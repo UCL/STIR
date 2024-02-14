@@ -1,8 +1,8 @@
 //
 //
 
-/*! 
-  \file 
+/*!
+  \file
   \ingroup FBP3DRP
   \brief Colsher filter class
   \author Claire LABBE
@@ -24,15 +24,16 @@
 #define __ColsherFilter_H__
 
 #ifdef NRFFT
-#include "stir_experimental/Filter.h"
+#  include "stir_experimental/Filter.h"
 #else
-#include "stir/ArrayFilterUsingRealDFTWithPadding.h"
-#include "stir/TimedObject.h"
+#  include "stir/ArrayFilterUsingRealDFTWithPadding.h"
+#  include "stir/TimedObject.h"
 #endif
 
 START_NAMESPACE_STIR
 #ifdef NRFFT
-template <typename elemT> class Viewgram;
+template <typename elemT>
+class Viewgram;
 #endif
 
 /*!
@@ -41,92 +42,95 @@ template <typename elemT> class Viewgram;
 
   The Colsher filter is combined with a 2-dimensional apodising Hamming filter.
 */
-class ColsherFilter: 
+class ColsherFilter :
 #ifdef NRFFT
-  public Filter2D <float>
+    public Filter2D<float>
 #else
-  public ArrayFilterUsingRealDFTWithPadding<2,float>,
-  public TimedObject
+    public ArrayFilterUsingRealDFTWithPadding<2, float>,
+    public TimedObject
 #endif
 {
 
 public:
-#ifndef NRFFT       
+#ifndef NRFFT
   //! Default constructor
   /*! \warning Leaves object in ill-defined state*/
-  ColsherFilter() {}
+  ColsherFilter()
+  {}
   /*!
     \brief constructor for the ColsherFilter.
-    
-    \param theta_max
-           the polar angle corresponding to the maximum oblique angle 
-	   included in the reconstruction.
 
-    The \c alpha and \c fc parameters are designed to minimize the 
+    \param theta_max
+           the polar angle corresponding to the maximum oblique angle
+           included in the reconstruction.
+
+    The \c alpha and \c fc parameters are designed to minimize the
     amplification of noise.
 
     The \c stretch_factor parameters can be used to define the Colsher
-    filter via a finer grid to avoid the problems with sampling a 
-    continuous filter in frequency space. For the ramp-filter, this can 
-    be done using analytic integration, but here we have to do it numerically. 
+    filter via a finer grid to avoid the problems with sampling a
+    continuous filter in frequency space. For the ramp-filter, this can
+    be done using analytic integration, but here we have to do it numerically.
   */
   explicit ColsherFilter(float theta_max,
-			 float alpha_colsher_axial=1.F, float fc_colsher_axial=0.5F,
-			 float alpha_colsher_radial=1.F, float fc_colsher_radial=0.5F,
-			 const int stretch_factor_axial=2,
-			 const int stretch_factor_planar=2);
+                         float alpha_colsher_axial = 1.F,
+                         float fc_colsher_axial = 0.5F,
+                         float alpha_colsher_radial = 1.F,
+                         float fc_colsher_radial = 0.5F,
+                         const int stretch_factor_axial = 2,
+                         const int stretch_factor_planar = 2);
   //! Initialise filter values
   /*! creates a 2D Colsher filter of size height*width,
     \param theta the polar angle
     \param d_a the sampling distance in the 's' coordinate
     \param d_b the sampling distance in the 't' coordinate
   */
-  Succeeded
-    set_up(int height, int width, float theta,
-	   float d_a, float d_b);
+  Succeeded set_up(int height, int width, float theta, float d_a, float d_b);
 #else
-  ColsherFilter(int height, int width, float gamma, float theta_max,
-		  float d_a, float d_b,
-                  float alpha_colsher_axial, float fc_colsher_axial,
-                  float alpha_colsher_radial, float fc_colsher_radial);
+  ColsherFilter(int height,
+                int width,
+                float gamma,
+                float theta_max,
+                float d_a,
+                float d_b,
+                float alpha_colsher_axial,
+                float fc_colsher_axial,
+                float alpha_colsher_radial,
+                float fc_colsher_radial);
 #endif
 
   virtual std::string parameter_info() const;
-  
-  ~ColsherFilter() {}
 
+  ~ColsherFilter() override
+  {}
 
-  private:
+private:
 #ifdef NRFFT
-    //! gamma is the polar angle
-    float gamma;
-        /* d_a, d_b are used to convert to millimeter.*/
-    //! d_a is initialised with the sampling distance
-    float d_a;
-    //! d_b is initialised with ring spacing * sin(theta)
-    float d_b; 
+  //! gamma is the polar angle
+  float gamma;
+  /* d_a, d_b are used to convert to millimeter.*/
+  //! d_a is initialised with the sampling distance
+  float d_a;
+  //! d_b is initialised with ring spacing * sin(theta)
+  float d_b;
 #endif
-    //! theta_max corresponds to the maximum aperture in the reconstruction 
-    float theta_max;
-    //! value of the axial alpha parameter for apodized Hamming window
-    float alpha_axial;
-    //! value of the axial cut-off frequency of the Colsher filter
-    float fc_axial;
-    //! value of the planar alpha parameter for apodized Hamming window
-    float alpha_planar;
-    //! value of the planar cut-off frequency of the Colsher filter
-    float fc_planar;
-    int stretch_factor_axial;
-    int stretch_factor_planar;
+  //! theta_max corresponds to the maximum aperture in the reconstruction
+  float theta_max;
+  //! value of the axial alpha parameter for apodized Hamming window
+  float alpha_axial;
+  //! value of the axial cut-off frequency of the Colsher filter
+  float fc_axial;
+  //! value of the planar alpha parameter for apodized Hamming window
+  float alpha_planar;
+  //! value of the planar cut-off frequency of the Colsher filter
+  float fc_planar;
+  int stretch_factor_axial;
+  int stretch_factor_planar;
 };
 
 #ifdef NRFFT
-void Filter_proj_Colsher(Viewgram<float> & view_i,
-			 Viewgram<float> & view_i1,
-                         ColsherFilter& CFilter, 
-                         int PadS, int PadZ);
+void Filter_proj_Colsher(Viewgram<float>& view_i, Viewgram<float>& view_i1, ColsherFilter& CFilter, int PadS, int PadZ);
 #endif
 END_NAMESPACE_STIR
 
 #endif //  __ColsherFilter_H__
-

@@ -2,7 +2,9 @@ name: Build and ctest and recon_test_pack CI
 
 on:
   push:
-    branches: [ master ]
+    branches: 
+      - master
+      - tof_sino_UCL
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -12,7 +14,9 @@ on:
       - '**/*.tex'
 
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - tof_sino_UCL
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -37,6 +41,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 9
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -45,6 +50,7 @@ jobs:
         - os: ubuntu-latest
           compiler: clang
           #compiler_version:
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -54,6 +60,7 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 10
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Debug"
           parallelproj: "OFF"
@@ -62,14 +69,25 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           compiler_version: 12
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
           BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          cuda_version: "12.1.0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
         - os: macOS-latest
           compiler: gcc
           compiler_version: 11
+          cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Debug"
@@ -88,7 +106,7 @@ jobs:
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
 
-    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
 
     steps:
     - name: disk space
@@ -112,9 +130,21 @@ jobs:
               # no idea how to do this
               ;;
            esac
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
+
+    - name: disk space
+      shell: bash
+      run: |
+          case ${{matrix.os}} in
+            (ubuntu* | macOS*)
+              sudo .github/workflows/GHA_increase_disk_space.sh
+              ;;
+            (windows*)
+              # no idea what to do here
+              ;;
+           esac
 
     - name: set_compiler_variables
       shell: bash
@@ -151,6 +181,13 @@ jobs:
           # make available to jobs below
           echo CC="$CC" >> $GITHUB_ENV
           echo CXX="$CXX" >> $GITHUB_ENV
+
+    - if: matrix.cuda_version != '0'
+      uses: Jimver/cuda-toolkit@v0.2.11
+      id: cuda-toolkit
+      with:
+          cuda: ${{ matrix.cuda_version }}
+          linux-local-args: '["--toolkit"]'
 
     - name: install_dependencies
       shell: bash
@@ -209,10 +246,13 @@ jobs:
           python -m pip install pytest
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
-             git clone --depth 1 --branch v1.3.7 https://github.com/gschramm/parallelproj
+             git clone --depth 1 --branch v1.7.3 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
              cd parallelproj/build
-             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSKIP_CUDA_LIB:BOOL=ON
+             if test "${{matrix.cuda_version}}" == "0"; then
+               extra_args="-DSKIP_CUDA_LIB:BOOL=ON"
+             fi
+             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_args}
              cmake --build . --target install --config Release
              cd ../..
           fi
@@ -243,7 +283,7 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1
       with:
-        key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}
+        key: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}
         max-size: "2G"
 
     - name: configure
@@ -266,7 +306,7 @@ jobs:
           EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
-          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/src"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
           mkdir build
           cd build
@@ -295,11 +335,23 @@ jobs:
       env:
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       run: |
+          set -vx
           cd ${GITHUB_WORKSPACE}/build
+          # find test exclusions. Complicated due to need of single -E argument and | pattern
+          if test ${{matrix.cuda_version}} != "0"; then
+              # No CUDA drivers on GitHub Actions
+              EXCLUDE="parallelproj|test_blocks_on_cylindrical_projectors"
+          fi
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE="-E test_data_processor_projectors|test_export_array|test_ArcCorrection|test_blocks_on_cylindrical_projectors"
+              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              EXCLUDE="${EXCLUDE_Debug}${EXCLUDE:+"|"}${EXCLUDE}"
           fi
+          # prepend -E
+          if [ ! -z "${EXCLUDE}" ]; then
+              EXCLUDE="-E ${EXCLUDE}"
+          fi
+          # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
 
     - name: recon_test_pack
@@ -330,15 +382,17 @@ jobs:
       uses: actions/upload-artifact@v3
       if: failure()
       with:
-        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
         path: ${{ github.workspace }}/recon_test_pack/**/*.log
+          ${{ github.workspace }}/recon_test_pack/**/my_*v
+          ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session if triggered
       uses: mxschmitt/action-tmate@v3
       timeout-minutes: 15
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
 
     - name: examples
       shell: bash
@@ -350,8 +404,8 @@ jobs:
           ./run_simulation.sh 1> /dev/null
 
           # Run the Demo executables
-          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++
-          cd ${GITHUB_WORKSPACE}/examples/C++/src
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++/using_STIR_LOCAL
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL
 
           generate_image generate_image.par
           forward_project sino.hs image.hv  small.hs
@@ -361,6 +415,15 @@ jobs:
           ${EXE_LOC}/demo3 demoPM.par --display_off
           ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
           ${EXE_LOC}/demo5_line_search demo5_line_search.par
+
+          # build and run C++/using_installed_STIR
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
+          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+          cmake --build build/ --config Release  --target install
+          # run demo
+          demo_create_image
+          # just check if its output makes sense
+          list_image_info test.hv
 
     - name: Python
       shell: bash

@@ -1,4 +1,4 @@
-# Copyright 2022 University College London
+# Copyright 2022, 2024 University College London
 
 # Author Robert Twyman
 
@@ -8,10 +8,11 @@
 #
 # See STIR/LICENSE.txt for details
 
+from BackendTools.STIRInterface import ProjDataDims, ProjDataVisualisationBackend
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QGridLayout, QLabel, QSpinBox, QSlider
 
-from BackendTools.STIRInterface import ProjDataDims, ProjDataVisualisationBackend
+import stir
 
 
 class UIGroupboxProjDataDimensions:
@@ -42,6 +43,10 @@ class UIGroupboxProjDataDimensions:
             ProjDataDims.TANGENTIAL_POS: {
                 'label': 'Tangential position',
                 'connect_method': self.tangential_pos_refresh
+            },
+            ProjDataDims.TIMING_POS: {
+                'label': 'TOF bin',
+                'connect_method': self.timing_pos_refresh
             }
         }
 
@@ -54,6 +59,7 @@ class UIGroupboxProjDataDimensions:
         self.UI_slider_spinboxes[ProjDataDims.AXIAL_POS].add_item_to_layout(layout, row=2)
         self.UI_slider_spinboxes[ProjDataDims.VIEW_NUMBER].add_item_to_layout(layout, row=4)
         self.UI_slider_spinboxes[ProjDataDims.TANGENTIAL_POS].add_item_to_layout(layout, row=6)
+        self.UI_slider_spinboxes[ProjDataDims.TIMING_POS].add_item_to_layout(layout, row=8)
 
         layout.setRowStretch(5, 1)
         self.groupbox.setLayout(layout)
@@ -82,8 +88,8 @@ class UIGroupboxProjDataDimensions:
     def segment_number_refresh(self):
         """ This function is called when the user changes the segment number value.
         Because of the way the STIR segment data is handled, the segment_data needs to change first."""
-        new_segment_num = self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].value()
-        self.stir_interface.refresh_segment_data(new_segment_num)
+        self.stir_interface.segment_data = self.stir_interface.projdata.get_segment_by_view(
+            self.get_segment_indices_from_UI())
         self.UI_controller_UI_change_trigger()
 
     def axial_pos_refresh(self):
@@ -98,43 +104,51 @@ class UIGroupboxProjDataDimensions:
         """This function is called when the user changes the tangential position value."""
         self.UI_controller_UI_change_trigger()
 
+    def timing_pos_refresh(self):
+        """This function is called when the user changes the TOF bin value."""
+        self.stir_interface.segment_data = self.stir_interface.projdata.get_segment_by_view(
+            self.get_segment_indices_from_UI())
+        self.UI_controller_UI_change_trigger()
+
+    def get_segment_indices_from_UI(self) -> stir.SegmentIndices:
+        """Returns the segment indices from the UI slider and spinboxes."""
+        return stir.SegmentIndices(self.UI_slider_spinboxes[ProjDataDims.SEGMENT_NUM].value(),
+                                   self.UI_slider_spinboxes[ProjDataDims.TIMING_POS].value())
+
     def refresh_sliders_and_spinboxes_ranges(self) -> None:
         """Update the sliders and spinboxes ranges based upon the stir_interface projdata."""
         if self.stir_interface.projdata is None:
             return
         # Update all slider and spinbox ranges, should start with segment number
         for dimension in ProjDataDims:
-            current_segment_num = self.stir_interface.get_current_segment_num()
-            limits = self.stir_interface.get_limits(dimension, current_segment_num)
+            limits = self.stir_interface.get_limits(dimension, self.stir_interface.get_current_segment_num())
             self.UI_slider_spinboxes[dimension].update_limits(limits=limits)
 
-    def update_enable_disable(self, sinogram_radio_button_state: bool):
-        # Segment slider and scroll box handling
+    def configure_enable_disable_sliders(self, is_sinogram_mode: bool):
+        """Configure the sliders and spinboxes based upon the current mode and the projdata limits in each dimension."""
+
+        self.disable(ProjDataDims.TANGENTIAL_POS)
+
         segment_limits = self.stir_interface.get_limits(ProjDataDims.SEGMENT_NUM,
                                                         self.stir_interface.get_current_segment_num())
-        if self.stir_interface.projdata is not None:
-            if segment_limits[0] == 0 and segment_limits[1] == 0:
-                self.disable(ProjDataDims.SEGMENT_NUM)
-            else:
-                self.enable(ProjDataDims.SEGMENT_NUM)
+        self.update_dimension_state(ProjDataDims.SEGMENT_NUM, segment_limits)
 
-        # Check if sinogram or viewgram is selected and disable the appropriate sliders and spinboxes
-        if sinogram_radio_button_state:
-            # Disable the tangential position slider and spinbox
+        if is_sinogram_mode:
+            # No view number in sinogram mode
             self.disable(ProjDataDims.VIEW_NUMBER)
-            axial_pos_limits = self.stir_interface.get_limits(ProjDataDims.AXIAL_POS,
-                                                              self.stir_interface.get_current_segment_num())
-            if (axial_pos_limits[0] - axial_pos_limits[1]) != 0:
-                self.enable(ProjDataDims.AXIAL_POS)
-            else:
-                self.disable(ProjDataDims.AXIAL_POS)
-
-        elif not sinogram_radio_button_state:
+            axial_limits = self.stir_interface.get_limits(ProjDataDims.AXIAL_POS,
+                                                          self.stir_interface.get_current_segment_num())
+            self.update_dimension_state(ProjDataDims.AXIAL_POS, axial_limits)
+        else:
+            # No axial position in viewgram (not sinogram) mode
             self.disable(ProjDataDims.AXIAL_POS)
-            self.enable(ProjDataDims.VIEW_NUMBER)
+            view_limits = self.stir_interface.get_limits(ProjDataDims.VIEW_NUMBER,
+                                                         self.stir_interface.get_current_segment_num())
+            self.update_dimension_state(ProjDataDims.VIEW_NUMBER, view_limits)
 
-        if True:  # Until I work out what to do with tangential position
-            self.disable(ProjDataDims.TANGENTIAL_POS)
+        tof_limits = self.stir_interface.get_limits(ProjDataDims.TIMING_POS,
+                                                    self.stir_interface.get_current_segment_num())
+        self.update_dimension_state(ProjDataDims.TIMING_POS, tof_limits)
 
     def __construct_slider_spinboxes(self, slider_spinbox_configurations: dict) -> dict:
         """
@@ -160,6 +174,13 @@ class UIGroupboxProjDataDimensions:
                                                                connect_method=item[1]['connect_method']
                                                                )
         return UI_slider_spinboxes
+
+    def update_dimension_state(self, dimension, limits):
+        """Updates the state of the slider and spinbox for the given dimension. If limits are equal, disable."""
+        if limits[1] == limits[0]:
+            self.disable(dimension)
+        else:
+            self.enable(dimension)
 
     def enable(self, dimension: ProjDataDims) -> None:
         """Enables the slider and spinbox for the given dimension."""

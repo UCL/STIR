@@ -45,14 +45,14 @@
 #include <math.h>
 #include "stir/CPUTimer.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::setw;
 using std::endl;
 using std::min;
 using std::max;
 using std::size_t;
-#endif
+
+//#define STIR_TOF_DEBUG 1
 
 START_NAMESPACE_STIR
 
@@ -128,9 +128,12 @@ ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
         num_axial_pos_per_segment[i] = 2 * scanner_sptr->get_num_rings() - i - 1;
     }
 
-  auto proj_data_info_blocks_sptr
-      = std::make_shared<TProjDataInfo>(scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v,
-                                        scanner_sptr->get_max_num_views(), scanner_sptr->get_max_num_non_arccorrected_bins());
+  auto proj_data_info_blocks_sptr = std::make_shared<TProjDataInfo>(scanner_sptr,
+                                                                    num_axial_pos_per_segment,
+                                                                    min_ring_diff_v,
+                                                                    max_ring_diff_v,
+                                                                    scanner_sptr->get_max_num_views(),
+                                                                    scanner_sptr->get_max_num_non_arccorrected_bins());
 
   return proj_data_info_blocks_sptr;
 }
@@ -138,11 +141,38 @@ ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
 void
 ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 {
+  cerr << "\tTests on get_min/max_num\n";
+  check_if_equal(proj_data_info.get_max_tangential_pos_num() - proj_data_info.get_min_tangential_pos_num() + 1,
+                 proj_data_info.get_num_tangential_poss(),
+                 "basic check on min/max/num_tangential_pos_num");
+  check(abs(proj_data_info.get_max_tangential_pos_num() + proj_data_info.get_min_tangential_pos_num()) <= 1,
+        "check on min/max_tangential_pos_num being (almost) centred");
+  check_if_equal(proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num() + 1,
+                 proj_data_info.get_num_tof_poss(),
+                 "basic check on min/max/num_tof_pos_num");
+  check_if_equal(proj_data_info.get_max_tof_pos_num() + proj_data_info.get_min_tof_pos_num(),
+                 0,
+                 "check on min/max_tof_pos_num being (almost) centred");
+  check_if_equal(proj_data_info.get_max_view_num() - proj_data_info.get_min_view_num() + 1,
+                 proj_data_info.get_num_views(),
+                 "basic check on min/max/num_view_num");
+  check_if_equal(proj_data_info.get_max_segment_num() - proj_data_info.get_min_segment_num() + 1,
+                 proj_data_info.get_num_segments(),
+                 "basic check on min/max/num_segment_num");
+  // not strictly necessary in most of the code, but most likely required in some of it
+  check_if_equal(proj_data_info.get_max_segment_num() + proj_data_info.get_min_segment_num(),
+                 0,
+                 "check on min/max_segment_num being centred");
+  check_if_equal(proj_data_info.get_max_axial_pos_num(0) - proj_data_info.get_min_axial_pos_num(0) + 1,
+                 proj_data_info.get_num_axial_poss(0),
+                 "basic check on min/max/num_axial_pos_num");
+
   cerr << "\tTests on get_LOR/get_bin\n";
   int max_diff_segment_num = 0;
   int max_diff_view_num = 0;
   int max_diff_axial_pos_num = 0;
   int max_diff_tangential_pos_num = 0;
+  int max_diff_timing_pos_num = 0;
 #ifdef STIR_OPENMP
 #  pragma omp parallel for schedule(dynamic)
 #endif
@@ -165,108 +195,164 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                                                          - proj_data_info_cyl_ptr->get_average_ring_difference(segment_num))));
             }
           for (int axial_pos_num = proj_data_info.get_min_axial_pos_num(segment_num) + axial_pos_num_margin;
-               axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num) - axial_pos_num_margin; axial_pos_num += 3)
+               axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num) - axial_pos_num_margin;
+               axial_pos_num += 3)
             {
               for (int tangential_pos_num = proj_data_info.get_min_tangential_pos_num() + 1;
-                   tangential_pos_num <= proj_data_info.get_max_tangential_pos_num() - 1; tangential_pos_num += 1)
+                   tangential_pos_num <= proj_data_info.get_max_tangential_pos_num() - 1;
+                   tangential_pos_num += 1)
                 {
-                  const Bin org_bin(segment_num, view_num, axial_pos_num, tangential_pos_num, /* value*/ 1);
-                  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-                  proj_data_info.get_LOR(lor, org_bin);
-                  {
-                    const Bin new_bin = proj_data_info.get_bin(lor);
-#if 1
-                    // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
-                    const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
-                      intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
-                    const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
-                    const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                    const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
-                      intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
-                    if (new_bin.get_bin_value() > 0)
+                  for (int timing_pos_num = proj_data_info.get_min_tof_pos_num();
+                       timing_pos_num <= proj_data_info.get_max_tof_pos_num();
+                       timing_pos_num += std::max(1,
+                                                  (proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num())
+                                                      / 2)) // take 3 or 1 steps, always going through 0
+                    {
+                      const Bin org_bin(segment_num, view_num, axial_pos_num, tangential_pos_num, timing_pos_num, /* value*/ 1.f);
+                      const double delta_time = proj_data_info.get_tof_delta_time(org_bin);
+                      LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+                      proj_data_info.get_LOR(lor, org_bin);
+
                       {
-                        if (diff_segment_num > max_diff_segment_num)
-                          max_diff_segment_num = diff_segment_num;
-                        if (diff_view_num > max_diff_view_num)
-                          max_diff_view_num = diff_view_num;
-                        if (diff_axial_pos_num > max_diff_axial_pos_num)
-                          max_diff_axial_pos_num = diff_axial_pos_num;
-                        if (diff_tangential_pos_num > max_diff_tangential_pos_num)
-                          max_diff_tangential_pos_num = diff_tangential_pos_num;
-                      }
+                        const Bin new_bin = proj_data_info.get_bin(lor, delta_time);
+#if 1
+                        // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
+                        // and TOF bin
+                        const int diff_segment_num
+                            = intabs(org_bin.view_num() - new_bin.view_num())
+                                      < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num())
+                                  ? intabs(org_bin.segment_num() - new_bin.segment_num())
+                                  : intabs(org_bin.segment_num() + new_bin.segment_num());
+                        const int diff_view_num
+                            = min(intabs(org_bin.view_num() - new_bin.view_num()),
+                                  proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
+                        const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
+                        const int diff_tangential_pos_num
+                            = intabs(org_bin.view_num() - new_bin.view_num())
+                                      < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num())
+                                  ? intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num())
+                                  : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
+                        const int diff_timing_pos_num
+                            = intabs(org_bin.view_num() - new_bin.view_num())
+                                      < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num())
+                                  ? intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num())
+                                  : intabs(org_bin.timing_pos_num() + new_bin.timing_pos_num());
+                        if (new_bin.get_bin_value() > 0)
+                          {
+                            if (diff_segment_num > max_diff_segment_num)
+                              max_diff_segment_num = diff_segment_num;
+                            if (diff_view_num > max_diff_view_num)
+                              max_diff_view_num = diff_view_num;
+                            if (diff_axial_pos_num > max_diff_axial_pos_num)
+                              max_diff_axial_pos_num = diff_axial_pos_num;
+                            if (diff_tangential_pos_num > max_diff_tangential_pos_num)
+                              max_diff_tangential_pos_num = diff_tangential_pos_num;
+                            if (diff_timing_pos_num > max_diff_timing_pos_num)
+                              max_diff_timing_pos_num = diff_timing_pos_num;
+                          }
 #  ifdef STIR_OPENMP
-                      // add a pragma to avoid cerr output being jumbled up if there are any errors
+                          // add a pragma to avoid cerr output being jumbled up if there are any errors
 #    pragma omp critical(TESTPROJDATAINFO)
 #  endif
-                    if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(), "round-trip get_LOR then get_bin: value")
-                        || !check(diff_segment_num <= 0, "round-trip get_LOR then get_bin: segment")
-                        || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin: view")
-                        || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin: axial_pos")
-                        || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin: tangential_pos"))
+                        if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(), "round-trip get_LOR then get_bin: value")
+                            || !check(diff_segment_num <= 0, "round-trip get_LOR then get_bin: segment")
+                            || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin: view")
+                            || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin: axial_pos")
+                            || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin: tangential_pos")
+                            || !check(diff_timing_pos_num == 0, "round-trip get_LOR then get_bin: timing_pos"))
 
 #else
-                    if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
+                        if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
 #endif
-                      {
-                        cerr << "\tProblem at    segment = " << org_bin.segment_num() << ", axial pos " << org_bin.axial_pos_num()
-                             << ", view = " << org_bin.view_num() << ", tangential_pos_num = " << org_bin.tangential_pos_num()
-                             << "\n";
-                        if (new_bin.get_bin_value() > 0)
-                          cerr << "\tround-trip to segment = " << new_bin.segment_num() << ", axial pos "
-                               << new_bin.axial_pos_num() << ", view = " << new_bin.view_num()
-                               << ", tangential_pos_num = " << new_bin.tangential_pos_num() << '\n';
+                          {
+                            cerr << "\tProblem at    segment = " << org_bin.segment_num() << ", axial pos "
+                                 << org_bin.axial_pos_num() << ", view = " << org_bin.view_num()
+                                 << ", tangential_pos = " << org_bin.tangential_pos_num()
+                                 << ", timing_pos = " << org_bin.timing_pos_num() << "\n";
+                            if (new_bin.get_bin_value() > 0)
+                              cerr << "\tround-trip to segment = " << new_bin.segment_num() << ", axial pos "
+                                   << new_bin.axial_pos_num() << ", view = " << new_bin.view_num()
+                                   << ", tangential_pos = " << new_bin.tangential_pos_num()
+                                   << ", timing_pos = " << new_bin.timing_pos_num() << '\n';
+                          }
                       }
-                  }
-                  // repeat test but with different type of LOR
-                  {
-                    LORAs2Points<float> lor_as_points;
-                    lor.get_intersections_with_cylinder(lor_as_points, lor.radius());
-                    const Bin new_bin = proj_data_info.get_bin(lor_as_points);
+                      // repeat test but with different type of LOR
+                      {
+                        LORAs2Points<float> lor_as_points;
+                        lor.get_intersections_with_cylinder(lor_as_points, lor.radius());
+#if STIR_TOF_DEBUG > 1
+                        std::cerr << "    z1=" << lor_as_points.p1().z() << ", y1=" << lor_as_points.p1().y()
+                                  << ", x1=" << lor_as_points.p1().x() << "\n    z2=" << lor_as_points.p2().z()
+                                  << ", y2=" << lor_as_points.p2().y() << ", x2=" << lor_as_points.p2().x() << std::endl;
+#endif
+                        const Bin new_bin = proj_data_info.get_bin(lor_as_points, proj_data_info.get_tof_delta_time(org_bin));
 #if 1
-                    // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
-                    const int diff_segment_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
-                      intabs(org_bin.segment_num() - new_bin.segment_num()) : intabs(org_bin.segment_num() + new_bin.segment_num());
-                    const int diff_view_num = min(intabs(org_bin.view_num() - new_bin.view_num()), proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
-                    const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
-                    const int diff_tangential_pos_num = intabs(org_bin.view_num() - new_bin.view_num()) < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()) ? 
-                      intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num()) : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
-                    if (new_bin.get_bin_value() > 0)
-                      {
-                        if (diff_segment_num > max_diff_segment_num)
-                          max_diff_segment_num = diff_segment_num;
-                        if (diff_view_num > max_diff_view_num)
-                          max_diff_view_num = diff_view_num;
-                        if (diff_axial_pos_num > max_diff_axial_pos_num)
-                          max_diff_axial_pos_num = diff_axial_pos_num;
-                        if (diff_tangential_pos_num > max_diff_tangential_pos_num)
-                          max_diff_tangential_pos_num = diff_tangential_pos_num;
-                      }
-                    if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(),
-                               "round-trip get_LOR then get_bin (LORAs2Points): value")
-                        || !check(diff_segment_num <= 0, "round-trip get_LOR then get_bin (LORAs2Points): segment")
-                        || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): view")
-                        || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos")
-                        || !check(diff_tangential_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos"))
+
+                        // the differences need to also consider wrap-around in views, which would flip tangential pos and segment
+                        const int diff_segment_num
+                            = intabs(org_bin.view_num() - new_bin.view_num())
+                                      < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num())
+                                  ? intabs(org_bin.segment_num() - new_bin.segment_num())
+                                  : intabs(org_bin.segment_num() + new_bin.segment_num());
+                        const int diff_view_num
+                            = min(intabs(org_bin.view_num() - new_bin.view_num()),
+                                  proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num()));
+                        const int diff_axial_pos_num = intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
+                        const int diff_tangential_pos_num
+                            = intabs(org_bin.view_num() - new_bin.view_num())
+                                      < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num())
+                                  ? intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num())
+                                  : intabs(org_bin.tangential_pos_num() + new_bin.tangential_pos_num());
+                        const int diff_timing_pos_num
+                            = intabs(org_bin.view_num() - new_bin.view_num())
+                                      < proj_data_info.get_num_views() - intabs(org_bin.view_num() - new_bin.view_num())
+                                  ? intabs(org_bin.timing_pos_num() - new_bin.timing_pos_num())
+                                  : intabs(org_bin.timing_pos_num() + new_bin.timing_pos_num());
+                        if (new_bin.get_bin_value() > 0)
+                          {
+                            if (diff_segment_num > max_diff_segment_num)
+                              max_diff_segment_num = diff_segment_num;
+                            if (diff_view_num > max_diff_view_num)
+                              max_diff_view_num = diff_view_num;
+                            if (diff_axial_pos_num > max_diff_axial_pos_num)
+                              max_diff_axial_pos_num = diff_axial_pos_num;
+                            if (diff_tangential_pos_num > max_diff_tangential_pos_num)
+                              max_diff_tangential_pos_num = diff_tangential_pos_num;
+                            if (diff_timing_pos_num > max_diff_timing_pos_num)
+                              max_diff_timing_pos_num = diff_timing_pos_num;
+                          }
+                        if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(),
+                                   "round-trip get_LOR then get_bin (LORAs2Points): value")
+                            || !check(diff_segment_num <= 0, "round-trip get_LOR then get_bin (LORAs2Points): segment")
+                            || !check(diff_view_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): view")
+                            || !check(diff_axial_pos_num <= 1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos")
+                            || !check(diff_tangential_pos_num <= 1,
+                                      "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos")
+                            || !check(diff_timing_pos_num == 0, "round-trip get_LOR then get_bin: timing_pos"))
 
 #else
-                    if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
+                        if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
 #endif
-                      {
-                        cerr << "\tProblem at    segment = " << org_bin.segment_num() << ", axial pos " << org_bin.axial_pos_num()
-                             << ", view = " << org_bin.view_num() << ", tangential_pos_num = " << org_bin.tangential_pos_num()
-                             << "\n";
-                        if (new_bin.get_bin_value() > 0)
-                          cerr << "\tround-trip to segment = " << new_bin.segment_num() << ", axial pos "
-                               << new_bin.axial_pos_num() << ", view = " << new_bin.view_num()
-                               << ", tangential_pos_num = " << new_bin.tangential_pos_num() << '\n';
+                          {
+                            cerr << "\tProblem at    segment = " << org_bin.segment_num() << ", axial pos "
+                                 << org_bin.axial_pos_num() << ", view = " << org_bin.view_num()
+                                 << ", tangential_pos_num = " << org_bin.tangential_pos_num()
+                                 << ", timing_pos = " << org_bin.timing_pos_num() << "\n";
+                            if (new_bin.get_bin_value() > 0)
+                              cerr << "\tround-trip to segment = " << new_bin.segment_num() << ", axial pos "
+                                   << new_bin.axial_pos_num() << ", view = " << new_bin.view_num()
+                                   << ", tangential_pos_num = " << new_bin.tangential_pos_num()
+                                   << ", timing_pos = " << new_bin.timing_pos_num() << '\n';
+                          }
                       }
-                  }
+                    }
                 }
             }
         }
     }
   cerr << "Max Deviation:  segment = " << max_diff_segment_num << ", axial pos " << max_diff_axial_pos_num
-       << ", view = " << max_diff_view_num << ", tangential_pos_num = " << max_diff_tangential_pos_num << "\n";
+       << ", view = " << max_diff_view_num << ", tangential_pos_num = " << max_diff_tangential_pos_num
+       << ", timing_pos_num = " << max_diff_timing_pos_num << "\n";
 
   // test on reduce_segment_range and operator>=
   {
@@ -276,7 +362,11 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
     check(proj_data_info >= *smaller, "check on tangential_pos and operator>=");
     smaller->set_min_axial_pos_num(4, 0);
     check(proj_data_info >= *smaller, "check on axial_pos and operator>=");
-
+    // if (proj_data_info.is_tof_data())
+    //   {
+    //      smaller->set_min_timing_pos_num(0);
+    //      check(proj_data_info >= *smaller, "check on timing_pos and operator>=");
+    //   }
     smaller->reduce_segment_range(0, 0);
     check(proj_data_info >= *smaller, "check on reduce_segment_range and operator>=");
     // make one range larger, so should now fail
@@ -305,11 +395,15 @@ ProjDataInfoCylindricalTests::test_cylindrical_proj_data_info(ProjDataInfoCylind
 {
   cerr << "\tTesting consistency between different implementations of geometric info\n";
   {
-    const Bin bin(proj_data_info.get_max_segment_num(), 1,
-                  proj_data_info.get_max_axial_pos_num(proj_data_info.get_max_segment_num()) / 2, 1);
-    check_if_equal(proj_data_info.get_sampling_in_m(bin), proj_data_info.ProjDataInfo::get_sampling_in_m(bin),
+    const Bin bin(proj_data_info.get_max_segment_num(),
+                  1,
+                  proj_data_info.get_max_axial_pos_num(proj_data_info.get_max_segment_num()) / 2,
+                  1);
+    check_if_equal(proj_data_info.get_sampling_in_m(bin),
+                   proj_data_info.ProjDataInfo::get_sampling_in_m(bin),
                    "test consistency get_sampling_in_m");
-    check_if_equal(proj_data_info.get_sampling_in_t(bin), proj_data_info.ProjDataInfo::get_sampling_in_t(bin),
+    check_if_equal(proj_data_info.get_sampling_in_t(bin),
+                   proj_data_info.ProjDataInfo::get_sampling_in_t(bin),
                    "test consistency get_sampling_in_t");
 #if 0
     // ProjDataInfo has no default implementation for get_tantheta
@@ -318,29 +412,33 @@ ProjDataInfoCylindricalTests::test_cylindrical_proj_data_info(ProjDataInfoCylind
 		   proj_data_info.ProjDataInfo::get_tantheta(bin),
 		   "test consistency get_tantheta");
 #endif
-    check_if_equal(proj_data_info.get_costheta(bin), proj_data_info.ProjDataInfo::get_costheta(bin),
-                   "test consistency get_costheta");
+    check_if_equal(
+        proj_data_info.get_costheta(bin), proj_data_info.ProjDataInfo::get_costheta(bin), "test consistency get_costheta");
 
-    check_if_equal(proj_data_info.get_costheta(bin), cos(atan(proj_data_info.get_tantheta(bin))),
+    check_if_equal(proj_data_info.get_costheta(bin),
+                   cos(atan(proj_data_info.get_tantheta(bin))),
                    "cross check get_costheta and get_tantheta");
 
     // try the same with a non-standard ring spacing
     const float old_ring_spacing = proj_data_info.get_ring_spacing();
     proj_data_info.set_ring_spacing(2.1F);
 
-    check_if_equal(proj_data_info.get_sampling_in_m(bin), proj_data_info.ProjDataInfo::get_sampling_in_m(bin),
+    check_if_equal(proj_data_info.get_sampling_in_m(bin),
+                   proj_data_info.ProjDataInfo::get_sampling_in_m(bin),
                    "test consistency get_sampling_in_m");
-    check_if_equal(proj_data_info.get_sampling_in_t(bin), proj_data_info.ProjDataInfo::get_sampling_in_t(bin),
+    check_if_equal(proj_data_info.get_sampling_in_t(bin),
+                   proj_data_info.ProjDataInfo::get_sampling_in_t(bin),
                    "test consistency get_sampling_in_t");
 #if 0
     check_if_equal(proj_data_info.get_tantheta(bin),
 		   proj_data_info.ProjDataInfo::get_tantheta(bin),
 		   "test consistency get_tantheta");
 #endif
-    check_if_equal(proj_data_info.get_costheta(bin), proj_data_info.ProjDataInfo::get_costheta(bin),
-                   "test consistency get_costheta");
+    check_if_equal(
+        proj_data_info.get_costheta(bin), proj_data_info.ProjDataInfo::get_costheta(bin), "test consistency get_costheta");
 
-    check_if_equal(proj_data_info.get_costheta(bin), cos(atan(proj_data_info.get_tantheta(bin))),
+    check_if_equal(proj_data_info.get_costheta(bin),
+                   cos(atan(proj_data_info.get_tantheta(bin))),
                    "cross check get_costheta and get_tantheta");
     // set back to usual value
     proj_data_info.set_ring_spacing(old_ring_spacing);
@@ -373,11 +471,14 @@ ProjDataInfoCylindricalTests::test_cylindrical_proj_data_info(ProjDataInfoCylind
             const ProjDataInfoCylindrical::RingNumPairs& ring_pairs
                 = proj_data_info.get_all_ring_pairs_for_segment_axial_pos_num(segment_num, axial_pos_num);
 
-            check_if_equal(ring_pairs.size(), static_cast<size_t>(1),
+            check_if_equal(ring_pairs.size(),
+                           static_cast<size_t>(1),
                            "test total number of ring-pairs for 1 segment/ax_pos should be 1 for span=1\n");
-            check_if_equal(ring1, ring_pairs[0].first,
+            check_if_equal(ring1,
+                           ring_pairs[0].first,
                            "test ring1 equal after going to segment/ax_pos and returning (version with all ring_pairs)\n");
-            check_if_equal(ring2, ring_pairs[0].second,
+            check_if_equal(ring2,
+                           ring_pairs[0].second,
                            "test ring2 equal after going to segment/ax_pos and returning (version with all ring_pairs)\n");
           }
     }
@@ -390,15 +491,16 @@ ProjDataInfoCylindricalTests::test_cylindrical_proj_data_info(ProjDataInfoCylind
     for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num();
          ++segment_num)
       for (int axial_pos_num = proj_data_info.get_min_axial_pos_num(segment_num);
-           axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num); ++axial_pos_num)
+           axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num);
+           ++axial_pos_num)
         {
           const ProjDataInfoCylindrical::RingNumPairs& ring_pairs
               = proj_data_info.get_all_ring_pairs_for_segment_axial_pos_num(segment_num, axial_pos_num);
           for (ProjDataInfoCylindrical::RingNumPairs::const_iterator iter = ring_pairs.begin(); iter != ring_pairs.end(); ++iter)
             {
               int check_segment_num = 0, check_axial_pos_num = 0;
-              check(proj_data_info.get_segment_axial_pos_num_for_ring_pair(check_segment_num, check_axial_pos_num, iter->first,
-                                                                           iter->second)
+              check(proj_data_info.get_segment_axial_pos_num_for_ring_pair(
+                        check_segment_num, check_axial_pos_num, iter->first, iter->second)
                         == Succeeded::yes,
                     "test if segment,ax_pos_num found for a ring pair");
               check_if_equal(check_segment_num, segment_num, "test if segment_num is consistent\n");
@@ -442,12 +544,15 @@ ProjDataInfoTests::run_Blocks_DOI_test()
   timer.start();
 
   for (int seg = proj_data_info_blocks_doi0_ptr->get_min_segment_num();
-       seg <= proj_data_info_blocks_doi0_ptr->get_max_segment_num(); ++seg)
+       seg <= proj_data_info_blocks_doi0_ptr->get_max_segment_num();
+       ++seg)
     for (int ax = proj_data_info_blocks_doi0_ptr->get_min_axial_pos_num(seg);
-         ax <= proj_data_info_blocks_doi0_ptr->get_max_axial_pos_num(seg); ++ax)
+         ax <= proj_data_info_blocks_doi0_ptr->get_max_axial_pos_num(seg);
+         ++ax)
       for (int view = 0; view <= proj_data_info_blocks_doi0_ptr->get_max_view_num(); view++)
         for (int tang = proj_data_info_blocks_doi0_ptr->get_min_tangential_pos_num();
-             tang <= proj_data_info_blocks_doi0_ptr->get_max_tangential_pos_num(); ++tang)
+             tang <= proj_data_info_blocks_doi0_ptr->get_max_tangential_pos_num();
+             ++tang)
           {
             bin.segment_num() = seg;
             bin.axial_pos_num() = ax;
@@ -540,10 +645,12 @@ ProjDataInfoTests::run_coordinate_test()
 
   for (int seg = proj_data_info_blocks_ptr->get_min_segment_num(); seg <= proj_data_info_blocks_ptr->get_max_segment_num(); ++seg)
     for (int ax = proj_data_info_blocks_ptr->get_min_axial_pos_num(seg);
-         ax <= proj_data_info_blocks_ptr->get_max_axial_pos_num(seg); ++ax)
+         ax <= proj_data_info_blocks_ptr->get_max_axial_pos_num(seg);
+         ++ax)
       for (int view = 0; view <= proj_data_info_blocks_ptr->get_max_view_num(); view++)
         for (int tang = proj_data_info_blocks_ptr->get_min_tangential_pos_num();
-             tang <= proj_data_info_blocks_ptr->get_max_tangential_pos_num(); ++tang)
+             tang <= proj_data_info_blocks_ptr->get_max_tangential_pos_num();
+             ++tang)
           {
             bin.segment_num() = seg;
             bin.axial_pos_num() = ax;
@@ -556,16 +663,18 @@ ProjDataInfoTests::run_coordinate_test()
             const int num_detectors = proj_data_info_cyl_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
 
             int det_num1 = 0, det_num2 = 0;
-            proj_data_info_cyl_ptr->get_det_num_pair_for_view_tangential_pos_num(det_num1, det_num2, bin.view_num(),
-                                                                                 bin.tangential_pos_num());
+            proj_data_info_cyl_ptr->get_det_num_pair_for_view_tangential_pos_num(
+                det_num1, det_num2, bin.view_num(), bin.tangential_pos_num());
 
             float phi;
             phi = static_cast<float>((det_num1 + det_num2) * _PI / num_detectors - _PI / 2
                                      + proj_data_info_cyl_ptr->get_azimuthal_angle_offset());
 
-            lorC1 = LORInAxialAndNoArcCorrSinogramCoordinates<float>(lorC.z1(), lorC.z2(),
+            lorC1 = LORInAxialAndNoArcCorrSinogramCoordinates<float>(lorC.z1(),
+                                                                     lorC.z2(),
                                                                      phi, // lorC.phi(),
-                                                                     lorC.beta(), proj_data_info_cyl_ptr->get_ring_radius());
+                                                                     lorC.beta(),
+                                                                     proj_data_info_cyl_ptr->get_ring_radius());
 
             const float old_phi = proj_data_info_cyl_ptr->get_phi(bin);
             if (fabs(phi - old_phi) >= 2 * _PI / num_detectors)
@@ -573,9 +682,11 @@ ProjDataInfoTests::run_coordinate_test()
                 // float ang=2*_PI/num_detectors/2;
                 //                  warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
-                lorC1 = LORInAxialAndNoArcCorrSinogramCoordinates<float>(lorC.z2(), lorC.z1(),
+                lorC1 = LORInAxialAndNoArcCorrSinogramCoordinates<float>(lorC.z2(),
+                                                                         lorC.z1(),
                                                                          phi, // lorC.phi(),
-                                                                         -lorC.beta(), proj_data_info_cyl_ptr->get_ring_radius());
+                                                                         -lorC.beta(),
+                                                                         proj_data_info_cyl_ptr->get_ring_radius());
               }
             //                check det_pos instead
             proj_data_info_blocks_ptr->get_det_pair_for_bin(Bdet1, Bring1, Bdet2, Bring2, bin);
@@ -589,8 +700,8 @@ ProjDataInfoTests::run_coordinate_test()
             check_if_equal(Bring2, Cring2, "");
 
             //                test round trip from detector ID to coordinates and from cordinates to detecto IDs
-            proj_data_info_blocks_ptr->find_cartesian_coordinates_given_scanner_coordinates(roundt1, roundt2, Bring1, Bring2,
-                                                                                            Bdet1, Bdet2);
+            proj_data_info_blocks_ptr->find_cartesian_coordinates_given_scanner_coordinates(
+                roundt1, roundt2, Bring1, Bring2, Bdet1, Bdet2);
             proj_data_info_blocks_ptr->find_bin_given_cartesian_coordinates_of_detection(binRT, roundt1, roundt2);
             proj_data_info_blocks_ptr->get_det_pair_for_bin(RTdet1, RTring1, RTdet2, RTring2, bin);
 
@@ -611,23 +722,28 @@ ProjDataInfoTests::run_coordinate_test()
             if (abs(lorB.phi() - lorC1.phi()) < tolerance)
               {
 
-                check_if_equal(proj_data_info_blocks_ptr->get_s(bin), lorB.s(),
+                check_if_equal(proj_data_info_blocks_ptr->get_s(bin),
+                               lorB.s(),
                                "A get_s() from projdata is different from Block on Cylindrical LOR.s()");
 
-                check_if_equal(lorB.s(), lorC1.s(),
+                check_if_equal(lorB.s(),
+                               lorC1.s(),
                                "tang_pos=" + std::to_string(tang) + " PHI-C=" + std::to_string(lorC1.phi())
                                    + " PHI-B=" + std::to_string(lorB.phi()) + " view=" + std::to_string(view)
                                    + " Atest if BlocksOnCylindrical LOR.s is the same as the LOR produced by Cylindrical"); //)
 
-                check_if_equal(lorB.beta(), lorC1.beta(),
+                check_if_equal(lorB.beta(),
+                               lorC1.beta(),
                                "tang_pos=" + std::to_string(tang) + " ax_pos=" + std::to_string(ax)
                                    + " segment=" + std::to_string(seg) + " view=" + std::to_string(view)
                                    + " test if BlocksOnCylindrical LOR.beta is the same as the LOR produced by Cylindrical");
-                check_if_equal(lorB.z1(), lorC1.z1(),
+                check_if_equal(lorB.z1(),
+                               lorC1.z1(),
                                "tang_pos=" + std::to_string(tang) + " ax_pos=" + std::to_string(ax)
                                    + " segment=" + std::to_string(seg) + " view=" + std::to_string(view)
                                    + " test if BlocksOnCylindrical LOR.z1 is the same as the LOR produced by Cylindrical");
-                check_if_equal(lorB.z2(), lorC1.z2(),
+                check_if_equal(lorB.z2(),
+                               lorC1.z2(),
                                "tang_pos=" + std::to_string(tang) + " ax_pos=" + std::to_string(ax)
                                    + " segment=" + std::to_string(seg) + " view=" + std::to_string(view)
                                    + " test if BlocksOnCylindrical LOR.z2 is the same as the LOR produced by Cylindrical");
@@ -637,23 +753,28 @@ ProjDataInfoTests::run_coordinate_test()
             else if (abs(lorB.phi() - lorC1.phi()) + _PI < tolerance || abs(lorB.phi() - lorC1.phi()) - _PI < tolerance)
               {
 
-                check_if_equal(proj_data_info_blocks_ptr->get_s(bin), lorB.s(),
+                check_if_equal(proj_data_info_blocks_ptr->get_s(bin),
+                               lorB.s(),
                                "B get_s() from projdata is different from Block on Cylindrical LOR.s()");
-                check_if_equal(proj_data_info_blocks_ptr->get_phi(bin), phi,
+                check_if_equal(proj_data_info_blocks_ptr->get_phi(bin),
+                               phi,
                                "B get_phi() from projdata Cylinder is different from Block on Cylindrical");
 
-                check_if_equal(lorB.s(), -lorC1.s(),
+                check_if_equal(lorB.s(),
+                               -lorC1.s(),
                                "tang_pos=" + std::to_string(tang) + " PHYC=" + std::to_string(lorC1.phi())
                                    + " PHIB=" + std::to_string(lorB.phi()) + " view=" + std::to_string(view)
                                    + " Btest if BlocksOnCylindrical LOR.s is the same as the LOR produced by Cylindrical"); //)
-                check_if_equal(lorB.beta(), -lorC1.beta(),
+                check_if_equal(lorB.beta(),
+                               -lorC1.beta(),
                                " Btest if BlocksOnCylindrical LOR.beta is the same as the LOR produced by Cylindrical");
-                check_if_equal(lorB.z1(), lorC1.z2(),
+                check_if_equal(lorB.z1(),
+                               lorC1.z2(),
                                "tang_pos=" + std::to_string(tang) + " ax_pos=" + std::to_string(ax)
                                    + " segment=" + std::to_string(seg) + " view=" + std::to_string(view)
                                    + " Btest if BlocksOnCylindrical LOR.z1 is the same as the LOR produced by Cylindrical");
-                check_if_equal(lorB.z2(), lorC1.z1(),
-                               " Btest if BlocksOnCylindrical LOR.z2 is the same as the LOR produced by Cylindrical");
+                check_if_equal(
+                    lorB.z2(), lorC1.z1(), " Btest if BlocksOnCylindrical LOR.z2 is the same as the LOR produced by Cylindrical");
               }
             else
               {
@@ -717,10 +838,12 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
 
   for (int seg = proj_data_info_blocks_ptr->get_min_segment_num(); seg <= proj_data_info_blocks_ptr->get_max_segment_num(); ++seg)
     for (int ax = proj_data_info_blocks_ptr->get_min_axial_pos_num(seg);
-         ax <= proj_data_info_blocks_ptr->get_max_axial_pos_num(seg); ++ax)
+         ax <= proj_data_info_blocks_ptr->get_max_axial_pos_num(seg);
+         ++ax)
       for (int view = 0; view <= proj_data_info_blocks_ptr->get_max_view_num(); view++)
         for (int tang = proj_data_info_blocks_ptr->get_min_tangential_pos_num();
-             tang <= proj_data_info_blocks_ptr->get_max_tangential_pos_num(); ++tang)
+             tang <= proj_data_info_blocks_ptr->get_max_tangential_pos_num();
+             ++tang)
           {
             bin.segment_num() = seg;
             bin.axial_pos_num() = ax;
@@ -731,8 +854,8 @@ ProjDataInfoTests::run_coordinate_test_for_realistic_scanner()
             proj_data_info_blocks_ptr->get_LOR(lorB, bin);
 
             int det_num1 = 0, det_num2 = 0;
-            proj_data_info_cyl_ptr->get_det_num_pair_for_view_tangential_pos_num(det_num1, det_num2, bin.view_num(),
-                                                                                 bin.tangential_pos_num());
+            proj_data_info_cyl_ptr->get_det_num_pair_for_view_tangential_pos_num(
+                det_num1, det_num2, bin.view_num(), bin.tangential_pos_num());
 
             //                check det_pos instead
             proj_data_info_blocks_ptr->get_det_pair_for_bin(Bdet1, Bring1, Bdet2, Bring2, bin);
@@ -823,17 +946,17 @@ ProjDataInfoTests::run_lor_get_s_test()
       Cdet2 = scannerCyl_ptr->get_num_detectors_per_ring() / 2 + Cdet1;
       if (Cdet2 >= scannerCyl_ptr->get_num_detectors_per_ring())
         Cdet2 = Cdet1 - scannerCyl_ptr->get_num_detectors_per_ring() / 2;
-
-      proj_data_info_cyl_ptr->get_bin_for_det_pair(bin, Cdet1, Cring1, Cdet2, Cring2);
+      const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(Cdet1, Cring1), DetectionPosition<>(Cdet2, Cring2));
+      proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
       proj_data_info_cyl_ptr->get_LOR(lorC, bin);
 
-      proj_data_info_blocks_ptr->get_bin_for_det_pair(bin, Cdet1, Cring1, Cdet2, Cring2);
+      proj_data_info_blocks_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
       proj_data_info_blocks_ptr->get_LOR(lorB, bin);
 
-      check_if_equal(0., lorC.s(),
-                     std::to_string(i) + " Cylinder get_s() should be zero when the LOR passes at the center of the scanner");
-      check_if_equal(0., lorB.s(),
-                     std::to_string(i) + " Blocks get_s() should be zero when the LOR passes at the center of the scanner");
+      check_if_equal(
+          0., lorC.s(), std::to_string(i) + " Cylinder get_s() should be zero when the LOR passes at the center of the scanner");
+      check_if_equal(
+          0., lorB.s(), std::to_string(i) + " Blocks get_s() should be zero when the LOR passes at the center of the scanner");
     }
 
   //    Check get_s() (for BlocksOnCylindrical) when the line is at a given angle. We consider two blocks at a relative angle of
@@ -856,7 +979,9 @@ ProjDataInfoTests::run_lor_get_s_test()
       Cring2 = 0;
       Cdet2 = 2 * Ctb + det_id_diff + Ctb - 1 - i;
 
-      proj_data_info_blocks_ptr->get_bin_for_det_pair(bin, Cdet1, Cring1, Cdet2, Cring1);
+      const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(Cdet1, Cring1), DetectionPosition<>(Cdet2, Cring2));
+
+      proj_data_info_blocks_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
       proj_data_info_blocks_ptr->get_LOR(lorB, bin);
       /*float R=block_trans_spacing*(sin(_PI*5/12)+sin(_PI/4)+sin(_PI/12));
         float s=R*cos(_PI/3)+
@@ -872,8 +997,8 @@ ProjDataInfoTests::run_lor_get_s_test()
       if (i > 0)
         {
           check_if_equal(s_step, lorB.s() - prev_s, std::to_string(i) + " Blocks get_s() the step is different");
-          check_if_equal(0.F, lorB.phi() - prev_phi,
-                         " Blocks get_phi() should be always the same as we are considering parallel LORs");
+          check_if_equal(
+              0.F, lorB.phi() - prev_phi, " Blocks get_phi() should be always the same as we are considering parallel LORs");
         }
       prev_s = lorB.s();
       prev_phi = lorB.phi();
@@ -888,7 +1013,7 @@ ProjDataInfoTests::run_lor_get_s_test()
 class ProjDataInfoCylindricalArcCorrTests : public ProjDataInfoCylindricalTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 void
@@ -943,8 +1068,8 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
     const float bin_size = 1.2F;
 
     // Test on the constructor
-    ProjDataInfoCylindricalArcCorr ob2(scanner_ptr, bin_size, num_axial_pos_per_segment, min_ring_diff, max_ring_diff, num_views,
-                                       num_tangential_poss);
+    ProjDataInfoCylindricalArcCorr ob2(
+        scanner_ptr, bin_size, num_axial_pos_per_segment, min_ring_diff, max_ring_diff, num_views, num_tangential_poss);
 
     check_if_equal(ob2.get_tangential_sampling(), bin_size, "test on tangential_sampling");
     check_if_equal(ob2.get_azimuthal_angle_sampling(), _PI / num_views, " test on azimuthal_angle_sampling");
@@ -1024,7 +1149,8 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
   // are in some segment, so use maximum ring difference
   shared_ptr<ProjDataInfo> proj_data_info_ptr(
       ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                             /*span*/ 1, scanner_ptr->get_num_rings() - 1,
+                                             /*span*/ 1,
+                                             scanner_ptr->get_num_rings() - 1,
                                              /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2,
                                              /*tang_pos*/ 64,
                                              /*arc_corrected*/ true));
@@ -1032,7 +1158,8 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
 
   cerr << "\nTests with proj_data_info with mashing and axial compression (span 5)\n\n";
   proj_data_info_ptr = ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                                              /*span*/ 5, scanner_ptr->get_num_rings() - 1,
+                                                              /*span*/ 5,
+                                                              scanner_ptr->get_num_rings() - 1,
                                                               /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
                                                               /*tang_pos*/ 64,
                                                               /*arc_corrected*/ true);
@@ -1040,7 +1167,8 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
 
   cerr << "\nTests with proj_data_info with mashing and axial compression (span 4)\n\n";
   proj_data_info_ptr = ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                                              /*span*/ 4, scanner_ptr->get_num_rings() - 1,
+                                                              /*span*/ 4,
+                                                              scanner_ptr->get_num_rings() - 1,
                                                               /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
                                                               /*tang_pos*/ 64,
                                                               /*arc_corrected*/ true);
@@ -1060,7 +1188,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
 class ProjDataInfoCylindricalNoArcCorrTests : public ProjDataInfoCylindricalTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 
 private:
   void test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info);
@@ -1076,15 +1204,18 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
   // are in some segment, so use maximum ring difference
   shared_ptr<ProjDataInfo> proj_data_info_ptr(
       ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                             /*span*/ 1, scanner_ptr->get_num_rings() - 1,
+                                             /*span*/ 1,
+                                             scanner_ptr->get_num_rings() - 1,
                                              /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2,
                                              /*tang_pos*/ 64,
                                              /*arc_corrected*/ false));
+#ifndef STIR_TOF_DEBUG // disable these for speed of testing
   test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with mashing and axial compression (span 5)\n\n";
   proj_data_info_ptr = ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                                              /*span*/ 5, scanner_ptr->get_num_rings() - 1,
+                                                              /*span*/ 5,
+                                                              scanner_ptr->get_num_rings() - 1,
                                                               /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
                                                               /*tang_pos*/ 64,
                                                               /*arc_corrected*/ false);
@@ -1092,10 +1223,22 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 
   cerr << "\nTests with proj_data_info with mashing and axial compression (span 2)\n\n";
   proj_data_info_ptr = ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                                              /*span*/ 2, scanner_ptr->get_num_rings() - 7,
+                                                              /*span*/ 2,
+                                                              scanner_ptr->get_num_rings() - 7,
                                                               /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
                                                               /*tang_pos*/ 64,
                                                               /*arc_corrected*/ false);
+  test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr));
+#endif // STIR_TOF_DEBUG
+  cerr << "\nTests with proj_data_info with time-of-flight\n\n";
+  shared_ptr<Scanner> scanner_tof_ptr(new Scanner(Scanner::Discovery690));
+  proj_data_info_ptr = ProjDataInfo::construct_proj_data_info(scanner_tof_ptr,
+                                                              /*span*/ 11,
+                                                              scanner_tof_ptr->get_num_rings() - 1,
+                                                              /*views*/ scanner_tof_ptr->get_num_detectors_per_ring() / 2,
+                                                              /*tang_pos*/ 64,
+                                                              /*arc_corrected*/ false,
+                                                              /*tof_mashing*/ 5);
   test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr));
 }
 
@@ -1214,85 +1357,99 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
           for (int tangential_coord1 = 0; tangential_coord1 < num_detectors; tangential_coord1++)
             for (det_pos_pair.pos2().tangential_coord() = 0; det_pos_pair.pos2().tangential_coord() < (unsigned)num_detectors;
                  det_pos_pair.pos2().tangential_coord()++)
-              {
-                // set from for-loop variable
-                det_pos_pair.pos1().tangential_coord() = (unsigned)tangential_coord1;
-                // skip case of equal detector numbers (as this is either a singular LOR)
-                // or an LOR parallel to the scanner axis
-                if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
-                  continue;
-                Bin bin;
-                DetectionPositionPair<> new_det_pos_pair;
-                const bool there_is_a_bin = proj_data_info.get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes;
-                if (there_is_a_bin)
-                  proj_data_info.get_det_pos_pair_for_bin(new_det_pos_pair, bin);
-#  ifdef STIR_OPENMP
-                  // add a pragma to avoid cerr output being jumbled up if there are any errors
-#    pragma omp critical(TESTPROJDATAINFO)
-#  endif
-                if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
-                    || !check(det_pos_pair == new_det_pos_pair, "checking if we round-trip to the same detection positions"))
-                  {
-                    cerr << "Problem at det1 = " << det_pos_pair.pos1().tangential_coord()
-                         << ", det2 = " << det_pos_pair.pos2().tangential_coord()
-                         << ", ring1 = " << det_pos_pair.pos1().axial_coord() << ", ring2 = " << det_pos_pair.pos2().axial_coord()
-                         << endl;
-                    if (there_is_a_bin)
-                      cerr << "  dets,rings -> bin -> dets,rings, gives new numbers:\n\t"
-                           << "det1 = " << new_det_pos_pair.pos1().tangential_coord()
-
-                           << ", det2 = " << new_det_pos_pair.pos2().tangential_coord()
-                           << ", ring1 = " << new_det_pos_pair.pos1().axial_coord()
-                           << ", ring2 = " << new_det_pos_pair.pos2().axial_coord() << endl;
-                  }
-
-              } // end of get_bin_for_det_pos_pair and vice versa code
-
-      cerr << "\n\tTest code for bin -> detector,ring and back conversions. (This might take a while...)";
-
-      {
-        Bin bin;
-        // set value for comparison later on
-        bin.set_bin_value(0);
-        for (bin.segment_num() = max(-5, proj_data_info.get_min_segment_num());
-             bin.segment_num() <= min(5, proj_data_info.get_max_segment_num()); ++bin.segment_num())
-          for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
-               bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
-#  ifdef STIR_OPENMP
-          // insert a parallel for here for testing.
-          // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do
-          // Note that the omp construct needs an int loop variable
-#    pragma omp parallel for firstprivate(bin)
-#  endif
-            for (int tangential_pos_num = -(num_detectors / 2) + 1; tangential_pos_num < num_detectors / 2; ++tangential_pos_num)
-              for (bin.view_num() = 0; bin.view_num() < num_detectors / 2; ++bin.view_num())
+              for (det_pos_pair.timing_pos() = 0; // currently unsigned so start from 0
+                   det_pos_pair.timing_pos() <= (unsigned)proj_data_info.get_max_tof_pos_num();
+                   det_pos_pair.timing_pos() += (unsigned)std::max(1, proj_data_info.get_max_tof_pos_num()))
                 {
-                  // set from for-loop variable
-                  bin.tangential_pos_num() = tangential_pos_num;
-                  Bin new_bin;
-                  // set value for comparison with bin
-                  new_bin.set_bin_value(0);
-                  DetectionPositionPair<> det_pos_pair;
-                  proj_data_info.get_det_pos_pair_for_bin(det_pos_pair, bin);
 
-                  const bool there_is_a_bin = proj_data_info.get_bin_for_det_pos_pair(new_bin, det_pos_pair) == Succeeded::yes;
+                  // set from for-loop variable
+                  det_pos_pair.pos1().tangential_coord() = (unsigned)tangential_coord1;
+                  // skip case of equal detector numbers (as this is either a singular LOR)
+                  // or an LOR parallel to the scanner axis
+                  if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
+                    continue;
+                  Bin bin(0, 0, 0, 0, 0, 0.0f);
+                  DetectionPositionPair<> new_det_pos_pair;
+                  const bool there_is_a_bin = proj_data_info.get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes;
+                  if (there_is_a_bin)
+                    proj_data_info.get_det_pos_pair_for_bin(new_det_pos_pair, bin);
 #  ifdef STIR_OPENMP
-                  // add a pragma to avoid cerr output being jumbled up if there are any errors
+                    // add a pragma to avoid cerr output being jumbled up if there are any errors
 #    pragma omp critical(TESTPROJDATAINFO)
 #  endif
                   if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
-                      || !check(bin == new_bin, "checking if we round-trip to the same bin"))
+                      || !check(det_pos_pair == new_det_pos_pair, "checking if we round-trip to the same detection positions"))
                     {
-                      cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
-                           << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+                      cerr << "Problem at det1 = " << det_pos_pair.pos1().tangential_coord()
+                           << ", det2 = " << det_pos_pair.pos2().tangential_coord()
+                           << ", ring1 = " << det_pos_pair.pos1().axial_coord()
+                           << ", ring2 = " << det_pos_pair.pos2().axial_coord() << ", timing_pos = " << det_pos_pair.timing_pos()
+                           << endl;
                       if (there_is_a_bin)
-                        cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
-                             << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
-                             << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-                             << endl;
+                        cerr << "  dets,rings -> bin -> dets,rings, gives new numbers:\n\t"
+                             << "det1 = " << new_det_pos_pair.pos1().tangential_coord()
+
+                             << ", det2 = " << new_det_pos_pair.pos2().tangential_coord()
+                             << ", ring1 = " << new_det_pos_pair.pos1().axial_coord()
+                             << ", ring2 = " << new_det_pos_pair.pos2().axial_coord()
+                             << ", timing_pos = " << det_pos_pair.timing_pos() << endl;
                     }
 
-                } // end of get_det_pos_pair_for_bin and back code
+                } // end of get_bin_for_det_pos_pair and vice versa code
+
+      cerr << "\n\tTest code for bin -> detector,ring and back conversions. (This might take a while...)";
+      {
+        Bin bin(0, 0, 0, 0, 0, 0.0f);
+        // set value for comparison later on
+        bin.set_bin_value(0.f);
+        for (bin.timing_pos_num() = proj_data_info.get_min_tof_pos_num();
+             bin.timing_pos_num() <= proj_data_info.get_max_tof_pos_num();
+             bin.timing_pos_num() += std::max(1,
+                                              (proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num())
+                                                  / 2)) // take 3 or 1 steps, always going through 0)
+          for (bin.segment_num() = max(-5, proj_data_info.get_min_segment_num());
+               bin.segment_num() <= min(5, proj_data_info.get_max_segment_num());
+               ++bin.segment_num())
+            for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
+                 bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
+                 ++bin.axial_pos_num())
+#  ifdef STIR_OPENMP
+            // insert a parallel for here for testing.
+            // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do
+            // Note that the omp construct needs an int loop variable
+#    pragma omp parallel for firstprivate(bin)
+#  endif
+              for (int tangential_pos_num = -(num_detectors / 2) + 1; tangential_pos_num < num_detectors / 2;
+                   ++tangential_pos_num)
+                for (bin.view_num() = 0; bin.view_num() < num_detectors / 2; ++bin.view_num())
+                  {
+                    // set from for-loop variable
+                    bin.tangential_pos_num() = tangential_pos_num;
+                    Bin new_bin(0, 0, 0, 0, 0, 0.0f);
+                    // set value for comparison with bin
+                    new_bin.set_bin_value(0);
+                    DetectionPositionPair<> det_pos_pair;
+                    proj_data_info.get_det_pos_pair_for_bin(det_pos_pair, bin);
+
+                    const bool there_is_a_bin = proj_data_info.get_bin_for_det_pos_pair(new_bin, det_pos_pair) == Succeeded::yes;
+#  ifdef STIR_OPENMP
+                    // add a pragma to avoid cerr output being jumbled up if there are any errors
+#    pragma omp critical(TESTPROJDATAINFO)
+#  endif
+                    if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
+                        || !check(bin == new_bin, "checking if we round-trip to the same bin"))
+                      {
+                        cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
+                             << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num()
+                             << ", timing pos num = " << bin.timing_pos_num() << "\n";
+                        if (there_is_a_bin)
+                          cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
+                               << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
+                               << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
+                               << ", timing pos num = " << new_bin.timing_pos_num() << endl;
+                      }
+
+                  } // end of get_det_pos_pair_for_bin and back code
       }
     } // end of tests which require no mashing nor axial compression
 
@@ -1304,57 +1461,64 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
     bin.set_bin_value(0);
     // parallel loop for testing
     // Note that the omp construct cannot handle bin.segment_num() etc as loop variable, making this ugly
-#   ifdef STIR_OPENMP
-#   if _OPENMP <201107
-#     pragma omp parallel for schedule(dynamic) firstprivate(bin)
-#   else
-#     pragma omp parallel for collapse(2) firstprivate(bin)
-#   endif
-#   endif
+#  ifdef STIR_OPENMP
+#    if _OPENMP < 201107
+#      pragma omp parallel for schedule(dynamic) firstprivate(bin)
+#    else
+#      pragma omp parallel for collapse(2) firstprivate(bin)
+#    endif
+#  endif
     for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num();
          ++segment_num)
-      for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num();
-           ++view_num)
+      for (int view_num = proj_data_info.get_min_view_num(); view_num <= proj_data_info.get_max_view_num(); ++view_num)
         for (int axial_pos_num = proj_data_info.get_min_axial_pos_num(segment_num);
-             axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num); ++axial_pos_num)
+             axial_pos_num <= proj_data_info.get_max_axial_pos_num(segment_num);
+             ++axial_pos_num)
           for (int tangential_pos_num = proj_data_info.get_min_tangential_pos_num();
-               tangential_pos_num <= proj_data_info.get_max_tangential_pos_num(); ++tangential_pos_num)
-            {
-              bin.segment_num() = segment_num;
-              bin.axial_pos_num() = axial_pos_num;
-              bin.view_num() = view_num;
-              bin.tangential_pos_num() = tangential_pos_num;
-              std::vector<DetectionPositionPair<>> det_pos_pairs;
-              proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
-              Bin new_bin;
-              // set value for comparison with bin
-              new_bin.set_bin_value(0);
-              for (std::vector<DetectionPositionPair<>>::const_iterator det_pos_pair_iter = det_pos_pairs.begin();
-                   det_pos_pair_iter != det_pos_pairs.end(); ++det_pos_pair_iter)
-                {
-                  const bool there_is_a_bin
-                      = proj_data_info.get_bin_for_det_pos_pair(new_bin, *det_pos_pair_iter) == Succeeded::yes;
-                  if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
-                      || !check(bin == new_bin, "checking if we round-trip to the same bin"))
-                    {
-#  ifdef STIR_OPENMP
-                      // add a pragma to avoid cerr output being jumbled up if there are any errors
-#                     pragma omp critical(TESTPROJDATAINFO)
-#  endif
+               tangential_pos_num <= proj_data_info.get_max_tangential_pos_num();
+               ++tangential_pos_num)
+            for (bin.timing_pos_num() = proj_data_info.get_min_tof_pos_num();
+                 bin.timing_pos_num() <= proj_data_info.get_max_tof_pos_num();
+                 bin.timing_pos_num() += std::max(1,
+                                                  (proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num())
+                                                      / 2)) // take 3 or 1 steps, always going through 0)
+              {
+                bin.segment_num() = segment_num;
+                bin.axial_pos_num() = axial_pos_num;
+                bin.view_num() = view_num;
+                bin.tangential_pos_num() = tangential_pos_num;
+                std::vector<DetectionPositionPair<>> det_pos_pairs;
+                proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, bin, false); // include TOF
+                Bin new_bin;
+                // set value for comparison with bin
+                new_bin.set_bin_value(0);
+                for (std::vector<DetectionPositionPair<>>::const_iterator det_pos_pair_iter = det_pos_pairs.begin();
+                     det_pos_pair_iter != det_pos_pairs.end();
+                     ++det_pos_pair_iter)
+                  {
+                    const bool there_is_a_bin
+                        = proj_data_info.get_bin_for_det_pos_pair(new_bin, *det_pos_pair_iter) == Succeeded::yes;
+                    if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
+                        || !check(bin == new_bin, "checking if we round-trip to the same bin"))
                       {
-                        cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
-                             << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
-                        if (there_is_a_bin)
-                          cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
-                               << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
-                               << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-                               << endl;
+#  ifdef STIR_OPENMP
+                        // add a pragma to avoid cerr output being jumbled up if there are any errors
+#    pragma omp critical(TESTPROJDATAINFO)
+#  endif
+                        {
+                          cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
+                               << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+                          if (there_is_a_bin)
+                            cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
+                                 << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
+                                 << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
+                                 << ", timing_pos - " << new_bin.timing_pos_num() << endl;
+                        }
                       }
-                    }
-                } // end of iteration of det_pos_pairs
-            }     // end of loop over all bins
-  }               // end of get_all_det_pairs_for_bin and back code
-#endif            // TEST_ONLY_GET_BIN
+                  } // end of iteration of det_pos_pairs
+              }     // end of loop over all bins
+  }                 // end of get_all_det_pairs_for_bin and back code
+#endif              // TEST_ONLY_GET_BIN
 
   {
     cerr << endl;
@@ -1376,15 +1540,16 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
                 CartesianCoordinate3D<float> coord_1;
                 CartesianCoordinate3D<float> coord_2;
 
-                proj_data_info.find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2, Ring_A, Ring_B, det1, det2);
+                proj_data_info.find_cartesian_coordinates_given_scanner_coordinates(
+                    coord_1, coord_2, Ring_A, Ring_B, det1, det2, 1); // use timing_pos_num>=0 as pre-TOF test
 
                 const CartesianCoordinate3D<float> coord_1_new = coord_1 + (coord_2 - coord_1) * 5;
                 const CartesianCoordinate3D<float> coord_2_new = coord_1 + (coord_2 - coord_1) * 2;
 
                 int det1_f, det2_f, ring1_f, ring2_f;
 
-                check(proj_data_info.find_scanner_coordinates_given_cartesian_coordinates(det1_f, det2_f, ring1_f, ring2_f,
-                                                                                          coord_1_new, coord_2_new)
+                check(proj_data_info.find_scanner_coordinates_given_cartesian_coordinates(
+                          det1_f, det2_f, ring1_f, ring2_f, coord_1_new, coord_2_new)
                       == Succeeded::yes);
                 if (det1_f == det1 && Ring_A == ring1_f)
                   {
@@ -1414,12 +1579,14 @@ main()
 {
   set_default_num_threads();
 
+#ifndef STIR_TOF_DEBUG // disable for speed of testing
   {
     ProjDataInfoCylindricalArcCorrTests tests;
     tests.run_tests();
     if (!tests.is_everything_ok())
       return tests.main_return_value();
   }
+#endif
   {
     ProjDataInfoCylindricalNoArcCorrTests tests1;
     tests1.run_tests();

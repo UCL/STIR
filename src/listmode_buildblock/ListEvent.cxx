@@ -4,7 +4,7 @@
   \file
   \ingroup listmode
   \brief Implementations of class stir::ListEvent.
-    
+
   \author Daniel Deidda
   \author Kris Thielemans
 
@@ -19,7 +19,6 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/listmode/ListRecord.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/Bin.h"
@@ -28,12 +27,10 @@
 
 START_NAMESPACE_STIR
 
-void 
-ListEvent::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+void
+ListEvent::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
   bin = proj_data_info.get_bin(get_LOR());
 }
 
 END_NAMESPACE_STIR
-

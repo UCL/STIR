@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016-17, University of Hull
     Copyright (C) 2017-2018, 2020, 2022, 2023 University College London
     This file is part of STIR.
 
@@ -16,8 +17,10 @@
 
   \brief Declaration of class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Elise Emond
   \author PARAPET project
 
 */
@@ -36,21 +39,28 @@
 
 START_NAMESPACE_STIR
 
-template <typename elemT> class Sinogram;
-template <typename elemT> class Viewgram;
-template <typename elemT> class SegmentByView;
-template <typename elemT> class SegmentBySinogram;
-template <typename elemT> class RelatedViewgrams;
+template <typename elemT>
+class Sinogram;
+template <typename elemT>
+class Viewgram;
+template <typename elemT>
+class SegmentByView;
+template <typename elemT>
+class SegmentBySinogram;
+template <typename elemT>
+class RelatedViewgrams;
 class DataSymmetriesForViewSegmentNumbers;
 class ViewSegmentNumbers;
 class Bin;
-template <typename T> class LOR;
-template <typename T> class LORInAxialAndNoArcCorrSinogramCoordinates;
+template <typename T>
+class LOR;
+template <typename T>
+class LORInAxialAndNoArcCorrSinogramCoordinates;
 class PMessage;
 
 /*!
   \ingroup projdata
-  \brief An (abstract base) class that contains information on the 
+  \brief An (abstract base) class that contains information on the
   projection data.
 
   This class supports a fixed horizontal and vertical bed position. Both are set to zero
@@ -62,30 +72,34 @@ protected:
   typedef ProjDataInfo root_type;
 
 public:
-
   /********** static members **************/
 
   //! Ask for the details and return a ProjDataInfo pointer
-  static ProjDataInfo* 
-  ask_parameters();
+  static ProjDataInfo* ask_parameters();
 
   //! Construct a ProjDataInfo with span=3 for segment 0, but span=1 for others.
   /*! This function implements our old understanding of GE data. An alternative is to use
-      construct_proj_data_info() with \c span=2.*/
-  static ProjDataInfo*  
-  ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr, 
-		 const int max_delta,
-		 const int num_views, const int num_tangential_poss, 
-                 const bool arc_corrected = true);
+      construct_proj_data_info() with \c span=2.
+         \warning N.E: TOF mash factor = 1, means possible many TOF bins
+     \warning N.E: TOF mash factor = 0 will produce nonTOF data
+*/
+  static ProjDataInfo* ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr,
+                                      const int max_delta,
+                                      const int num_views,
+                                      const int num_tangential_poss,
+                                      const bool arc_corrected = true,
+                                      const int tof_mash_factor = 0);
 
   //! Old name for construct_proj_data_info()
   /*! \deprecated
-     */
-  static ProjDataInfo* 
-    ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
-		  const int span, const int max_delta,
-                  const int num_views, const int num_tangential_poss, 
-                  const bool arc_corrected = true);
+   */
+  static ProjDataInfo* ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+                                       const int span,
+                                       const int max_delta,
+                                       const int num_views,
+                                       const int num_tangential_poss,
+                                       const bool arc_corrected = true,
+                                       const int tof_mash_factor = 0);
 
   //! Construct a ProjDataInfo suitable with a given span
   /*! \c span is used to denote the amount of axial compression (see the STIR glossary).
@@ -93,35 +107,49 @@ public:
   Siemens/CTI currently uses odd span. GE scanners use a mixed case where segment 0
   has span 3, while other segments have span 2. We call this span 2.
   As a generalisation, this function supports any even span.
+
+         \warning N.E: TOF mash factor = 1, means possible many TOF bins
+     \warning N.E: TOF mash factor = 0 will produce nonTOF data
   */
-  static unique_ptr<ProjDataInfo>
-	  construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
-		  const int span, const int max_delta,
-		  const int num_views, const int num_tangential_poss,
-		  const bool arc_corrected = true);
+  static unique_ptr<ProjDataInfo> construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
+                                                           const int span,
+                                                           const int max_delta,
+                                                           const int num_views,
+                                                           const int num_tangential_poss,
+                                                           const bool arc_corrected = true,
+                                                           const int tof_mash_factor = 0);
 
   /************ constructors ***********/
   // TODO should probably be protected
 
   //! Construct an empty object
-   ProjDataInfo();
-  
+  ProjDataInfo();
+
   //! Constructor setting all relevant info for a ProjDataInfo
-   /*! The num_axial_pos_per_segment argument should be such that
-       num_axial_pos_per_segment[segment_num] gives you the appropriate value 
-       for a particular segment_num
-       */
+  /*! The num_axial_pos_per_segment argument should be such that
+      num_axial_pos_per_segment[segment_num] gives you the appropriate value
+      for a particular segment_num
+      */
   ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr,
-		      const VectorWithOffset<int>& num_axial_pos_per_segment, 
-		      const int num_views, 
-		      const int num_tangential_poss);
+               const VectorWithOffset<int>& num_axial_pos_per_segment,
+               const int num_views,
+               const int num_tangential_poss);
 
+  //! Overloaded Contructor with TOF initialisation
+  ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr,
+               const VectorWithOffset<int>& num_axial_pos_per_segment,
+               const int num_views,
+               const int num_tangential_poss,
+               const int tof_mash_factor);
 
-  //! Standard trick for a 'virtual copy-constructor' 
+  //! Standard trick for a 'virtual copy-constructor'
   virtual ProjDataInfo* clone() const = 0;
 
   //! Like clone() but return a shared_ptr
   inline shared_ptr<ProjDataInfo> create_shared_clone() const;
+
+  //! Similar to create_shared_clone() but returns a non-tof version of ProjDataInfo setting tof mashing factor = 0
+  inline shared_ptr<ProjDataInfo> create_non_tof_clone() const;
 
   //! Destructor
   virtual ~ProjDataInfo() {}
@@ -134,29 +162,29 @@ public:
   //@{
 
   //! Set a new range of segment numbers
-  /*! 
-    This function is virtual in case a derived class needs to know the 
+  /*!
+    This function is virtual in case a derived class needs to know the
     segment range changed.
 
     \warning the new range has to be 'smaller' than the old one. */
   virtual void reduce_segment_range(const int min_segment_num, const int max_segment_num);
   //! Set number of views (min_view_num is set to 0).
-  /*! This function is virtual in case a derived class needs to know the 
+  /*! This function is virtual in case a derived class needs to know the
     number of views changed. */
   virtual void set_num_views(const int num_views);
   //! Set number of tangential positions
-  /*! This function is virtual in case a derived class needs to know the 
+  /*! This function is virtual in case a derived class needs to know the
     number of tangential positions changed. */
   virtual void set_num_tangential_poss(const int num_tang_poss);
   //! Set number of axial positions per segment
-  /*! 
+  /*!
     \param num_axial_poss_per_segment is a vector with the new numbers,
     where the index into the vector is the segment_num (i.e. it is not
     related to the storage order of the segments or so).
 
-    This function is virtual in case a derived class needs to know the 
+    This function is virtual in case a derived class needs to know the
     number of axial positions changed. */
-  virtual void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment); 
+  virtual void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment);
 
   //! Set minimum axial position number for 1 segment
   /*! This function is virtual in case a derived class needs to know the number changed. */
@@ -164,7 +192,7 @@ public:
   //! Set maximum axial position number for 1 segment
   /*! This function is virtual in case a derived class needs to know the number changed. */
   virtual void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num);
-  
+
   //! Set minimum tangential position number
   /*! This function is virtual in case a derived class needs to know the number changed. */
   virtual void set_min_tangential_pos_num(const int min_tang_poss);
@@ -189,6 +217,13 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of tof bin for a given time difference
+  inline int get_tof_bin(const double delta) const;
+#if 0
+// KT: code disabled as buggy but currently not needed
+  //! Get number of tof bin for a given time difference, ignoring the TOF mashing factor
+  inline int get_unmashed_tof_bin(const double delta) const;
+#endif
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number
@@ -211,11 +246,15 @@ public:
   /* 0 indicates non-TOF data, as well as the max number of TOF bins for the scanner
    (as all TOF bins will then be added). */
   inline int get_tof_mash_factor() const;
-   //! Get the index of the first TOF position
+  //! Get the index of the first TOF position
   inline int get_min_tof_pos_num() const;
   //! Get the index of the last timgin position.
   inline int get_max_tof_pos_num() const;
+
   //! Get the total number of sinograms
+  /*! Note that this will count TOF sinograms as well.
+      \see get_num_non_tof_sinograms()
+  */
   inline int get_num_sinograms() const;
   //! Get the number of non-tof sinograms
   /*! Note that this is the sum of the number of axial poss over all segments.
@@ -225,6 +264,9 @@ public:
   //! Get the total size of the data
   inline std::size_t size_all() const;
   //@}
+
+  //! Determine if TOF data from tof_mash_factor and num_tof_bins
+  inline bool is_tof_data() const;
 
   //! Return a list of view numbers in the "original" data if subsets are used
   /*! ProjDataInfoSubsetByView can be used to construct a subset of data. It might
@@ -239,20 +281,20 @@ public:
   //@{
   //! Get tangent of the co-polar angle of the normal to the projection plane
   /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis) */
-  virtual float get_tantheta(const Bin&) const =0;
-  
+  virtual float get_tantheta(const Bin&) const = 0;
+
   //! Get cosine of the co-polar angle of the normal to the projection plane
   /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis) */
   inline float get_costheta(const Bin&) const;
-  
+
   //! Get azimuthal angle phi of the normal to the projection plane
   /*! phi=0 when the normal vector has no component along the horizontal axis */
-  virtual float get_phi(const Bin&) const =0;
-  
+  virtual float get_phi(const Bin&) const = 0;
+
   //! Get value of the (roughly) axial coordinate in the projection plane (in mm)
   /*! t-axis is defined to be orthogonal to the s-axis (and to the vector
       normal to the projection plane */
-  virtual float get_t(const Bin&) const =0;
+  virtual float get_t(const Bin&) const = 0;
 
   //! Return z-coordinate of the middle of the LOR (in mm)
   /*!
@@ -266,13 +308,20 @@ public:
     \code
     get_t(bin)/get_costheta(bin)
     \endcode
-  */  
+  */
   virtual inline float get_m(const Bin&) const;
 
   //! Get value of the tangential coordinate in the projection plane (in mm)
   /*! s-axis is defined to be orthogonal to the scanner axis (and to the vector
       normal to the projection plane */
-  virtual float get_s(const Bin&) const =0;
+  virtual float get_s(const Bin&) const = 0;
+
+  //! Get value of the TOF location along the LOR (in mm)
+  //! k is a line segment connecting the centers of the two detectors.
+  float get_k(const Bin&) const;
+
+  //! Get the value of the TOF timing difference (in ps)
+  double get_tof_delta_time(const Bin&) const;
 
   //! Get LOR corresponding to a given bin
   /*!
@@ -280,16 +329,14 @@ public:
       \warning This function might get a different type of arguments
       in the next release.
   */
-  virtual void
-    get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>&,
-	    const Bin&) const = 0;
+  virtual void get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>&, const Bin&) const = 0;
   //@}
 
   //! \name Functions that return info on the sampling in the different coordinates
   //@{
   //! Get sampling distance in the \c t coordinate
-  /*! For some coordinate systems, this might depend on the Bin. The 
-      default implementation computes it as 
+  /*! For some coordinate systems, this might depend on the Bin. The
+      default implementation computes it as
       \code
       1/2(get_t(..., ax_pos+1,...)-get_t(..., ax_pos-1,...)))
       \endcode
@@ -297,8 +344,8 @@ public:
   virtual float get_sampling_in_t(const Bin&) const;
 
   //! Get sampling distance in the \c m coordinate
-  /*! For some coordinate systems, this might depend on the Bin. The 
-      default implementation computes it as 
+  /*! For some coordinate systems, this might depend on the Bin. The
+      default implementation computes it as
       \code
       1/2(get_m(..., ax_pos+1,...)-get_m(..., ax_pos-1,...)))
       \endcode
@@ -306,18 +353,20 @@ public:
   virtual float get_sampling_in_m(const Bin&) const;
 
   //! Get sampling distance in the \c s coordinate
-  /*! For some coordinate systems, this might depend on the Bin. The 
-      default implementation computes it as 
+  /*! For some coordinate systems, this might depend on the Bin. The
+      default implementation computes it as
       \code
       1/2(get_s(..., tang_pos+1)-get_s(..., tang_pos_pos-1)))
       \endcode
   */
   virtual float get_sampling_in_s(const Bin&) const;
+
+  //! Get sampling distance in the k \c coordinate
+  float get_sampling_in_k(const Bin&) const;
   //@}
 
-
   //! Find the bin in the projection data that 'contains' an LOR
-  /*! Projection data corresponds to lines, so most Lines Of Response 
+  /*! Projection data corresponds to lines, so most Lines Of Response
       (LORs) there is a bin in the projection data. Usually this will be
       the bin which has a central LOR that is 'closest' to the LOR that
       is passed as an argument.
@@ -330,16 +379,14 @@ public:
       in the next release.
       \see get_LOR()
   */
-  virtual 
-    Bin
-    get_bin(const LOR<float>&) const = 0;
+  virtual Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const = 0;
 
   //! \name Equality of ProjDataInfo objects
   //@{
   //! check equality
-  bool operator ==(const ProjDataInfo& proj) const; 
-  
-  bool operator !=(const ProjDataInfo& proj) const;
+  bool operator==(const ProjDataInfo& proj) const;
+
+  bool operator!=(const ProjDataInfo& proj) const;
 
   //! Check if \c *this contains \c proj
   virtual bool operator>=(const ProjDataInfo& proj) const;
@@ -360,62 +407,97 @@ public:
 
   //! Get empty viewgram
   /*! \deprecated */
-  Viewgram<float> get_empty_viewgram(const int view_num, const int segment_num, 
-    const bool make_num_tangential_poss_odd = false) const;
-  
+  Viewgram<float> get_empty_viewgram(const int view_num,
+                                     const int segment_num,
+                                     const bool make_num_tangential_poss_odd = false,
+                                     const int timing_pos_num = 0) const;
+
   //! Get empty_sinogram
   /*! \deprecated */
-  Sinogram<float> get_empty_sinogram(const int ax_pos_num, const int segment_num,
-    const bool make_num_tangential_poss_odd = false) const;
+  Sinogram<float> get_empty_sinogram(const int ax_pos_num,
+                                     const int segment_num,
+                                     const bool make_num_tangential_poss_odd = false,
+                                     const int timing_pos_num = 0) const;
 
   //! Get empty segment sino
   /*! \deprecated */
-  SegmentByView<float> get_empty_segment_by_view(const int segment_num, 
-		  	   const bool make_num_tangential_poss_odd = false) const;
+  SegmentByView<float> get_empty_segment_by_view(const int segment_num,
+                                                 const bool make_num_tangential_poss_odd = false,
+                                                 const int timing_pos_num = 0) const;
   //! Get empty segment view
   /*! \deprecated */
-  SegmentBySinogram<float> get_empty_segment_by_sinogram(const int segment_num, 
-				   const bool make_num_tangential_poss_odd = false) const;
-
+  SegmentBySinogram<float> get_empty_segment_by_sinogram(const int segment_num,
+                                                         const bool make_num_tangential_poss_odd = false,
+                                                         const int timing_pos_num = 0) const;
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
   /*! make_num_tangential_poss_odd has to be \c false */
+  // TODOTOF
   RelatedViewgrams<float> get_empty_related_viewgrams(const ViewgramIndices&,
-    const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
-    const bool make_num_tangential_poss_odd = false) const;   
+                                                      const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
+                                                      const bool make_num_tangential_poss_odd = false,
+                                                      const int timing_pos_num = 0) const;
   //@}
 
-
-  //! Get scanner pointer  
+  //! Get scanner pointer
   inline const Scanner* get_scanner_ptr() const;
 
   //! Get scanner shared pointer
   inline shared_ptr<Scanner> get_scanner_sptr() const;
-  
+
   //! Return a string describing the object
   virtual std::string parameter_info() const;
-  
+
+  //! Struct which holds two floating numbers
+  struct Float1Float2
+  {
+    float low_lim;
+    float high_lim;
+  };
+
+  //! Vector which holds the lower and higher boundary for each TOF position in mm, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_mm;
+  //! Vector which holds the lower and higher boundary for each TOF position in ps`, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_ps;
+  //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in mm, for
+  //! faster access.
+#if 0
+  mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_mm;
+  //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in ps`, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_ps;
+#endif
+
   //! Set horizontal bed position
   void set_bed_position_horizontal(const float bed_position_horizontal_arg)
-  { bed_position_horizontal = bed_position_horizontal_arg; }
+  {
+    bed_position_horizontal = bed_position_horizontal_arg;
+  }
 
   //! Get horizontal bed position
-  float get_bed_position_horizontal() const { return bed_position_horizontal; }
+  float get_bed_position_horizontal() const
+  {
+    return bed_position_horizontal;
+  }
 
   //! Set vertical bed position
   void set_bed_position_vertical(const float bed_position_vertical_arg)
-  { bed_position_vertical = bed_position_vertical_arg; }
+  {
+    bed_position_vertical = bed_position_vertical_arg;
+  }
 
   //! Get vertical bed position
-  float get_bed_position_vertical() const { return bed_position_vertical; }
-  
+  float get_bed_position_vertical() const
+  {
+    return bed_position_vertical;
+  }
+
   inline bool has_energy_information() const
   {
-      return scanner_ptr->has_energy_information();
+    return scanner_ptr->has_energy_information();
   }
 
 protected:
-  virtual bool blindly_equals(const root_type * const) const = 0;
+  virtual bool blindly_equals(const root_type* const) const = 0;
 
 private:
   shared_ptr<Scanner> scanner_ptr;
@@ -423,11 +505,26 @@ private:
   int max_view_num;
   int min_tangential_pos_num;
   int max_tangential_pos_num;
-  VectorWithOffset<int> min_axial_pos_per_seg; 
+  //! Minimum TOF pos
+  int min_tof_pos_num;
+  //! Maximum TOF pos
+  int max_tof_pos_num;
+#if 0
+  //! Minimum TOF pos regardless of the mashing factor
+  int min_unmashed_tof_pos_num;
+  //! Maximum TOF pos regardless of the mashing factor
+  int max_unmashed_tof_pos_num;
+#endif
+  //! TOF mash factor.
+  int tof_mash_factor;
+  //! Finally (with any mashing factor) TOF bin increament.
+  float tof_increament_in_mm;
+  //! Number of tof bins (TOF mash factor applied)
+  int num_tof_bins;
+  VectorWithOffset<int> min_axial_pos_per_seg;
   VectorWithOffset<int> max_axial_pos_per_seg;
   float bed_position_horizontal;
   float bed_position_vertical;
-  
 };
 
 END_NAMESPACE_STIR
@@ -435,4 +532,3 @@ END_NAMESPACE_STIR
 #include "stir/ProjDataInfo.inl"
 
 #endif //  __ProjDataInfo_H__
-

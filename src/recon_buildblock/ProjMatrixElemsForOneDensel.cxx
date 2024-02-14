@@ -5,9 +5,9 @@
   \file
   \ingroup projection
   \brief non-inline implementations for stir::ProjMatrixElemsForOneDensel
- 
+
   \author Kris Thielemans
-  
+
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
@@ -29,168 +29,159 @@
 
 START_NAMESPACE_STIR
 
-
-ProjMatrixElemsForOneDensel::
-ProjMatrixElemsForOneDensel(const Densel& densel, const int default_capacity)
-: densel(densel)
+ProjMatrixElemsForOneDensel::ProjMatrixElemsForOneDensel(const Densel& densel, const int default_capacity)
+    : densel(densel)
 {
-  elements.reserve(default_capacity); 
+  elements.reserve(default_capacity);
 }
 
-ProjMatrixElemsForOneDensel::
-ProjMatrixElemsForOneDensel()
+ProjMatrixElemsForOneDensel::ProjMatrixElemsForOneDensel()
 {
-  elements.reserve(300); 
+  elements.reserve(300);
 }
 
-
-void 
-ProjMatrixElemsForOneDensel::
-reserve(size_type max_number)
+void
+ProjMatrixElemsForOneDensel::reserve(size_type max_number)
 {
   elements.reserve(max_number);
 }
 
-
-void ProjMatrixElemsForOneDensel::erase()
+void
+ProjMatrixElemsForOneDensel::erase()
 {
   elements.resize(0);
 }
 
-ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator*=(const float d)
+ProjMatrixElemsForOneDensel&
+ProjMatrixElemsForOneDensel::operator*=(const float d)
 {
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
-  {
-    iterator element_ptr = begin();
-    while (element_ptr != end())
     {
-      *element_ptr *= d;        
-      ++element_ptr;
-    }	 
-  }
+      iterator element_ptr = begin();
+      while (element_ptr != end())
+        {
+          *element_ptr *= d;
+          ++element_ptr;
+        }
+    }
   return *this;
 }
 
-ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator/=(const float d)
+ProjMatrixElemsForOneDensel&
+ProjMatrixElemsForOneDensel::operator/=(const float d)
 {
-  assert( d != 0);
+  assert(d != 0);
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
-  {
-    iterator element_ptr = begin();
-    while (element_ptr != end())
-    { 
-      *element_ptr /= d;
-      ++element_ptr;
+    {
+      iterator element_ptr = begin();
+      while (element_ptr != end())
+        {
+          *element_ptr /= d;
+          ++element_ptr;
+        }
     }
-  }
   return *this;
 }
 
-
-Succeeded ProjMatrixElemsForOneDensel::check_state() const
+Succeeded
+ProjMatrixElemsForOneDensel::check_state() const
 {
   Succeeded success = Succeeded::yes;
 
-  if (size()==0)
+  if (size() == 0)
     return success;
 
   ProjMatrixElemsForOneDensel lor = *this;
   lor.sort();
-  
-  for (ProjMatrixElemsForOneDensel::const_iterator lor_iter = lor.begin();
-       lor_iter != lor.end()-1; 
-       ++lor_iter)
-  {
-    if (value_type::coordinates_equal(*lor_iter, *(lor_iter+1)))
+
+  for (ProjMatrixElemsForOneDensel::const_iterator lor_iter = lor.begin(); lor_iter != lor.end() - 1; ++lor_iter)
     {
-      warning("ProjMatrixElemsForOneDensel: coordinates occur more than once %d,%d,%d,%d\n",
-	      lor_iter->segment_num(), lor_iter->view_num(), 
-	      lor_iter->axial_pos_num(), lor_iter->tangential_pos_num());
-      success = Succeeded::no;
+      if (value_type::coordinates_equal(*lor_iter, *(lor_iter + 1)))
+        {
+          warning("ProjMatrixElemsForOneDensel: coordinates occur more than once %d,%d,%d,%d\n",
+                  lor_iter->segment_num(),
+                  lor_iter->view_num(),
+                  lor_iter->axial_pos_num(),
+                  lor_iter->tangential_pos_num());
+          success = Succeeded::no;
+        }
     }
-  }
   return success;
 }
 
-
-void ProjMatrixElemsForOneDensel::sort()
+void
+ProjMatrixElemsForOneDensel::sort()
 {
-  // need explicit std:: here to resolve possible name conflict
-  // this might give you trouble if your compiler does not support namespaces
-#if !defined(STIR_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
-  std::
-#endif                                           
-  sort(begin(), end(), value_type::coordinates_less);
+  std::sort(begin(), end(), value_type::coordinates_less);
 }
 
-
-float ProjMatrixElemsForOneDensel::square_sum() const
+float
+ProjMatrixElemsForOneDensel::square_sum() const
 {
-  float sq_sum=0;
+  float sq_sum = 0;
   const_iterator element_ptr = begin();
   while (element_ptr != end())
-  {
-    sq_sum += square(element_ptr->get_bin_value());        
-    ++element_ptr;
-  }	 
+    {
+      sq_sum += square(element_ptr->get_bin_value());
+      ++element_ptr;
+    }
   return sq_sum;
 }
 
 // TODO make sure we can have a const argument
 // not calling lor2.erase() would probably speed it up anyway
-void 
-ProjMatrixElemsForOneDensel::
-merge( ProjMatrixElemsForOneDensel &lor2 )
+void
+ProjMatrixElemsForOneDensel::merge(ProjMatrixElemsForOneDensel& lor2)
 {
   assert(check_state() == Succeeded::yes);
   assert(lor2.check_state() == Succeeded::yes);
 
   iterator element_ptr = begin();
-  iterator element_ptr2= lor2.begin();
-  
-  bool found=false;
-  while ( element_ptr2 != lor2.end() )
-  {   		
-    //unsigned int key = make_key( element_ptr2->x, element_ptr2->y,element_ptr2->z);    		 
-    iterator  dup_xyz = element_ptr; 	  
-    while ( dup_xyz != end() )
+  iterator element_ptr2 = lor2.begin();
+
+  bool found = false;
+  while (element_ptr2 != lor2.end())
     {
-      //unsigned int dup_key = make_key( dup_xyz->x,dup_xyz->y,dup_xyz->z);			 
-      
-      //if ( dup_key == key ) 
-      if (value_type::coordinates_equal(*element_ptr2, *dup_xyz))
-      {
-        //TEST/////////
-        *dup_xyz += *element_ptr2;		    	  
-        ///////////////
-        element_ptr = dup_xyz+1;
-        found = true;
-        break; // assume no more duplicated point, only 2 lors 
-      }
+      // unsigned int key = make_key( element_ptr2->x, element_ptr2->y,element_ptr2->z);
+      iterator dup_xyz = element_ptr;
+      while (dup_xyz != end())
+        {
+          // unsigned int dup_key = make_key( dup_xyz->x,dup_xyz->y,dup_xyz->z);
+
+          // if ( dup_key == key )
+          if (value_type::coordinates_equal(*element_ptr2, *dup_xyz))
+            {
+              // TEST/////////
+              *dup_xyz += *element_ptr2;
+              ///////////////
+              element_ptr = dup_xyz + 1;
+              found = true;
+              break; // assume no more duplicated point, only 2 lors
+            }
+          else
+            ++dup_xyz;
+        }
+      if (found)
+        {
+          element_ptr2 = lor2.erase(element_ptr2);
+          found = false;
+        }
       else
-        ++dup_xyz;
+        {
+          ++element_ptr2;
+        }
     }
-    if( found )
-    {	        
-      element_ptr2  = lor2.erase(element_ptr2);
-      found = false;
-    }
-    else{            
-      ++element_ptr2;			
-    }	
-  }
   // append the rest
-  element_ptr2  = lor2.begin();
-  while ( element_ptr2 != lor2.end() )
-  {   		  
-    push_back( *element_ptr2);
-    ++element_ptr2;
-  }
+  element_ptr2 = lor2.begin();
+  while (element_ptr2 != lor2.end())
+    {
+      push_back(*element_ptr2);
+      ++element_ptr2;
+    }
   assert(check_state() == Succeeded::yes);
 }
-
 
 #if 0
 // todo remove this 
@@ -245,7 +236,7 @@ void ProjMatrixElemsForOneDensel::read(   fstream&fst )
 }
 #endif
 
-/////////////////// projection  operations ////////////////////////////////// 
+/////////////////// projection  operations //////////////////////////////////
 #if 0
 // TODO
 void 

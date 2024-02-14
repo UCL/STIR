@@ -35,9 +35,10 @@ class ViewgramIndices : public SegmentIndices
 
 public:
   //! an empty constructor (sets everything to 0)
+  // TODOTOF remove default
   inline ViewgramIndices();
   //! constructor taking view and segment number as arguments
-  inline ViewgramIndices(const int view_num, const int segment_num);
+  inline ViewgramIndices(const int view_num, const int segment_num, const int timing_pos_num = 0);
 
   //! get view number for const objects
   inline int view_num() const;

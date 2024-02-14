@@ -58,6 +58,7 @@ set(${dir_EXE_SOURCES}
         conv_interfile_to_gipl.cxx
         shift_image.cxx
         stir_config.cxx
+        stir_list_registries.cxx
         shift_image_origin.cxx
         warp_and_accumulate_gated_images.cxx
         warp_image.cxx
@@ -78,10 +79,6 @@ set(${dir_EXE_SOURCES}
 
 if (HAVE_ITK)
   list(APPEND ${dir_EXE_SOURCES} SPECT_dicom_to_interfile.cxx)
-endif()
-
-if (AVW_FOUND)
-  list(APPEND ${dir_EXE_SOURCES}  conv_AVW.cxx)
 endif()
 
 if (HAVE_HDF5)

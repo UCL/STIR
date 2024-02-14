@@ -185,7 +185,18 @@ def test_zoom_image():
     assert abs(zoomed_image[ind]-1)<.001
     zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_projections))
     assert abs(zoomed_image[ind]-1./(zoom))<.001
-    
+
+def test_DetectionPositionPair():
+    d1=DetectionPosition(1,2,0)
+    d2=DetectionPosition(4,5,6)
+    dp=DetectionPositionPair(d1,d2,3)
+    assert d1==dp.pos1
+    assert d2==dp.pos2
+    assert dp.timing_pos == 3
+    dp.pos1.tangential_coord = 7
+    assert dp.pos1.tangential_coord == 7
+    assert d1.tangential_coord == 1
+
 def test_Scanner():
     scanner=Scanner.get_scanner_from_name("ECAT 962")
     assert scanner.get_num_rings()==32

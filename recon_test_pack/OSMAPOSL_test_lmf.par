@@ -1,0 +1,38 @@
+OSMAPOSLParameters := 
+objective function type:=  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
+	list mode filename := PET_ACQ_small.l.hdr.STIR
+	max ring difference num to process :=  2
+	projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+   ; use multiple (almost) parallel LORs for every bin in the sinogram 
+   ; to avoid discretisation artefacts
+   number of rays in tangential direction to trace for each bin:= 3
+   ; you could disable some symmetries if you have enough memory
+   ; this would for instance allow you to increase the number of subsets
+   ; do_symmetry_90degrees_min_phi:=0
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+        Bin Normalisation type := From ProjData
+	  Bin Normalisation From ProjData :=
+	   normalisation projdata filename:= my_acfs.hs
+	End Bin Normalisation From ProjData:=
+
+	;num_events_to_store := 100
+	recompute sensitivity :=1
+	use subset sensitivities:= 0
+	sensitivity filename:=  my_sens_t_lm_pr_seg2.hv
+	zoom :=  1
+
+additive sinogram := my_MLrandoms_f1.hs
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
+enforce initial positivity condition:=  1
+number of subsets:= 1
+number of subiterations:= 1
+save estimates at subiteration intervals:= 1
+output filename prefix := my_output_t_lm_pr_seg2
+END := 

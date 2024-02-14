@@ -3,7 +3,7 @@
     Copyright (C) 2012, Kris Thielemans
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) 2013, University College London
-    
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -33,49 +33,47 @@
 #include "stir/IO/MultiParametricDiscretisedDensityInputFileFormat.h"
 #include "stir/IO/MultiParametricDiscretisedDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
-#include "stir/IO/ECAT6OutputFileFormat.h"
-#include "stir/IO/ECAT7OutputFileFormat.h"
-#include "stir/IO/ECAT7DynamicDiscretisedDensityOutputFileFormat.h"
-#include "stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
-#include "stir/IO/ECAT7DynamicDiscretisedDensityInputFileFormat.h"
+#  include "stir/IO/ECAT6OutputFileFormat.h"
+#  include "stir/IO/ECAT7OutputFileFormat.h"
+#  include "stir/IO/ECAT7DynamicDiscretisedDensityOutputFileFormat.h"
+#  include "stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
+#  include "stir/IO/ECAT7DynamicDiscretisedDensityInputFileFormat.h"
 #endif
-
 
 #if 1
-#include "stir/IO/InputFileFormatRegistry.h"
-#include "stir/IO/InterfileImageInputFileFormat.h"
-#ifdef HAVE_LLN_MATRIX
-#include "stir/IO/ECAT6ImageInputFileFormat.h"
-#include "stir/IO/ECAT7ImageInputFileFormat.h"
-#include "stir/IO/ECAT966ListmodeInputFileFormat.h"
-#include "stir/IO/ECAT962ListmodeInputFileFormat.h"
-#endif
+#  include "stir/IO/InputFileFormatRegistry.h"
+#  include "stir/IO/InterfileImageInputFileFormat.h"
+#  ifdef HAVE_LLN_MATRIX
+#    include "stir/IO/ECAT6ImageInputFileFormat.h"
+#    include "stir/IO/ECAT7ImageInputFileFormat.h"
+#    include "stir/IO/ECAT966ListmodeInputFileFormat.h"
+#    include "stir/IO/ECAT962ListmodeInputFileFormat.h"
+#  endif
 #endif
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
 #ifdef HAVE_HDF5
-#include "stir/IO/GEHDF5ListmodeInputFileFormat.h"
+#  include "stir/IO/GEHDF5ListmodeInputFileFormat.h"
 #endif
-
 //! Addition for SAFIR listmode input file format
 #include "stir/IO/SAFIRCListmodeInputFileFormat.h"
 
 //! Addition for ROOT support - Nikos Efthimiou
 #ifdef HAVE_CERN_ROOT
-#include "stir/IO/ROOTListmodeInputFileFormat.h"
-#include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
-#include "stir/IO/InputStreamFromROOTFileForECATPET.h"
+#  include "stir/IO/ROOTListmodeInputFileFormat.h"
+#  include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
+#  include "stir/IO/InputStreamFromROOTFileForECATPET.h"
 #endif
 
 #ifdef HAVE_UPENN
-#include "stir/IO/PENNListmodeInputFileFormat.h"
-#include "stir/IO/InputStreamWithRecordsFromUPENNbin.h"
-#include "stir/IO/InputStreamWithRecordsFromUPENNtxt.h"
+#  include "stir/IO/PENNListmodeInputFileFormat.h"
+#  include "stir/IO/InputStreamWithRecordsFromUPENNbin.h"
+#  include "stir/IO/InputStreamWithRecordsFromUPENNtxt.h"
 #endif
 
 #ifdef HAVE_ITK
-#include "stir/IO/ITKOutputFileFormat.h"
-#include "stir/IO/ITKImageInputFileFormat.h"
+#  include "stir/IO/ITKOutputFileFormat.h"
+#  include "stir/IO/ITKImageInputFileFormat.h"
 #endif
 
 START_NAMESPACE_STIR
@@ -103,8 +101,6 @@ static InputStreamFromROOTFileForCylindricalPET::RegisterIt dummy60606;
 static InputStreamFromROOTFileForECATPET::RegisterIt dummy606062;
 #endif
 
-
-
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
@@ -118,12 +114,11 @@ END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
 
-
 static RegisterInputFileFormat<InterfileImageInputFileFormat> idummy0(0);
 #ifdef HAVE_LLN_MATRIX
 static RegisterInputFileFormat<ecat::ecat7::ECAT7ImageInputFileFormat> idummy2(4);
 
-// ECAT6 very low priority it doesn't have a signature 
+// ECAT6 very low priority it doesn't have a signature
 static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(100000);
 
 static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputFileFormat> dynidummy(0);
@@ -131,14 +126,13 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputF
 #ifdef HAVE_ITK
 // we'll put it at low priority such that it is tried (almost) last, i.e. after STIR specific input routines
 // This is because we translate the ITK info currently incompletely.
-static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,float> > > idummy6(10000);
-static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,CartesianCoordinate3D<float> > > > idummy7(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3, float>>> idummy6(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3, CartesianCoordinate3D<float>>>> idummy7(10000);
 #endif
 static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
 static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);
 static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> dynim_dummy_multi(1);
 static RegisterInputFileFormat<MultiParametricDiscretisedDensityInputFileFormat> parim_dummy_multi(1);
-
 
 /*************************** listmode data **********************/
 #ifdef HAVE_LLN_MATRIX
@@ -154,8 +148,8 @@ static RegisterInputFileFormat<GE::RDF_HDF5::GEHDF5ListmodeInputFileFormat> LMdu
 static RegisterInputFileFormat<PENNListmodeInputFileFormat> LMdummyPENN(8);
 static InputStreamWithRecordsFromUPENNbin::RegisterIt dummy68606;
 static InputStreamWithRecordsFromUPENNtxt::RegisterIt dummy686062;
-//static RegisterInputFileFormat<PENNbinListmodeInputFileFormat> LMdummyPENNbin(9);
-//static RegisterInputFileFormat<PENNImageInputFileFormat> idummy1(2);
+// static RegisterInputFileFormat<PENNbinListmodeInputFileFormat> LMdummyPENNbin(9);
+// static RegisterInputFileFormat<PENNImageInputFileFormat> idummy1(2);
 #endif
 
 END_NAMESPACE_STIR

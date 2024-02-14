@@ -35,9 +35,11 @@ class ViewSegmentNumbers : public ViewgramIndices
 public:
   using ViewgramIndices::ViewgramIndices;
   // default constructor (needed for Visual Studio)
-  ViewSegmentNumbers() : ViewgramIndices() {}
+  ViewSegmentNumbers()
+      : ViewgramIndices()
+  {}
   ViewSegmentNumbers(const ViewgramIndices& ind)
-    : ViewgramIndices(ind)
+      : ViewgramIndices(ind)
   {}
 };
 

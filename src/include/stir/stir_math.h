@@ -1,17 +1,15 @@
 /*
   Copyright (C) 2016, UCL
   This file is part of STIR.
-  
+
   SPDX-License-Identifier: Apache-2.0
-  
+
   See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_STIR_MATH_H__
 #define __stir_STIR_MATH_H__
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
 using std::cout;
 using std::endl;
 using std::fstream;
@@ -20,7 +18,6 @@ using std::max;
 using std::min;
 using std::string;
 using std::vector;
-#endif
 
 USING_NAMESPACE_STIR
 
@@ -31,17 +28,21 @@ USING_NAMESPACE_STIR
 class pow_times_add
 {
 public:
-  pow_times_add(const float add_scalar, const float mult_scalar, const float power,
-        const float min_threshold, const float max_threshold)
-    : add(add_scalar), mult(mult_scalar), power(power),
-      min_threshold(min_threshold), max_threshold(max_threshold)
+  pow_times_add(
+      const float add_scalar, const float mult_scalar, const float power, const float min_threshold, const float max_threshold)
+      : add(add_scalar),
+        mult(mult_scalar),
+        power(power),
+        min_threshold(min_threshold),
+        max_threshold(max_threshold)
   {}
 
   float operator()(float const arg) const
   {
     const float value = min(max(arg, min_threshold), max_threshold);
-    return add+mult*(power==1?value : pow(value,power));
+    return add + mult * (power == 1 ? value : pow(value, power));
   }
+
 private:
   const float add;
   const float mult;
@@ -51,4 +52,3 @@ private:
 };
 
 #endif
-

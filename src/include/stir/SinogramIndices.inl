@@ -7,7 +7,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-  
+
 
 */
 /*
@@ -20,45 +20,49 @@
     See STIR/LICENSE.txt for details
 */
 
-
 START_NAMESPACE_STIR
 
 SinogramIndices::SinogramIndices()
-:SegmentIndices(),_axial_pos(0)
-  {}
+    : SegmentIndices(),
+      _axial_pos(0)
+{}
 
-SinogramIndices::SinogramIndices( const int axial_pos_num,const int segment_num)
-    : SegmentIndices(segment_num),_axial_pos(axial_pos_num)
-  {}
+SinogramIndices::SinogramIndices(const int axial_pos_num, const int segment_num, const int timing_pos_num)
+    : SegmentIndices(segment_num, timing_pos_num),
+      _axial_pos(axial_pos_num)
+{}
 
-int 
+SinogramIndices::SinogramIndices(const Bin& bin)
+    : SegmentIndices(bin),
+      _axial_pos(bin.axial_pos_num())
+{}
+
+int
 SinogramIndices::axial_pos_num() const
 {
-  return _axial_pos;}
-
-
-int& 
-SinogramIndices::axial_pos_num() 
-{ return _axial_pos;}
-
-bool 
-SinogramIndices::
-operator<(const SinogramIndices& other) const
-{
-  return (_axial_pos< other._axial_pos) ||
-    ((_axial_pos == other._axial_pos) && base_type::operator<(other));
+  return _axial_pos;
 }
 
-bool 
-SinogramIndices::
-operator==(const SinogramIndices& other) const
+int&
+SinogramIndices::axial_pos_num()
+{
+  return _axial_pos;
+}
+
+bool
+SinogramIndices::operator<(const SinogramIndices& other) const
+{
+  return (_axial_pos < other._axial_pos) || ((_axial_pos == other._axial_pos) && base_type::operator<(other));
+}
+
+bool
+SinogramIndices::operator==(const SinogramIndices& other) const
 {
   return (_axial_pos == other._axial_pos) && base_type::operator==(other);
 }
 
-bool 
-SinogramIndices::
-operator!=(const SinogramIndices& other) const
+bool
+SinogramIndices::operator!=(const SinogramIndices& other) const
 {
   return !(*this == other);
 }

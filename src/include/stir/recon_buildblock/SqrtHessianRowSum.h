@@ -55,102 +55,100 @@ class Succeeded;
   https://doi.org/10.1109/TMI.2019.2913889
 */
 template <typename TargetT>
-class SqrtHessianRowSum:
-        public ParsingObject
+class SqrtHessianRowSum : public ParsingObject
 {
 public:
-    //! Default constructor
-    /*! calls set_defaults().*/
-    SqrtHessianRowSum();
-    explicit SqrtHessianRowSum(const std::string&);
-    
-    //! sets default values
-    /*! Sets \c use_approximate_hessian to \c true and \c compute_with_penalty to \c false
-    */
-    void set_defaults();
+  //! Default constructor
+  /*! calls set_defaults().*/
+  SqrtHessianRowSum();
+  explicit SqrtHessianRowSum(const std::string&);
 
-    //! The main function to compute and save the sqrt of the Hessian row sum volume
-    /*! Different Hessian row sum methods can be used, see compute_Hessian_row_sum() and
-          compute_approximate_Hessian_row_sum().*/
-    void process_data();
+  //! sets default values
+  /*! Sets \c use_approximate_hessian to \c true and \c compute_with_penalty to \c false
+   */
+  void set_defaults() override;
 
-    //! \name get and set methods for the objective function sptr
-    //@{
-    GeneralisedObjectiveFunction<TargetT > const& get_objective_function_sptr();
-    void set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT > > &obj_fun);
-    //@}
+  //! The main function to compute and save the sqrt of the Hessian row sum volume
+  /*! Different Hessian row sum methods can be used, see compute_Hessian_row_sum() and
+        compute_approximate_Hessian_row_sum().*/
+  void process_data();
 
-    //! \name get and set methods for the input image
-    //@{
-    shared_ptr<TargetT> get_input_image_sptr();
-    void set_input_image_sptr(shared_ptr <TargetT > const& image);
-    //@}
+  //! \name get and set methods for the objective function sptr
+  //@{
+  GeneralisedObjectiveFunction<TargetT> const& get_objective_function_sptr();
+  void set_objective_function_sptr(const shared_ptr<GeneralisedObjectiveFunction<TargetT>>& obj_fun);
+  //@}
 
-    //! get method for returning the sqrt row sum image
-    shared_ptr<TargetT> get_output_target_sptr();
+  //! \name get and set methods for the input image
+  //@{
+  shared_ptr<TargetT> get_input_image_sptr();
+  void set_input_image_sptr(shared_ptr<TargetT> const& image);
+  //@}
 
-    void set_up();
+  //! get method for returning the sqrt row sum image
+  shared_ptr<TargetT> get_output_target_sptr();
 
-    //! \name get and set methods for use approximate hessian bool
-    //@{
-    bool get_use_approximate_hessian() const;
-    void set_use_approximate_hessian(bool use_approximate);
-    //@}
+  void set_up();
 
-    //! \name get and set methods for the compute with penalty bool
-    //@{
-    bool get_compute_with_penalty() const;
-    void set_compute_with_penalty(bool with_penalty);
-    //@}
+  //! \name get and set methods for use approximate hessian bool
+  //@{
+  bool get_use_approximate_hessian() const;
+  void set_use_approximate_hessian(bool use_approximate);
+  //@}
 
-    //! Computes the objective function Hessian row sum at the current image estimate.
-    //! Can compute the penalty's Hessian if it exists for the selected prior.
-    void compute_Hessian_row_sum();
+  //! \name get and set methods for the compute with penalty bool
+  //@{
+  bool get_compute_with_penalty() const;
+  void set_compute_with_penalty(bool with_penalty);
+  //@}
 
-    //! Computes the approximate Hessian of the objective function.
-    //! Cannot use penalty's approximate Hessian, see compute_with_penalty
-    void compute_approximate_Hessian_row_sum();
+  //! Computes the objective function Hessian row sum at the current image estimate.
+  //! Can compute the penalty's Hessian if it exists for the selected prior.
+  void compute_Hessian_row_sum();
+
+  //! Computes the approximate Hessian of the objective function.
+  //! Cannot use penalty's approximate Hessian, see compute_with_penalty
+  void compute_approximate_Hessian_row_sum();
 
 protected:
+  bool _already_setup = false;
 
 private:
-    bool _already_setup = false;
+  //! Objective function object
+  shared_ptr<GeneralisedObjectiveFunction<TargetT>> objective_function_sptr;
 
-    //! Objective function object
-    shared_ptr<GeneralisedObjectiveFunction<TargetT> >  objective_function_sptr;
+  //! The filename the for the output sqrt row sum image
+  std::string output_filename;
 
-    //! The filename the for the output sqrt row sum image
-    std::string output_filename;
+  //! Used to load an image as a template or current image estimate to compute sqrt row sum
+  std::string input_image_filename;
 
-    //! Used to load an image as a template or current image estimate to compute sqrt row sum
-    std::string input_image_filename;
+  //! The input image, can be template or current_image_estimate, dependant on which sqrt row sum method used
+  shared_ptr<TargetT> input_image_sptr;
 
-    //! The input image, can be template or current_image_estimate, dependant on which sqrt row sum method used
-    shared_ptr<TargetT> input_image_sptr;
+  //! The output image that the row sum computation methods will populate
+  shared_ptr<TargetT> output_target_sptr;
 
-    //! The output image that the row sum computation methods will populate
-    shared_ptr<TargetT> output_target_sptr;
+  //! Used to toggle which of the two row sum methods will be utilised.
+  //! This toggles the usage of input_image_sptr.
+  //! If true, input_image_sptr is only used as a template for the output back-projection,
+  //! else, input_image_sptr is used as the current_image_estimate
+  bool use_approximate_hessian;
 
-    //! Used to toggle which of the two row sum methods will be utilised.
-    //! This toggles the usage of input_image_sptr.
-    //! If true, input_image_sptr is only used as a template for the output back-projection,
-    //! else, input_image_sptr is used as the current_image_estimate
-    bool use_approximate_hessian;
+  //! When computing the hessian row sum of the objective function, include the penalty term or not.
+  //! Does not work with use_approximate_hessian as priors do not have an approximate method.
+  bool compute_with_penalty;
 
-    //! When computing the hessian row sum of the objective function, include the penalty term or not.
-    //! Does not work with use_approximate_hessian as priors do not have an approximate method.
-    bool compute_with_penalty;
+  //! File-format to save images
+  shared_ptr<OutputFileFormat<TargetT>> output_file_format_sptr;
 
-    //! File-format to save images
-    shared_ptr<OutputFileFormat<TargetT> > output_file_format_sptr;
+  /// Verbosity level
+  int _verbosity;
 
-    /// Verbosity level
-    int _verbosity;
-
-    //! used to check acceptable parameter ranges, etc...
-    bool post_processing();
-    void initialise_keymap();
+  //! used to check acceptable parameter ranges, etc...
+  bool post_processing() override;
+  void initialise_keymap() override;
 };
 
 END_NAMESPACE_STIR
-#endif //STIR_SQRTHESSIANROWSUM_H
+#endif // STIR_SQRTHESSIANROWSUM_H

@@ -1,18 +1,18 @@
 //
-// $Id: 
+// $Id:
 //
 /*!
 
   \file
-  \ingroup buildblock  
-  \brief 
-   
-    
+  \ingroup buildblock
+  \brief
+
+
   \author Sanida Mustafovic
   \author Kris Thielemans
-      
-   $Date: 
-   $Revision: 
+
+   $Date:
+   $Revision:
 */
 /*
     Copyright (C) 2000- 2002, IRSL
@@ -29,23 +29,19 @@
 
 START_NAMESPACE_STIR
 
-
 template <int num_dimensions, typename elemT>
-class SeparableLowPassArrayFilter:
-      public SeparableArrayFunctionObject <num_dimensions,elemT> 
+class SeparableLowPassArrayFilter : public SeparableArrayFunctionObject<num_dimensions, elemT>
 {
-public:  
-
+public:
   //! Default constructor
-  SeparableLowPassArrayFilter();  
-  
-  SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients, int z_trivial);
-  
-private:
- VectorWithOffset<float> filter_coefficients;
- int z_trivial;
-};
+  SeparableLowPassArrayFilter();
 
+  SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients, int z_trivial);
+
+private:
+  VectorWithOffset<float> filter_coefficients;
+  int z_trivial;
+};
 
 END_NAMESPACE_STIR
 

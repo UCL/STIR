@@ -63,22 +63,30 @@ public:
   //! Constructor that can take some input data to run the test with
   TestProjDataInfoSubsets(const std::string& sinogram_filename);
 
-  virtual ~TestProjDataInfoSubsets() {}
+  ~TestProjDataInfoSubsets() override {}
 
-  void run_tests();
+  void run_tests() override;
+  void run_tests(const std::shared_ptr<ProjData>& proj_data_sptr,
+                 const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr);
 
   void test_split(const ProjData& proj_data);
   // void test_split_and_combine(const ProjData &proj_data, int num_subsets=2);
   void test_forward_projection_is_consistent(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
-                                             const shared_ptr<const ProjData>& template_sino_sptr, bool use_z_symmetries = false,
-                                             bool use_other_symmetries = false, int num_subsets = 10);
+                                             const shared_ptr<const ProjData>& template_sino_sptr,
+                                             bool use_z_symmetries = false,
+                                             bool use_other_symmetries = false,
+                                             int num_subsets = 10);
   void test_forward_projection_is_consistent_with_unbalanced_subset(
       const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
-      const shared_ptr<const ProjData>& template_sino_sptr, bool use_z_symmetries = false, bool use_other_symmetries = false,
+      const shared_ptr<const ProjData>& template_sino_sptr,
+      bool use_z_symmetries = false,
+      bool use_other_symmetries = false,
       int num_subsets = 10);
   void test_forward_projection_is_consistent_with_reduced_segment_range(
       const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
-      const shared_ptr<const ProjData>& template_sino_sptr, bool use_z_symmetries = false, bool use_other_symmetries = false,
+      const shared_ptr<const ProjData>& template_sino_sptr,
+      bool use_z_symmetries = false,
+      bool use_other_symmetries = false,
       int num_subsets = 10);
   void test_back_projection_is_consistent(const shared_ptr<const ProjData>& input_sino_sptr,
                                           const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
@@ -86,51 +94,74 @@ public:
 
 protected:
   std::string _sinogram_filename;
-  shared_ptr<ProjData> _input_sino_sptr;
-  shared_ptr<VoxelsOnCartesianGrid<float>> _test_image_sptr;
   static shared_ptr<VoxelsOnCartesianGrid<float>> construct_test_image_data(const ProjData& template_projdata);
-  static shared_ptr<ProjData> construct_test_proj_data();
+  static shared_ptr<ProjData> construct_test_proj_data(bool TOF);
   static shared_ptr<ProjectorByBinPairUsingProjMatrixByBin>
   construct_projector_pair(const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
                            const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
-                           bool use_z_symmetries = false, bool use_other_symmetries = false);
+                           bool use_z_symmetries = false,
+                           bool use_other_symmetries = false);
   static void fill_proj_data_with_forward_projection(const std::shared_ptr<ProjData>& proj_data_sptr,
                                                      const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr);
 
-  void check_viewgrams(const ProjData& proj_data, const ProjData& subset_proj_data,
+  void check_viewgrams(const ProjData& proj_data,
+                       const ProjData& subset_proj_data,
                        const std::vector<int>& subset_views,
                        const std::string& str);
 
   ProjDataInMemory generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                                     const shared_ptr<const ProjData>& template_sino_sptr,
-                                                    bool use_z_symmetries = false, bool use_other_symmetries = false);
+                                                    bool use_z_symmetries = false,
+                                                    bool use_other_symmetries = false);
   ProjDataInMemory generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                                     const shared_ptr<const ProjDataInfo>& template_projdata_info_sptr,
                                                     const shared_ptr<const ExamInfo>& template_examinfo_sptr,
-                                                    bool use_z_symmetries = false, bool use_other_symmetries = false);
+                                                    bool use_z_symmetries = false,
+                                                    bool use_other_symmetries = false);
   shared_ptr<VoxelsOnCartesianGrid<float>>
   generate_full_back_projection(const shared_ptr<const ProjData>& input_sino_sptr,
                                 const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
-                                bool use_z_symmetries = false, bool use_other_symmetries = false);
+                                bool use_z_symmetries = false,
+                                bool use_other_symmetries = false);
   void test_forward_projection_for_one_subset(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                               const ProjDataInMemory& full_forward_projection,
-                                              ProjData& subset_forward_projection, bool use_z_symmetries = false,
+                                              ProjData& subset_forward_projection,
+                                              bool use_z_symmetries = false,
                                               bool use_other_symmetries = false);
 };
 
-TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string& sinogram_filename) : _sinogram_filename(sinogram_filename) {}
+TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string& sinogram_filename)
+    : _sinogram_filename(sinogram_filename)
+{}
 
 shared_ptr<ProjData>
-TestProjDataInfoSubsets::construct_test_proj_data()
+TestProjDataInfoSubsets::construct_test_proj_data(bool TOF)
 {
-  cerr << "\tGenerating default ProjData from E953" << endl;
-  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(
-      ProjDataInfo::construct_proj_data_info(scanner_ptr,
-                                             /*span*/ 5, scanner_ptr->get_num_rings() - 1,
-                                             /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
-                                             /*tang_pos*/ 64,
-                                             /*arc_corrected*/ false));
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  if (!TOF)
+    {
+      cerr << "\tGenerating default ProjData from E953" << endl;
+      shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+      proj_data_info_sptr = ProjDataInfo::construct_proj_data_info(scanner_ptr,
+                                                                   /*span*/ 5,
+                                                                   scanner_ptr->get_num_rings() - 1,
+                                                                   /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
+                                                                   /*tang_pos*/ 64,
+                                                                   /*arc_corrected*/ false);
+    }
+  else
+    {
+      cerr << "\tGenerating default ProjData from D690" << endl;
+      shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Discovery690));
+      proj_data_info_sptr = ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                                                   /*span*/ 2,
+                                                                   5,
+                                                                   /*views*/ scanner_sptr->get_num_detectors_per_ring() / 4,
+                                                                   /*tang_pos*/ 22,
+                                                                   /*arc_corrected*/ false,
+                                                                   /* Tof_mashing */ 11);
+    }
+
   auto exam_info_sptr = std::make_shared<ExamInfo>();
   exam_info_sptr->imaging_modality = ImagingModality::PT;
 
@@ -160,7 +191,8 @@ TestProjDataInfoSubsets::construct_test_image_data(const ProjData& template_proj
 shared_ptr<ProjectorByBinPairUsingProjMatrixByBin>
 TestProjDataInfoSubsets::construct_projector_pair(const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
                                                   const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
-                                                  bool use_z_symmetries, bool use_other_symmetries)
+                                                  bool use_z_symmetries,
+                                                  bool use_other_symmetries)
 {
   cerr << "\tSetting up default projector pair, ProjectorByBinPairUsingProjMatrixByBin" << endl;
   auto proj_matrix_sptr = std::make_shared<ProjMatrixByBinUsingRayTracing>();
@@ -188,51 +220,48 @@ TestProjDataInfoSubsets::fill_proj_data_with_forward_projection(
 }
 
 void
-TestProjDataInfoSubsets::run_tests()
+TestProjDataInfoSubsets::run_tests(const std::shared_ptr<ProjData>& input_sino_sptr,
+                                   const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr)
 {
-  cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
   try
     {
-      // Open sinogram
-      if (_sinogram_filename.empty())
-        {
-          _input_sino_sptr = construct_test_proj_data();
-          _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
-          fill_proj_data_with_forward_projection(_input_sino_sptr, _test_image_sptr);
-        }
-      else
-        {
-          _input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
-          _test_image_sptr = construct_test_image_data(*_input_sino_sptr);
-        }
-
       // check get_original_view_nums() on the original data
       {
-        auto views = _input_sino_sptr->get_original_view_nums();
-        check_if_equal(views[0], _input_sino_sptr->get_min_view_num(), "check get_original_view_nums on non-subset data: first view");
-        check_if_equal(views[views.size()-1], _input_sino_sptr->get_max_view_num(), "check get_original_view_nums on non-subset data: last view");
+        auto views = input_sino_sptr->get_original_view_nums();
+        check_if_equal(
+            views[0], input_sino_sptr->get_min_view_num(), "check get_original_view_nums on non-subset data: first view");
+        check_if_equal(views[views.size() - 1],
+                       input_sino_sptr->get_max_view_num(),
+                       "check get_original_view_nums on non-subset data: last view");
       }
 
-      test_split(*_input_sino_sptr);
+      test_split(*input_sino_sptr);
 
-      // test_split_and_combine(*_input_sino_sptr);
+      // test_split_and_combine(*input_sino_sptr);
 
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr);
+      test_forward_projection_is_consistent(test_image_sptr, input_sino_sptr);
       cerr << "repeat with an 'unusual' number of subsets, 13" << endl;
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr, /*use_z_symmetries=*/false,
-                                            /*use_z_symmetries=*/false, /*num_subsets=*/13);
+      test_forward_projection_is_consistent(test_image_sptr,
+                                            input_sino_sptr,
+                                            /*use_z_symmetries=*/false,
+                                            /*use_z_symmetries=*/false,
+                                            /*num_subsets=*/13);
       cerr << "repeat with z shift symmetries" << endl;
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr, /*use_z_symmetries=*/true,
+      test_forward_projection_is_consistent(test_image_sptr,
+                                            input_sino_sptr,
+                                            /*use_z_symmetries=*/true,
                                             /*use_z_symmetries=*/false);
       cerr << "repeat with all symmetries" << endl;
-      test_forward_projection_is_consistent(_test_image_sptr, _input_sino_sptr, /*use_z_symmetries=*/true,
+      test_forward_projection_is_consistent(test_image_sptr,
+                                            input_sino_sptr,
+                                            /*use_z_symmetries=*/true,
                                             /*use_z_symmetries=*/true);
 
-      test_forward_projection_is_consistent_with_unbalanced_subset(_test_image_sptr, _input_sino_sptr);
+      test_forward_projection_is_consistent_with_unbalanced_subset(test_image_sptr, input_sino_sptr);
 
-      test_forward_projection_is_consistent_with_reduced_segment_range(_test_image_sptr, _input_sino_sptr);
+      test_forward_projection_is_consistent_with_reduced_segment_range(test_image_sptr, input_sino_sptr);
 
-      test_back_projection_is_consistent(_input_sino_sptr, _test_image_sptr, /*num_subsets=*/10);
+      test_back_projection_is_consistent(input_sino_sptr, test_image_sptr, /*num_subsets=*/10);
     }
   catch (const std::exception& error)
     {
@@ -258,16 +287,19 @@ TestProjDataInfoSubsets::check_viewgrams(const ProjData& proj_data,
       // the corresponding view in the original data is at subset_views[i]
 
       // loop over all segments to check viewgram for all segments
-      for (int segment_num = proj_data.get_min_segment_num(); segment_num < proj_data.get_max_segment_num(); ++segment_num)
-        {
-          if (!check_if_equal(proj_data.get_viewgram(subset_views[i], segment_num),
-                              subset_proj_data.get_viewgram(i, segment_num), str + "Are viewgrams equal?"))
-            {
-              cerr << "test_split failed: viewgrams weren't equal" << endl;
-              break;
-            }
-          // TODO also compare viewgram metadata
-        }
+      for (int timing_pos_num = proj_data.get_min_tof_pos_num(); timing_pos_num <= proj_data.get_max_tof_pos_num();
+           ++timing_pos_num)
+        for (int segment_num = proj_data.get_min_segment_num(); segment_num < proj_data.get_max_segment_num(); ++segment_num)
+          {
+            if (!check_if_equal(proj_data.get_viewgram(subset_views[i], segment_num, false, timing_pos_num),
+                                subset_proj_data.get_viewgram(i, segment_num, false, timing_pos_num),
+                                "Are viewgrams equal?"))
+              {
+                cerr << "test_split failed: viewgrams weren't equal" << endl;
+                break;
+              }
+            // TODO also compare viewgram metadata
+          }
     }
 }
 
@@ -287,15 +319,21 @@ TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
       // check basic sizes
       {
         check_if_equal(proj_data.get_num_views() / num_subsets, subset_proj_data.get_num_views(), "check on get_num_views()");
-        check_if_equal(proj_data.get_min_tangential_pos_num(), subset_proj_data.get_min_tangential_pos_num(), "check on get_min_tangential_pos_num()");
-        check_if_equal(proj_data.get_max_tangential_pos_num(), subset_proj_data.get_max_tangential_pos_num(), "check on get_max_tangential_pos_num()");
+        check_if_equal(proj_data.get_min_tangential_pos_num(),
+                       subset_proj_data.get_min_tangential_pos_num(),
+                       "check on get_min_tangential_pos_num()");
+        check_if_equal(proj_data.get_max_tangential_pos_num(),
+                       subset_proj_data.get_max_tangential_pos_num(),
+                       "check on get_max_tangential_pos_num()");
         check_if_equal(proj_data.get_min_segment_num(), subset_proj_data.get_min_segment_num(), "check on get_min_segment_num()");
         check_if_equal(proj_data.get_max_segment_num(), subset_proj_data.get_max_segment_num(), "check on get_max_segment_num()");
-        for (int segment_num = proj_data.get_min_segment_num(); segment_num <= proj_data.get_max_segment_num(); ++ segment_num)
+        for (int segment_num = proj_data.get_min_segment_num(); segment_num <= proj_data.get_max_segment_num(); ++segment_num)
           {
-            check_if_equal(proj_data.get_min_axial_pos_num(segment_num), subset_proj_data.get_min_axial_pos_num(segment_num),
+            check_if_equal(proj_data.get_min_axial_pos_num(segment_num),
+                           subset_proj_data.get_min_axial_pos_num(segment_num),
                            "check on get_min_axial_pos_num() for seg " + std::to_string(segment_num));
-            check_if_equal(proj_data.get_max_axial_pos_num(segment_num), subset_proj_data.get_max_axial_pos_num(segment_num),
+            check_if_equal(proj_data.get_max_axial_pos_num(segment_num),
+                           subset_proj_data.get_max_axial_pos_num(segment_num),
                            "check on get_max_axial_pos_num() for seg " + std::to_string(segment_num));
           }
       }
@@ -363,8 +401,11 @@ TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
 
 void
 TestProjDataInfoSubsets::test_forward_projection_is_consistent(
-    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr, const shared_ptr<const ProjData>& template_sino_sptr,
-    bool use_z_symmetries, bool use_other_symmetries, int num_subsets)
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
+    const shared_ptr<const ProjData>& template_sino_sptr,
+    bool use_z_symmetries,
+    bool use_other_symmetries,
+    int num_subsets)
 {
   cerr << "\tTesting Subset forward projection is consistent" << endl;
 
@@ -378,15 +419,18 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent(
           = _calc_regularly_sampled_views_for_subset(subset_n, num_subsets, full_forward_projection.get_num_views());
       auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
-      test_forward_projection_for_one_subset(input_image_sptr, full_forward_projection, *subset_forward_projection_uptr,
-                                             use_z_symmetries, use_other_symmetries);
+      test_forward_projection_for_one_subset(
+          input_image_sptr, full_forward_projection, *subset_forward_projection_uptr, use_z_symmetries, use_other_symmetries);
     }
 }
 
 void
 TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_subset(
-    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr, const shared_ptr<const ProjData>& template_sino_sptr,
-    bool use_z_symmetries, bool use_other_symmetries, int num_subsets)
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
+    const shared_ptr<const ProjData>& template_sino_sptr,
+    bool use_z_symmetries,
+    bool use_other_symmetries,
+    int num_subsets)
 {
   cerr << "\tTesting Subset forward projection is consistent with unbalanced subset" << endl;
 
@@ -420,15 +464,18 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_s
       auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
       cerr << "\tTesting unbalanced subset " << subset_n << ": views " << subset_views << endl;
-      test_forward_projection_for_one_subset(input_image_sptr, full_forward_projection, *subset_forward_projection_uptr,
-                                             use_z_symmetries, use_other_symmetries);
+      test_forward_projection_for_one_subset(
+          input_image_sptr, full_forward_projection, *subset_forward_projection_uptr, use_z_symmetries, use_other_symmetries);
     }
 }
 
 void
 TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_reduced_segment_range(
-    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr, const shared_ptr<const ProjData>& template_sino_sptr,
-    bool use_z_symmetries, bool use_other_symmetries, int num_subsets)
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
+    const shared_ptr<const ProjData>& template_sino_sptr,
+    bool use_z_symmetries,
+    bool use_other_symmetries,
+    int num_subsets)
 {
   cerr << "\tTesting Subset forward projection is consistent with reduced segment range" << endl;
 
@@ -442,9 +489,11 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_reduced_segm
   // First we make a full forward projection with a reduced segment range
   shared_ptr<ProjDataInfo> reduced_seg_range_pdi_sptr(template_sino_sptr->get_proj_data_info_sptr()->clone());
   reduced_seg_range_pdi_sptr->reduce_segment_range(-1, 1);
-  auto full_forward_projection
-      = generate_full_forward_projection(input_image_sptr, reduced_seg_range_pdi_sptr, template_sino_sptr->get_exam_info_sptr(),
-                                         use_z_symmetries, use_other_symmetries);
+  auto full_forward_projection = generate_full_forward_projection(input_image_sptr,
+                                                                  reduced_seg_range_pdi_sptr,
+                                                                  template_sino_sptr->get_exam_info_sptr(),
+                                                                  use_z_symmetries,
+                                                                  use_other_symmetries);
 
   for (int subset_n = 0; subset_n < num_subsets; ++subset_n)
     {
@@ -461,25 +510,30 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_reduced_segm
                                                  subset_reduced_seg_range_pdi_sptr);
 
       cerr << "\tTesting reduced segment range on subset " << subset_n << endl;
-      test_forward_projection_for_one_subset(input_image_sptr, full_forward_projection, subset_forward_projection,
-                                             use_z_symmetries, use_other_symmetries);
+      test_forward_projection_for_one_subset(
+          input_image_sptr, full_forward_projection, subset_forward_projection, use_z_symmetries, use_other_symmetries);
     }
 }
 
 ProjDataInMemory
 TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                                           const shared_ptr<const ProjData>& template_projdata_sptr,
-                                                          bool use_z_symmetries, bool use_other_symmetries)
+                                                          bool use_z_symmetries,
+                                                          bool use_other_symmetries)
 {
-  return generate_full_forward_projection(input_image_sptr, template_projdata_sptr->get_proj_data_info_sptr(),
-                                          template_projdata_sptr->get_exam_info_sptr(), use_z_symmetries, use_other_symmetries);
+  return generate_full_forward_projection(input_image_sptr,
+                                          template_projdata_sptr->get_proj_data_info_sptr(),
+                                          template_projdata_sptr->get_exam_info_sptr(),
+                                          use_z_symmetries,
+                                          use_other_symmetries);
 }
 
 ProjDataInMemory
 TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                                           const shared_ptr<const ProjDataInfo>& template_projdata_info_sptr,
                                                           const shared_ptr<const ExamInfo>& template_examinfo_sptr,
-                                                          bool use_z_symmetries, bool use_other_symmetries)
+                                                          bool use_z_symmetries,
+                                                          bool use_other_symmetries)
 {
   check(input_image_sptr->find_max() > 0, "forward projection test run with empty image");
 
@@ -499,11 +553,13 @@ TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const
 shared_ptr<VoxelsOnCartesianGrid<float>>
 TestProjDataInfoSubsets::generate_full_back_projection(const shared_ptr<const ProjData>& input_sino_sptr,
                                                        const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
-                                                       bool use_z_symmetries, bool use_other_symmetries)
+                                                       bool use_z_symmetries,
+                                                       bool use_other_symmetries)
 {
-  auto back_projector_sptr = construct_projector_pair(input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr,
-                                                      use_z_symmetries, use_other_symmetries)
-                                 ->get_back_projector_sptr();
+  auto back_projector_sptr
+      = construct_projector_pair(
+            input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr, use_z_symmetries, use_other_symmetries)
+            ->get_back_projector_sptr();
 
   shared_ptr<VoxelsOnCartesianGrid<float>> full_back_projection_sptr(template_image_sptr->get_empty_copy());
   back_projector_sptr->back_project(*full_back_projection_sptr, *input_sino_sptr);
@@ -515,15 +571,18 @@ TestProjDataInfoSubsets::generate_full_back_projection(const shared_ptr<const Pr
 
 void
 TestProjDataInfoSubsets::test_forward_projection_for_one_subset(
-    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr, const ProjDataInMemory& full_forward_projection,
-    ProjData& subset_forward_projection, bool use_z_symmetries, bool use_other_symmetries)
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
+    const ProjDataInMemory& full_forward_projection,
+    ProjData& subset_forward_projection,
+    bool use_z_symmetries,
+    bool use_other_symmetries)
 {
   cerr << "\tTesting Subset forward projection is consistent" << endl;
   auto subset_proj_data_info_sptr
       = std::dynamic_pointer_cast<const ProjDataInfoSubsetByView>(subset_forward_projection.get_proj_data_info_sptr());
 
-  auto subset_proj_pair_sptr = construct_projector_pair(subset_forward_projection.get_proj_data_info_sptr(), input_image_sptr,
-                                                        use_z_symmetries, use_other_symmetries);
+  auto subset_proj_pair_sptr = construct_projector_pair(
+      subset_forward_projection.get_proj_data_info_sptr(), input_image_sptr, use_z_symmetries, use_other_symmetries);
 
   subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(subset_forward_projection);
 
@@ -536,23 +595,29 @@ TestProjDataInfoSubsets::test_forward_projection_for_one_subset(
       // the corresponding view in the original data is at subset_views[i]
 
       // loop over all segments to check viewgram for all segments
-      for (int segment_num = full_forward_projection.get_min_segment_num();
-           segment_num < full_forward_projection.get_max_segment_num(); ++segment_num)
-        {
-          if (!check_if_equal(full_forward_projection.get_viewgram(subset_views[i], segment_num),
-                              subset_forward_projection.get_viewgram(i, segment_num), "Are viewgrams equal?"))
-            {
-              cerr << "testing forward projection failed: viewgrams weren't equal in subset " << i << endl;
-              break;
-            }
-          // TODO also compare viewgram metadata
-        }
+      for (int timing_pos_num = full_forward_projection.get_min_tof_pos_num();
+           timing_pos_num <= full_forward_projection.get_max_tof_pos_num();
+           ++timing_pos_num)
+        for (int segment_num = full_forward_projection.get_min_segment_num();
+             segment_num < full_forward_projection.get_max_segment_num();
+             ++segment_num)
+          {
+            if (!check_if_equal(full_forward_projection.get_viewgram(subset_views[i], segment_num, false, timing_pos_num),
+                                subset_forward_projection.get_viewgram(i, segment_num, false, timing_pos_num),
+                                "Are viewgrams equal?"))
+              {
+                cerr << "testing forward projection failed: viewgrams weren't equal in subset " << i << endl;
+                break;
+              }
+            // TODO also compare viewgram metadata
+          }
     }
 }
 
 void
 TestProjDataInfoSubsets::test_back_projection_is_consistent(
-    const shared_ptr<const ProjData>& input_sino_sptr, const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
+    const shared_ptr<const ProjData>& input_sino_sptr,
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
     int num_subsets)
 {
   auto full_back_projection_sptr = generate_full_back_projection(input_sino_sptr, template_image_sptr);
@@ -573,6 +638,37 @@ TestProjDataInfoSubsets::test_back_projection_is_consistent(
       (*back_projection_sum_sptr) += *subset_back_projection_sptr;
     }
   check_if_equal(*full_back_projection_sptr, *back_projection_sum_sptr, "Are backprojections equal?");
+}
+
+void
+TestProjDataInfoSubsets::run_tests()
+{
+
+  cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
+  // Open sinogram
+  if (_sinogram_filename.empty())
+    {
+      std::cerr << "------------------ non-TOF\n";
+      {
+        auto input_sino_sptr = construct_test_proj_data(false);
+        auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
+        fill_proj_data_with_forward_projection(input_sino_sptr, test_image_sptr);
+        run_tests(input_sino_sptr, test_image_sptr);
+      }
+      std::cerr << "------------------ TOF\n";
+      {
+        auto input_sino_sptr = construct_test_proj_data(true);
+        auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
+        fill_proj_data_with_forward_projection(input_sino_sptr, test_image_sptr);
+        run_tests(input_sino_sptr, test_image_sptr);
+      }
+    }
+  else
+    {
+      auto input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
+      auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
+      run_tests(input_sino_sptr, test_image_sptr);
+    }
 }
 
 END_NAMESPACE_STIR

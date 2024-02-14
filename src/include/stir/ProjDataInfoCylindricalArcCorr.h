@@ -26,13 +26,12 @@
 #ifndef __stir_ProjDataInfoCylindricalArcCorr_H__
 #define __stir_ProjDataInfoCylindricalArcCorr_H__
 
-
 #include "stir/ProjDataInfoCylindrical.h"
 
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup projdata 
+  \ingroup projdata
   \brief Projection data info for arc-corrected data
 
   This means that 'tangential_pos_num' actually indexes a linear coordinate
@@ -50,35 +49,37 @@ class ProjDataInfoCylindricalArcCorr : public ProjDataInfoCylindrical
 public:
   //! Constructors
   ProjDataInfoCylindricalArcCorr();
-  ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner> scanner_ptr,float bin_size,
-    const  VectorWithOffset<int>& num_axial_pos_per_segment,
-    const  VectorWithOffset<int>& min_ring_diff_v, 
-    const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+  ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner> scanner_ptr,
+                                 float bin_size,
+                                 const VectorWithOffset<int>& num_axial_pos_per_segment,
+                                 const VectorWithOffset<int>& min_ring_diff_v,
+                                 const VectorWithOffset<int>& max_ring_diff_v,
+                                 const int num_views,
+                                 const int num_tangential_poss,
+                                 const int tof_mash_factor = 0);
 
-  ProjDataInfo* clone() const;
-  
+  ProjDataInfo* clone() const override;
+
   bool operator==(const self_type&) const;
 
-  inline virtual float get_s(const Bin&) const;
+  inline float get_s(const Bin&) const override;
   //! Set tangential sampling
   void set_tangential_sampling(const float bin_size);
   //! Get tangential sampling
   inline float get_tangential_sampling() const;
-  virtual float get_sampling_in_s(const Bin&) const
-  {return bin_size; }
+  float get_sampling_in_s(const Bin&) const override
+  {
+    return bin_size;
+  }
 
-  virtual 
-    Bin
-    get_bin(const LOR<float>&) const;
+  Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 
-  virtual std::string parameter_info() const;
+  std::string parameter_info() const override;
+
 private:
-  
   float bin_size;
 
-  virtual bool blindly_equals(const root_type * const) const;
-
+  bool blindly_equals(const root_type* const) const override;
 };
 
 END_NAMESPACE_STIR

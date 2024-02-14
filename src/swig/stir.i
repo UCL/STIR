@@ -70,14 +70,19 @@
  #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
  #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
  #include "stir/recon_buildblock/TrivialBinNormalisation.h"
- #include "stir/listmode/LmToProjData.h"
+ #include "stir/listmode/ListRecord.h"
+ #include "stir/listmode/ListEvent.h"
+ #include "stir/listmode/CListRecord.h"
  #include "stir/listmode/ListModeData.h"
+ #include "stir/listmode/CListModeData.h"
+ #include "stir/listmode/LmToProjData.h"
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
+#include "stir/IndexRange4D.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -131,6 +136,7 @@
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
+#include "stir/recon_buildblock/ProjMatrixByBinPinholeSPECTUB.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
@@ -698,27 +704,95 @@ namespace std {
 
 
 #endif
-  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+  static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
+  {
+    const int num_non_tof_sinos = proj_data.get_num_non_tof_sinograms();
+ Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),num_non_tof_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+      return array;
+  }
+
+  // a function for  converting ProjData to a 4D array as that's what is easy to use
+  static Array<4,float> projdata_to_4D(const ProjData& proj_data)
+  {
+
+      Array<4,float> array = create_array_for_proj_data(proj_data);
+      Array<4,float>::full_iterator array_iter = array.begin_all();
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
+      //        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //        std::advance(array_iter, segment.size_all());
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_segment_by_sinogram(-s);
+      //            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //            std::advance(array_iter, segment.size_all());
+      //          }
+      //      }
+      proj_data.copy_to(array_iter);
+      return array;
+  }
+
+  // inverse of the above function
+  void fill_proj_data_from_4D(ProjData& proj_data, const Array<4,float>& array)
   {
       //    int num_sinos=proj_data.get_num_axial_poss(0);
       //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
       //      {
       //        num_sinos += 2*proj_data.get_num_axial_poss(s);
       //      }
-      int num_sinos = proj_data.get_num_sinograms();
-
-      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
-      return array;
+      //    if (array.size() != static_cast<std::size_t>(num_sinos)||
+      //        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) ||
+      //        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
+      //      {
+      //        throw std::runtime_error("Incorrect size for filling this projection data");
+      //      }
+      Array<4,float>::const_full_iterator array_iter = array.begin_all();
+      //
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
+      //        // cannot use std::copy sadly as needs end-iterator for range
+      //        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //             seg_iter != segment.end_all();
+      //             /*empty*/)
+      //          *seg_iter++ = *array_iter++;
+      //        proj_data.set_segment(segment);
+      //
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_empty_segment_by_sinogram(-s);
+      //            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //                 seg_iter != segment.end_all();
+      //                 /*empty*/)
+      //              *seg_iter++ = *array_iter++;
+      //            proj_data.set_segment(segment);
+      //          }
+      //      }
+      proj_data.fill_from(array_iter);
   }
 
-  // a function for  converting ProjData to a 3D array as that's what is easy to use
-  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
-  {
-      Array<3,float> array = create_array_for_proj_data(proj_data);
-      Array<3,float>::full_iterator array_iter = array.begin_all();
-      copy_to(proj_data, array_iter);
-      return array;
-  }
+//  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+//  {
+//      //    int num_sinos=proj_data.get_num_axial_poss(0);
+//      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+//      //      {
+//      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+//      //      }
+//      int num_sinos = proj_data.get_num_sinograms();
+
+//      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+//      return array;
+//  }
+
+//  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
+//  {
+//      Array<3,float> array = create_array_for_proj_data(proj_data);
+//      Array<3,float>::full_iterator array_iter = array.begin_all();
+//      copy_to(proj_data, array_iter);
+//      return array;
+//  }
+
   
  } // end of namespace
 
@@ -908,9 +982,6 @@ namespace std {
 %shared_ptr(stir::ParsingObject);
 
 %shared_ptr(stir::Verbosity);
-%shared_ptr(stir::LORAs2Points<float>);
-%shared_ptr(stir::LOR<float>);
-%shared_ptr(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>);
 
 //  William S Fulton trick for passing templates (with commas) through macro arguments
 // (already defined in swgmacros.swg)
@@ -951,30 +1022,14 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/ByteOrder.h"
 
 %include "stir_coordinates.i"
-
-#if 0
- // TODO enable this in STIR version 6 (breaks backwards compatibility
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z1);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, z2);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, beta);
-%attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, phi);
-#else
-%ignore *::z1() const;
-%ignore *::z2() const;
-%ignore *::beta() const;
-%ignore *::phi() const;
-#endif
-%ignore *::check_state;
-%include "stir/LORCoordinates.h"
-
-%template(FloatLOR) stir::LOR<float>;
-%template(FloatLORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
+%include "stir_LOR.i"
 
 %include "stir_array.i"
 %include "stir_exam.i"
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
 %include "stir_projdata.i"
+%include "stir_listmode.i"
 %include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 %include "stir_voxels.i"
@@ -984,7 +1039,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/zoom.h"
 
 %include "stir/Verbosity.h"
-
 
 // shapes
 %include "stir_shapes.i"
@@ -1009,10 +1063,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/multiply_crystal_factors.h"
 %include "stir/decay_correction_factor.h"
 
-%rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
-%shared_ptr(stir::LmToProjData);
-%include "stir/listmode/LmToProjData.h"
-
 %shared_ptr(stir::ScatterSimulation);
 %shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
   stir::ScatterSimulation, stir::ScatterSimulation>);
@@ -1030,18 +1080,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 
 %shared_ptr(stir::CreateTailMaskFromACFs);
 %include "stir/scatter/CreateTailMaskFromACFs.h"
-
-%shared_ptr(stir::ListModeData);
-%include "stir/listmode/ListModeData.h"
-
-%extend stir::ListModeData {
-  static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
-    {
-      using namespace stir;
-      shared_ptr<ListModeData> ret(read_from_file<ListModeData>(filename));
-      return ret;
-    }
-}
 
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);

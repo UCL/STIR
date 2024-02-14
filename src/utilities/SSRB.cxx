@@ -28,7 +28,7 @@
    \endcode
    \param num_segments_to_combine has to be odd. It is used as the number of segments
       in the original data to combine.
-   \param num_views_to_combine has to be at least 1 (which is the default). 
+   \param num_views_to_combine has to be at least 1 (which is the default).
       It is used as the number of views in the original data to combine.
    \param num_tangential_poss_to_trim has to be smaller than the available number
       of tangential positions.
@@ -45,14 +45,14 @@
   output would correspond to a span=3 file with mashing factor 2, and would be
   normalised (at least as far as SSRB concerns). \a num_segments_to_combine=3
   results in ring differences -1,0,1 to be combined all into segment 0, etc.
-  \see 
+  \see
   stir::SSRB(const std::string& output_filename,
              const stir::ProjData& in_projdata,
-	     const int num_segments_to_combine,
-	     const int num_views_to_combine,
-	     const int num_tang_poss_to_trim,
-	     const bool do_normalisation,
-	     const int max_in_segment_num_to_process
+             const int num_segments_to_combine,
+             const int num_views_to_combine,
+             const int num_tang_poss_to_trim,
+             const bool do_normalisation,
+             const int max_in_segment_num_to_process
      )
   for info on parameters and restrictions.
   \code
@@ -67,15 +67,13 @@
 #include <string.h>
 #include "stir/ProjDataInterfile.h"
 
-#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::cerr;
-#endif
 
 USING_NAMESPACE_STIR
 
-
-static void print_usage_and_exit(const std::string& prog_name)
+static void
+print_usage_and_exit(const std::string& prog_name)
 {
   cerr << "Usage:\n\n"
        << "Two options:\n"
@@ -83,7 +81,7 @@ static void print_usage_and_exit(const std::string& prog_name)
        << prog_name << " [-t num_tangential_poss_to_trim] \\\n"
        << "\toutput_filename input_projdata_name \\\n"
        << "\t[num_segments_to_combine \\\n"
-       <<"\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process ]]]]\n"
+       << "\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process ]]]]\n"
        << "num_segments_to_combine has to be odd. It is used as the number of segments\n"
        << "  in the original data to combine.\n"
        << "num_views_to_combine has to be at least 1 (which is the default)\n"
@@ -99,21 +97,23 @@ static void print_usage_and_exit(const std::string& prog_name)
   exit(EXIT_FAILURE);
 }
 
-void classic_SSRB(int argc, char **argv)
+void
+classic_SSRB(int argc, char** argv)
 {
   // Does the standard method of SSRB based upon numerical inputs
   int num_tangential_poss_to_trim = 0;
-  if (argc>1 && strcmp(argv[1], "-t")==0)
-  {
-    num_tangential_poss_to_trim = atoi(argv[2]);
-    argc -= 2; argv += 2;
-  }
+  if (argc > 1 && strcmp(argv[1], "-t") == 0)
+    {
+      num_tangential_poss_to_trim = atoi(argv[2]);
+      argc -= 2;
+      argv += 2;
+    }
   const string output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
   const int num_segments_to_combine = argc <= 3 ? 1 : atoi(argv[3]);
-  const int num_views_to_combine = argc<=4 ? 1 : atoi(argv[4]);
-  const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
-  const int max_segment_num_to_process = argc <=6 ? -1 : atoi(argv[6]);
+  const int num_views_to_combine = argc <= 4 ? 1 : atoi(argv[4]);
+  const bool do_norm = argc <= 5 ? true : atoi(argv[5]) != 0;
+  const int max_segment_num_to_process = argc <= 6 ? -1 : atoi(argv[6]);
   // do standard SSRB
   SSRB(output_filename,
        *in_projdata_ptr,
@@ -121,35 +121,38 @@ void classic_SSRB(int argc, char **argv)
        num_views_to_combine,
        num_tangential_poss_to_trim,
        do_norm,
-       max_segment_num_to_process
-  );
+       max_segment_num_to_process);
 }
 
-void template_based_SSRB(int argc, char **argv)
+void
+template_based_SSRB(int argc, char** argv)
 {
   // Does the template based SSRB whereby the target template is given as an argument
   shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[2]);
   const string output_filename = argv[3];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[4]);
-  ProjDataInterfile out_proj_data(in_projdata_ptr->get_exam_info_sptr(),
-                                  template_projdata_ptr->get_proj_data_info_sptr(), output_filename, std::ios::out);
-  const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
+  ProjDataInterfile out_proj_data(
+      in_projdata_ptr->get_exam_info_sptr(), template_projdata_ptr->get_proj_data_info_sptr(), output_filename, std::ios::out);
+  const bool do_norm = argc <= 5 ? true : atoi(argv[5]) != 0;
   SSRB(out_proj_data, *in_projdata_ptr, do_norm);
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
-  if (argc > 7 || argc < 3 )
-  {
-    print_usage_and_exit(argv[0]);
-  }
+  if (argc > 7 || argc < 3)
+    {
+      print_usage_and_exit(argv[0]);
+    }
 
-  if (strcmp(argv[1], "--template")==0)
-  {
-    template_based_SSRB(argc, argv);
-  } else {
-    classic_SSRB(argc, argv);
-  }
+  if (strcmp(argv[1], "--template") == 0)
+    {
+      template_based_SSRB(argc, argv);
+    }
+  else
+    {
+      classic_SSRB(argc, argv);
+    }
 
   return EXIT_SUCCESS;
 }

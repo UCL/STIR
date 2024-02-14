@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -15,12 +16,12 @@
 
   \brief Declaration of class stir::ProjDataInfoCylindricalNoArcCorr
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
 #ifndef __stir_ProjDataInfoCylindricalNoArcCorr_H__
 #define __stir_ProjDataInfoCylindricalNoArcCorr_H__
-
 
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/DetectionPositionPair.h"
@@ -31,7 +32,7 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 /*!
-  \ingroup projdata 
+  \ingroup projdata
   \brief Projection data info for data which are not arc-corrected.
 
   For this class, 'tangential_pos_num' actually indexes an angular coordinate
@@ -41,7 +42,7 @@ class Succeeded;
     get_s(Bin(..., tang_pos_num)) == ring_radius * sin(tang_pos_num*angular_increment)
   \endcode
 
-  This class also contains some functions specific for (static) full-ring PET 
+  This class also contains some functions specific for (static) full-ring PET
   scanners. In this case, it is assumed that for 'raw' data (i.e. no mashing)
   sinogram space is 'interleaved': 2 adjacent LOR_angles are
   merged to 1 'view', while the corresponding bins are
@@ -53,13 +54,13 @@ class Succeeded;
          a10     a11     ...
      a20     a21     a22 ...      view 1: a20 a30 a21 a31 ...
          a30     a31     ...
-	 \endverbatim
+         \endverbatim
   This (standard) interleaving is done because for 'odd' LOR_angles there
   is no LOR which goes through the origin.
 
 
   \par Interchanging the 2 detectors
-  
+
   When the ring difference = 0 (i.e. a 2D - or direct - sinogram),
   interchanging the 2 detectors does not change the LOR. This is why
   (in 2D) one gets away with a full sinogram size of
@@ -72,7 +73,7 @@ class Succeeded;
   - have 2 sinograms of the same size as in 2D, together with the rings
     as 'ordered pair' (i.e. ring_difference can be positive and negative).
   In STIR, we use the second convention.
-  
+
   \todo The detector specific functions possibly do not belong in this class.
   One can easily imagine a case where the theta,phi,s,t coordinates are as
   described, but there is no real correspondence with detectors (for instance,
@@ -94,49 +95,54 @@ public:
   //! Constructor completely specifying all parameters
   /*! \see ProjDataInfoCylindrical class documentation for info on parameters */
   ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-    const float ring_radius, const float angular_increment,
-    const  VectorWithOffset<int>& num_axial_pos_per_segment,
-    const  VectorWithOffset<int>& min_ring_diff_v, 
-    const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+                                   const float ring_radius,
+                                   const float angular_increment,
+                                   const VectorWithOffset<int>& num_axial_pos_per_segment,
+                                   const VectorWithOffset<int>& min_ring_diff_v,
+                                   const VectorWithOffset<int>& max_ring_diff_v,
+                                   const int num_views,
+                                   const int num_tangential_poss,
+                                   const int tof_mash_factor = 0);
 
   //! Constructor which gets \a ring_radius and \a angular_increment from the scanner
   /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring.
   \todo only suitable for full-ring PET scanners*/
-   ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-    const  VectorWithOffset<int>& num_axial_pos_per_segment,
-    const  VectorWithOffset<int>& min_ring_diff_v, 
-    const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+  ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
+                                   const VectorWithOffset<int>& num_axial_pos_per_segment,
+                                   const VectorWithOffset<int>& min_ring_diff_v,
+                                   const VectorWithOffset<int>& max_ring_diff_v,
+                                   const int num_views,
+                                   const int num_tangential_poss,
+                                   const int tof_mash_factor = 0);
 
-  ProjDataInfo* clone() const;
+  ProjDataInfo* clone() const override;
 
   bool operator==(const self_type&) const;
 
   //! Gets s coordinate in mm
-  /*! \warning   
-    This does \c not take the 'interleaving' into account which is 
+  /*! \warning
+    This does \c not take the 'interleaving' into account which is
     customarily applied to raw PET data.
   */
-  inline virtual float get_s(const Bin&) const;
+  inline float get_s(const Bin&) const override;
 
   //! Gets angular increment (in radians)
   inline float get_angular_increment() const;
 
-  virtual std::string parameter_info() const;
+  std::string parameter_info() const override;
 
   //! \name Functions that convert between bins and detection positions
-  //@{ 
+  //@{
   //! This gets view_num and tang_pos_num for a particular detector pair
-  /*! This function makes only sense if the scanner is a full-ring scanner 
+  /*! This function makes only sense if the scanner is a full-ring scanner
       with discrete detectors and there is no rotation or wobble.
 
       \arg view runs currently from 0 to num_views-1
 
       \arg tang_pos_num is centred around 0, where 0 corresponds
       to opposing detectors. The maximum range of tangential positions for any
-      scanner is -(num_detectors)/2<tang_pos_num<=-(num_detectors)/2+num_detectors, 
-      but this range is never used (as the 'last' tang_pos_num would be a LOR 
+      scanner is -(num_detectors)/2<tang_pos_num<=-(num_detectors)/2+num_detectors,
+      but this range is never used (as the 'last' tang_pos_num would be a LOR
       between two adjacent detectors).
 
       \arg det_num1, \a det_num2 run from 0 to num_detectors-1
@@ -149,108 +155,100 @@ public:
       \warning Will call error() if certain conditions are not met.
 
       \see get_det_num_pair_for_view_tangential_pos_num()
-  */			
-  inline bool 
-     get_view_tangential_pos_num_for_det_num_pair(int& view_num,
-						 int& tang_pos_num,
-						 const int det1_num,
-						 const int det2_num) const;
+  */
+  inline bool
+  get_view_tangential_pos_num_for_det_num_pair(int& view_num, int& tang_pos_num, const int det1_num, const int det2_num) const;
   //! This routine gets \a det_num1 and \a det_num2
-  /*! 
-      It sets the detectors in a particular order (i.e. it fixes the 
+  /*!
+      It sets the detectors in a particular order (i.e. it fixes the
       orientation of the LOR) corresponding to the detector pair belonging
       to a positive segment.
 
       \warning This currently only works when no mashing of views is used,
-      as otherwise there would be multiple detector pairs corresponding 
+      as otherwise there would be multiple detector pairs corresponding
       to a single bin.
-      
-      \see get_view_tangential_pos_num_for_det_num_pair() for info and 
+
+      \see get_view_tangential_pos_num_for_det_num_pair() for info and
       restrictions.
       \warning Will call error() if certain conditions are not met.
    */
   inline void
-    get_det_num_pair_for_view_tangential_pos_num(
-						 int& det1_num,
-						 int& det2_num,
-						 const int view_num,
-						 const int tang_pos_num) const;
+  get_det_num_pair_for_view_tangential_pos_num(int& det1_num, int& det2_num, const int view_num, const int tang_pos_num) const;
 
   //! This gets Bin coordinates for a particular detector pair
-  /*! 
-    Note that when axial compression and/or mashing is applied, this is a many-to-one relation, 
+  /*!
+    Note that when axial compression and/or mashing is applied, this is a many-to-one relation,
     i.e. multiple detector pairs contribute to one bin.
 
     \return Succeeded::yes when a corresponding bin is found in the range of projection data. Currently,
-    the Bin value is always set to 1. 
+    the Bin value is always set to 1.
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
     \todo use member template for the coordT type to support continuous detectors.
-  */		       
-  inline Succeeded 
-    get_bin_for_det_pos_pair(Bin&,
-			 const DetectionPositionPair<>&) const;
-
+  */
+  inline Succeeded get_bin_for_det_pos_pair(Bin&, const DetectionPositionPair<>&) const;
 
   //! This routine gets the detector pair corresponding to a bin.
-  /*! 
+  /*!
     \see get_det_pair_for_view_tangential_pos_num() for
     restrictions. In addition, this routine only works for span=1 data,
     i.e. no axial compression.
     \todo use member template for the coordT type to support continuous detectors.
     \warning Will call error() if certain conditions are not met.
   */
-  inline void
-    get_det_pos_pair_for_bin(DetectionPositionPair<>&,
-	                 const Bin&) const;
+  inline void get_det_pos_pair_for_bin(DetectionPositionPair<>&, const Bin&) const;
 
   //! This routine returns the number of detector pairs that correspond to a bin
-  unsigned int
-    get_num_det_pos_pairs_for_bin(const Bin&) const;
+  /*!
+    \see get_all_det_pos_pairs_for_bin(). This function return the size of its output.
+  */
+  unsigned int get_num_det_pos_pairs_for_bin(const Bin&, bool ignore_non_spatial_dimensions = true) const;
 
   //! This routine fills a vector with all the detector pairs that correspond to a bin.
-  /*!     
+  /*!
+    \param[in] ignore_non_spatial_dimensions if \c true, only 1 \c timing_pos_num
+       will be set, i.e. only the detection positions are returned, not TOF (nor energy)
+
     \see ProjDataInfoCylindrical::get_all_ring_pairs_for_segment_axial_pos_num
-    for restrictions. 
-    \todo It might be possible to return some weight factors in case there is 
-    no many-to-one correspondence between detection positions and bins 
-    (for instance for continuous detectors, or rotating scanners, or 
+    for restrictions.
+    \todo It might be possible to return some weight factors in case there is
+    no many-to-one correspondence between detection positions and bins
+    (for instance for continuous detectors, or rotating scanners, or
     arc-corrected data).
   */
-  void
-    get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<> >&,
-				  const Bin&) const;
+  void get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<>>&,
+                                     const Bin&,
+                                     bool ignore_non_spatial_dimensions = true) const;
 
+private:
+  // old function, now private. Use get_bin_for_det_pos_pair instead.
   //! This gets Bin coordinates for a particular detector pair
-  /*! 
+  /*!
     \return Succeeded::yes when a corresponding segment is found
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
     \obsolete
-  */		       
-  inline Succeeded 
-    get_bin_for_det_pair(Bin&,
-			 const int det1_num, const int ring1_num,
-			 const int det2_num, const int ring2_num) const;
-
-
-  //! This routine gets the detector pair corresponding to a bin.
-  /*! 
-    \see get_det_pair_for_view_tangential_pos_num() for
-    restrictions. In addition, this routine only works for span=1 data,
-    i.e. no axial compression.
-    \obsolete
+    \warning Takes a "TOF-mashed" bin as argument ATM.
   */
-  inline void
-    get_det_pair_for_bin(
-			 int& det1_num, int& ring1_num,
-			 int& det2_num, int& ring2_num,
-			 const Bin&) const;
+  inline Succeeded get_bin_for_det_pair(Bin&,
+                                        const int det1_num,
+                                        const int ring1_num,
+                                        const int det2_num,
+                                        const int ring2_num,
+                                        const int mashed_timing_pos_num = 0) const;
+
+public:
+  //! This routine gets the detector pair corresponding to a bin.
+  /*!
+  \see get_det_pair_for_view_tangential_pos_num() for
+  restrictions. In addition, this routine only works for span=1 data,
+  i.e. no axial compression.
+  \obsolete
+  */
+
+  inline void get_det_pair_for_bin(int& det_num1, int& ring_num1, int& det_num2, int& ring_num2, const Bin& bin) const;
 
   //@}
 
-  virtual 
-    Bin
-    get_bin(const LOR<float>&) const;
-
+  Bin get_bin(const LOR<float>&, const double delta_time) const override;
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
@@ -259,26 +257,31 @@ public:
     is zero in the first ring, while for get_m() etc it is zero in the centre of the scanner.
     \obsolete
   */
-  Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
-					             const CartesianCoordinate3D<float>& c1,
-						     const CartesianCoordinate3D<float>& c2) const;
-  
-  void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
-					       CartesianCoordinate3D<float>& coord_2,
-					       const Bin& bin) const;
+  Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1,
+                                                                 int& det2,
+                                                                 int& ring1,
+                                                                 int& ring2,
+                                                                 const CartesianCoordinate3D<float>& c1,
+                                                                 const CartesianCoordinate3D<float>& c2) const;
 
-  void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
-							     CartesianCoordinate3D<float>& coord_2,
-							     const int Ring_A,const int Ring_B, 
-							     const int det1, const int det2) const;
- 
+  void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
+                                               CartesianCoordinate3D<float>& coord_2,
+                                               const Bin& bin) const;
+
+  void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
+                                                            CartesianCoordinate3D<float>& coord_2,
+                                                            const int Ring_A,
+                                                            const int Ring_B,
+                                                            const int det1,
+                                                            const int det2,
+                                                            const int timing_pos_num) const;
+
   void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
-						  const CartesianCoordinate3D<float>& coord_1,
-						  const CartesianCoordinate3D<float>& coord_2) const;
+                                                         const CartesianCoordinate3D<float>& coord_1,
+                                                         const CartesianCoordinate3D<float>& coord_2) const;
   //@}
 
 private:
-  
   float ring_radius;
   float angular_increment;
 
@@ -286,16 +289,25 @@ private:
   float get_psi_offset() const;
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
-  struct Det1Det2 { int det1_num; int det2_num; };
-  mutable VectorWithOffset< VectorWithOffset<Det1Det2> > uncompressed_view_tangpos_to_det1det2;
+  struct Det1Det2
+  {
+    int det1_num;
+    int det2_num;
+  };
+  mutable VectorWithOffset<VectorWithOffset<Det1Det2>> uncompressed_view_tangpos_to_det1det2;
   mutable bool uncompressed_view_tangpos_to_det1det2_initialised;
   //! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
   void initialise_uncompressed_view_tangpos_to_det1det2() const;
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
   // we prestore a lookup-table in terms for unmashed view/tangpos
-  struct ViewTangPosSwap { int view_num; int tang_pos_num; bool swap_detectors; };
-  mutable VectorWithOffset< VectorWithOffset<ViewTangPosSwap> > det1det2_to_uncompressed_view_tangpos;
+  struct ViewTangPosSwap
+  {
+    int view_num;
+    int tang_pos_num;
+    bool swap_detectors;
+  };
+  mutable VectorWithOffset<VectorWithOffset<ViewTangPosSwap>> det1det2_to_uncompressed_view_tangpos;
   mutable bool det1det2_to_uncompressed_view_tangpos_initialised;
   //! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
   void initialise_det1det2_to_uncompressed_view_tangpos() const;
@@ -305,8 +317,7 @@ private:
   //! build look-up table unless already done before
   inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
 
-  virtual bool blindly_equals(const root_type * const) const;
-
+  bool blindly_equals(const root_type* const) const override;
 };
 
 END_NAMESPACE_STIR

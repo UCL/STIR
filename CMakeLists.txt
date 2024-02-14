@@ -5,11 +5,7 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
-if (CMAKE_HOST_WIN32)
-  cmake_minimum_required(VERSION 3.12.0)
-else()
-  cmake_minimum_required(VERSION 3.1.0)
-endif()
+cmake_minimum_required(VERSION 3.14.0)
 
 # enable ccache https://ccache.samba.org/
 find_program(CCACHE_PROGRAM ccache)
@@ -35,7 +31,9 @@ endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
-UseCXX(11)
+# minimum C++ version required (you can still ask for a more recent one
+# by setting CMAKE_CXX_STANDARD)
+UseCXX(14)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -55,31 +53,34 @@ else()
 endif()
 
 ####### Set Version number etc
-set(VERSION_MAJOR   5)
-set(VERSION_MINOR   2)
+set(VERSION_MAJOR   6)
+set(VERSION_MINOR   0)
 set(VERSION_PATCH   0)
-set(VERSION   050200) # only used in STIRConfig.h.in
+set(VERSION   060000) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 ####### Installation directories
 # Note: using absolute paths for those variables that are used in STIRConfig.h.in
+set(STIR_VERSION_MM STIR-${VERSION_MAJOR}.${VERSION_MINOR})
 
 # Use BeOS locations as in
 # https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
 # However, use CYGWIN location also elsewhere (as that's what's used in Ubuntu (and others?))
 if(BEOS)
-  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/documentation/doc/${STIR_VERSION_MM}")
 else() #if(CYGWIN)
-  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/${STIR_VERSION_MM}")
 #else()
-#  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+#  set(STIR_DOC_DIR "doc/${STIR_VERSION_MM}")
 endif()
-# TODO append version numbers
-set(STIR_DATA_DIR "share/stir")
-set(ConfigPackageLocation lib/cmake/)
-set(STIR_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/stir/config" CACHE PATH "") 
+set(STIR_DATA_DIR "share/${STIR_VERSION_MM}")
+set(ConfigPackageLocation "lib/cmake/${STIR_VERSION_MM}")
+# installed json files
+set(STIR_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/${STIR_VERSION_MM}/config")
+# include files
+set(STIR_INCLUDE_INSTALL_DIR "include/${STIR_VERSION_MM}")
 
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
@@ -93,8 +94,6 @@ find_package( Boost 1.36.0 REQUIRED )
 # Listed here such that we know if we should compile extra utilities
 option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
 option(DISABLE_ITK "disable use of ITK library" OFF)
-option(DISABLE_AVW "disable use of AVW library" OFF)
-option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_HDF5 "disable use of HDF5 libraries" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
@@ -127,14 +126,6 @@ if(NOT DISABLE_CERN_ROOT)
         UseCXX(14)
     endif()
   endif()
-endif()
-
-if(NOT DISABLE_AVW)
-  find_package(AVW)
-endif()
-
-if(NOT DISABLE_RDF)
-  find_package(RDF)
 endif()
 
 if(NOT DISABLE_HDF5)
@@ -197,7 +188,7 @@ endif()
 
 # Parallelproj
 if(NOT DISABLE_Parallelproj_PROJECTOR)
-    find_package(parallelproj 1.0.1 CONFIG)
+    find_package(parallelproj 1.3.4 CONFIG)
     if (parallelproj_FOUND)
       set(STIR_WITH_Parallelproj_PROJECTOR ON)
       if (parallelproj_built_with_CUDA)
@@ -242,19 +233,14 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 
 # Set STIR_INCLUDE_DIRS before exporting such that it will refer to
 # the installed files, not the source.
-set (STIR_INCLUDE_DIRS "include")
+set (STIR_INCLUDE_DIRS "${STIR_INCLUDE_INSTALL_DIR}")
 
 
 # Older CMake cannot import or export object libraries. So we have to export
 # the sources and tell the user to explicitly use STIR_REGISTRIES.
 # This will be set to either a list of source files, or a list of object files.
 # See STIRConfig.cmake.in on how we cope with this
-if (CMAKE_VERSION VERSION_LESS 3.12)
-  message(WARNING "Your CMake version is older than 3.12. The STIR_REGISTRIES
-    will be exported as source files only. Please upgrade CMake!")
-else()
-  install(TARGETS stir_registries EXPORT STIRTargets DESTINATION lib)
-endif()
+install(TARGETS stir_registries EXPORT STIRTargets DESTINATION lib)
 
 # install the registry sources for older CMake versions
 install(FILES ${STIR_REGISTRIES} DESTINATION ${STIR_DATA_DIR}/src)

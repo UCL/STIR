@@ -35,24 +35,22 @@ using std::string;
 
 START_NAMESPACE_STIR
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_defaults()
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_defaults()
 {
   base_type::set_defaults();
 
-  this->sensitivity_filename = "";  
-  this->subsensitivity_filenames = "";  
+  this->sensitivity_filename = "";
+  this->subsensitivity_filenames = "";
   this->recompute_sensitivity = false;
   this->use_subset_sensitivities = true;
   this->subsensitivity_sptrs.resize(0);
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-initialise_keymap()
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::initialise_keymap()
 {
   base_type::initialise_keymap();
 
@@ -60,13 +58,11 @@ initialise_keymap()
   this->parser.add_key("subset sensitivity filenames", &this->subsensitivity_filenames);
   this->parser.add_key("recompute sensitivity", &this->recompute_sensitivity);
   this->parser.add_key("use_subset_sensitivities", &this->use_subset_sensitivities);
-
 }
 
-template<typename TargetT>
+template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-post_processing()
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::post_processing()
 {
   if (base_type::post_processing() == true)
     return true;
@@ -74,206 +70,189 @@ post_processing()
   return false;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 std::string
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_sensitivity_filename() const
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::get_sensitivity_filename() const
 {
   return this->sensitivity_filename;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 std::string
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_subsensitivity_filenames() const
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::get_subsensitivity_filenames() const
 {
   return this->subsensitivity_filenames;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_sensitivity_filename(const std::string& filename)
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_sensitivity_filename(const std::string& filename)
 {
+  this->already_set_up = false;
   this->sensitivity_filename = filename;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_subsensitivity_filenames(const std::string& filenames)
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_subsensitivity_filenames(const std::string& filenames)
 {
+  this->already_set_up = false;
   this->subsensitivity_filenames = filenames;
   try
     {
-      const std::string test_sensitivity_filename =
-	boost::str(boost::format(this->subsensitivity_filenames) % 0);
+      const std::string test_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % 0);
     }
   catch (std::exception& e)
     {
-      error("argument %s to set_subsensitivity_filenames is invalid (see boost::format documentation)\n. Error message: %s", filenames.c_str(), e.what());
+      error("argument %s to set_subsensitivity_filenames is invalid (see boost::format documentation)\n. Error message: %s",
+            filenames.c_str(),
+            e.what());
     }
-
 }
 
-
-template<typename TargetT>
-shared_ptr<TargetT> 
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_subset_sensitivity_sptr(const int subset_num) const
+template <typename TargetT>
+shared_ptr<TargetT>
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::get_subset_sensitivity_sptr(const int subset_num) const
 {
   return this->subsensitivity_sptrs[subset_num];
 }
 
-template<typename TargetT>
+template <typename TargetT>
 const TargetT&
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_subset_sensitivity(const int subset_num) const
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::get_subset_sensitivity(const int subset_num) const
 {
   return *get_subset_sensitivity_sptr(subset_num);
 }
 
-template<typename TargetT>
+template <typename TargetT>
 const TargetT&
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_sensitivity() const
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::get_sensitivity() const
 {
   return *this->sensitivity_sptr;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_recompute_sensitivity() const
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::get_recompute_sensitivity() const
 {
   return this->recompute_sensitivity;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_recompute_sensitivity(const bool arg)
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_recompute_sensitivity(const bool arg)
 {
   this->recompute_sensitivity = arg;
-
 }
 
-template<typename TargetT>
+template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_use_subset_sensitivities() const
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::get_use_subset_sensitivities() const
 {
   return this->use_subset_sensitivities;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_use_subset_sensitivities(const bool arg)
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_use_subset_sensitivities(const bool arg)
 {
+  this->already_set_up = this->already_set_up && (this->use_subset_sensitivities == arg);
   this->use_subset_sensitivities = arg;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_subset_sensitivity_sptr(const shared_ptr<TargetT>& arg, const int subset_num)
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_subset_sensitivity_sptr(const shared_ptr<TargetT>& arg,
+                                                                                 const int subset_num)
 {
+  this->already_set_up = false;
   this->subsensitivity_sptrs[subset_num] = arg;
 }
 
-template<typename TargetT>
-Succeeded 
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_up(shared_ptr<TargetT> const& target_sptr)
+template <typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_up(shared_ptr<TargetT> const& target_sptr)
 {
   if (base_type::set_up(target_sptr) != Succeeded::yes)
     return Succeeded::no;
 
   this->subsensitivity_sptrs.resize(this->num_subsets);
 
-  if(!this->recompute_sensitivity)
-    {      
-      if(is_null_ptr(this->subsensitivity_sptrs[0]) &&
-         ((this->get_use_subset_sensitivities() && this->subsensitivity_filenames=="") ||
-          (!this->get_use_subset_sensitivities() && this->sensitivity_filename=="")))
+  if (!this->recompute_sensitivity)
+    {
+      if (is_null_ptr(this->subsensitivity_sptrs[0])
+          && ((this->get_use_subset_sensitivities() && this->subsensitivity_filenames == "")
+              || (!this->get_use_subset_sensitivities() && this->sensitivity_filename == "")))
         {
           info("(subset)sensitivity filename(s) not set so I will compute the (subset)sensitivities", 2);
           this->recompute_sensitivity = true;
           // initialisation of pointers will be done below
         }
-      else if(this->sensitivity_filename=="1")
+      else if (this->sensitivity_filename == "1")
         {
           if (this->get_use_subset_sensitivities())
             {
               error("PoissonLogLikelihoodWithLinearModelForMean limitation:\n"
-                      "currently cannot use subset_sensitivities if sensitivity is forced to 1");
+                    "currently cannot use subset_sensitivities if sensitivity is forced to 1");
               return Succeeded::no;
             }
           this->sensitivity_sptr.reset(target_sptr->get_empty_copy());
-          std::fill(this->sensitivity_sptr->begin_all(), this->sensitivity_sptr->end_all(), 1);  
+          std::fill(this->sensitivity_sptr->begin_all(), this->sensitivity_sptr->end_all(), 1);
         }
       else
         {
           // read from file
-          try 
+          try
             {
               if (this->get_use_subset_sensitivities())
                 {
-		  if (this->subsensitivity_filenames.empty())
-		    {
-		      error("'subset sensitivity filenames' is empty. You need to set this before using it.");
-		      return Succeeded::no;
-		    }
+                  if (this->subsensitivity_filenames.empty())
+                    {
+                      error("'subset sensitivity filenames' is empty. You need to set this before using it.");
+                      return Succeeded::no;
+                    }
                   // read subsensitivies
-                  for (int subset=0; subset<this->get_num_subsets(); ++subset)
+                  for (int subset = 0; subset < this->get_num_subsets(); ++subset)
                     {
                       std::string current_sensitivity_filename;
                       try
                         {
-                          current_sensitivity_filename =
-                            boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                          current_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % subset);
                         }
                       catch (std::exception& e)
                         {
                           error(boost::format("Error using 'subset sensitivity filenames' pattern (which is set to '%1%'). "
-                                                "Check syntax for boost::format. Error is:\n%2%") %
-                                  this->subsensitivity_filenames % e.what());
+                                              "Check syntax for boost::format. Error is:\n%2%")
+                                % this->subsensitivity_filenames % e.what());
                           return Succeeded::no;
                         }
                       info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
 
-                      this->subsensitivity_sptrs[subset] = 
-                        read_from_file<TargetT>(current_sensitivity_filename);   
+                      this->subsensitivity_sptrs[subset] = read_from_file<TargetT>(current_sensitivity_filename);
                       string explanation;
-                      if (!target_sptr->has_same_characteristics(*this->subsensitivity_sptrs[subset], 
-                                                                 explanation))
+                      if (!target_sptr->has_same_characteristics(*this->subsensitivity_sptrs[subset], explanation))
                         {
-                          error("sensitivity and target should have the same characteristics.\n%s",
-                                  explanation.c_str());
+                          error("sensitivity and target should have the same characteristics.\n%s", explanation.c_str());
                           return Succeeded::no;
                         }
                     }
                 }
               else
                 {
-		  if (this->sensitivity_filename.empty())
-		    {
-		      error("'sensitivity filename' is empty. You need to set this before using it.");
-		      return Succeeded::no;
-		    }
+                  if (this->sensitivity_filename.empty())
+                    {
+                      error("'sensitivity filename' is empty. You need to set this before using it.");
+                      return Succeeded::no;
+                    }
                   // reading single sensitivity
-                  const std::string current_sensitivity_filename =
-                    this->sensitivity_filename;
+                  const std::string current_sensitivity_filename = this->sensitivity_filename;
                   info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
 
                   this->sensitivity_sptr = read_from_file<TargetT>(current_sensitivity_filename);
                   string explanation;
-                  if (!target_sptr->has_same_characteristics(*this->sensitivity_sptr, 
-                                                             explanation))
+                  if (!target_sptr->has_same_characteristics(*this->sensitivity_sptr, explanation))
                     {
-                      error("sensitivity and target should have the same characteristics.\n%s",
-                              explanation.c_str());
+                      error("sensitivity and target should have the same characteristics.\n%s", explanation.c_str());
                       return Succeeded::no;
                     }
                 }
@@ -293,15 +272,15 @@ set_up(shared_ptr<TargetT> const& target_sptr)
       return Succeeded::no;
     }
 
-  if(!this->subsets_are_approximately_balanced() && !this->get_use_subset_sensitivities())
+  if (!this->subsets_are_approximately_balanced() && !this->get_use_subset_sensitivities())
     {
       error("Number of subsets %d is such that subsets will be very unbalanced.\n"
-              "You need to set 'use_subset_sensitivities' to true to handle this.",
-              this->num_subsets);
+            "You need to set 'use_subset_sensitivities' to true to handle this.",
+            this->num_subsets);
       return Succeeded::no;
     }
 
-  if(this->recompute_sensitivity)
+  if (this->recompute_sensitivity)
     {
       info("Computing sensitivity");
       CPUTimer sens_timer;
@@ -318,27 +297,24 @@ set_up(shared_ptr<TargetT> const& target_sptr)
         {
           if (this->get_use_subset_sensitivities())
             {
-              if (this->subsensitivity_filenames.size()!=0)
+              if (this->subsensitivity_filenames.size() != 0)
                 {
-                  for (int subset=0; subset<this->get_num_subsets(); ++subset)
+                  for (int subset = 0; subset < this->get_num_subsets(); ++subset)
                     {
-                      const std::string current_sensitivity_filename =
-                        boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                      const std::string current_sensitivity_filename
+                          = boost::str(boost::format(this->subsensitivity_filenames) % subset);
                       info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
-                      write_to_file(current_sensitivity_filename,
-                                    this->get_subset_sensitivity(subset));
+                      write_to_file(current_sensitivity_filename, this->get_subset_sensitivity(subset));
                     }
                 }
             }
           else
             {
-              if (this->sensitivity_filename.size()!=0)
-                {            
-                  const std::string current_sensitivity_filename =
-                    this->sensitivity_filename;
+              if (this->sensitivity_filename.size() != 0)
+                {
+                  const std::string current_sensitivity_filename = this->sensitivity_filename;
                   info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
-                  write_to_file(current_sensitivity_filename,
-                                  this->get_sensitivity());
+                  write_to_file(current_sensitivity_filename, this->get_sensitivity());
                 }
             }
         }
@@ -348,54 +324,51 @@ set_up(shared_ptr<TargetT> const& target_sptr)
           return Succeeded::no;
         }
     }
-      
+  this->already_set_up = true;
   return Succeeded::yes;
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-compute_sub_gradient_without_penalty(TargetT& gradient, 
-                                     const TargetT &current_estimate, 
-                                     const int subset_num)
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::compute_sub_gradient_without_penalty(TargetT& gradient,
+                                                                                          const TargetT& current_estimate,
+                                                                                          const int subset_num)
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   this->actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, false);
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
-                                                      const TargetT &current_estimate,
-                                                      const int subset_num)
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::compute_sub_gradient_without_penalty_plus_sensitivity(
+    TargetT& gradient, const TargetT& current_estimate, const int subset_num)
 {
+  if (!this->already_set_up)
+    error("Need to call set_up() for objective function first");
   actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, true);
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-compute_sensitivities()
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::compute_sensitivities()
 {
   // check subset balancing
   if (this->use_subset_sensitivities == false)
-  {
-    std::string warning_message = "PoissonLogLikelihoodWithLinearModelForMean:\n";
-    if (!this->subsets_are_approximately_balanced(warning_message))
-      {
-        error("%s\n . you need to set use_subset_sensitivities to true",
-                warning_message.c_str());
-      }
-  } // end check balancing
+    {
+      std::string warning_message = "PoissonLogLikelihoodWithLinearModelForMean:\n";
+      if (!this->subsets_are_approximately_balanced(warning_message))
+        {
+          error("%s\n . you need to set use_subset_sensitivities to true", warning_message.c_str());
+        }
+    } // end check balancing
 
   // compute subset sensitivities
-  for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
+  for (int subset_num = 0; subset_num < this->num_subsets; ++subset_num)
     {
       if (subset_num == 0)
         {
-          std::fill(this->subsensitivity_sptrs[subset_num]->begin_all(), 
-                    this->subsensitivity_sptrs[subset_num]->end_all(), 
-                    0);
+          std::fill(this->subsensitivity_sptrs[subset_num]->begin_all(), this->subsensitivity_sptrs[subset_num]->end_all(), 0);
         }
       else
         {
@@ -416,7 +389,7 @@ compute_sensitivities()
     }
   if (!this->get_use_subset_sensitivities())
     {
-      // copy full sensitivity (currently stored in subsensitivity[0]) 
+      // copy full sensitivity (currently stored in subsensitivity[0])
       this->sensitivity_sptr = this->subsensitivity_sptrs[0];
       this->subsensitivity_sptrs[0].reset();
     }
@@ -424,23 +397,23 @@ compute_sensitivities()
   this->set_total_or_subset_sensitivities();
 }
 
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_total_or_subset_sensitivities()
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_total_or_subset_sensitivities()
 {
   if (this->get_use_subset_sensitivities())
     {
       // add subset sensitivities, just in case we need the total somewhere
       this->sensitivity_sptr.reset(this->subsensitivity_sptrs[0]->clone());
-      for (int subset_num=1; subset_num<this->num_subsets; ++subset_num)
+      for (int subset_num = 1; subset_num < this->num_subsets; ++subset_num)
         {
           typename TargetT::full_iterator sens_iter = this->sensitivity_sptr->begin_all();
           typename TargetT::full_iterator subsens_iter = this->subsensitivity_sptrs[subset_num]->begin_all();
           while (sens_iter != this->sensitivity_sptr->end_all())
             {
               *sens_iter += *subsens_iter;
-              ++sens_iter; ++ subsens_iter;
+              ++sens_iter;
+              ++subsens_iter;
             }
         }
     }
@@ -456,40 +429,33 @@ set_total_or_subset_sensitivities()
           *subsens_iter /= this->num_subsets;
         }
       // set all other pointers the same
-      for (int subset_num=1; subset_num<this->num_subsets; ++subset_num)
+      for (int subset_num = 1; subset_num < this->num_subsets; ++subset_num)
         this->subsensitivity_sptrs[subset_num] = this->subsensitivity_sptrs[0];
     }
-
 }
 
-
-template<typename TargetT>
+template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-fill_nonidentifiable_target_parameters(TargetT& target, const float value) const
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::fill_nonidentifiable_target_parameters(TargetT& target,
+                                                                                            const float value) const
 {
   typename TargetT::full_iterator target_iter = target.begin_all();
   typename TargetT::full_iterator target_end_iter = target.end_all();
-  typename TargetT::const_full_iterator sens_iter = 
-    this->get_sensitivity().begin_all_const();
-  
-  for (;
-       target_iter != target_end_iter;
-       ++target_iter, ++sens_iter)
+  typename TargetT::const_full_iterator sens_iter = this->get_sensitivity().begin_all_const();
+
+  for (; target_iter != target_end_iter; ++target_iter, ++sens_iter)
     {
       if (*sens_iter == 0)
         *target_iter = value;
     }
 }
 
-#  ifdef _MSC_VER
-// prevent warning message on instantiation of abstract class 
-#  pragma warning(disable:4661)
-#  endif
+#ifdef _MSC_VER
+// prevent warning message on instantiation of abstract class
+#  pragma warning(disable : 4661)
+#endif
 
-template class PoissonLogLikelihoodWithLinearModelForMean<DiscretisedDensity<3,float> >;
-template class PoissonLogLikelihoodWithLinearModelForMean<ParametricVoxelsOnCartesianGrid >; 
+template class PoissonLogLikelihoodWithLinearModelForMean<DiscretisedDensity<3, float>>;
+template class PoissonLogLikelihoodWithLinearModelForMean<ParametricVoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR
-
-

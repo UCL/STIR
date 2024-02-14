@@ -4,7 +4,7 @@
 #  Copyright (C) 2000 - 2001 PARAPET partners
 #  Copyright (C) 2001 - 2009-10-11, Hammersmith Imanet Ltd
 #  Copyright (C) 2011, Kris Thielemans
-#  Copyright (C) 2013 - 2014, University College London
+#  Copyright (C) 2013 - 2014, 2024, University College London
 #  This file is part of STIR.
 #
 #  SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -19,7 +19,7 @@ if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
     set -e
 fi
 
-echo This script should work with STIR version 5.2. If you have
+echo This script should work with STIR version 6.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -96,16 +96,20 @@ echo --------- TESTS THAT USE INTERPOLATING BACKPROJECTOR --------
 echo
 echo ------------- Running OSMAPOSL for sensitivity ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
-${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> OSMAPOSL_test_for_sensitivity.log 2> OSMAPOSL_test_for_sensitivity_stderr.log 
-
-echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
-echo Running ${INSTALL_DIR}compare_image
-if ${INSTALL_DIR}compare_image RPTsens_seg4.hv my_RPTsens_seg4.hv;
+if ${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> OSMAPOSL_test_for_sensitivity.log 2> OSMAPOSL_test_for_sensitivity_stderr.log
 then
-echo ---- This test seems to be ok !;
+    echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
+    echo Running ${INSTALL_DIR}compare_image
+    if ${INSTALL_DIR}compare_image RPTsens_seg4.hv my_RPTsens_seg4.hv;
+    then
+        echo ---- This test seems to be ok !;
+    else
+        echo There were problems here!;
+        ThereWereErrors=1;
+    fi
 else
-echo There were problems here!;
-ThereWereErrors=1;
+    echo There were problems here!;
+    ThereWereErrors=1;
 fi
 
 echo
@@ -143,17 +147,22 @@ ${INSTALL_DIR}generate_image generate_uniform_image.par
 ${INSTALL_DIR}postfilter my_uniform_image_circular.hv my_uniform_image.hv postfilter_truncate_circular_FOV.par
 echo ------------- Running OSMAPOSL for sensitivity ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
-${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
-
-echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
-echo Running ${INSTALL_DIR}compare_image
-if ${INSTALL_DIR}compare_image RPTsens_seg3_PM.hv my_RPTsens_seg3_PM.hv;
+if ${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
 then
-echo ---- This test seems to be ok !;
+    echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
+    echo Running ${INSTALL_DIR}compare_image
+    if ${INSTALL_DIR}compare_image RPTsens_seg3_PM.hv my_RPTsens_seg3_PM.hv;
+    then
+        echo ---- This test seems to be ok !;
+    else
+        echo There were problems here!;
+        ThereWereErrors=1;
+    fi
 else
-echo There were problems here!;
-ThereWereErrors=1;
+    echo There were problems here!;
+    ThereWereErrors=1;
 fi
+
 
 echo
 echo -------- Running OSMAPOSL  with the MRP prior -------- 

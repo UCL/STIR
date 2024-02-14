@@ -10,7 +10,7 @@
 */
 
 /*!
-  \file 
+  \file
   \ingroup test
   \ingroup ancillary
   \brief A simple program to test stir::RadionuclideDB and stir::Radionuclide
@@ -23,7 +23,6 @@
 
 #include <iostream>
 
-
 START_NAMESPACE_STIR
 
 /*!
@@ -34,9 +33,8 @@ START_NAMESPACE_STIR
 class RadionuclideTest : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
-
 
 void
 RadionuclideTest::run_tests()
@@ -55,14 +53,14 @@ RadionuclideTest::run_tests()
   check_if_equal(F18_rnuclide.get_energy(), 511.F, "check on F18 energy");
   check_if_equal(F18_rnuclide.get_branching_ratio(), 0.9686F, "check on F-18 branching ratio");
   check(F18_rnuclide.get_modality() == pt_mod, "check on F-18 modality");
-    
+
   const auto Tc99m_rnuclide = db.get_radionuclide(nm_mod, "^99m^Technetium");
   std::cerr << "Tc-99m radionuclide: " << Tc99m_rnuclide.parameter_info();
   check_if_equal(Tc99m_rnuclide.get_half_life(), 21624.12, "check on Tc-99m half-life");
   check_if_equal(Tc99m_rnuclide.get_energy(), 140.511F, "check on Tc-99m energy");
   check_if_equal(Tc99m_rnuclide.get_branching_ratio(), 0.885F, "check on Tc-99m branching ratio");
   check(Tc99m_rnuclide.get_modality() == nm_mod, "check on Tc-99m modality");
-  
+
   std::cerr << "Testing defaults\n";
   {
     // PET
@@ -99,32 +97,25 @@ RadionuclideTest::run_tests()
     check_if_equal(Y90_rnuclide_PET.get_energy(), 511.F, "check on Y90 (PET) energy");
     check_if_equal(Y90_rnuclide_PET.get_branching_ratio(), 0.0000319F, "check on Y90 (PET) branching ratio");
     check(Y90_rnuclide_PET.get_modality() == pt_mod, "check on Y90 (PET) modality");
-
   }
-  
+
   std::cerr << "Testing lookup-table and database\n";
   {
     check(F18_rnuclide == db.get_radionuclide(pt_mod, "F-18"), "alias F-18");
     check(F18_rnuclide == db.get_radionuclide(pt_mod, "18F"), "alias 18F");
     check(Tc99m_rnuclide == db.get_radionuclide(nm_mod, "Tc-99m"), "alias Tc-99m");
     check(Tc99m_rnuclide == db.get_radionuclide(nm_mod, "99mTc"), "alias 99mTc");
-    check_if_equal(db.get_radionuclide(pt_mod, "^11^Carbon").get_half_life(), 1221.66F,
-                   "C11 half-life");
+    check_if_equal(db.get_radionuclide(pt_mod, "^11^Carbon").get_half_life(), 1221.66F, "C11 half-life");
   }
-#endif    
-
+#endif
 }
-
 
 END_NAMESPACE_STIR
 
-
-
 USING_NAMESPACE_STIR
 
-
-
-int main()
+int
+main()
 {
   RadionuclideTest tests;
   tests.run_tests();

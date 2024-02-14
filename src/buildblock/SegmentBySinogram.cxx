@@ -29,119 +29,105 @@
 
 START_NAMESPACE_STIR
 
-
-
 template <typename elemT>
-SegmentBySinogram<elemT> ::
-SegmentBySinogram(const Array<3,elemT>& v, 
-		  const shared_ptr<const ProjDataInfo>& pdi_ptr,
-		  const SegmentIndices& ind)
-  : 
-  Segment<elemT>(pdi_ptr, ind),
-  Array<3,elemT>(v)
+SegmentBySinogram<elemT>::SegmentBySinogram(const Array<3, elemT>& v,
+                                            const shared_ptr<const ProjDataInfo>& pdi_ptr,
+                                            const SegmentIndices& ind)
+    : Segment<elemT>(pdi_ptr, ind),
+      Array<3, elemT>(v)
 {
-  assert( get_min_view_num() == pdi_ptr->get_min_view_num());
-  assert( get_max_view_num() == pdi_ptr->get_max_view_num());
-  assert( get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(ind.segment_num()));
-  assert( get_max_axial_pos_num() == pdi_ptr->get_max_axial_pos_num(ind.segment_num()));
-  assert( get_min_tangential_pos_num() == pdi_ptr->get_min_tangential_pos_num());
-  assert( get_max_tangential_pos_num() == pdi_ptr->get_max_tangential_pos_num());
+  assert(get_min_view_num() == pdi_ptr->get_min_view_num());
+  assert(get_max_view_num() == pdi_ptr->get_max_view_num());
+  assert(get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(ind.segment_num()));
+  assert(get_max_axial_pos_num() == pdi_ptr->get_max_axial_pos_num(ind.segment_num()));
+  assert(get_min_tangential_pos_num() == pdi_ptr->get_min_tangential_pos_num());
+  assert(get_max_tangential_pos_num() == pdi_ptr->get_max_tangential_pos_num());
 }
 
-template <typename elemT>  
-SegmentBySinogram<elemT> ::
-SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr,
-		  const SegmentIndices& ind)
-  : 
-  Segment<elemT>(pdi_ptr, ind),
-  Array<3,elemT>(IndexRange3D(pdi_ptr->get_min_axial_pos_num(ind.segment_num()),
-                              pdi_ptr->get_max_axial_pos_num(ind.segment_num()),
-                              pdi_ptr->get_min_view_num(),
-                              pdi_ptr->get_max_view_num(),
-                              pdi_ptr->get_min_tangential_pos_num(),
-                              pdi_ptr->get_max_tangential_pos_num()))
+template <typename elemT>
+SegmentBySinogram<elemT>::SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr, const SegmentIndices& ind)
+    : Segment<elemT>(pdi_ptr, ind),
+      Array<3, elemT>(IndexRange3D(pdi_ptr->get_min_axial_pos_num(ind.segment_num()),
+                                   pdi_ptr->get_max_axial_pos_num(ind.segment_num()),
+                                   pdi_ptr->get_min_view_num(),
+                                   pdi_ptr->get_max_view_num(),
+                                   pdi_ptr->get_min_tangential_pos_num(),
+                                   pdi_ptr->get_max_tangential_pos_num()))
 {}
 
 template <typename elemT>
-SegmentBySinogram<elemT>::
-SegmentBySinogram(const Array<3,elemT>& v,
-		  const shared_ptr<const ProjDataInfo>& pdi_sptr,
-		  int segment_num)
-  :
-  SegmentBySinogram(v, pdi_sptr, SegmentIndices(segment_num))
+SegmentBySinogram<elemT>::SegmentBySinogram(const Array<3, elemT>& v,
+                                            const shared_ptr<const ProjDataInfo>& pdi_sptr,
+                                            int segment_num,
+                                            int timing_pos_num)
+    : SegmentBySinogram(v, pdi_sptr, SegmentIndices(segment_num, timing_pos_num))
 {}
 
 template <typename elemT>
-SegmentBySinogram<elemT>::
-SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
-		  const int segment_num)
-  :
-  SegmentBySinogram(pdi_sptr, SegmentIndices(segment_num))
+SegmentBySinogram<elemT>::SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
+                                            const int segment_num,
+                                            const int t_num)
+    : SegmentBySinogram(pdi_sptr, SegmentIndices(segment_num, t_num))
 {}
 
 template <typename elemT>
-SegmentBySinogram<elemT>::
-SegmentBySinogram(const SegmentByView<elemT>& s_v )
-  : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(),
-                   s_v.get_segment_indices()),
-   Array<3,elemT> (IndexRange3D (s_v.get_min_axial_pos_num(), s_v.get_max_axial_pos_num(),
-		                 s_v.get_min_view_num(), s_v.get_max_view_num(),
-		                 s_v.get_min_tangential_pos_num(), s_v.get_max_tangential_pos_num()))
+SegmentBySinogram<elemT>::SegmentBySinogram(const SegmentByView<elemT>& s_v)
+
+    : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(), s_v.get_segment_indices()),
+      Array<3, elemT>(IndexRange3D(s_v.get_min_axial_pos_num(),
+                                   s_v.get_max_axial_pos_num(),
+                                   s_v.get_min_view_num(),
+                                   s_v.get_max_view_num(),
+                                   s_v.get_min_tangential_pos_num(),
+                                   s_v.get_max_tangential_pos_num()))
 {
-  
-  for (int r=get_min_axial_pos_num(); r<= get_max_axial_pos_num(); r++)
+
+  for (int r = get_min_axial_pos_num(); r <= get_max_axial_pos_num(); r++)
     set_sinogram(s_v.get_sinogram(r));
 }
 
-template<typename elemT>
-bool 
-SegmentBySinogram<elemT>::
-operator ==(const Segment<elemT>& that) const
+template <typename elemT>
+bool
+SegmentBySinogram<elemT>::operator==(const Segment<elemT>& that) const
 {
-  return
-    this->has_same_characteristics(that) &&
-    Array<3,elemT>::operator==(static_cast<const self_type&>(that));
+  return this->has_same_characteristics(that) && Array<3, elemT>::operator==(static_cast<const self_type&>(that));
 }
 
-
 template <typename elemT>
-Viewgram<elemT> 
+Viewgram<elemT>
 SegmentBySinogram<elemT>::get_viewgram(int view_num) const
 {
   // gcc 2.95.2 needs a this-> in front of get_min_ring for unclear reasons
-  Array<2,elemT> pre_view(IndexRange2D(this->get_min_axial_pos_num(), get_max_axial_pos_num(),
-                                       get_min_tangential_pos_num(),get_max_tangential_pos_num()));
-  for (int r=get_min_axial_pos_num(); r<= get_max_axial_pos_num(); r++)
-    pre_view[r] = Array<3,elemT>::operator[](r)[view_num];
-  //KT 9/12 constructed a PETSinogram before...
-  // CL&KT 15/12 added ring_difference stuff
-  return Viewgram<elemT>(pre_view, this->proj_data_info_sptr->create_shared_clone(), view_num,
-			 this->get_segment_num());
+  Array<2, elemT> pre_view(IndexRange2D(
+      this->get_min_axial_pos_num(), get_max_axial_pos_num(), get_min_tangential_pos_num(), get_max_tangential_pos_num()));
+  for (int r = get_min_axial_pos_num(); r <= get_max_axial_pos_num(); r++)
+    pre_view[r] = Array<3, elemT>::operator[](r)[view_num];
+  // KT 9/12 constructed a PETSinogram before...
+  //  CL&KT 15/12 added ring_difference stuff
+  return Viewgram<elemT>(
+      pre_view, this->proj_data_info_sptr->create_shared_clone(), view_num, this->get_segment_num(), this->get_timing_pos_num());
 }
 
 template <typename elemT>
 void
 SegmentBySinogram<elemT>::set_viewgram(const Viewgram<elemT>& viewgram)
 {
-  for (int r=get_min_axial_pos_num(); r<= get_max_axial_pos_num(); r++)
-    Array<3,elemT>::operator[](r)[viewgram.get_view_num()] = viewgram[r];
+  for (int r = get_min_axial_pos_num(); r <= get_max_axial_pos_num(); r++)
+    Array<3, elemT>::operator[](r)[viewgram.get_view_num()] = viewgram[r];
 }
-
-
 
 /*!
   This makes sure that the new Array dimensions are the same as those in the
   ProjDataInfo member.
 */
 template <typename elemT>
-void 
-SegmentBySinogram<elemT>::
-resize(const IndexRange<3>& range)
-{   
+void
+SegmentBySinogram<elemT>::resize(const IndexRange<3>& range)
+{
   if (range == this->get_index_range())
     return;
 
-  assert(range.is_regular()==true);
+  assert(range.is_regular() == true);
 
   const int ax_min = range.get_min_index();
   const int ax_max = range.get_max_index();
@@ -151,29 +137,26 @@ resize(const IndexRange<3>& range)
   assert(range[ax_min].get_min_index() == 0);
 
   shared_ptr<ProjDataInfo> pdi_sptr = this->proj_data_info_sptr->create_shared_clone();
-  
+
   pdi_sptr->set_min_axial_pos_num(ax_min, this->get_segment_num());
   pdi_sptr->set_max_axial_pos_num(ax_max, this->get_segment_num());
-  
+
   pdi_sptr->set_num_views(range[ax_min].get_max_index() + 1);
   pdi_sptr->set_min_tangential_pos_num(range[ax_min][0].get_min_index());
   pdi_sptr->set_max_tangential_pos_num(range[ax_min][0].get_max_index());
 
   this->proj_data_info_sptr = pdi_sptr;
 
-  Array<3,elemT>::resize(range);
-	
+  Array<3, elemT>::resize(range);
 }
-
 
 /*!
   This makes sure that the new Array dimensions are the same as those in the
   ProjDataInfo member.
 */
 template <typename elemT>
-void 
-SegmentBySinogram<elemT>::
-grow(const IndexRange<3>& range)
+void
+SegmentBySinogram<elemT>::grow(const IndexRange<3>& range)
 {
   resize(range);
 }

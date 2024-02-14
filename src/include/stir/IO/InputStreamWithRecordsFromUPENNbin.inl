@@ -14,42 +14,39 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "liboption.h"
 #include "stir/error.h"
 
 START_NAMESPACE_STIR
 
 Succeeded
-InputStreamWithRecordsFromUPENNbin::
-create_output_file(std::string ofilename)
+InputStreamWithRecordsFromUPENNbin::create_output_file(std::string ofilename)
 {
-    olistCodec = new list::EventCodec( eventFormat );
+  olistCodec = new list::EventCodec(eventFormat);
 
-    if ( !ofilename.empty() )
+  if (!ofilename.empty())
     {
-        const std::ios_base::openmode writeonly = std::ios_base::out
-                | std::ios_base::binary;
+      const std::ios_base::openmode writeonly = std::ios_base::out | std::ios_base::binary;
 
-        if ( !outputListFile.open( ofilename.c_str(), writeonly ) )
+      if (!outputListFile.open(ofilename.c_str(), writeonly))
         {
-            error("Cannot create file " + ofilename);
+          error("Cannot create file " + ofilename);
         }
-        outputList = &outputListFile;
+      outputList = &outputListFile;
     }
 
-    if ( !list::encodeHeader( *outputList, listHeader ) )
+  if (!list::encodeHeader(*outputList, listHeader))
     {
-       error("cannot write header to output list");
+      error("cannot write header to output list");
     }
-    out = new list::OutputBuffer(*outputList, eventSize );
-    has_output = true;
+  out = new list::OutputBuffer(*outputList, eventSize);
+  has_output = true;
 
-    if(keep_delayed == 1 && has_output)
+  if (keep_delayed == 1 && has_output)
     {
-        error("You cannot keep delayed events and pass output.");
+      error("You cannot keep delayed events and pass output.");
     }
-    return Succeeded::yes;
+  return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR

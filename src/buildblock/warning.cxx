@@ -1,8 +1,8 @@
 //
 //
 /*!
-  \file 
- 
+  \file
+
   \brief defines the stir::warning() function
 
   \author Kris Thielemans
@@ -32,29 +32,29 @@
    Visual Studio can be accomodated with the following work-around
 */
 #ifdef BOOST_MSVC
-#define vsnprintf _vsnprintf
+#  define vsnprintf _vsnprintf
 #endif
 
 START_NAMESPACE_STIR
 
-void warning(const char *const s, ...)
+void
+warning(const char* const s, ...)
 {
   va_list ap;
   va_start(ap, s);
-  const unsigned size=10000;
+  const unsigned size = 10000;
   char tmp[size];
-  const int returned_size= vsnprintf(tmp,size, s, ap);
+  const int returned_size = vsnprintf(tmp, size, s, ap);
   std::stringstream ss;
   va_end(ap);
   if (returned_size < 0)
-	  ss << "\nWARNING: error formatting warning message" << std::endl;
+    ss << "\nWARNING: error formatting warning message" << std::endl;
   else
-  {
-	  ss << "\nWARNING: " << tmp << std::endl;
-      if (static_cast<unsigned>(returned_size)>=size)
-		  ss << "\nWARNING: previous warning message truncated as it exceeds "
-		  << size << "bytes" << std::endl;
-  }
+    {
+      ss << "\nWARNING: " << tmp << std::endl;
+      if (static_cast<unsigned>(returned_size) >= size)
+        ss << "\nWARNING: previous warning message truncated as it exceeds " << size << "bytes" << std::endl;
+    }
   writeText(ss.str().c_str(), WARNING_CHANNEL);
 }
 

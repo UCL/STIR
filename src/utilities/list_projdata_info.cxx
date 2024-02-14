@@ -1,7 +1,9 @@
 /*
     Copyright (C) 2002 - 2005-06-09, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2020, University College London
+    Copyright (C) 2013, 2020 University College London
+    Copyright (C) 2016, University of Hull
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -22,6 +24,7 @@
   Add one or more options to print the exam/geometric/min/max/sum information.
   If no option is specified, geometric info is printed.
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
@@ -31,23 +34,25 @@
 #include "stir/SegmentByView.h"
 #include "stir/is_null_ptr.h"
 #include "stir/warning.h"
-#include <iostream> 
+#include <iostream>
 #include <limits>
 #include <string>
 
 USING_NAMESPACE_STIR
 
-void print_usage_and_exit(const std::string& program_name)
+void
+print_usage_and_exit(const std::string& program_name)
 {
-  std::cerr<<"Usage: " << program_name << " [--all | --min | --max | --sum | --geom | --exam] projdata_file\n"
-	   <<"\nAdd one or more options to print the exam/geometric/min/max/sum information.\n"
-	   <<"\nIf no option is specified, geometric info is printed.\n";
+  std::cerr << "Usage: " << program_name << " [--all | --min | --max | --sum | --geom | --exam] projdata_file\n"
+            << "\nAdd one or more options to print the exam/geometric/min/max/sum information.\n"
+            << "\nIf no option is specified, geometric info is printed.\n";
   exit(EXIT_FAILURE);
 }
 
-int main(int argc, char *argv[])
-{ 
-  const char * const program_name = argv[0];
+int
+main(int argc, char* argv[])
+{
+  const char* const program_name = argv[0];
   // skip program name
   --argc;
   ++argv;
@@ -61,49 +66,55 @@ int main(int argc, char *argv[])
   bool no_options = true; // need this for default behaviour
 
   // first process command line options
-  while (argc>0 && argv[0][0]=='-' && argc>=2)
+  while (argc > 0 && argv[0][0] == '-' && argc >= 2)
     {
-      no_options=false;
-      if (strcmp(argv[0], "--all")==0)
-	{
-	  print_min = print_max = print_sum = print_geom = print_exam = true; 
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--max")==0)
-	{
-	  print_max = true; 
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--min")==0)
-	{
-	  print_min = true; 
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--sum")==0)
-	{
-	  print_sum = true; 
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--geom")==0)
-	{
-	  print_geom = true; 
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--exam")==0)
-	{
-	  print_exam = true; 
-	  --argc; ++argv;
-	}
+      no_options = false;
+      if (strcmp(argv[0], "--all") == 0)
+        {
+          print_min = print_max = print_sum = print_geom = print_exam = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--max") == 0)
+        {
+          print_max = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--min") == 0)
+        {
+          print_min = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--sum") == 0)
+        {
+          print_sum = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--geom") == 0)
+        {
+          print_geom = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--exam") == 0)
+        {
+          print_exam = true;
+          --argc;
+          ++argv;
+        }
       else
-	print_usage_and_exit(program_name);
+        print_usage_and_exit(program_name);
     }
   if (no_options)
     print_geom = true;
 
-  if(argc!=1) 
-  {
-    print_usage_and_exit(program_name);
-  }
+  if (argc != 1)
+    {
+      print_usage_and_exit(program_name);
+    }
 
   // set filename to last remaining argument
   const std::string filename(argv[0]);
@@ -124,35 +135,44 @@ int main(int argc, char *argv[])
   if (print_min || print_max || print_sum)
     {
       const int min_segment_num = proj_data_sptr->get_min_segment_num();
-      const int max_segment_num = proj_data_sptr->get_max_segment_num();     
+      const int max_segment_num = proj_data_sptr->get_max_segment_num();
+      const int min_timing_num = proj_data_sptr->get_min_tof_pos_num();
+      const int max_timing_num = proj_data_sptr->get_max_tof_pos_num();
+
       bool accumulators_initialized = false;
-      float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
-      float accum_max=std::numeric_limits<float>::min();
-      double sum=0.;
-      for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num) 
-	{
-	    const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num));
-	    const float this_max=seg.find_max();
-	    const float this_min=seg.find_min();
-	    sum+=static_cast<double>(seg.sum());
-	    if(!accumulators_initialized) 
-	      {
-		accum_max=this_max;
-		accum_min=this_min;
-		accumulators_initialized=true;
-	      }
-	    else 
-	      {
-		if (accum_max<this_max) accum_max=this_max;
-		if (accum_min>this_min) accum_min=this_min;
-	      }
-	  }
+      float accum_min
+          = std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
+      float accum_max = std::numeric_limits<float>::min();
+      double sum = 0.;
+      for (int timing_num = min_timing_num; timing_num <= max_timing_num; ++timing_num)
+        {
+          for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+            {
+              const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num, timing_num));
+              const float this_max = seg.find_max();
+              const float this_min = seg.find_min();
+              sum += static_cast<double>(seg.sum());
+              if (!accumulators_initialized)
+                {
+                  accum_max = this_max;
+                  accum_min = this_min;
+                  accumulators_initialized = true;
+                }
+              else
+                {
+                  if (accum_max < this_max)
+                    accum_max = this_max;
+                  if (accum_min > this_min)
+                    accum_min = this_min;
+                }
+            }
+        }
       if (print_min)
-	std::cout << "\nData min: " << accum_min;
+        std::cout << "\nData min: " << accum_min;
       if (print_max)
-	std::cout << "\nData max: " << accum_max;
+        std::cout << "\nData max: " << accum_max;
       if (print_sum)
-	std::cout << "\nData sum: " << sum;
+        std::cout << "\nData sum: " << sum;
       std::cout << "\n";
     }
   return EXIT_SUCCESS;

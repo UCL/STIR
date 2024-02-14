@@ -25,7 +25,6 @@
 
 START_NAMESPACE_STIR
 
-
 /*!
   \ingroup symmetries
   \brief A class derived from DataSymmetriesForBins that says that there are
@@ -37,53 +36,43 @@ class TrivialDataSymmetriesForBins : public DataSymmetriesForBins
 public:
   TrivialDataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
-  virtual 
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    TrivialDataSymmetriesForBins 
-#else
-    DataSymmetriesForViewSegmentNumbers
-#endif
-    * clone() const;
+  TrivialDataSymmetriesForBins* clone() const override;
 
-  virtual void
-    get_related_bins(std::vector<Bin>&, const Bin& b,
-                      const int min_axial_pos_num, const int max_axial_pos_num,
-                      const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+  void get_related_bins(std::vector<Bin>&,
+                        const Bin& b,
+                        const int min_axial_pos_num,
+                        const int max_axial_pos_num,
+                        const int min_tangential_pos_num,
+                        const int max_tangential_pos_num,
+                        const int min_timing_pos_num,
+                        const int max_timing_pos_num0) const override;
 
-  virtual void
-    get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,
-                                const int min_axial_pos_num, const int max_axial_pos_num,
-                                const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+  void get_related_bins_factorised(std::vector<AxTangPosNumbers>&,
+                                   const Bin& b,
+                                   const int min_axial_pos_num,
+                                   const int max_axial_pos_num,
+                                   const int min_tangential_pos_num,
+                                   const int max_tangential_pos_num) const override;
 
-  virtual int
-    num_related_bins(const Bin& b) const;
+  int num_related_bins(const Bin& b) const override;
 
-  virtual unique_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_bin(Bin&) const;
+  unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_bin(Bin&) const override;
 
-  virtual bool
-    find_basic_bin(Bin& b) const;
+  bool find_basic_bin(Bin& b) const override;
 
-  virtual bool
-    is_basic(const Bin& v_s) const;
+  bool is_basic(const Bin& v_s) const override;
 
-  virtual unique_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
+  unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const override;
 
-  virtual void
-    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers&) const;
+  void get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers&) const override;
 
-  virtual int
-    num_related_view_segment_numbers(const ViewSegmentNumbers&) const;
-  virtual bool
-    find_basic_view_segment_numbers(ViewSegmentNumbers&) const;
+  int num_related_view_segment_numbers(const ViewSegmentNumbers&) const override;
+  bool find_basic_view_segment_numbers(ViewSegmentNumbers&) const override;
 
 private:
-  virtual bool blindly_equals(const root_type * const) const;
+  bool blindly_equals(const root_type* const) const override;
 };
 
 END_NAMESPACE_STIR
 
-
 #endif
-

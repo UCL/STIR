@@ -30,20 +30,17 @@
 
 START_NAMESPACE_STIR
 
-const char * const 
-BinNormalisationFromProjData::registered_name = "From ProjData"; 
+const char* const BinNormalisationFromProjData::registered_name = "From ProjData";
 
-
-void 
+void
 BinNormalisationFromProjData::set_defaults()
 {
   base_type::set_defaults();
   normalisation_projdata_filename = "";
 }
 
-void 
-BinNormalisationFromProjData::
-initialise_keymap()
+void
+BinNormalisationFromProjData::initialise_keymap()
 {
   base_type::initialise_keymap();
   parser.add_start_key("Bin Normalisation From ProjData");
@@ -51,9 +48,8 @@ initialise_keymap()
   parser.add_stop_key("End Bin Normalisation From ProjData");
 }
 
-bool 
-BinNormalisationFromProjData::
-post_processing()
+bool
+BinNormalisationFromProjData::post_processing()
 {
   if (base_type::post_processing())
     return true;
@@ -61,95 +57,95 @@ post_processing()
   return false;
 }
 
-BinNormalisationFromProjData::
-BinNormalisationFromProjData()
+BinNormalisationFromProjData::BinNormalisationFromProjData()
 {
   set_defaults();
 }
 
-BinNormalisationFromProjData::
-BinNormalisationFromProjData(const std::string& filename)
+BinNormalisationFromProjData::BinNormalisationFromProjData(const std::string& filename)
     : norm_proj_data_ptr(ProjData::read_from_file(filename))
-  {}
+{}
 
-BinNormalisationFromProjData::
-BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
+BinNormalisationFromProjData::BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
     : norm_proj_data_ptr(norm_proj_data_ptr)
-  {}
+{}
 
-Succeeded 
-BinNormalisationFromProjData::
-set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
+Succeeded
+BinNormalisationFromProjData::set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,
+                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
 {
-  base_type::set_up(exam_info_sptr, proj_data_info_ptr);
+  if (!base_type::set_up(exam_info_sptr, proj_data_info_sptr).succeeded())
+    return Succeeded::no;
 
-  if (*(norm_proj_data_ptr->get_proj_data_info_sptr()) == *proj_data_info_ptr)
+  const auto& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
+  // complication: if the emission data is TOF but the norm is not, `apply()` et al. multiply all
+  // TOF bins with the non-TOF norm. So, we need to allow for that.
+  auto proj_to_check_sptr = proj_data_info_sptr;
+  if (!norm_proj.is_tof_data() && proj_data_info_sptr->is_tof_data())
+    proj_to_check_sptr = proj_data_info_sptr->create_non_tof_clone();
+  const auto& proj = *proj_to_check_sptr;
+
+  if (norm_proj == proj)
     return Succeeded::yes;
   else
-  {
-    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
-    const ProjDataInfo& proj = *proj_data_info_ptr;
-    bool ok = 
-      (norm_proj >= proj) &&
-      (norm_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
-      (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num());
-    
-    for (int segment_num=proj.get_min_segment_num();
-	 ok && segment_num<=proj.get_max_segment_num();
-	 ++segment_num)
-      {
-	ok = 
-	  norm_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num) &&
-	  norm_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
-      }
-    if (ok)
-      return Succeeded::yes;
-    else
-      {
-	warning(boost::format("BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n%s\nEmission projdata info:\n%s\n--- (end of incompatible projection data info)---\n")
-		% norm_proj.parameter_info()
-		% proj.parameter_info());
-	return Succeeded::no;
-      }
-  }
+    {
+      // Check if the emission data is "smaller" than the norm data (e.g. fewer segments)
+      // We will require equal tangential_pos ranges as `apply()` currently needs that.
+      bool ok = (norm_proj >= proj) && (norm_proj.get_min_tangential_pos_num() == proj.get_min_tangential_pos_num())
+                && (norm_proj.get_max_tangential_pos_num() == proj.get_max_tangential_pos_num());
+
+      for (int segment_num = proj.get_min_segment_num(); ok && segment_num <= proj.get_max_segment_num(); ++segment_num)
+        {
+          ok = norm_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num)
+               && norm_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
+        }
+      if (ok)
+        return Succeeded::yes;
+      else
+        {
+          warning(boost::format(
+                      "BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n%s\nEmission projdata "
+                      "info (made non-TOF if norm is non-TOF):\n%s\n--- (end of incompatible projection data info)---\n")
+                  % norm_proj.parameter_info() % proj.parameter_info());
+          return Succeeded::no;
+        }
+    }
 }
 
-bool 
-BinNormalisationFromProjData::
-is_trivial() const
+bool
+BinNormalisationFromProjData::is_trivial() const
 {
   return false;
 }
 
-void 
-BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const 
-  {
-    this->check(*viewgrams.get_proj_data_info_sptr());
-    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
-    viewgrams *= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_sptr, false);
-  }
+void
+BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const
+{
+  this->check(*viewgrams.get_proj_data_info_sptr());
+  const ViewSegmentNumbers vs_num = viewgrams.get_basic_view_segment_num();
+  const int timing_pos_num
+      = norm_proj_data_ptr->get_proj_data_info_sptr()->is_tof_data() ? viewgrams.get_basic_timing_pos_num() : 0;
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
+  viewgrams *= norm_proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr, false, timing_pos_num);
+}
 
-void 
-BinNormalisationFromProjData::
-undo(RelatedViewgrams<float>& viewgrams) const 
-  {
-    this->check(*viewgrams.get_proj_data_info_sptr());
-    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
-    viewgrams /= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_sptr, false);
+void
+BinNormalisationFromProjData::undo(RelatedViewgrams<float>& viewgrams) const
+{
+  this->check(*viewgrams.get_proj_data_info_sptr());
+  const ViewSegmentNumbers vs_num = viewgrams.get_basic_view_segment_num();
+  const int timing_pos_num
+      = norm_proj_data_ptr->get_proj_data_info_sptr()->is_tof_data() ? viewgrams.get_basic_timing_pos_num() : 0;
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
+  viewgrams /= norm_proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr, false, timing_pos_num);
+}
 
-  }
-
-float 
+float
 BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin) const
 {
-  //TODO
+  // TODO
   error("BinNormalisationFromProjData::get_bin_efficiency is not implemented");
   return 1;
-
 }
 
 shared_ptr<ProjData>
@@ -157,5 +153,5 @@ BinNormalisationFromProjData::get_norm_proj_data_sptr() const
 {
   return this->norm_proj_data_ptr;
 }
- 
+
 END_NAMESPACE_STIR

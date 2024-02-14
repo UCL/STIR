@@ -41,119 +41,117 @@ START_NAMESPACE_STIR
   - a geometry test to see that a point in a sinogram is arc-corrected to the
     correct location.
 
-  - a uniformity test that checks that uniform data are arc-corrected to 
+  - a uniformity test that checks that uniform data are arc-corrected to
     uniform data with the same value.
 
   This is currently only done on sinograms and viewgrams.
 
-  The tests are performed both at the default arc-corrected bin-size, 
+  The tests are performed both at the default arc-corrected bin-size,
   but also at twice as large bin-size.
 */
-class ArcCorrectionTests: public RunTests
+class ArcCorrectionTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
+  void run_tests_tof();
+
 protected:
   void run_tests_for_specific_proj_data_info(const ArcCorrection&);
 };
 
 void
-ArcCorrectionTests::
-run_tests_for_specific_proj_data_info(const ArcCorrection& arc_correction)
+ArcCorrectionTests::run_tests_for_specific_proj_data_info(const ArcCorrection& arc_correction)
 {
-  const ProjDataInfoCylindricalArcCorr& proj_data_info_arc_corr =
-    arc_correction.get_arc_corrected_proj_data_info();
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarc_corr =
-    arc_correction.get_not_arc_corrected_proj_data_info();
+  const ProjDataInfoCylindricalArcCorr& proj_data_info_arc_corr = arc_correction.get_arc_corrected_proj_data_info();
+  const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarc_corr = arc_correction.get_not_arc_corrected_proj_data_info();
 
   const float sampling_in_s = proj_data_info_arc_corr.get_tangential_sampling();
 
-  for (int segment_num=proj_data_info_noarc_corr.get_min_segment_num();
-       segment_num<=proj_data_info_noarc_corr.get_max_segment_num();
-	 ++segment_num)
+  for (int timing_pos_num = proj_data_info_noarc_corr.get_min_tof_pos_num();
+       timing_pos_num <= proj_data_info_noarc_corr.get_max_tof_pos_num();
+       ++timing_pos_num)
+    for (int segment_num = proj_data_info_noarc_corr.get_min_segment_num();
+         segment_num <= proj_data_info_noarc_corr.get_max_segment_num();
+         ++segment_num)
       {
-	const int axial_pos_num = 0;
-	Sinogram<float> noarccorr_sinogram = 
-	      proj_data_info_noarc_corr.get_empty_sinogram(axial_pos_num, segment_num);
-	Sinogram<float> arccorr_sinogram = 
-	      proj_data_info_arc_corr.get_empty_sinogram(axial_pos_num, segment_num);
+        const int axial_pos_num = 0;
+        Sinogram<float> noarccorr_sinogram
+            = proj_data_info_noarc_corr.get_empty_sinogram(axial_pos_num, segment_num, false, timing_pos_num);
+        Sinogram<float> arccorr_sinogram
+            = proj_data_info_arc_corr.get_empty_sinogram(axial_pos_num, segment_num, false, timing_pos_num);
 
-	for (int view_num=proj_data_info_noarc_corr.get_min_view_num();
-	     view_num<=proj_data_info_noarc_corr.get_max_view_num();
-	     view_num+=3)
-	  {
-	    Viewgram<float> noarccorr_viewgram = 
-	      proj_data_info_noarc_corr.get_empty_viewgram(view_num, segment_num);
-	    Viewgram<float> arccorr_viewgram = 
-	      proj_data_info_arc_corr.get_empty_viewgram(view_num, segment_num);
-	    // test geometry by checking if single non-zero value gets put in the right bin
-	    {
-	      for (int tangential_pos_num=proj_data_info_noarc_corr.get_min_tangential_pos_num();
-		   tangential_pos_num<=proj_data_info_noarc_corr.get_max_tangential_pos_num();
-		   tangential_pos_num+=4)
-		{
-		  noarccorr_sinogram.fill(0);
-		  noarccorr_viewgram.fill(0);
-		  noarccorr_viewgram[axial_pos_num][tangential_pos_num]=1;
-		  noarccorr_sinogram[view_num][tangential_pos_num]=1;
-		  arc_correction.do_arc_correction(arccorr_sinogram, noarccorr_sinogram);
-		  arc_correction.do_arc_correction(arccorr_viewgram, noarccorr_viewgram);
-		  check_if_equal(noarccorr_sinogram[view_num], noarccorr_viewgram[axial_pos_num],
-				 "1 line in sinogram and viewgram (geometric test)");
-		  const int arccorr_tangential_pos_num_at_max=
-		    index_at_maximum(arccorr_viewgram[axial_pos_num]);
-		    
-		  const float noarccorr_s = 
-		    proj_data_info_noarc_corr.
-		    get_s(Bin(segment_num,view_num,axial_pos_num,tangential_pos_num));
-		  const float arccorr_s = 
-		    proj_data_info_arc_corr.
-		    get_s(Bin(segment_num,view_num,axial_pos_num,arccorr_tangential_pos_num_at_max));
-		  check((arccorr_s - noarccorr_s)/sampling_in_s < 1.1,
-			"correspondence in location of maximum after arc-correction");
-		}
-	    }
-	    // test if uniformity and counts are preserved
-	    {
-	      /* We set a viewgram to 1, and check if the transformed viewgram is also 1 
-		 (except at the boundary).
-	      */
-	      noarccorr_sinogram.fill(1);
-	      noarccorr_viewgram.fill(1);
-	      arc_correction.do_arc_correction(arccorr_sinogram, noarccorr_sinogram);
-	      arc_correction.do_arc_correction(arccorr_viewgram, noarccorr_viewgram);
-	      check_if_equal(noarccorr_sinogram[view_num], noarccorr_viewgram[axial_pos_num],
-			     "1 line in sinogram and viewgram (uniformity test)");
+        for (int view_num = proj_data_info_noarc_corr.get_min_view_num();
+             view_num <= proj_data_info_noarc_corr.get_max_view_num();
+             view_num += 3)
+          {
+            Viewgram<float> noarccorr_viewgram
+                = proj_data_info_noarc_corr.get_empty_viewgram(view_num, segment_num, false, timing_pos_num);
+            Viewgram<float> arccorr_viewgram
+                = proj_data_info_arc_corr.get_empty_viewgram(view_num, segment_num, false, timing_pos_num);
+            // test geometry by checking if single non-zero value gets put in the right bin
+            {
+              for (int tangential_pos_num = proj_data_info_noarc_corr.get_min_tangential_pos_num();
+                   tangential_pos_num <= proj_data_info_noarc_corr.get_max_tangential_pos_num();
+                   tangential_pos_num += 4)
+                {
+                  noarccorr_sinogram.fill(0);
+                  noarccorr_viewgram.fill(0);
+                  noarccorr_viewgram[axial_pos_num][tangential_pos_num] = 1;
+                  noarccorr_sinogram[view_num][tangential_pos_num] = 1;
+                  arc_correction.do_arc_correction(arccorr_sinogram, noarccorr_sinogram);
+                  arc_correction.do_arc_correction(arccorr_viewgram, noarccorr_viewgram);
+                  check_if_equal(noarccorr_sinogram[view_num],
+                                 noarccorr_viewgram[axial_pos_num],
+                                 "1 line in sinogram and viewgram (geometric test)");
+                  const int arccorr_tangential_pos_num_at_max = index_at_maximum(arccorr_viewgram[axial_pos_num]);
 
-	      const float max_s = 
-		    proj_data_info_noarc_corr.
-		    get_s(Bin(segment_num,view_num,axial_pos_num,
-			      proj_data_info_noarc_corr.get_max_tangential_pos_num()));
-	      const float min_s = 
-		    proj_data_info_noarc_corr.
-		    get_s(Bin(segment_num,view_num,axial_pos_num,
-			      proj_data_info_noarc_corr.get_min_tangential_pos_num()));		
-	      for (int tangential_pos_num= round(min_s/sampling_in_s)+2;
-		   tangential_pos_num<=round(max_s/sampling_in_s)-2;
-		   ++tangential_pos_num)
-		check_if_equal(arccorr_viewgram[axial_pos_num][tangential_pos_num], 1.F,
-			       "uniformity");
-	    }
-	  }
+                  const float noarccorr_s = proj_data_info_noarc_corr.get_s(
+                      Bin(segment_num, view_num, axial_pos_num, tangential_pos_num, timing_pos_num));
+                  const float arccorr_s = proj_data_info_arc_corr.get_s(
+                      Bin(segment_num, view_num, axial_pos_num, arccorr_tangential_pos_num_at_max, timing_pos_num));
+                  check((arccorr_s - noarccorr_s) / sampling_in_s < 1.1,
+                        "correspondence in location of maximum after arc-correction");
+                }
+            }
+            // test if uniformity and counts are preserved
+            {
+              /* We set a viewgram to 1, and check if the transformed viewgram is also 1
+                 (except at the boundary).
+              */
+              noarccorr_sinogram.fill(1);
+              noarccorr_viewgram.fill(1);
+              arc_correction.do_arc_correction(arccorr_sinogram, noarccorr_sinogram);
+              arc_correction.do_arc_correction(arccorr_viewgram, noarccorr_viewgram);
+              check_if_equal(noarccorr_sinogram[view_num],
+                             noarccorr_viewgram[axial_pos_num],
+                             "1 line in sinogram and viewgram (uniformity test)");
+
+              const float max_s = proj_data_info_noarc_corr.get_s(
+                  Bin(segment_num, view_num, axial_pos_num, proj_data_info_noarc_corr.get_max_tangential_pos_num()));
+              const float min_s = proj_data_info_noarc_corr.get_s(
+                  Bin(segment_num, view_num, axial_pos_num, proj_data_info_noarc_corr.get_min_tangential_pos_num()));
+              for (int tangential_pos_num = round(min_s / sampling_in_s) + 2;
+                   tangential_pos_num <= round(max_s / sampling_in_s) - 2;
+                   ++tangential_pos_num)
+                check_if_equal(arccorr_viewgram[axial_pos_num][tangential_pos_num], 1.F, "uniformity");
+            }
+          }
       }
 }
 
-
 void
 ArcCorrectionTests::run_tests()
-{ 
+{
   cerr << "-------- Testing ArcCorrection --------\n";
   ArcCorrection arc_correction;
   shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E962));
-  
-  shared_ptr<ProjDataInfo> proj_data_info_ptr(
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-				  /*span*/7, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ false));
+
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+                                                                            /*span*/ 7,
+                                                                            10,
+                                                                            /*views*/ 96,
+                                                                            /*tang_pos*/ 128,
+                                                                            /*arc_corrected*/ false));
   cerr << "Using default range and bin-size\n";
   {
     arc_correction.set_up(proj_data_info_ptr);
@@ -161,21 +159,46 @@ ArcCorrectionTests::run_tests()
   }
   cerr << "Using non-default range and bin-size\n";
   {
-    arc_correction.set_up(proj_data_info_ptr,
-			  128,
-			  scanner_ptr->get_default_bin_size()*2);
+    arc_correction.set_up(proj_data_info_ptr, 128, scanner_ptr->get_default_bin_size() * 2);
+    run_tests_for_specific_proj_data_info(arc_correction);
+  }
+}
+
+void
+ArcCorrectionTests::run_tests_tof()
+{
+  cerr << "-------- Testing ArcCorrection for TOF scanner --------\n";
+  ArcCorrection arc_correction;
+  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::PETMR_Signa));
+
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoGE(scanner_ptr,
+                                                                           /*max_delta*/ 5,
+                                                                           /*views*/ 112,
+                                                                           /*tang_pos*/ 357,
+                                                                           /*arc_corrected*/ false,
+                                                                           /*tof_mashing_factor*/ 116));
+
+  cerr << "Using default range and bin-size\n";
+  {
+    arc_correction.set_up(proj_data_info_ptr);
+    run_tests_for_specific_proj_data_info(arc_correction);
+  }
+  cerr << "Using non-default range and bin-size\n";
+  {
+    arc_correction.set_up(proj_data_info_ptr, 357, scanner_ptr->get_default_bin_size() * 2);
     run_tests_for_specific_proj_data_info(arc_correction);
   }
 }
 
 END_NAMESPACE_STIR
 
-
 USING_NAMESPACE_STIR
 
-int main()
+int
+main()
 {
   ArcCorrectionTests tests;
   tests.run_tests();
+  tests.run_tests_tof();
   return tests.main_return_value();
 }

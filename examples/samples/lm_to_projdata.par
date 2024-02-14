@@ -37,5 +37,5 @@ lm_to_projdata Parameters:=
     ; if you're short of RAM (i.e. a single projdata does not fit into memory),
     ; you can use this to process the list mode data in multiple passes.
     num_segments_in_memory := -1
-
+    num_TOF_bins_in_memory := -1
 End := 

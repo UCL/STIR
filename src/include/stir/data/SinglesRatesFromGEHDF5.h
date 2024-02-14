@@ -24,10 +24,11 @@
 #include "stir/data/SinglesRatesForTimeSlices.h"
 #include "stir/RegisteredParsingObject.h"
 
-
 START_NAMESPACE_STIR
-namespace GE {
-namespace RDF_HDF5 {
+namespace GE
+{
+namespace RDF_HDF5
+{
 
 class GEHDF5Wrapper;
 
@@ -41,40 +42,33 @@ class GEHDF5Wrapper;
   \todo expose GE::RDF_HDF5::GEHDF5Wrapper.get_exam_info_sptr()
 
 */
-class SinglesRatesFromGEHDF5 : 
-  public RegisteredParsingObject<SinglesRatesFromGEHDF5, SinglesRates, SinglesRatesForTimeSlices>
+class SinglesRatesFromGEHDF5 : public RegisteredParsingObject<SinglesRatesFromGEHDF5, SinglesRates, SinglesRatesForTimeSlices>
 
-{ 
+{
 public:
+  //! Name which will be used when parsing a SinglesRatesFromGEHDF5 object
+  static const char* const registered_name;
 
- //! Name which will be used when parsing a SinglesRatesFromGEHDF5 object 
- static const char * const registered_name; 
+  //! Default constructor
+  SinglesRatesFromGEHDF5();
 
- //! Default constructor 
- SinglesRatesFromGEHDF5();
+  //! construct from filename
+  explicit SinglesRatesFromGEHDF5(const std::string& rdf_filename) { read_from_file(rdf_filename); }
 
- //! construct from filename
- explicit SinglesRatesFromGEHDF5(const std::string& rdf_filename)
- { read_from_file(rdf_filename); }
-
- void read_from_file(const std::string& rdf_filename);
- 
+  void read_from_file(const std::string& rdf_filename);
 
 private:
+  shared_ptr<GEHDF5Wrapper> m_input_sptr;
 
- shared_ptr<GEHDF5Wrapper> m_input_sptr;
- 
- std::string _rdf_filename;
+  std::string _rdf_filename;
 
- virtual void set_defaults();
- virtual void initialise_keymap();
- virtual bool post_processing();
- 
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
-} // namespace
-}
+} // namespace RDF_HDF5
+} // namespace GE
 END_NAMESPACE_STIR
-
 
 #endif

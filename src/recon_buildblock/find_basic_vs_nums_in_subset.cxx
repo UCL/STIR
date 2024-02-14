@@ -25,44 +25,49 @@
 
 START_NAMESPACE_STIR
 
-namespace detail 
+namespace detail
 {
 
-  std::vector<ViewSegmentNumbers> 
-  find_basic_vs_nums_in_subset(const ProjDataInfo& proj_data_info,
-                               const DataSymmetriesForViewSegmentNumbers& symmetries, 
-                               const int min_segment_num, const int max_segment_num,
-                               const int subset_num, const int num_subsets)
-  {
-    std::vector<ViewSegmentNumbers> vs_nums_to_process;
-    for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
-      {
-        for (int view = proj_data_info.get_min_view_num() + subset_num; 
-             view <= proj_data_info.get_max_view_num(); 
-             view += num_subsets)
-          {
-            const ViewSegmentNumbers view_segment_num(view, segment_num);
+std::vector<ViewSegmentNumbers>
+find_basic_vs_nums_in_subset(const ProjDataInfo& proj_data_info,
+                             const DataSymmetriesForViewSegmentNumbers& symmetries,
+                             const int min_segment_num,
+                             const int max_segment_num,
+                             const int subset_num,
+                             const int num_subsets)
+{
+  std::vector<ViewSegmentNumbers> vs_nums_to_process;
+  for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
+    {
+      for (int timing_pos_num = -proj_data_info.get_min_tof_pos_num(); timing_pos_num <= proj_data_info.get_max_tof_pos_num();
+           ++timing_pos_num)
+        {
+          for (int view = proj_data_info.get_min_view_num() + subset_num; view <= proj_data_info.get_max_view_num();
+               view += num_subsets)
+            {
+              const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-            if (!symmetries.is_basic(view_segment_num))
-              continue;
+              if (!symmetries.is_basic(view_segment_num))
+                continue;
 
-            vs_nums_to_process.push_back(view_segment_num);
-      
+              vs_nums_to_process.push_back(view_segment_num);
+
 #ifndef NDEBUG
-            // test if symmetries didn't take us out of the segment range
-            std::vector<ViewSegmentNumbers> rel_vs;
-            symmetries.get_related_view_segment_numbers(rel_vs, view_segment_num);
-            for (std::vector<ViewSegmentNumbers>::const_iterator iter = rel_vs.begin(); iter!= rel_vs.end(); ++iter)
-              {
-                assert(iter->segment_num() >= min_segment_num);
-                assert(iter->segment_num() <= max_segment_num);
-              }
+              // test if symmetries didn't take us out of the segment range
+              std::vector<ViewSegmentNumbers> rel_vs;
+              symmetries.get_related_view_segment_numbers(rel_vs, view_segment_num);
+              for (std::vector<ViewSegmentNumbers>::const_iterator iter = rel_vs.begin(); iter != rel_vs.end(); ++iter)
+                {
+                  assert(iter->segment_num() >= min_segment_num);
+                  assert(iter->segment_num() <= max_segment_num);
+                }
 #endif
-          }
-      }
-    return vs_nums_to_process;
-  }
-
+            }
+        }
+    }
+  return vs_nums_to_process;
 }
+
+} // namespace detail
 
 END_NAMESPACE_STIR
