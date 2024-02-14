@@ -80,12 +80,6 @@ for i in range(0,2*Nr-1,1 ):
 
 proj_data_info_blocks=stir.ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner, num_ax_pps, min_r_diff, max_r_diff, scanner.get_max_num_views(), scanner.get_max_num_non_arccorrected_bins())
 
-
-#%% Plot 2D XY LORs for segment, axial position and tangential position =0
-b1=stir.FloatCartesianCoordinate3D;
-b2=stir.FloatCartesianCoordinate3D;
-lor=stir.FloatLORInAxialAndNoArcCorrSinogramCoordinates;
-
 fig=plt.figure()
 ax=plt.axes()
 plt.xlim([-rmax, rmax])
