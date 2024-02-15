@@ -242,3 +242,14 @@ namespace stir {
   //%template(SharedProjData) boost::shared_ptr<ProjData>;
 
 }
+
+
+%include "stir/SSRB.h"
+%include "stir/inverse_SSRB.h"
+
+%newobject stir::SSRB; /*(const stir::ProjDataInfo& in_proj_data_info,
+                   const int num_segments_to_combine,
+                   const int num_views_to_combine = 1,
+                   const int num_tangential_poss_to_trim = 0,
+                   const int max_in_segment_num_to_process = -1,
+                   const int num_tof_bins_to_combine = 1);*/
