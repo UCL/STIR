@@ -362,40 +362,6 @@ jobs:
           # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
 
-    - name: recon_test_pack
-      shell: bash
-      env:
-          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
-          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
-      run: |
-          set -ex;
-          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
-          cd ${GITHUB_WORKSPACE}/recon_test_pack
-          ./run_tests.sh --nointbp
-          # don't run all of them in Debug mode as it takes too long
-          if test ${BUILD_TYPE} != Debug; then
-            ./run_test_simulate_and_recon.sh
-            ./run_test_listmode_recon.sh
-            ./run_test_simulate_and_recon_with_motion.sh
-            ./run_scatter_tests.sh
-            ./run_test_zoom_image.sh
-            ./run_ML_norm_tests.sh
-            if test "${{matrix.ROOT}}XX" == "ONXX"; then ./run_root_GATE.sh; fi
-            ./run_tests_modelling.sh
-            cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
-            ./run_SPECT_tests.sh
-          fi
-
-    - name: Upload log files for debugging
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
-        path: ${{ github.workspace }}/recon_test_pack/**/*.log
-          ${{ github.workspace }}/recon_test_pack/**/my_*v
-          ${{ github.workspace }}/recon_test_pack/**/my_*s
-        retention-days: 7
-
     - name: examples
       shell: bash
       run: |
@@ -426,6 +392,46 @@ jobs:
           demo_create_image
           # just check if its output makes sense
           list_image_info test.hv
+
+    - name: remove build
+      shell: bash
+         # remove to create some disk space
+      run:
+          rm -rf cd ${GITHUB_WORKSPACE}/build
+
+    - name: recon_test_pack
+      shell: bash
+      env:
+          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          cd ${GITHUB_WORKSPACE}/recon_test_pack
+          ./run_tests.sh --nointbp
+          # don't run all of them in Debug mode as it takes too long
+          if test ${BUILD_TYPE} != Debug; then
+            ./run_test_simulate_and_recon.sh
+            ./run_test_listmode_recon.sh
+            ./run_test_simulate_and_recon_with_motion.sh
+            ./run_scatter_tests.sh
+            ./run_test_zoom_image.sh
+            ./run_ML_norm_tests.sh
+            if test "${{matrix.ROOT}}XX" == "ONXX"; then ./run_root_GATE.sh; fi
+            ./run_tests_modelling.sh
+            cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
+            ./run_SPECT_tests.sh
+          fi
+
+    - name: Upload recon_test_pack log files for debugging
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+          ${{ github.workspace }}/recon_test_pack/**/my_*v
+          ${{ github.workspace }}/recon_test_pack/**/my_*s
+        retention-days: 7
 
     - name: Python
       shell: bash
