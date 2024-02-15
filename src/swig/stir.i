@@ -162,6 +162,9 @@
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
 
+#include "stir/SSRB.h"
+#include "stir/inverse_SSRB.h"
+
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
 #include <stdexcept>
