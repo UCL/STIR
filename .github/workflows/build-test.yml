@@ -70,7 +70,7 @@ jobs:
           compiler: gcc
           compiler_version: 12
           cuda_version: "0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "ON"
           ROOT: "OFF"
