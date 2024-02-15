@@ -72,7 +72,7 @@ public:
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
   static const char* const registered_name;
 
-  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>();
+  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin();
 
   //! Computes the gradient of the objective function at the \a current_estimate overwriting \a gradient.
   /*!
