@@ -696,6 +696,20 @@ InterfilePDFSHeader::find_storage_order()
       num_timing_poss = 1;
       tof_mash_factor = 0;
     }
+  else
+    {
+      // TOF
+      if (matrix_labels[4] == "timing positions")
+        {
+          num_timing_poss = matrix_size[4][0];
+        }
+      else
+        {
+          warning("Interfile header parsing: currently need 'matrix axis label [5] := timing positions' for TOF data");
+          stop_parsing();
+          return true;
+        }
+    }
 
   if (matrix_labels[0] != "tangential coordinate")
     {
@@ -713,44 +727,33 @@ InterfilePDFSHeader::find_storage_order()
       if (matrix_labels[1] == "axial coordinate" && matrix_labels[2] == "view")
         {
           // If TOF information is in there
-          if (matrix_labels.size() > 4)
-            {
-              if (matrix_labels[4] == "timing positions")
-                {
-                  num_timing_poss = matrix_size[4][0];
-                  storage_order = ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos;
-                  num_views = matrix_size[2][0];
-#ifdef _MSC_VER
-                  num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
-#else
-                  num_rings_per_segment = matrix_size[1];
-#endif
-                }
-              else
-                error("Interfile header parsing: currently need 'matrix axis label [5] := timing positions' for TOF data");
-            }
+          if (num_dimensions > 4)
+            storage_order = ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos;
           else
-            {
-              storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
-              num_views = matrix_size[2][0];
+            storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
+
+          num_views = matrix_size[2][0];
 #ifdef _MSC_VER
-              num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+          num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
 #else
-              num_rings_per_segment = matrix_size[1];
+          num_rings_per_segment = matrix_size[1];
 #endif
-            }
+          return false;
         }
       else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial coordinate")
         {
-          storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+          // If TOF information is in there
+          if (num_dimensions > 4)
+            storage_order = ProjDataFromStream::Timing_Segment_AxialPos_View_TangPos;
+          else
+            storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
           num_views = matrix_size[1][0];
 #ifdef _MSC_VER
-
           num_rings_per_segment.assign(matrix_size[2].begin(), matrix_size[2].end());
-
 #else
           num_rings_per_segment = matrix_size[2];
 #endif
+          return false;
         }
     }
   /*
@@ -765,17 +768,13 @@ InterfilePDFSHeader::find_storage_order()
   #else
   num_rings_per_segment = matrix_size[1];
   #endif
-
+  return false;
    }
   */
-  else
-    {
-      warning("Interfile error: matrix labels not in expected (or supported) format\n");
-      stop_parsing();
-      return true;
-    }
-
-  return false;
+  // shouldn 't get here
+  warning("Interfile error: matrix labels not in expected (or supported) format\n");
+  stop_parsing();
+  return true;
 }
 
 // definition for using sort() below.
