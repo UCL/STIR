@@ -38,12 +38,12 @@ bool
 Array<num_dimensions, elemT>::is_contiguous() const
 {
   auto mem = &(*this->begin_all());
-  for (auto i=this->get_min_index(); i<this->get_max_index(); ++i)
+  for (auto i = this->get_min_index(); i < this->get_max_index(); ++i)
     {
       if (!(*this)[i].is_contiguous())
         return false;
       mem += (*this)[i].size_all();
-      if (mem != &(*(*this)[i+1].begin_all()))
+      if (mem != &(*(*this)[i + 1].begin_all()))
         return false;
     }
   return true;
@@ -62,15 +62,13 @@ Array<num_dimensions, elemT>::resize(const IndexRange<num_dimensions>& range)
 
 template <int num_dimensions, typename elemT>
 void
-Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elemT * const data_ptr, bool copy_data)
+Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data)
 {
   base_type::resize(range.get_min_index(), range.get_max_index());
   auto iter = this->begin();
   auto range_iter = range.begin();
   auto ptr = data_ptr;
-  for (;
-       iter != this->end();
-       ++iter, ++range_iter)
+  for (; iter != this->end(); ++iter, ++range_iter)
     {
       (*iter).init(*range_iter, ptr, copy_data);
       ptr += range_iter->size_all();
@@ -78,7 +76,7 @@ Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elem
 }
 
 template <int num_dimensions, typename elemT>
-void 
+void
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   resize(range);
@@ -86,29 +84,34 @@ Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array()
-  : base_type(), _allocated_full_data_ptr(nullptr)
+    : base_type(),
+      _allocated_full_data_ptr(nullptr)
 {}
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
-  : base_type(), _allocated_full_data_ptr(new elemT[range.size_all()])
+    : base_type(),
+      _allocated_full_data_ptr(new elemT[range.size_all()])
 {
-  // info("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size " + std::to_string(range.size_all()));
-  // set elements to zero
-  std::for_each(this->_allocated_full_data_ptr.get(), this->_allocated_full_data_ptr.get() + range.size_all(), [](elemT& e) { assign(e, 0); });
+  // info("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size "
+  // + std::to_string(range.size_all())); set elements to zero
+  std::for_each(this->_allocated_full_data_ptr.get(), this->_allocated_full_data_ptr.get() + range.size_all(), [](elemT& e) {
+    assign(e, 0);
+  });
   this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr)
 {
-    this->_allocated_full_data_ptr = data_sptr;
+  this->_allocated_full_data_ptr = data_sptr;
   this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const self& t)
-:  base_type(t), _allocated_full_data_ptr(nullptr)
+    : base_type(t),
+      _allocated_full_data_ptr(nullptr)
 {
   // info("constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
 }
@@ -117,7 +120,8 @@ Array<num_dimensions, elemT>::Array(const self& t)
 // swig cannot parse this ATM, but we don't need it anyway in the wrappers
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const base_type& t)
-:  base_type(t), _allocated_full_data_ptr(nullptr)
+    : base_type(t),
+      _allocated_full_data_ptr(nullptr)
 {
   // info("constructor basetype " + std::to_string(num_dimensions) + " of size " + std::to_string(this->size_all()));
 }
@@ -128,14 +132,14 @@ Array<num_dimensions, elemT>::~Array()
 {
   if (this->_allocated_full_data_ptr)
     {
-      // info("Array destructor full_data_ptr " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size " + std::to_string(this->size_all()));
-      // delete [] this->_allocated_full_data_ptr;
+      // info("Array destructor full_data_ptr " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) +
+      // " of size " + std::to_string(this->size_all())); delete [] this->_allocated_full_data_ptr;
     }
 }
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(Array<num_dimensions, elemT>&& other) noexcept
-  : Array()
+    : Array()
 {
   swap(*this, other);
   // info("move constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
@@ -143,8 +147,7 @@ Array<num_dimensions, elemT>::Array(Array<num_dimensions, elemT>&& other) noexce
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>&
-Array<num_dimensions, elemT>::
-operator=(Array<num_dimensions, elemT> other)
+Array<num_dimensions, elemT>::operator=(Array<num_dimensions, elemT> other)
 {
   swap(*this, other);
   // info("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
@@ -273,7 +276,7 @@ Array<num_dimensions, elemT>::get_full_data_ptr()
   \see get_full_data_ptr()
 */
 template <int num_dimensions, typename elemT>
-const elemT *
+const elemT*
 Array<num_dimensions, elemT>::get_const_full_data_ptr() const
 {
   this->_full_pointer_access = true;
@@ -538,10 +541,9 @@ Array<num_dimensions, elemT>::sapyb(const T& a, const Array& y, const T& b)
  **********************************************/
 template <class elemT>
 void
-Array<1, elemT>::init(const IndexRange<1>& range,  elemT * const data_ptr, bool copy_data)
+Array<1, elemT>::init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data)
 {
-  base_type::
-    init(range.get_min_index(), range.get_max_index(), data_ptr, copy_data);
+  base_type::init(range.get_min_index(), range.get_max_index(), data_ptr, copy_data);
 }
 
 template <class elemT>
@@ -625,7 +627,7 @@ Array<1, elemT>::Array(const base_type& il)
 
 template <typename elemT>
 Array<1, elemT>::Array(const Array<1, elemT>& other)
-  : base_type(other)
+    : base_type(other)
 {}
 
 template <typename elemT>
@@ -634,7 +636,7 @@ Array<1, elemT>::~Array()
 
 template <typename elemT>
 Array<1, elemT>::Array(Array<1, elemT>&& other) noexcept
-  : Array()
+    : Array()
 {
   swap(*this, other);
 }
@@ -647,7 +649,6 @@ Array<1, elemT>::operator=(const Array<1, elemT>& other)
   base_type::operator=(other);
   return *this;
 }
-
 
 template <typename elemT>
 typename Array<1, elemT>::full_iterator

@@ -34,8 +34,8 @@ template <class T>
 void
 VectorWithOffset<T>::init()
 {
-  length = 0; // i.e. an empty row of zero length,
-  start = 0;  // no offsets
+  length = 0;    // i.e. an empty row of zero length,
+  start = 0;     // no offsets
   num = nullptr; // and no data.
   begin_allocated_memory = nullptr;
   end_allocated_memory = nullptr;
@@ -44,7 +44,7 @@ VectorWithOffset<T>::init()
 
 template <class T>
 void
-VectorWithOffset<T>::init(const int min_index, const int max_index, T * const data_ptr, bool copy_data)
+VectorWithOffset<T>::init(const int min_index, const int max_index, T* const data_ptr, bool copy_data)
 {
   this->pointer_access = false;
   if (copy_data)
@@ -99,7 +99,7 @@ VectorWithOffset<T>::_destruct_and_deallocate()
   // we'll have to be careful to delete only initialised elements
   // and just de-allocate the rest
 
-    this->allocated_memory_sptr = nullptr;
+  this->allocated_memory_sptr = nullptr;
 }
 
 template <class T>
@@ -273,8 +273,7 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
 
 #if STIR_VERSION < 070000
 template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, 
-                                      T * const data_ptr, T * const end_of_data_ptr)   
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr)
     : length(static_cast<unsigned>(max_index - min_index) + 1),
       start(min_index),
       pointer_access(false),
@@ -315,7 +314,7 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, 
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(VectorWithOffset<T>&& other) noexcept
-  : VectorWithOffset()
+    : VectorWithOffset()
 {
   swap(*this, other);
 }

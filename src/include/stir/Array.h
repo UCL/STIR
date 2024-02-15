@@ -175,11 +175,11 @@ public:
   }
 
   //! move constructor
-  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
   Array(Array&& other) noexcept;
 
   //! assignment operator
-  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
   Array& operator=(Array other);
 
   /*! @name functions returning full_iterators*/
@@ -307,7 +307,7 @@ public:
   inline void release_const_full_data_ptr() const;
   //@}
 
- private:
+private:
   //! boolean to test if get_full_data_ptr is called
   // This variable is declared mutable such that get_const_full_data_ptr() can change it.
   mutable bool _full_pointer_access;
@@ -322,11 +322,10 @@ public:
     The C-array \data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
   */
-  inline void
-    init(const IndexRange<num_dimensions>& range, elemT * const data_ptr, bool copy_data);
+  inline void init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data);
   // Make sure that we can access init() recursively
-  template <int num_dimensions2, class elemT2> friend class Array;
-
+  template <int num_dimensions2, class elemT2>
+  friend class Array;
 };
 
 /**************************************************
@@ -408,7 +407,7 @@ public:
   inline Array(const self& t);
 
   //! move constructor
-  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
   Array(Array&& other) noexcept;
 
   //! virtual destructor
@@ -461,18 +460,33 @@ public:
   //! \name access to the data via a pointer
   //@{
   //! return if the array is contiguous in memory (always \c true)
-  bool is_contiguous() const { return true; }
+  bool is_contiguous() const
+  {
+    return true;
+  }
   //! member function for access to the data via a elemT*
-  inline elemT* get_full_data_ptr() { return this->get_data_ptr(); }
+  inline elemT* get_full_data_ptr()
+  {
+    return this->get_data_ptr();
+  }
 
   //! member function for access to the data via a const elemT*
-  inline const elemT* get_const_full_data_ptr() const  { return this->get_const_data_ptr(); }
+  inline const elemT* get_const_full_data_ptr() const
+  {
+    return this->get_const_data_ptr();
+  }
 
   //! signal end of access to elemT*
-  inline void release_full_data_ptr() { this->release_data_ptr(); }
+  inline void release_full_data_ptr()
+  {
+    this->release_data_ptr();
+  }
 
   //! signal end of access to const elemT*
-  inline void release_const_full_data_ptr() const { this->release_const_data_ptr(); }
+  inline void release_const_full_data_ptr() const
+  {
+    this->release_const_data_ptr();
+  }
   //@}
 
   //! return sum of all elements
@@ -553,16 +567,16 @@ public:
   inline const elemT& at(const BasicCoordinate<1, int>& c) const;
   //@}
 
-  private:
+private:
   // Make sure we can call init() recursively.
-  template <int num_dimensions2, class elemT2> friend class Array;
+  template <int num_dimensions2, class elemT2>
+  friend class Array;
 
   //! change vector with new index range and point to \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
   */
-  inline void init(const IndexRange<1>& range, elemT * const data_ptr, bool copy_data);
-
+  inline void init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data);
 };
 
 END_NAMESPACE_STIR

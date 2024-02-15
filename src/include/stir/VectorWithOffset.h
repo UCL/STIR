@@ -203,7 +203,7 @@ public:
   }
 
   //! move constructor
-  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */  
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
   VectorWithOffset(VectorWithOffset&& other) noexcept;
 
   //! Free all memory and make object as if default-constructed
