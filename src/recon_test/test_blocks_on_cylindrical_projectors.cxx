@@ -6,9 +6,11 @@
   \brief Test program for back projection and forward projection using stir::ProjDataInfoBlockOnCylindrical
 
   \author Daniel Deidda
+  \author Robert Twyman
 
 */
 /*  Copyright (C) 2021-2022, National Physical Laboratory
+    Copyright (C) 2024, Prescient Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -52,8 +54,6 @@
 #endif
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/IO/write_to_file.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/Shape/Shape3D.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
@@ -80,6 +80,7 @@ private:
   void run_map_orientation_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_projection_test(ForwardProjectorByBin& forw_projector1, ForwardProjectorByBin& forw_projector2);
   void run_intersection_with_cylinder_test();
+  void run_back_projection_test_with_axial_buckets(BackProjectorByBin& back_projector);
 };
 
 /*! The following is a function to allow a projdata_info BlocksOnCylindrical to be created from the scanner. */
@@ -872,6 +873,64 @@ BlocksTests::run_intersection_with_cylinder_test()
 }
 
 void
+BlocksTests::run_back_projection_test_with_axial_buckets(BackProjectorByBin& back_projector)
+
+{
+  int num_buckets = 1;
+  auto scanner_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  { // create geometry
+    scanner_sptr->set_average_depth_of_interaction(5);
+    scanner_sptr->set_num_axial_crystals_per_block(1);
+    scanner_sptr->set_axial_block_spacing(scanner_sptr->get_axial_crystal_spacing()
+                                          * scanner_sptr->get_num_axial_crystals_per_block());
+    scanner_sptr->set_transaxial_block_spacing(scanner_sptr->get_transaxial_crystal_spacing()
+                                               * scanner_sptr->get_num_transaxial_crystals_per_block());
+    scanner_sptr->set_num_axial_blocks_per_bucket(2);
+    scanner_sptr->set_num_rings(scanner_sptr->get_num_axial_crystals_per_bucket() * num_buckets);
+    scanner_sptr->set_scanner_geometry("BlocksOnCylindrical");
+    scanner_sptr->set_up();
+  }
+
+  auto projdata_info_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scanner_sptr, 1);
+  auto exam_info_sptr = std::make_shared<ExamInfo>(ImagingModality::PT);
+  auto projdata_sptr = std::make_shared<ProjDataInMemory>(exam_info_sptr, projdata_info_sptr);
+
+  auto origin = CartesianCoordinate3D<float>(0, 0, 0);
+  auto volume_dimensions = CartesianCoordinate3D<int>(-1, -1, -1);
+  auto volume_sptr
+      = std::make_shared<VoxelsOnCartesianGrid<float>>(exam_info_sptr, *projdata_info_sptr, 1, origin, volume_dimensions);
+
+  // Now run the test
+  volume_sptr->fill(0.0);
+  projdata_sptr->fill(1.0);
+
+  back_projector.set_up(projdata_info_sptr, volume_sptr);
+  back_projector.back_project(*volume_sptr, *projdata_sptr, 0, projdata_info_sptr->get_num_views());
+
+  bool test_ok = true;
+  std::ostringstream oss;
+  oss << "BlocksTests::run_back_projection_test_with_axial_buckets: Central voxel values are:" << std::endl;
+
+  auto centre_axial_values = std::vector<float>(volume_sptr->get_z_size());
+  for (int z = volume_sptr->get_min_z(); z <= volume_sptr->get_max_z(); z++)
+    {
+      centre_axial_values[z] = (*volume_sptr)[z][0][0];
+      oss << "\tz = " << z << "/" << volume_sptr->get_max_z() << " is " << centre_axial_values[z] << std::endl;
+      if (test_ok)
+        {
+          test_ok = check(centre_axial_values[z] > 0,
+                          "BlocksTests::run_back_projection_test_with_axial_buckets: Central voxel value <= 0");
+          everything_ok = everything_ok && test_ok;
+        }
+    }
+
+  if (test_ok)
+    return;
+  // Something went wrong, log the error
+  std::cerr << oss.str();
+}
+
+void
 BlocksTests::run_tests()
 {
   HighResWallClockTimer timer;
@@ -905,6 +964,8 @@ BlocksTests::run_tests()
   print_time("map orientation test took: ");
   run_intersection_with_cylinder_test();
   print_time("intersection with cylinder test took: ");
+  run_back_projection_test_with_axial_buckets(back_projector);
+  print_time("back projection test with axial buckets took: ");
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   // run the same tests with parallelproj, if available
