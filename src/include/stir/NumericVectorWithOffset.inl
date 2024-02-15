@@ -33,9 +33,8 @@ NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const VectorWithOffs
 {}
 
 template <class T, class NUMBER>
-NumericVectorWithOffset<T, NUMBER>::
-NumericVectorWithOffset(NumericVectorWithOffset<T, NUMBER>&& other) noexcept
-  : NumericVectorWithOffset()
+NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(NumericVectorWithOffset<T, NUMBER>&& other) noexcept
+    : NumericVectorWithOffset()
 {
   swap(*this, other);
 }
@@ -43,8 +42,7 @@ NumericVectorWithOffset(NumericVectorWithOffset<T, NUMBER>&& other) noexcept
 // assignment
 template <class T, class NUMBER>
 NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::
-operator=(const NumericVectorWithOffset<T, NUMBER>& other)
+NumericVectorWithOffset<T, NUMBER>::operator=(const NumericVectorWithOffset<T, NUMBER>& other)
 {
   base_type::operator=(other);
   return *this;
