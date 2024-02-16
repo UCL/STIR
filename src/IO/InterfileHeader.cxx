@@ -1030,9 +1030,9 @@ InterfilePDFSHeader::post_processing()
     {
       if (this->timing_poss_sequence.size() != static_cast<std::vector<int>::size_type>(this->num_timing_poss))
         {
-          warning("Inconsistent number of TOF bins (" + std::to_string(this->num_timing_poss) +
-          ") and size of the 'TOF bin order' list (" + std::to_string(this->timing_poss_sequence.size()) + ").");
-          //return true;
+          warning("Inconsistent number of TOF bins (" + std::to_string(this->num_timing_poss)
+                  + ") and size of the 'TOF bin order' list (" + std::to_string(this->timing_poss_sequence.size()) + ").");
+          // return true;
         }
     }
 
