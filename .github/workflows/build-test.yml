@@ -211,7 +211,7 @@ jobs:
                 sudo apt install libinsighttoolkit5-dev
               fi
               # free up some disk space
-              sudo apt clean
+              apt autoremove --purge && sudo apt clean
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
@@ -255,6 +255,7 @@ jobs:
              cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_args}
              cmake --build . --target install --config Release
              cd ../..
+             rm -rf parallelproj
           fi
 
           # Install ROOT (warning: currently only valid on Ubuntu)
@@ -362,7 +363,7 @@ jobs:
           # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
 
-    - name: examples
+    - name: C++ examples with STIR_LOCAL
       shell: bash
       run: |
           set -ex;
@@ -384,7 +385,22 @@ jobs:
           ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
           ${EXE_LOC}/demo5_line_search demo5_line_search.par
 
+    - name: remove build
+      shell: bash
+         # remove to create some disk space
+      run: |
+          set -x
+          cd ${GITHUB_WORKSPACE}
+          df -h .
+          rm -rf ./build
+          df -h .
+
+    - name: C++ examples with installed STIR
+      shell: bash
+      run: |
+          set -ex;
           # build and run C++/using_installed_STIR
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
           cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
           cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
           cmake --build build/ --config Release  --target install
@@ -392,12 +408,7 @@ jobs:
           demo_create_image
           # just check if its output makes sense
           list_image_info test.hv
-
-    - name: remove build
-      shell: bash
-         # remove to create some disk space
-      run:
-          rm -rf cd ${GITHUB_WORKSPACE}/build
+          rm -rf build
 
     - name: recon_test_pack
       shell: bash
@@ -432,6 +443,11 @@ jobs:
           ${{ github.workspace }}/recon_test_pack/**/my_*v
           ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7
+
+    - name: remove recon_test_pack
+      shell: bash
+      run: |
+          rm -rf ${GITHUB_WORKSPACE}/recon_test_pack
 
     - name: Python
       shell: bash
