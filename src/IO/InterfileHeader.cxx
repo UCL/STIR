@@ -617,6 +617,8 @@ InterfilePDFSHeader::InterfilePDFSHeader()
 #if STIR_VERSION < 070000
   add_alias_key("Maximum number of (unmashed) TOF time bins", "Number of TOF time bins");
 #endif
+  timing_poss_sequence.clear();
+  add_key("TOF bin order", &timing_poss_sequence);
   size_of_timing_pos = -1.f;
   add_key("Size of unmashed TOF time bins (ps)", &size_of_timing_pos);
 #if STIR_VERSION < 070000
@@ -701,7 +703,7 @@ InterfilePDFSHeader::find_storage_order()
       // TOF
       if (matrix_labels[4] == "timing positions")
         {
-          num_timing_poss = matrix_size[4][0];
+          this->num_timing_poss = matrix_size[4][0];
         }
       else
         {
@@ -1022,6 +1024,17 @@ InterfilePDFSHeader::post_processing()
     << std::accumulate(num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
     << endl;
 #endif
+
+  // TOF order
+  if (this->timing_poss_sequence.size())
+    {
+      if (this->timing_poss_sequence.size() != static_cast<std::vector<int>::size_type>(this->num_timing_poss))
+        {
+          warning("Inconsistent number of TOF bins (" + std::to_string(this->num_timing_poss)
+                  + ") and size of the 'TOF bin order' list (" + std::to_string(this->timing_poss_sequence.size()) + ").");
+          // return true;
+        }
+    }
 
   // handle scanner
 

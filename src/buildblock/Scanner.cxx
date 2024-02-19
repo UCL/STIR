@@ -42,6 +42,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <boost/format.hpp>
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -1751,6 +1752,23 @@ Scanner::check_consistency() const
 
   if (get_scanner_geometry() == "BlocksOnCylindrical")
     { //! Check consistency of axial and transaxial spacing for block geometry
+      if (get_num_axial_buckets() != 1)
+        {
+          warning(boost::format("BlocksOnCylindrical num_axial_buckets (%d) is greater than 1. This is not supported yet. "
+                                "Consider multiplying the number of axial_blocks_per_bucket by %d.")
+                  % get_num_axial_buckets() % get_num_axial_buckets());
+          return Succeeded::no;
+        }
+      { // Assert that each block contains an equal number of axial crystals
+        if (get_num_rings() % get_num_axial_crystals_per_bucket() != 0)
+          {
+            warning(boost::format("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the "
+                                  "get_num_axial_crystals_per_bucket "
+                                  "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)")
+                    % get_num_rings() % get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_block()
+                    % get_num_axial_blocks_per_bucket());
+          }
+      }
       if (get_axial_crystal_spacing() * get_num_axial_crystals_per_block() > get_axial_block_spacing())
         {
           warning(
@@ -1786,21 +1804,21 @@ Scanner::check_consistency() const
                   get_inner_ring_radius());
           return Succeeded::no;
         }
-      else if (get_scanner_geometry() == "Generic")
-        { //! Check if the crystal map is correct and given
-          if (get_crystal_map_file_name() == "")
+    }
+  else if (get_scanner_geometry() == "Generic")
+    { //! Check if the crystal map is correct and given
+      if (get_crystal_map_file_name().empty())
+        {
+          warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
+          return Succeeded::no;
+        }
+      else
+        {
+          std::ifstream crystal_map(get_crystal_map_file_name());
+          if (!crystal_map)
             {
-              warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
+              warning("No correct crystal map provided. Please check the file name.");
               return Succeeded::no;
-            }
-          else
-            {
-              std::ifstream crystal_map(get_crystal_map_file_name());
-              if (!crystal_map)
-                {
-                  warning("No correct crystal map provided. Please check the file name.");
-                  return Succeeded::no;
-                }
             }
         }
     }

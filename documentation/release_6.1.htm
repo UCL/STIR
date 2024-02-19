@@ -52,6 +52,7 @@ improvements to the documentation.
 <ul>
 <li>
   Add TOF capability of the parallelproj projector (see <a href=https://github.com/UCL/STIR/pull/1356>PR #1356</a>)
+  Read TOF bin order from interfile header (see <a href=https://github.com/UCL/STIR/pull/1389> PR #1389</a>)
 </li>
 </ul>
 
@@ -85,8 +86,10 @@ from the above):</H2>
 
 <h3>Backward incompatibities</h3>
 <ul>
-<li>
-</li>
+    <li>
+        Additional checks on <code>GeometryBlocksOnCylindrical</code> scanner configuration, which may lead to an
+        error being raised, while previously the code silently proceeded.
+    </li>
 </ul>
 
 <h3>New functionality</h3>
