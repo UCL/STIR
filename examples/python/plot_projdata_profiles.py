@@ -15,13 +15,14 @@
 # SPDX-License-Identifier: Apache-2.0
 # See STIR/LICENSE.txt for details
 
+import argparse
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 import stir
 import stirextra
-import numpy as np
-import argparse
-import pytest
-import sys
-import matplotlib.pyplot as plt
 
 PROJDATA_DIM_MAP = {
     0: "TOF",
@@ -124,7 +125,7 @@ def compress_and_extract_1d_from_nd_array(data: np.ndarray,
     return data
 
 
-def plot_sinogram_profiles(projection_data_list: list[stir.ProjData] | list[str],
+def plot_projdata_profiles(projection_data_list: list[stir.ProjData] | list[str],
                            display_axis: int = 3,
                            data_indices: list[int | None] | None = None,
                            ) -> None:
@@ -227,79 +228,7 @@ if __name__ == '__main__':
         parser.print_help()
         exit(0)
 
-    plot_sinogram_profiles(projection_data_list=args.filenames,
+    plot_projdata_profiles(projection_data_list=args.filenames,
                            display_axis=args.display_axis,
                            data_indices=[args.tof, args.axial_segment, args.view, args.tangential]
                            )
-
-# def test_generate_1d_from_4d():
-#     """
-#     Test the generation of a 1D array from a 4D array.
-#     """
-#     np_4d = np.random.rand(2, 3, 4, 5)
-#     configs = [
-#         {
-#             "display_axis": 0,
-#             "projdata_indices": [None, None, None, None],
-#             "result_shape": (np_4d.shape[0],),
-#             "result_sum": np_4d.sum()
-#         },
-#         {
-#             "display_axis": 1,
-#             "projdata_indices": [None, None, None, None],
-#             "result_shape": (np_4d.shape[1],),
-#             "result_sum": np_4d.sum()
-#         },
-#         {
-#             "display_axis": 2,
-#             "projdata_indices": [None, None, None, None],
-#             "result_shape": (np_4d.shape[2],),
-#             "result_sum": np_4d.sum()
-#         },
-#         {
-#             "display_axis": 3,
-#             "projdata_indices": [None, None, None, None],
-#             "result_shape": (np_4d.shape[3],),
-#             "result_sum": np_4d.sum()
-#         },
-#         # Extracting a single value from certain dimensions
-#         # in some cases add an index in the display axis dimension to be ignored.
-#         {
-#             "display_axis": 0,
-#             "projdata_indices": [0, None, None, None],
-#             "result_shape": (np_4d.shape[0],),
-#             "result_sum": None
-#         },
-#         {
-#             "display_axis": 0,
-#             "projdata_indices": [0, 1, None, None],
-#             "result_shape": (np_4d.shape[0],),
-#             "result_sum": None
-#         },
-#         {
-#             "display_axis": 1,
-#             "projdata_indices": [None, 1, None, None],
-#             "result_shape": (np_4d.shape[1],),
-#             "result_sum": None
-#         },
-#         {
-#             "display_axis": 2,
-#             "projdata_indices": [None, None, 1, None],
-#             "result_shape": (np_4d.shape[2],),
-#             "result_sum": None
-#         },
-#         {
-#             "display_axis": 3,
-#             "projdata_indices": [None, None, None, 1],
-#             "result_shape": (np_4d.shape[3],),
-#             "result_sum": None
-#         },
-#     ]
-#
-#     for config in configs:
-#         result = compress_and_extract_1d_from_nd_array(np_4d,
-#                                                        config["display_axis"],
-#                                                        config["projdata_indices"])
-#         assert result.shape == config["result_shape"]
-#         if config["result_sum"] is not None:
-#             pytest.approx(result.sum(), config["result_sum"], 1e-6)
