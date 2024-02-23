@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2020, UCL
+    Copyright (C) 2020, 2023 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -50,17 +50,29 @@ private:
   typedef VectorWithOffset<T> base_type;
 
 public:
-  //! Construct an empty NumericVectorWithOffset
-  inline NumericVectorWithOffset();
-
-  //! Construct a NumericVectorWithOffset of given length
-  inline explicit NumericVectorWithOffset(const int hsz);
-
-  //! Construct a NumericVectorWithOffset of elements with offset \c min_index
-  inline NumericVectorWithOffset(const int min_index, const int max_index);
+  using base_type::base_type;
 
   //! Constructor from an object of this class' base_type
   inline NumericVectorWithOffset(const VectorWithOffset<T>& t);
+
+  //! Constructor from an object of this class' base_type
+  inline NumericVectorWithOffset(const NumericVectorWithOffset& t)
+      : NumericVectorWithOffset(static_cast<const base_type&>(t))
+  {}
+
+  //! Swap content/members of 2 objects
+  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
+  friend inline void swap(NumericVectorWithOffset& first, NumericVectorWithOffset& second) // nothrow
+  {
+    swap(static_cast<base_type&>(first), static_cast<base_type&>(second));
+  }
+
+  //! move constructor
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
+  NumericVectorWithOffset(NumericVectorWithOffset&& other) noexcept;
+
+  //! assignment
+  NumericVectorWithOffset& operator=(const NumericVectorWithOffset& other);
 
   // arithmetic operations with a vector, combining element by element
 

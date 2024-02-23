@@ -43,7 +43,6 @@ using std::min_element;
 using std::max_element;
 using std::min;
 using std::max;
-using std::swap;
 using std::endl;
 using std::string;
 using std::pair;
@@ -113,7 +112,7 @@ ProjDataInfoCylindrical::ProjDataInfoCylindrical(const shared_ptr<Scanner>& scan
                   min_ring_diff[segment_num],
                   max_ring_diff[segment_num],
                   segment_num);
-          swap(min_ring_diff[segment_num], max_ring_diff[segment_num]);
+          std::swap(min_ring_diff[segment_num], max_ring_diff[segment_num]);
         }
   }
 

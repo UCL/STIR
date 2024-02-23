@@ -576,6 +576,7 @@
 %newobject *::get_empty_copy;
 %newobject *::read_from_file;
 
+%ignore **::swap;
 %ignore *::ask_parameters;
 %ignore *::create_shared_clone;
 %ignore *::read_from_stream;
@@ -583,6 +584,10 @@
 %ignore *::get_const_data_ptr;
 %ignore *::release_data_ptr;
 %ignore *::release_const_data_ptr;
+%ignore *::get_full_data_ptr;
+%ignore *::get_const_full_data_ptr;
+%ignore *::release_full_data_ptr;
+%ignore *::release_const_full_data_ptr;
 
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 

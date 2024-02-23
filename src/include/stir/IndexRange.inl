@@ -67,6 +67,20 @@ IndexRange<num_dimensions>::IndexRange(const BasicCoordinate<num_dimensions, int
 }
 
 template <int num_dimensions>
+std::size_t
+IndexRange<num_dimensions>::size_all() const
+{
+  this->check_state();
+  if (this->is_regular_range == regular_true && this->get_length() > 0)
+    return this->get_length() * this->begin()->size_all();
+  // else
+  size_t acc = 0;
+  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+    acc += this->num[i].size_all();
+  return acc;
+}
+
+template <int num_dimensions>
 bool
 IndexRange<num_dimensions>::operator==(const IndexRange<num_dimensions>& range2) const
 {
@@ -148,6 +162,12 @@ int
 IndexRange<1>::get_length() const
 {
   return max - min + 1;
+}
+
+std::size_t
+IndexRange<1>::size_all() const
+{
+  return std::size_t(this->get_length());
 }
 
 bool

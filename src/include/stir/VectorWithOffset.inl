@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-07-01, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -21,6 +22,7 @@
 
 */
 
+#include "stir/IndexRange.h"
 #include <algorithm>
 #include <stdexcept>
 #include "thresholding.h"
@@ -32,18 +34,40 @@ template <class T>
 void
 VectorWithOffset<T>::init()
 {
-  length = 0; // i.e. an empty row of zero length,
-  start = 0;  // no offsets
-  num = 0;    // and no data.
-  begin_allocated_memory = 0;
-  end_allocated_memory = 0;
+  length = 0;    // i.e. an empty row of zero length,
+  start = 0;     // no offsets
+  num = nullptr; // and no data.
+  begin_allocated_memory = nullptr;
+  end_allocated_memory = nullptr;
+  allocated_memory_sptr = nullptr;
+}
+
+template <class T>
+void
+VectorWithOffset<T>::init(const int min_index, const int max_index, T* const data_ptr, bool copy_data)
+{
+  this->pointer_access = false;
+  if (copy_data)
+    {
+      this->resize(min_index, max_index);
+      std::copy(data_ptr, data_ptr + this->length, this->begin());
+    }
+  else
+    {
+      this->length = static_cast<unsigned>(max_index - min_index) + 1;
+      this->start = min_index;
+      this->begin_allocated_memory = data_ptr;
+      this->end_allocated_memory = data_ptr + this->length;
+      this->num = this->begin_allocated_memory - this->start;
+      this->check_state();
+    }
 }
 
 template <class T>
 bool
 VectorWithOffset<T>::owns_memory_for_data() const
 {
-  return this->_owns_memory_for_data;
+  return this->allocated_memory_sptr ? true : false;
 }
 
 /*!
@@ -62,6 +86,7 @@ VectorWithOffset<T>::check_state() const
   assert(begin_allocated_memory <= num + start);
   assert(end_allocated_memory >= begin_allocated_memory);
   assert(static_cast<unsigned>(end_allocated_memory - begin_allocated_memory) >= length);
+  assert(!allocated_memory_sptr || (allocated_memory_sptr.get() == begin_allocated_memory));
 }
 
 template <class T>
@@ -74,11 +99,7 @@ VectorWithOffset<T>::_destruct_and_deallocate()
   // we'll have to be careful to delete only initialised elements
   // and just de-allocate the rest
 
-  // Check on capacity probably not really necessary
-  // as begin_allocated_memory is == 0 in that case, and delete[] 0 doesn't do anything
-  // (I think). Anyway, we're on the safe side now...
-  if (this->owns_memory_for_data() && this->capacity() != 0)
-    delete[] this->begin_allocated_memory;
+  this->allocated_memory_sptr = nullptr;
 }
 
 template <class T>
@@ -222,55 +243,41 @@ VectorWithOffset<T>::rend() const
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset()
-    : _owns_memory_for_data(true)
+    : pointer_access(false)
 {
-  pointer_access = false;
   this->init();
 }
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int hsz)
-    : length(hsz),
-      start(0),
-      pointer_access(false),
-      _owns_memory_for_data(true)
-{
-  if ((hsz > 0))
-    {
-      num = new T[hsz];
-      begin_allocated_memory = num;
-      end_allocated_memory = num + length;
-    }
-  else
-    this->init();
-  this->check_state();
-}
+    : VectorWithOffset(0, hsz - 1)
+{}
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
     : length(static_cast<unsigned>(max_index - min_index) + 1),
       start(min_index),
-      pointer_access(false),
-      _owns_memory_for_data(true)
+      pointer_access(false)
 {
   if (max_index >= min_index)
     {
-      num = new T[length];
-      begin_allocated_memory = num;
-      end_allocated_memory = num + length;
-      num -= min_index;
+      allocated_memory_sptr = shared_ptr<T[]>(new T[length]);
+      begin_allocated_memory = allocated_memory_sptr.get();
+      end_allocated_memory = begin_allocated_memory + length;
+      num = begin_allocated_memory - min_index;
     }
   else
     this->init();
   this->check_state();
 }
 
+#if STIR_VERSION < 070000
 template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int sz, T* const data_ptr, T* const end_of_data_ptr)
-    : length(static_cast<unsigned>(sz)),
-      start(0),
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr)
+    : length(static_cast<unsigned>(max_index - min_index) + 1),
+      start(min_index),
       pointer_access(false),
-      _owns_memory_for_data(false)
+      allocated_memory_sptr(nullptr) // we don't own the data
 {
   this->begin_allocated_memory = data_ptr;
   this->end_allocated_memory = end_of_data_ptr;
@@ -279,16 +286,37 @@ VectorWithOffset<T>::VectorWithOffset(const int sz, T* const data_ptr, T* const 
 }
 
 template <class T>
-VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr)
-    : length(static_cast<unsigned>(max_index - min_index) + 1),
-      start(min_index),
-      pointer_access(false),
-      _owns_memory_for_data(false)
+VectorWithOffset<T>::VectorWithOffset(const int sz, T* const data_ptr, T* const end_of_data_ptr)
+    : VectorWithOffset(0, sz - 1, data_ptr, end_of_data_ptr)
+{}
+#endif // STIR_VERSION < 070000
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, const T* const data_ptr)
 {
-  this->begin_allocated_memory = data_ptr;
-  this->end_allocated_memory = end_of_data_ptr;
-  this->num = this->begin_allocated_memory - this->start;
-  this->check_state();
+  // first set empty, such that resize() will work ok
+  this->init();
+  // note: need a const_cast, but it's safe because we will copy the data
+  this->init(min_index, max_index, const_cast<T*>(data_ptr), /* copy_data = */ true);
+}
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(const int sz, const T* const data_ptr)
+    : VectorWithOffset(0, sz - 1, data_ptr)
+{}
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, shared_ptr<T[]> data_sptr)
+{
+  this->allocated_memory_sptr = data_sptr;
+  this->init(min_index, max_index, data_sptr.get(), /* copy_data = */ false);
+}
+
+template <class T>
+VectorWithOffset<T>::VectorWithOffset(VectorWithOffset<T>&& other) noexcept
+    : VectorWithOffset()
+{
+  swap(*this, other);
 }
 
 template <class T>
@@ -364,13 +392,13 @@ VectorWithOffset<T>::reserve(const int new_capacity_min_index, const int new_cap
   // check if data is being accessed via a pointer (see get_data_ptr())
   assert(pointer_access == false);
   // TODO use allocator here instead of new
-  T* newmem = new T[new_capacity];
+  shared_ptr<T[]> new_allocated_memory_sptr(new T[new_capacity]);
   const unsigned extra_at_the_left = length == 0 ? 0U : std::max(0, this->get_min_index() - actual_capacity_min_index);
-  std::copy(this->begin(), this->end(), newmem + extra_at_the_left);
+  std::copy(this->begin(), this->end(), new_allocated_memory_sptr.get() + extra_at_the_left);
   this->_destruct_and_deallocate();
-  begin_allocated_memory = newmem;
+  allocated_memory_sptr = std::move(new_allocated_memory_sptr);
+  begin_allocated_memory = allocated_memory_sptr.get();
   end_allocated_memory = begin_allocated_memory + new_capacity;
-  _owns_memory_for_data = true;
   num = begin_allocated_memory + extra_at_the_left - (length > 0 ? start : 0);
   this->check_state();
 }
@@ -495,8 +523,7 @@ VectorWithOffset<T>::operator=(const VectorWithOffset& il)
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const VectorWithOffset& il)
-    : pointer_access(false),
-      _owns_memory_for_data(true)
+    : pointer_access(false)
 {
   this->init();
   *this = il; // Uses assignment operator (above)
