@@ -739,8 +739,8 @@ actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                  this->additive_proj_data_sptr,
                                  this->normalisation_sptr,
                                  caching_info_ptr,
-                                 proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift,
-                                 proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift,
+                                 proj_data_sptr->get_min_tof_pos_num(),// + tof_bin_shift,
+                                 proj_data_sptr->get_max_tof_pos_num(),// - tof_bin_shift,
                                  add_sensitivity);
 }
 
@@ -783,8 +783,8 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
                                          this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                          this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                          this->caching_info_ptr,
-                                         proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift,
-                                         proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift
+                                         proj_data_sptr->get_min_tof_pos_num(),// + tof_bin_shift,
+                                         proj_data_sptr->get_max_tof_pos_num()// - tof_bin_shift
                                          );
                 
     
@@ -799,8 +799,8 @@ sum_projection_data() const
 {
   
   float counts=0.0F;
-  int min_timing_poss_to_process = proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift;
-  int max_timing_poss_to_process = proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift;
+  int min_timing_poss_to_process = proj_data_sptr->get_min_tof_pos_num();// + tof_bin_shift;
+  int max_timing_poss_to_process = proj_data_sptr->get_max_tof_pos_num();// - tof_bin_shift;
   for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; ++segment_num)
   {
       for (int timing_pos_num = min_timing_poss_to_process; timing_pos_num <= max_timing_poss_to_process; ++timing_pos_num)
@@ -896,8 +896,8 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                  this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                  this->caching_info_ptr,
-                                 use_tofsens ? proj_data_sptr->get_min_tof_pos_num() + tof_bin_shift : 0,
-                                 use_tofsens ? proj_data_sptr->get_max_tof_pos_num() - tof_bin_shift : 0);
+                                 use_tofsens ? proj_data_sptr->get_min_tof_pos_num() : 0,// + tof_bin_shift : 0,
+                                 use_tofsens ? proj_data_sptr->get_max_tof_pos_num() : 0);// - tof_bin_shift : 0);
 
   std::transform(sensitivity.begin_all(), sensitivity.end_all(), 
                  sensitivity_this_subset_sptr->begin_all(), sensitivity.begin_all(), 
