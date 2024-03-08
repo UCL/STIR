@@ -171,6 +171,8 @@ public:
 
   inline void set_num_iterations(int);
 
+  inline void set_half_filter_width(unsigned int);
+
   inline void set_downsample_scanner(bool downsample_scanner, int downsampled_detectors_per_ring = -1);
 
   void set_output_scatter_estimate_prefix(const std::string&);

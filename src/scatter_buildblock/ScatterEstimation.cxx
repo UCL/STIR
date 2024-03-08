@@ -825,7 +825,7 @@ ScatterEstimation::process_data()
   float local_min_scale_value = 0.5f;
   float local_max_scale_value = 0.5f;
 
-  stir::BSpline::BSplineType spline_type = stir::BSpline::quadratic;
+  stir::BSpline::BSplineType spline_type = stir::BSpline::linear;
 
   // This has been set to 2D or 3D in the set_up()
   shared_ptr<ProjData> unscaled_est_projdata_sptr(
