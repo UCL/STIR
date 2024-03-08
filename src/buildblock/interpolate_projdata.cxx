@@ -239,17 +239,9 @@ interpolate_projdata(ProjData& proj_data_out,
           };
         }
       else
-        { // for BlocksOnCylindrical, views and tangential positions are not subsampled and can be mapped 1:1
-          if (proj_data_in_info.get_num_tangential_poss() != proj_data_out_info.get_num_tangential_poss())
-            {
-              error("Interpolation of BlocksOnCylindrical scanners assumes that number of tangential positions "
-                    "is the same in the downsampled scanner.");
-            }
-          if (proj_data_in_info.get_num_views() != proj_data_out_info.get_num_views())
-            {
-              error("Interpolation of BlocksOnCylindrical scanners assumes that number of views "
-                    "is the same in the downsampled scanner.");
-            }
+        { // for BlocksOnCylindrical, views and tangential positions are scaled by a fixed value
+          auto scale_factor
+              = (double)proj_data_out_info.get_num_tangential_poss() / (double)proj_data_in_info.get_num_tangential_poss();
 
           // only extending in axial direction - an extension of 2 was found to be sufficient
           proj_data_interpolator.set_coef(extend_segment(segment, 0, 2, 0));
@@ -267,7 +259,7 @@ interpolate_projdata(ProjData& proj_data_out,
             }
 
           // define a function to translate indices in the output proj data to indices in input proj data
-          index_converter = [&proj_data_out_info, m_offset, m_sampling](
+          index_converter = [&proj_data_out_info, m_offset, m_sampling, scale_factor](
                                 const BasicCoordinate<3, int>& index_out) -> BasicCoordinate<3, double> {
             // translate index on output to coordinate
             auto bin
@@ -277,8 +269,8 @@ interpolate_projdata(ProjData& proj_data_out,
             // translate to indices in input proj data
             BasicCoordinate<3, double> index_in;
             index_in[1] = (out_m - m_offset) / m_sampling;
-            index_in[2] = index_out[2];
-            index_in[3] = index_out[3];
+            index_in[2] = index_out[2] / scale_factor;
+            index_in[3] = index_out[3] / scale_factor;
 
             return index_in;
           };

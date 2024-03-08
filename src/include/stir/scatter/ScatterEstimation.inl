@@ -64,4 +64,17 @@ ScatterEstimation::set_num_iterations(int arg)
   this->num_scatter_iterations = arg;
 }
 
+void
+ScatterEstimation::set_half_filter_width(unsigned int arg)
+{
+  this->half_filter_width = arg;
+}
+
+void
+ScatterEstimation::set_downsample_scanner(bool downsample_scanner, int downsampled_detectors_per_ring)
+{
+  this->downsample_scanner_bool = downsample_scanner;
+  this->downsampled_detectors_per_ring = downsampled_detectors_per_ring;
+}
+
 END_NAMESPACE_STIR

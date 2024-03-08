@@ -162,6 +162,8 @@
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
 
+#include "stir/inverse_SSRB.h"
+
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
 #include <stdexcept>
@@ -1093,3 +1095,5 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 
 %shared_ptr(stir::InvertAxis);
 %include "stir/spatial_transformation/InvertAxis.h"
+
+%include "stir/inverse_SSRB.h"
