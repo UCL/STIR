@@ -23,6 +23,7 @@
 #include "stir/recon_buildblock/ChainedBinNormalisation.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/inverse_SSRB.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -77,7 +78,7 @@ ScatterEstimation::set_defaults()
   this->override_scanner_template = true;
   this->override_density_image = true;
   this->downsample_scanner_bool = true;
-  this->downsampled_detectors_per_ring = 0;
+  this->downsampled_detectors_per_ring = -1;
   this->remove_interleaving = true;
   this->atten_image_filename = "";
   this->atten_coeff_filename = "";
@@ -1016,16 +1017,13 @@ ScatterEstimation::process_data()
               shared_ptr<BinNormalisation> normalisation_factors_3d_sptr
                   = this->get_normalisation_object_sptr(this->multiplicative_binnorm_sptr);
 
-              upsample_and_fit_scatter_estimate(*scatter_estimate_sptr,
-                                                *this->input_projdata_sptr,
-                                                *temp_projdata,
-                                                *normalisation_factors_3d_sptr,
-                                                *this->input_projdata_sptr,
-                                                1.0f,
-                                                1.0f,
-                                                1,
-                                                spline_type,
-                                                false);
+              ProjDataInMemory interpolated_scatter(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                    this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+              inverse_SSRB(interpolated_scatter, *temp_projdata);
+              normalisation_factors_3d_sptr->set_up(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                    this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+              normalisation_factors_3d_sptr->undo(interpolated_scatter);
+              scatter_estimate_sptr->fill(interpolated_scatter);
             }
           else
             {
