@@ -17,12 +17,12 @@
   \brief Declaration of class stir::ParametricDiscretisedDensity
   \author Kris Thielemans
   \author Richard Brown
- 
+
 */
 
 #include "stir/DiscretisedDensity.h"
 #include "stir/NestedIterator.h"
-// for ParametricVoxelsOnCartesianGrid typedef 
+// for ParametricVoxelsOnCartesianGrid typedef
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/modelling/KineticParameters.h"
 START_NAMESPACE_STIR
@@ -37,13 +37,13 @@ template <typename DiscDensT>
 struct Parametric2Single;
 
 template <typename DiscDensT>
-struct Parametric2Single<ParametricDiscretisedDensity<DiscDensT> >
+struct Parametric2Single<ParametricDiscretisedDensity<DiscDensT>>
 {
   typedef typename Parametric2Single<DiscDensT>::type type;
 };
 
 template <int num_parameters, typename elemT>
-struct Parametric2Single<VoxelsOnCartesianGrid<KineticParameters<num_parameters, elemT> > >
+struct Parametric2Single<VoxelsOnCartesianGrid<KineticParameters<num_parameters, elemT>>>
 {
   typedef VoxelsOnCartesianGrid<elemT> type;
 };
@@ -61,13 +61,13 @@ struct Parametric2Single<VoxelsOnCartesianGrid<KineticParameters<num_parameters,
   In some cases, there could only be a single time frame (start to end of the study).
 */
 template <typename DiscDensT>
-class ParametricDiscretisedDensity:
-public DiscDensT
+class ParametricDiscretisedDensity : public DiscDensT
 {
- private:
+private:
   //  typedef DiscretisedDensity<num_dimensions, KinParsT> base_type;
   typedef DiscDensT base_type;
- public:
+
+public:
   //! A typedef that can be used what the base of the hierarchy is
   /*! For these purposes, we don't use DiscDensT (even though it's the base_type).
 
@@ -80,20 +80,18 @@ public DiscDensT
   typedef typename base_type::full_iterator full_densel_iterator;
   typedef typename base_type::const_full_iterator const_full_densel_iterator;
 
-  typedef NestedIterator<full_densel_iterator, BeginEndFunction<full_densel_iterator> > full_iterator;
-  typedef NestedIterator<const_full_densel_iterator, ConstBeginEndFunction<const_full_densel_iterator> >
-    const_full_iterator;
+  typedef NestedIterator<full_densel_iterator, BeginEndFunction<full_densel_iterator>> full_iterator;
+  typedef NestedIterator<const_full_densel_iterator, ConstBeginEndFunction<const_full_densel_iterator>> const_full_iterator;
 
   //! A static member to read an image from file
-  static ParametricDiscretisedDensity * read_from_file(const std::string& filename);
+  static ParametricDiscretisedDensity* read_from_file(const std::string& filename);
 
   //! Get number of parameters in a single densel
-  static unsigned int
-    get_num_params();
+  static unsigned int get_num_params();
 
   ParametricDiscretisedDensity(const base_type& density)
-    : base_type(density)
-    {}
+      : base_type(density)
+  {}
 
   /// Create blank parametric image from a dynamic image
   /*! Uses only its geometric/exam info and timing */
@@ -109,83 +107,69 @@ public DiscDensT
   // implementation works, but not needed for now
   // void update_parametric_image(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > &  densities);
 
-  void update_parametric_image(const SingleDiscretisedDensityType &  single_density, const unsigned int param_num);
+  void update_parametric_image(const SingleDiscretisedDensityType& single_density, const unsigned int param_num);
 
-  full_iterator begin_all()
-    { return full_iterator(base_type::begin_all(), base_type::end_all()); }
+  full_iterator begin_all() { return full_iterator(base_type::begin_all(), base_type::end_all()); }
 
   const_full_iterator begin_all_const() const
-    { return const_full_iterator(base_type::begin_all_const(), base_type::end_all_const()); }
+  {
+    return const_full_iterator(base_type::begin_all_const(), base_type::end_all_const());
+  }
 
-  full_iterator end_all()
-    { return full_iterator(base_type::end_all(), base_type::end_all()); }
+  full_iterator end_all() { return full_iterator(base_type::end_all(), base_type::end_all()); }
 
   const_full_iterator end_all_const() const
-    { return const_full_iterator(base_type::end_all_const(), base_type::end_all_const()); }
+  {
+    return const_full_iterator(base_type::end_all_const(), base_type::end_all_const());
+  }
 
-  const_full_iterator begin_all() const
-    { return this->begin_all_const(); }
+  const_full_iterator begin_all() const { return this->begin_all_const(); }
 
-  const_full_iterator end_all() const
-    { return this->end_all_const(); }
+  const_full_iterator end_all() const { return this->end_all_const(); }
 
-  full_densel_iterator begin_all_densel()
-    { return base_type::begin_all(); }
+  full_densel_iterator begin_all_densel() { return base_type::begin_all(); }
 
-  const_full_densel_iterator begin_all_densel_const() const
-    { return base_type::begin_all_const(); }
+  const_full_densel_iterator begin_all_densel_const() const { return base_type::begin_all_const(); }
 
-  full_densel_iterator end_all_densel()
-    { return base_type::end_all(); }
+  full_densel_iterator end_all_densel() { return base_type::end_all(); }
 
-  const_full_densel_iterator end_all_densel_const() const
-    { return base_type::end_all_const(); }
+  const_full_densel_iterator end_all_densel_const() const { return base_type::end_all_const(); }
 
-  const_full_densel_iterator begin_all_densel() const
-    { return this->begin_all_densel_const(); }
+  const_full_densel_iterator begin_all_densel() const { return this->begin_all_densel_const(); }
 
-  const_full_densel_iterator end_all_densel() const
-    { return this->end_all_densel_const(); }
+  const_full_densel_iterator end_all_densel() const { return this->end_all_densel_const(); }
 
   //! Allocate a new object with same characteristics as the current one.
-  virtual ParametricDiscretisedDensity* get_empty_copy() const;
+  ParametricDiscretisedDensity* get_empty_copy() const override;
 
   //! Allocate a new object which is a copy of the current one.
-  virtual ParametricDiscretisedDensity* clone() const;
+  ParametricDiscretisedDensity* clone() const override;
 
-  //! construct a single image by applying a function object on each KineticParameter 
+  //! construct a single image by applying a function object on each KineticParameter
   template <class KPFunctionObject>
-    void 
-    construct_single_density_using_function(SingleDiscretisedDensityType& density, KPFunctionObject f) const;
+  void construct_single_density_using_function(SingleDiscretisedDensityType& density, KPFunctionObject f) const;
 
   template <class KPFunctionObject>
-    const SingleDiscretisedDensityType
-    construct_single_density_using_function(KPFunctionObject f) const;
+  const SingleDiscretisedDensityType construct_single_density_using_function(KPFunctionObject f) const;
 
   //! construct a single image corresponding to the parameter with index \c i
-   //@{
-  void 
-    construct_single_density(SingleDiscretisedDensityType& density, const int i) const;
+  //@{
+  void construct_single_density(SingleDiscretisedDensityType& density, const int i) const;
 
-  const SingleDiscretisedDensityType
-    construct_single_density(const int index) const;
-#if 0   //!< Implementation of non-const functions - which should be able to update a single parameter of a parametric image.
+  const SingleDiscretisedDensityType construct_single_density(const int index) const;
+#if 0 //!< Implementation of non-const functions - which should be able to update a single parameter of a parametric image.
   // can't be done really
   SingleDiscretisedDensityType &
     construct_single_density(const int index);
 #endif
-   //@}
+  //@}
 };
 
-//! Convenience typedef for base-type of Cartesian Voxelised Parametric Images with just two parameters 
-typedef VoxelsOnCartesianGrid<KineticParameters<2,float> >
-           ParametricVoxelsOnCartesianGridBaseType;
+//! Convenience typedef for base-type of Cartesian Voxelised Parametric Images with just two parameters
+typedef VoxelsOnCartesianGrid<KineticParameters<2, float>> ParametricVoxelsOnCartesianGridBaseType;
 
-
-//! Convenience typedef for Cartesian Voxelised Parametric Images with just two parameters 
-typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>
-   ParametricVoxelsOnCartesianGrid;
-
+//! Convenience typedef for Cartesian Voxelised Parametric Images with just two parameters
+typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType> ParametricVoxelsOnCartesianGrid;
 
 END_NAMESPACE_STIR
 //#include "stir/modelling/ParametricDiscretisedDensity.inl"

@@ -1,5 +1,4 @@
 # A macro to set the C++ version
-# Based on https://stackoverflow.com/questions/10851247/how-to-activate-c-11-in-cmake
 
 # Copyright (C) 2017, 2020 University College London
 # Author Kris Thielemans
@@ -21,17 +20,8 @@ function(UseCXX VERSION)
         endif()
     endif()
 
-    if (CMAKE_VERSION VERSION_LESS "3.1")
-      message(WARNING "Your CMake version is older than v3.1. Attempting to set C++ version to ${VERSION} with compiler flags but this might fail. Please upgrade your CMake.")
-      if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_EXTENSIONS)
-        set (CMAKE_CXX_FLAGS "-std=gnu++${VERSION} ${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
-      else()
-        set (CMAKE_CXX_FLAGS "-std=c++${VERSION} ${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
-      endif ()
-    else ()
-      set (CMAKE_CXX_STANDARD ${VERSION} PARENT_SCOPE)
-      set (CMAKE_CXX_STANDARD_REQUIRED ON PARENT_SCOPE)
-    endif ()
+    set (CMAKE_CXX_STANDARD ${VERSION} PARENT_SCOPE)
+    set (CMAKE_CXX_STANDARD_REQUIRED ON PARENT_SCOPE)
 
     message(STATUS "Using C++ version ${VERSION}")
 endfunction(UseCXX)

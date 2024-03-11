@@ -34,7 +34,7 @@
 /*! \namespace stir::ecat
   \brief Namespace for the ECAT IO part of the STIR library (and some/most of its applications)
 
-  This namespace contains all routines that are common to the ECAT6 and 
+  This namespace contains all routines that are common to the ECAT6 and
   ECAT7 format.
 */
 
@@ -42,23 +42,22 @@
   \brief Namespace for the ECAT7 IO part of the STIR library (and some/most of its applications)
 
   This namespace is only non-empty when the HAVE_LLN_MATRIX preprocessor
-  symbol is defined during compilation. 
+  symbol is defined during compilation.
   */
 
 // have to define it here, otherwise doxygen ignores the \def command below
-#define  HAVE_LLN_MATRIX
+#define HAVE_LLN_MATRIX
 
 /*! \def HAVE_LLN_MATRIX
     \brief Preprocessor symbol that needs to be defined to enable ECAT7 support.
-  You need to have the ecat matrix library developed originally at the 
-  UCL of Louvain la Neuve. If the STIR Makefiles can find this 
+  You need to have the ecat matrix library developed originally at the
+  UCL of Louvain la Neuve. If the STIR Makefiles can find this
   library, HAVE_LLN_MATRIX will be automatically defined for you.
   See the User's guide for instructions.
 */
 /*! \namespace stir::ecat::ecat6
   \brief Namespace for the ECAT6 IO part of the STIR library (and some/most of its applications)
   */
-
 
 /*! \namespace stir::GE
   \brief Namespace for the part of the STIR library that handles GE data (and some/most of its applications)
@@ -86,11 +85,11 @@ The whole collection of libraries in STIR.
 \defgroup buildblock Basic building blocks
 \ingroup STIR_library
 Library with things that are not specific to reconstructions.
-This includes multi-dimensional arrays, images, image processors, 
+This includes multi-dimensional arrays, images, image processors,
 projection data,...
 */
 /*!
-\defgroup buildblock_detail Implementation details for buildblock 
+\defgroup buildblock_detail Implementation details for buildblock
 \ingroup buildblock
 */
 /*!
@@ -138,7 +137,7 @@ Classes for LORs.
 /*!
 \defgroup densitydata Items related to image data
 \ingroup buildblock
-Basic support for image (or discretised density) data. 
+Basic support for image (or discretised density) data.
 */
 /*!
 \defgroup resolution Items related to finding image resolution based on point or line sources
@@ -177,7 +176,7 @@ be selected at run-time.
 Library with building blocks for reading scan data
 \todo move projection data etc in here
 */
-/*! 
+/*!
 \defgroup singles_buildblock Singles rates etc
 \ingroup data_buildblock
 */
@@ -186,18 +185,18 @@ Library with building blocks for reading scan data
 \defgroup numerics Numerical algorithms
 \ingroup STIR_library
 */
-/*! 
+/*!
 \defgroup DFT Discrete Fourier transforms
 \ingroup numerics
 */
-/*! 
+/*!
 \defgroup BSpline Classes and functions for B-spline interpolation.
 \ingroup numerics
 */
 /*!
 \defgroup IO Input/Output Library
 \ingroup STIR_library
-Library with classes and functions to read and write images and projection 
+Library with classes and functions to read and write images and projection
 from/to file.
 */
 /*!
@@ -214,19 +213,19 @@ from/to file.
 \ingroup IO
 */
 
-/*! 
+/*!
 \defgroup listmode Support classes for reading list mode data
 \ingroup STIR_library
 */
 
-/*! 
+/*!
 \defgroup Shape Classes for describing geometric shapes such as cylinders etc.
 \ingroup STIR_library
 */
 
-/*! 
+/*!
 \defgroup evaluation Classes for computing ROI values and other FOMs
-   For image evaluation, it is often necessary to compute ROI values, 
+   For image evaluation, it is often necessary to compute ROI values,
    or other simple Figures of Merits (FOMs). These classes
    and functions allow you do to this directly in STIR. This is mainly
    useful for automation, as there is no nice graphical interface in STIR
@@ -244,18 +243,18 @@ Library with 'general' reconstruction building blocks
 \ingroup recon_buildblock
 Everything (?) related to projection matrices, forward and back projection.
 
-In the context of image reconstruction, 'forward projection' means going from 
-the image to an estimate of the (mean of the) data. This is because in 
-SPECT and PET, the measurements can be seen to be approximations of line 
+In the context of image reconstruction, 'forward projection' means going from
+the image to an estimate of the (mean of the) data. This is because in
+SPECT and PET, the measurements can be seen to be approximations of line
 integrals through the object.
 
-STIR keeps this terminology, even though it is unfortunate. (For instance, 
+STIR keeps this terminology, even though it is unfortunate. (For instance,
 a stir::ProjMatrix is not a projection matrix in the mathematical sense.)
 */
 /*!
 \defgroup symmetries Symmetries building blocks
 \ingroup projection
-Usually, there are (geometric) symmetries between the image and the projection 
+Usually, there are (geometric) symmetries between the image and the projection
 data. This means that various elements of the projection matrix will be equal.
 The classes in this module convert this concept into code, such that projection
 matrices need only be computed for the 'independent' bins.
@@ -266,7 +265,7 @@ matrices need only be computed for the 'independent' bins.
 Everything related to BinNormalisation classes.
 
 In PET 'normalisation' is used to describe a multiplicative calibration of
-every detector-pair. More generally, it can be used to the process of 
+every detector-pair. More generally, it can be used to the process of
 'correcting' projection data by multiplying every bin with a factor.
 */
 /*!
@@ -355,7 +354,7 @@ building blocks for scatter estimation
 Library for displaying of images
 */
 /*!
-\defgroup para Parallel library 
+\defgroup para Parallel library
 \ingroup STIR_library
 */
 
@@ -376,9 +375,6 @@ Library for displaying of images
 \ingroup alltest
 */
 
-
-
-
 /*!
 \defgroup main_programs Executables
 \ingroup STIR
@@ -397,8 +393,6 @@ Almost all programs that can be executed by the user.
 \ingroup utilities
 Includes conversion programs etc.
 */
-
-
 
 /*!
 \defgroup examples Example files

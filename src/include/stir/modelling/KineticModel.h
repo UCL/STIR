@@ -15,7 +15,7 @@
   \brief Definition of class stir::KineticModel
 
   \author Charalampos Tsoumpas
- 
+
 */
 
 #ifndef __stir_modelling_KineticModel_H__
@@ -26,22 +26,22 @@
 
 START_NAMESPACE_STIR
 
-/*! 
+/*!
   \brief base class for all kinetic models
   \ingroup modelling
 
   At present very basic. It just provides the parsing mechanism.
 */
-class KineticModel: public RegisteredObject<KineticModel> 
-{ 
+class KineticModel : public RegisteredObject<KineticModel>
+{
 
 public:
-  static const char * const registered_name ; 
-   //! default constructor
+  static const char* const registered_name;
+  //! default constructor
   KineticModel();
 
   //! default destructor
-  virtual ~KineticModel();
+  ~KineticModel() override;
 
   //  virtual float get_compartmental_activity_at_time(const int param_num, const int sample_num) const;
   //  virtual float get_total_activity_at_time(const int sample_num) const;
@@ -50,7 +50,6 @@ public:
 
   // protected:
   //  void initialise_keymap();
-
 };
 
 END_NAMESPACE_STIR

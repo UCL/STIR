@@ -23,23 +23,26 @@
 START_NAMESPACE_STIR
 
 // Global static pointer used to ensure a single instance of the class.
-Verbosity* Verbosity::_instance = NULL; 
+Verbosity* Verbosity::_instance = NULL;
 
-Verbosity::Verbosity(){
+Verbosity::Verbosity()
+{
   _verbosity_level = 2;
 };
 
-int Verbosity::get() 
+int
+Verbosity::get()
 {
-  if (!_instance)   // Only allow one instance of class to be generated.
+  if (!_instance) // Only allow one instance of class to be generated.
     _instance = new Verbosity;
 
   return _instance->_verbosity_level;
 }
 
-void Verbosity::set(int level) 
+void
+Verbosity::set(int level)
 {
-  if (!_instance)   // Only allow one instance of class to be generated.
+  if (!_instance) // Only allow one instance of class to be generated.
     _instance = new Verbosity;
 
   _instance->_verbosity_level = level;

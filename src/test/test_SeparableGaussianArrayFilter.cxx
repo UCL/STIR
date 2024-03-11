@@ -1,8 +1,8 @@
 
 /*!
-  \file 
+  \file
   \ingroup test
- 
+
   \brief tests for the stir::SeparableGaussianArrayFilter class
 
   \author Ludovica Brusaferri
@@ -33,7 +33,6 @@
 
 START_NAMESPACE_STIR
 
-
 #define num_dimensions 3
 
 /*!
@@ -46,28 +45,27 @@ START_NAMESPACE_STIR
 class SeparableGaussianArrayFilterTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
+
 private:
   //! test one case (overwrites contents of \c test)
   void test_one(Array<num_dimensions, float>&,
-		const BasicCoordinate< num_dimensions,float>& fwhms,
-		const BasicCoordinate< num_dimensions,int>& max_kernel_sizes);
-
+                const BasicCoordinate<num_dimensions, float>& fwhms,
+                const BasicCoordinate<num_dimensions, int>& max_kernel_sizes);
 };
 
 void
-SeparableGaussianArrayFilterTests::
-test_one(Array<num_dimensions, float>& test,
-	 const BasicCoordinate< num_dimensions,float>& fwhms,
-	 const BasicCoordinate< num_dimensions,int>& max_kernel_sizes)
+SeparableGaussianArrayFilterTests::test_one(Array<num_dimensions, float>& test,
+                                            const BasicCoordinate<num_dimensions, float>& fwhms,
+                                            const BasicCoordinate<num_dimensions, int>& max_kernel_sizes)
 {
   test.fill(0.F);
-  BasicCoordinate<3,int> min_ind, max_ind;
+  BasicCoordinate<3, int> min_ind, max_ind;
   test.get_regular_range(min_ind, max_ind);
-  BasicCoordinate<3,int> centre = (max_ind+min_ind)/2;
+  BasicCoordinate<3, int> centre = (max_ind + min_ind) / 2;
   test[centre] = 1.F;
 
-  SeparableGaussianArrayFilter<3,float> filter(fwhms,max_kernel_sizes,true);
+  SeparableGaussianArrayFilter<3, float> filter(fwhms, max_kernel_sizes, true);
   filter(test);
   double old_tol = get_tolerance();
   set_tolerance(.01);
@@ -76,11 +74,11 @@ test_one(Array<num_dimensions, float>& test,
   check(test.find_min() >= 0, "test if Gaussian kernel is non-negative");
 
   set_tolerance(.1);
-  for (int d=1; d<=3; ++d)
+  for (int d = 1; d <= 3; ++d)
     {
       std::cerr << "testing FWHM along dim " << d << '\n';
-      const Array<1,float> line = extract_line(test, centre, d);
-      const float fwhm = find_level_width(line.begin(), line.end(), .5*test[centre]);
+      const Array<1, float> line = extract_line(test, centre, d);
+      const float fwhm = find_level_width(line.begin(), line.end(), .5 * test[centre]);
       check_if_equal(fwhm, fwhms[d], "FWHM of kernel");
     }
   set_tolerance(old_tol);
@@ -88,37 +86,44 @@ test_one(Array<num_dimensions, float>& test,
 
 void
 SeparableGaussianArrayFilterTests::run_tests()
-{ 
+{
   std::cerr << "\nTesting 3D\n";
   {
     set_tolerance(.001F);
-    const int size1=69;
-    const int size2=200;
-    const int size3=130;
-    Array<3,float> test(IndexRange3D(size1,size2,size3));
+    const int size1 = 69;
+    const int size2 = 200;
+    const int size3 = 130;
+    Array<3, float> test(IndexRange3D(size1, size2, size3));
     {
-      BasicCoordinate< num_dimensions,float> fwhms;
-      fwhms[1]=9.F; fwhms[2]=7.4F; fwhms[3]=5.4F;
-      BasicCoordinate< num_dimensions,int> max_kernel_sizes;
+      BasicCoordinate<num_dimensions, float> fwhms;
+      fwhms[1] = 9.F;
+      fwhms[2] = 7.4F;
+      fwhms[3] = 5.4F;
+      BasicCoordinate<num_dimensions, int> max_kernel_sizes;
       std::cerr << "Fixed kernel size\n";
       {
-	max_kernel_sizes[1]=19; max_kernel_sizes[2]=19; max_kernel_sizes[3]=29;
-	test_one(test, fwhms, max_kernel_sizes);
+        max_kernel_sizes[1] = 19;
+        max_kernel_sizes[2] = 19;
+        max_kernel_sizes[3] = 29;
+        test_one(test, fwhms, max_kernel_sizes);
       }
       std::cerr << "Automatic kernel size\n";
       {
-	max_kernel_sizes[1]=-1; max_kernel_sizes[2]=-1; max_kernel_sizes[3]=-1;
-	test_one(test, fwhms, max_kernel_sizes);
+        max_kernel_sizes[1] = -1;
+        max_kernel_sizes[2] = -1;
+        max_kernel_sizes[3] = -1;
+        test_one(test, fwhms, max_kernel_sizes);
       }
     }
-  }  
+  }
 }
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main()
+int
+main()
 {
   SeparableGaussianArrayFilterTests tests;
   tests.run_tests();

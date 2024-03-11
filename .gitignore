@@ -69,6 +69,7 @@ install_manifest.txt
 # Ignore Visual Studio Code User-specific files
 build/
 install/
+.vscode/
 
 # MATLAB
 

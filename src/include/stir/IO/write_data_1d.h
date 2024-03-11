@@ -1,8 +1,8 @@
 #ifndef __stir_IO_write_data_1d_H__
 #define __stir_IO_write_data_1d_H__
 /*!
-  \file 
-  \ingroup Array_IO_detail 
+  \file
+  \ingroup Array_IO_detail
   \brief Declaration of stir::write_data_1d() functions for writing 1D stir::Array objects to file
 
   \author Kris Thielemans
@@ -23,34 +23,32 @@
 START_NAMESPACE_STIR
 class Succeeded;
 class ByteOrder;
-template <int num_dimensions, class elemT> class Array;
+template <int num_dimensions, class elemT>
+class Array;
 
-namespace detail {
+namespace detail
+{
 /*! \ingroup Array_IO_detail
   \brief This is an internal function called by \c write_data(). It does the actual writing
    to \c std::ostream.
 
-  This function does not throw any exceptions. Exceptions thrown by std::ostream::write 
+  This function does not throw any exceptions. Exceptions thrown by std::ostream::write
   are caught.
  */
 template <class elemT>
 inline Succeeded
-write_data_1d(std::ostream& s, const Array<1, elemT>& data,
-	      const ByteOrder byte_order,
-	      const bool can_corrupt_data);
+write_data_1d(std::ostream& s, const Array<1, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data);
 /*! \ingroup Array_IO_detail
   \brief This is an internal function called by \c write_data(). It does the actual writing
    to \c FILE* using stdio functions.
 
-  This function does not throw any exceptions. 
-  
+  This function does not throw any exceptions.
+
  */
 template <class elemT>
 inline Succeeded
-write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
-	   const ByteOrder byte_order,
-	   const bool can_corrupt_data);
-}
+write_data_1d(FILE*& fptr_ref, const Array<1, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data);
+} // namespace detail
 
 END_NAMESPACE_STIR
 

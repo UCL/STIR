@@ -44,56 +44,50 @@ listmode file with a third party.
 class ListModeData_dummy : public ListModeData
 {
 public:
-    ListModeData_dummy(shared_ptr<const ExamInfo> exam_info,
-                         shared_ptr<const ProjDataInfo> proj_data_info)
-    {
-        this->exam_info_sptr = exam_info;
-        this->proj_data_info_sptr = proj_data_info;
-    }
+  ListModeData_dummy(shared_ptr<const ExamInfo> exam_info, shared_ptr<const ProjDataInfo> proj_data_info)
+  {
+    this->exam_info_sptr = exam_info;
+    this->proj_data_info_sptr = proj_data_info;
+  }
 
-    virtual std::string get_name() const
-    {
-        return std::string("ListModeData_dummy");
-    }
+  std::string get_name() const override { return std::string("ListModeData_dummy"); }
 
-    virtual Succeeded reset()
-    {
-        error("ListModeData_dummy does not have reset()");
-        return Succeeded::no;
-    }
+  Succeeded reset() override
+  {
+    error("ListModeData_dummy does not have reset()");
+    return Succeeded::no;
+  }
 
-    virtual SavedPosition save_get_position()
-    {
-        error("ListModeData_dummy does not have save_get_position()");
-        return 0;
-    }
+  SavedPosition save_get_position() override
+  {
+    error("ListModeData_dummy does not have save_get_position()");
+    return 0;
+  }
 
-    virtual Succeeded set_get_position(const SavedPosition&)
-    {
-        error("ListModeData_dummy does not have set_get_position()");
-        return Succeeded::no;
-    }
+  Succeeded set_get_position(const SavedPosition&) override
+  {
+    error("ListModeData_dummy does not have set_get_position()");
+    return Succeeded::no;
+  }
 
-    virtual bool has_delayeds() const
-    {
-        error("ListModeData_dummy does not have has_delayeds()");
-        return false;
-    }
+  bool has_delayeds() const override
+  {
+    error("ListModeData_dummy does not have has_delayeds()");
+    return false;
+  }
 
 protected:
-    virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const
-    {
-        error("ListModeData_dummy does not have get_empty_record_helper_sptr()");
-        return nullptr;
-    }
-    virtual Succeeded get_next(ListRecord& event) const
-    {
-        error("ListModeData_dummy does not have get_next()");
-        return Succeeded::no;
-    }
-
+  shared_ptr<ListRecord> get_empty_record_helper_sptr() const override
+  {
+    error("ListModeData_dummy does not have get_empty_record_helper_sptr()");
+    return nullptr;
+  }
+  Succeeded get_next(ListRecord& event) const override
+  {
+    error("ListModeData_dummy does not have get_next()");
+    return Succeeded::no;
+  }
 };
-
 
 END_NAMESPACE_STIR
 

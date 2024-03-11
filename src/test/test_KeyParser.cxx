@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2020, 2024, University College London
     This file is part of STIR.
- 
+
     SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
@@ -32,9 +32,8 @@ class TestKP : public KeyParser
 {
 public:
   TestKP()
-    :
-    scalar_v(0),
-    vector_v(2,0)
+      : scalar_v(0),
+        vector_v(2, 0)
   {
     add_start_key("start");
     add_stop_key("stop");
@@ -49,8 +48,7 @@ public:
   std::vector<elemT> vector_v;
   bool operator==(TestKP& other) const
   {
-    return scalar_v == other.scalar_v &&
-      std::equal(vector_v.begin(),vector_v.end(), other.vector_v.begin());
+    return scalar_v == other.scalar_v && std::equal(vector_v.begin(), vector_v.end(), other.vector_v.begin());
   }
 };
 
@@ -62,8 +60,9 @@ public:
 class KeyParserTests : public RunTests
 {
 public:
-  template <typename elemT> void run_tests_one_type();
-  void run_tests();
+  template <typename elemT>
+  void run_tests_one_type();
+  void run_tests() override;
 };
 
 void
@@ -86,8 +85,8 @@ KeyParserTests::run_tests_one_type()
 {
   // basic test if parsing ok
   {
-    TestKP<elemT>  parser;
-    TestKP<elemT>  parser2;
+    TestKP<elemT> parser;
+    TestKP<elemT> parser2;
     std::stringstream str;
     str << "start:=\n"
         << "scalar:=2\n"
@@ -101,8 +100,8 @@ KeyParserTests::run_tests_one_type()
   }
   // test alias
   {
-    TestKP<elemT>  parser;
-    TestKP<elemT>  parser2;
+    TestKP<elemT> parser;
+    TestKP<elemT> parser2;
     std::stringstream str;
     str << "start:=\n"
         << "new alias:=2\n"
@@ -131,7 +130,7 @@ KeyParserTests::run_tests_one_type()
   }
   // test 1 if parsing catches errors
   {
-    TestKP<elemT>  parser;
+    TestKP<elemT> parser;
     std::stringstream str;
     str << "start:=\n"
         << "scalar[1]:=2\n"
@@ -139,7 +138,7 @@ KeyParserTests::run_tests_one_type()
         << "stop     :=\n";
     try
       {
-        std::cerr <<  "\nNext test should write an error (but not crash!)"  << std::endl;
+        std::cerr << "\nNext test should write an error (but not crash!)" << std::endl;
         parser.parse(str);
         check(false, "parsing non-vectorised key with vector should have failed");
       }
@@ -150,7 +149,7 @@ KeyParserTests::run_tests_one_type()
   }
   // test 2 if parsing catches errors
   {
-    TestKP<elemT>  parser;
+    TestKP<elemT> parser;
     std::stringstream str;
     str << "start:=\n"
         << "scalar:=2\n"
@@ -158,7 +157,7 @@ KeyParserTests::run_tests_one_type()
         << "stop     :=\n";
     try
       {
-        std::cerr <<  "\nNext test should write an error (but not crash!)"  << std::endl;
+        std::cerr << "\nNext test should write an error (but not crash!)" << std::endl;
         parser.parse(str);
         check(false, "parsing vectorised key with non-vector should have failed");
       }
@@ -167,16 +166,14 @@ KeyParserTests::run_tests_one_type()
         // ok
       }
   }
-
 }
 
 END_NAMESPACE_STIR
 
-
 USING_NAMESPACE_STIR
 
-
-int main()
+int
+main()
 {
   KeyParserTests tests;
   tests.run_tests();

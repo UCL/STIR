@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 5.2}}
+\textbf{\textit{version 6.0}}
 
 \end{center}
 
@@ -274,7 +274,7 @@ with \textit{rel\_time}, e.g. \textit{tracer\_injection\_rel\_time}.
 Pointers to an object called \textit{something\_ptr}. Currently there 
 is no naming distinction between shared pointers etc. This is 
 probably a bad idea. For new code, we recommend to use \textit{something\_sptr} 
-for shared pointers, and \textit{something\_aptr} for auto\_ptrs (see 
+for shared pointers, and \textit{something\_uptr} for unique\_ptrs (see 
 section \ref{sect:sharedptr}).
 \end{itemize}
 
@@ -314,7 +314,7 @@ To avoid unnecessary interdependencies between \textit{.h} files (and
 hence unnecessary rebuilds when modifying one \textit{.h} file), we 
 avoid including \textit{.h} files for 'supporting' classes as much 
 as possible. Instead, we only declare the classes needed, e.g. \textit{class 
-Bin;} instead of \textit{\#include stir/Bin.h.}
+Bin;} instead of \textit{\#include ``stir/Bin.h''.}
 
 
 
@@ -391,14 +391,24 @@ such that a production version of the programs
 is not slowed down. If an assertion is false, the program aborts 
 with info on the file and line number where the assertion failed.
 
+\subsection{C++ conventions}
+STIR uses C++-14 and is compatible with C++-20 to the best of our knowledge.
+For legacy reasons, we have some preprocessor 
+macros (see \textit{stir/common.h}) to define the stir namespace (see below).
+These should disappear at a 
+later development stage of the library.
+
+We use \texttt{override} for virtual functions in derived classes. This is clearer,
+less error-prone and avoids compiler warnings.
+
+STIR has a very long history. Lots of code was written pre-C++-11. We gradually simplify
+code when editing. This is definitely visible for code using iterators, which could be
+simplified by using \texttt{auto} as in this guide. It is a long term project to
+remove all compiler warnings from the code. Please help.
+
 \subsection{\label{ssect:AdvancedCppFeatures}
 Advanced (?) C++ features used}
 
-STIR uses C++-11 an dis compatible with C++-20 to the best of our knowledge.
-For legacy reasons, we have some preprocessor 
-macros (see \textit{stir/common.h}) that were used isolate work-arounds for older 
-compilers. Ideally, all these \#ifdefs should disappear at a 
-later development stage of the library.
 
 This section describes some C++ features used in STIR that might not be so familiar to
 non-C++ programmers.
@@ -514,7 +524,7 @@ pre-C++-11 and we do not use this smart pointer class too much, and
 generally use \texttt{shared\_ptr} instead. This is somewhat unfortunate 
 as these two smart pointers are generally quite different concepts. 
 
-\texttt{shared\_ptr} is a wrapper around the \texttt{std} (or boost\footnote{Boost smart pointer are probably no longer supported, and will no longer be from STIR 6.0.}) smart pointer class which 
+\texttt{shared\_ptr} is a wrapper around the \texttt{std} (or boost\footnote{Boost smart pointer are probably no longer supported, and will no longer be from STIR 6.1.}) smart pointer class which 
 is suitable when there are (potentially) more than one pointer 
 pointing to the same object. It keeps a reference count such 
 that the object is (only) deleted when the last shared pointer 
@@ -551,10 +561,10 @@ shared_ptr<ProjDataInfo> new_proj_data_info_sptr(proj_data_info_ptr->clone());
 
 We provide the convenience function \textit{stir::is\_null\_ptr()} 
 to test if a pointer is `null', i.e. does not point to anything. \textit{is\_null\_ptr} 
-works with ordinary pointers, shared\_ptrs and auto\_ptrs. Use 
+works with ordinary pointers, shared\_ptrs and unique\_ptrs. Use 
 it to avoid that your code depends on what type of (smart) pointer 
 you are using. Note however that since C++-11, it is more convenient to use the
-automatic converstion to \texttt{bool}.
+automatic conversion to \texttt{bool}.
 
 \subsection{Generic functionality of STIR classes}
 This is a (very incomplete) section describing some functionality that
@@ -1024,7 +1034,7 @@ following example.
 
     int number; float a;
 
-    void initialise_keymap()
+    void initialise_keymap() override
     {
       base_type::initialise_keymap();
       this->parser.add_start_key("My Class Parameters");
@@ -1033,14 +1043,14 @@ following example.
       this->parser.add_stop_key("END My Class Parameters");
     }
 
-    void set_defaults()
+    void set_defaults() override
     {
       base_type::set_defaults();
       // specify defaults for the parameters in case they are not set.
       number = 1;
       a = 2.4F;
     }
-    bool post_processing() // will be renamed to post_parsing()
+    bool post_processing() override // will be renamed to post_parsing()
     {
       // do some checks and handle some extra variables
       return false; // everything was ok
@@ -1122,11 +1132,9 @@ We currently have no easy way to copy all data across from one \texttt{ProjData}
 object to another. You will have to write an explicit loop over segments.
 
 \subsection{Dynamic or gated data}
-STIR 2.0 does not provide any direct facilities for reading 4D data (aside from
-the ECAT conversion utilities). Basic support should come in version 2.1.
-In the mean time, there is some preliminary functionality via the 
-\texttt{TimeFrameDefinitions} class and the \texttt{get\_time\_frame\_info}
-utility.
+Data should have an \texttt{ExamInfo} with a \texttt{TimeFrameDefinitions} object.
+You can also use the \texttt{get\_time\_frame\_info} utility.
+There is no equivalenet yet for gating fractions.
 
 
 \section{
@@ -1323,7 +1331,10 @@ as above, everything should work as expected.
 
 \section{Contributing to STIR}
 See
-\R2Lurl{https://github.com/UCL/STIR/blob/master/CONTRIBUTING.md}{STIR/CONTRIBUTING.md}.
+\R2Lurl{https://github.com/UCL/STIR/blob/master/CONTRIBUTING.md}{STIR/CONTRIBUTING.md}
+and
+\R2Lurl{https://github.com/UCL/STIR/blob/master/documentation/devel/README.md}{documentation/devel/README.md}
+for more information on editor settings etc.
 
 \subsection{Continuous integration testing}
 We use GitHub Actions and Appveyor for testing of every pull-request that was submitted on GitHub. PRs

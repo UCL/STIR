@@ -17,8 +17,8 @@
 \author Kris Thielemans
 \author PARAPET project
 
-This utility compares two input projection data sets. 
-The input data are deemed identical if their maximum absolute difference 
+This utility compares two input projection data sets.
+The input data are deemed identical if their maximum absolute difference
 is less than a hard-coded tolerance value.
 Diagnostic output is written to stdout, and the return value indicates
 if the files are identical or not. Note however that a non-success return
@@ -40,141 +40,132 @@ using std::cout;
 using std::endl;
 using std::max;
 
-
-
 START_NAMESPACE_STIR
-
 
 //*********************** functions
 
 // WARNING: modifies input1
-void 
-update_comparison(SegmentByView<float>& input1, const SegmentByView<float> &input2,
-		  float &max_pos_error, float& max_neg_error, float &amplitude)
+void
+update_comparison(SegmentByView<float>& input1,
+                  const SegmentByView<float>& input2,
+                  float& max_pos_error,
+                  float& max_neg_error,
+                  float& amplitude)
 {
-  const float reference_max=input1.find_max();
-  const float reference_min=input1.find_min();
+  const float reference_max = input1.find_max();
+  const float reference_min = input1.find_min();
 
-  const float local_amplitude=
-    fabs(reference_max)>fabs(reference_min)?
-    fabs(reference_max):fabs(reference_min);
+  const float local_amplitude = fabs(reference_max) > fabs(reference_min) ? fabs(reference_max) : fabs(reference_min);
 
-  amplitude=local_amplitude>amplitude?local_amplitude:amplitude;
+  amplitude = local_amplitude > amplitude ? local_amplitude : amplitude;
 
-  input1-=input2;
-  const float max_local_pos_error=input1.find_max();
-  const float max_local_neg_error=input1.find_min();
+  input1 -= input2;
+  const float max_local_pos_error = input1.find_max();
+  const float max_local_neg_error = input1.find_min();
 
-  max_pos_error=max_local_pos_error>max_pos_error? max_local_pos_error:max_pos_error;
-  max_neg_error=max_local_neg_error<max_neg_error? max_local_neg_error:max_neg_error;
-  
+  max_pos_error = max_local_pos_error > max_pos_error ? max_local_pos_error : max_pos_error;
+  max_neg_error = max_local_neg_error < max_neg_error ? max_local_neg_error : max_neg_error;
 }
-
-
-
 
 END_NAMESPACE_STIR
 
 //********************** main
 
-
-
-
-
-int main(int argc, char *argv[])
+int
+main(int argc, char* argv[])
 {
 
   USING_NAMESPACE_STIR;
 
   // defaults
-  float tolerance=0.0001F;
-
+  float tolerance = 0.0001F;
 
   // first process command line options
-  const char * const progname = argv[0];
+  const char* const progname = argv[0];
 
   // skip program name
   --argc;
   ++argv;
 
-  while (argc>0 && argv[0][0]=='-')
+  while (argc > 0 && argv[0][0] == '-')
     {
-      if (strcmp(argv[0], "-t")==0)
-	{
-	  if (argc<2)
-	    { cerr << "Option '-t' expects a (float) argument\n"; exit(EXIT_FAILURE); }
-	  tolerance = static_cast<float>(atof(argv[1]));
-	  argc-=2; argv+=2;
-	}      
+      if (strcmp(argv[0], "-t") == 0)
+        {
+          if (argc < 2)
+            {
+              cerr << "Option '-t' expects a (float) argument\n";
+              exit(EXIT_FAILURE);
+            }
+          tolerance = static_cast<float>(atof(argv[1]));
+          argc -= 2;
+          argv += 2;
+        }
       else
         {
-          std::cerr << "Unknown option '" << argv[0] <<"'\n"; exit(EXIT_FAILURE);
+          std::cerr << "Unknown option '" << argv[0] << "'\n";
+          exit(EXIT_FAILURE);
         }
     }
 
-  if(argc<2)
-  {
-    cerr<< "Usage:" << progname << " [-t tolerance] old_projdata new_projdata [max_segment_num]\n";
-    exit(EXIT_FAILURE);
-  }
+  if (argc < 2)
+    {
+      cerr << "Usage:" << progname << " [-t tolerance] old_projdata new_projdata [max_segment_num]\n";
+      exit(EXIT_FAILURE);
+    }
 
-	
+  shared_ptr<ProjData> first_operand = ProjData::read_from_file(argv[0]);
+  shared_ptr<ProjData> second_operand = ProjData::read_from_file(argv[1]);
 
-  shared_ptr<ProjData> first_operand=ProjData::read_from_file(argv[0]);
-  shared_ptr<ProjData> second_operand=ProjData::read_from_file(argv[1]);
-
-  int max_segment=first_operand->get_max_segment_num();
-  if(argc==3 && atoi(argv[2])>=0 && atoi(argv[2])<max_segment) 
-    max_segment=atoi(argv[2]);
+  int max_segment = first_operand->get_max_segment_num();
+  if (argc == 3 && atoi(argv[2]) >= 0 && atoi(argv[2]) < max_segment)
+    max_segment = atoi(argv[2]);
 
   // compare proj_data_info
   {
     shared_ptr<ProjDataInfo> first_sptr(first_operand->get_proj_data_info_sptr()->clone());
     shared_ptr<ProjDataInfo> second_sptr(second_operand->get_proj_data_info_sptr()->clone());
-    if (argc==4)
+    if (argc == 4)
       {
-	first_sptr->reduce_segment_range(-max_segment, max_segment);
-	second_sptr->reduce_segment_range(-max_segment, max_segment);
+        first_sptr->reduce_segment_range(-max_segment, max_segment);
+        second_sptr->reduce_segment_range(-max_segment, max_segment);
       }
     if (*first_sptr != *second_sptr)
       {
-	cout << "\nProjection data sizes or other data characteristics are not identical. \n"
-	     << "Use list_projdata_info to investigate.\n";
-	return EXIT_FAILURE;    }
+        cout << "\nProjection data sizes or other data characteristics are not identical. \n"
+             << "Use list_projdata_info to investigate.\n";
+        return EXIT_FAILURE;
+      }
   }
 
-  float max_pos_error=0.F, max_neg_error=0.F, amplitude=0.F;
-  for (int timing_pos_num=first_operand->get_min_tof_pos_num();
-       timing_pos_num<=first_operand->get_max_tof_pos_num();
+  float max_pos_error = 0.F, max_neg_error = 0.F, amplitude = 0.F;
+  for (int timing_pos_num = first_operand->get_min_tof_pos_num(); timing_pos_num <= first_operand->get_max_tof_pos_num();
        ++timing_pos_num)
-    for (int segment_num = -max_segment; segment_num <= max_segment ; segment_num++) 
+    for (int segment_num = -max_segment; segment_num <= max_segment; segment_num++)
       {
         SegmentIndices s_idx(segment_num, timing_pos_num);
-        auto  input1=first_operand->get_segment_by_view(s_idx);
-        const auto input2=second_operand->get_segment_by_view(s_idx);
+        auto input1 = first_operand->get_segment_by_view(s_idx);
+        const auto input2 = second_operand->get_segment_by_view(s_idx);
 
-        update_comparison(input1,input2,max_pos_error,max_neg_error, amplitude);
+        update_comparison(input1, input2, max_pos_error, max_neg_error, amplitude);
       }
 
-  const float max_abs_error=max(max_pos_error, -max_neg_error);
-  bool same=(max_abs_error/amplitude<=tolerance)?true:false;
+  const float max_abs_error = max(max_pos_error, -max_neg_error);
+  bool same = (max_abs_error / amplitude <= tolerance) ? true : false;
 
-  cout << "\nMaximum absolute error = "<<max_abs_error
-       << "\nMaximum in (1st - 2nd) = "<<max_pos_error
-       << "\nMinimum in (1st - 2nd) = "<<max_neg_error<<endl;
-  cout <<"Error relative to sup-norm of first data-set = "<<(max_abs_error/amplitude)*100<<" %"<<endl;
+  cout << "\nMaximum absolute error = " << max_abs_error << "\nMaximum in (1st - 2nd) = " << max_pos_error
+       << "\nMinimum in (1st - 2nd) = " << max_neg_error << endl;
+  cout << "Error relative to sup-norm of first data-set = " << (max_abs_error / amplitude) * 100 << " %" << endl;
 
-  cout<<"Projection arrays ";
-  if(same)
-  {
-    cout << (max_abs_error == 0 ? "are " : "deemed ")
-         << "identical\n";
-  }
-  else 
-  {
-    cout<<"deemed different\n";
-  }
+  cout << "Projection arrays ";
+  if (same)
+    {
+      cout << (max_abs_error == 0 ? "are " : "deemed ") << "identical\n";
+    }
+  else
+    {
+      cout << "deemed different\n";
+    }
 
-  return same?EXIT_SUCCESS:EXIT_FAILURE;
+  return same ? EXIT_SUCCESS : EXIT_FAILURE;
 
-} //end main
+} // end main

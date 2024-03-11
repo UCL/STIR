@@ -63,21 +63,24 @@ set(STIR_VERSION
 
 ####### Installation directories
 # Note: using absolute paths for those variables that are used in STIRConfig.h.in
+set(STIR_VERSION_MM STIR-${VERSION_MAJOR}.${VERSION_MINOR})
 
 # Use BeOS locations as in
 # https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
 # However, use CYGWIN location also elsewhere (as that's what's used in Ubuntu (and others?))
 if(BEOS)
-  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/documentation/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/documentation/doc/${STIR_VERSION_MM}")
 else() #if(CYGWIN)
-  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+  set(STIR_DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/${STIR_VERSION_MM}")
 #else()
-#  set(STIR_DOC_DIR "doc/stir-${VERSION_MAJOR}.${VERSION_MINOR}")
+#  set(STIR_DOC_DIR "doc/${STIR_VERSION_MM}")
 endif()
-# TODO append version numbers
-set(STIR_DATA_DIR "share/stir")
-set(ConfigPackageLocation lib/cmake/)
-set(STIR_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/stir/config" CACHE PATH "") 
+set(STIR_DATA_DIR "share/${STIR_VERSION_MM}")
+set(ConfigPackageLocation "lib/cmake/${STIR_VERSION_MM}")
+# installed json files
+set(STIR_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/${STIR_VERSION_MM}/config")
+# include files
+set(STIR_INCLUDE_INSTALL_DIR "include/${STIR_VERSION_MM}")
 
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
@@ -185,7 +188,7 @@ endif()
 
 # Parallelproj
 if(NOT DISABLE_Parallelproj_PROJECTOR)
-    find_package(parallelproj 1.0.1 CONFIG)
+    find_package(parallelproj 1.3.4 CONFIG)
     if (parallelproj_FOUND)
       set(STIR_WITH_Parallelproj_PROJECTOR ON)
       if (parallelproj_built_with_CUDA)
@@ -230,7 +233,7 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 
 # Set STIR_INCLUDE_DIRS before exporting such that it will refer to
 # the installed files, not the source.
-set (STIR_INCLUDE_DIRS "include")
+set (STIR_INCLUDE_DIRS "${STIR_INCLUDE_INSTALL_DIR}")
 
 
 # Older CMake cannot import or export object libraries. So we have to export

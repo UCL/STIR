@@ -15,7 +15,7 @@
   \ingroup projdata
 
   \brief Implementation of inline functions of class
-	stir::ProjDataInfoBlocksOnCylindricalNoArcCorr
+        stir::ProjDataInfoBlocksOnCylindricalNoArcCorr
 
   \author Kris Thielemans
   \author Parisa Khateri
@@ -28,6 +28,5 @@
 #include <math.h>
 
 START_NAMESPACE_STIR
-
 
 END_NAMESPACE_STIR

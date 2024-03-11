@@ -4,7 +4,7 @@
   Copyright (C) 2016, UCL
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0 
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -20,7 +20,7 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
-	
+
   \par Usage:
 
   \verbatim
@@ -56,105 +56,106 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 
-/***********************************************************/     
+/***********************************************************/
 
 static void
-print_usage_and_exit(const char * const prog_name)
+print_usage_and_exit(const char* const prog_name)
 {
-    std::cerr << "\nUsage:\n" << prog_name << "\n"
-              << "\t--ACF-filename <filename>\n"
-              << "\t--output-filename <filename>\n"
-              << "\t[--ACF-threshold <float>]\n"
-              << "\t[--safety-margin <integer>]\n"
-              << "ACF-threshold defaults to 1.1, safety-margin to 4\n"
-              << "Alternative Usage:\n"
-              << "Create_tail_mask_from_ACFs parameters.par\n"
-              << "Example par file:";
-    exit(EXIT_FAILURE);
+  std::cerr << "\nUsage:\n"
+            << prog_name << "\n"
+            << "\t--ACF-filename <filename>\n"
+            << "\t--output-filename <filename>\n"
+            << "\t[--ACF-threshold <float>]\n"
+            << "\t[--safety-margin <integer>]\n"
+            << "ACF-threshold defaults to 1.1, safety-margin to 4\n"
+            << "Alternative Usage:\n"
+            << "Create_tail_mask_from_ACFs parameters.par\n"
+            << "Example par file:";
+  exit(EXIT_FAILURE);
 }
 
-int main(int argc, const char *argv[])                                  
-{         
-    USING_NAMESPACE_STIR;
-    const char * const prog_name = argv[0];
+int
+main(int argc, const char* argv[])
+{
+  USING_NAMESPACE_STIR;
+  const char* const prog_name = argv[0];
 
-    CreateTailMaskFromACFs create_tail_mask_from_ACFs;
+  CreateTailMaskFromACFs create_tail_mask_from_ACFs;
 
-
-
-    // If one arg is supplied and it is a par file
-    // then use the Create_tail_mask_from_ACFs to parse the
-    // file. Otherwise continue the old way.
-    if (argc == 2)
+  // If one arg is supplied and it is a par file
+  // then use the Create_tail_mask_from_ACFs to parse the
+  // file. Otherwise continue the old way.
+  if (argc == 2)
     {
-        std::stringstream hdr_stream(argv[1]);
-        std::string sargv = hdr_stream.str();
+      std::stringstream hdr_stream(argv[1]);
+      std::string sargv = hdr_stream.str();
 
-        size_t lastindex = sargv.find_last_of(".");
-        std::string extension = sargv.substr(lastindex);
-        std::string par_ext = ".par";
-        if ( extension.compare(par_ext) != 0 )
-            error("Please provide a valid par file.");
+      size_t lastindex = sargv.find_last_of(".");
+      std::string extension = sargv.substr(lastindex);
+      std::string par_ext = ".par";
+      if (extension.compare(par_ext) != 0)
+        error("Please provide a valid par file.");
 
-        if (create_tail_mask_from_ACFs.parse(argv[1]) == false)
+      if (create_tail_mask_from_ACFs.parse(argv[1]) == false)
         {
-            warning("Create_tail_mask_from_ACFs aborting because error in parsing. Not writing any output");
-            return EXIT_FAILURE;
+          warning("Create_tail_mask_from_ACFs aborting because error in parsing. Not writing any output");
+          return EXIT_FAILURE;
         }
     }
-    else
+  else
     {
-        // option processing
-        float ACF_threshold = 1.1F;
-        int safety_margin=4;
-        std::string ACF_filename;
-        std::string output_filename;
+      // option processing
+      float ACF_threshold = 1.1F;
+      int safety_margin = 4;
+      std::string ACF_filename;
+      std::string output_filename;
 
-        while (argc>2 && argv[1][1] == '-')
+      while (argc > 2 && argv[1][1] == '-')
         {
-            if (strcmp(argv[1], "--ACF-filename")==0)
+          if (strcmp(argv[1], "--ACF-filename") == 0)
             {
-                ACF_filename = (argv[2]);
-                argc-=2; argv +=2;
+              ACF_filename = (argv[2]);
+              argc -= 2;
+              argv += 2;
             }
-            else if (strcmp(argv[1], "--output-filename")==0)
+          else if (strcmp(argv[1], "--output-filename") == 0)
             {
-                output_filename = (argv[2]);
-                argc-=2; argv +=2;
+              output_filename = (argv[2]);
+              argc -= 2;
+              argv += 2;
             }
-            else if (strcmp(argv[1], "--ACF-threshold")==0)
+          else if (strcmp(argv[1], "--ACF-threshold") == 0)
             {
-                ACF_threshold = float(atof(argv[2]));
-                argc-=2; argv +=2;
+              ACF_threshold = float(atof(argv[2]));
+              argc -= 2;
+              argv += 2;
             }
-            else if (strcmp(argv[1], "--safety-margin")==0)
+          else if (strcmp(argv[1], "--safety-margin") == 0)
             {
-                safety_margin = atoi(argv[2]);
-                argc-=2; argv +=2;
+              safety_margin = atoi(argv[2]);
+              argc -= 2;
+              argv += 2;
             }
-            else
+          else
             {
-                std::cerr << "\nUnknown option: " << argv[1];
-                print_usage_and_exit(prog_name);
+              std::cerr << "\nUnknown option: " << argv[1];
+              print_usage_and_exit(prog_name);
             }
         }
 
-        if (argc!=1 || ACF_filename.size()==0 || output_filename.size()==0)
+      if (argc != 1 || ACF_filename.size() == 0 || output_filename.size() == 0)
         {
-            print_usage_and_exit(prog_name);
+          print_usage_and_exit(prog_name);
         }
 
-        // Use CreateTailMaskFromACFs::set_up to parse the parameters
-        create_tail_mask_from_ACFs.set_input_projdata(ACF_filename);
-        create_tail_mask_from_ACFs.set_output_projdata(output_filename);
-        create_tail_mask_from_ACFs.ACF_threshold = ACF_threshold;
-        create_tail_mask_from_ACFs.safety_margin = safety_margin;
-
+      // Use CreateTailMaskFromACFs::set_up to parse the parameters
+      create_tail_mask_from_ACFs.set_input_projdata(ACF_filename);
+      create_tail_mask_from_ACFs.set_output_projdata(output_filename);
+      create_tail_mask_from_ACFs.ACF_threshold = ACF_threshold;
+      create_tail_mask_from_ACFs.safety_margin = safety_margin;
     }
 
-    // Onwards the new class will do the job ...
+  // Onwards the new class will do the job ...
 
-    return create_tail_mask_from_ACFs.process_data() == stir::Succeeded::yes ?
-                EXIT_SUCCESS : EXIT_FAILURE;
-}                 
-     
+  return create_tail_mask_from_ACFs.process_data() == stir::Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+}

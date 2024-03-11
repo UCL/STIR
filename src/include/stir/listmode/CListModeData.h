@@ -12,7 +12,7 @@
   \file
   \ingroup listmode
   \brief Declaration of class stir::CListModeData
-    
+
 \author Daniel Deidda
 \author Kris Thielemans
 */
@@ -28,8 +28,11 @@
 #include "stir/listmode/ListModeData.h"
 #include "stir/listmode/CListRecord.h"
 
-# ifdef BOOST_NO_STDC_NAMESPACE
-namespace std { using ::time_t; }
+#ifdef BOOST_NO_STDC_NAMESPACE
+namespace std
+{
+using ::time_t;
+}
 #endif
 
 START_NAMESPACE_STIR
@@ -51,26 +54,24 @@ public:
   /*! This is mainly/only useful to get a record of the correct type, that can then be
       passed to get_next_record().
   */
-  virtual
-    shared_ptr <CListRecord> get_empty_record_sptr() const = 0;
+  virtual shared_ptr<CListRecord> get_empty_record_sptr() const = 0;
 
   //! Gets the next record in the listmode sequence
 
-    virtual
-    Succeeded get_next_record(CListRecord& event) const = 0;
+  virtual Succeeded get_next_record(CListRecord& event) const = 0;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
-  virtual bool has_delayeds() const = 0;
+  bool has_delayeds() const override = 0;
 
 protected:
-  virtual shared_ptr<ListRecord> get_empty_record_helper_sptr() const
+  shared_ptr<ListRecord> get_empty_record_helper_sptr() const override
   {
-        shared_ptr<CListRecord> sptr(this->get_empty_record_sptr());
-        shared_ptr<ListRecord> sptr1(static_pointer_cast<ListRecord>(sptr));
-        return sptr1;}
+    shared_ptr<CListRecord> sptr(this->get_empty_record_sptr());
+    shared_ptr<ListRecord> sptr1(static_pointer_cast<ListRecord>(sptr));
+    return sptr1;
+  }
 
-  virtual Succeeded get_next(ListRecord& event) const
-  {return this->get_next_record((CListRecord&)(event));}
+  Succeeded get_next(ListRecord& event) const override { return this->get_next_record((CListRecord&)(event)); }
 };
 
 END_NAMESPACE_STIR

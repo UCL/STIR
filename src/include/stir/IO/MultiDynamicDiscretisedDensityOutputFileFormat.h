@@ -33,48 +33,40 @@ class DynamicDiscretisedDensity;
 
 /*!
   \ingroup MultiIO
-  \brief 
+  \brief
   Implementation of OutputFileFormat paradigm for the Multi format.
  */
 
-class MultiDynamicDiscretisedDensityOutputFileFormat : 
-  public RegisteredParsingObject<
-        MultiDynamicDiscretisedDensityOutputFileFormat,
-        OutputFileFormat<DynamicDiscretisedDensity>,
-        OutputFileFormat<DynamicDiscretisedDensity> >
+class MultiDynamicDiscretisedDensityOutputFileFormat
+    : public RegisteredParsingObject<MultiDynamicDiscretisedDensityOutputFileFormat,
+                                     OutputFileFormat<DynamicDiscretisedDensity>,
+                                     OutputFileFormat<DynamicDiscretisedDensity>>
 {
- private:
-  typedef 
-     RegisteredParsingObject<
-        MultiDynamicDiscretisedDensityOutputFileFormat,
-        OutputFileFormat<DynamicDiscretisedDensity>,
-        OutputFileFormat<DynamicDiscretisedDensity> >    base_type;
-public :
-    //! Name which will be used when parsing an OutputFileFormat object
-  static const char * const registered_name;
+private:
+  typedef RegisteredParsingObject<MultiDynamicDiscretisedDensityOutputFileFormat,
+                                  OutputFileFormat<DynamicDiscretisedDensity>,
+                                  OutputFileFormat<DynamicDiscretisedDensity>>
+      base_type;
 
-  MultiDynamicDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::FLOAT, 
-                   const ByteOrder& = ByteOrder::native);
+public:
+  //! Name which will be used when parsing an OutputFileFormat object
+  static const char* const registered_name;
 
-  virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
- protected:
-  virtual Succeeded  
-    actual_write_to_file(std::string& output_filename,
-		  const DynamicDiscretisedDensity& density) const;
+  MultiDynamicDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::FLOAT, const ByteOrder& = ByteOrder::native);
 
+  ByteOrder set_byte_order(const ByteOrder&, const bool warn = false) override;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-  
+protected:
+  Succeeded actual_write_to_file(std::string& output_filename, const DynamicDiscretisedDensity& density) const override;
+
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
+
   /// Output type for the individual images
-  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > individual_output_type_sptr;
-
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3, float>>> individual_output_type_sptr;
 };
 
-
-
 END_NAMESPACE_STIR
-
 
 #endif

@@ -32,13 +32,13 @@ START_NAMESPACE_STIR
 class MultipleProjData : public ExamData
 {
 public:
-
-  MultipleProjData():ExamData() {}
+  MultipleProjData()
+      : ExamData()
+  {}
 
   MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr)
-    :ExamData(exam_info_sptr)
-  {
-  }
+      : ExamData(exam_info_sptr)
+  {}
 
   //!
   //! \brief MultipleProjData
@@ -47,116 +47,91 @@ public:
   //! \author Nikos Efthimiou
   //! \details Convinience constructor which sets the number of gates.
   //! \warning The _proj_datas have been resized, but are still empty.
-  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                   const int num_gates);
+  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr, const int num_gates);
 
-  static
-  unique_ptr<MultipleProjData>
-  read_from_file(const std::string &parameter_file);
+  static unique_ptr<MultipleProjData> read_from_file(const std::string& parameter_file);
 
-  //N.E.14/07/16 Inherited from ExamData
-  // //! Get a pointer to the exam information
-//  const ExamInfo*
-//    get_exam_info_ptr() const
-//  {
-//    return this->_exam_info_sptr.get();
-//  }
+  // N.E.14/07/16 Inherited from ExamData
+  //  //! Get a pointer to the exam information
+  //  const ExamInfo*
+  //    get_exam_info_ptr() const
+  //  {
+  //    return this->_exam_info_sptr.get();
+  //  }
 
-//  //! Get a shared pointer to the exam information
-//  shared_ptr<ExamInfo>
-//    get_exam_info_sptr() const
-//  {
-//    return this->_exam_info_sptr;
-//  }
+  //  //! Get a shared pointer to the exam information
+  //  shared_ptr<ExamInfo>
+  //    get_exam_info_sptr() const
+  //  {
+  //    return this->_exam_info_sptr;
+  //  }
 
-  unsigned
-    get_num_proj_data() const
-  {
-    return static_cast<unsigned>(this->_proj_datas.size());
-  }
+  unsigned get_num_proj_data() const { return static_cast<unsigned>(this->_proj_datas.size()); }
 
   //!
   //! \brief get_projData_size
   //! \return The size of the projdata[0]
   //!
-  std::size_t get_proj_data_size() const
-  {
-      return _proj_datas.at(0)->size_all();
-  }
-
+  std::size_t get_proj_data_size() const { return _proj_datas.at(0)->size_all(); }
 
   //! resize to new number of projection data
   /*! This acts like std::vector::resize(), i.e. if the new size is smaller than the previous size,
     the last elements are deleted. If the new size is larger than the previous size, the new
     elements are assigned with null pointers. In the latter case, you need to use set_proj_data_sptr()
   */
-  void resize(const unsigned new_size)
-  {
-    this->_proj_datas.resize(new_size);
-  }
+  void resize(const unsigned new_size) { this->_proj_datas.resize(new_size); }
 
   //! set projection data for a particular index
   /*! \arg proj_data_sptr projection data (already fully initialised)
       \arg index number of the data (needs to be between 1 and get_num_proj_data())
   */
-  void 
-    set_proj_data_sptr(const shared_ptr<ProjData >& proj_data_sptr, 
-		       const unsigned int index);
+  void set_proj_data_sptr(const shared_ptr<ProjData>& proj_data_sptr, const unsigned int index);
   /*!
     \warning The index starts from 1
   */
-  const ProjData & 
-    operator[](const unsigned int index) const 
-    { 
-      assert(index>=1);
-      assert(index<= this->get_num_proj_data());
-      return *this->_proj_datas[index-1]; 
-    }
+  const ProjData& operator[](const unsigned int index) const
+  {
+    assert(index >= 1);
+    assert(index <= this->get_num_proj_data());
+    return *this->_proj_datas[index - 1];
+  }
   /*!
     \warning The index starts from 1
   */
-  const ProjData & 
-    get_proj_data(const unsigned int index) const 
-    { return (*this)[index]; }
+  const ProjData& get_proj_data(const unsigned int index) const { return (*this)[index]; }
 
   /*!
     \warning The index starts from 1
   */
-  shared_ptr<ProjData> 
-    get_proj_data_sptr(const unsigned int index) const 
-    {
-      assert(index>=1);
-      assert(index<= this->get_num_proj_data());
-      return this->_proj_datas[index-1]; 
-    }
+  shared_ptr<ProjData> get_proj_data_sptr(const unsigned int index) const
+  {
+    assert(index >= 1);
+    assert(index <= this->get_num_proj_data());
+    return this->_proj_datas[index - 1];
+  }
 
-  const shared_ptr<const ProjDataInfo>
-    get_proj_data_info_sptr() const;
+  const shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
   // return get_proj_data_sptr(1))->get_proj_data_info_sptr()
 
   /*! \deprecated */
-  unsigned int get_num_gates() const
-  {
-    return static_cast<unsigned int>(_proj_datas.size());
-  }
+  unsigned int get_num_gates() const { return static_cast<unsigned int>(_proj_datas.size()); }
 
   //!
   //! \brief copy_to
   //! \param array_iter an iterator to an array or other object (which has to be pre-allocated)
   //! \details Copy all data by incrementing \c array_iter.
   //! \author Nikos Efthimiou
-  template < typename iterT>
+  template <typename iterT>
   iterT copy_to(iterT array_iter) const
   {
-    for ( std::vector<shared_ptr<ProjData> >::const_iterator it = _proj_datas.begin();
-            it != _proj_datas.end(); ++it)
+    for (std::vector<shared_ptr<ProjData>>::const_iterator it = _proj_datas.begin(); it != _proj_datas.end(); ++it)
       {
-          if ( is_null_ptr( *(it)))
-              error("Dynamic/gated ProjData have not been properly allocated. Abort.");
+        if (is_null_ptr(*(it)))
+          error("Dynamic/gated ProjData have not been properly allocated. Abort.");
 
-          array_iter = stir::copy_to(*(*it), array_iter);
+        array_iter = stir::copy_to(*(*it), array_iter);
       }
-      return array_iter;
+    return array_iter;
   }
 
   //!
@@ -167,13 +142,12 @@ public:
   template <typename iterT>
   void fill_from(iterT array_iter)
   {
-      for (std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
-           it != _proj_datas.end(); ++it)
+    for (std::vector<shared_ptr<ProjData>>::iterator it = _proj_datas.begin(); it != _proj_datas.end(); ++it)
       {
-          if ( is_null_ptr( *(it)))
-              error("Dynamic ProjData have not been properly allocated.Abort.");
+        if (is_null_ptr(*(it)))
+          error("Dynamic ProjData have not been properly allocated.Abort.");
 
-          array_iter = (*it)->fill_from(array_iter);
+        array_iter = (*it)->fill_from(array_iter);
       }
   }
 
@@ -182,47 +156,47 @@ public:
   //! \author Nikos Efthimiou
   std::size_t size_all() const
   {
-      std::size_t size = 0;
-      for (std::size_t i_gate = 0; i_gate < this->get_num_gates(); i_gate++)
-          size += _proj_datas.at(i_gate)->size_all();
+    std::size_t size = 0;
+    for (std::size_t i_gate = 0; i_gate < this->get_num_gates(); i_gate++)
+      size += _proj_datas.at(i_gate)->size_all();
 
-      return size;
+    return size;
   }
 
 protected:
-  std::vector<shared_ptr<ProjData > > _proj_datas;
-  //shared_ptr<Scanner> _scanner_sptr;
- protected:
-  //N.E:14/07/16 Inherited from ExamData.
-//  shared_ptr<ExamInfo> _exam_info_sptr;
+  std::vector<shared_ptr<ProjData>> _proj_datas;
+  // shared_ptr<Scanner> _scanner_sptr;
+protected:
+  // N.E:14/07/16 Inherited from ExamData.
+  //  shared_ptr<ExamInfo> _exam_info_sptr;
 };
 
-
 //! Copy all bins to a range specified by an iterator
-/*! 
+/*!
   \ingroup copy_fill
   \return \a iter advanced over the range (as std::copy)
-  
+
   \warning there is no range-check on \a iter
 */
-template<>
+template <>
 struct CopyFill<MultipleProjData>
-{ template < typename iterT>
-    static
-iterT copy_to(const MultipleProjData& stir_object, iterT iter)
 {
-  //std::cerr<<"Using MultipleProjData::copy_to\n";
-  return stir_object.copy_to(iter);
-}
+  template <typename iterT>
+  static iterT copy_to(const MultipleProjData& stir_object, iterT iter)
+  {
+    // std::cerr<<"Using MultipleProjData::copy_to\n";
+    return stir_object.copy_to(iter);
+  }
 };
 
 //! set all elements of a MultipleProjData  from an iterator
-/*!  
+/*!
    Implementation that resorts to MultipleProjData::fill_from
    \warning there is no size/range-check on \a iter
 */
-template < typename iterT>
-void fill_from(MultipleProjData& stir_object, iterT iter, iterT /*iter_end*/)
+template <typename iterT>
+void
+fill_from(MultipleProjData& stir_object, iterT iter, iterT /*iter_end*/)
 {
   return stir_object.fill_from(iter);
 }
