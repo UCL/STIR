@@ -353,7 +353,7 @@ find_sym_op_general_bin(
     if ( !do_symmetry_swap_segment || segment_num > 0) 
     {   
       if ( do_symmetry_swap_s && s < 0) 
-        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(view180, axial_pos_shift, z_shift, transform_z, proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss()-1);
+        return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(view180, axial_pos_shift, z_shift, transform_z, proj_data_info_ptr->get_max_tof_pos_num()-1);
       else
       {
         if (z_shift==0)
@@ -369,13 +369,13 @@ find_sym_op_general_bin(
           return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z);
         else*/  
           if ( do_symmetry_swap_s && s < 0) 
-            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss()-1);
+            return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_max_tof_pos_num()-1);
           else        
             return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z);   // s > 0
       }  
       else // segment_num = 0 
       {
-        if ( do_symmetry_swap_s && s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_scanner_ptr()->get_max_num_timing_poss()-1);
+        if ( do_symmetry_swap_s && s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_max_tof_pos_num()-1);
         else
         {
           if (z_shift==0)
