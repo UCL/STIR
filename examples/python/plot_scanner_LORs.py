@@ -31,11 +31,12 @@ import stir
 
 # %% definition of useful objects and variables
 
-scanner = stir.Scanner_get_scanner_from_name('SAFIRDualRingPrototype')
-scanner.set_num_transaxial_blocks_per_bucket(1)
+scanner = stir.Scanner.get_scanner_from_name('SAFIRDualRingPrototype')
+scanner.set_num_transaxial_blocks_per_bucket(2)
+scanner.set_transaxial_block_spacing(scanner.get_transaxial_crystal_spacing()*scanner.get_num_transaxial_crystals_per_block()*1.2)
 scanner.set_intrinsic_azimuthal_tilt(0)
 # scanner.set_num_axial_crystals_per_block(1)
-# scanner.set_axial_block_spacing(scanner.get_axial_crystal_spacing()*scanner.get_num_axial_crystals_per_block())
+scanner.set_axial_block_spacing(scanner.get_axial_crystal_spacing()*scanner.get_num_axial_crystals_per_block()*1.2)
 # scanner.set_num_rings(1)
 scanner.set_scanner_geometry("BlocksOnCylindrical")
 # scanner.set_up()
@@ -91,33 +92,37 @@ color_v = iter(cm.tab20(numpy.linspace(0, 10, NCpR)))
 c = next(color_v)
 tB_num2 = -1
 
-for v in range(0, Nv, 5):
+for v in range(0, Nv, 1):
+    # TODO no clue where this comes from
     tB_nim_i, tB_num_f = divmod(v / NtCpBl, 1)
     tB_num = int(tB_nim_i)
     bin = stir.Bin(0, v, 0, 0)
 
     if tB_num > tB_num2:
         c = next(color_v)
-
+        label = "Block %s" % tB_num
+    else:
+        label = "_nolegend"
     tB_num2 = tB_num
     b1 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_1(bin)
     b2 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_2(bin)
 
     plt.plot((b1.x(), b2.x()), (b1.y(), b2.y()), color=c)
-    plt.plot(b1.x(), b1.y(), 'o', color=c, label="Block %s - det %s" % (tB_num, v))
+    plt.plot(b1.x(), b1.y(), 'o', color=c, label=label)
 
-    # Shrink current axis %
+    # Shrink current x-axis %
     box = ax.get_position()
-    ax.set_position([box.x0 - box.y0 * 0.04, box.y0 + box.y0 * 0.01, box.width, box.height])
+    ax.set_position([box.x0 - box.x0 * 0.04, box.y0, box.width, box.height])
     ax.set_aspect('equal', 'box')
     plt.legend(loc='best', bbox_to_anchor=(1., 1.), fancybox=True)
-    # plt.show()  #if debugging we can se how the LORs are order
+    # plt.show()  #if debugging we can see how the LORs are order
+# TODO no idea labels come. Probably from HFS patient?
 plt.gca().invert_yaxis()
 plt.text(-65, 65, "PL")
 plt.text(65, 65, "PR")
 plt.text(-65, -65, "AL")
 plt.text(65, -65, "AR")
-plt.savefig('2D-2BlocksPerBuckets-ObliqueAt0degrees-XY-LOR.png', format='png', dpi=300)
+plt.savefig(f'2D-{scanner.get_num_transaxial_blocks_per_bucket()}BlocksPerBuckets-ObliqueAt{scanner.get_intrinsic_azimuthal_tilt()/math.pi*180}degrees-XY-LOR.png', format='png', dpi=300)
 plt.show()
 plt.close()
 
