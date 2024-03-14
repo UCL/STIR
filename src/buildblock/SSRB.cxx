@@ -253,33 +253,35 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
 
                 unsigned int num_in_ax_pos = 0;
 
-              for (int in_timing_pos_num = in_proj_data.get_min_tof_pos_num();
-                   in_timing_pos_num <= in_proj_data.get_max_tof_pos_num();
-                   ++in_timing_pos_num)
-                for (int in_segment_num = in_min_segment_num; in_segment_num <= in_max_segment_num; ++in_segment_num)
-                  for (int in_ax_pos_num = in_proj_data.get_min_axial_pos_num(in_segment_num);
-                       in_ax_pos_num <= in_proj_data.get_max_axial_pos_num(in_segment_num);
-                       ++in_ax_pos_num)
-                    {
-                      const float in_m = in_proj_data_info_sptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, in_timing_pos_num));
-                      if (fabs(out_m - in_m) < 1E-4)
-                        {
-                          ++num_in_ax_pos;
+                for (int in_timing_pos_num = in_proj_data.get_min_tof_pos_num();
+                     in_timing_pos_num <= in_proj_data.get_max_tof_pos_num();
+                     ++in_timing_pos_num)
+                  for (int in_segment_num = in_min_segment_num; in_segment_num <= in_max_segment_num; ++in_segment_num)
+                    for (int in_ax_pos_num = in_proj_data.get_min_axial_pos_num(in_segment_num);
+                         in_ax_pos_num <= in_proj_data.get_max_axial_pos_num(in_segment_num);
+                         ++in_ax_pos_num)
+                      {
+                        const float in_m
+                            = in_proj_data_info_sptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, in_timing_pos_num));
+                        if (fabs(out_m - in_m) < 1E-4)
+                          {
+                            ++num_in_ax_pos;
 
-                          in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num, false, in_timing_pos_num);
-                          for (int in_view_num = in_proj_data.get_min_view_num(); in_view_num <= in_proj_data.get_max_view_num();
-                               ++in_view_num)
-                            for (int tangential_pos_num
-                                 = max(in_proj_data.get_min_tangential_pos_num(), out_proj_data.get_min_tangential_pos_num());
-                                 tangential_pos_num
-                                 <= min(in_proj_data.get_max_tangential_pos_num(), out_proj_data.get_max_tangential_pos_num());
-                                 ++tangential_pos_num)
-                              out_sino[in_view_num / num_views_to_combine][tangential_pos_num]
-                                  += in_sino[in_view_num][tangential_pos_num];
+                            in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num, false, in_timing_pos_num);
+                            for (int in_view_num = in_proj_data.get_min_view_num();
+                                 in_view_num <= in_proj_data.get_max_view_num();
+                                 ++in_view_num)
+                              for (int tangential_pos_num
+                                   = max(in_proj_data.get_min_tangential_pos_num(), out_proj_data.get_min_tangential_pos_num());
+                                   tangential_pos_num
+                                   <= min(in_proj_data.get_max_tangential_pos_num(), out_proj_data.get_max_tangential_pos_num());
+                                   ++tangential_pos_num)
+                                out_sino[in_view_num / num_views_to_combine][tangential_pos_num]
+                                    += in_sino[in_view_num][tangential_pos_num];
 
-                          break; // out of loop over ax_pos as we found where to put it
-                        }
-                    }
+                            break; // out of loop over ax_pos as we found where to put it
+                          }
+                      }
                 if (do_norm && num_in_ax_pos != 0)
                   out_sino /= static_cast<float>(num_in_ax_pos * num_views_to_combine);
                 if (num_in_ax_pos == 0)
