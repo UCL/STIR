@@ -47,8 +47,8 @@ SSRB(const ProjDataInfo& in_proj_data_info,
      const int max_in_segment_num_to_process_argument,
      const int num_tof_bins_to_combine)
 {
-  if (num_tof_bins_to_combine != 1)
-    error("SSRB: num_tof_bins_to_combine (%d) currently needs to be 1", num_tof_bins_to_combine);
+  // if (num_tof_bins_to_combine != 1)
+  //   error("SSRB: num_tof_bins_to_combine (%d) currently needs to be 1", num_tof_bins_to_combine);
   if (num_segments_to_combine % 2 == 0)
     error("SSRB: num_segments_to_combine (%d) needs to be odd\n", num_segments_to_combine);
   const int max_in_segment_num_to_process = max_in_segment_num_to_process_argument >= 0 ? max_in_segment_num_to_process_argument
@@ -165,8 +165,8 @@ SSRB(const string& output_filename,
 void
 SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
 {
-  if (in_proj_data.get_proj_data_info_sptr()->is_tof_data())
-    error("SSRB for TOF data is not currently implemented.\n");
+  // if (in_proj_data.get_proj_data_info_sptr()->is_tof_data())
+  //   error("SSRB for TOF data is not currently implemented.\n");
 
   const shared_ptr<const ProjDataInfoCylindrical> in_proj_data_info_sptr
       = dynamic_pointer_cast<const ProjDataInfoCylindrical>(in_proj_data.get_proj_data_info_sptr());
@@ -184,6 +184,7 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
     }
 
   const int num_views_to_combine = in_proj_data.get_num_views() / out_proj_data.get_num_views();
+  const int num_tof_bins_to_combine = in_proj_data.get_num_tof_poss() / out_proj_data.get_num_tof_poss();
 
   if (in_proj_data.get_min_view_num() != 0 || out_proj_data.get_min_view_num() != 0)
     error("SSRB can only mash views when min_view_num==0\n");
@@ -238,47 +239,54 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
             = out_proj_data.get_empty_sinogram(out_proj_data.get_min_axial_pos_num(out_segment_num), out_segment_num);
         Sinogram<float> in_sino
             = in_proj_data.get_empty_sinogram(in_proj_data.get_min_axial_pos_num(out_segment_num), out_segment_num);
-
-        for (int out_ax_pos_num = out_proj_data.get_min_axial_pos_num(out_segment_num);
-             out_ax_pos_num <= out_proj_data.get_max_axial_pos_num(out_segment_num);
-             ++out_ax_pos_num)
+        for (int out_timing_pos_num = out_proj_data.get_min_tof_pos_num();
+             out_timing_pos_num <= out_proj_data.get_max_tof_pos_num();
+             ++out_timing_pos_num)
           {
-            out_sino = out_proj_data.get_empty_sinogram(out_ax_pos_num, out_segment_num);
-            // get_m could be replaced by get_t
-            const float out_m = out_proj_data_info_sptr->get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));
+            for (int out_ax_pos_num = out_proj_data.get_min_axial_pos_num(out_segment_num);
+                 out_ax_pos_num <= out_proj_data.get_max_axial_pos_num(out_segment_num);
+                 ++out_ax_pos_num)
+              {
+                out_sino = out_proj_data.get_empty_sinogram(out_ax_pos_num, out_segment_num, false, out_timing_pos_num);
+                // get_m could be replaced by get_t
+                const float out_m = out_proj_data_info_sptr->get_m(Bin(out_segment_num, 0, out_ax_pos_num, out_timing_pos_num));
 
-            unsigned int num_in_ax_pos = 0;
+                unsigned int num_in_ax_pos = 0;
 
-            for (int in_segment_num = in_min_segment_num; in_segment_num <= in_max_segment_num; ++in_segment_num)
-              for (int in_ax_pos_num = in_proj_data.get_min_axial_pos_num(in_segment_num);
-                   in_ax_pos_num <= in_proj_data.get_max_axial_pos_num(in_segment_num);
-                   ++in_ax_pos_num)
-                {
-                  const float in_m = in_proj_data_info_sptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, 0));
-                  if (fabs(out_m - in_m) < 1E-4)
+              for (int in_timing_pos_num = in_proj_data.get_min_tof_pos_num();
+                   in_timing_pos_num <= in_proj_data.get_max_tof_pos_num();
+                   ++in_timing_pos_num)
+                for (int in_segment_num = in_min_segment_num; in_segment_num <= in_max_segment_num; ++in_segment_num)
+                  for (int in_ax_pos_num = in_proj_data.get_min_axial_pos_num(in_segment_num);
+                       in_ax_pos_num <= in_proj_data.get_max_axial_pos_num(in_segment_num);
+                       ++in_ax_pos_num)
                     {
-                      ++num_in_ax_pos;
+                      const float in_m = in_proj_data_info_sptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, in_timing_pos_num));
+                      if (fabs(out_m - in_m) < 1E-4)
+                        {
+                          ++num_in_ax_pos;
 
-                      in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num);
-                      for (int in_view_num = in_proj_data.get_min_view_num(); in_view_num <= in_proj_data.get_max_view_num();
-                           ++in_view_num)
-                        for (int tangential_pos_num
-                             = max(in_proj_data.get_min_tangential_pos_num(), out_proj_data.get_min_tangential_pos_num());
-                             tangential_pos_num
-                             <= min(in_proj_data.get_max_tangential_pos_num(), out_proj_data.get_max_tangential_pos_num());
-                             ++tangential_pos_num)
-                          out_sino[in_view_num / num_views_to_combine][tangential_pos_num]
-                              += in_sino[in_view_num][tangential_pos_num];
+                          in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num, false, in_timing_pos_num);
+                          for (int in_view_num = in_proj_data.get_min_view_num(); in_view_num <= in_proj_data.get_max_view_num();
+                               ++in_view_num)
+                            for (int tangential_pos_num
+                                 = max(in_proj_data.get_min_tangential_pos_num(), out_proj_data.get_min_tangential_pos_num());
+                                 tangential_pos_num
+                                 <= min(in_proj_data.get_max_tangential_pos_num(), out_proj_data.get_max_tangential_pos_num());
+                                 ++tangential_pos_num)
+                              out_sino[in_view_num / num_views_to_combine][tangential_pos_num]
+                                  += in_sino[in_view_num][tangential_pos_num];
 
-                      break; // out of loop over ax_pos as we found where to put it
+                          break; // out of loop over ax_pos as we found where to put it
+                        }
                     }
-                }
-            if (do_norm && num_in_ax_pos != 0)
-              out_sino /= static_cast<float>(num_in_ax_pos * num_views_to_combine);
-            if (num_in_ax_pos == 0)
-              warning("SSRB: no sinograms contributing to output segment %d, ax_pos %d\n", out_segment_num, out_ax_pos_num);
+                if (do_norm && num_in_ax_pos != 0)
+                  out_sino /= static_cast<float>(num_in_ax_pos * num_views_to_combine);
+                if (num_in_ax_pos == 0)
+                  warning("SSRB: no sinograms contributing to output segment %d, ax_pos %d\n", out_segment_num, out_ax_pos_num);
 
-            out_proj_data.set_sinogram(out_sino);
+                out_proj_data.set_sinogram(out_sino);
+              }
           }
       }
     }
