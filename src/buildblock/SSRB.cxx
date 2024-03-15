@@ -47,8 +47,8 @@ SSRB(const ProjDataInfo& in_proj_data_info,
      const int max_in_segment_num_to_process_argument,
      const int num_tof_bins_to_combine)
 {
-  if (in_proj_data_info.get_num_tof_poss() % num_tof_bins_to_combine == 0)
-    error("SSRB: num_tof_bins_to_combine needs to divide the number of TOF bins\n");
+  // if (in_proj_data_info.get_num_tof_poss() % num_tof_bins_to_combine == 0)
+  //   error("SSRB: num_tof_bins_to_combine needs to divide the number of TOF bins\n");
   if (num_segments_to_combine % 2 == 0)
     error("SSRB: num_segments_to_combine (%d) needs to be odd\n", num_segments_to_combine);
   const int max_in_segment_num_to_process = max_in_segment_num_to_process_argument >= 0 ? max_in_segment_num_to_process_argument
