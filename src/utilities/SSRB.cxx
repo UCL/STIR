@@ -81,7 +81,7 @@ print_usage_and_exit(const std::string& prog_name)
        << prog_name << " [-t num_tangential_poss_to_trim] \\\n"
        << "\toutput_filename input_projdata_name \\\n"
        << "\t[num_segments_to_combine \\\n"
-       << "\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process ]]]]\n"
+       << "\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process [num_tof_bins_to_combine ]]]]]\n"
        << "num_segments_to_combine has to be odd. It is used as the number of segments\n"
        << "  in the original data to combine.\n"
        << "num_views_to_combine has to be at least 1 (which is the default)\n"
@@ -89,6 +89,7 @@ print_usage_and_exit(const std::string& prog_name)
        << "  of tangential positions.\n"
        << "do_norm has to be 1 (normalise the result, which is the default) or 0\n"
        << "max_in_segment_num_to_process defaults to all segments\n"
+       << "num_tof_bins_to_combine defaults to 1, so TOF bins are not combined\n"
        << "\n\t - Template Based SSRB method\n"
        << prog_name << "--template template_projdata_filename output_filename input_projdata_name [do_norm]\n"
        << "template_projdata_filename the format of the output sinogram.\n"
@@ -114,6 +115,7 @@ classic_SSRB(int argc, char** argv)
   const int num_views_to_combine = argc <= 4 ? 1 : atoi(argv[4]);
   const bool do_norm = argc <= 5 ? true : atoi(argv[5]) != 0;
   const int max_segment_num_to_process = argc <= 6 ? -1 : atoi(argv[6]);
+  const int num_tof_bins_to_combine = argc <= 7 ? 1 : atoi(argv[7]);
   // do standard SSRB
   SSRB(output_filename,
        *in_projdata_ptr,
@@ -121,7 +123,8 @@ classic_SSRB(int argc, char** argv)
        num_views_to_combine,
        num_tangential_poss_to_trim,
        do_norm,
-       max_segment_num_to_process);
+       max_segment_num_to_process,
+       num_tof_bins_to_combine);
 }
 
 void
@@ -140,7 +143,7 @@ template_based_SSRB(int argc, char** argv)
 int
 main(int argc, char** argv)
 {
-  if (argc > 7 || argc < 3)
+  if (argc > 8 || argc < 3)
     {
       print_usage_and_exit(argv[0]);
     }
