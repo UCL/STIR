@@ -5,7 +5,8 @@
     Copyright (C) 2016, University of Hull
     Copyright (C) 2016, 2019, 2021, 2023 UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-    Copyright (C 2017-2018, University of Leeds
+    Copyright (C) 2017-2018, University of Leeds
+    Copyright (C) 2024, Prescient Imaging
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -28,6 +29,7 @@
   \author Palak Wadhwa
   \author PARAPET project
   \author Parisa Khateri
+  \author Robert Twyman Skelly
 
 */
 #ifndef __stir_buildblock_SCANNER_H__
@@ -332,7 +334,7 @@ public:
       algorithm. It uses the same coordinate system as ProjDataInfo::get_phi().
   */
   inline float get_intrinsic_azimuthal_tilt() const;
-  //! \name Info on crystals per block etc.
+  //! \name Info on crystals per block/bucket etc.
   //@{
   //! get number of transaxial blocks per bucket
   inline int get_num_transaxial_blocks_per_bucket() const;
@@ -348,6 +350,10 @@ public:
   inline int get_num_axial_crystals_per_bucket() const;
   //! get number of crystal layers (for DOI)
   inline int get_num_detector_layers() const;
+  /*! With virtual crystals between blocks, it will miss the end virtual crystals. This method takes this into account.*/
+  inline int get_num_axial_crystals() const;
+  //! get the number of transaxial crystals
+  inline int get_num_transaxial_crystals() const;
   //! get number of axial blocks
   inline int get_num_axial_blocks() const;
   //! get number of axial blocks
@@ -416,13 +422,13 @@ public:
   //! get scanner geometry
   /*! \see set_scanner_geometry */
   inline std::string get_scanner_geometry() const;
-  //! get crystal spacing in axial direction
+  //! get crystal spacing/pitch in axial direction in mm
   inline float get_axial_crystal_spacing() const;
-  //! get crystal spacing in transaxial direction
+  //! get crystal spacing/pitch in transaxial direction in mm
   inline float get_transaxial_crystal_spacing() const;
-  //! get block spacing in axial direction
+  //! get block spacing/pitch in axial direction in mm
   inline float get_axial_block_spacing() const;
-  //! get block spacing in transaxial direction
+  //! get block spacing/pitch in transaxial direction in mm
   inline float get_transaxial_block_spacing() const;
   //@} (end of get block geometry info)
 
@@ -478,7 +484,7 @@ public:
   inline void set_default_bin_size(const float& new_size);
   //! in degrees
   inline void set_intrinsic_azimuthal_tilt(const float new_tilt);
-  //! \name Info on crystals per block etc.
+  //! \name Info on crystals per block/bucket etc.
   //@{
   //! set number of transaxial blocks per bucket
   inline void set_num_transaxial_blocks_per_bucket(const int& new_num);

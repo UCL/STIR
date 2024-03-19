@@ -22,6 +22,7 @@
   \author Long Zhang (set*() functions)
   \author PARAPET project
   \author Parisa Khateri
+  \author Robert Twyman Skelly
 
 
 */
@@ -143,13 +144,13 @@ Scanner::get_num_transaxial_crystals_per_block() const
 int
 Scanner::get_num_axial_crystals_per_bucket() const
 {
-  return get_num_axial_blocks_per_bucket() * get_num_axial_crystals_per_block();
+  return get_num_axial_crystals_per_block() * get_num_axial_blocks_per_bucket();
 }
 
 int
 Scanner::get_num_transaxial_crystals_per_bucket() const
 {
-  return get_num_transaxial_blocks_per_bucket() * get_num_transaxial_crystals_per_block();
+  return get_num_transaxial_crystals_per_block() * get_num_transaxial_blocks_per_bucket();
 }
 
 int
@@ -159,29 +160,41 @@ Scanner::get_num_detector_layers() const
 }
 
 int
+Scanner::get_num_axial_crystals() const
+{
+  // when using virtual crystals between blocks, there won't be any at the end, so we
+  // need to take this into account.
+  return num_rings + get_num_virtual_axial_crystals_per_block();
+}
+
+int
+Scanner::get_num_transaxial_crystals() const
+{
+  return num_detectors_per_ring;
+}
+
+int
 Scanner::get_num_axial_blocks() const
 {
-  // when using virtual crystals between blocks, there won't be one at the end, so we
-  // need to take this into account.
-  return (num_rings + get_num_virtual_axial_crystals_per_block()) / num_axial_crystals_per_block;
+  return get_num_axial_crystals() / get_num_axial_crystals_per_block();
 }
 
 int
 Scanner::get_num_transaxial_blocks() const
 {
-  return num_detectors_per_ring / num_transaxial_crystals_per_block;
+  return get_num_transaxial_crystals() / get_num_transaxial_crystals_per_block();
 }
 
 int
 Scanner::get_num_axial_buckets() const
 {
-  return get_num_axial_blocks() / num_axial_blocks_per_bucket;
+  return get_num_axial_blocks() / get_num_axial_blocks_per_bucket();
 }
 
 int
 Scanner::get_num_transaxial_buckets() const
 {
-  return get_num_transaxial_blocks() / num_transaxial_blocks_per_bucket;
+  return get_num_transaxial_blocks() / get_num_transaxial_blocks_per_bucket();
 }
 
 int
@@ -205,7 +218,7 @@ Scanner::get_num_axial_singles_units() const
     }
   else
     {
-      return (num_rings + get_num_virtual_axial_crystals_per_block()) / num_axial_crystals_per_singles_unit;
+      return get_num_axial_crystals() / num_axial_crystals_per_singles_unit;
     }
 }
 
@@ -218,7 +231,8 @@ Scanner::get_num_transaxial_singles_units() const
     }
   else
     {
-      return num_detectors_per_ring / num_transaxial_crystals_per_singles_unit;
+      // TODO: RTS believe this should account for virtual crystals, check!
+      return get_num_detectors_per_ring() / num_transaxial_crystals_per_singles_unit;
     }
 }
 
