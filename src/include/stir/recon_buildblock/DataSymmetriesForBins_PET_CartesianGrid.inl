@@ -327,7 +327,7 @@ DataSymmetriesForBins_PET_CartesianGrid::find_sym_op_general_bin(int s, int segm
             {
               if (do_symmetry_swap_s && s < 0)
                 return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(
-                    view180, axial_pos_shift, z_shift, transform_z, proj_data_info_ptr->get_max_tof_pos_num() - 1);
+                    view180, axial_pos_shift, z_shift, transform_z, proj_data_info_ptr->get_max_tof_pos_num());
               else
                 {
                   if (z_shift == 0)
@@ -343,7 +343,7 @@ DataSymmetriesForBins_PET_CartesianGrid::find_sym_op_general_bin(int s, int segm
               else*/
               if (do_symmetry_swap_s && s < 0)
                 return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(
-                    view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_max_tof_pos_num() - 1);
+                    view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_max_tof_pos_num());
               else
                 return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_shift, z_shift, transform_z); // s > 0
             }
@@ -352,7 +352,7 @@ DataSymmetriesForBins_PET_CartesianGrid::find_sym_op_general_bin(int s, int segm
 
               if (do_symmetry_swap_s && s < 0)
                 return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(
-                    view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_max_tof_pos_num() - 1);
+                    view180, axial_pos_shift, z_shift, proj_data_info_ptr->get_max_tof_pos_num());
 
               else
                 {

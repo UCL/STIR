@@ -208,7 +208,7 @@ find_timing_poss_sequence(const ProjDataInfo& pdi)
   for (int timing_pos_num = 1; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
     {
       timing_pos_sequence[2 * timing_pos_num - 1] = timing_pos_num;
-      timing_pos_sequence[2 * timing_pos_num] = -timing_pos_num;
+      timing_pos_sequence[2 * timing_pos_num] = max_timing_pos_num - timing_pos_num;
     }
   return timing_pos_sequence;
 }
