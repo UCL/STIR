@@ -67,7 +67,7 @@ ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& pro
 #ifndef NDEBUG
           probabilities.check_state();
 #endif
-          if (proj_data_info_sptr->is_tof_data() && this->tof_enabled)
+          if (proj_data_info_sptr->is_tof_data())
             { // Apply TOF kernel to basic bin
               apply_tof_kernel(probabilities);
             }
@@ -97,7 +97,7 @@ ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& pro
 #ifndef NDEBUG
               probabilities.check_state();
 #endif
-              if (proj_data_info_sptr->is_tof_data() && this->tof_enabled)
+              if (proj_data_info_sptr->is_tof_data())
                 { // Apply TOF kernel to basic bin
                   apply_tof_kernel(probabilities);
                 }
@@ -149,7 +149,16 @@ ProjMatrixByBin::get_tof_value(const float d1, const float d2) const
   if ((d1_n >= 4.f && d2_n >= 4.f) || (d1_n <= -4.f && d2_n <= -4.f))
     return 0.F;
   else
-    return 0.5f * (erf_interpolation(d2_n) - erf_interpolation(d1_n));
+    {
+       if (this->tof_enabled)
+        {
+             return 0.5f * (erf_interpolation(d2_n) - erf_interpolation(d1_n));
+        }
+       else
+         {
+           return 1.0f;
+         }
+    }
 }
 
 END_NAMESPACE_STIR
