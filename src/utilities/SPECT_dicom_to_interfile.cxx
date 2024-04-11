@@ -32,6 +32,7 @@
 #include "stir/error.h"
 #include "stir/warning.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/Interfileheader.h"
 
 enum class EnergyWindowInfo
 {
@@ -81,7 +82,7 @@ private:
   int actual_frame_duration = 0; // frame duration in msec
   int num_of_rotations = 0;
   std::string direction_of_rotation, isotope_name;
-  int extent_of_rotation;
+  float extent_of_rotation;
   float calibration_factor;
   std::string rotation_radius;
 
@@ -382,7 +383,7 @@ SPECTDICOMData::open_dicom_file(bool is_planar)
   std::string no_of_det_as_str;
   std::string start_angle_as_string;
   std::string angular_step_as_string;
-  std::string extent_of_rotation_as_string;
+  std::string scan_arc_as_string;
   std::string radius_as_string;
   std::string actual_frame_duration_as_string;
   std::string calib_factor_as_string;
@@ -459,11 +460,27 @@ SPECTDICOMData::open_dicom_file(bool is_planar)
           std::cout << "Angular step: " << std::fixed << std::setprecision(6) << angular_step << std::endl;
         }
 
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1143), extent_of_rotation_as_string) == stir::Succeeded::yes)
+      // Set the extent of rotation as the product of the scan arc and the number of detectors.
+      // Note that in the presence of multiple detector heads, this assumes that the angular extent of
+      // do NOT overlap.
+      float scan_arc = 0;
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1143), scan_arc_as_string) == stir::Succeeded::yes)
         {
-          extent_of_rotation = std::stoi(extent_of_rotation_as_string);
-          std::cout << "Rotation extent: " << extent_of_rotation << std::endl;
+          scan_arc = std::stof(scan_arc_as_string);
+          std::cout << "Scan Arc: " << std::fixed << std::setprecision(6) << scan_arc << std::endl;
         }
+
+      // Assert that the factors were valid before calculating the extent of rotation.
+      if (num_of_detectors > 0 && scan_arc > 0)
+        {
+          extent_of_rotation = num_of_detectors * scan_arc;
+        }
+      else
+        {
+          stir::warning(boost::format("SPECTDICOMData: cannot determine extent of rotation."));
+          extent_of_rotation = stir::MinimalInterfileHeader::double_value_not_set;
+        }
+      std::cout << "Rotation extent: " << std::fixed << std::setprecision(6) << extent_of_rotation << std::endl;
 
       // Get the radial positions of the detector head(s) for all heads.
       if (GetDetectorInfo(file, DetectorInfo::RadialPosition, radius_as_string) == stir::Succeeded::yes)
@@ -626,7 +643,7 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
   ss << "!version of keys := 3.3" << std::endl;
   ss << "name of data file := " << data_filename_only << std::endl;
   ss << "data offset in bytes := "
-     << this->matrix_size.at(0) * this->matrix_size.at(1) * this->num_of_projections * dataset_num * 4 // float hard-wired
+     << this->matrix_size.at(0) * this->matrix_size.at(1) * this->num_of_projections * dataset_num * sizeof(float)
      << std::endl;
   ss << std::endl;
 
