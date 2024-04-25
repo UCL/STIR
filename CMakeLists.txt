@@ -101,6 +101,7 @@ option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
 option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 option(DISABLE_Parallelproj_PROJECTOR "disable use of Parallelproj projector" OFF)
+option(DISABLE_STIR_CUDA "disable use of STIR cuda" OFF)
 OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" OFF)
 option(DISABLE_UPENN "disable use of UPENN filetypes" OFF)
 
@@ -205,6 +206,18 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
   message(STATUS "Parallelproj projector support enabled.")
 else()
   message(STATUS "Parallelproj projector support disabled or not available.")
+endif()
+
+if(NOT DISABLE_STIR_CUDA)
+  find_package(CUDAToolkit)
+  if (CUDAToolkit_FOUND)
+    set(CMAKE_CUDA_ARCHITECTURES "all")
+    set(STIR_WITH_STIR_CUDA ON)
+    if(STIR_WITH_STIR_CUDA)
+      enable_language(CUDA)
+      message(STATUS "STIR CUDA support enabled. Using CUDA version ${CUDAToolkit_VERSION}.")
+    endif()
+  endif()
 endif()
 
 #### enable support for ctest
