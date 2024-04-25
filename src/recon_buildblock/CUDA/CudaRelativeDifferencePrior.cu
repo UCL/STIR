@@ -231,10 +231,10 @@ void CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, 
     }
 
     // Check for any errors during kernel execution
-    cudaError_t error = cudaGetLastError();
-    if (error != cudaSuccess) {
-        std::cerr << "CUDA error in compute_value kernel execution: " << cudaGetErrorString(error) << std::endl;
+    cudaError_t cuda_error = cudaGetLastError();
+    if (cuda_error != cudaSuccess) {
         cudaFree(d_image_data); cudaFree(d_weights_data); cudaFree(d_gradient_data);
+        error("CUDA error in compute_value kernel execution: " << cudaGetErrorString(cuda_error));
     }
 
     // Allocate host memory for the result and copy from device to host
@@ -322,10 +322,10 @@ double CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensit
     }
 
     // Check for any errors during kernel execution
-    cudaError_t error = cudaGetLastError();
-    if (error != cudaSuccess) {
-        std::cerr << "CUDA error in compute_value kernel execution: " << cudaGetErrorString(error) << std::endl;
+    cudaError_t cuda_error = cudaGetLastError();
+    if (cuda_error != cudaSuccess) {
         cudaFree(d_image_data); cudaFree(d_weights_data); cudaFree(d_tmp_value);
+        error("CUDA error in compute_value kernel execution: " << cudaGetErrorString(cuda_error));
         return 0.0; // Handle error appropriately
     }
 
