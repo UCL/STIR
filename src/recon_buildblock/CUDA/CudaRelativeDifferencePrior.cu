@@ -1,4 +1,4 @@
-#include "stir/recon_buildblock/CUDA_stir/CudaRelativeDifferencePrior.h"
+#include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -13,24 +13,23 @@ void computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
                                                     const bool do_kappa,
                                                     const float gamma,
                                                     const float epsilon,
+                                                    const float penalisation_factor,
                                                     const int z_dim,
                                                     const int y_dim,
                                                     const int x_dim) {
-    // tmp_grad, cp_image, cp_weights, cp_kappa, cp_penalisation_factor, cp_gamma, cp_epsilon, z_dim, y_dim, x_dim
-    int z = blockIdx.z * blockDim.z + threadIdx.z;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    // Get the voxel in x, y, z dimensions
+    const int z = blockIdx.z * blockDim.z + threadIdx.z;
+    const int y = blockIdx.y * blockDim.y + threadIdx.y;
+    const int x = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (z >= z_dim || y >= y_dim || x >= x_dim) return; // Boundary check
+    // Check if the voxel is within the image dimensions
+    if (z >= z_dim || y >= y_dim || x >= x_dim) return;
 
-    int inputIndex = z * y_dim * x_dim + y * x_dim + x;
+    // Get the index of the voxel
+    const int inputIndex = z * y_dim * x_dim + y * x_dim + x;
 
+    // Define a single voxel gradient variable
     double voxel_gradient = 0.0f;
-    double current = 0.0f;
-    float diff = 0.0f;
-    float diff_abs = 0.0f;
-    float add_3 = 0.0f;
-    float add = 0.0f;
 
     // Define the neighbourhood
     int min_dz = -1;
@@ -39,7 +38,8 @@ void computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
     int max_dy = 1;
     int min_dx = -1;
     int max_dx = 1;
-
+    
+    // Check if the neighbourhood is at the boundary
     if (z == 0) min_dz = 0;
     if (z == z_dim - 1) max_dz = 0;
     if (y == 0) min_dy = 0;
@@ -47,25 +47,25 @@ void computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
     if (x == 0) min_dx = 0;
     if (x == x_dim - 1) max_dx = 0;
 
-    // Apply convolution kernel hard coded 3x3x3 neighbourhood with unity weights
+    // Apply RDP with hard coded 3x3x3 neighbourhood
     for(int dz = min_dz; dz <= max_dz; dz++) {
         for(int dy = min_dy; dy <= max_dy; dy++) {
             for(int dx = min_dx; dx <= max_dx; dx++) {
-                int neighbourIndex = (z + dz) * y_dim * x_dim + (y + dy) * x_dim + (x + dx);
-                int weightsIndex = (dz + 1) * 9 + (dy + 1) * 3 + (dx + 1);
-                diff = (image[inputIndex] - image[neighbourIndex]);
-                diff_abs = abs(diff);
-                add = (image[inputIndex] + image[neighbourIndex]);
-                add_3 = (image[inputIndex] + 3*image[neighbourIndex]);
-                current = weights[weightsIndex]*(diff*(gamma*diff_abs + add_3))/((add + gamma*diff_abs + epsilon)*(add + gamma*diff_abs + epsilon));
+                const int neighbourIndex = (z + dz) * y_dim * x_dim + (y + dy) * x_dim + (x + dx);
+                const int weightsIndex = (dz + 1) * 9 + (dy + 1) * 3 + (dx + 1);
+                const float diff = (image[inputIndex] - image[neighbourIndex]);
+                const float diff_abs = abs(diff);
+                const float add = (image[inputIndex] + image[neighbourIndex]);
+                const float add_3 = (image[inputIndex] + 3*image[neighbourIndex]);
+                double current = weights[weightsIndex]*(diff*(gamma*diff_abs + add_3))/((add + gamma*diff_abs + epsilon)*(add + gamma*diff_abs + epsilon));
                 if (do_kappa) {
                     current *= kappa[inputIndex]*kappa[neighbourIndex];
                 }
                 voxel_gradient += current;
-                }
+            }
         }
     }
-    tmp_grad[inputIndex] = voxel_gradient;
+    tmp_grad[inputIndex] = penalisation_factor * voxel_gradient;
 }
 
 
@@ -77,22 +77,23 @@ void computeCudaRelativeDifferencePriorValueKernel(double* tmp_value,
                                                     const bool do_kappa,
                                                     const float gamma,
                                                     const float epsilon,
+                                                    const float penalisation_factor,
                                                     const int z_dim,
                                                     const int y_dim,
                                                     const int x_dim) {
-    // tmp_value, cp_image, cp_weights, cp_penalisation_factor, cp_gamma, cp_epsilon, cp_kappa, z_dim, y_dim, x_dim
-    int z = blockIdx.z * blockDim.z + threadIdx.z;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    // Get the voxel in x, y, z dimensions
+    const int z = blockIdx.z * blockDim.z + threadIdx.z;
+    const int y = blockIdx.y * blockDim.y + threadIdx.y;
+    const int x = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (z >= z_dim || y >= y_dim || x >= x_dim) return; // Boundary check
+    // Check if the voxel is within the image dimensions
+    if (z >= z_dim || y >= y_dim || x >= x_dim) return;
 
-    int inputIndex = z * y_dim * x_dim + y * x_dim + x;
+    // Get the index of the voxel
+    const int inputIndex = z * y_dim * x_dim + y * x_dim + x;
 
+    // Define the sum variable
     double sum = 0.0f;
-    double current = 0.0f;
-    float diff = 0.0f;
-    float add = 0.0f;
 
     // Define the neighbourhood
     int min_dz = -1;
@@ -102,22 +103,24 @@ void computeCudaRelativeDifferencePriorValueKernel(double* tmp_value,
     int min_dx = -1;
     int max_dx = 1;
 
+    // Check if the neighbourhood is at the boundary
     if (z == 0) min_dz = 0;
     if (z == z_dim - 1) max_dz = 0;
     if (y == 0) min_dy = 0;
     if (y == y_dim - 1) max_dy = 0;
     if (x == 0) min_dx = 0;
     if (x == x_dim - 1) max_dx = 0;
-    // Apply convolution kernel hard coded 3x3x3 neighbourhood
+
+    // Apply RDP with hard coded 3x3x3 neighbourhood
     for(int dz = min_dz; dz <= max_dz; dz++) {
         for(int dy = min_dy; dy <= max_dy; dy++) {
             for(int dx = min_dx; dx <= max_dx; dx++) {
-                int neighbourIndex = (z + dz) * y_dim * x_dim + (y + dy) * x_dim + (x + dx);
-                int weightsIndex = (dz + 1) * 9 + (dy + 1) * 3 + (dx + 1);
+                const int neighbourIndex = (z + dz) * y_dim * x_dim + (y + dy) * x_dim + (x + dx);
+                const int weightsIndex = (dz + 1) * 9 + (dy + 1) * 3 + (dx + 1);
 
-                diff = (image[inputIndex] - image[neighbourIndex]);
-                add = (image[inputIndex] + image[neighbourIndex]);
-                current = (weights[weightsIndex]*0.5*diff*diff)/(add + gamma*abs(diff) + epsilon);
+                const float diff = (image[inputIndex] - image[neighbourIndex]);
+                const float add = (image[inputIndex] + image[neighbourIndex]);
+                double current = (weights[weightsIndex]*0.5*diff*diff)/(add + gamma*abs(diff) + epsilon);
                 if (do_kappa) {
                     current *= kappa[inputIndex]*kappa[neighbourIndex];
                 }
@@ -125,7 +128,7 @@ void computeCudaRelativeDifferencePriorValueKernel(double* tmp_value,
             }
         }
     }
-    tmp_value[inputIndex] = sum;
+    tmp_value[inputIndex] = penalisation_factor * sum;
 }
 
 START_NAMESPACE_STIR
@@ -216,14 +219,14 @@ void CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, 
         cudaMalloc(&d_kappa, current_image_estimate.size_all() * sizeof(float));
         cudaMemcpy(d_kappa, kappa_data.data(), current_image_estimate.size_all() * sizeof(float), cudaMemcpyHostToDevice);
         computeCudaRelativeDifferencePriorGradientKernel<<<this->grid_dim, this->block_dim>>>(
-            d_gradient_data, d_image_data, d_weights_data, d_kappa, do_kappa, this->gamma, this->epsilon, z_dim, y_dim, x_dim
+            d_gradient_data, d_image_data, d_weights_data, d_kappa, do_kappa, this->gamma, this->epsilon, this->penalisation_factor, z_dim, y_dim, x_dim
         );
         cudaFree(d_kappa);
     }
     else
     {
         computeCudaRelativeDifferencePriorGradientKernel<<<this->grid_dim, this->block_dim>>>(
-            d_gradient_data, d_image_data, d_weights_data, nullptr, do_kappa, this->gamma, this->epsilon, z_dim, y_dim, x_dim
+            d_gradient_data, d_image_data, d_weights_data, nullptr, do_kappa, this->gamma, this->epsilon, this->penalisation_factor, z_dim, y_dim, x_dim
         );
     }
 
@@ -240,7 +243,6 @@ void CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, 
     
     // Copy the gradient data to the prior_gradient
     std::copy(gradient_data.begin(), gradient_data.end(), prior_gradient.begin_all());
-    prior_gradient *= this->penalisation_factor;
 
     // Cleanup
     cudaFree(d_image_data);
@@ -308,14 +310,14 @@ double CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensit
         cudaMalloc(&d_kappa, current_image_estimate.size_all() * sizeof(float));
         cudaMemcpy(d_kappa, kappa_data.data(), current_image_estimate.size_all() * sizeof(float), cudaMemcpyHostToDevice);
         computeCudaRelativeDifferencePriorValueKernel<<<this->grid_dim, this->block_dim>>>(
-            d_tmp_value, d_image_data, d_weights_data, d_kappa, do_kappa, this->gamma, this->epsilon, z_dim, y_dim, x_dim
+            d_tmp_value, d_image_data, d_weights_data, d_kappa, do_kappa, this->gamma, this->epsilon, this->penalisation_factor, z_dim, y_dim, x_dim
         );
         cudaFree(d_kappa);
     }
     else
     {
         computeCudaRelativeDifferencePriorValueKernel<<<this->grid_dim, this->block_dim>>>(
-            d_tmp_value, d_image_data, d_weights_data, nullptr, do_kappa, this->gamma, this->epsilon, z_dim, y_dim, x_dim
+            d_tmp_value, d_image_data, d_weights_data, nullptr, do_kappa, this->gamma, this->epsilon, this->penalisation_factor, z_dim, y_dim, x_dim
         );
     }
 
@@ -338,7 +340,7 @@ double CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensit
     cudaFree(d_image_data);
     cudaFree(d_weights_data);
     cudaFree(d_tmp_value);
-    return totalValue * this->penalisation_factor;
+    return totalValue;
 }
 
 template <typename elemT>

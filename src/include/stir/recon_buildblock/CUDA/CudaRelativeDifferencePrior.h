@@ -1,5 +1,5 @@
-#ifndef CUDA_RELATIVE_DIFFERENCE_PRIOR_CLASS_H
-#define CUDA_RELATIVE_DIFFERENCE_PRIOR_CLASS_H
+#ifndef __stir_recon_buildblock_CudaRelativeDifferencePrior_h__
+#define __stir_recon_buildblock_CudaRelativeDifferencePrior_h__
 
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #include "stir/DiscretisedDensity.h"
@@ -33,4 +33,4 @@ class CudaRelativeDifferencePrior : public RelativeDifferencePrior<elemT> {
 
 END_NAMESPACE_STIR
 
-#endif // CUDA_RELATIVE_DIFFERENCE_PRIOR_CLASS_H
+#endif // __stir_recon_buildblock_CudaRelativeDifferencePrior_h__
