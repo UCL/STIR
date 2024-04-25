@@ -69,7 +69,7 @@ namespace stir {
 
 #cmakedefine STIR_WITH_NiftyPET_PROJECTOR
 
-#cmakedefine STIR_WITH_STIR_CUDA
+#cmakedefine STIR_WITH_CUDA
 
 #cmakedefine STIR_WITH_Parallelproj_PROJECTOR
 #cmakedefine parallelproj_built_with_CUDA
