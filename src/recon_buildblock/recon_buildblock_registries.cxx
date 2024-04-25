@@ -77,6 +77,10 @@
 #  include "stir/recon_buildblock/NiftyPET_projector/ProjectorByBinPairUsingNiftyPET.h"
 #endif
 
+#ifdef STIR_WITH_STIR_CUDA
+#  include "stir/recon_buildblock/CUDA_stir/CudaRelativeDifferencePrior.h"
+#endif
+
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
 #  include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
 #  include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
@@ -137,6 +141,10 @@ static OSSPSReconstruction<ParametricVoxelsOnCartesianGrid>::RegisterIt dummyOSS
 static ForwardProjectorByBinNiftyPET::RegisterIt gpu_fwd;
 static BackProjectorByBinNiftyPET::RegisterIt gpu_bck;
 static ProjectorByBinPairUsingNiftyPET::RegisterIt gpu_pair;
+#endif
+
+#ifdef STIR_WITH_STIR_CUDA
+static CudaRelativeDifferencePrior<float>::RegisterIt gpu_rdp;
 #endif
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
