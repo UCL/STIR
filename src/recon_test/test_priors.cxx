@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2020-2023 University College London
+    Copyright (C) 2020-2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -69,8 +69,6 @@ public:
   explicit GeneralisedPriorTests(char const* density_filename = nullptr);
   typedef DiscretisedDensity<3, float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
-
-  void run_tests() override;
 
   //! Set methods that control which tests are run.
   void configure_prior_tests(bool gradient, bool Hessian_convexity, bool Hessian_numerical);
@@ -442,8 +440,20 @@ GeneralisedPriorTests::construct_input_data(shared_ptr<target_type>& density_spt
     }
 }
 
+/*!
+ \brief tests for QuadraticPrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class QuadraticPriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_tests() override;
+};
+
 void
-GeneralisedPriorTests::run_tests()
+QuadraticPriorTests::run_tests()
 {
   shared_ptr<target_type> density_sptr;
   construct_input_data(density_sptr);
@@ -454,6 +464,26 @@ GeneralisedPriorTests::run_tests()
     this->configure_prior_tests(true, true, true);
     this->run_tests_for_objective_function("Quadratic_no_kappa", objective_function, density_sptr);
   }
+}
+
+/*!
+ \brief tests for RelativeDifferencePrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class RelativeDifferencePriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_tests() override;
+};
+
+void
+RelativeDifferencePriorTests::run_tests()
+{
+  shared_ptr<target_type> density_sptr;
+  construct_input_data(density_sptr);
+
   std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0\n";
   {
     // gamma is default and epsilon is 0.0
@@ -468,6 +498,25 @@ GeneralisedPriorTests::run_tests()
     this->configure_prior_tests(true, true, true); // With a large enough epsilon the RDP Hessian numerical test will pass
     this->run_tests_for_objective_function("RDP_no_kappa_with_eps", objective_function, density_sptr);
   }
+}
+
+/*!
+ \brief tests for PLSPrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class PLSPriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_tests() override;
+};
+
+void
+PLSPriorTests::run_tests()
+{
+  shared_ptr<target_type> density_sptr;
+  construct_input_data(density_sptr);
 
   std::cerr << "\n\nTests for PLSPrior\n";
   {
@@ -479,6 +528,26 @@ GeneralisedPriorTests::run_tests()
     this->configure_prior_tests(false, false, false);
     this->run_tests_for_objective_function("PLS_no_kappa_flat_anatomical", objective_function, density_sptr);
   }
+}
+
+/*!
+ \brief tests for LogCoshPrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class LogCoshPriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_tests() override;
+};
+
+void
+LogCoshPriorTests::run_tests()
+{
+  shared_ptr<target_type> density_sptr;
+  construct_input_data(density_sptr);
+
   std::cerr << "\n\nTests for Logcosh Prior\n";
   {
     // scalar is off
@@ -497,7 +566,29 @@ main(int argc, char** argv)
 {
   set_default_num_threads();
 
-  GeneralisedPriorTests tests(argc > 1 ? argv[1] : nullptr);
-  tests.run_tests();
-  return tests.main_return_value();
+  bool everything_ok = true;
+
+  {
+    QuadraticPriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+  {
+    RelativeDifferencePriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+  {
+    PLSPriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+  {
+    PLSPriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+
+
+  return everything_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
