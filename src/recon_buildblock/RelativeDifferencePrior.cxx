@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2019, Hammersmith Imanet Ltd
-    Copyright (C) 2019- 2020, UCL
+    Copyright (C) 2019- 2024, UCL
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -31,9 +31,9 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <algorithm>
+#include <cmath>
 using std::min;
 using std::max;
-
 /* Pretty horrible code because we don't have an iterator of neigbhourhoods yet
  */
 
@@ -267,6 +267,22 @@ compute_weights(Array<3, float>& weights, const CartesianCoordinate3D<float>& gr
 
 template <typename elemT>
 double
+RelativeDifferencePrior<elemT>::value(const elemT x, const elemT y) const
+{
+  return 0.5 * (square(static_cast<double>(x - y)) / (x + y + this->gamma * std::abs(x - y) + this->epsilon));
+}
+
+template <typename elemT>
+elemT
+RelativeDifferencePrior<elemT>::derivative_10(const elemT x, const elemT y) const
+{
+  const double num = (static_cast<double>(x - y) * (this->gamma * std::abs(x - y) + x + 3 * y + 2 * this->epsilon));
+  const double denom_sqrt = static_cast<double>(x + y) + this->gamma * std::abs(x - y) + this->epsilon;
+  return static_cast<elemT>(num / (denom_sqrt * denom_sqrt));
+}
+
+template <typename elemT>
+double
 RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   if (this->penalisation_factor == 0)
@@ -326,13 +342,8 @@ RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>
                         }
                       else
                         {
-                          current = weights[dz][dy][dx] * 0.5
-                                    * (pow(current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx], 2)
-                                       / (current_image_estimate[z][y][x] + current_image_estimate[z + dz][y + dy][x + dx]
-                                          + this->gamma
-                                                * abs(current_image_estimate[z][y][x]
-                                                      - current_image_estimate[z + dz][y + dy][x + dx])
-                                          + this->epsilon));
+                          current = weights[dz][dy][dx]
+                                    * value(current_image_estimate[z][y][x], current_image_estimate[z + dz][y + dy][x + dx]);
                         }
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
@@ -411,16 +422,7 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
                         {
                           current
                               = weights[dz][dy][dx]
-                                * (((current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx])
-                                    * (this->gamma
-                                           * abs(current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx])
-                                       + current_image_estimate[z][y][x] + 3 * current_image_estimate[z + dz][y + dy][x + dx]
-                                       + 2 * this->epsilon))
-                                   / (square((current_image_estimate[z][y][x] + current_image_estimate[z + dz][y + dy][x + dx])
-                                             + this->gamma
-                                                   * abs(current_image_estimate[z][y][x]
-                                                         - current_image_estimate[z + dz][y + dy][x + dx])
-                                             + this->epsilon)));
+                                * derivative_10(current_image_estimate[z][y][x], current_image_estimate[z + dz][y + dy][x + dx]);
                         }
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];

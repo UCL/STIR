@@ -185,21 +185,25 @@ protected:
   void initialise_keymap() override;
   bool post_processing() override;
 
-private:
+protected:
   shared_ptr<DiscretisedDensity<3, elemT>> kappa_ptr;
 
-  //! The second partial derivatives of the Relative Difference Prior
+  //! The value and partial derivatives of the Relative Difference Prior
   /*!
-   derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
-   derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
-   See J. Nuyts, et al., 2002, Equation 7.
+   * derivative_10 refers to the derivative w.r.t. x_j only
+   * derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
+   * derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
+
+   See J. Nuyts, et al., 2002, Equation 7 etc, but here an epsilon is added.
    In the instance x_j, x_k and epsilon equal 0.0, these functions return 0.0 to prevent returning an undefined value
-   due to 0/0 computation. This is a "reasonable" solution to this issue.
+   due to 0/0 computation. This is a "reasonable" solution to this issue, although not necessarily continuous.
    * @param x_j is the target voxel.
    * @param x_k is the voxel in the neighbourhood.
    * @return the second order partial derivatives of the Relative Difference Prior
    */
   //@{
+  double value(const elemT x_j, const elemT x_k) const;
+  elemT derivative_10(const elemT x, const elemT y) const;
   elemT derivative_20(const elemT x_j, const elemT x_k) const;
   elemT derivative_11(const elemT x_j, const elemT x_k) const;
   //@}
