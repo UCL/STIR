@@ -505,6 +505,7 @@ RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
 
   if (rdp.get_epsilon() > 0)
     {
+      // test Lipschitz condition on current image
       const double grad_Lipschitz = 4 * weights_sum * kappa2_max / rdp.get_epsilon();
 
       rdp.compute_gradient(*grad_sptr, *target_sptr);
@@ -513,21 +514,34 @@ RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
                     "gradient Lipschitz with x = input_image, y = 0");
     }
 
+  // do some checks on a "delta" image
   shared_ptr<target_type> delta_sptr(target_sptr->get_empty_copy());
   delta_sptr->fill(0.F);
 
-  auto idx = make_coordinate(1, 1, 1);
-  (*delta_sptr)[idx] = 1E10F * rdp.get_epsilon();
-  rdp.compute_gradient(*grad_sptr, *delta_sptr);
-  check_if_less((*grad_sptr)[idx], weights_sum / (1 + rdp.get_gamma()), "RDP gradient large limit");
-  (*delta_sptr)[idx] = 1E20F * rdp.get_epsilon();
-  rdp.compute_gradient(*grad_sptr, *delta_sptr);
-  check_if_less((*grad_sptr)[idx], weights_sum / (1 + rdp.get_gamma()), "RDP gradient very large limit");
-  // check at boundary
-  idx = make_coordinate(0, 0, 0);
-  (*delta_sptr)[idx] = 1E10F * rdp.get_epsilon();
-  rdp.compute_gradient(*grad_sptr, *delta_sptr);
-  check_if_less((*grad_sptr)[idx], weights_sum / (1 + rdp.get_gamma()), "RDP gradient large limit at boundary");
+  {
+    // The derivative of the RDP_potential(x,0) limits to 1/(1+gamma). Therefore, the
+    // gradient of the prior will limit to
+    const auto grad_limit_no_kappa = weights_sum / (1 + rdp.get_gamma());
+
+    const auto scale = rdp.get_epsilon() ? rdp.get_epsilon() : 1;
+    auto idx = make_coordinate(1, 1, 1);
+    double kappa_at_idx_2 = do_kappa ? square((*rdp.get_kappa_sptr())[idx]) : 1.;
+    auto grad_limit = grad_limit_no_kappa * kappa_at_idx_2;
+    (*delta_sptr)[idx] = 1E5F * scale;
+    rdp.compute_gradient(*grad_sptr, *delta_sptr);
+    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), 1e-4, "RDP gradient large limit");
+    (*delta_sptr)[idx] = 1E20F * scale;
+    rdp.compute_gradient(*grad_sptr, *delta_sptr);
+    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), 1e-4, "RDP gradient very large limit");
+
+    // check at boundary (fewer neighbours)
+    idx = make_coordinate(0, 0, 0);
+    (*delta_sptr)[idx] = 1E5F * scale;
+    kappa_at_idx_2 = do_kappa ? square((*rdp.get_kappa_sptr())[idx]) : 1.;
+    grad_limit = grad_limit_no_kappa * kappa_at_idx_2;
+    rdp.compute_gradient(*grad_sptr, *delta_sptr);
+    check_if_less((*grad_sptr)[idx] / grad_limit, 1., "RDP gradient large limit at boundary");
+  }
 }
 
 void
