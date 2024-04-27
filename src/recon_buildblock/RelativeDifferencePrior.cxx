@@ -276,6 +276,13 @@ template <typename elemT>
 elemT
 RelativeDifferencePrior<elemT>::derivative_10(const elemT x, const elemT y) const
 {
+  if (this->epsilon == 0.0 && x == 0 && y == 0)
+    {
+      // handle 0/0 by taking the limit with x=y->0
+      // note that the limit y=0,x->0 is 1/(1+gamma)
+      return elemT(0);
+    }
+
   const double num = (static_cast<double>(x - y) * (this->gamma * std::abs(x - y) + x + 3 * y + 2 * this->epsilon));
   const double denom_sqrt = static_cast<double>(x + y) + this->gamma * std::abs(x - y) + this->epsilon;
   return static_cast<elemT>(num / (denom_sqrt * denom_sqrt));
@@ -410,20 +417,9 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
-
-                      elemT current;
-                      if (this->epsilon == 0.0 && current_image_estimate[z][y][x] == 0.0
-                          && current_image_estimate[z + dz][y + dy][x + dx] == 0.0)
-                        {
-                          // handle the undefined nature of the gradient
-                          current = 0.0;
-                        }
-                      else
-                        {
-                          current
-                              = weights[dz][dy][dx]
-                                * derivative_10(current_image_estimate[z][y][x], current_image_estimate[z + dz][y + dy][x + dx]);
-                        }
+                      elemT current
+                          = weights[dz][dy][dx]
+                            * derivative_10(current_image_estimate[z][y][x], current_image_estimate[z + dz][y + dy][x + dx]);
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
 
@@ -628,9 +624,9 @@ elemT
 RelativeDifferencePrior<elemT>::derivative_20(const elemT x_j, const elemT x_k) const
 {
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
-    return 2 * pow(2 * x_k + this->epsilon, 2) / pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
+    return 2 * pow(2 * x_k + this->epsilon, 2) / pow(x_j + x_k + this->gamma * std::abs(x_j - x_k) + this->epsilon, 3);
   else
-    return 0.0;
+    return INFINITY;
 }
 
 template <typename elemT>
@@ -639,9 +635,9 @@ RelativeDifferencePrior<elemT>::derivative_11(const elemT x_j, const elemT x_k) 
 {
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
     return -2 * (2 * x_j + this->epsilon) * (2 * x_k + this->epsilon)
-           / pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
+           / pow(x_j + x_k + this->gamma * std::abs(x_j - x_k) + this->epsilon, 3);
   else
-    return 0.0;
+    return INFINITY;
 }
 
 #ifdef _MSC_VER
