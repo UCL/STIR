@@ -173,6 +173,7 @@ GeneralisedPriorTests::test_gradient(const std::string& test_name,
                                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
                                      const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
 {
+  using value_type = target_type::full_value_type;
   // setup images
   target_type& target(*target_sptr);
   shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
@@ -192,7 +193,8 @@ GeneralisedPriorTests::test_gradient(const std::string& test_name,
   target_type::full_iterator gradient_2_iter = gradient_2_sptr->begin_all();
 
   // setup perturbation response
-  const float eps = 1e-3F;
+  const auto target_max = target_sptr->find_max();
+  const auto eps = static_cast<value_type>(1e-4F * target_max);
   bool testOK = true;
   info("Computing gradient of objective function by numerical differences (this will take a while)", 3);
   while (target_iter != target.end_all()) // && testOK)
@@ -201,9 +203,14 @@ GeneralisedPriorTests::test_gradient(const std::string& test_name,
       *target_iter += eps; // perturb current voxel
       const double value_at_inc = objective_function.compute_value(target);
       *target_iter = org_image_value; // restore
-      const auto ngradient_at_iter = static_cast<float>((value_at_inc - value_at_target) / eps);
+      const auto ngradient_at_iter = static_cast<value_type>((value_at_inc - value_at_target) / eps);
       *gradient_2_iter = ngradient_at_iter;
-      testOK = testOK && this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
+      const bool this_testOK = this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
+      testOK = testOK && this_testOK;
+      if (!this_testOK)
+        {
+          // std::cerr << "failure x=" << org_image_value << ", eps_Value = " << eps << '\n';
+        }
       // for (int i=0; i<5 && target_iter!=target.end_all(); ++i)
       {
         ++gradient_2_iter;
