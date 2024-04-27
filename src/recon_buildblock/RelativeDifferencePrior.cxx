@@ -340,7 +340,7 @@ RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
-                      elemT current;
+                      double current;
                       if (this->epsilon == 0.0 && current_image_estimate[z][y][x] == 0.0
                           && current_image_estimate[z + dz][y + dy][x + dx] == 0.0)
                         {
@@ -355,7 +355,7 @@ RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
 
-                      result += static_cast<double>(current);
+                      result += current;
                     }
             }
         }
@@ -412,12 +412,12 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
 
-              elemT gradient = 0;
+              double gradient = 0;
               for (int dz = min_dz; dz <= max_dz; ++dz)
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
-                      elemT current
+                      double current
                           = weights[dz][dy][dx]
                             * derivative_10(current_image_estimate[z][y][x], current_image_estimate[z + dz][y + dy][x + dx]);
                       if (do_kappa)
@@ -426,7 +426,7 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
                       gradient += current;
                     }
 
-              prior_gradient[z][y][x] = gradient * this->penalisation_factor;
+              prior_gradient[z][y][x] = static_cast<elemT>(gradient * this->penalisation_factor);
             }
         }
     }
