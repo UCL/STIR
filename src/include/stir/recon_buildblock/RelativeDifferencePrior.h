@@ -51,6 +51,9 @@ START_NAMESPACE_STIR
   "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,"
   vol. 49, no. 1, pp. 56-60, 2002. </em>
 
+  Note that if \f$ \epsilon=0 \f$, we resolve 0/0 by using the limit, ensuring continuity. Note that
+  the Hessian explodes to infinity when both voxel values approach 0, and we currently return INFINITY.
+
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
@@ -190,13 +193,18 @@ protected:
 
   //! The value and partial derivatives of the Relative Difference Prior
   /*!
+   * value refers to its value
    * derivative_10 refers to the derivative w.r.t. x_j only
    * derivative_20 refers to the second derivative w.r.t. x_j only (i.e. diagonal elements of the Hessian)
    * derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
 
    See J. Nuyts, et al., 2002, Equation 7 etc, but here an epsilon is added.
-   In the instance x_j, x_k and epsilon equal 0.0, these functions return 0.0 to prevent returning an undefined value
-   due to 0/0 computation. This is a "reasonable" solution to this issue, although not necessarily continuous.
+
+   In the instance x_j, x_k and epsilon equal 0.0, these functions get ill-defined due to 0/0 computations.
+   We currently return 0 for the value, 0 for derivative_10, and INFINITY for the second order
+   derivatives. These follow by taking the limit, i.e. by assuming continuity. Note however that
+   when epsilon=0, derivative_10(x,0) limits to\f$ 1/(1+\gamma) \f$, while derivative_10(x,x) limits to \f$ 0 \f$.
+
    * @param x_j is the target voxel.
    * @param x_k is the voxel in the neighbourhood.
    * @return the second order partial derivatives of the Relative Difference Prior
