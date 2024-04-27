@@ -51,8 +51,12 @@ START_NAMESPACE_STIR
   "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,"
   vol. 49, no. 1, pp. 56-60, 2002. </em>
 
-  Note that if \f$ \epsilon=0 \f$, we resolve 0/0 by using the limit, ensuring continuity. Note that
-  the Hessian explodes to infinity when both voxel values approach 0, and we currently return INFINITY.
+  If \f$ \epsilon=0 \f$, we attempt to resolve 0/0 at \f$ \lambda_r = \lambda_{r+dr}=0 \f$ by using the limit.
+  Note that the Hessian explodes to infinity when both voxel values approach 0, and we currently return \c INFINITY.
+  Also, as the RDP is not differentiable at this point, we have chosen to return 0 for the gradient
+  (such that a zero background is not modified).
+
+  \warning the default value for \f$ \epsilon \f$ is zero, which can be problematic for gradient-based algorithms.
 
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
@@ -61,6 +65,10 @@ START_NAMESPACE_STIR
 
   By default, a 3x3 or 3x3x3 neighbourhood is used where the weights are set to
   x-voxel_size divided by the Euclidean distance between the points.
+
+  The prior computation excludes voxel-pairs where one voxel is outside the volume. This is
+  effectively the same as extending the volume by replicating the edges (which is different
+  from zero boundary conditions).
 
 \par Parsing
   These are the keywords that can be used in addition to the ones in GeneralPrior.
@@ -203,7 +211,7 @@ protected:
    In the instance x_j, x_k and epsilon equal 0.0, these functions get ill-defined due to 0/0 computations.
    We currently return 0 for the value, 0 for derivative_10, and INFINITY for the second order
    derivatives. These follow by taking the limit, i.e. by assuming continuity. Note however that
-   when epsilon=0, derivative_10(x,0) limits to\f$ 1/(1+\gamma) \f$, while derivative_10(x,x) limits to \f$ 0 \f$.
+   when epsilon=0, derivative_10(x,0) limits to \f$ 1/(1+\gamma) \f$, while derivative_10(x,x) limits to \f$ 0 \f$.
 
    * @param x_j is the target voxel.
    * @param x_k is the voxel in the neighbourhood.
