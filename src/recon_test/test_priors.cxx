@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2020-2023 University College London
+    Copyright (C) 2020-2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -37,6 +37,7 @@
 #include "stir/Verbosity.h"
 #include "stir/Succeeded.h"
 #include "stir/num_threads.h"
+#include "stir/numerics/norm.h"
 #include <iostream>
 #include <memory>
 #include <boost/random/uniform_01.hpp>
@@ -69,8 +70,6 @@ public:
   explicit GeneralisedPriorTests(char const* density_filename = nullptr);
   typedef DiscretisedDensity<3, float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
-
-  void run_tests() override;
 
   //! Set methods that control which tests are run.
   void configure_prior_tests(bool gradient, bool Hessian_convexity, bool Hessian_numerical);
@@ -174,6 +173,7 @@ GeneralisedPriorTests::test_gradient(const std::string& test_name,
                                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
                                      const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
 {
+  using value_type = target_type::full_value_type;
   // setup images
   target_type& target(*target_sptr);
   shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
@@ -193,7 +193,8 @@ GeneralisedPriorTests::test_gradient(const std::string& test_name,
   target_type::full_iterator gradient_2_iter = gradient_2_sptr->begin_all();
 
   // setup perturbation response
-  const float eps = 1e-3F;
+  const auto target_max = target_sptr->find_max();
+  const auto eps = static_cast<value_type>(1e-4F * target_max);
   bool testOK = true;
   info("Computing gradient of objective function by numerical differences (this will take a while)", 3);
   while (target_iter != target.end_all()) // && testOK)
@@ -202,9 +203,14 @@ GeneralisedPriorTests::test_gradient(const std::string& test_name,
       *target_iter += eps; // perturb current voxel
       const double value_at_inc = objective_function.compute_value(target);
       *target_iter = org_image_value; // restore
-      const auto ngradient_at_iter = static_cast<float>((value_at_inc - value_at_target) / eps);
+      const auto ngradient_at_iter = static_cast<value_type>((value_at_inc - value_at_target) / eps);
       *gradient_2_iter = ngradient_at_iter;
-      testOK = testOK && this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
+      const bool this_testOK = this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
+      testOK = testOK && this_testOK;
+      if (!this_testOK)
+        {
+          // std::cerr << "failure x=" << org_image_value << ", eps_Value = " << eps << '\n';
+        }
       // for (int i=0; i<5 && target_iter!=target.end_all(); ++i)
       {
         ++gradient_2_iter;
@@ -442,8 +448,20 @@ GeneralisedPriorTests::construct_input_data(shared_ptr<target_type>& density_spt
     }
 }
 
+/*!
+ \brief tests for QuadraticPrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class QuadraticPriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_tests() override;
+};
+
 void
-GeneralisedPriorTests::run_tests()
+QuadraticPriorTests::run_tests()
 {
   shared_ptr<target_type> density_sptr;
   construct_input_data(density_sptr);
@@ -454,12 +472,92 @@ GeneralisedPriorTests::run_tests()
     this->configure_prior_tests(true, true, true);
     this->run_tests_for_objective_function("Quadratic_no_kappa", objective_function, density_sptr);
   }
+}
+
+/*!
+ \brief tests for RelativeDifferencePrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class RelativeDifferencePriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_specific_tests(const std::string& test_name,
+                          RelativeDifferencePrior<float>& rdp,
+                          const shared_ptr<target_type>& target_sptr);
+  void run_tests() override;
+};
+
+void
+RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
+                                                 RelativeDifferencePrior<float>& rdp,
+                                                 const shared_ptr<DiscretisedDensity<3, float>>& target_sptr)
+{
+  std::cerr << "----- test " << test_name << "  --> RDP gradient limit tests\n";
+  shared_ptr<target_type> grad_sptr(target_sptr->get_empty_copy());
+  const Array<3, float> weights = rdp.get_weights() * rdp.get_penalisation_factor();
+  const bool do_kappa = rdp.get_kappa_sptr() != 0;
+  // strictly speaking, we should be checking product of the kappas in a neighbourhood, but they usually very smoothly. In any
+  // case, this will give an upper-bound
+  const double kappa2_max = do_kappa ? square(rdp.get_kappa_sptr()->find_max()) : 1.;
+  const auto weights_sum = weights.sum() * kappa2_max;
+
+  if (rdp.get_epsilon() > 0)
+    {
+      // test Lipschitz condition on current image
+      const double grad_Lipschitz = 4 * weights_sum * kappa2_max / rdp.get_epsilon();
+
+      rdp.compute_gradient(*grad_sptr, *target_sptr);
+      check_if_less(norm(grad_sptr->begin_all(), grad_sptr->end_all()),
+                    grad_Lipschitz * norm(target_sptr->begin_all(), target_sptr->end_all()) * 1.001F,
+                    "gradient Lipschitz with x = input_image, y = 0");
+    }
+
+  // do some checks on a "delta" image
+  shared_ptr<target_type> delta_sptr(target_sptr->get_empty_copy());
+  delta_sptr->fill(0.F);
+
+  {
+    // The derivative of the RDP_potential(x,0) limits to 1/(1+gamma). Therefore, the
+    // gradient of the prior will limit to
+    const auto grad_limit_no_kappa = weights_sum / (1 + rdp.get_gamma());
+
+    const auto scale = rdp.get_epsilon() ? rdp.get_epsilon() : 1;
+    auto idx = make_coordinate(1, 1, 1);
+    double kappa_at_idx_2 = do_kappa ? square((*rdp.get_kappa_sptr())[idx]) : 1.;
+    auto grad_limit = grad_limit_no_kappa * kappa_at_idx_2;
+    (*delta_sptr)[idx] = 1E5F * scale;
+    rdp.compute_gradient(*grad_sptr, *delta_sptr);
+    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), 1e-4, "RDP gradient large limit");
+    (*delta_sptr)[idx] = 1E20F * scale;
+    rdp.compute_gradient(*grad_sptr, *delta_sptr);
+    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), 1e-4, "RDP gradient very large limit");
+
+    // check at boundary (fewer neighbours)
+    idx = make_coordinate(0, 0, 0);
+    (*delta_sptr)[idx] = 1E5F * scale;
+    kappa_at_idx_2 = do_kappa ? square((*rdp.get_kappa_sptr())[idx]) : 1.;
+    grad_limit = grad_limit_no_kappa * kappa_at_idx_2;
+    rdp.compute_gradient(*grad_sptr, *delta_sptr);
+    check_if_less((*grad_sptr)[idx] / grad_limit, 1., "RDP gradient large limit at boundary");
+  }
+}
+
+void
+RelativeDifferencePriorTests::run_tests()
+{
+  shared_ptr<target_type> density_sptr;
+  construct_input_data(density_sptr);
+
   std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0\n";
   {
     // gamma is default and epsilon is 0.0
     RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.F);
-    this->configure_prior_tests(true, true, false); // RDP, with epsilon = 0.0, will fail the numerical Hessian test
+    this->configure_prior_tests(
+        true, true, false); // RDP, with epsilon = 0.0, will fail the numerical Hessian test (it can become infinity)
     this->run_tests_for_objective_function("RDP_no_kappa_no_eps", objective_function, density_sptr);
+    this->run_specific_tests("RDP_specific_no_kappa_no_eps", objective_function, density_sptr);
   }
   std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0.1\n";
   {
@@ -467,7 +565,27 @@ GeneralisedPriorTests::run_tests()
     RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.1F);
     this->configure_prior_tests(true, true, true); // With a large enough epsilon the RDP Hessian numerical test will pass
     this->run_tests_for_objective_function("RDP_no_kappa_with_eps", objective_function, density_sptr);
+    this->run_specific_tests("RDP_specific_no_kappa_with_eps", objective_function, density_sptr);
   }
+}
+
+/*!
+ \brief tests for PLSPrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class PLSPriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_tests() override;
+};
+
+void
+PLSPriorTests::run_tests()
+{
+  shared_ptr<target_type> density_sptr;
+  construct_input_data(density_sptr);
 
   std::cerr << "\n\nTests for PLSPrior\n";
   {
@@ -479,6 +597,26 @@ GeneralisedPriorTests::run_tests()
     this->configure_prior_tests(false, false, false);
     this->run_tests_for_objective_function("PLS_no_kappa_flat_anatomical", objective_function, density_sptr);
   }
+}
+
+/*!
+ \brief tests for LogCoshPrior
+ \ingroup recontest
+ \ingroup priors
+*/
+class LogCoshPriorTests : public GeneralisedPriorTests
+{
+public:
+  using GeneralisedPriorTests::GeneralisedPriorTests;
+  void run_tests() override;
+};
+
+void
+LogCoshPriorTests::run_tests()
+{
+  shared_ptr<target_type> density_sptr;
+  construct_input_data(density_sptr);
+
   std::cerr << "\n\nTests for Logcosh Prior\n";
   {
     // scalar is off
@@ -497,7 +635,28 @@ main(int argc, char** argv)
 {
   set_default_num_threads();
 
-  GeneralisedPriorTests tests(argc > 1 ? argv[1] : nullptr);
-  tests.run_tests();
-  return tests.main_return_value();
+  bool everything_ok = true;
+
+  {
+    QuadraticPriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+  {
+    RelativeDifferencePriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+  {
+    PLSPriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+  {
+    LogCoshPriorTests tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+
+  return everything_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
