@@ -70,6 +70,11 @@ improvements to the documentation.
   <li>The Relative Difference Prior gave incorrect results, probably since switching to C++-14 in version 6.0, although we are not sure.
     See <a href=https://github.com/UCL/STIR/pull/1410>PR #1410</a> and associated <a href=https://github.com/UCL/STIR/pull/1409>issue #1409</a>.
   </li>
+  <li>
+      Our checks for determining system byte-order were out-of-date and in particular did not work on MacOS 14 on ARM.
+      We now use CMake's <code>CMAKE_CXX_BYTE_ORDER</code> (available since CMake 3.20).
+      See <a href=https://github.com/UCL/STIR/pull/1412>PR #1412</a>.
+  </li>
 </ul>
 
 <h3>Known problems</h3>
