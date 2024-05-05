@@ -162,9 +162,6 @@ jobs:
             CXX=${CXX}-${{ matrix.compiler_version }}            
           fi
           if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
-            # need to force XCode version for the moment due to a linker bug
-            # see https://github.com/UCL/STIR/issues/1103
-            echo DEVELOPER_DIR="/Applications/Xcode_14.1.app/Contents/Developer" >> $GITHUB_ENV
             if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
               brew install llvm@${{ matrix.compiler_version }}
               if test XX${HOMEBREW_PREFIX} = XX; then
