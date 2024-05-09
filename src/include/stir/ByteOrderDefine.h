@@ -27,10 +27,10 @@ START_NAMESPACE_STIR
 #if defined(BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE)         /* variable set via CMake in stir/config.h */                              \
     || (!defined(LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE) /* variable set via CMake in stir/config.h */                              \
         && ((!defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__)                \
-                 && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__) && !defined(__i886__)   \
-                 && !defined(__k6__) && !defined(__athlon__) && !defined(__x86_64__) && !defined(__k6__))                         \
-             || (defined(__MSL__) && !defined(__LITTLE_ENDIAN)) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN)       \
-             || (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) /* gcc */) || defined(__BIG_ENDIAN__)))
+             && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__) && !defined(__i886__)       \
+             && !defined(__k6__) && !defined(__athlon__) && !defined(__x86_64__) && !defined(__k6__))                            \
+            || (defined(__MSL__) && !defined(__LITTLE_ENDIAN)) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN)        \
+            || (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) /* gcc */) || defined(__BIG_ENDIAN__)))
 #  define STIRIsNativeByteOrderBigEndian 1
 #  define STIRIsNativeByteOrderLittleEndian 0
 #else
