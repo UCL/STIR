@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2015, Univ. of Leeds
-    Copyright (C) 2016, 2022 UCL
+    Copyright (C) 2016, 2022, 2024 UCL
     Copyright (C) 2021, University of Pennsylvania
     SPDX-License-Identifier: Apache-2.0
 
@@ -148,20 +148,44 @@ protected:
   bool skip_balanced_subsets;
 
 private:
-  //! Cache of the listmode file
+  //! Cache of the current "batch" in the listmode file
   /*! \todo Move this higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
   std::vector<BinAndCorr> record_cache;
 
-  //! This function caches the listmode file, or reads it. It is run during set_up()
+  //! This function loads the next "batch" of data from the listmode file.
+  /*!
+    This function will either use read_listmode_batch or load_listmode_cache_file.
+
+    \param[in] ibatch the batch number to be read.
+    \return \c true if there are no more events to read after this call, \c false otherwise
+    \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
+   */
+  bool load_listmode_batch(unsigned int ibatch);
+
+  //! This function reads the next "batch" of data from the listmode file.
+  /*!
+    This function keeps on reading from the current position in the list-mode data and stores
+    prompts events and additive terms in \c record_cache. It also updates \c end_time_per_batch
+    such that we know when each batch starts/ends.
+
+    \param[in] ibatch the batch number to be read.
+    \return \c true if there are no more events to read after this call, \c false otherwise
+    \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
+    \warning This function has to be called in sequence.
+   */
+  bool read_listmode_batch(unsigned int ibatch);
+  //! This function caches the list-mode batches to file. It is run during set_up()
   /*! \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
   Succeeded cache_listmode_file();
 
-  Succeeded load_listmode_cache_file(unsigned int file_id);
+  //! Reads the "batch" of data from the cache
+  bool load_listmode_cache_file(unsigned int file_id);
   Succeeded write_listmode_cache_file(unsigned int file_id) const;
 
   unsigned int num_cache_files;
+  std::vector<double> end_time_per_batch;
 };
 
 END_NAMESPACE_STIR
