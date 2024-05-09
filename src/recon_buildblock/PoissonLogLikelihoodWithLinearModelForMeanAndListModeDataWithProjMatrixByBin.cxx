@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2016, 2018, 2022 University College London
+    Copyright (C) 2014, 2016, 2018, 2022, 2024 University College London
     Copyright (C) 2016, University of Hull
     Copyright (C) 2021, University of Pennsylvania
     This file is part of STIR.
@@ -44,6 +44,7 @@
 #include "stir/listmode/ListModeData_dummy.h"
 
 #include <fstream>
+#include <cmath>
 #include <string>
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
@@ -324,6 +325,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       this->cache_lm_file = true;
       return cache_listmode_file();
     }
+  else
+    {
+      this->cache_lm_file = false;
+      this->cache_size = 1000000;
+    }
 
   return Succeeded::yes;
 }
@@ -353,7 +359,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 }
 
 template <typename TargetT>
-Succeeded
+bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::load_listmode_cache_file(
     unsigned int file_id)
 {
@@ -399,11 +405,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   else
     {
       error("Cannot find Listmode cache on disk. Please recompute it or do not set the  max cache size. Abort.");
-      return Succeeded::no;
+      return true; // need to return something to avoid compiler warning
     }
 
-  info(boost::format("Cached Events: %1% ") % record_cache.size());
-  return Succeeded::yes;
+  info(boost::format("Cached Events: %1% ") % record_cache.size(), 2);
+  return (file_id + 1) == this->num_cache_files;
 }
 
 template <typename TargetT>
@@ -438,6 +444,173 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 }
 
 template <typename TargetT>
+bool
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::read_listmode_batch(unsigned int ibatch)
+{
+  double current_time = 0.;
+  if (ibatch == 0)
+    this->list_mode_data_sptr->reset();
+  else
+    current_time = this->end_time_per_batch[ibatch - 1];
+
+  record_cache.clear();
+  try
+    {
+      record_cache.reserve(this->cache_size);
+    }
+  catch (...)
+    {
+      error("Listmode: cannot allocate cache for " + std::to_string(this->cache_size) + " records. Reduce cache size.");
+    }
+
+  const shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+
+  const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
+  const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
+  unsigned long int cached_events = 0;
+
+  bool stop_caching = false;
+
+  while (true) // Start for the current cache
+    {
+      if (this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
+        {
+          stop_caching = true;
+          break;
+        }
+      if (record_sptr->is_time())
+        {
+          current_time = record_sptr->time().get_time_in_secs();
+          if (this->do_time_frame && current_time >= end_time)
+            {
+              stop_caching = true;
+              break; // get out of while loop
+            }
+        }
+      if (current_time < start_time)
+        continue; // skip
+      if (record_sptr->is_event() && record_sptr->event().is_prompt())
+        {
+          BinAndCorr tmp;
+          tmp.my_bin.set_bin_value(1.0);
+          record_sptr->event().get_bin(tmp.my_bin, *this->proj_data_info_sptr);
+
+          if (tmp.my_bin.get_bin_value() != 1.0f || tmp.my_bin.segment_num() < this->proj_data_info_sptr->get_min_segment_num()
+              || tmp.my_bin.segment_num() > this->proj_data_info_sptr->get_max_segment_num()
+              || tmp.my_bin.tangential_pos_num() < this->proj_data_info_sptr->get_min_tangential_pos_num()
+              || tmp.my_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
+              || tmp.my_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(tmp.my_bin.segment_num())
+              || tmp.my_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(tmp.my_bin.segment_num())
+              || tmp.my_bin.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
+              || tmp.my_bin.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num())
+            {
+              continue;
+            }
+          try
+            {
+              record_cache.push_back(tmp);
+              ++cached_events;
+            }
+          catch (...)
+            {
+              // should never get here due to `reserve` statement above, but best to check...
+              error("Listmode: running out of memory for cache. Current size: " + std::to_string(this->record_cache.size())
+                    + " records");
+            }
+
+          if (record_cache.size() > 1 && record_cache.size() % 500000L == 0)
+            info(boost::format("Read Prompt Events (this batch): %1% ") % record_cache.size(), 3);
+
+          if (this->num_events_to_use > 0)
+            if (cached_events >= static_cast<std::size_t>(this->num_events_to_use))
+              {
+                stop_caching = true;
+                break;
+              }
+
+          if (record_cache.size() == this->cache_size)
+            break; // cache is full.
+        }
+    }
+  if (this->end_time_per_batch.size() < (ibatch + 1))
+    {
+      assert(this->end_time_per_batch.size() == ibatch);
+      this->end_time_per_batch.push_back(end_time);
+    }
+  else
+    {
+      if (std::abs(this->end_time_per_batch[ibatch] - end_time) > 0.0005)
+        error("Internal error in reading listmode files: end times do not match. Please raise a bug report");
+    }
+
+  info(boost::format("Loaded %1% prompts from list-mode file") % cached_events, 2);
+
+  // add additive term to current cache
+  if (this->has_add)
+    {
+      info(boost::format("Caching Additive corrections for : %1% events.") % record_cache.size(), 2);
+
+#ifdef STIR_OPENMP
+#  pragma omp parallel
+      {
+#  pragma omp single
+        {
+          info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads", 2);
+        }
+      }
+#endif
+
+#ifdef STIR_OPENMP
+#  if _OPENMP < 201107
+#    pragma omp parallel for schedule(dynamic)
+#  else
+#    pragma omp parallel for collapse(2) schedule(dynamic)
+#  endif
+#endif
+      for (int seg = this->additive_proj_data_sptr->get_min_segment_num();
+           seg <= this->additive_proj_data_sptr->get_max_segment_num();
+           ++seg)
+        for (int timing_pos_num = this->additive_proj_data_sptr->get_min_tof_pos_num();
+             timing_pos_num <= this->additive_proj_data_sptr->get_max_tof_pos_num();
+             ++timing_pos_num)
+          {
+            const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg, timing_pos_num));
+
+            for (BinAndCorr& cur_bin : record_cache)
+              {
+                if (cur_bin.my_bin.segment_num() == seg)
+                  {
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201012
+#    pragma omp atomic write
+#  else
+#    pragma omp critical(PLogLikListModePMBAddSinoCaching)
+#  endif
+#endif
+                    cur_bin.my_corr
+                        = segment[cur_bin.my_bin.view_num()][cur_bin.my_bin.axial_pos_num()][cur_bin.my_bin.tangential_pos_num()];
+                  }
+              }
+          }
+    } // end additive correction
+  return stop_caching;
+}
+
+template <typename TargetT>
+bool
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::load_listmode_batch(unsigned int ibatch)
+{
+  if (this->cache_lm_file)
+    {
+      return this->load_listmode_cache_file(ibatch);
+    }
+  else
+    {
+      return this->read_listmode_batch(ibatch);
+    }
+}
+
+template <typename TargetT>
 Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::cache_listmode_file()
 {
@@ -458,161 +631,26 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       return Succeeded::yes; // Stop here!!!
     }
 
+  assert(this->cache_lm_file);
+
   this->num_cache_files = 0;
-  if (this->cache_lm_file)
+
+  while (true)
     {
       info("Listmode reconstruction: Creating cache...", 2);
 
-      record_cache.clear();
-      try
+      bool stop_caching = this->read_listmode_batch(this->num_cache_files);
+
+      if (write_listmode_cache_file(this->num_cache_files) == Succeeded::no)
         {
-          record_cache.reserve(this->cache_size);
+          error("Error writing cache file!");
         }
-      catch (...)
-        {
-          error("Listmode: cannot allocate cache for " + std::to_string(this->cache_size) + " records. Reduce cache size.");
-        }
+      ++this->num_cache_files;
 
-      this->list_mode_data_sptr->reset();
-      const shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-
-      const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
-      const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
-      double current_time = 0.;
-      unsigned long int cached_events = 0;
-
-      bool stop_caching = false;
-      record_cache.reserve(this->cache_size);
-
-      while (true) // keep caching across multiple files.
-        {
-          record_cache.clear();
-
-          while (true) // Start for the current cache
-            {
-              if (this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
-                {
-                  stop_caching = true;
-                  break;
-                }
-              if (record_sptr->is_time())
-                {
-                  current_time = record_sptr->time().get_time_in_secs();
-                  if (this->do_time_frame && current_time >= end_time)
-                    {
-                      stop_caching = true;
-                      break; // get out of while loop
-                    }
-                }
-              if (current_time < start_time)
-                continue;
-              if (record_sptr->is_event() && record_sptr->event().is_prompt())
-                {
-                  BinAndCorr tmp;
-                  tmp.my_bin.set_bin_value(1.0);
-                  record_sptr->event().get_bin(tmp.my_bin, *this->proj_data_info_sptr);
-
-                  if (tmp.my_bin.get_bin_value() != 1.0f
-                      || tmp.my_bin.segment_num() < this->proj_data_info_sptr->get_min_segment_num()
-                      || tmp.my_bin.segment_num() > this->proj_data_info_sptr->get_max_segment_num()
-                      || tmp.my_bin.tangential_pos_num() < this->proj_data_info_sptr->get_min_tangential_pos_num()
-                      || tmp.my_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
-                      || tmp.my_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(tmp.my_bin.segment_num())
-                      || tmp.my_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(tmp.my_bin.segment_num())
-                      || tmp.my_bin.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
-                      || tmp.my_bin.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num())
-                    {
-                      continue;
-                    }
-                  try
-                    {
-                      record_cache.push_back(tmp);
-                      ++cached_events;
-                    }
-                  catch (...)
-                    {
-                      // should never get here due to `reserve` statement above, but best to check...
-                      error("Listmode: running out of memory for cache. Current size: "
-                            + std::to_string(this->record_cache.size()) + " records");
-                    }
-
-                  if (record_cache.size() > 1 && record_cache.size() % 500000L == 0)
-                    info(boost::format("Cached Prompt Events (this cache): %1% ") % record_cache.size());
-
-                  if (this->num_events_to_use > 0)
-                    if (cached_events >= static_cast<std::size_t>(this->num_events_to_use))
-                      {
-                        stop_caching = true;
-                        break;
-                      }
-
-                  if (record_cache.size() == this->cache_size)
-                    break; // cache is full. go to next cache.
-                }
-            }
-
-          // add additive term to current cache
-          if (this->has_add)
-            {
-              info(boost::format("Caching Additive corrections for : %1% events.") % record_cache.size());
-
-#ifdef STIR_OPENMP
-#  pragma omp parallel
-              {
-#  pragma omp single
-                {
-                  info("Caching add background with " + std::to_string(omp_get_num_threads()) + " threads", 2);
-                }
-              }
-#endif
-
-#ifdef STIR_OPENMP
-#  if _OPENMP < 201107
-#    pragma omp parallel for schedule(dynamic)
-#  else
-#    pragma omp parallel for collapse(2) schedule(dynamic)
-#  endif
-#endif
-              for (int seg = this->additive_proj_data_sptr->get_min_segment_num();
-                   seg <= this->additive_proj_data_sptr->get_max_segment_num();
-                   ++seg)
-                for (int timing_pos_num = this->additive_proj_data_sptr->get_min_tof_pos_num();
-                     timing_pos_num <= this->additive_proj_data_sptr->get_max_tof_pos_num();
-                     ++timing_pos_num)
-                  {
-                    const auto segment(this->additive_proj_data_sptr->get_segment_by_view(seg, timing_pos_num));
-
-                    for (BinAndCorr& cur_bin : record_cache)
-                      {
-                        if (cur_bin.my_bin.segment_num() == seg)
-                          {
-#ifdef STIR_OPENMP
-#  if _OPENMP >= 201012
-#    pragma omp atomic write
-#  else
-#    pragma omp critical(PLogLikListModePMBAddSinoCaching)
-#  endif
-#endif
-                            cur_bin.my_corr = segment[cur_bin.my_bin.view_num()][cur_bin.my_bin.axial_pos_num()]
-                                                     [cur_bin.my_bin.tangential_pos_num()];
-                          }
-                      }
-                  }
-            } // end additive correction
-
-          if (write_listmode_cache_file(this->num_cache_files) == Succeeded::no)
-            {
-              error("Error writing cache file!");
-            }
-          ++this->num_cache_files;
-
-          if (stop_caching)
-            break;
-        }
-      info(boost::format("Cached Events: %1% ") % cached_events);
-      return Succeeded::yes;
+      if (stop_caching)
+        break;
     }
-  return Succeeded::no;
+  return Succeeded::yes;
 }
 
 template <typename TargetT>
@@ -738,145 +776,22 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
           "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
           "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
 
-  if (this->cache_lm_file)
+  unsigned int icache = 0;
+  while (true)
     {
-      for (unsigned int icache = 0; icache < this->num_cache_files; ++icache)
-        {
-          load_listmode_cache_file(icache);
-          LM_distributable_computation(this->PM_sptr,
-                                       this->proj_data_info_sptr,
-                                       &gradient,
-                                       &current_estimate,
-                                       record_cache,
-                                       subset_num,
-                                       this->num_subsets,
-                                       this->has_add,
-                                       /* accumulate = */ icache != 0);
-        }
-    }
-  else
-    {
-      //  list_mode_data_sptr->set_get_position(start_time);
-      // TODO implement function that will do this for a random time
-
-      this->list_mode_data_sptr->reset();
-
-      const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
-      const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
-
-      long num_used_events = 0;
-      const float max_quotient = 10000.F;
-
-      double current_time = 0.;
-
-      // need get_bin_value(), so currently need to cast to either of the 2 below (ugly. TODO)
-      shared_ptr<ProjDataFromStream> add_from_stream_sptr;
-      shared_ptr<ProjDataInMemory> add_in_mem_sptr;
-
-      if (!is_null_ptr(this->additive_proj_data_sptr))
-        {
-          add_in_mem_sptr = std::dynamic_pointer_cast<ProjDataInMemory>(this->additive_proj_data_sptr);
-          if (is_null_ptr(add_in_mem_sptr))
-            {
-              add_from_stream_sptr = std::dynamic_pointer_cast<ProjDataFromStream>(this->additive_proj_data_sptr);
-              // TODO could create a ProjDataInMemory instead, but for now we give up.
-              if (is_null_ptr(add_from_stream_sptr))
-                error("Additive projection data is in unsupported file format. You need to create an Interfile copy. sorry.");
-            }
-        }
-
-      ProjMatrixElemsForOneBin proj_matrix_row;
-      gradient.fill(0);
-      shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-      ListRecord& record = *record_sptr;
-
-      VectorWithOffset<ListModeData::SavedPosition> frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
-
-      while (true)
-        {
-
-          if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
-            {
-              info("End of listmode file!", 2);
-              break; // get out of while loop
-            }
-
-          if (record.is_time())
-            {
-              current_time = record.time().get_time_in_secs();
-              if (this->do_time_frame && current_time >= end_time)
-                {
-                  break; // get out of while loop
-                }
-            }
-
-          if (current_time < start_time)
-            continue;
-
-          if (record.is_event() && record.event().is_prompt())
-            {
-              Bin measured_bin;
-              measured_bin.set_bin_value(1.0f);
-              record.event().get_bin(measured_bin, *this->proj_data_info_sptr);
-
-              if (measured_bin.get_bin_value() != 1.0f
-                  || measured_bin.segment_num() < this->proj_data_info_sptr->get_min_segment_num()
-                  || measured_bin.segment_num() > this->proj_data_info_sptr->get_max_segment_num()
-                  || measured_bin.tangential_pos_num() < this->proj_data_info_sptr->get_min_tangential_pos_num()
-                  || measured_bin.tangential_pos_num() > this->proj_data_info_sptr->get_max_tangential_pos_num()
-                  || measured_bin.axial_pos_num() < this->proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
-                  || measured_bin.axial_pos_num() > this->proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num())
-                  || measured_bin.timing_pos_num() < this->proj_data_info_sptr->get_min_tof_pos_num()
-                  || measured_bin.timing_pos_num() > this->proj_data_info_sptr->get_max_tof_pos_num())
-                {
-                  continue;
-                }
-
-              measured_bin.set_bin_value(1.0f);
-              // If more than 1 subsets, check if the current bin belongs to the current.
-              bool in_subset = true;
-              if (this->num_subsets > 1)
-                {
-                  Bin basic_bin = measured_bin;
-                  this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
-                  in_subset = (subset_num == static_cast<int>(basic_bin.view_num() % this->num_subsets));
-                }
-              if (in_subset)
-                {
-                  this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
-                  Bin fwd_bin;
-                  fwd_bin.set_bin_value(0.0f);
-                  proj_matrix_row.forward_project(fwd_bin, current_estimate);
-                  // additive sinogram
-                  if (!is_null_ptr(this->additive_proj_data_sptr))
-                    {
-                      // TODO simplify once we don't need the casting for get_bin_value() anymore
-                      const float add_value = add_in_mem_sptr ? add_in_mem_sptr->get_bin_value(measured_bin)
-                                                              : add_from_stream_sptr->get_bin_value(measured_bin);
-                      const float value = fwd_bin.get_bin_value() + add_value;
-                      fwd_bin.set_bin_value(value);
-                    }
-
-                  if (measured_bin.get_bin_value() <= max_quotient * fwd_bin.get_bin_value())
-                    {
-                      const float measured_div_fwd = 1.0f / fwd_bin.get_bin_value();
-                      measured_bin.set_bin_value(measured_div_fwd);
-                      proj_matrix_row.back_project(gradient, measured_bin);
-                    }
-                }
-
-              ++num_used_events;
-
-              if (num_used_events % 200000L == 0)
-                info(boost::format("Used Events: %1% ") % num_used_events);
-
-              // if we use event-count-based processing, see if we need to stop
-              if (this->num_events_to_use > 0)
-                if (num_used_events >= this->num_events_to_use)
-                  break;
-            }
-        }
-      info(boost::format("Number of used events (for all subsets): %1%") % num_used_events);
+      bool stop = this->load_listmode_batch(icache);
+      LM_distributable_computation(this->PM_sptr,
+                                   this->proj_data_info_sptr,
+                                   &gradient,
+                                   &current_estimate,
+                                   record_cache,
+                                   subset_num,
+                                   this->num_subsets,
+                                   this->has_add,
+                                   /* accumulate = */ icache != 0);
+      ++icache;
+      if (stop)
+        break;
     }
 
   if (!add_sensitivity)
