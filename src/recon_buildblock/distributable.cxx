@@ -622,17 +622,9 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
   std::vector<shared_ptr<DiscretisedDensity<3, float>>> local_output_image_sptrs;
   std::vector<double> local_log_likelihoods;
   std::vector<int> local_counts, local_count2s;
-  std::vector<Bin> local_measured_bin, local_basic_bin, local_fwd_bin;
   std::vector<ProjMatrixElemsForOneBin> local_row;
-  std::vector<float> measured_div_fwd;
 #ifdef STIR_OPENMP
-#  pragma omp parallel shared(local_output_image_sptrs,                                                                          \
-                              local_row,                                                                                         \
-                              local_log_likelihoods,                                                                             \
-                              local_counts,                                                                                      \
-                              local_count2s,                                                                                     \
-                              local_measured_bin,                                                                                \
-                              local_fwd_bin)
+#  pragma omp parallel shared(local_output_image_sptrs, local_row, local_log_likelihoods, local_counts, local_count2s)
 #endif
   // start of threaded section if openmp
   {
@@ -644,10 +636,6 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
       //            local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
-      measured_div_fwd.resize(omp_get_max_threads(), 0.f);
-      local_measured_bin.resize(omp_get_max_threads(), Bin());
-      local_basic_bin.resize(omp_get_max_threads(), Bin());
-      local_fwd_bin.resize(omp_get_max_threads(), Bin());
       local_row.resize(omp_get_max_threads(), ProjMatrixElemsForOneBin());
     }
 
@@ -659,50 +647,19 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
       //            local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(1, 0);
       local_count2s.resize(1, 0);
-      measured_div_fwd.resize(1, 0.f);
-      local_measured_bin.resize(1, Bin());
-      local_basic_bin.resize(1, Bin());
-      local_fwd_bin.resize(1, Bin());
       local_row.resize(1, ProjMatrixElemsForOneBin());
     }
 #endif
-    // Putting the Bins here I avoid rellocation.
     for (long int ievent = 0; ievent < record_ptr.size(); ++ievent)
       {
+        if (record_ptr.at(ievent).my_bin.get_bin_value() == 0.0f) // shouldn't happen really, but a check probably doesn't hurt
+          continue;
+
 #ifdef STIR_OPENMP
         const int thread_num = omp_get_thread_num();
 #else
         const int thread_num = 0;
 #endif
-
-        local_measured_bin[thread_num] = record_ptr.at(ievent).my_bin;
-
-        if (local_measured_bin[thread_num].get_bin_value() == 0.0f)
-          continue;
-
-        if (num_subsets > 1)
-          {
-            local_basic_bin[thread_num] = local_measured_bin[thread_num];
-            if (!PM_sptr->get_symmetries_ptr()->is_basic(local_measured_bin[thread_num]))
-              PM_sptr->get_symmetries_ptr()->find_basic_bin(local_basic_bin[thread_num]);
-
-            if (subset_num != static_cast<int>(local_basic_bin[thread_num].view_num() % num_subsets))
-              {
-                continue;
-              }
-          }
-
-        PM_sptr->get_proj_matrix_elems_for_one_bin(local_row[thread_num], local_measured_bin[thread_num]);
-
-        local_fwd_bin[thread_num].set_bin_value(0.0f);
-        local_row[thread_num].forward_project(local_fwd_bin[thread_num], *input_image_ptr);
-
-        if (has_add)
-          {
-            local_fwd_bin[thread_num].set_bin_value(local_fwd_bin[thread_num].get_bin_value() + record_ptr.at(ievent).my_corr);
-          }
-
-        measured_div_fwd[thread_num] = 0.0;
 
         if (output_image_ptr != NULL)
           {
@@ -710,14 +667,39 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
               local_output_image_sptrs[thread_num].reset(output_image_ptr->get_empty_copy());
           }
 
-        if (local_measured_bin[thread_num].get_bin_value() <= max_quotient * local_fwd_bin[thread_num].get_bin_value())
-          measured_div_fwd[thread_num]
-              = local_measured_bin[thread_num].get_bin_value() / local_fwd_bin[thread_num].get_bin_value();
+        Bin measured_bin = record_ptr.at(ievent).my_bin;
+
+        if (num_subsets > 1)
+          {
+            Bin basic_bin = measured_bin;
+            if (!PM_sptr->get_symmetries_ptr()->is_basic(measured_bin))
+              PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
+
+            if (subset_num != static_cast<int>(basic_bin.view_num() % num_subsets))
+              {
+                continue;
+              }
+          }
+
+        PM_sptr->get_proj_matrix_elems_for_one_bin(local_row[thread_num], measured_bin);
+
+        Bin fwd_bin = measured_bin;
+        fwd_bin.set_bin_value(0.0f);
+        local_row[thread_num].forward_project(fwd_bin, *input_image_ptr);
+
+        if (has_add)
+          {
+            fwd_bin.set_bin_value(fwd_bin.get_bin_value() + record_ptr.at(ievent).my_corr);
+          }
+
+        float measured_div_fwd = 0.F;
+        if (measured_bin.get_bin_value() <= max_quotient * fwd_bin.get_bin_value())
+          measured_div_fwd = measured_bin.get_bin_value() / fwd_bin.get_bin_value();
         else
           continue;
 
-        local_measured_bin[thread_num].set_bin_value(measured_div_fwd[thread_num]);
-        local_row[thread_num].back_project(*local_output_image_sptrs[thread_num], local_measured_bin[thread_num]);
+        measured_bin.set_bin_value(measured_div_fwd);
+        local_row[thread_num].back_project(*local_output_image_sptrs[thread_num], measured_bin);
       }
   }
 #ifdef STIR_OPENMP
