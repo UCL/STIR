@@ -160,8 +160,8 @@ Succeeded
 SRT2DSPECTReconstruction::
 actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 {
-/*
-	// perform SSRB
+
+/*	// perform SSRB
   if (num_segments_to_combine>1)
     {  
       const ProjDataInfoCylindrical& proj_data_info_cyl =
@@ -184,7 +184,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   else
     {
       // just use the proj_data_ptr we have already
-    }*/
+    }*/ 
 
 	// check if segment 0 has direct sinograms
   {
@@ -195,7 +195,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	return Succeeded::no;
       }
   }
-/*
+
   float tangential_sampling;
   // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
   // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
@@ -228,7 +228,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       tangential_sampling =
 	arc_correction.get_arc_corrected_proj_data_info().get_tangential_sampling();  
     }
-*/
+
 	VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);	
 density_ptr->fill(0);
 	Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0,0); 
@@ -327,9 +327,9 @@ float lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1];
 	
 	for(int it=0; it<Nt/2; it++) { 
 		view_atten = atten_data_ptr->get_viewgram(Nmul*it, 0);      
-		//if (do_arc_correction) {
-		//  view_atten = arc_correction.do_arc_correction(view_atten);
-		//}
+		if (do_arc_correction) {
+		  view_atten = arc_correction.do_arc_correction(view_atten);
+		}
 		//float mv = 1e-4; 
 		for(int ia=0; ia<sa; ia++) {
 			for(int ip=0; ip<sp; ip++){ 	 
@@ -394,10 +394,10 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 		{
 			view = proj_data_ptr->get_viewgram(ith, 0);  
 			view_atten = atten_data_ptr->get_viewgram(ith, 0);      
-			//if (do_arc_correction) {
-			//	view = arc_correction.do_arc_correction(view);
-			//	view_atten = arc_correction.do_arc_correction(view_atten); 
-			//}
+			if (do_arc_correction) {
+				view = arc_correction.do_arc_correction(view);
+				view_atten = arc_correction.do_arc_correction(view_atten); 
+			}
 			//float mv = 1e-4; 
 			for(int ia=0; ia<sa; ia++) {
 				for(int ip=0; ip<sp; ip++){ 	 
@@ -488,14 +488,14 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 						if(fabs(p[ip+1]-rho2)<2e-6 || fabs(p[ip]-rho2)<2e-6) lg2_cache[it][ip] = 0.; 
 					}
 				}
-				
+				 
 				for(int ia=0; ia<sa; ia++) { 
-			//	if(ia!=31 && ia!=70 && ia!=81 && ia!=100) continue; 
+				//if(ia!=31 && ia!=70 && ia!=71 && ia!=81 && ia!=100) continue; 
 					f_node = A*f[ia][i]+B*f[ia][i+1]+C*ddf[ia][i]+D*ddf[ia][i+1];
 					
 					// calculate fcme, fsme, fc, fs, hc, hs
 					
-					h = hilbert(rho, f[ia], ddf[ia], p, sp, lg); 
+					h = hilbert(rho, f[ia], ddf[ia], p, sp, lg);  
 					fcme_fin = exp(-0.5*f_node)*cos(h/(2*M_PI));
 					fsme_fin = exp(-0.5*f_node)*sin(h/(2*M_PI));
 
@@ -859,7 +859,7 @@ void SRT2DSPECTReconstruction::spline(float x[],float y[],int n, float y2[]) {
 	int i, k;
 	float p, qn, sig, un;
 	float u[n];
-	y2[0]=0.0;
+	y2[0]=0.0; 
 	u[0]=0.0;
 	for(i=1; i<n-1; i++) {
 		sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
