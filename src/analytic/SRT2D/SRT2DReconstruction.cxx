@@ -14,13 +14,21 @@
 #include "stir/IO/interfile.h" 
 #include "stir/info.h" 
 #include <boost/format.hpp>   
-
+ 
 using std::cerr;  
 using std::endl; 
 #ifdef STIR_OPENMP
 #include <omp.h>
 #endif
 #include "stir/num_threads.h"
+
+#include <cmath>// For M_PI and other math functions
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#include <vector>
+#include <algorithm> 
 
 START_NAMESPACE_STIR
 
@@ -224,17 +232,17 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	 *	", img_min = " << image.get_min_y() << 
 	 *	", img_max = " << image.get_max_y() << 
 	 *	", img_siz = " << image.get_y_size() << 
-	 *	 endl; */
-	
-	const int sp = proj_data_ptr->get_num_tangential_poss(); 
-	const int sth = proj_data_ptr->get_num_views();
-	const int sa = proj_data_ptr->get_num_axial_poss(0);
-	
-	const int sx = image.get_x_size();
-	const int sy = image.get_y_size();
-	const int sx2 = ceil(sx/2.0), sy2 = ceil(sy/2.0);
-	const int sth2 = ceil(sth/2.0);
-	const float c_int = -1/(M_PI*sth*(sp-1)); 
+	 *	 endl; */	
+
+    // Retrieve runtime-dependent sizes
+   const int sp = proj_data_ptr->get_num_tangential_poss();
+   const int sth = proj_data_ptr->get_num_views();
+   const int sa = proj_data_ptr->get_num_axial_poss(0);
+   const int sx = image.get_x_size();
+   const int sy = image.get_y_size();
+   const int sx2 = ceil(sx / 2.0), sy2 = ceil(sy/2.0);
+   const int sth2 = ceil(sth / 2.0);
+   const float c_int = -1/(M_PI*sth*(sp-1)); 
 	
 	//The rest of the variables used by the program.
 	int ia, image_pos;
@@ -244,19 +252,54 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	
 	const int image_min_x = image.get_min_x();
 	const int image_min_y = image.get_min_y();
+
+    // Dynamically allocated vectors
+  //Old static array declarations: float th[sth], p[sp], p_ud[sp], x1[sx],  x2[sy];//hx[sth]
+  // New dynamic declarations using std::vector
+  std::vector<float> th(sth), p(sp), p_ud(sp), x1(sx), x2(sy);
+
+  //Old static array declarations: float f[sth][sp], ddf[sth][sp];
+  // New dynamic declaration using std::vector
+  std::vector<std::vector<float>> f(sth, std::vector<float>(sp));
+  std::vector<std::vector<float>> ddf(sth, std::vector<float>(sp));
+
+  // Old declarations: float f_ud[sth][sp], ddf_ud[sth][sp]; 
+  // New declarations using std::vector of std::vector
+  std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp));
+  std::vector<std::vector<float>> ddf_ud(sth, std::vector<float>(sp));
+
+	//float f_ud[sth][sp], ddf_ud[sth][sp];
+	//float f1[sth][sp], ddf1[sth][sp];
+	//float f1_ud[sth][sp], ddf1_ud[sth][sp];
 	
-	float th[sth], p[sp], p_ud[sp], x1[sx], x2[sy]; //hx[sth]
-	float f[sth][sp], ddf[sth][sp];
-	float f_ud[sth][sp], ddf_ud[sth][sp];
-	float f1[sth][sp], ddf1[sth][sp];
-	float f1_ud[sth][sp], ddf1_ud[sth][sp];
+	//float f_th[sth][sp], ddf_th[sth][sp];
+	//float f_th_ud[sth][sp], ddf_th_ud[sth][sp];
+	//float f1_th[sth][sp], ddf1_th[sth][sp];
+	//float f1_th_ud[sth][sp], ddf1_th_ud[sth][sp];
 	
-	float f_th[sth][sp], ddf_th[sth][sp];
-	float f_th_ud[sth][sp], ddf_th_ud[sth][sp];
-	float f1_th[sth][sp], ddf1_th[sth][sp];
-	float f1_th_ud[sth][sp], ddf1_th_ud[sth][sp];
-	
-	float lg[sp], termC[sth], termC_th[sth]; 
+	// Convert these arrays to std::vector<std::vector<float>>
+	std::vector<std::vector<float>> f1(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> ddf1(sth, std::vector<float>(sp));
+
+	std::vector<std::vector<float>> f1_ud(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> ddf1_ud(sth, std::vector<float>(sp));
+
+
+	std::vector<std::vector<float>> f_th(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> ddf_th(sth, std::vector<float>(sp));
+
+	std::vector<std::vector<float>> f_th_ud(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> ddf_th_ud(sth, std::vector<float>(sp));
+
+	std::vector<std::vector<float>> f1_th(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> ddf1_th(sth, std::vector<float>(sp));
+
+	std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> ddf1_th_ud(sth, std::vector<float>(sp));
+
+
+  //	float lg[sp], termC[sth], termC_th[sth]; 
+  std::vector<float> lg(sp), termC(sth), termC_th(sth);
 	const float dp6 = 6.0/4.0*2.0/(sp-1.0);
 	
 	//Some constants.
@@ -355,10 +398,15 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 				continue;
 			}		
 			x=x2[ix2]*cos(th[ith])-x1[ix1]*sin(th[ith]); 
-			for (ip=0; ip<sp; ip++) {
+		/*	for (ip=0; ip<sp; ip++) {
 				lg[ip] = log(fabs(x-p[ip])); 
 if(fabs(p[ip]-x)<2e-6) lg[ip] = 0.; 			
+}*/
+for (ip=0; ip<sp; ip++) {
+    double val = fabs(x - p[ip]);
+    lg[ip] = val < 2e-6 ? 0. : std::log(val);  // Using std::log to specify the namespace
 }
+
 			for(ia=0; ia<sa; ia++){
 				image[ia][image_min_x +sx-ix1-1][image_min_y +ix2] 
 				= -hilbert_der(x, f[ia], ddf[ia], p, sp, lg, termC[ia])/(M_PI*sth*(sp-1)); //2*
@@ -373,7 +421,8 @@ if(fabs(p[ip]-x)<2e-6) lg[ip] = 0.;
 	shared(view, view1, view_th, view1_th,do_arc_correction, arc_correction, p,th,x1,x2,image) \
 	private(jth,ia, ip, f, f_ud,f1, f1_ud, ddf,f_th, f_th_ud, f1_th, f1_th_ud, ddf1, ddf_th, ddf1_th, \
 	ddf_ud, ddf1_ud, ddf_th_ud, ddf1_th_ud, termC, termC_th, ix2, ix1, aux, x, lg, image_pos)
-	#pragma omp for schedule(auto)  nowait
+//	#pragma omp for schedule(auto)  nowait
+	#pragma omp for schedule(dynamic)  nowait
 	#endif
 	for(ith=1; ith<sth; ith++){
 		//image_pos= image.get_min_z() + 2*(ia - proj_data_ptr->get_min_axial_pos_num(0));
@@ -455,11 +504,14 @@ if(fabs(p[ip]-x)<2e-6) lg[ip] = 0.;
 				
 				// Computation of h_rho			
 				x=x2[ix2]*cos(th[ith])-x1[ix1]*sin(th[ith]); 
+				/*	for (ip=0; ip<sp; ip++) {
+				lg[ip] = log(fabs(x-p[ip])); 
+				if(fabs(p[ip]-x)<2e-6) lg[ip] = 0.; 	 		
+				}*/
 				for (ip=0; ip<sp; ip++) {
-					lg[ip] = log(fabs(x-p[ip])); 
-          if(fabs(p[ip]-x)<2e-6) lg[ip] = 0.; 
+				double val = fabs(x - p[ip]);
+				lg[ip] = val < 2e-6 ? 0. : std::log(val);  // Using std::log to specify the namespace
 				}
-				
 				
 				for(ia=0; ia<sa; ia++){
 					image_pos= ia;//2*ia;
@@ -538,9 +590,13 @@ void SRT2DReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, in
 	const int min_x = image.get_min_x();
 	const int min_y = image.get_min_y();
 	const int ws = 9; 
-	
+	    
 	for(int ia=0; ia<sa; ia++) { 
-		float localMean[sx][sy], localVar[sx][sy], noise=0.; 
+		//float localMean[sx][sy], localVar[sx][sy], 
+    std::vector<std::vector<float>> localMean(sx, std::vector<float>(sy, 0));
+    std::vector<std::vector<float>> localVar(sx, std::vector<float>(sy, 0));
+  
+   float noise=0.; 
 		
 		for(int i=0+1; i<sx-1; i++){ 
 			for(int j=0+1; j<sy-1; j++) { 
@@ -553,15 +609,21 @@ void SRT2DReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, in
 				
 				for(int k=-1; k<=1; k++) 
 					for(int l=-1; l<=1; l++) 
-						localVar[i][j] += pow(image[ia][min_x+i+k][min_y+j+l], 2)*1.; 
-				localVar[i][j] = localVar[i][j]/ws - pow(localMean[i][j], 2); 
-				
+				//		localVar[i][j] += std::pow(image[ia][min_x+i+k][min_y+j+l], 2)*1.; 
+				//localVar[i][j] = localVar[i][j]/ws - std::pow(localMean[i][j], 2); 
+        //Corrected version:
+				//localVar[i][j] += std::pow(static_cast<double>(image[ia][min_x+i+k][min_y+j+l]), 2.0); 
+				//localVar[i][j] = localVar[i][j]/ws - std::pow(static_cast<double>(localMean[i][j]), 2.0);
+
+				localVar[i][j] += image[ia][min_x+i+k][min_y+j+l] * image[ia][min_x+i+k] [min_y+j+l]; 
+			  localVar[i][j] = localVar[i][j]/ws - localMean[i][j] * localMean[i][j];
+
 				noise += localVar[i][j]; 
 			}
 		}
 		noise /= sx*sy; 
 		
-		for(int i=0+1; i<sx-1; i++) 
+		for(int i=0+1; i<sx-1; i++)  
 			for(int j=0+1; j<sy-1; j++) 
 				image[ia][min_x+i][min_y+j] = (image[ia][min_x+i][min_y+j] - localMean[i][j])/std::max(localVar[i][j], noise)* \
 								std::max(localVar[i][j] - noise, 0.f) + localMean[i][j]; 
@@ -576,8 +638,9 @@ void SRT2DReconstruction::median(VoxelsOnCartesianGrid<float>& image, int sx, in
 	const int filter_size = 3;
 	const int offset = filter_size/2;
 	const int len = 4; 
-	double neighbors[9]; 
-	
+	//double neighbors[9]; 
+	std::vector<double> neighbors(filter_size * filter_size, 0);
+
 	for(int ia=0; ia<sa; ia++) { 
 		for(int i=0; i<9; i++) 
 			neighbors[i] = 0; 
@@ -588,10 +651,13 @@ void SRT2DReconstruction::median(VoxelsOnCartesianGrid<float>& image, int sx, in
 					continue; 
 				for(int k=-offset; k<=offset; k++) { 
 					for(int l=-offset; l<=offset; l++) { 
-						neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];
-					}
+					//	neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];
+//          neighbors[(k + offset) * filter_size + (l + offset)] = image[ia][min_x + i + std::clamp(k + i, 0, sx - 1)][min_y + j + std::clamp(l + j, 0, sy - 1)];
+neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];			
+		}
 				}
-				std::sort(std::begin(neighbors), std::end(neighbors));
+				//std::sort(std::begin(neighbors), std::end(neighbors));
+        std::sort(neighbors.begin(), neighbors.end());
 				image[ia][min_x+i][min_y+j] = neighbors[len];
 			}
 		}
@@ -625,7 +691,7 @@ void SRT2DReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int
 		float averagePixelValue = 0.; 
 		for(int i=0; i<sx; i++) { 
 			for(int j=0; j<sy; j++) { 
-				if(abs(image[ia][min_x+i][min_y+j])>0.1) { 
+				if(std::abs(image[ia][min_x+i][min_y+j])>0.1) { 
 					count++; 
 					averagePixelValue+=image[ia][min_x+i][min_y+j]; 
 				}
@@ -635,29 +701,29 @@ void SRT2DReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int
 		
 		float gamma_val = 1.; 
 		if(averagePixelValue>0.)
-			gamma_val = log(targetAverage) / log(averagePixelValue);
+			gamma_val = std::log(targetAverage) / std::log(averagePixelValue);
 		//img = img.^gamma; 
 		for(int i=0; i<sx; i++) 
 			for(int j=0; j<sy; j++) 
-				image[ia][min_x+i][min_y+j] = abs(image[ia][min_x+i][min_y+j])>1e-6 ? pow(image[ia][min_x+i][min_y+j],gamma_val) : image[ia][min_x+i][min_y+j]; 
+				image[ia][min_x+i][min_y+j] = std::abs(image[ia][min_x+i][min_y+j])>1e-6 ? std::pow(image[ia][min_x+i][min_y+j],gamma_val) : image[ia][min_x+i][min_y+j]; 
 		
 		// denormalize image
 		for(int i=0; i<sx; i++) 
 			for(int j=0; j<sy; j++) 
 				image[ia][min_x+i][min_y+j] = image[ia][min_x+i][min_y+j]*(max_val-min_val)+min_val; 
-	}
+	} 
 	return; 
 }
 
-
-float SRT2DReconstruction::hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC) {
+//float SRT2DReconstruction::hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC) {
+float SRT2DReconstruction::hilbert_der(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, const std::vector<float>& lg, float termC) {
 	
 	float term, trm0, termd0; 
 	float d, d_div_6, minus_half_div_d;
 	
 	d = p[1]-p[0]; 
 	d_div_6 = d/6.0;
-	minus_half_div_d = -0.5/d;
+	minus_half_div_d = -0.5/d; 
 	
 	term = 0.5*(ddf[sp-2] - ddf[0])*x + termC;
 	
@@ -681,7 +747,8 @@ float SRT2DReconstruction::hilbert_der(float x, float f[], float ddf[], float p[
 	return term; 
 }
 
-void SRT2DReconstruction::spline(float x[],float y[],int n, float y2[]) {
+//void SRT2DReconstruction::spline(float x[],float y[],int n, float y2[]) {
+void SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) {
 	// function for nanural qubic spline.
 	int i, k;
 	float qn, un;
@@ -702,8 +769,8 @@ void SRT2DReconstruction::spline(float x[],float y[],int n, float y2[]) {
 	return;
 }
 
-
-float SRT2DReconstruction::integ(float dist, int max, float ff[]) {
+//float SRT2DReconstruction::integ(float dist, int max, float ff[]) {
+float SRT2DReconstruction::integ(float dist, int max, const std::vector<float>& ff) {
 	// function for the calculation of integrals (closed formula).
 	int k, intg;
 	intg=ff[0];
