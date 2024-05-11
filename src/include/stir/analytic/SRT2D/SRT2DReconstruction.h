@@ -18,7 +18,7 @@
  
   \brief declares the stir::SRT2DReconstruction class
 
-  \author Kris Thielemans
+  \author Dimitra Kyriakopoulou
   \author PARAPET project
  
 */
@@ -98,7 +98,7 @@ public:
   int display_level;
   float zoom;
   int filter_wiener; 
-  int filter_median; 
+  int filter_median;  
   int filter_gamma; 
 	float thres_restr_bound;
 	std::vector<double> thres_restr_bound_vector;  
@@ -110,10 +110,15 @@ public:
   virtual void initialise_keymap();
   virtual bool post_processing(); 
 
- inline void spline(float x[],float y[],int n, float y2[]);
+ //inline void spline(float x[],float y[],int n, float y2[]);
 
-inline float hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC);
-inline float integ(float dist, int max, float ff[]);
+//inline float hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC);
+//inline float integ(float dist, int max, float ff[]);
+ 
+void spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2);
+
+  float hilbert_der(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, const std::vector<float>& lg, float termC);
+  float integ(float dist, int max, const std::vector<float>& ff);
 
 void wiener(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa); 
 void median(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa); 
