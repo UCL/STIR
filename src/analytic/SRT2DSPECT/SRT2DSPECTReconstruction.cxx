@@ -279,14 +279,27 @@ RelatedViewgrams<float> viewgrams;
 	
 	//float rx1x2th[sa][sx][sy], lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1]; 
 float lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1]; 
- float *** rx1x2th = (float ***)malloc(sa*sizeof(float**));
+
+float *** rx1x2th = reinterpret_cast<float ***>(malloc(sa * sizeof(float **)));
+for (int i = 0; i < sa; i++) {
+    rx1x2th[i] = reinterpret_cast<float **>(malloc(sx * sizeof(float *)));
+    for (int j = 0; j < sx; j++) {
+        rx1x2th[i][j] = reinterpret_cast<float *>(malloc(sy * sizeof(float)));
+        for (int k = 0; k < sy; k++) {
+            rx1x2th[i][j][k] = 0.; // Initialize to zero
+        }
+    }
+}
+ 
+
+/* float *** rx1x2th = (float ***)malloc(sa*sizeof(float**));
         for (int i = 0; i< sa; i++) {
          rx1x2th[i] = (float **) malloc(sx*sizeof(float *));
           for (int j = 0; j < sx; j++) {
               rx1x2th[i][j] = (float *)malloc(sy*sizeof(float));
 							for(int k=0; k<sy; k++) rx1x2th[i][j][k] = 0.; 
           }
-        }
+        }*/
 
 	float f_cache[sa][Nt/2][sp], ddf_cache[sa][Nt/2][sp]; 
 	float f1_cache[sa][Nt/2][sp], ddf1_cache[sa][Nt/2][sp]; 
@@ -490,7 +503,7 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 				}
 				 
 				for(int ia=0; ia<sa; ia++) { 
-				//if(ia!=31 && ia!=70 && ia!=71 && ia!=81 && ia!=100) continue; 
+				if(ia!=31 && ia!=70 && ia!=81 && ia!=100) continue; 
 					f_node = A*f[ia][i]+B*f[ia][i+1]+C*ddf[ia][i]+D*ddf[ia][i+1];
 					
 					// calculate fcme, fsme, fc, fs, hc, hs
@@ -734,7 +747,7 @@ float SRT2DSPECTReconstruction::hilbert_node(float x, float f[], float ddf[], fl
 
 float SRT2DSPECTReconstruction::hilbert(float x, float f[], float ddf[], float p[], int sp, float lg[])
 {
-	float dh, Di, Di1; 
+	float dh, Di; 
 	int i; 
 	 
 	i=0; 
@@ -748,7 +761,7 @@ float SRT2DSPECTReconstruction::hilbert(float x, float f[], float ddf[], float p
 
 	for (i=1;i<sp-2;i++){
 
-		Di1=-1.0/(p[i]-p[i+1])* (  
+	float	Di1=-1.0/(p[i]-p[i+1])* (  
 				(p[i+1]-x)*f[i] - (p[i]-x)*f[i+1]  
 				-1.0/6*(p[i]-x)*(p[i+1]-x)*( (p[i]-2*p[i+1]+x)*ddf[i] + (2*p[i]-p[i+1]-x)*ddf[i+1] ) ); 
 			
@@ -777,11 +790,11 @@ float SRT2DSPECTReconstruction::hilbert(float x, float f[], float ddf[], float p
 void SRT2DSPECTReconstruction::hilbert_der_double(float x, float f[], float ddf[], float f1[], float ddf1[], float p[], int sp, float *dhp, float *dh1p, float lg[]){
 
 	float dh, dh1, dp; 
-	dh = 0; dh1 = 0; dp = p[1]-p[2];     float pix = 0., pi1x = 0.; 
+	dh = 0; dh1 = 0; dp = p[1]-p[2];     //float pix = 0., pi1x = 0.; 
 	for (int i=0; i<sp-1;i++) {
 		//lg = log( fabs( (p[i+1]-x)/(p[i]-x) ) ); 
-		pix  = fabs(p[i]-x)>2e-6 ? f[i]/(p[i]-x) : 0.; 
-		pi1x = fabs(p[i+1]-x)>2e-6 ? f[i+1]/(p[i+1]-x) : 0.; 
+		float pix  = fabs(p[i]-x)>2e-6 ? f[i]/(p[i]-x) : 0.; 
+		float pi1x = fabs(p[i+1]-x)>2e-6 ? f[i+1]/(p[i+1]-x) : 0.; 
 		dh = dh + pix - pi1x 
 			- 1.0/4*(p[i]-3*p[i+1]+2*x)*ddf[i]  
 			- 1.0/4*(3*p[i]-p[i+1]-2*x)*ddf[i+1]  
@@ -828,13 +841,13 @@ float SRT2DSPECTReconstruction::hilbert_derivative(float x, float f[], float ddf
 
 float SRT2DSPECTReconstruction::splint(float xa[], float ya[], float y2a[], int n, float x)
 {
-	int  klo, khi, k; 
+	int  klo, khi; 
 	float h, a, b, y; 
 	
 	klo = 1;
 	khi = n;
 	while(khi-klo > 1) { 
-		k = floor((khi+klo)/2.0);
+		int k = floor((khi+klo)/2.0);
 		//k = (khi+klo)/2; 
 		if(xa[k] > x) { 
 			khi = k;
@@ -857,13 +870,13 @@ float SRT2DSPECTReconstruction::splint(float xa[], float ya[], float y2a[], int 
 void SRT2DSPECTReconstruction::spline(float x[],float y[],int n, float y2[]) {
 	// function for nanural qubic spline.
 	int i, k;
-	float p, qn, sig, un;
+	float qn, sig, un;
 	float u[n];
 	y2[0]=0.0; 
 	u[0]=0.0;
 	for(i=1; i<n-1; i++) {
 		sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
-		p=sig*y2[i-1]+2.0;
+		float p=sig*y2[i-1]+2.0;
 		y2[i]=(sig-1.0)/p;
 		u[i]=(6.0*((y[i+1]-y[i])/(x[i+1]-x[i])-(y[i]-y[i-1])/(x[i]-x[i-1]))/(x[i+1]-x[i-1])-sig*u[i-1])/p;
 	}
