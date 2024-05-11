@@ -43,7 +43,7 @@ SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D   analytic
       scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
       display  IO  data_buildblock numerics_buildblock  buildblock 
       spatial_transformation_buildblock
-      Shape_buildblock eval_buildblock 
+      Shape_buildblock eval_buildblock  
       # repeat for linking
       numerics_buildblock modelling_buildblock listmode_buildblock)
 
