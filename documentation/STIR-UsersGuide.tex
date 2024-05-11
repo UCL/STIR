@@ -2,8 +2,10 @@
 \batchmode
 \documentclass{article}
 \usepackage{geometry}
+\usepackage{amsmath}
 %\usepackage{a4wide}
 %\usepackage{layout}
+\usepackage{graphicx}
 
 \geometry{
   margin=2.cm
@@ -25,6 +27,9 @@
 \newcommand{\cmdline}[1]{\par \noindent $>$ \texttt{#1}\par}
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
+
+\sloppy % prevent text from running into margins
+
 \begin{document}
 
 \begin{spacing}{2}
@@ -39,7 +44,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 3.0}}
+ Version 6.0}}
 \end{center}
 
 \end{spacing}
@@ -48,7 +53,7 @@
 
 \noindent 
 K. Thielemans \\
-{\it \small Hammersmith Imanet Ltd; Algorithms and Software Consulting Ltd; University College London}\\
+{\it \small University College London; Algorithms and Software Consulting Ltd (formerly Hammersmith Imanet Ltd}\\
 Ch. Tsoumpas\\ 
 {\it \small Hammersmith Imanet Ltd; Imperial College London; King's College London}\\
 D. Sauge, C. Labb\'e, C. Morel \\
@@ -60,27 +65,27 @@ A. Zverovich \\
 T. Beisel \\
 {\it \small Univ. of Paderborn} \\
 C. Falc\'{o}n \\
-{\it \small Univ. of Barcelona}
+{\it \small Univ. of Barcelona} \\
+R. Twyman \\
+{\it \small University College London}\\
+D. Deidda \\
+{\it \small National Physical Laboratory}\\
+M. Strugari \\
+{\it \small Dalhousie University}
+\\
+\\
 
-\begin{center}
-License
-\end{center}
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
+SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    Parts of this file are licensed under the PARAPET license.     
-    See STIR/LICENSE.txt for details.
+See STIR/LICENSE.txt for details.
 
 \newpage
 
+\normalsize
+
 \tableofcontents
+
+
 
 
 \section{
@@ -97,8 +102,8 @@ This library was originally developed by the PARAPET
 project (funded by the European Union during 1997-2000), extended by Hammersmith 
 Imanet and made into an Open Source project. \\
 The current library has different license restrictions than the 
-original PARAPET distribution. Details on licensing are to be 
-found during the registration process, and the file \textbf{STIR/LICENSE.txt} 
+original PARAPET distribution, with nearly all changes since then released under the Apache-2.0 license.
+Details on licensing are in the file \textbf{STIR/LICENSE.txt} 
 that comes with the distribution. 
 
 See the publications section of the STIR website for information on which reference
@@ -114,7 +119,7 @@ compiler tools and the \textit{STIR} reconstruction building blocks.
 Then a brief explanation is given about how to run reconstruction 
 algorithms as well as additional utilities. A description of 
 the reconstruction building block library can be found on our 
-web site (section \textit{documentation}). A short (but out-dated) review of analytic 
+web site (section \textit{documentation}). A short (but very out-dated) review of analytic 
 and iterative reconstruction methods is available in [PAR1.3] 
 (available on the STIR web-site).
 
@@ -125,7 +130,7 @@ Although we attempt to keep all documentation up-to-date, we
 recommend to read documentation in the following order:
 \begin{itemize}
 \item general overview documents, such as this User's Guide
-\item the \url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki}
+\item the \url{http://stir.sourceforge.net/wiki}{STIR Wiki}
 \item 
 online generated documentation (produced by doxygen). This is 
 produced from comments and (partly) code in the source files.
@@ -137,8 +142,41 @@ web-site on how to search these.
 Any comments on documentation, and especially contributions are 
 always welcome. Please use the stir-users mailing list.
 
+\section{Installing STIR via a pre-built version }
+\subsection{
+Installing via conda}
+The easiest way is to use \texttt{conda} (or one of its derivatives such as \texttt{mamba}):
+\begin{verbatim}
+conda config --add channels conda-forge
+conda create -n stirenv  stir  matplotlib
+conda activate stirenv
+
+# use STIR executable or python
+
+# deactivate the environment
+conda deactivate
+\end{verbatim}
+See \url{https://stir.sourceforge.net/wiki/index.php/Installing_STIR_with_conda}{our Wiki page} for
+more detail, including on how to get a development version.
+
+\subsection{SIRF distributions}
+CCP SyneRBI distributes SIRF with its dependencies, including STIR,
+see \url{https://www.ccpsynerbi.ac.uk/downloads/}{its download page} for
+a Virtual Machine, docker etc. However, only the STIR libraries are included in
+these distributions. You can easily install ``full'' STIR on the Virtual Machine though,
+see \url{https://github.com/SyneRBI/SIRF-SuperBuild/blob/master/VirtualBox/documentation/README.md}{its documentation}.
+
 \section{
-Installation}
+Installation from source}
+This section describes how to install STIR. It is complemented by information on the
+\url{http://stir.sourceforge.net/wiki}{STIR Wiki} with information for specific systems etc.
+
+Note that as opposed to using the instructions below, you can also
+the \url{https://github.com/SyneRBI/SIRF-SuperBuild/blob/master/README.md}{SIRF-Superbuild}
+of \url{https://www.ccpsynerbi.ac.uk/}{SyneRBI} to build STIR with CMake. This will take care of all dependencies.
+Note that you will need to use advanced CMake variables \texttt{STIR\_BUILD\_EXECUTABLES=ON}
+and \texttt{STIR\_BUILD\_SWIG\_PYTHON=ON}.
+
 
 \subsection{
 Installing source files}
@@ -147,31 +185,30 @@ Download the source at the \textit{STIR} site:
 \begin{center}
 \url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
-\noindent (Section \textbf{Registered Users}).\\
-Download the source files in the zip format. You can then use unzip from \\
-\url{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
-Extract using
-\cmdline{unzip -a file.zip}
-
-
-The \texttt{-a} option makes sure that files are extracted using the 
-end-of-line convention appropriate for your system. Note that 
-other programs that can handle zip files (such as WinZip) should 
-work as well, although you might have problems with the EOL convention.
-
+or from \url{https://github.com/UCL/STIR/releases}{github.com/UCL/STIR/releases}.\\
+Alternatively, if you are feeling adventurous, you can get the most-recent
+developer version (no guarantees!) of STIR from
+\url{https://github.com/UCL/STIR}{https://github.com/UCL/STIR}.\\
 
 Note that you can put the distribution in any location (it does 
 not have to be your home directory).
 
 
-The result is a \textbf{STIR} directory and subdirectories, described 
-in the annex section.
+After unpacking, you should have a \textbf{STIR} directory (subdirectories are described 
+in the doxygen documentation).
 
 \subsection{
 Installing external software}
 STIR relies on some external software and a few external libraries which enable certain functionality. 
 On most systems, you should be able to get these using your package manager. 
 Please check the Wiki for most up-to-date information.
+
+\subsubsection{
+C++ Compiler}
+
+In order to compile and run the \textit{STIR} programs, you will need a compiler
+and associated tools such as \texttt{CMake}. These days, any compiler should work. We would love 
+to hear from any attempts where there are failures.
 
 \subsubsection{BOOST}
 The only required external library is the well-respected \textit{boost} library. If it
@@ -182,28 +219,22 @@ the boost libraries). However, you will need to tell your compiler
 where to find the \texttt{boost/} directory with all the include files
 (see section \ref{sec:UsingCMake}).
 
+\subsubsection{JSON}
+The \texttt{HUToMu} and \texttt{Radionuclide} database functionality parse a file in JSON format. We use the
+\url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
+instructions for this library are available on its github page or you can get it via \texttt{conda}.
+Without it, we only support a few basic radionuclides.
 
 \subsubsection{
-C++ Compiler}
+Enabling ECAT 7 support\label{sec:ECAT67support}}
+{\em ECAT7 support is no longer tested.}
 
-In order to compile and run the \textit{STIR} programs, you will need a compiler
-and associated tools. These days, any compiler should work. See the 
-\url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki} for more
-specific information of which compilers we have tried.
-We would love 
-to hear from any attempts of using another compiler. 
-
-\subsubsection{
-Enabling ECAT 7 support}
-\label{sec:ECAT67support}
 Older CTI (Siemens) scanners use a file format called ECAT\texttrademark{}.
 At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library (called LLN in
 the rest of this document).\footnote{\textit{STIR} versions 1.? came with
 specific files for ECAT6 support without the need for the LLN library. 
 However, due to license restrictions this is now no longer the case.} 
-The library might still be available on  
-\url{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
-It is also available for GATE users.
+The library could be  available on  the OpenGATE website.
 
 You have to download that library and issue 'make --f Makefile.unix' 
 (or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
@@ -214,21 +245,31 @@ that you would otherwise experience when using \textit{STIR} and ECAT7
 files.
 
 \subsubsection{
-Enabling GE RDF and VOLPET support}
+Enabling GE RDF  support}
 \label{sec:RDFsupport}
-We have software that reads VOLPET and RDF data for all GE scanners, but this can currently
-not be distributed due to licensing restrictions. If you have the
-GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RDF
-support in \textit{STIR}.
+This software includes support for GE Raw Data Format (RDF) version 9 files, used
+by the GE Signa PET/MR and some PET/CT scanners (depending on their software version). This is only enabled if CMake was able to find HDF5 libraries.
+For most operating systems this can be done via your package manager which we highly recommend. You could also
+download from the \url{https://www.hdfgroup.org/downloads/hdf5/}{HDF5 group download page}.
+
+\subsubsection{
+Enabling ROOT support\label{sec:installROOT}}
+STIR can read CERN ROOT files from GATE (see section \ref{sec:ROOTIO}). Check the \url{https://root.cern/install/}{installation instructions for ROOT}.
+
+\subsubsection{
+Enabling ITK support\label{sec:installITK}}
+STIR can use \url{http://www.itk.org}{ITK}, a large open source library.  Specifying this
+ enables NRRD, MetaIO and Nifti IO, and DICOM reading.
+ Use your package manager, including conda or pip, or check the \url{https://itk.org/download/}{installation instructions for ITK}.
 
 \subsection{
-Compilation}
+Building}
+Since version 2.2, \textit{STIR} contains files to build STIR using the platform-independent
+\url{"http://www.cmake.org"}{CMake}. This is now the only option to build STIR as
+it is easier for configuration and finding system dependencies.
 \subsubsection{
 Using CMake}
 \label{sec:UsingCMake}
-Since version 2.2, \textit{STIR} contains files to build using the platform-independent
-\url{"http://www.cmake.org"}{CMake}. This is the recommended way to build STIR as
-it is easier for configuration and finding system dependencies.
 
 Normal build procedure on Linux/Unix would be something like\footnote{Point \texttt{CMake} to the main \textbf{STIR}
 directory, not \textbf{STIR/src}.}
@@ -236,14 +277,31 @@ directory, not \textbf{STIR/src}.}
 \cmdline{cd /somewhere/nice/STIRbuild/Release}
 \cmdline{cmake-gui /somewhere/else/STIR\&}
 
-This will bring up a basic interface where you might to have to choose your prefered
+This will bring up a basic interface where you might to have to choose your preferred
 build system (i.e. \texttt{make} on Linux/Unix) and do an initial configuration. Then 
-you specify build variables. You can press \texttt{c} to do additional configurations, \texttt{g} for generating
-your build files, \texttt{q} to quit. After this step, you will have to run your build system (e.g.\ on Linux etc,
+you specify build variables. You can press \texttt{Configure} to do additional configurations,
+possibly repeatedly and finally \texttt{Generate} for generating your build files\footnote{
+When using \texttt{ccmake} as opposed to \texttt{cmake-gui}, the key presses are:
+\texttt{c} to do additional configurations, \texttt{g} for generating
+your build files, \texttt{q} to quit}. After this step, you will have to run your build system (e.g.\ on Linux etc,
 type \texttt{make}, then \texttt{make test}, then \texttt{make install}).
+A helpful note: You can specify just to make a single ``target'',
+using \texttt{make <target>}. All executable names are targets that
+make just the required executable (e.g., \texttt{make FBP2D}). A
+useful target for developers is to just make the tests, using
+\texttt{make BUILD\_TESTS}. So \texttt{make BUILD\_TESTS \&\& make test}
+would build and then run the tests.
+
+On Windows or MacOSX, the procedure is essentially the same, except that you will likely have
+to specify more locations. When using Visual Studio, XCode or other IDEs as  your build system,
+you do not need to specify the Build Type, as you will be able to select that in
+your IDE.
+
 More information on using CMake is on the STIR Wiki.
 
-For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}. 
+{\subsubsubsection{CMake configuration variables}
+}
+
 \newlength{\MakeTableFirstCol}
 \newlength{\MakeTableSecondCol}
 \setlength{\MakeTableFirstCol}{1.5in}
@@ -278,17 +336,33 @@ STIR dramatically.}
 % ROW 
 {\raggedright \textit{STIR\_OPENMP}} & 
 {\raggedright Toggles between ON, OFF. Enable threaded processing using OPENMP.
-\footnote{Since version 2.0, \textit{STIR} contains preliminary code for running \texttt{FBP2D} in threaded mode
-(contribution by Tobias Beisel, Univ. of Paderborn). You need a compiler that 
-supports \texttt{OPENMP}. Note however, that this code doesn't presently result 
-in a decent speed-up of \texttt{FBP2D}.}
 See section \ref{sec:RunningWithOPENMP} for information on how to run programs using OPENMP.
 } \\
 \hline
 % ROW 
 {\raggedright \textit{STIR\_LOCAL}} & 
-{\raggedright Specify location of directy with your own extensions to STIR. See
+{\raggedright Specify location of directory with your own extensions to STIR. See
 the developer's guide.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_ENABLE\_\\EXPERIMENTAL}} & 
+{\raggedright Toggles between ON, OFF. Enable to use experimental features in \textit{STIR}.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_CONFIG\_DIR}} & 
+{\raggedright Contains the location of the \textit{STIR} configuration folder, which defaults to a sub-directory of \texttt{CMAKE\_INSTALL\_PREFIX}. See section \ref{sec:configuration} for more info
+rmation.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_LEGACY\_\\IGNORE\_VIEW\_\\OFFSET}} & 
+{\raggedright Default to OFF. Introduced in v5.0.0 for backwards compatibility (will be removed in a future version).
+When setting to ON, STIR will ignore the \texttt{view offset (degrees)} keyword in Interfile headers and similar information in other places.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_ROOT\_\\ROTATION\_AS\_V4}} & 
+{\raggedright Default to OFF. Introduced in v5.0.1 for backwards compatibility (will be removed in a future version).
+When setting to ON, STIR re-enables ad-hoc additions to the correspondence between GATE and STIR crystal indices ``along'' the ring.
+See section \ref{sec:ROOTIO} for more info.}\\
 \hline
 \end{longtable}
 
@@ -296,31 +370,40 @@ You can also (optionally) specify locations of some external libraries for addit
 capabilities of STIR. 
 \begin{itemize}
 \item LLN files for ECAT support via \texttt{LLN\_INCLUDE\_DIRS} and \texttt{LLN\_LIBRARIES}.
-\item AVW\texttrademark{} (a commercial library\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.}
-via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
-\item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
- enables NRRD, MetaIO and Nifti IO.
-\item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
+See section \ref{sec:ECAT67support}.
+\item ITK\_DIR, use IO from ITK, see section \ref{sec:installITK}.
+\item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
+  If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
+  See \ref{sec:installROOT}.
+\item GE RDF\texttrademark{} 9 support via \texttt{HDF5\_ROOT} and related variables (requires the HDF5 library).
 \end{itemize}
 
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
 use the LLN ECAT library, even if cmake found it.
 
-Finally, do not forget to set
+Here are some standard CMake variables that might be useful.
 \begin{itemize}
-\item CMAKE\_BUILD\_TYPE to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug},
-\item CMAKE\_INSTALL\_PREFIX to specify where the final installation has to occur. CMake
+\item set \textit{CMAKE\_BUILD\_TYPE} to \texttt{Release} (default), \texttt{Debug} or \texttt{RelWithDebug}.
+(This is ignored when using Visual Studio or XCode).
+\item \textit{CMAKE\_INSTALL\_PREFIX} specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
+\item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
+a particular version of the C++ standard (if it supports it). It is set 
+to \texttt{11} since STIR 5.0. Other possible allowed values are
+\texttt{14}, \texttt{17} and \textit{20}. More recent version have not yet been tested.
 \end{itemize}
 
-On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
-to specify more locations When using Visual Studio, XCode or other IDEs as  your build system,
-you do not need to specify the Build Type, as you will be able to select that in 
-your IDE.
+When building the Python code, and you have multiple versions of Python installed,
+it is often necessary to specify the correct Python executable that you want, together with
+the libraries. You can use the \texttt{Python\_EXECUTABLE} variable for this. If you
+specify the full path to the actual executable, this should be sufficient.
+\footnote{If you are using CMake 3.13 or older, use \texttt{PYTHON\_EXECUTABLE}.
+In this case, you might have to set \texttt{PYTHON\_LIBRARY} as well.}
 
-
+There are various other variables that can be set, some of which are only visible if you toggled
+the display of \texttt{Advanced} variables on. They should only be set by advanced users, or if a package
+cannot be found. For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}.
 
 \subsubsection{
 Operating system specifics}
@@ -361,10 +444,10 @@ display, you could try 8bit mode anyway.
 
 { \subsubsubsection{Cygwin on Windows}
 }
+\textit{Cygwin support has not been tested since about 2018 but likely still works. Instructions below might be out-of-date though.}
 
-Cygwin is a must-have if you are using Windows but would like 
-to have nearly everything that Linux/Unix has to offer (at least 
-from a user's point of view). Check out http://cygwin.com.
+If you are using Windows but would like 
+to have nearly everything that Linux/Unix has to offer, Cygwin could help. Check out http://cygwin.com.
 
 { \subsubsubsubsection{Using X windows on cygwin}
 }
@@ -389,7 +472,9 @@ some point).
 Running tests}
 
 We \textbf{highly recommend} running test programs after building. There are currently two
-sets of tests. The first set tests various components of \textit{STIR}. This process is described on the Wiki.
+sets of tests. The first set tests various components of
+\textit{STIR}. This process is described on the Wiki, but briefly can
+be run using \texttt{make BUILD\_TESTS \&\& make test}.
 The second set of tests is available via the \textit{STIR} web-site, where we 
 we provide test reconstructions as part of the
 \textbf{recon\_test\_pack}, with an 
@@ -406,20 +491,52 @@ in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf
 slow.
 
 
+\section{Configuration after installation
+\label{sec:configuration}
+}
+Since \textit{STIR} version 5.0, STIR reads some configuration files, currently JSON files used for
+the estimation of attenuation factors from a CT image and a database with isotope information.
+The location of these files is found as follows
+\begin{itemize}
+\item Environment variable: if the \texttt{STIR\_CONFIG\_DIR} environment variable exists, it is used.
 
+\item CMake variable: when running \textit{CMake}, you can specify the default location via the
+\texttt{STIR\_CONFIG\_DIR} CMake variable. By default, this is set to a sub-directory \texttt{share/stir/config}
+in your install folder.
+\end{itemize}
+If you want to use a non-default location, it is highly recommended to set the variable to an absolute path.
+
+The installation process will copy the default configuration files to the path specified by the
+(CMake) \texttt{STIR\_CONFIG\_DIR} variable.
+This currently contains
+\begin{itemize}
+\item \texttt{ct\_slopes.json} which is used for the estimation of attenuation factors from a CT image,
+\item \texttt{radionuclide\_info.json} contains information on radio-isotopes, such as decay rates etc.
+\item \texttt{radionuclide\_names.json} contains a look-up table for radio-isotope names to convert them
+to the standard (as used by DICOM).
+\end{itemize}
+You might need to edit these files to add information for your scanner.
+
+See section \ref{sec:stirconfig} for a utility to display the directory where the configuration files are found.
+
+See section \ref{sec:RunningWithOPENMP} for information on OpenMP and mult-threading (if enabled when building \textit{STIR}).
 
 \section{
 Running \textit{STIR} programs}
 
 Here we describe:
 \begin{itemize}
-\item documentation and program conventions
-\item supported file formats 
-\item rebinning algorithms
-\item reconstruction programs
-\item utility programs
-\item user-selectable components
-\item display properties
+\item documentation and program conventions (section \ref{sec:conventions})
+\item supported file formats (section \ref{sec:fileformats})
+\item list mode processing (section \ref{sec:listmodeprocessing})
+\item rebinning algorithms (section \ref{sec:Rebinning})
+\item reconstruction programs (section \ref{sec:imagereconstructionprograms})
+\item scatter estimation and simulation (section \ref{sec:scatterestimation})
+\item parametric image construction using kinetic modelling (section \ref{sec:KineticModels})
+\item motion correction (section \ref{sec:motioncorrection})
+\item utility programs (section \ref{sec:Utilities})
+\item user-selectable components such as projectors, filters etc (section \ref{sec:user-selectablecomponents})
+\item display properties (section \ref{sec:display})
 \end{itemize}
 
 \textit{STIR} is highly configurable and modular. It is therefore difficult to give a complete (and readable)
@@ -485,7 +602,7 @@ selected.
 
 Sample parameter files for particular programs (or part of a 
 parameter file relevant to a particular common component) are 
-presented in subsequent sections. See also the files in \textbf{STIR}/\textbf{samples}.
+presented in subsequent sections. See also the files in \texttt{STIR/examples/samples/}.
 
 
 \subsection{
@@ -548,7 +665,7 @@ processor.
 
 \subsection{
 File formats}
-
+\label{sec:fileformats}
 The STIR utility and reconstruction programs frequently need 
 to read and write files of image and projection data. Files formats 
 are encountered in which data and header information are maintained 
@@ -573,7 +690,7 @@ find sample Interfile headers in the \textbf{recon\_test\_pack} or by using
 \texttt{create\_projdata\_template}.
 
 \item For SPECT projection data, we use Interfile version 3.3 (with a few small changes).
-You can find a sample SPECT Interfile header in the \textbf{samples} directory.
+You can find a sample SPECT Interfile header in the \texttt{samples} directory.
 
 \item For images, we use the proposed Interfile version. Currently, images have to 
 be written as PET data, even for SPECT.
@@ -588,19 +705,22 @@ where \textit{projdata\_filename.hs} is the header text file and \textit{projdat
 is the data file. Please read section \ref{sec:outputinterfile} for info regarding 
 images written by \textit{STIR} in Interfile.
 
-\subsubsection{VOLPET sinograms}
+\subsubsection{Siemens interfile-like}
+Siemens PET/CT and PET/MR scanners use a file format that is based on the mentioned
+proposed Interfile standard but with some variations. We read this since STIR 4.0,
+but do not write it.
 
-The GE VOLPET sinogram format is supported for reading, but for
-the GE Advance only and data files must have a single data set, maximum ring 
-difference 11 and contain 281 bins * 256 segments * 336 views. 
-See section \ref{sec:RDFsupport} for enabling support for other scanners and
-data in the GE RDF format.
+\subsubsection{RDF9 data}
+See section \ref{sec:RDFsupport} for enabling support for data from GE scanners
+that use the GE RDF format. We currently support uncompressed listmode,
+uncompressed sinograms and normalisation files. (well-counter files are not
+yet supported). Please check \texttt{examples/GE-Signa-PETMR} for some
+information.
 
 \subsubsection{ECAT6 and ECAT7 data} 
 See section \ref{sec:ECAT67support} for enabling support for ECAT data.
 
-ECAT6 images can be read without conversion. However, only the 
-first frame (ECAT matrix 1,1,1,0,0) will be read.
+ECAT6 data are no longer supported.
 
 ECAT7 sinograms, attenuation files and images can be read without 
 conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
@@ -611,39 +731,262 @@ is currently ignored.
 
 For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
 
-\subsubsection{Image IO using the AVW library}
-See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
+\textbf{Warning} ECAT7 support is no longer tested.
 
 \subsubsection{Image IO using the ITK library \label{sec:ITKIO}}
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
 all image formats supported by \textit{ITK}, see \url{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
-that do, \textit{STIR} currently ignores orientation, offset and timing.
+that do, \textit{STIR} currently timing. Except for DICOM, \textbf{orientation and offset code
+assumes the patient is in HFS position}. Only if DICOM is used and the correct DICOM codes are set
+(0018, 5100) will the orientation be correct.
+
 Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
-other slices belonging to the same series/time frame/gate.
+other slices belonging to the same series. When there are multiple time frames/gates in a folder, 
+these may be incorrectly treated as a single volume.
 
 \subsubsection{SimSET files}
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
 
+\subsubsection{ROOT files as output by OpenGATE \label{sec:ROOTIO}}
+We highly recommend
+\url{https://github.com/UCL/STIR-GATE-Connection}{STIR-GATE-Connection} to be sure that GATE input
+and STIR images are aligned etc.
+We give information on the details here.
+
+You need to create a text file header for your ROOT file
+to specify the scanner (as this information is not stored in the ROOT file).
+We tend to name this header \texttt{something.hroot} but this is not mandatory.
+
+We currently support only ROOT output using the CylindricalPET and ECAT systems
+from GATE.\footnote{There are some unfinished classes
+available on the \textit{STIR} web-site to read \textit{LMF} format files,
+in conjunction with the \textit{LMF} library. However, these might be out-dated.
+.}
+
+\textbf{Warning:} There is a check of consistent scanner geometry information between \textit{STIR} template projection data headers that are used for \texttt{lm\_to\_projdata}
+with the information in the \texttt{.hroot} file
+as discrepancies can lead to crashes if the actual number of blocks/crystals etc is
+larger than what is specified in the scanner info. However, this check still requires the \texttt{.hroot}
+file to accurately correspond to your GATE macro (which are not read by STIR).
+
+\textbf{Warning:} Since STIR 5.0, some scanners (currently some Siemens scanners) default to using
+``virtual crystals" to accomodate for gaps between blocks. If you use
+the \texttt{originating system} to specify the scanner, this will be automatically enabled.
+(If you do not want this, set it to \texttt{User\_defined\_scanner} and specify all values).
+
+An OpenGATE scanner geometry is modular. For CylindricalPET, \textit{STIR} uses the conversion
+scheme detailed in Table \ref{tab:STIR-OpenGATE_terminology}.
+
+\begin{table}[h]
+    \centering
+        \begin{tabular}{ |c | c| }
+            \hline
+            \textbf{GATE} & \textbf{STIR}  \\ 
+            \hline
+            Crystal & Crystal  \\
+            Submodule & Block  \\
+            Module & Bucket  \\
+            Rsector & Buckets around the ring  \\
+            \hline
+        \end{tabular}
+    \caption{A guide on the terminology equivalents between STIR and OpenGATE for CylindricalPET
+    scanner geometries.}
+    \label{tab:STIR-OpenGATE_terminology}
+\end{table}
+
+
+A full example is given in \texttt{STIR/examples/samples/root\_header.hroot}. Below are
+2 shorter examples.
+If the scanner is known to \texttt{stir::Scanner}, you can use this
+\begin{verbatim}
+ROOT header := 
+Originating system := Siemens mMR
+
+; specify GATE output format (could be GATE_ECAT_PET as well)
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+  ; name of the actual ROOT file
+  name of data file := mysim.root
+
+  ; See elsewhere for other parameters
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 
+\end{verbatim}
+This is of course very brief, but it is hard to know if the STIR defined scanner is
+compatibile with your GATE macros. Below is an example using a user-defined scanner. 
+\begin{verbatim}
+ROOT header := 
+Originating system := User_defined_scanner
+Number of rings                          := 4
+Number of detectors per ring             := 504
+Inner ring diameter (cm)                 := 65.6
+Average depth of interaction (cm)        := 0.7
+Distance between rings (cm)              := 0.40625
+Default bin size (cm)                    := 0.208626
+Maximum number of non-arc-corrected bins := 344
+Default number of arc-corrected bins     := 344 ; default is same as previous value
+View offset (degrees)                    := 0 ; default, but see info below
+
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+  ; name of the actual ROOT file
+  name of data file := mysim.root
+
+  ; root tree chain to use
+  name of input TChain := Coincidences
+
+  ; Gate scanner geometry terminology used to check scanner properties
+  number of Rsectors := 504 
+  number of modules_X := 1 
+  number of modules_Y := 1
+  number of modules_Z := 1
+  number of submodules_X := 1 
+ number of submodules_Y := 1
+  number of submodules_Z := 1
+  number of crystals_X := 1
+  number of crystals_Y := 1
+  number of crystals_Z := 4
+
+  Singles readout depth := 1
+
+  ; exclude different event types
+  exclude non-random events := 0
+  exclude unscattered events := 0
+  exclude scattered events := 0
+  exclude random events := 0
+
+  low energy window (keV) := 0      ; Default 0
+  upper energy window (keV):= 10000 ; Default 10000
+
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 
+\end{verbatim}
+
+See \texttt{STIR/examples/samples/root\_headerECAT.hroot} for an example using the ECAT system.
+
+OpenGATE energy information is recorded in MeV units into the ROOT file.
+For STIR files, e.g. \texttt{.hroot} and \texttt{.hs}, should use keV units.
+STIR assumes this convention and will convert this automatically.
+
+\subsubsubsection{STIR GATE geometry alignment}
+
+\noindent \underline{Rotation}
+
+When \texttt{View offset} is 0, STIR's first crystal/detector index is at $y=-R$, while GATE (by default)
+places the centre of the first module at $x=+R$.
+This results in a rotation of about 90 degrees in the reconstructed images unless accounted for.
+Two possible correction methods exist:
+\begin{enumerate}
+    \item Rotate the GATE scanner geometry using \texttt{/gate/cylindricalPET/placement/setRotationAngle}.
+    \item Use the \texttt{View offset (degrees)} parameter in the scanner definition of the \texttt{.hroot} header file.
+\end{enumerate}
+Of course, these 2 methods can be combined. This can be necessary if you want to reproduce the
+gemoetry of an existing scanner. For instance, most GE scanners have the first ``bucket''
+horizontally on ``top'' of the scanner.
+See an example to accomodate this by using a rotation by -90 degrees in the GATE macro
+\url{https://github.com/UCL/STIR/blob/master/examples/ROOT_files/ROOT_STIR_consistency/Gate_macros/geometry.mac}{ROOT\_STIR\_consistency/Gate\_macros/geometry.mac}
+and a small rotation for the ``bucket'' in
+\url{https://github.com/UCL/STIR/blob/master/examples/ROOT_files/ROOT_STIR_consistency/root_header_test_template.hroot}{ROOT\_STIR\_consistency/root\_header\_test\_template.hroot}.
+    
+Note, pre-STIR version 5.0.1, a number of rotations were used in STIR to rotate the scanner and align GATE simulation
+with STIR. However, these were removed because with the addition of \texttt{View offset (degrees)} into scanner definitions.
+More information can be found in the
+\url{http://stir.sourceforge.net/documentation/release_5.0.htm}{documentation/release\_5.0.htm notes}.
+
+\noindent \underline{Translation}
+
+At present, STIR image coordinates are such that the origin is in the centre of the first plane,
+normally corresponding to the centre of the first detector ring. GATE macros usually
+define the origin in the centre of the scanner. Therefore, when comparing shapes generated
+with STIR (e.g. via  \texttt{generate\_image}), and geometric shapes from GATE, you need to use
+the following
+\begin{equation}
+z_\textrm{STIR} = (N-1) d/2 + z_\textrm{GATE}
+\end{equation}
+\noindent
+with $d$ the ring spacing (as given in the STIR files) and $N$ the number of rings.
+
+\subsubsubsection{ROOT exclusion keys configurations}
+The \textit{exclude xxx events := 1} keys can be used to process specific types of events.
+Below are sets event types that will be processed with an exclusion or combination of exclusions.
+The exclusions of an event type is false by default.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ | c | c | }
+        \hline
+        \textbf{Event(s) type} & \textbf{Exclusion Configuration}
+        \\ \hline \hline
+        All events & \textit{None}
+
+        \\ \hline \hline
+        \vtop{\hbox{\strut Scattered from same eventID }
+        \hbox{\strut Unscattered from same eventID}}
+        & \textit{exclude random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Unscattered from same eventID }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude scattered events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from different eventIDs }
+        \hbox{\strut Unscattered from different eventIDs}}
+        & \textit{exclude non-random events := 1}
+        \\ \hline
+        \vtop{\hbox{\strut Scattered from same eventID}
+        \hbox{\strut Scattered from different eventIDs}}
+        & \textit{exclude unscattered events := 1}
+
+        \\ \hline \hline
+        Unscattered from same eventID & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Unscattered from different eventIDs &  \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude scattered events := 1}}}
+        \\ \hline
+        Scattered from same eventID  & \vtop{\hbox{\strut \textit{exclude random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+        Scattered from different eventIDs & \vtop{\hbox{\strut \textit{exclude non-random events := 1} }\hbox{\strut \textit{exclude unscattered events := 1}}}
+        \\ \hline
+    \end{tabular}
+    \caption{A guide on how to process specific types of events from a ROOT file using various exclusion keys and combinations of keys.}
+    \label{tab:ROOT_file_exclusions}
+\end{table}
+
+
+\subsubsection{Multi header format}
+\label{multi-file-format}
+It is often useful to be able to constract a single dataset from multiply components (e.g. images
+or projection data). We have a (STIR-specific) header format for this which is very simple, for example
+\begin{verbatim}
+Multi :=
+  total number of data sets := 2
+  data set[1] := sinogram_1.hs
+  data set[2] := sinogram_2.hs
+end :=
+\end{verbatim}
+Each ``component'' will be read independently, so could in principle be in a different file format
+from the others.
+
+We currently support this format for dynamic images and projection data.
+
+\subsubsection{SPECT DICOM projection data}
+SPECT raw projection data in DICOM format is currently only supported by running the  \texttt{SPECT\_dicom\_to\_interfile} utility,
+see \ref{utility:SPECT_dicom_to_interfile}.
+
 \subsection{
 List mode processing}
+\label{sec:listmodeprocessing}
 
 Some scanners produce list mode data, which is essentially a 
-list of events.  \textit{STIR} provides utilities to use
+list of events. \textit{STIR} provides utilities to use
 the list mode files, for example to convert them to sinograms. It is
-also possible to reconstruct images directly from list mode data, although
-this has not been tested very well yet as of \textit{STIR 2.1}.
+also possible to reconstruct images directly from list mode data.
 
 Currently supported list mode formats are specific to the ECAT 
-HR+ and ECAT EXACT 3D scanners. There are some unfinished classes
-available on the \textit{STIR} web-site to read \textit{LMF} format files,
-in conjunction with the \textit{LMF} library. However, these might be obsolete
-as the OpenGATE project might be distributing files
-to enable STIR to read \textit{LMF} format files.
-
-See the \textit{STIR} web-site for an independent project that allows reading
-\textit{ROOT} files and convert it to \textit{STIR}-compatible Interfile projection data.
+HR+, ECAT EXACT 3D and Siemens mMR scanners. We also support \textit{CERN ROOT} files
+as output by OpenGATE (see section \ref{sec:ROOTIO}).
 
 \subsubsection{
 lm\_to\_projdata}
@@ -656,7 +999,7 @@ needs to be run as follows:
 \cmdline{lm\_to\_projdata par\_filename}
 
 
-See \textbf{STIR/samples/lm\_to\_projdata.par} for an example file. Please 
+See \textbf{STIR/examples/samples/lm\_to\_projdata.par} for an example file. Please 
 check out the online documentation (as generated by doxygen) 
 for more info.
 
@@ -676,18 +1019,56 @@ The seed is a positive integer (do not use $0$). Specifying different seeds will
 You can use the same parameter file as for \texttt{lm\_to\_projdata}.
 
 \subsubsection{
+lm\_to\_projdata\_with\_random\_rejection}
+As before, but using random rejection of events. This is useful to generate multiple sub-samples 
+from a long list mode file to study variance.
+
+You can use it as follows:
+
+\cmdline{lm\_to\_projdata\_with\_random\_rejection par\_filename seed ratio}
+
+The seed is a positive integer (do not use $0$). Specifying different seeds will give you different noise realisations. The ratio is a number between 0 and 1, the default value is 0.5 which will save half of the events.
+You can use the same parameter file as for \texttt{lm\_to\_projdata}.
+
+\subsubsection{
+lm\_to\_projdata\_NiftyPET}
+If STIR has been built with NiftyPET-wrapped [Mar18] support, then GPU-accelerated functionality can be used to extract projection data from listmode files. It can also be used to estimate randoms and norm projection data.
+
+To extract a projection data for the first 1000 s of the listmode file, \texttt{list.l}, saving the prompts, randoms and norm to disk, you can use it as follows:
+
+\cmdline{lm\_to\_projdata\_NiftyPET list.l 0 1000 -N norm.n.hdr -p sino -r rands -n norm}
+
+Note that to extract the norm projection data, it is necessary to supply the binary ECAT8 normalisation file (either with the extension \texttt{.bf} (straight from the scanner) or \texttt{.n} converted to interfile format.
+
+Also note that this functionality is currently limited to the Siemens mMR scanner, span-11 projection data, and NiftyPET requires a CUDA-enabled GPU.
+
+\subsubsection{
 lm\_fansums}
 Computes fan-sums, i.e. for each detector, sum all data that are in coincidence with that detector.
 Results are written as a simple text file. This could be used to check if all detectors are working
 properly for instance.
 
 \subsubsection{
+list\_lm\_info}
+Writes exam-info and (optionally) geometric info on underlying projection data to stdout.
+Run without arguments to see a usage message.
+
+\subsubsection{
 list\_lm\_events}
 Allows inspecting the events in a list mode file. Run without arguments to see a usage message.
 
+\subsubsection{
+list\_lm\_countrates}
+Outputs a text file with (comma separated) colums of count-rates per
+time interval like
+\begin{verbatim}
+start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds
+\end{verbatim}
+Run without arguments to see a usage message.
+
 \subsection{
 Rebinning algorithms}
-
+\label{sec:Rebinning}
 In 3D PET, the name \textit{rebinning} is used for the 
 process of manipulating the 3D projection data set to the equivalent 
 of 2D projection data. This reduces the number of segments (see 
@@ -721,6 +1102,8 @@ i.e. add views together.
 \cmdline{SSRB output\_filename input\_projdata\_name {\textbackslash} \\
 num\_segments\_to\_combine [num\_views\_to\_combine {\textbackslash}\\
 {[}do\_normalisation [max\_in\_segment\_num\_to\_process ]]]}
+or
+\cmdline{SSRB --template template\_filename output\_filename input\_projdata\_name [do\_normalisation]}
 
 \begin{description}
 \item[num\_segments\_to\_combine] has to be odd. It is used as the 
@@ -733,6 +1116,12 @@ the result is normalised, i.e. divided by \textit{num\_segments\_to\_combine*num
 This is appropriate for rebinning data where normalisation has 
 already been applied, but inappropriate otherwise.
 
+\item[template\_filename] inicated by the \textit{--template} flag, 
+is the sinogram type that the \textit{input\_projdata\_name} will 
+be mapped to. This allows for the effective use of 
+\textit{num\_segments\_to\_combine} to be an even number, 
+e.g. the conversion between span-1 and span-2 projection data sets. 
+
 \item[max\_in\_segment\_num\_to\_process] defaults to all segments. 
 Can be used to ignore the most oblique segments in the input 
 data. Note that the most oblique segments that cannot be rebinned 
@@ -743,10 +1132,46 @@ produced), as 9 input segments would be necessary to produce
 3 'complete' output segments.
 \end{description}
 
+\subsubsection{
+FORE}
+\label{sec:FORE}
+The \textit{Fourier Rebinning} algorithm [Def97] is probably the most popular
+rebinning algorithm. It is based on an approximate formula called the
+``frequency-distance relationship''. FORE works better than SSRB but starts
+to fail with larger acceptance angles. Also, the mathematics
+for FORE only works if the data were fully precorrected before running FORE.
+
+\textit{Usage:}
+
+\cmdline{rebin\_projdata fore.par}
+
+The form of a typical parameter file\footnote{Parameter values used here are for
+illustration only and are \textit{not} necessarily recommended.} is as follows:
+
+{\small 
+\begin{verbatim}
+Rebin projdata Parameters :=
+ rebinning type := FORE
+    FORE Parameters :=
+     input file := Your_Input_File_Name.hs
+     output filename prefix := Your_Output_File_Name
+     Smallest angular frequency := 20
+     Smallest transaxial frequency := 20
+     Index for consistency := 20
+     Delta max for small omega := 10
+     maximum absolute segment number to process := 2
+     FORE debug level := 0
+   End FORE Parameters:=
+ END:=
+\end{verbatim}
+}
+For the meaning of these parameters, check the documentation for the
+\texttt{FourierRebinning} class or read
+\texttt{src/include/recon\_buildblock/FourierRebinning.h}.
 
 \subsection{
 Image reconstruction programs}
-
+\label{sec:imagereconstructionprograms}
 
 
 
@@ -860,7 +1285,8 @@ zero end planes of segment 0 := 1
 Projector pair type := Matrix 
  Projector Pair Using Matrix Parameters := 
    ; Use the PET Ray-tracing matrix.
-   ;  This needs to be changed to SPECT UB when using SPECT data
+   ;  Change to SPECT UB when using SPECT data with parallel-hole collimators
+   ;  Change to Pinhole SPECT UB when using SPECT data with pinhole collimators
    Matrix type := Ray Tracing
      Ray Tracing Matrix Parameters:=
    End Ray Tracing Matrix Parameters:= 
@@ -959,7 +1385,7 @@ END :=
 \end{verbatim}
 }
 
-See \textbf{STIR/samples/} for example parameter files.
+See \texttt{STIR/examples/samples/} for example parameter files.
 
 The following gives a brief explanation of the parameters. Where 
 appropriate, the notation \textit{[min, max, default]} is used to 
@@ -1040,6 +1466,10 @@ sensitivities. It should provide a pattern \'{a} la \texttt{printf}\footnote{In 
 \texttt{boost::format} is used, so the pattern can be more flexible.} to allow
 constructing different filenames for each subset.
 
+\item[use time-of-flight sensitivities]
+Defaults to 0, i.e. off. By default, the sensitivity calculation will be non-TOF. However,
+this fails when using a TOF proj-data, as used by Siemens for the Vision 600 etc. In this case,
+you will need to set this parameter to 1.
 
 \item[Projector pair type]
 Specifies the back/forward projector pair to be used in the reconstruction. 
@@ -1392,7 +1822,7 @@ See [Bei08] for some info on performance.
 }
 
  Most of what has been described above for OSMAPOSL applies verbatim for OSSPS. 
- See \textbf{STIR/samples/} for example parameter file(s). The
+ See \texttt{STIR/examples/samples/} for example parameter file(s). The
  following describes the parameters that are specific to OSSPS:
 
  \begin{description}
@@ -1420,10 +1850,8 @@ Since \textit{STIR} 2.0, you can specify an objective function that takes list m
 and uses a projection matrix. This can be used to do a static image reconstruction
 without any resolution loss etc. 
 
-\textbf{WARNING: The current implementation has not been thoroughly tested.} Please use
-the mailing lists for questions and results.
+The following gives the main parameters to use for the objective function (illustrated with OSMAPOSL).
 
-The following gives the main parameters to use for OSMAPOSL.
 { \small
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -1434,13 +1862,40 @@ OSMAPOSLParameters :=
     time frame definition filename:= timeframes.fdef
     ; time frame to use data for the reconstruction
     time frame number:=1
-    ; maximum ring difference (defaults to all ring differences)
-    ;max ring difference num to process:=
+    ; or use a total number of events (if  larger than 0, frame definitions will be ignored)
+    ; note that this counts the total of prompts
+    num events to use := 0
+    ; maximum segment number to process (defaults to all segments)
+    ;maximum absolute segment number to process:=
+
+    ;; acquisition modelling
+
     ; matrix to use for forward and back projection (defaults to ray tracing)
     ;Matrix type:= using ray tracing
+    ;bin normalisation type := None ; see elsewhere for allowed values
+
     ; background term
     additive sinogram:=
-    sensitivity filename:=filename
+
+    ; sensitivity keywords (see the corresponding objective function for projection data)
+
+    ;; speeding-up things (experimental. will likely change)
+
+    ; if set to 1, additive_sinogram will be completely stored in memory, as opposed to re-reading from disk
+    reduce memory usage := 0
+    ; cache listmode events in memory and on file
+      ; set this number > 0 to enable this feature
+      ; depending on this max size, one or more files will be created in cache_path (see below)
+      max cache size := 0
+
+      ; location of cache files (defaults to current working directory, needs to exist)
+      cache path :=
+
+      ; if set to 1, any existing cache file will be overwritten (defaults to 1)
+      recompute cache := 1
+
+    ; if you are sure your subsets are balanced, you can save a bit of time by skipping the test
+    skip checking balanced subsets := 0
 
     ; other usual objective function parameters 
 
@@ -1452,15 +1907,28 @@ End:=
 \end{verbatim}
 }
 
-Currently, the sensitivity filename needs to be specified as the code to compute it using
-a bin normalisation type has not yet been copied to the 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
-class. You could run OSMAPOSL first with projection data without axial compression (and view
-``mashing'') to create the sensitivity filename. Similarly, if you want to use OSSPS,
-you will need to run the projection data version first to get the ``precomputed denominator''.
+Some parameters are the same as for the projection data case, see \ref{sec:PoissonProjectionDataObjectiveFunction}.
 
-The additive sinogram is as discussed in \ref{sec:PoissonProjectionDataObjectiveFunction}, 
-but needs to be without axial compression (and view ``mashing'').
+Note that for some scanners, listmode data are stored using axial compression or view mashing
+(see the STIR glossary). Therefore, a listmode file has ``intrinsic'' projection data
+info associated to it.
+You can see what this is using
+\cmdline{list\_lm\_info --geom <filename>}
+You need to provide the additive sinogram (and noormalisation when using \texttt{From ProjData}, see \ref{sec:binnormalisationFromProjData}) with the same dimensions.
+
+{ \subsubsubsubsection{Use of caching (experimental feature)}
+}\\
+Since STIR 5.1, it is possible to use cache listmode events in memory (and on disk). This is enabled by setting
+\texttt{max cache size} to a non-zero (and preferably large) number. This will result in faster reading, but also
+enables multi-threaded calculation if OpenMP is used.
+
+It is also possible to re-use existing cached files, currently called \texttt{<cache path>/my\_CACHE\%d.bin}.
+This could be handy to distribute files to someone that doesn't have a particular listmode reader (e.g.
+the UPenn format depends on files that we cannot distribute with STIR). However, the cache files are simple
+binary files and could be compiler dependent. Moreover, when re-using existing cache files, there is \textbf{no}
+check on time frames or number of events, which might lead to surprising (i.e. wrong!) results. Therefore,
+\texttt{recompute\_cache} defaults to 1 (i.e. ignore existing cache files).
+
 
 { \subsubsubsection{Parametric image estimation algorithms}
 }
@@ -1470,13 +1938,11 @@ dynamic data, called \textbf{POSMAPOSL} and \textbf{POSSPS} respectively.
 Their parameters are identical to the static versions of the algorithms, except that
 they need a different type of objective function. Currently, the only defined version is
 where the input is dynamic projection data and the Patlak linear model is used to go from
-dynamic images to parametric images. See section {sec:KineticModels} for more information.
+dynamic images to parametric images. See section \ref{sec:KineticModels} for more information.
 
-Currently, the input and output has to be in ECAT7 format. 
-
-Below is an excerpt of a possible parameter for file POSMAPOSL. A complete parameter file
-can be found in \textbf{STIR/samples/}. The only change is the fact that dynamic data
-form the input, and that a (linear) kinetic model has to be specified.
+Below is an excerpt of a possible parameter for file \textbf{POSMAPOSL}. A complete parameter file
+can be found in \texttt{STIR/examples/samples/}. The only change is the fact that dynamic data
+form the input, and that a (linear) kinetic model has to be specified, see \ref{sec:KineticModels}.
 
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -1505,6 +1971,122 @@ OSMAPOSLParameters :=
 End:=
 \end{verbatim}
 
+{ \subsubsubsection{HKEM}
+}
+\label{sec:HKEM}
+  { \subsubsubsubsection{Algorithm description}
+  }
+  Hybrid kernelised expectation maximisation(HKEM) and kernelised expectation maximisation (KEM) iterative algorithms
+  are implemented corresponding to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
+  Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
+  also sinogram-based reconstruction. Each voxel value of the image, $ \boldsymbol{\lambda}$, can be represented as a
+  linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
+  $ j $ of the emission image a feature vector, $ \boldsymbol{v}_j $, using the prior information. The voxel value,
+  $\lambda_j$, can then be described using the kernel matrix 
+  \[
+   \lambda_j=  \sum_{l=1}^L \alpha_l k_{jl}
+  \]
+  \noindent
+  where $k_{jl}$ is the $jl^{th}$ kernel element of the matrix, $\boldsymbol{K}$.
+  The resulting algorithm with OSEM, for example, is the following:
+
+  \[
+  \alpha^{(n+1)}_j =  \frac{ \alpha^{(n)}_j }{\sum_{m} k^{(n)}_{jm} \sum_i p_{mi}} \sum_{m}k^{(n)}_{jm}\sum_i p_{mi}\frac{ y_i }{\sum_{q} p_{iq} \sum_l k^{(n)}_{ql}\alpha^{(n)}_l  + s_i}
+  \]
+  \noindent
+  where the  element, $ jl $, of the kernel can be written as:
+
+  \[
+    k^{(n)}_{jl} = k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) \cdot k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l);
+  \]
+  \noindent
+  with
+
+  \[
+   k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{v}_j-\boldsymbol{v}_l \|^2}{2 \sigma_m^2} \right) \exp \left(- \frac{\tiny \|  \boldsymbol{x}_j-\boldsymbol{x}_l \|^2}{ \tiny 2 \sigma_{dm}^2} \right)
+  \]
+  \noindent
+  being the MR component of the kernel and
+
+  \[
+   k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \|^2}{2 \sigma_p^2} \right) \exp \left(\tiny - \frac{\|  \boldsymbol{x}_j-\boldsymbol{x}_l \|^2}{ \tiny{2 \sigma_{dp}^2}} \right)
+  \]
+  \noindent
+  is the part coming from the emission iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
+
+Below is an excerpt of a possible parameter file for KOSMAPOSL. A complete parameter file
+can be found in \texttt{STIR/examples/samples/}. The changes in this parameter file includes the MR anatomical prior images and the kernel-based parameters. 
+
+
+ \begin{verbatim}
+ An example of a KOSMAPOSL parameter file can be found in examples/samples/. It is similar to the OSMAPOSL parameter file withe following extra keywords
+
+KOSMAPOSL Parameters:=
+
+;the following disables the alpha coefficient output:
+disable output :=1
+
+
+; here we have the possibility to choose the parameters which define the kernel
+; matrix and the name of the anatomical image. the following are the defaults values:
+
+; 1 (default): use hybrid kernel (prior from MR and PET estimate)
+; OR
+; 0 kernel is MR-only
+hybrid:=1
+
+; Gaussian scaling parameter for the anatomical prior (units of image intensity)
+; It controls the edge preservation from the anatomical image, the bigger the stronger
+; default: 1
+sigma_m:= 1
+
+; Gaussian scaling parameter for the PET estimate (units of PET image intensity)
+; It controls the edge preservation from the functional image, the bigger the stronger
+; default: 1
+sigma_p:=1
+
+
+; NB: sigma_dm and sigma_dp should be the same
+; Spatial Gaussian scaling parameter for the anatomical prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dm:=5
+
+; Spatial Gaussian scaling parameter for the PET prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dp:=5
+
+; Number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
+; default: 3
+number of neighbours:= 3
+
+; Number of non-zero elements in the feature vectors. This makes you choose the size of your feature vector by default we only have one element
+; default: 1
+number of non-zero feature elements:=1
+
+; this are the file names of the anatomical images (at the moment we can accept only one image)
+anatomical image filenames:= {MRbrain.hv}
+
+; the following should be 1 if you want to reconstruct 2D data
+only_2D:=1
+
+; the following is the output prefix of the PET reconstructed image
+kernelised output filename prefix :=KOSMAPOSL
+
+;the following is only set if you want to freeze the kernel matrix after a certain subiteration. Default is -1
+;freeze iterative kernel at subiteration number :=21
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+.
+.
+.
+
+End KOSMAPOSL Parameters :=
+  \end{verbatim}
+
+
+
 \subsubsection{
 Filtered back projection (FBP2D)}
 
@@ -1524,7 +2106,7 @@ from the file are assigned a default value. If a parameter file
 is not used, the program prompts the user for the required information.
 
 
-A sample.par file can be found in the \textbf{samples/} directory. 
+A sample.par file can be found in the \texttt{samples} directory. 
 Below are the parameters you probably need.
 
 
@@ -1584,8 +2166,7 @@ Also, the Colsher filter is numerically computed at a finer grid
 in an initial stage to avoid DC problems.
 
 
-A sample.par file can be found in the \textbf{samples/} 
-directory. See separate documentation on FBP3DRP, the doxygen documentation 
+A sample.par file can be found in the \texttt{samples} directory. See separate documentation on FBP3DRP, the doxygen documentation 
 (or the source) for more info. Similar to FBP2D, an apodizing window can be specified.
 FBP3DRP defaults to using the ``pure'' Colsher filter. \\
 \textbf{Warning:} the current version of the interpolating backprojector, 
@@ -1593,7 +2174,8 @@ the default backprojector used by FBP3DRP, has a central artefact
 on some systems (including Sparc and 64-bit AMD and Intel processors).
 
 \subsection{
-Scatter Correction}
+Scatter Estimation and simulation}
+\label{sec:scatterestimation}
 Coincidence events where one or more of the photons are scattered form a major contribution to the data
 in 3D PET. This scatter background needs to be estimated and taken into account during reconstruction. In
 \textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
@@ -1601,14 +2183,96 @@ Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
 Polycarpou et al describe in detail how to perform scatter correction
 using STIR [Pol11].
 
-\subsubsection{Data Initialisation \label{sec:scatter_data_initialisation}}
+Since \textit{STIR 4.0}, there is a class \texttt{ScatterEstimation} and executable
+\texttt{scatter\_estimation} that performs the iterative process necessary to estimate
+the scatter from measured data.\footnote{%
+There is also a script \texttt{estimate\_scatter.sh} that performs most of the steps by
+calling various other executables, as detailed below. However, it is strongly recommended to
+ignore this script.}
+
+A full example of scatter estimation (and other steps) is provided in \texttt{examples/Siemens-mMR}.
+The following describes the various components.
+
+\subsubsection{Scatter simulation}
+The actual scatter simulation process consists of $2$ steps:
+\begin{itemize} 
+\item Use \textbf{simulate\_scatter} to find subsampled (single) scatter estimate from current emission image
+\item Use \textbf{upsample\_and\_fit\_single\_scatter}
+\end{itemize} 
+These steps are now discussed in more detail.\\[1cm]
+
+\cmdline{simulate\_scatter simulate\_scatter.par}
+Note that this if you enable the \texttt{downsample\_scanner} option, the class currently simulates
+scatter for the downsampled scanner, and needs to be followed by upsampling (see below).
+
+Example \texttt{simulate\_scatter.par}
+\begin{verbatim}
+Scatter Simulation Parameters :=
+Scatter Simulation type := PET Single Scatter Simulation
+PET Single Scatter Simulation Parameters :=
+; threshold below which not to bother putting a scatter point
+; in a voxel (in cm^-1)
+   attenuation_threshold :=.01
+; Place the scatter points in a random position of a voxel or in the centre
+   randomly_place_scatter_points := 1
+; Caching (of the line integrals) speeds up the estimation drastically.
+   use_cache := 1
+   activity_image_filename := ACTIVITY_IMAGE
+   attenuation_image_filename := DENSITY_IMAGE
+   template_projdata_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
+   output_filename_prefix := OUTPUT_PROJECTION_DATA
+
+   ; downsample the template projection data
+   downsample scanner := 0 ; default value is off!
+   ; if the above is 1, let STIR do the downsampling (recommended!).
+   ; This is safer than doing it yourself, physical size will be preserved etc.
+   ; With the following settings it should use sensible defaults
+   downsampled scanner number of detectors per ring := -1
+   downsampled scanner number of rings := -1
+
+; advanced usage (don't use these!)
+   ; use your own down-sampled attenuation image
+   attenuation_image_for_scatter_points_filename :=
+   ; or specify dimensions yourself
+   zoom XY for attenuation image for scatter points := -1
+   zoom Z for attenuation image for scatter points := -1
+   XY size of downsampled image for scatter points := -1
+   Z size of downsampled image for scatter points := -1
+   ; you can write the zoomed image to file
+   attenuation image for scatter points output filename :=
+End Single Scatter Simulation Parameters:=
+End Scatter Simulation Parameters:=
+\end{verbatim}
+\begin{description}
+\item[activity\_image]
+current estimate of the activity (or emission) image
+\item[attenuation\_image] mu-map or attenuation image (at 511 keV and in units cm$^{-1}$),
+used to compute the line-integrals (in the exponentials) in the Klein-Nishina formula.
+\item[template\_proj\_data]
+``sinogram'' template. If \texttt{downsample\_scanner} is on, it
+is first downsampled.
+\item[random]
+select random scatter points in each selected scatter voxel (as in [Wat96])
+\item[attenuation\_threshold]
+allows excluding voxels with too low attenuation as scatter points (all voxels will be used for the attenuation line integrals)
+\item[attenuation\_image\_for\_scatter\_points] "subsampled" attenuation image (at 511 keV and in units cm${}^{-1}$), 
+used to select scatter points (and their corresponding mu),
+normally computed automatically. This is used to speed up your
+ calculation. When caching line integrals (which is the default), it also means that the scatter estimation
+ needs less memory.
+\end{description}
+The reason we use $2$ different attenuation images is to be able to investigate if the sampling used for
+the attenuation in those $2$ situations makes any difference. Unfortunately, we didn't complete that
+investigation so cannot recommend what to use for the original attenuation image (for large uniform
+objects, it won't make any difference, for objects with small features of high attenuation, it might). 
+As discussed in the literature however, you can safely reduce the number of scatter points and still get
+good estimates.
+
+\textit{Optional Data Initialisation}
+If you want more control over the scatter simulation, you can provide the following input data yourself. Note
+however that is not recommended as you can easily do things wrong.
 \begin{itemize}
-\item Apply randoms correction (and optionally normalisation) to the emission data (this will be used to scale the scatter estimate)
-\item Reconstruct/get attenuation image (ideally use odd number of voxels for zoom\_image step below).
-\item Calculate Attenuation Correction Factors (ACFs)
-\item Use \textbf{create\_tail\_mask\_from\_ACFs} to estimate the region that will be used for scaling
-\item Reconstruct emission image without scatter correction
-\item Construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
+\item You can construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
 less rings and detectors without arc-correction) as suggested in literature (e.g. in [Tso04]). This template
 sinogram should have no compression (number of views = half the number of detectors per ring, and span = 1 (see the
 STIR glossary). 
@@ -1617,29 +2281,141 @@ detector pairs. You can reduce this if your scanner has a narrower FOV, but be c
 make it too small (otherwise you will get strange behaviour at the edge when upsampling the scatter estimate).
 Because of a limitation in the upsampling routine, it is currently recommended to have ring difference 0 only in this
 template.
-\item Construct a ``subsampled" attenuation image using \texttt{zoom\_image} and \texttt{stir\_math}. 
- STIR SSS will select 1 scatter point per voxel in this attenuation image. This can be used to speed up your
- calculation. When caching line integrals (which is the default), it also means that the scatter estimation
- needs less memory.\\
- Careful: \texttt{zoom\_image} will scale the voxel values with the product of the zoom-factors in each dimension. 
- You need to undo this scaling for the ``subsampled'' image.    
- For example
- \begin{verbatim}
-  # zoom to larger voxels 
-  zoom_image zoomed.hv image_mu.hv 21 .25 0 0 5 .1626
-  # correct back to mu-values
-   stir_math --accumulate  --including-first --times-scalar .1626 \
-     --times-scalar .25 --times-scalar .25  zoomed.hv
- \end{verbatim}
-  The exact number of voxels and zoom does not matter too much (as long as you cover the 
-  whole object), but the offset parameters to zoom\_image
-  \textbf{HAVE TO BE ZERO} and the number of voxels (in both input and output image)
-  \textbf{HAVE TO BE ODD}\footnote{See the Wiki for more information on offset conventions.}
+\item You can construct the ``subsampled" attenuation image using \texttt{zoom\_image}. 
+  There is however a current STIR limitation described on \url{https://github.com/UCL/STIR/issues/495}{Github issue 495}
+  that imposes a relation between the number of voxels and zoom. It is therefore strongly recommended to let
+  \texttt{simulate\_scatter} take care of this (you can safely set either the z-zoom or the z-size, and xy-size has to be odd).
+  We perform a consistency check in the code to make sure results will be fine.
 \end{itemize}
 
+See below for information on upsampling.
+
+\subsubsection{Scatter estimation}
+The scatter estimation is based on images that do not include scatter, therefore an iterative procedure
+is needed such that scatter is eliminated progressively. In the first iteration, scatter is
+overestimated and thus images are overcorrected for it. Then, in the second iteration scatter
+is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two/three
+iterations are usually enough to estimate a good approximation of scatter.
+
+There are a lot of parameters that can be set in scatter estimation. It is highly recommended to use
+the example parameter files provided in the \texttt{examples} folder. In particular, you could check
+the fully working example for a NEMA phantom provides for the Siemens mMR.
+
+\cmdline{%
+estimate\_scatter scatter\_estimate.par}
+Example \texttt{scatter\_estimate.par}
+\begin{verbatim}
+Scatter Estimation Parameters :=
+
+;;; input
+
+; Measured data
+input file := ${sino_input}
+
+; Attenuation Image
+attenuation image filename := ${atnimg}
+
+; Normalisation coefficients & attenuation data
+; If only one normalisation input is set; 
+; it will be assumed that they are attenuation correction factors. 
+;; The algorithm will assume that the first is normalisation, i.e. the 
+;; efficiency factors and the second the attenuation. You should not 
+;; change this order. 
+Bin Normalisation type := Chained
+	Chained Bin Normalisation Parameters:=
+   Bin Normalisation to apply first:= from ProjData
+           Bin Normalisation From ProjData :=
+            normalisation projdata filename:= ${NORM}
+       End Bin Normalisation From ProjData:=
+
+	Bin Normalisation to apply second:= From ProjData
+		Bin Normalisation From ProjData :=
+           normalisation projdata filename:= ${acf3d}
+        End Bin Normalisation From ProjData:=
+		
+END Chained Bin Normalisation Parameters:=
+
+;; Background data (not  normalised)
+background projdata filename := ${randoms3d}
+
+;;; Output
+; Export scatter estimates of each iteration 
+export scatter estimates of each iteration := 1
+
+output scatter estimate name prefix := ${scatter_prefix}
+output additive estimate name prefix:= ${total_additive_prefix}
+
+;;; Parameters
+
+;Run in debug mode
+;; A new folder called extras will be created, in which many 
+;; extra files will be stored (default is off)
+run in debug mode := 0
+
+;; Mask for tail-fitting
+; It will be computed by masking the attenuation image, and forward projecting that.
+; If recompute mask projdata == 0, then the filename must be set.
+recompute mask projdata := 1
+mask projdata filename := ${mask_projdata_filename}
+; Input or output filename - depends on recompute  
+recompute mask image := 1
+mask image filename := ${mask_image}
+mask attenuation image min threshold  := 0.003
+mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gaussian.par
+;End of Mask
+
+; Run simulation and reconstruction in 2D (this is currently the only possibility)
+run in 2d projdata := 1
+
+;; ScatterSimulation parameters
+; specify either via a separate file or directly here
+scatter simulation parameter filename := ${scatter_pardir}/scatter_simulation.par
+; keyword for parsing here
+; Scatter Simulation type := ...
+; scatter simulation parameters would need to follow (see one of the examples)
+
+; next option is the default
+use scanner downsampling in scatter simulation := 1
+
+;; specify how to run the reconstructions
+; you should use a large voxel size to save time.
+; Important to use filtering to avoid problems with the downsampling.
+reconstruction parameter filename := ${scatter_pardir}/run_reconstruction.par 
+; could use keyword here instead
+; reconstruction type := ...
+
+; number of times which the Scatter Estimation will iterate. Default is 5
+number of scatter iterations := ${num_scat_iters}
+
+; Average the first two activity images to reduce the initial oscillatoins
+do average at 2 := 1
+
+;; tail fitting parameters
+;Parameter file for the tail fitting of the scatter data (within the mask)
+tail fitting parameter filename := ${scatter_pardir}/tail_fitting.par
+
+maximum scatter scaling factor := 2 
+minimum scatter scaling factor := 0.4
+
+; smooth scale factors (defaults to 3)
+upsampling half filter width := 3
+
+End Scatter Estimation Parameters :=
+\end{verbatim}
+This still needs documenting. Apologies.
+Some parameters are
+similar to what is described below.
+
+\subsubsubsection{tail-fitting}
+Performance of the scatter estimation is strongly determined by the tail-fitting. By default, the
+``tails'' are determined by forward projecting an image mask (normally constructed by thresholding the
+attenuation image, but you can supply one) and thresholding in the sinogram.
+Alternatively, you can pass a file
+using the \texttt{mask projdata filename} parameter. You could  use
+a separate utility for creating this mask.
 \cmdline{%
 create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
-					--ACF-threshold <number (1.01)> \textbackslash \\
+					--ACF-threshold <number (1.1)> \textbackslash \\
 					--output-filename <projdata> \textbackslash \\
 					--safety-margin <0>%
 }
@@ -1650,57 +2426,9 @@ create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
 \item[output-filename] The file that new projection data will be stored
 \end{description}
 
-\subsubsection{SSS}
-The actual scatter estimation process consists of $2$ steps:
-\begin{itemize} 
-\item Use \textbf{estimate\_scatter} to find subsampled (single) scatter estimate from current emission image
-\item Use \textbf{upsample\_and\_fit\_single\_scatter}
-\end{itemize} 
-These steps are now discussed in more detail.\\[1cm]
+The following utility can be used to manually upsample with tail-fitting. Its underlying code is used in
+the \texttt{scatter\_estimate} utility above.
 
-\cmdline{estimate\_scatter scatter.par}
-Example \texttt{scatter.par}
-\begin{verbatim}
-Scatter Estimation Parameters:=
-; threshold below which not to bother putting a scatter point
-; in a voxel (in cm^-1)
-   attenuation_threshold :=.01
-; Place the scatter points in a random position of a voxel or in the centre
-   random := 1
-; Caching (of the line integrals) speeds up the estimation drastically.
-   use_cache := 1
-; The resolution of the scanner (at 511 keV) as given in the literature
-; given as a ratio (example value is 22%)
-   energy_resolution :=.22
-; Acquisition settings
-   lower_energy_threshold :=350
-   upper_energy_threshold :=650
-   activity_image_filename := ACTIVITY_IMAGE
-   density_image_filename := DENSITY_IMAGE
-   density_image_for_scatter_points_filename := LOW_RESOLUTION_DENSITY_IMAGE
-   template_proj_data_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
-   output_filename_prefix := OUTPUT_PROJECTION_DATA
-End Scatter Estimation Parameters:=
-\end{verbatim}
-\begin{description}
-\item[activity\_image]
-current estimate of the activity (or emission) image
-\item[density\_image] mu-map or attenuation image (at 511 keV and in units cm$^{-1}$),
-used to compute the line-integrals (in the exponentials) in the Klein-Nishina formula.
-\item[density\_image\_for\_scatter\_points] "subsampled" attenuation image (at 511 keV and in units cm${}^{-1}$), 
-used to select scatter points (and their corresponding mu),
-as discussed in section \ref{sec:scatter_data_initialisation}
-\item[template\_proj\_data]
-``subsampled sinogram'' template,
-as discussed in section \ref{sec:scatter_data_initialisation}
-\end{description}
-The reason we use $2$ different attenuation images is to be able to investigate if the sampling used for
-the attenuation in those $2$ situations makes any difference. Unfortunately, we didn't complete that
-investigation so cannot recommend what to use for the original attenuation image (for large uniform
-objects, it won't make any difference, for objects with small features of high attenuation, it might). 
-As discussed in the literature however, you can safely reduce the number of scatter points and still get
-good estimates. 
-\\[1cm]
 \cmdline{%
 upsample\_and\_fit\_single\_scatter \textbackslash \\
 					--min-scale-factor <number> \textbackslash \\
@@ -1750,39 +2478,13 @@ normalisation factors, $U$ the upsampled scatter estimate. (If no normalisation 
 final scatter estimate:
 \[S_b =  \alpha U_b/N_b \]
 
-The procedure of scaling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
+The procedure of upsampling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
 view (Linear) dimensions, while for oblique segments, currently the interpolation is achieved by applying the
 pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
 
-\subsubsection{Iterative loop (if necessary)}
-The scatter estimation is based on images that do not include scatter, therefore an iterative procedure
-is needed such that scatter is eliminated progressively. In the first iteration, scatter (B.2) is
-overestimated and thus images are overcorrected (B.3) for it. Then, in the second iteration (B.2) scatter
-is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two
-iterations are usually enough to estimate a good approximation of scatter.
-
-\begin{itemize}
-\item Reconstruct emission image with scatter estimate\\
-Two options exist:
-\begin{itemize}
-\item	FBP: Correct the scatter estimate for attenuation and subtract from the precorrected emission data. 
-Run FBP with sufficient filtering.
-   \[\mathrm{Image} = \mathrm{FBP}\left(\mathrm{ACF}*(N*(P-R)-S)\right) \]
-\item Iterative (e.g. OSEM or OSSPS): Use the following for the additive sinogram (\textit{A}).
-    \[A=(R*N+S)*(\mathrm{ACF})  \]
-\end{itemize}
-where
-  \begin{description}
-   \item[N] Normalization Factors, 
-   \item[ACF] Attenuation Correction Factors,
-   \item[R] Random Projection Data,
-   \item[S] Scatter Projection Data as estimated using  \textit{STIR},
-   \item[P] Measured Projection Data (prompts)
-  \end{description}
-\end{itemize}
 
 \subsubsection{Limitations}
-The three separate executables need to be merged in one together with the iterative loop. The
+The
 \textit{SSS} can estimate 3D scatter that is measured by indirect rings but no interpolation of indirect
 rings is currently in place. Therefore, upsampling of oblique sinograms is currently handled in a simple
 way i.e. (pseudo)-inverse SSRB but ideally interpolation of the 3D sinograms will be useful. In the
@@ -1805,12 +2507,13 @@ is derived from the \textbf{KineticModel} class.
 The user will need to provide information about:
 \begin{itemize} 
 \item	File of input function (e.g. plasma activity or reference tissue activity values); 
-\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units with the input function) 
+\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units as the input function)
 \item	Starting frame to apply  \textit{Patlak Plot} 
 \item	Delay between input function and PET measurement 
-\item	Time-frame definition file. 
-\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total or mean over each frame 
-\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size}
+\item	Time-frame definition file \textbf{There is currently no check that these time-frame definitions are consistent with the actual data!}
+\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total (which is currently the case in STIR reconstructions) or mean over each frame
+\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size} (i.e. voxels have the
+   same values as for \texttt{zoom=1}) (this needs to be set to 0 for STIR reconstructions).
 \end{itemize}
 Example Sample File: \texttt{PatlakPlot.par} 
 
@@ -1820,7 +2523,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := FLOAT
-scale factor := FLOAT
 blood data filename := plasma.if
 ; In seconds
 Time Shift := FLOAT
@@ -1831,14 +2533,19 @@ end Patlak Plot Parameters:=
 \end{verbatim}
 
 Current assumptions are that an \textit{F-18} tracer is used; the input function is not decay corrected and it
-is given in a text file with three columns (i.e. \textbf{PlasmaSample}): time in \textit{seconds}, plasma-activity in
-\textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}) 
-%HARRY TODO "and multiple" ?
-and multiple the total number of \textbf{PlasmaSample}
-is usually given in the very first row. Currently, the parametric image
-has to be in \textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+is given in a text file with three columns: time of the sample in \textit{seconds}, plasma-activity\footnote{%
+If you have no plasma info, it is customary to use a published function to convert blood activity to plasma activity.
+\textit{STIR} has currently no functionality for this however.}
+in \textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}). The total number of samples has to be in the very first row.
+(See an example in the \texttt{recon\_test\_pack/test\_modelling\_input}). The data are stored as a vector
+of \texttt{PlasmaSample} objects.
 
-How to Run \textit{Patlak Plot}:
+
+Currently, the parametric image
+can be in (STIR-specific) \texttt{Interfile}, use a \texttt{Multi} header (see \ref{multi-file-format}), or
+\textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+
+How to use \textit{Patlak Plot} for post-reconstruction fitting:
 
 \cmdline{%
 apply\_patlak\_to\_images \textbackslash \\
@@ -1857,7 +2564,6 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := 1
-scale factor := 1
 blood data filename := tac.roi
 ; In seconds
 Time Shift := 0
@@ -1869,14 +2575,14 @@ end Patlak Plot Parameters:=
 
 \textbf{Important Note}: The current version of indirect reconstruction does not consider any special weighting for the time frames. This is a good approximation only if the counts at each frame is very similar which is mostly true for frames with the same duration. If the user needs to use  \textit{weighted least-squares}, the code will need minor modification.
 
-Moreover, two direct reconstruction version of linear kinetic models have been also implemented, evaluated [Tso08, Tso07] and optimised [Ang11]. These are the parametric versions of \textbf{OSEM} and \textbf{OSSPS} therefore called \textbf{POSEM} and \textbf{POSSPS}. 
-P
+Moreover, two direct reconstruction version of linear kinetic models have been also implemented, evaluated [Tso08, Tso07] and optimised [Ang11]. These are the parametric versions of \textbf{OSEM} and \textbf{OSSPS} therefore called \textbf{POSEM} and \textbf{POSSPS}.
+
 \cmdline{POSMAPOSL POSEM.par}
 \cmdline{POSSPS POSSPS.par}
 
 
 The parameter files include the information of the kinetic model as described for the indirect case and the declaration of the new objective function type\\
-\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}.
+\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}, see \ref{sec:ParametricImageIterativeAlgorithms}.
 
 %TODO More information could be included for \textbf{MAP} estimation e.g. \textbf{quadratic priors}. 
 
@@ -1885,6 +2591,7 @@ The parameter files include the information of the kinetic model as described fo
 
 \subsection{
 Motion Correction}
+\label{sec:motioncorrection}
 Motion correction has become an important task in PET imaging. Amongst several approaches to
 motion-correct PET data, two are the most common: reconstruct-transform-average (RTA) [Kle96] and
 motion-compensated image reconstruction (MCIR) [Li06]. In RTA, separate images are reconstructed for each
@@ -2153,14 +2860,24 @@ to the orientation the original files have been stored in gipl format.
 
 
 \subsection{
-Utilities}
+Utilities} \label{sec:Utilities}
 
 Programs are given in the \textbf{STIR/utilities} directory, that 
 allow the user to display, manipulate and convert \textbf{interfile} 
 data, either image or projection data.
-
 Utilities specific to files in ECAT 6 or 7 format or in the \textbf{ecat}
 sub-directory.
+
+\subsubsection{Displaying STIR configuration and version information}
+\label{sec:stirconfig}
+\textbf{stir\_config} allows displaying the directory where the configuration files
+are found (see section \ref{sec:configuration}), where the documentation and examples are installed
+and the STIR version. Run without arguments to get usage information.
+(Equivalent functions in C++/Python are \texttt{get\_STIR\_config\_dir},
+\texttt{get\_STIR\_doc\_dir} and \texttt{get\_STIR\_examples\_dir}).
+
+\textbf{stir\_list\_registries} is a utility that list possible values of various
+registries, which can be useful to know what to use in a <tt>.par<tt> file.
 
 \subsubsection{
 Displaying and performing operations on data}
@@ -2170,19 +2887,11 @@ The programs are \textbf{manip\_image}, \textbf{stir\_write\_pgm}, \textbf{list\
 for image data and \textbf{manip\_projdata}, 
  \textbf{display\_projdata}, \textbf{extract\_segments}, 
 \textbf{list\_projdata\_info} for 
-projection data and \textbf{stir\_math} for both. Run them with the 
-name of the image or projection data file as an argument. For 
-example, for \textbf{manip\_image}:
-\cmdline{manip\_image file\_name.hv}
-
+projection data, and \textbf{stir\_math} and \textbf{get\_time\_frame\_info} for both.
+Run them without arguments to get usage information.
 
 See also section \ref{sec:SSRB} for the use of \textbf{SSRB} to manipulate projection 
 data.
-
-
-The program \textbf{get\_time\_frame\_info} is \textit{STIR}'s first (small!) 
-step into supporting dynamic data.
-
 
 \textbf{Note}: The displaying functionality is \textit{really} basic, and 
 only intended for a quick check how your data looks like. For 
@@ -2197,6 +2906,7 @@ convert your \textit{STIR} data to another format using (X)medcon
 
 A utility that lists information about an image on stdout. This includes number of voxels,
 physical sizes, bounding boxes, etc. It also prints min/max/sum of the data. 
+Optionally this can be listed per time-frame.
 
 { \subsubsubsection{stir\_write\_pgm}
 }
@@ -2208,7 +2918,7 @@ This utility is mainly useful for shell/batch scripts.
 { \subsubsubsection{manip\_image}
 }
 
-This program works on two modes. Additionally to the display 
+This program works in two modes. Additionally to the display 
 possibility, the main mode allows to retrieve information about 
 the image:
 
@@ -2292,7 +3002,7 @@ size, etc. It will then output new projection data (in Interfile
 format). However, the binary file will not contain any data.
 
 It currently only supports PET data. For SPECT, you will have to copy the
-sample Interfile header from the \textbf{samples} directory and edit it by hand.
+sample Interfile header from the \texttt{samples} directory and edit it by hand.
 You will also need to provide a file with the binary data (but this can be empty if
 you are only going to use this as a template).
 
@@ -2383,12 +3093,11 @@ HAS to be different from all the input files.
 numbers is probably system-dependent.
 
 { \subsubsubsection{generate\_image}
-}
+\label{sec:generate_image}}
 
 This program can be used to generate 
 images containing geometric shapes such as cylinders, spheres 
-etc. See the online documentation generated by doxygen for more 
-info.
+etc. See section \ref{sec:shapes} for further details.
 
 { \subsubsubsection{zoom\_image}
 }
@@ -2416,12 +3125,73 @@ Using no arguments will give a more extensive usage message showing
 some options to select which data to print.
 
 { \subsubsubsection{list\_ROI\_values}
+\label{sec:list_ROI_values}}
+
+This program can be used to find 
+ROI values for an image. See its usage message, and/or the online documentation generated 
+by doxygen for more info. ROIs can be specified by geometric shapes or
+discretised ``masks", see section \ref{sec:shapes}.
+Example files specifying the ROIs can be found in the
+\texttt{examples/samples} folder.
+
+{ \subsubsubsection{extract\_single\_images\_from\_dynamic\_image}
 }
 
-This is a test-release of a program that can be used to find 
-ROI values for an image. See the online documentation generated 
-by doxygen for more info.
+This executable can be used to get the individual components of a 
+dynamic image as separate images. 
+To use it, simply give the pattern of the output filename, the input filename, and optionally
+supply a parameter file for the file-format used to save the output images.
 
+{ {\subsubsubsection{extract\_single\_images\_from\_parametric\_image}
+}
+
+As above but for parametric images.
+
+{ \subsubsubsection{create\_multi\_header}
+  This is a command line utility for creating a header that "points" to several other
+  data-sets, useful for e.g. dynamic images/data. The output header is in the \texttt{multi}
+  file-format (see \ref{multi-file-format}) and can then be used in
+  other STIR utilities. This is useful for instance if you have
+  a set of reconstruct images corresponding to several time frames, but need to read the data
+  as a single study.
+
+  To use it, specify the output filename and a list of input filenames (in the order you want
+  them to appear in the header).
+  There is no check that the data sizes and other info are compatible.
+
+{ \subsubsubsection{ctac\_to\_mu\_values}
+}
+
+This executable can be used to convert a CT or CT for attenuation correction (CTAC) to linear attenuation coefficients
+(mu-values) in cm-1. To use it, pass the output filename, input volume file name (if this is a DICOM series, then
+choose one file from the directory), the JSON file containing the conversion slopes, the manufacturer of the scanner
+(this needs to be present in the JSON file) and the target keV. It should normally be run as follows
+
+\cmdline{ctac\_to\_mu\_values {\textbackslash}\\
+-o output\_filename {\textbackslash}\\
+-i input\_volume {\textbackslash}\\
+-j slope\_filename {\textbackslash}\\
+-m manufacturer\_name {\textbackslash}\\
+{[}-v kilovoltage\_peak{]} {\textbackslash}\\
+-k target\_photon\_energy}
+
+The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
+a kVp of 120 is assumed. 
+
+{ \subsubsubsection{compute\_sqrt\_Hessian\_row\_sum} \label{sec:Utilities:HessianRowSum}
+}
+This executable can be used to generate the square root of the Hessian row sum of an objective function, the output of
+which may be used as a spatially variant penalty strength $\kappa$ (or \textit{kappa image}) within iterative
+reconstruction algorithms, see \ref{sec:priors:Quadratic}.
+
+This utility computes the row-sum of the Hessian of the objective function at a given image (by multiplying it with a vector of ones). The square root of the image is saved to file. Along with a method
+to compute the Hessian row sum, we include an optional method to approximate Hessian row sum that is less computational
+and does not require an estimate image for the the Hessian computation (but does require one for an output image
+template).
+
+Basic Usage:
+\cmdline{compute\_sqrt\_Hessian\_row\_sum compute\_sqrt\_Hessian\_row\_sum.par}
+An example parameter file is included in the \texttt{samples} folder.
 
 \subsubsection{
 Converting data}
@@ -2475,49 +3245,6 @@ factor is \texttt{<} 0, in which case it is assumed to be 1).
 
 \textbf{Warning} Note that sinogram data have to be 'corner-swapped', 
 see section \ref{sec:ecat_swap_corners}.
-
-{ \subsubsubsection{conv\_to\_ecat6}
-}
-This program is used to convert image or projection data into 
-CTI ECAT 6 data (input can be any format currently supported 
-by the library). It normally should be run as follows:
-
-
-for images:
-\cmdline{conv\_to\_ecat6 [-k] [-i] outputfilename.img {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ] scanner}
-
-
-for projection data:
-\cmdline{conv\_to\_ecat6 -s[2] [-k] [-i] outputfilename.scn {\textbackslash}\\
-input\_filename1 [input\_filename2 \dots ]}
-
-
-If there are no command line parameters, the user is asked for 
-the filenames and options instead. Unless the --\textit{i} option is 
-used, the data will be assigned a frame number in the order that 
-they occur on the command line.
-
-
-See \textbf{STIR/buildblock/Scanner.cxx} for supported scanner names, 
-but examples are ``ECAT 953'', ``ART'', 
-``Advance''. 
-
-
-{ \subsubsubsubsection{Command line options}
-}\begin{description}
-\item[-s2] This option forces output to 2D sinograms (ignoring higher 
-segments).
-\item[-k] the existing ECAT6 file will NOT be overwritten, but added 
-to. Any existing data in the ECAT6 file with the same \texttt{<}frame,gate,data,bed\texttt{>} 
-specification will be overwritten.
-\item[-i] ask for \texttt{<} frame,gate,data,bed\texttt{>} for each dataset
-\end{description}
-
-Note that to store projection data in ECAT6, a 3D sinogram cannot 
-be axially compressed (CTI \textit{span}=1).\\
-\textbf{Warning} This utility does \textit{not} corner-swap 3D projection 
-data back to the `raw' convention, see section \ref{sec:ecat_swap_corners}.
 
 { \subsubsubsection{conv\_to\_ecat7}
 }
@@ -2585,6 +3312,7 @@ is currently ignored.
 
 \subsubsubsection{ecat\_swap\_corners}
 \label{sec:ecat_swap_corners}
+This utility is obsolete and will be removed in a next version.
 { \subsubsubsubsection{Usage}
 }
 \cmdline{ecat\_swap\_corners out\_name in\_name}
@@ -2665,34 +3393,27 @@ wrong thing.
 Allows copying header info between ECAT7 files. Check doxygen, or run without 
 parameters for usage info.
 
-{ \subsubsubsection{conv\_AVW}
-}
-\label{sec:convAVW}
-If you have the \textit{AVW}\texttrademark  library
-\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.
-} installed on your system, the build process should have built \texttt{utilities/conv\_AVW},
-see also \ref{sec:UsingCMake}.
-This utility allows to use the \textit{AVW} library to read an image, and then write it out
-using \textit{STIR} as Interfile.\\
-\textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
-on the file format. For instance, it reads \textit{ECAT7} files using a z-flip compared
-to \textit{STIR}.
-
-It normally should be run as follows:
-\cmdline{conv\_AVW [ --flip\_z ] imagefile}
-
-It will require access to a run-time license for \textit{AVW}.
-
 { \subsubsubsection{conv\_GATE\_projdata\_to\_interfile}
 }
-This program converts GATE raw sinogram output (.ima) into STIR interfile format. 
+This program converts GATE raw sinogram output (.ima) into STIR interfile format. This utility
+has not been used recently however, so beware.
 
 { \subsubsubsection{conv\_gipl\_to\_interfile and conv\_interfile\_to\_gipl}
 }
 These programs convert from/to GIPL format. The latter program has a somewhat wrong name.
 It will actually read an image in any format supported by STIR.
 
+{ \subsubsubsection{SPECT\_dicom\_to\_interfile}\label{utility:SPECT_dicom_to_interfile}}
+This (still somewhat preliminary) utility reads a DICOM file with SPECT projection data and extracts the data and writes one or more Interfile 3.3
+headers. You will need to pass a filename-prefix. The utility will output several files:
+\begin{itemize}
+\item \texttt{<prefix>.s} the raw data
+\item \texttt{<prefix><string>.hdr} multiple headers, one per energy window grouping, where the \texttt{<string>} is given by the grouping name, read from (0054,0018).
+\end{itemize}
+Note that we currently do not read the Energy Window Vector (0054,0010), which could mean that the output data is incorrect.
+Also, dynamic and gated studies are not supported. You will have to edit the headers yourself.
+
+See also \url{https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.4.8.html}{Section C.8.4.8 of the DICOM standard}.
 
 \subsubsection{
 Filtering image data}
@@ -2715,7 +3436,7 @@ name\texttt{>} {\textbackslash}\\
 
 where the square brackets denote optional parameters (their value 
 will be asked interactively). Example postfilter.par files can 
-be found in the \textbf{STIR/samples} directory.
+be found in the \texttt{STIR/examples/samples} directory.
 
 
 \subsubsection{
@@ -2753,7 +3474,7 @@ It is run as
 \cmdline{correct\_projdata correct\_projdata\_par\_filename}
 
 
-A sample parameter file is given in \textbf{STIR}/\textbf{samples} and 
+A sample parameter file is given in \texttt{STIR/examples/samples/} and 
 is more or less as follows
 
 \begin{verbatim}
@@ -2973,6 +3694,13 @@ Interfacing with SimSET}
 a popular Monte Carlo simulator for PET and SPECT. This
 is all preliminary. Check out the \texttt{README.txt} in the \textbf{STIR/SimSET} directory.
 
+\subsubsection{
+Performing timings of certain operations}
+The \textbf{stir\_timings} utility  is mostly useful for developers,
+but you could use it to optimise the number of OpenMP threads to use for your data.
+
+Run the utility without any arguments to get a help message.
+If you want to know what is actually timed, you will have to look at the source code.
 
 \subsection{
 User-selectable components}
@@ -3219,7 +3947,7 @@ available to programs is fully extendable (at compile time).
 How to do this is beyond the scope of this document. Here we 
 only discuss how to specify a particular data processor at run-time, 
 and list the currently available ones. Samples of their parameters 
-should be available in \textbf{STIR/samples}.
+should be available in \texttt{STIR/examples/samples}.
 
 
 Each data processor has a unique name associated to it (given 
@@ -3235,6 +3963,15 @@ the data processor .
 
 
 See also the online documentation for the class \textbf{DataProcessor}.
+
+As of STIR version 4.0, it is now possible to use data processors 
+on images prior to forward projection and following back projection
+with any projector. This supercedes functionality provided by 
+ \textbf{PresmoothingForwardProjectorByBin} and 
+ \textbf{PostsmoothingBackProjectorByBin},
+  which can now be considered deprecated. Examples are available
+in \texttt{STIR/examples/samples/forward\_projector\_proj\_matrix\_ray\_tracing\_pre\_smoothing.par} 
+(and a similarly named back-projector example).
 
 { \subsubsubsection{Separable Convolution}
 }
@@ -3406,6 +4143,38 @@ The maximum width of the kernel (in pixels). Prior to version
 in the input image (in that direction).
 \end{description}
 
+{ \subsubsubsection{Separable Gaussian Filter}
+}
+This is a separable 3D Gaussian filter for images discretised on
+a Cartesian voxel grid. These filters are composed of 3 1D filter
+kernels, one for the x,y and z directions each. Each 1D filter
+is specified by a Full Width at Half Maximum (FWHM) parameter
+(in millimetres), and a maximum spatial kernel width.
+The kernel values are obtained by sampling a Gaussian.
+
+The filter is normalised to 1 by default, but the user can choose to disable this option.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+Sample parameters are given below
+\begin{verbatim}
+separable gaussian filter parameters :=
+x-dir filter fwhm (in mm) := 6
+y-dir filter fwhm (in mm) := 6
+z-dir filter fwhm (in mm) := 6
+x-dir maximum kernel size := 129
+y-dir maximum kernel size := 129
+z-dir maximum kernel size := 31
+Normalise filter to 1 := 1
+end separable gaussian filter parameters :=
+\end{verbatim}
+
+Default values are:
+(i) fwhm = 0 , which means no filtering
+(ii) maximum kernel size = -1 , which means unrestricted
+(iii) normalise filter to 1 = 1, which means that the filter is normalised to 1.
+
 { \subsubsubsection{Median}
 }
 \label{sec:median}
@@ -3459,6 +4228,31 @@ set to a hard-coded strictly positive parameter SMALL\_NUM\texttt{<}\texttt{<}1.
 Otherwise, all non-positive entries in the data are set to SMALL\_NUM 
 times the minimum strictly positive value.
 
+{ \subsubsubsection{HUToMu}
+}
+
+This data processor (class \texttt{HUToMuImageProcessor}) is intended to convert a CT image in Hounsfield Units to mu-values.
+It takes a file in JSON format specifying the piecewise-linear for various systems, Xray voltages and gamma energies.
+Currently, it supports 2-segment piecewise linear transformations only.
+In practice, this needs to be combined with a smoothing filter to match CT to PET resolution.
+
+A sample file JSON is currently located in the source of STIR (\texttt{src/utilities/share}).
+This file is installed in your \texttt{install\_prefix/share} folder.
+
+{ \subsubsubsubsection{Parameters}
+}
+Example parameters are given by
+\begin{verbatim}
+    HUToMu Parameters:=
+      slope filename := json_filename
+      ; next defaults to GENERIC
+      manufacturer_name := IN_CAPITALS
+      ; CT tube voltage (defaults to 120)
+      ;kilovoltage_peak :=
+      ; gamma energy (defaults to 511 for PET)
+      ;target_photon_energy :=
+    End HUToMu Parameters:=
+\end{verbatim}
 
 { \subsubsubsection{Chained Data Processor}
 }
@@ -3496,7 +4290,7 @@ Which priors are available to programs is fully extendable (at
 compile time). How to do this is beyond the scope of this document. 
 Here we only discuss how to specify a particular prior, and list 
 the currently available ones. Samples of their parameters should 
-be available in \textbf{STIR/samples}.
+be available in \texttt{STIR/examples/samples}.
 
 
 
@@ -3565,13 +4359,18 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
   END FilterRootPrior Parameters :=
  \end{verbatim}
 
-{ \subsubsubsection{Quadratic}
+
+{ \subsubsubsection{Quadratic} \label{sec:priors:Quadratic}
 }
-This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
+This implements a quadratic Gibbs prior. The value of the prior is computed as follows:
  \[
-  g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+ f = \frac{1}{4} \sum_{r,dr} w_{dr} (\lambda_r - \lambda_{r+dr})^2 * \kappa_r * \kappa_{r+dr}
+ \]
+ and its gradient
+ \[
+  g_r = \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
   \]
-  \noindent where $\lambda$ is the image where the gradient is computed
+  \noindent where $\lambda$ is the image where the prior is computed
    and $r$ and $dr$ are indices and the sum
   is over the neighbourhood where the weights $w_{dr}$ are non-zero.
 
@@ -3579,6 +4378,7 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If $\kappa$ is not set, this class will effectively
   use 1 for all $\kappa$'s.
+  The utility \textit{compute\_sqrt\_Hessian\_row\_sum} \ref{sec:Utilities:HessianRowSum} may be used to generate such images.
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
   x-voxel\_size divided by the Euclidean distance between the points.
@@ -3603,6 +4403,129 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   END Quadratic Prior Parameters:=
   \end{verbatim}
 
+
+{ \subsubsubsection{Relative Difference} \label{sec:priors:Relative_Difference}
+}
+This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2002. The value of the prior is computed as follows:
+  \[
+      f= \sum_{r,dr} \frac{w_{dr}}{2} \frac{(\lambda_r - \lambda_{r+dr})^2}{(\lambda_r+ \lambda_{r+dr} + \gamma |\lambda_r - \lambda_{r+dr}| + \epsilon)} * \kappa_r * \kappa_{r+dr}
+  \]
+  \noindent where $\lambda$ is the image where the prior is computed
+   and $r$ and $dr$ are indices and the sum
+  is over the neighbourhood where the weights $w_{dr}$ are non-zero.
+  $\gamma$ is a edge preservation hyper-parameter and $\epsilon$ is small 
+  modification the penalty function used to prevent divide by zero's.
+
+  The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
+
+  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
+  \texttt{x-voxel\_size} divided by the Euclidean distance between the points.
+ 
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := Relative Difference Prior
+  Relative Difference Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  ; gamma is a parameter used to control edge preservation
+  ; gamma value := 2
+  ; epsilion is used to control divide by zeros in the prior denominator
+  ; epsilon value := 0.0001
+  END Relative Difference Prior Parameters:=
+  \end{verbatim}
+
+
+{ \subsubsubsection{Logcosh} \label{sec:priors:Logcosh}
+}
+This implements a Logcosh. The value of the prior is computed as follows:
+  \[
+      f = \sum_{r,dr} w_{dr} \frac{1}{2 s^2}  log(cosh(s(\lambda_r - \lambda_{r+dr}))) * \kappa_r * \kappa_{r+dr}
+  \]
+  \noindent where $\lambda$ is the image where the prior is computed
+   and $r$ and $dr$ are indices and the sum
+  is over the neighbourhood where the weights $w_{dr}$ are non-zero.\footnote{The actual
+  implementation takes care of numerical problems for very large or small
+  arguments of the logcosh function.}
+  $s$ (a.k.a. scalar) controls the transition between the quadratic (smooth) and linear (edge-preserving) nature of the prior.
+
+  The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
+
+  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
+  x-voxel\_size divided by the Euclidean distance between the points.
+
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := Logcosh
+  Logcosh Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  ; scalar is a parameter used to control edge preservation
+  ; scalar value := 1
+  END Logcosh Prior Parameters:=
+  \end{verbatim}
+
+
+{ \subsubsubsection{PLS}
+This implements the  anatomical penalty function, Parallel Level Sets (PLS), also sometimes called Directional TV,
+proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
+  PLS becomes smoothed TV when an uniform anatomical image is provided.  
+The prior has 2 parameters alpha and eta. It is computed for an image $ f $ as
+
+  \[
+  \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
+  \]
+  where $ f $ is the PET image, $\nabla$ is the finite difference operator (\textrm{not} taking voxel-sizes into account) and
+  $ \xi $ is the normalised gradient calculated as follows:
+
+  \[
+  \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
+  \]
+
+  $ v $ is the anatomical image, $ \alpha $ controls the edge-preservation property of PLS, and depends on the scale of the emission image,
+  and $ \eta $ avoids division by zero, and depends on the scale of the anatomical image. 
+}
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := PLS
+  PLS Prior Parameters:=
+  penalisation factor :=1
+
+  ; 
+  ; alpha controls the edge-preservation property of PLS, and depends on the scale of the emission image. 
+  ; eta avoids division by zero, and depends on the scale of the anatomical image. 
+
+  eta:=1
+  alpha:=1
+
+  anatomical_filename:=${filename}
+  only_2D:=0
+  END PLS Prior Parameters:=
+  \end{verbatim}
+
 \subsubsection{
 Selecting different projector pairs}
 \label{sec:projectorpairs}
@@ -3620,12 +4543,12 @@ to be given in the.par file (or will be asked interactively).
 
 
 Samples of OSMAPOSL reconstruction parameter files selecting 
-different types of projectors should be available in \textbf{STIR/samples}.
+different types of projectors should be available in \texttt{STIR/examples/samples}.
+
+Currently, the default projector uses the ray-tracing matrix (see \ref{sec:projmatrixusingraytracing}).
 
 \textbf{Warning: for most iterative algorithms, it is recommended 
-to use matching forward and back-projector. This is unfortunately 
-not the default due to historical reasons. It is recommended to replace
-the default by using a projection matrix as detailed below.}
+to use matching forward and back-projector.}
 
 { \subsubsubsection{Matrix}
 }
@@ -3643,6 +4566,44 @@ End Projector Pair Using Matrix Parameters:=
 \end{verbatim}
 
 See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
+
+{ \subsubsubsection{NiftyPET}
+}
+\label{sec:projectorpairusingNiftyPET}
+If STIR has been built with NiftyPET-wrapped [Mar18] support, then GPU-accelerated functionality can be used to project data. The forward and back projectors are described individually in the following sections.
+
+Note that this functionality is currently limited to the Siemens mMR scanner, and NiftyPET requires a CUDA-enabled GPU.
+
+Also note that, although NiftyPET allows spans 0, 1 and 11, the STIR wrapper has only currently been tested for span-11, so use with caution. The wrapper is also only currently capable of projecting all of the data, meaning projections of subsets of the data are not possible. We hope to address this soon.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using NiftyPET Parameters:=
+  verbosity := 1
+End Projector Pair Using NiftyPET Parameters:=
+\end{verbatim}
+
+{ \subsubsubsection{Parallelproj}
+\label{sec:projectorpairusingparallelproj}
+}
+This projector pair wraps Georg Schramm's \texttt{parallelproj} projectors, see
+\url{https://github.com/gschramm/parallelproj}{github.com/gschramm/parallelproj}. This project provides implementations
+of PET projectors using the Joseph algorithm. We only use the \em{C} and \em{CUDA} code (not any \textit{Python}).
+
+This projector is only available if STIR has been built with parallelproj support (by letting CMake finding it).
+
+At present, STIR will use the GPU-accelerated functionality of \texttt{parallelproj} was
+built with \em{CUDA} support, otherwise it falls back to the \em{OpenMP} versions.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using Parallelproj Parameters:=
+  verbosity := 1
+End Projector Pair Using Parallelproj Parameters:=
+\end{verbatim}
 
 { \subsubsubsection{Separate Projectors }
 }
@@ -3691,7 +4652,7 @@ result.
 \begin{verbatim}
 Forward Projector Using Matrix Parameters:=
 Matrix type := some value
-End Forward Projector Pair Using Matrix Parameters:=
+End Forward Projector Using Matrix Parameters:=
 \end{verbatim}
 
 See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
@@ -3706,7 +4667,7 @@ Section \ref{sec:projmatrixusingraytracing}). The result is identical though (up
 errors and possibly the voxels at the edge of the FOV).
 
 
-See also online documentation for class ForwardProjectorUsingRayTracing.
+See also online documentation for class \texttt{ForwardProjectorUsingRayTracing}.
 
 { \subsubsubsubsection{Parameters}
 }
@@ -3736,11 +4697,36 @@ Pre Smoothing Forward Projector Parameters:=
 End Pre Smoothing Forward Projector Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{NiftyPET}
+}
+This forward projector wraps NiftyPET's GPU forward projector.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using NiftyPET Parameters:=
+  verbosity := 1
+End Forward Projector Using NiftyPET Parameters:=
+\end{verbatim}
+
+{ \subsubsubsection{Parallelproj}
+}
+This forward projector wraps the \texttt{parallelproj} forward projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Forward Projector Using Parallelproj Parameters:=
+\end{verbatim}
+
 \subsubsection{
 Selecting a back projector}
 \label{sec:backprojectors}
 It is possible to select the type of back projector. The mechanism 
-is exactly the same as for the ForwardProjector hierarchy.
+is exactly the same as for the \texttt{ForwardProjector} hierarchy.
 
 { \subsubsubsection{Matrix}
 }
@@ -3751,7 +4737,7 @@ This back projector uses a projection matrix to compute its result.
 \begin{verbatim}
 Back Projector Using Matrix Parameters:=
 Matrix type := some value
-Back Forward Projector Pair Using Matrix Parameters:=
+End Back Projector Using Matrix Parameters:=
 \end{verbatim}
 
 See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
@@ -3816,6 +4802,30 @@ Post Smoothing Back Projector Parameters:=
 End Post Smoothing Back Projector Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{NiftyPET}
+}
+This back projector wraps NiftyPET's GPU back projector.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using NiftyPET Parameters:=
+  verbosity := 1
+End Back Projector Using NiftyPET Parameters:=
+\end{verbatim}
+
+{ \subsubsubsection{Parallelproj}
+}
+This back projector wraps the \texttt{parallelproj} back projector.
+See Section \ref{sec:projectorpairusingparallelproj}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using Parallelproj Parameters:=
+  verbosity := 1
+End Back Projector Using Parallelproj Parameters:=
+\end{verbatim}
 
 \subsubsection{
 Selecting a projection matrix}
@@ -3999,11 +5009,10 @@ End Interpolation Matrix Parameters:=
 See \ref{sec:IncrementalInterpolationBackProjector} for an explanation 
 of the first two parameters.
 
-{ \subsubsubsection{SPECT UB}
-}
+{ \subsubsubsection{SPECT UB} }
 \label{sec:projmatrixSPECTUB}
 This is a flexible implementation specific to SPECT data. See [Fus13] and [Fus14] for some information.
-A sample is given below
+A sample is given below:
 
 \begin{verbatim}
 Projection Matrix By Bin SPECT UB Parameters:=
@@ -4042,93 +5051,248 @@ should be done using alternative strategies. The geometrical part is calculated 
 PSF (area 1) within the bin. The geometrical part is multiplied by the attenuation factor calculated
 using a modified version of the Siddon algorithm.  
 
-{ \subsubsubsubsection{Parameters}
-}
+{ \subsubsubsubsection{Parameters} }
 \begin{description}
-\item[maximum number of sigmas] [0,$\infty$,2{]}
 
-  This is the number of sigmas to consider in PSF correction (float, typically 1.5 to 2.5). PSF are
-  modelled by Gaussian functions whose extension is infinite. To increase unnecessarily the number of
-  sigmas would produce an increase of the weight matrix size that would not result in a better correction
-  for PSF. It does not make sense to take into account very small contributions. A balance between the
-  precision of the correction for PSF and the size of the matrix and the time of the reconstruction
-  process should be done.
+\item[maximum number of sigmas] [0, $\infty$, 2{]}
+
+This is the number of sigmas to consider in PSF correction (float, typically 1.5 to 2.5). PSF are modelled by Gaussian functions whose extension is infinite. To increase unnecessarily the number of sigmas would produce an increase of the weight matrix size that would not result in a better correction for PSF. It does not make sense to take into account very small contributions. A balance between the precision of the correction for PSF and the size of the matrix and the time of the reconstruction process should be done.
 
 %\item[spatial resolution PSF:= 0.00001]
-%	
 % This is the spatial resolution in which to sample PSF distributions. PSF is modelled as a Gaussian or as a trapezoid (linear projection of a square) in case of no correction for PSF.  The calculus of the area within the bin is calculated by means of the Gaussian distribution function (cumulative sum). The parameter indicates the discretization interval for such functions (float, cm, typically 0.001-0.02, depending on the voxel size)
 
-\item[psf type] 
- 
-  The possible values are \{ 2D, 3D, Geometrical (default) \} to indicate, respectively, a planar
-  reconstruction (no information mixed between planes, planes reconstructed sequentially, 1d -PSF),
-  volumetric (mixed information between planes, volume reconstructed at once, 2d-PSF), or no correction
-  for PSF (in this case PSF is the trapezoid obtained by the projection of the square voxel).
+\item[psf type] \{2D, 3D, Geometrical (default)\}
 
-\item[collimator slope, collimator slope sigma 0 (cm)] (default 0) 
+Indicate, respectively, a planar reconstruction (no information mixed between planes, planes reconstructed sequentially, 1d -PSF), volumetric (mixed information between planes, volume reconstructed at once, 2d-PSF), or no correction for PSF (in this case PSF is the trapezoid obtained by the projection of the square voxel).
 
-  These two 2 parameters define the PSF.
-  They are ignored if \textit{psf type} is \textit{Geometrical}.  These values are mostly dependent on
-  your collimator.  The PSF is modelled as a Gaussian with sigma dependent on the distance from the
-  collimator
+\item[collimator slope, collimator slope sigma 0 (cm)] (default 0)
+
+These two 2 parameters define the PSF. They are ignored if \textit{psf type} is \textit{Geometrical}. These values are mostly dependent on your collimator. The PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
 \begin{equation}
  \sigma(d) = \mathrm{slope} * d + \mathrm{\sigma_0}
-\end{equation} \noindent
-  with $d$ the distance (in cm) of the voxel to the collimator radius.
+\end{equation} 
+\noindent with $d$ the distance (in cm) of the voxel to the collimator radius.
 
-  In the range of usual distances between the object and the detector, the dependence of the sigma with the
-  distance keeps perfectly linear for parallel collimators. You can adjust this dependence experimentally
-  or use analytical methods to determine it.
+In the range of usual distances between the object and the detector, the dependence of the sigma with the distance keeps perfectly linear for parallel collimators. You can adjust this dependence experimentally or use analytical methods to determine it.
 
-\item[attenuation type] 
+\item[attenuation type] \{Simple, Full, No (default)\}
 
-  The possible values are \{ Simple, Full, No (default) \}. Attenuation is calculated as the negative
-  exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation
-  coefficient. It requires an attenuation map (see next keyword). The simple option for correction for
-  attenuation is to consider that the whole PSF suffers the same attenuation (the attenuation of the
-  central ray). One single factor is applied to weight the contribution from one voxel to all the bins in
-  a detection plane. It is a very good approximation for uniform attenuation maps. The full option means
-  that a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained
-  along the voxel-bin pathway). It could be useful for very inhomogeneous attenuation maps.
+Attenuation is calculated as the negative exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation coefficient. It requires an attenuation map (see next keyword). The simple option for correction for attenuation is to consider that the whole PSF suffers the same attenuation (the attenuation of the central ray). One single factor is applied to weight the contribution from one voxel to all the bins in a detection plane. It is a very good approximation for uniform attenuation maps. The full option means that a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained along the voxel-bin pathway). It could be useful for very inhomogeneous attenuation maps.
 
-  See [Fus14] for an evaluation and more explanation.
+See [Fus14] for an evaluation and more explanation.
 
-\item[attenuation map]
+\item[attenuation map] \hfill
 
-  A filename giving the attenuation map as the attenuation coefficient at each voxel (in
-  $\mathrm{cm}^{-1}$).  Currently, this file has the same geometric characteristics as the image to be
-  reconstructed (number of columns, row, slices and voxel dimensions, orientation).
+A filename giving the attenuation map as the attenuation coefficient at each voxel (in $\mathrm{cm}^{-1}$). Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
 
-\item[mask type]
+\item[mask type] \{Cylinder, Attenuation Map, Explicit Mask, No (default)\}
 
-  This is a parameter to indicate if any mask should be applied to the volume, to reduce the matrix size
-  by removing weights from voxels that, according the prevoius information, do no contribute to the
-  projections. Possible values are:
- \begin{description}
- \item[Cylinder] the cylinder inscribed into the volume is used as a mask. The radius of the cylinder is
-   the maximum volume dimension (x-y),
- \item[Attenuation Map] the attenuation map is used as a mask. No weight is calculated where the
-   attenuation map is zero ( assiming no attenuation=no activity). NaNs values are set to zero.
- \item[Explicit Mask] the mask is defined in a file. The mask should have the same geometrical
-   prescription than the image. It could be useful for instance to remove the weight of voxels from the
-   table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is
-   considered. 
-  \item[No] (default). No attenuation correction.
- \end{description}
+This is a parameter to indicate if any mask should be applied to the volume, to reduce the matrix size by removing weights from voxels that, according to the previous information, do not contribute to the projections. Possible values are:
+\begin{description}
+\item[Cylinder:] The cylinder inscribed into the volume is used as a mask. The radius of the cylinder is the maximum volume dimension (x-y),
+\item[Attenuation Map:] The attenuation map is used as a mask. No weight is calculated where the attenuation map is zero (assuming no attenuation = no activity). NaNs values are set to zero.
+\item[Explicit Mask:] The mask is defined in a file. The mask should have the same geometrical characteristics as the image. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is considered. If not, attenuation map should suffice.
+\item[No:] No masking.
+\end{description}
 
-\item[mask file]
+\item[mask file] \hfill
 
- A filename with the mask (if the mask type is set to \textit{Explicit Mask}). Any voxels which are 
- (exactly) zero in the mask will be ignored.
- Currently, this file has the same geometric characteristics as the image to be
-  reconstructed (number of columns, row, slices and voxel dimensions, orientation).
+A filename with the mask (if the mask type is set to \textit{Explicit Mask}). Any voxels which are (exactly) zero in the mask will be ignored. Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, row, slices and voxel dimensions, orientation).
 
 \item[keep all views in cache] [0,1,0{]}
 
-  If this variable is set to 0 (default), only a single view is kept in memory. This avoids running
-  out-of-memory but means that the matrix has to be recomputed at every iteration.
+If this variable is set to 0 (default), only a single view is kept in memory. This avoids running out-of-memory but means that the matrix has to be recomputed at every iteration.
 
 \end{description}
+
+
+
+
+{ \subsubsubsection{Pinhole SPECT UB} }
+\label{sec:projmatrixPinholeSPECTUB}
+This is a flexible implementation specific to pinhole-SPECT data acquired in circular orbits as illustrated in Fig.~\ref{PinholeSPECTUB_coords}. The code was written by Carles Falc\'{o}n and  integrated into STIR by Matthew Strugari to create the weight matrix for single- and multi-pinhole collimators in SPECT. The code calculates the contribution of each voxel of the image to each detector element (one per angle and ring) and includes the geometric projection (shadow of the collimator hole) as well as corrections for the spatially variant collimator-detector response function in terms of intrinsic  PSF, depth of interaction (DOI), attenuation inside the crystal, and attenuation inside the subject --- full (different attenuation factors for each bin of PSF) and simple (the same attenuation factor for the whole PSF). Information about detector and collimator characteristics are read from text files with a fixed structure. See Sec.~\ref{sec:projmatrixSPECTUB} and [Str22a], [Str22b], [Fus13], and [Fus14] for additional information. A sample of PinholeSPECTUB parameter files are given below and in the \texttt{STIR/examples/samples/} directory.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[height=5cm]{graphics/STIR-UsersGuide_PinholeSPECTUB}
+\caption{PinholeSPECTUB system of reference and sign criteria illustrated for a polygonal collimator setup. Note that the projection matrix adheres to STIR's coordinate system as indicated by the x, y, and z axes. The detector and collimator use a rotating frame of reference where the transaxial x' and axial z' axes coincide with STIR's axes when the detector is at 0 $\mathrm{\deg}$. The collimator uses a right-handed coordinate system as indicated by the y' axis which points toward the detector. Further information is given in the parameter descriptions.}
+\label{PinholeSPECTUB_coords}
+\end{center}
+\end{figure}
+
+\begin{verbatim}
+Projection Matrix By Bin Pinhole SPECT UB Parameters:=
+
+   maximum number of sigmas := 2.0
+   spatial resolution PSF := 0.001
+   subsampling factor PSF := 1
+   
+   detector file := detector.txt
+   collimator file := collimator.txt
+
+   ; PSF and DOI correction { Yes // No }
+   psf correction := no
+   doi correction := no
+   
+   ; Attenuation correction { Simple // Full // No }
+   attenuation type := no
+   attenuation map :=
+   
+   object radius (cm) := 2.3
+   mask file := 
+   ; If no mask file is set, we can either compute it from attenuation map or object radius
+   mask from attenuation map := 0
+   
+   keep all views in cache := 0
+
+End Projection Matrix By Bin Pinhole SPECT UB Parameters:=
+\end{verbatim}
+
+{ \subsubsubsubsection{Parameters} }
+\begin{description}
+
+%\item[minimum weight:] Minimum weight to take into account (float, typically 0.0-0.02, default 0.0). It makes reference just to the geometric (PSF) part of the weight. The weight could be lower than this value after applying the attenuation factor.
+
+\item[maximum number of sigmas:] Number of sigmas to consider when correcting for intrinsic PSF (float, typically 1.5–2.5, default 2.0). To increase unnecessarily the number of sigma would produce an increase of the weight matrix size that would not result in a better PSF correction. PSFs are modelled by Gaussian functions whose extension is infinite. It does not make sense to take into account very small contribution. A balance between the precision of the correction for PSF and the size of the matrix and the time of the reconstruction process should be done.
+
+\item[spatial resolution PSF:] This is the spatial high resolution in which to sample distributions (float, cm, typically 0.001-0.0001, default 0.001, depends on the voxel size). It applies to geometric, PSF, and DOI calculations. The geometric contribution to one bin is the plane integral of the shadow of the hole within the bin. To easily compute thousands of integrals, the code pre-calculates the cumulative sum of the shadow of the hole at high resolution. This parameter indicates the discretization interval for such functions. The smaller this parameter the longer it takes to calculate the DOI correction (linear proportion).
+
+\item[subsampling factor PSF:] This is the subsampling factor to compute convolutions when PSF or DOI corrections are enabled (integer, typically 1-8, default 1). In some cases, the Gaussian that describes the intrinsic PSF has just a few voxels. To convolve the shadow of the hole with a low resolution intrinsic PSF could have low accuracy. The subsampling factor reduces temporally the resolution of the PSF to perform more accurate calculus and then down sample the final PSF to the bin size. It has a great influence on the computation time.
+
+\item[detector file:] Name of the file containing the detector information. See below for information on the structure of this file.
+
+\item[collimator file:] Name of the file containing the collimator information. See below for information on the structure of this file.
+
+\item[psf correction:] \{Yes, No (default)\} Enable or disable corrections for intrinsic PSF.
+
+\item[doi correction:] \{Yes, No (default)\} Enable or disable corrections for DOI. \textbf{Note:} There is currently a bug associated with the DOI correction at small angles from the pinhole axis.
+
+\item[attenuation type:] \{Simple, Full, No (default)\} Attenuation is calculated as the negative exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation coefficient. It requires an attenuation map (see next parameter). The simple option for correction for attenuation is to consider that the whole PSF suffers the same attenuation (the attenuation of the central ray). One single factor is applied to weight the contribution from one voxel to all the bins in a detection plane. It is a very good approximation for uniform attenuation maps. The full option means that a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained along the voxel-bin pathway). It could be useful for very inhomogeneous attenuation maps.
+
+See [Fus14] for an evaluation and more explanation.
+
+\item[attenuation map:] A filename giving the attenuation map as the attenuation coefficient at each voxel (in $\mathrm{cm}^{-1}$). If the attenuation map is provided but the attenuation type is set to ``No'', then simple attenuation will be applied automatically. Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
+
+\item[object radius (cm):] The radius of the object in the xy plane of the image volume. All voxels belonging to this cylinder are weighted according to this radius whether or not a mask is used. If a mask is not used, all voxels outside of this cylinder are masked by default. If a mask is specified, this radius should be no smaller than the object in the mask volume to avoid errors in the geometric or convolution calculation of the PSF. See the following two parameters for more information.
+
+
+%\item[mask type:] \{Attenuation Map, Explicit Mask, No (default)\} Applying a mask to the image volume reduces the matrix size by removing weights from voxels that do not contribute to the projections. The cylindrical mask is applied by default according to the object radius. This parameter applies additional masking. Possible values are:
+
+%\begin{description}
+
+%\item[Attenuation Map:] The attenuation map is used as a mask. No weight is calculated where the attenuation map is zero (no attenuation = no activity). If the attenuation map is obtained from a time-activity curve, very small values of attenuation could be set around the subject. Thresholding the attenuation map could be considered to adjust the mask to the subject. NaNs values are set to zero.
+%\item[Explicit Mask:] The mask is defined in a file. The mask should have the same geometrical characteristics as the image. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is considered. If not, attenuation map should suffice.
+
+%\item[No:] No additional masking.
+
+%\end{description}
+
+\item[mask file:] Applying a mask to the image volume reduces the matrix size by removing weights from voxels that do not contribute to the projections. If a mask file is provided, any voxels which are (exactly) zero in the mask will be ignored during reconstruction. It could be useful, for instance, to remove the weight of voxels from the patient table (no activity but attenuation) or to reduce the matrix size when no attenuation correction is considered. If not, attenuation map should suffice. If no mask file is set, masking will be applied either either outside of the object radius, or with the attenuation map (see next parameter).  Currently, this file has the same geometric characteristics as the image to be reconstructed (number of columns, rows, slices, voxel dimensions, and orientation).
+
+\item[mask from attenuation map:]  [0,1,0{]} If this variable is set to 0 (default), then masking will be applied either outside of the object radius, or with the mask file if it is set (see previous parameter). If this variable is set to 1 and no mask file is provided, then the attenuation map will be used to mask the image volume. No weight is calculated where the attenuation map is zero (no attenuation = no activity). If the attenuation map is obtained from a time-activity curve, very small values of attenuation could be set around the subject. Thresholding the attenuation map could be considered to adjust the mask to the subject. NaNs values are set to zero. \textbf{Note:} If this variable is set to 1 AND the mask file is specified, then this parameter will be automatically set to 0.
+
+\item[keep all views in cache:] [0,1,0{]} If this variable is set to 0 (default), only a single view is kept in memory. This avoids running out-of-memory but means that the matrix has to be recomputed at every iteration.
+
+\end{description}
+
+{ {\subsection*{{Detector file} }
+This file contains information about projections (see Fig.~\ref{PinholeSPECTUB_coords} for projection image orientation and angle criteria). Parameters are defined with a delimiting colon ``:". The labels before the colon are just information for users. The colon indicates the following value is a parameter to read, so it should be avoided in comments. The parameters should always keep the same order because they are read sequentially. The structure is demonstrated below with settings for the Cubresa Spark preclinical SPECT system in an aquisition with four projections over 360 degrees (see [Str22b]).
+
+\begin{verbatim}
+Information of detector
+Comments are allowed here or anywhere in lines not containing parameters.
+Parameters are defined with a delimiting colon. Avoid using a colon elsewehere.
+# Sigma = FWHM/(2*sqrt(2*ln(2))) where FWHM = 0.85 mm
+# CsI at 140.5 keV from NIST
+Number of rings: 1
+#intrinsic PSF#
+Sigma (cm): 0.0361
+Crystal thickness (cm): 0.3
+Crystal attenuation coefficient (cm -1): 4.407   
+\#……repeat for each ring …………\#
+Nangles: 4
+ang0 (deg): 180.
+incr (deg): 90.0
+z0 (cm): 0.
+\#…………until here……………\#
+\end{verbatim}
+
+\noindent Note that detector radius (in mm), projection matrix size, and scaling factor (mm/pixel) are read directly from the Interfile header. The detector radius refers to the front of the crystal (external face). In case of no DOI correction, the program automatically adds half of the crystal thickness to the detector radius. The projection matrix size can be different in the axial and transaxial directions. The code works internally in radians although the angular parameters in input files are specified in degrees. This file should contain all the parameters although not used for that particular matrix. If not, indices will not match.
+
+{ \subsubsubsubsection{Parameters} }
+\begin{description}
+
+\item[Number of rings:] There can be several rings of detectors. Each one can have a different configuration according to the parameters for Nangles, ang0($\mathrm{\deg}$), incr($\mathrm{\deg}$), and z0($\mathrm{cm}$).
+
+\item[Sigma (cm):] Sigma $\sigma$ defines the standard deviation of the Gaussian that describes the intrinsic PSF. It can be calculated from the intrinsic resolution (FWHM) of the system as 
+\begin{equation}
+ \sigma = \frac{\mathrm{FWHM}}{2\sqrt{2\ln{2}}}.
+\end{equation}
+
+\item[Crystal thickness (cm):] Thickness of the scintillating crystal.
+
+\item[Crystal attenuation coefficient (cm -1):] Attenuation coefficient of the crystal for the photon energy of interest.
+
+\item[Nangles:] Number of angles for projection images stored in the current detector ring.
+
+\item[ang0 (deg):] Starting angle of the detector in the current detector ring where the first projection was acquired. For example, 0 $\mathrm{\deg}$ refers to a detector above the patient table and 180 $\mathrm{\deg}$ refers to a detector below the patient table.
+
+\item[incr (deg):] Angular increment of the detector between projections in the current detector ring. When looking from the patient table into the gantry, a positive angular increment refers to a CCW rotation.
+
+\item[z0 (cm):] This refers to the axial position of the detector in the current ring relative to the center of the image volume.
+
+\end{description}
+
+{ {\subsection*{{Collimator file} }
+This file contains information about projections (see Fig.~\ref{PinholeSPECTUB_coords} for collimator/pinhole orientation and angle criteria). Parameters are defined with a delimiting colon. The labels before the colon are just information for users. The colon indicates the following value is a parameter to read, so it should be avoided in comments. The parameters should always keep the same order because they are read sequentially. The structure is demonstrated below with settings for the Cubresa Spark preclinical SPECT system in an aquisition with four projections over 360 degrees and a single-pinhole collimator (see [Str22b]).
+
+\begin{verbatim}
+Information of collimator
+Comments are allowed here or anywhere in lines not containing parameters.
+Parameters are defined with a delimiting colon. Avoid using a colon elsewehere.
+Model (cyl/pol): pol
+Collimator radius (cm): 2.8
+Wall thickness (cm): 1.
+#holes#
+Number of holes: 4
+nh / ind / x(cm) / y(cm) / z(cm) / shape(rect-round) / sizex(cm) / sizez(cm)
+/ angx(deg) / angz(deg) / accx(deg) / accz(deg)
+h1:	1	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+h2:	2	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+h3:	3	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+h4:	4	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
+\end{verbatim}
+
+{ \subsubsubsubsection{Parameters} }
+\begin{description}
+
+\item[Model (cyl/pol):] The collimator could be either cylindrical or polygonal (flat faces). In both cases, the holes are supposed to be parallel to detector plane.
+
+\item[Collimator radius (cm):] In case of polygonal collimator, the radius refers to the apothem, i.e., radius of rotation. This is the radial distance from the central axis to the center of the face of the collimator.
+
+\item[Wall thickness (cm):] Thickness of the face of the collimator.
+
+\item[Number of holes:] The number of holes is the total, considering all angular projections and rings. 
+
+\item[nh:] For each hole, the following information should be introduced in rows (value previous to ``:" is a label and is not read).
+
+\begin{description}
+
+\item[ind:] Index from 1 to the number of detector elements defining which detection element the hole projects to. In case one hole projects to more than one detector element, it should be added twice, once for each detector element using the relative position to that detector element. Assign the same detector element index to different holes to indicate that they project to the same detector element.
+
+\item[x, y, z coordinate (cm):] \textit{Polygonal collimator:} Center of the hole in the collimator plane. That is, 0. 0. 0. refers to the middle of the collimator face and in the middle of the collimator wall. Coordinates x, z refer to spatial position in the plane (transaxial and axial, respectively) and y is the radial position of the hole in the wall thickness, so it should be kept between $\pm$~wall\_thickness/2. \textbf{Note:} The collimator coordinate system is a right-handed coordinate system (see Fig.~\ref{PinholeSPECTUB_coords}). When the detector and collimator are at 0 $\mathrm{\deg}$, the axial and transaxial axes coincide with STIR's coordinate system whereas the collimator y-axis points radially outward toward the detector. \\ \textit{Cylindrical collimator:} Replace x(cm) y(cm) z(cm) with ang(deg) y(cm) z(cm) for cylindrical coordinates. 
+
+\item[shape (rect-round):] rect or round depending on if the hole has rectangular or round shape, respectively.
+
+\item[x, z hole size (cm):] Hole dimensions in the x (transaxial) and z (axial) directions.
+
+\item[x, z angle (deg):] Angle by which to tilt the central axis of the hole in the x and z directions. \textbf{Note:} The normal of a pinhole with a 0 $\mathrm{\deg}$ tilt lies along the y-axis (i.e., pointing toward the detector). A positive tilt angle will rotate the normal toward the indicated axis by the defined amount.
+
+\item[x, z acceptance angles (deg):] Aperture with respect to the hole axis given by half of the total acceptance angle.
+
+\end{description}
+\end{description}
+
 
 { \subsubsubsection{From File} }
 \label{sec:projmatrixfromfile}
@@ -4229,7 +5393,7 @@ In addition to the types listed below, you can also enter 'None',
 which means that the data won't be normalised at all.
 
 { \subsubsubsection{From Projdata}
-}
+}\label{sec:binnormalisationFromProjData}
 This can be used when the normalisation factors are stored simply 
 as projection data. Currently, these data have to have exactly 
 the same characteristics (size etc.) as the projection data which 
@@ -4323,14 +5487,42 @@ Bin Normalisation to apply second:= some_bin_normalisation_type
 END Chained Bin Normalisation Parameters:=
 \end{verbatim}
 
-See also online documentation for class ChainedBinNormalisation.
+See also online documentation for class \texttt{ChainedBinNormalisation}.
+
+{ \subsubsubsection{SPECT }
+}
+\label{sec:SPECTbinnormalisation}
+This can be used to apply decay correction and uniformity for SPECT. You need to specify the folder where the data and uniformity table are. In addition, for the decay correction it is necessary to specify how many detector heads the scanner has, the acquisition time per angular position, and  the half life of the radioisotope.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Bin Normalisation type := SPECT
+   Bin Normalisation SPECT:=
+      folder_prefix:=folder_prefix
+      projdata filename:=input_sino
+      use_uniformity_factors :=0
+      uniformity_filename:=uniformity_table.dat
+      use_decay_correction:=1
+     
+      half_life:=21600 ;seconds
+      num detector heads:=3
+      rel_angle:=120
+      
+      ;the following is the time of a head position
+      view_time_interval:=15 ;seconds
+
+   End Bin Normalisation SPECT:=
+\end{verbatim}
+
 
 \subsubsection{
 Available shapes}
 \label{sec:shapes}
 \textbf{STIR} can use shapes, \textit{e.g.} in the \texttt{generate\_image}
-utility, or for specifying ROIs. The distribution contains sample parameter files in the
-\textbf{samples} directory. In the following sub-sections the available shapes are listed.
+utility (see section \ref{sec:generate_image}), or for specifying ROIs, see \ref{sec:list_ROI_values}.
+The distribution contains sample parameter files in the
+\texttt{samples} directory. In the following sub-sections the available shapes are listed.
 
 Most shapes have a centre and orientation. This is specified in the parameter files
 by giving the ``origin'' and a $3x3$ matrix specifying $3$ direction vectors.
@@ -4406,21 +5598,27 @@ In addition, this shape can be restricted to a wedge by specifying initial and f
 
 { \subsubsubsection{Discretised Shape3D}
 }
-This shape can be used to read for instance saved ROIs. Image values are supposed to be between $0$ and $1$.
+This shape can be used to read for instance saved ROIs. This class supports 2 options:
+\begin{itemize}
+  \item a label-image with associated label index (an integer), suitable for multiple ROIs in a single file.
+  \item a ``weight" image, with (potentially) smooth edges, where voxel values
+    are supposed to be between $0$ and $1$.
+\end{itemize}
 Note that centre and orientation are taken from the image data, not from the parameter file.
 { \subsubsubsubsection{Parameters}
 }
 \begin{verbatim}
   Discretised Shape3D Parameters:=
     input filename := <filename>
+    ; optional member (if not set, or negative, STIR will use the image as weights
+    label index := <int>
   END:=
 \end{verbatim}
 where \texttt{filename} needs to specify a volume that can be read by STIR.
 
 
 \subsection{
-Display}
-
+Display}\label{sec:display}
 Some of the programs (e.g. in utilities/, recon\_tests/) use 
 the display routines. Which version is actually used depends 
 on the compilation settings (in particular the \textit{GRAPHICS} cmake 
@@ -4429,7 +5627,9 @@ variable), see section \ref{sec:UsingCMake}.
 
 \subsubsection{
 X Windows display}
-\label{sec:display}
+\label{sec:displayX}
+\textbf{Warning} This functionality is deprecated and will be removed in a next version.
+
 This provides a (very basic) way of displaying bitmaps when using 
 X windows. This works by creating a new window where some of 
 the bitmaps are displayed. To proceed, you have to make this 
@@ -4514,25 +5714,42 @@ in terms of classes that actually end up in the library.}
 
 See the doxygen documentation for an overview of the directory tree with brief descriptions.
 
+\section{Using STIR in an external C++ project
+\label{sec:ExternalProjectC++}}
+STIR exports its CMake settings. Therefore, an external project can do
+\begin{verbatim}
+find_package(STIR 6.0 REQUIRED CONFIG)
+add_library(my_lib file1.cxx file2.cxx)
+# my_lib uses STIR functionality
+target_link_libraries(my_lib PUBLIC ${STIR_LIBRARIES})
+add_executable(my_exe my_exe.cxx ${STIR_REGISTRIES})
+target_link_libraries(my_exe PUBLIC my_lib))
+\end{verbatim}
+In addition, if your CMake is older than 3.12, you need to add
+\begin{verbatim}
+include_directories("${STIR_INCLUDE_DIRS}")
+\end{verbatim}
+to your CMakeLists.txt file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
+(For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
+a list of compiled files).
+
+A fully working example is provided in the \texttt{examples/C++} folder, see also the
+\url{https://github.com/UCL/STIR/tree/master/examples/C\%2B\%2B/using_installed_STIR}{using\_installed\_STIR folder on GitHub}.
+
+Note that if CMake did not find the STIR files, you can point it to where they are installed.
+For example, if you installed STIR with
+\texttt{CMAKE\_INSTALL\_PREFIX=\$HOME/install}, set
+\texttt{CMAKE\_PREFIX\_PATH=\$HOME/install} or \texttt{STIR\_DIR=\$HOME/install/lib/cmake/STIR-6.0}.
+\footnote{This uses CMake Config mode for \texttt{find\_package}. There is no need for a \texttt{FindSTIR.cmake}}
+
 \section{
 Future developments and Support}
 
 The \textit{STIR} library, in its current state, possesses many capabilities. 
 The developers, however, look forward to still further increases 
-in the flexibility and power of the software. Some of the developments 
-being discussed are:
-
-\begin{itemize}
-\item
-expanded library of polymorphic classes (e.g. image grids, and 
-ordered subsets)
-\item
-additional scanners, also for SPECT
-\item
-additional data formats support, without conversion to Interfile.
-\item
-point-spread function reconstruction
-\end{itemize}
+in the flexibility and power of the software.
+Please check the \url{https://github.com/UCL/STIR/milestones}{GitHub milestones}
+for some information.
 
 
 While support for the library is on a voluntary basis, users 
@@ -4541,34 +5758,11 @@ mailing lists (see the `Mailing Lists' section of the \textit{STIR} website
 \url{http://stir.sourceforge.net/ }{http://stir.sourceforge.net}) 
 where they can follow developments of the software and obtain 
 helpful information from other users. Questions will ONLY be 
-answered (if at all) when directed to the mailing list.
+answered (if at all) when creating a \url{https://github.com/UCL/STIR/issues}{GitHub issue} (preferred) or
+when directed to the mailing list.
 
 Commercial support is available from \url{http://asc.uk.com}{Algorithms and
 Software Consulting Ltd}.
-
-Below, we list of some of the features that might make it into the next releases. 
-However, which feature is actually finalised/implemented depends 
-on the needs of the developers. If you want one of these features 
-and are willing to help, let us know.
-\begin{itemize}
-\item
-More automatic testing programs
-\item
-More algorithms: potentially ART,  
-OSCB [Ben99b] 
-\item
-More projectors
-\item
-More priors
-\item
-Extending the parallelisation of OSMAPOSL and OSSPS to FBP3DRP etc, or using OPEMMP
-\item
-Compatibility of the interpolating backprojector with recent 
-processors.
-\item
-More kinetic models: Spectral Analysis, Logan Plot
-\end{itemize}
-
 
 
 
@@ -4576,7 +5770,7 @@ More kinetic models: Spectral Analysis, Logan Plot
 \section{
 References}
 
-{[}Ahn2003] S. Ahn and J. A. Fessler, \textit{Globally convergent image reconstruction for
+\tab {[}Ahn2003] S. Ahn and J. A. Fessler, \textit{Globally convergent image reconstruction for
 emission tomography using relaxed ordered subsets algorithms,} IEEE
 Trans. Med. Imag., vol. 22, no. 3, pp. 613-626, May 2003.
 
@@ -4638,6 +5832,8 @@ beamwise backprojection using geometrical symmetries for 3D PET
 reconstruction in a cylindrical scanner geometry. \textit{Phys Med. 
 Biol.}, 43: 3009-3024.
 
+{[}Ehr16{]} Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others \textbf{(2016)}, 
+PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
 
 {[}Gem84] Geman S and Geman D \textbf{(1984)} Stochastic relaxation, 
 Gibbs distributions, and the Bayesian restoration of images. \textit{IEEE 
@@ -4667,16 +5863,9 @@ New York}.
 reconstruction using ordered subsets of projection data. \textit{IEEE 
 Trans. Med. Imaging}, MI-13: 601-609.
 
-{[}Fus13]  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,
-  \textbf{ (2013)}
-  Integration of advanced 3D SPECT modeling into the open-source STIR framework,
-  \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676
+{[}Fus13]  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans, \textbf{ (2013)} Integration of advanced 3D SPECT modeling into the open-source STIR framework, \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676.
 
-[Fus14{]} Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris
-  Livieratos, Domenec Ros, Kris Thielemans, \textbf{(2014)}
-  Evaluation of the novel 3D SPECT Modelling Algorithm in the
-  STIR Reconstruction Framework: Simple vs. full attenuation correction, 
-  \textit{proc. IEEE MIC 2013}, Seoul, Korea.
+{[}Fus14] Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Domenec Ros, Kris Thielemans, \textbf{(2014)}  Evaluation of the novel 3D SPECT Modelling Algorithm in the STIR Reconstruction Framework: Simple vs. full attenuation correction, \textit{proc. IEEE MIC 2013}, Seoul, Korea.
 
 {[}Jac00] Jacobson M, Levkovitz R, Ben-Tal A, Thielemans K, Spinks 
 T, Belluzzo D, Pagani E, Bettinardi V, Gilardi M C, Zverovich 
@@ -4747,6 +5936,12 @@ A and Levkovitz R \textbf{(1999)} The ordered sets mirror descent and
 conjugate barrier optimization algorithms adapted to the 3D PET 
 reconstruction problem. Technion internal report and PhD thesis of T. Margalit
 
+[Mar18] Markiewicz P J, Ehrhardt M J, Erlandsson K, Noonan P J, Barnes A, Schott J M, 
+Atkinson D, Arridge S R, Hutton B F, Ourselin S \textbf{(2018)}, 
+NiftyPET: a High-throughput Software Platform for High 
+Quantitative Accuracy and Precision PET Imaging and Analysis.
+\textit { Neuroinformatics }, 16(1): 95-115.
+
 {[}Mus01] Mustafovic S and Thielemans K, \textbf{(2001)} Additive and Multiplicative 
 versions of the Maximum A Posteriori Algorithm with the Median 
 Root Prior. poster at \textit{IEEE Med. Img. Conf. 2001.}
@@ -4802,21 +5997,23 @@ in high-resolution PET incorporating scattered and random events. \textit{IEEE T
 Med Imaging}, vol. 27, 1018-1033, 
 \url{http://dx.doi.org/10.1109/TMI.2008.917248}{doi 10.1109/TMI.2008.917248}.
 
-
  {[}Rea98] Reader A J, Visvikis A, Erlandsson K, Ott R J, and Flower 
 M A \textbf{(1998)} Intercomparison of four reconstruction techniques 
 for positron volume imaging with rotating planar detectors. \textit{Phys. 
 Med. Biol.}, 43: 823-34.
 
-
 {[}She82] Shepp L A and Vardi Y \textbf{(1982)} Maximum likelihood reconstruction 
 for emission tomography. \textit{IEEE Trans. Med. Imaging}, 1: 113-122.
-
 
 {[}Sil90] Silverman B W, Jones M C, Wilson J D, and Nychka D W \textbf{(1990)} 
 A smoothed EM approach to indirect estimation problems, with 
 particular reference to stereology and emission tomography. \textit{J. 
 Roy. Stat. Soc}., 52: 271-324. 
+
+[Str22a] Strugari M, Falcon C, Erlandsson K, Hutton B, Reid G A, Pottie I, Darvesh S, Beyea S, Brewer K and Thielemans K, \textbf{(2022)} Integration of advanced 3D SPECT modelling for pinhole collimators into the open-source STIR framework, \textit{proc. IEEE MIC 2022}, Milan, Italy.
+
+[Str22b] Strugari M, DeBay D, Beyea S, and Brewer K, \textbf{(2022)} NEMA NU 1-2018 performance characterization and Monte Carlo model validation 
+of the Cubresa Spark SiPM-based preclinical spect scanner. \textit{EJNMMI Phys}. Preprint. \url{https://doi.org/10.21203/rs.3.rs-1946160/v1}{doi /10.21203/rs.3.rs-1946160/v1}.
 
 {[}Thi07{]} Thielemans K, Manjeshwar R, Tsoumpas C and Jansen F\textbf{(2007)}, 
 A new algorithm for scaling of PET scatter estimates using all coincidence events. 
@@ -4864,10 +6061,10 @@ A single-scatter simulation technique for scatter correction in 3D PET.
 {[}Wat00{]} Watson C C \textbf{(2000)}, New, faster, image-based scatter correction for 3D PET. 
 \textit { IEEE Trans Nucl Sci } 47(4): 1587-1594. 
 
-{[}Wat04{]} Watson C C, Casey M E, Michel C, Bendriem B\textbf{(2004)}, 
+{[}Wat04{]} Watson C C, Casey M E, Michel C, Bendriem B \textbf{(2004)}, 
 Advances in scatter correction for 3D PET/CT. \textit { IEEE Nucl Sci Symp Med Imaging Conf } 3008 - 3012. 
 
-{[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G\textbf{(2002)}, 
+{[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G \textbf{(2002)}, 
 Fast implementation of the single scatter simulation algorithm and its use in iterative image 
 reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
 

@@ -14,15 +14,7 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -38,19 +30,18 @@ START_NAMESPACE_STIR
 class ProjData;
 class Bin;
 class DataSymmetriesForBins;
-/*! 
+/*!
   \ingroup recon_buildblock
-  \brief This class contains all information about a set of bins related 
+  \brief This class contains all information about a set of bins related
   by symmetry.
 */
 
-class RelatedBins 
+class RelatedBins
 {
 public:
- //! typedefs for iterator support
+  //! typedefs for iterator support
 
-
-  typedef std::random_access_iterator_tag iterator_category;  
+  typedef std::random_access_iterator_tag iterator_category;
   typedef Bin value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
@@ -58,15 +49,10 @@ public:
   typedef std::size_t size_type;
 
   //! typedefs to make it partly comply with STL requirements
-#ifndef STIR_NO_NAMESPACES
   typedef std::vector<Bin>::iterator iterator;
   typedef std::vector<Bin>::const_iterator const_iterator;
-#else
-  typedef vector<Bin>::iterator iterator;
-  typedef vector<Bin>::const_iterator const_iterator;
-#endif
-   //!Default constructor: creates no bins, no symmetries  
-  inline  RelatedBins();
+  //! Default constructor: creates no bins, no symmetries
+  inline RelatedBins();
 
   //! get the number of related bins
   inline int get_num_related_bins() const;
@@ -74,36 +60,31 @@ public:
   //! get 'basic' bin coordinates
   inline Bin get_basic_bin() const;
 
-  // get the pointer to a ProjDataInfo class 
-  // inline const ProjDataInfo * get_proj_data_info_ptr() const;
+  // get the pointer to a ProjDataInfo class
+  // inline const ProjDataInfo * get_proj_data_info_sptr() const;
 
   //! return the symmetries used
-  inline const DataSymmetriesForBins* get_symmetries_ptr() const ;
- 
+  inline const DataSymmetriesForBins* get_symmetries_ptr() const;
+
   //! get an empty copy
   RelatedBins get_empty_copy() const;
 
- // basic iterator support
+  // basic iterator support
 
   //! use to initialise an iterator to the first element of the vector
-   inline iterator begin();
-   //! iterator 'past' the last element of the vector
-   inline iterator end();
-    //! use to initialise an iterator to the first element of the (const) vector
-   inline const_iterator begin() const;
-   //! iterator 'past' the last element of the (const) vector
-   inline const_iterator end() const;
-
-
+  inline iterator begin();
+  //! iterator 'past' the last element of the vector
+  inline iterator end();
+  //! use to initialise an iterator to the first element of the (const) vector
+  inline const_iterator begin() const;
+  //! iterator 'past' the last element of the (const) vector
+  inline const_iterator end() const;
 
 private:
-   std::vector<Bin> related_bins;
-   shared_ptr<DataSymmetriesForBins> symmetries;
-     //! a private constructor which sets the members
-  inline RelatedBins(const std::vector<Bin>& related_bins,
-                     const shared_ptr<DataSymmetriesForBins>& symmetries_used);
- 
-
+  std::vector<Bin> related_bins;
+  shared_ptr<DataSymmetriesForBins> symmetries;
+  //! a private constructor which sets the members
+  inline RelatedBins(const std::vector<Bin>& related_bins, const shared_ptr<DataSymmetriesForBins>& symmetries_used);
 };
 
 END_NAMESPACE_STIR
@@ -111,5 +92,3 @@ END_NAMESPACE_STIR
 #include "stir/recon_buildblock/RelatedBins.inl"
 
 #endif //__RelatedBins_H__
-
-

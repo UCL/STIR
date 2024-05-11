@@ -16,41 +16,37 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
 #ifndef __BackProjectorByBinUsingInterpolation_h_
 #define __BackProjectorByBinUsingInterpolation_h_
 
-#include "stir/recon_buildblock/BackProjectorByBin.h" 
+#include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT> class Viewgram;
-template <typename elemT> class RelatedViewgrams;
-template <typename elemT> class VoxelsOnCartesianGrid;
-template <int num_dimensions, typename elemT> class Array;
+template <typename elemT>
+class Viewgram;
+template <typename elemT>
+class RelatedViewgrams;
+template <typename elemT>
+class VoxelsOnCartesianGrid;
+template <int num_dimensions, typename elemT>
+class Array;
 class ProjDataInfo;
 class ProjDataInfoCylindricalArcCorr;
 class DataSymmetriesForBins_PET_CartesianGrid;
 /*!
   \brief
-  The next class is used in BackProjectorByBinUsingInterpolation 
+  The next class is used in BackProjectorByBinUsingInterpolation
   to take geometric things
   into account. It also includes some normalisation. (internal use only).
-  
-  \internal 
+
+  \internal
 
   Use as follows:
   \code
@@ -59,8 +55,7 @@ class DataSymmetriesForBins_PET_CartesianGrid;
   \endcode
  */
 
-
-class JacobianForIntBP 
+class JacobianForIntBP
 {
 private:
   // store some scanner related data to avoid recomputation
@@ -77,19 +72,18 @@ private:
   const bool use_exact_Jacobian_now;
 
 public:
-   explicit JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool exact);
+  explicit JacobianForIntBP(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr, bool exact);
 
-   float operator()(const float delta, const float s) const
-   {
-     float tmp;
-     if (use_exact_Jacobian_now)
-       tmp = 4*(R2 - dxy2 * s*s);
-     else
-       tmp = 4*R2;
-     return tmp / pow(tmp + ring_spacing2*delta*delta, 1.5F)* backprojection_normalisation;
-   }
-};     
-
+  float operator()(const float delta, const float s) const
+  {
+    float tmp;
+    if (use_exact_Jacobian_now)
+      tmp = 4 * (R2 - dxy2 * s * s);
+    else
+      tmp = 4 * R2;
+    return tmp / pow(tmp + ring_spacing2 * delta * delta, 1.5F) * backprojection_normalisation;
+  }
+};
 
 /*!
   \ingroup projection
@@ -103,13 +97,13 @@ public:
   <li> piecewise linear interpolation in the axial direction
   </ul>
   The former is an implementation of
-  "Incremental beamwise backprojection using geometrical symmetries for 3D PET reconstruction 
+  "Incremental beamwise backprojection using geometrical symmetries for 3D PET reconstruction
   in a cylindrical scanner geometry"
-  M L Egger, C Joseph, C Morel, Phys. Med. Biol. (1998) 43 3009-3024   
+  M L Egger, C Joseph, C Morel, Phys. Med. Biol. (1998) 43 3009-3024
   http://dx.doi.org/10.1088/0031-9155/43/10/023
 
-  For the latter, see the extended abstract for 3D99 
-  "On various approximations for the projectors in iterative reconstruction algorithms for 
+  For the latter, see the extended abstract for 3D99
+  "On various approximations for the projectors in iterative reconstruction algorithms for
   3D-PET", K. Thielemans, M.W. Jacobson, D. Belluzzo. Available on the STIR web-site.
 
   The piecewise linear interpolation is only used when the axial voxel size is half the
@@ -118,7 +112,7 @@ public:
   \warning This implementation makes various assumptions (for optimal speed):
   <ul>
   <li> voxel_size.x() = voxel_size.y()
-  <li> arc-corrected data 
+  <li> arc-corrected data
   <li> voxel_size.z() is either equal to or half the axial_sampling of the projection data
   </ul>
   When the bin size is not equal to the voxel_size.x(), zoom_viewgrams() is first called to
@@ -129,50 +123,45 @@ public:
   correct results, SunSparc has a problem at tangential_pos_num==0 (also HP
   stations give problems).
 */
-class BackProjectorByBinUsingInterpolation : 
-  public RegisteredParsingObject<BackProjectorByBinUsingInterpolation,
-                                 BackProjectorByBin>
+class BackProjectorByBinUsingInterpolation
+    : public RegisteredParsingObject<BackProjectorByBinUsingInterpolation, BackProjectorByBin>
 
-{ 
+{
 public:
   //! Name which will be used when parsing a BackProjectorByBin object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
-  //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian 
-  explicit 
-    BackProjectorByBinUsingInterpolation(
-      const bool use_piecewise_linear_interpolation = true, 
-      const bool use_exact_Jacobian = true);
+  //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian
+  explicit BackProjectorByBinUsingInterpolation(const bool use_piecewise_linear_interpolation = true,
+                                                const bool use_exact_Jacobian = true);
 
-  //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian 
+  //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian
   /*! \deprecated Use set_up() instead */
-  BackProjectorByBinUsingInterpolation(
-    shared_ptr<ProjDataInfo>const&,
-    shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
-    const bool use_piecewise_linear_interpolation = true, const bool use_exact_Jacobian = true);
+  BackProjectorByBinUsingInterpolation(shared_ptr<const ProjDataInfo> const&,
+                                       shared_ptr<const DiscretisedDensity<3, float>> const& image_info_ptr,
+                                       const bool use_piecewise_linear_interpolation = true,
+                                       const bool use_exact_Jacobian = true);
 
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
-  */
-  virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+   */
+  void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+              const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
+              ) override;
 
   /*! \brief Gets the symmetries used by this backprojector
 
-  \warning This BackProjectorByBin implementation requires that the 
+  \warning This BackProjectorByBin implementation requires that the
   RelatedViewgrams data are constructed with symmetries corresponding
-  to the current member. Using another DataSymmetriesForViewSegmentNumbers 
+  to the current member. Using another DataSymmetriesForViewSegmentNumbers
   object will likely crash the program.
   */
-  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
-  /*! 
-  \brief Use this to switch between the exact Jacobian and 
+  const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override;
+  /*!
+  \brief Use this to switch between the exact Jacobian and
    an approximate Jacobian (valid for s << R).
    */
   void use_exact_Jacobian(const bool use_exact_Jacobian);
-
 
   /*!
   \brief Use this to switch between ordinary linear interpolation and
@@ -180,12 +169,13 @@ public:
   */
   void use_piecewise_linear_interpolation(const bool use_piecewise_linear_interpolation);
 
+  BackProjectorByBinUsingInterpolation* clone() const override;
+
 private:
- 
   // KT 20/06/2001 changed type to enable use of more methods
   shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> symmetries_ptr;
-  //const DataSymmetriesForViewSegmentNumbers * symmetries_ptr;
-  
+  // const DataSymmetriesForViewSegmentNumbers * symmetries_ptr;
+
   bool use_piecewise_linear_interpolation_now;
 
   bool use_exact_Jacobian_now;
@@ -223,41 +213,46 @@ struct ProjDataForIntBP
 };
 #endif
 
- void actual_back_project(DiscretisedDensity<3,float>&,
-                          const RelatedViewgrams<float>&,
-		          const int min_axial_pos_num, const int max_axial_pos_num,
-		          const int min_tangential_pos_num, const int max_tangential_pos_num);
+  void actual_back_project(DiscretisedDensity<3, float>&,
+                           const RelatedViewgrams<float>&,
+                           const int min_axial_pos_num,
+                           const int max_axial_pos_num,
+                           const int min_tangential_pos_num,
+                           const int max_tangential_pos_num) override;
 
+  void actual_back_project(DiscretisedDensity<3, float>&, const Bin&);
 
-  virtual void 
-   back_project_all_symmetries(  VoxelsOnCartesianGrid<float>& image,
-				 const Viewgram<float> & pos_view, 
-				 const Viewgram<float> & neg_view, 
-				 const Viewgram<float> & pos_plus90, 
-				 const Viewgram<float> & neg_plus90, 
-				 const Viewgram<float> & pos_min180, 
-				 const Viewgram<float> & neg_min180, 
-				 const Viewgram<float> & pos_min90, 
-				 const Viewgram<float> & neg_min90,				 
-				 const int min_axial_pos_num, const int max_axial_pos_num,
-				 const int min_tangential_pos_num, const int max_tangential_pos_num);
+  virtual void back_project_all_symmetries(VoxelsOnCartesianGrid<float>& image,
+                                           const Viewgram<float>& pos_view,
+                                           const Viewgram<float>& neg_view,
+                                           const Viewgram<float>& pos_plus90,
+                                           const Viewgram<float>& neg_plus90,
+                                           const Viewgram<float>& pos_min180,
+                                           const Viewgram<float>& neg_min180,
+                                           const Viewgram<float>& pos_min90,
+                                           const Viewgram<float>& neg_min90,
+                                           const int min_axial_pos_num,
+                                           const int max_axial_pos_num,
+                                           const int min_tangential_pos_num,
+                                           const int max_tangential_pos_num);
 
   /*
     This function projects 4 viewgrams related by symmetry.
-    It will be used for view=0 or 45 degrees 
-    (or all others if the above version is not implemented in 
+    It will be used for view=0 or 45 degrees
+    (or all others if the above version is not implemented in
     the derived class)
     Here 0<=view < num_views/2 (= 90 degrees)
     */
 
-  virtual void 
-  back_project_view_plus_90_and_delta(VoxelsOnCartesianGrid<float>& image,
-	                              const Viewgram<float> & pos_view, 
-				      const Viewgram<float> & neg_view, 
-				      const Viewgram<float> & pos_plus90, 
-				      const Viewgram<float> & neg_plus90,					 
-				      const int min_axial_pos_num, const int max_axial_pos_num,
-				      const int min_tangential_pos_num, const int max_tangential_pos_num);
+  virtual void back_project_view_plus_90_and_delta(VoxelsOnCartesianGrid<float>& image,
+                                                   const Viewgram<float>& pos_view,
+                                                   const Viewgram<float>& neg_view,
+                                                   const Viewgram<float>& pos_plus90,
+                                                   const Viewgram<float>& neg_plus90,
+                                                   const int min_axial_pos_num,
+                                                   const int max_axial_pos_num,
+                                                   const int min_tangential_pos_num,
+                                                   const int max_tangential_pos_num);
   /*
   void back_project_2D_view_plus_90(const PETSinogram<float> &sino, PETPlane &image, int view,
                                const int min_bin_num, const intmax_tangential_pos_num);
@@ -265,47 +260,61 @@ struct ProjDataForIntBP
                                     const int min_bin_num, const intmax_tangential_pos_num);
 */
 
+  /*
 
-/* 
+    These functions use a 3D version of Cho's algorithm for backprojecting incrementally.
+    See M. Egger's thesis for details.
+    In addition to the symmetries mentioned above, they also use s,-s symmetry
+    (while being careful when s=0 to avoid self-symmetric cases)
+    */
 
-  These functions use a 3D version of Cho's algorithm for backprojecting incrementally.
-  See M. Egger's thesis for details.
-  In addition to the symmetries mentioned above, they also use s,-s symmetry 
-  (while being careful when s=0 to avoid self-symmetric cases)
-  */
+  static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90(
+      Array<4, float> const& Projptr,
+      VoxelsOnCartesianGrid<float>& image,
+      const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+      float delta,
+      const double cphi,
+      const double sphi,
+      int s,
+      int ax_pos0,
+      const int num_planes_per_axial_pos,
+      const float axial_pos_to_z_offset);
 
+  static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(
+      Array<4, float> const& Projptr,
+      VoxelsOnCartesianGrid<float>& image,
+      const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+      float delta,
+      const double cphi,
+      const double sphi,
+      int s,
+      int ax_pos0,
+      const int num_planes_per_axial_pos,
+      const float axial_pos_to_z_offset);
 
- static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90(Array<4, float > const & Projptr,
-                                     VoxelsOnCartesianGrid<float>& image,				     
-				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
-                                     float delta,
-                                     const double cphi, const double sphi, int s, int ax_pos0, 
-				     const int num_planes_per_axial_pos,
-				     const float axial_pos_to_z_offset);
+  static void
+  linear_interpolation_backproj3D_Cho_view_viewplus90(Array<4, float> const& Projptr,
+                                                      VoxelsOnCartesianGrid<float>& image,
+                                                      const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+                                                      float delta,
+                                                      const double cphi,
+                                                      const double sphi,
+                                                      int s,
+                                                      int ax_pos0,
+                                                      const int num_planes_per_axial_pos,
+                                                      const float axial_pos_to_z_offset);
 
- static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
-                                                         VoxelsOnCartesianGrid<float>& image,							 
-							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
-                                                         float delta,
-                                                          const double cphi, const double sphi, int s, int ax_pos0,
-                                                          const int num_planes_per_axial_pos,
-							  const float axial_pos_to_z_offset);
-
-  static void linear_interpolation_backproj3D_Cho_view_viewplus90(Array<4, float > const & Projptr,
-                                     VoxelsOnCartesianGrid<float>& image,				     
-				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
-                                     float delta,
-                                     const double cphi, const double sphi, int s, int ax_pos0, 
-				     const int num_planes_per_axial_pos,
-				     const float axial_pos_to_z_offset);
-
- static void linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
-                                                         VoxelsOnCartesianGrid<float>& image,							 
-							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
-                                                         float delta,
-                                                          const double cphi, const double sphi, int s, int ax_pos0,
-                                                          const int num_planes_per_axial_pos,
-							  const float axial_pos_to_z_offset);
+  static void linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(
+      Array<4, float> const& Projptr,
+      VoxelsOnCartesianGrid<float>& image,
+      const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+      float delta,
+      const double cphi,
+      const double sphi,
+      int s,
+      int ax_pos0,
+      const int num_planes_per_axial_pos,
+      const float axial_pos_to_z_offset);
 
   /*
 static void   backproj2D_Cho_view_viewplus90( PETPlane & image,
@@ -317,13 +326,10 @@ static void   backproj2D_Cho_view_viewplus90( PETPlane & image,
                                     const double cphi, const double sphi, int s);
 
 */
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-
+  void set_defaults() override;
+  void initialise_keymap() override;
 };
 
 END_NAMESPACE_STIR
 
-
 #endif // __BackProjectorByBinUsingInterpolation_h_
-

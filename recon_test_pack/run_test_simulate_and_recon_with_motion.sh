@@ -7,15 +7,7 @@
 #  Copyright (C) 2013 - 2014, University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #
@@ -23,7 +15,13 @@
 # Author Kris Thielemans
 # 
 
-echo This script should work with STIR version 2.4 and 3.0. If you have
+# Scripts should exit with error code when a test fails:
+if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
+    set -e
+fi
+
+echo This script should work with STIR version 5.2. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -115,15 +113,16 @@ if [ $? -ne 0 ]; then
   echo "ERROR running warp_and_accumulate_gated_images"; exit 1;
 fi
 
-echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
-template_sino=my_DSTE_3D_rd2_template.hs
+echo "===  create template sinogram (DSTE in 3D with max ring diff 3 to save time)"
+template_sino=my_DSTE_3D_rd3_template.hs
 cat > my_input.txt <<EOF
 Discovery STE
+
 1
 n
 
-0
 2
+3
 EOF
 create_projdata_template  ${template_sino} < my_input.txt > my_create_${template_sino}.log 2>&1
 if [ $? -ne 0 ]; then 
@@ -182,6 +181,9 @@ fi
 if [ -z "${error_log_files}" ]; then
  echo "All tests OK!"
  echo "You can remove all output using \"rm -f my_*\""
+ exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail ${error_log_files}
+ exit 1
 fi

@@ -1,0 +1,163 @@
+# The original *cmake.in file is part of STIR.
+#
+# Author: Kris Thielemans
+# Author Richard Brown
+# Copyright 2016, 2019, 2020, 2022, 2023 University College London
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0.txt
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+# This file sets STIR_INCLUDE_DIRS, STIR_LIBRARIES and STIR_REGISTRIES.
+# It also finds the packages that were used to build STIR as you need those
+# to link against etc. It should normally not be required that you know about
+# these, as they should be automatically added to the dependencies of the STIR
+# libraries. Therefore, if you make a target that depends on ${STIR_LIBRARIES},
+# its include_directories and linkage should automagically be ok.
+#
+# Usage is like this
+#
+#  find_package(STIR 5.1 CONFIG)
+#  add_executable(my_exe ${STIR_REGISTRIES})
+#  target_link_libraries(my_exe ${STIR_LIBRARIES})
+#
+# In addition, if your CMake (or the version used to compile STIR) is older than 3.12,
+# you need to add
+#
+#  include_directories("${STIR_INCLUDE_DIRS}")
+#
+# to your CMake file to get the source files listed in STIR_REGISTRIES to compile.
+# For more recent CMake, this should not be necessary (as STIR_REGISTRIES is then set to
+# a list of compiled files).
+
+# This file also sets variables such as STIR_BUILT_WITH_ITK, STIR_BUILT_WITH_OpenMP etc
+# in case you need to how it was built.
+@PACKAGE_INIT@ 
+
+# add folder where this file resides to the cmake path such that it can use our find_package modules and .cmake files
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
+
+include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
+
+set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
+# cannot use set_and_check on lists at present
+# https://gitlab.kitware.com/cmake/cmake/issues/16219
+#set(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
+set(STIR_LIBRARIES @STIR_LIBRARIES@)
+
+# Set STIR_REGISTRIES to either a list of source or object files,
+# depending on the CMake version with which STIR was compiled as well as
+# the CMake version that is used to import STIR.
+if (@CMAKE_VERSION@ VERSION_LESS 3.12 OR CMAKE_VERSION VERSION_LESS 3.12)
+   set(STIR_REGISTRIES @PACKAGE_STIR_REGISTRIES@)
+else()
+  set(STIR_REGISTRIES $<TARGET_OBJECTS:stir_registries>)
+endif()
+
+## find external packages
+# we use a trick by Matt McCormick (kitware)
+# to set ITK_DIR etc first before calling find_package
+# to make sure we pick the same version of the external library
+if (STIR_FIND_QUIETLY)
+  SET(STIR_FIND_TYPE "QUIET")
+else()
+  SET(STIR_FIND_TYPE "REQUIRED")
+endif()
+
+if (@ITK_FOUND@)
+  message(STATUS "ITK support in STIR enabled.")
+  set(ITK_DIR "@ITK_DIR@")
+  find_package(ITK ${STIR_FIND_TYPE} CONFIG)
+  if(NOT ITK_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
+  include(${ITK_USE_FILE})
+  set(STIR_BUILT_WITH_ITK TRUE)
+endif()
+
+if (@HDF5_FOUND@)
+  message(STATUS "HDF5 support in STIR enabled.")
+  if (CMAKE_VERSION VERSION_LESS 3.21.0)
+    # should really look for CXX only, as that's all we need. However, this can create conflicts
+    # with older CMake, see https://gitlab.kitware.com/cmake/cmake/-/issues/20909
+    # We try to work-around this by first looking for both C and CXX, and then only for CXX.
+    # Note that this only solves the problem if in the "client" code,
+    # find_package(STIR) is called BEFORE find_package(HDF5)
+    find_package(HDF5 @HDF5_VERSION@ QUIET COMPONENTS C CXX)
+  endif()
+  find_package(HDF5 @HDF5_VERSION@ REQUIRED COMPONENTS CXX )
+  include_directories(${HDF5_INCLUDE_DIRS})
+
+  set(STIR_BUILT_WITH_HDF5 TRUE)
+endif()
+
+if (@LLN_FOUND@)
+  set(HAVE_ECAT ON)
+  message(STATUS "ECAT support in STIR enabled.")
+  # need to add this as stir_ecat7.h etc rely on it
+  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
+  include_directories("@LLN_INCLUDE_DIRS@")
+  set(STIR_BUILT_WITH_LLN_MATRIX TRUE)
+endif()
+
+if (@CERN_ROOT_FOUND@)
+  set(CERN_ROOT_CONFIG @CERN_ROOT_CONFIG@)
+  find_package(CERN_ROOT @CERN_ROOT_VERSION@ REQUIRED ${STIR_FIND_TYPE})
+  message(STATUS "CERN ROOT support in STIR enabled.")
+  set(STIR_BUILT_WITH_CERN_ROOT TRUE)
+endif()
+
+# Following lines are currently not necessary but would need to be enabled
+# if nlohmann_json stops being a header-only library.
+# See buildblock/CMakeLists.xt
+#
+#if (@nlohmann_json_FOUND@)
+#  find_package(nlohmann_json 3.2.0 ${STIR_FIND_TYPE})
+#  set(STIR_BUILD_WITH_nlohmann_json TRUE)
+#endif()
+
+if (@STIR_MPI@)
+  find_package(MPI ${STIR_FIND_TYPE})
+  if(NOT MPI_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
+  set(STIR_BUILT_WITH_MPI TRUE)
+endif()
+
+if(@STIR_OPENMP@)
+  find_package(OpenMP ${STIR_FIND_TYPE})
+  set(STIR_BUILT_WITH_OpenMP TRUE)
+endif()
+
+if(@STIR_WITH_NiftyPET_PROJECTOR@)
+  find_package(CUDAToolkit REQUIRED)
+  find_package(NiftyPET REQUIRED)
+  set(STIR_WITH_NiftyPET_PROJECTOR TRUE)
+endif()
+
+if(@STIR_WITH_Parallelproj_PROJECTOR@)
+  find_package(parallelproj REQUIRED CONFIG)
+  set(STIR_WITH_Parallelproj_PROJECTOR TRUE)
+endif()
+
+SET(STIR_WITH_EXPERIMENTAL @STIR_ENABLE_EXPERIMENTAL@)
+if(STIR_WITH_EXPERIMENTAL)
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
+      add_definitions(-DSTIR_WITH_EXPERIMENTAL)
+    else()
+      add_compile_definitions(STIR_WITH_EXPERIMENTAL)
+    endif()
+else()
+  remove_definitions(-DSTIR_WITH_EXPERIMENTAL)
+endif()
+
+# This version of STIR comes with TOF capabilities
+set(STIR_TOF 1)

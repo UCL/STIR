@@ -5,15 +5,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -24,56 +16,110 @@ set(dir IO)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  OutputFileFormat 
-  OutputFileFormat_default 
-  InterfileOutputFileFormat
-  interfile InterfileHeader InterfilePDFSHeaderSPECT
-  InputFileFormatRegistry 
-  InterfileDynamicDiscretisedDensityOutputFileFormat 
-  InterfileParametricDensityOutputFileFormat
-  GIPL_ImageFormat
+  OutputFileFormat.cxx
+  OutputFileFormat_default.cxx
+  InterfileOutputFileFormat.cxx
+  interfile.cxx
+  InterfileHeader.cxx
+  InterfilePDFSHeaderSPECT.cxx
+  InterfileHeaderSiemens.cxx
+  InputFileFormatRegistry.cxx
+  InterfileDynamicDiscretisedDensityOutputFileFormat.cxx
+  InterfileParametricDiscretisedDensityOutputFileFormat.cxx
+  MultiDynamicDiscretisedDensityOutputFileFormat.cxx
+  MultiParametricDiscretisedDensityOutputFileFormat.cxx
+
+  GIPL_ImageFormat.cxx
+  stir_ecat_common.cxx
 ) 
 
 # we can use IO from the itk library
-if (ITK_FOUND)
+if (HAVE_ITK)
   list(APPEND ${dir_LIB_SOURCES}
-    ITKOutputFileFormat
-    ITKImageInputFileFormat  
+    ITKOutputFileFormat.cxx
+    ITKImageInputFileFormat.cxx
  )
 endif()
 
 if (LLN_FOUND)
  list(APPEND ${dir_LIB_SOURCES}
-    ECAT7OutputFileFormat stir_ecat7 
-    ECAT6OutputFileFormat 
-    stir_ecat_common 
-    ECAT7ParametricDensityOutputFileFormat 
-    ECAT7DynamicDiscretisedDensityOutputFileFormat 
-    ECAT7DynamicDiscretisedDensityInputFileFormat
-    stir_ecat6 ecat6_utils
+    ECAT7OutputFileFormat.cxx stir_ecat7.cxx
+    ECAT6OutputFileFormat.cxx
+    ECAT7ParametricDensityOutputFileFormat.cxx
+    ECAT7DynamicDiscretisedDensityOutputFileFormat.cxx
+    ECAT7DynamicDiscretisedDensityInputFileFormat.cxx
+    stir_ecat6.cxx ecat6_utils.cxx
  )
 endif()
 
-if(AVW_FOUND)
-  list(APPEND ${dir_LIB_SOURCES}
-    stir_AVW
-  )
+if (CERN_ROOT_FOUND)
+ list(APPEND ${dir_LIB_SOURCES}
+    InputStreamFromROOTFile.cxx
+    InputStreamFromROOTFileForCylindricalPET.cxx
+    InputStreamFromROOTFileForECATPET.cxx
+ )
+endif()
+
+if (UPENN_FOUND)
+list(APPEND ${dir_LIB_SOURCES}
+	InputStreamWithRecordsFromUPENN.cxx
+	InputStreamWithRecordsFromUPENNbin.cxx
+	InputStreamWithRecordsFromUPENNtxt.cxx)
+endif()
+
+if (HAVE_HDF5)
+ list(APPEND ${dir_LIB_SOURCES}
+    GEHDF5Wrapper.cxx
+    GEHDF5ListmodeInputFileFormat.cxx
+ )
 endif()
 
 include(stir_lib_target)
 
 if (LLN_FOUND)
-  target_link_libraries(IO ${LLN_LIBRARIES})
+  target_link_libraries(IO PUBLIC ${LLN_LIBRARIES})
 endif()
 
-if (AVW_FOUND)
-  target_link_libraries(IO ${AVW_LIBRARIES})
+if (CERN_ROOT_FOUND)
+  target_include_directories(IO PRIVATE ${CERN_ROOT_INCLUDE_DIRS})
+  if (TARGET ROOT::Tree)
+   target_link_libraries(IO PUBLIC ROOT::Tree)
+  else()
+   target_link_libraries(IO PUBLIC ${CERN_ROOT_LIBRARIES})
+  endif()
 endif()
 
-if (ITK_FOUND) 
-  target_link_libraries(IO ITKCommon ${ITK_LIBRARIES})
+if (HAVE_HDF5)
+  target_link_libraries(IO PUBLIC ${HDF5_CXX_LIBRARIES})
+endif()
+
+if (HAVE_ITK)
+  target_link_libraries(IO PUBLIC ITKCommon ${ITK_LIBRARIES})
+endif()
+
+if (UPENN_FOUND)
+  target_include_directories(IO PUBLIC ${UPENN_INCLUDE_DIR})
+  target_link_libraries(IO PUBLIC ${UPENN_libsss_tof} ${UPENN_libfit} ${UPENN_libdist} ${UPENN_libgeom}
+        ${UPENN_liblor} ${UPENN_liblist} ${UPENN_libmhdr} ${JANSSON_LIBRARY} ${ZLIB_LIBRARY_RELEASE}
+${UPENN_libimagio} ${UPENN_libimagio++})
+endif()
+
+if (HAVE_JSON)
+  # Add the header-only nlohman_json header-only library
+  # Unfortunately, the simple line below exports the dependency while this is really not
+  # necessary.
+  #
+  # target_link_libraries(IO PUBLIC PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
+
+  # So, we currently use an ugly work-around from
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/15415#note_334852
+  # Warning: this will fail once nlohman_json stops being header-only!
+  # In that case, we will need to add it in STIRConfig.cmake.in
+  #
+  get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+  target_include_directories(IO PRIVATE "${TMP}")
 endif()
 
 # currently needed for ParametricDensity (TODO get rid of this somehow?)
-target_link_libraries(IO modelling_buildblock )
-
+target_link_libraries(IO PUBLIC modelling_buildblock )
+target_link_libraries(IO PUBLIC listmode_buildblock)

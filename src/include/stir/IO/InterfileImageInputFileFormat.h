@@ -1,27 +1,19 @@
 //
 //
-#ifndef __stir_IO_InterfileInputFileFormat_h__
-#define __stir_IO_InterfileInputFileFormat_h__
+#ifndef __stir_IO_InterfileImageInputFileFormat_h__
+#define __stir_IO_InterfileImageInputFileFormat_h__
 /*
     Copyright (C) 2006 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::InterfileInputFileFormat
+  \brief Declaration of class stir::InterfileImageInputFileFormat
 
   \author Kris Thielemans
 
@@ -40,41 +32,33 @@ START_NAMESPACE_STIR
 /*! \ingroup IO
 
 */
-class InterfileImageInputFileFormat :
-public InputFileFormat<DiscretisedDensity<3,float> >
+class InterfileImageInputFileFormat : public InputFileFormat<DiscretisedDensity<3, float>>
 {
- public:
-  virtual const std::string
-    get_name() const
-  {  return "Interfile"; }
+public:
+  const std::string get_name() const override { return "Interfile"; }
 
- protected:
-  virtual 
-    bool 
-    actual_can_read(const FileSignature& signature,
-		    std::istream& input) const
+protected:
+  bool actual_can_read(const FileSignature& signature, std::istream& input) const override
   {
     //. todo should check if it's an image
     return is_interfile_signature(signature.get_signature());
   }
 
-  virtual std::auto_ptr<data_type>
-    read_from_file(std::istream& input) const
+  unique_ptr<data_type> read_from_file(std::istream& input) const override
   {
-    std::auto_ptr<data_type> ret(read_interfile_image(input));
+    unique_ptr<data_type> ret(read_interfile_image(input));
     if (is_null_ptr(ret))
       {
-	error("failed to read an Interfile image from stream");
+        error("failed to read an Interfile image from stream");
       }
     return ret;
   }
-  virtual std::auto_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type> read_from_file(const std::string& filename) const override
   {
-    std::auto_ptr<data_type> ret(read_interfile_image(filename));
+    unique_ptr<data_type> ret(read_interfile_image(filename));
     if (is_null_ptr(ret))
       {
-	error("failed to read an Interfile image from file \"%s\"", filename.c_str());
+        error("failed to read an Interfile image from file \"%s\"", filename.c_str());
       }
     return ret;
   }

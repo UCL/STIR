@@ -1,0 +1,9 @@
+lm_to_projdata needs a “time frame definitions file”. This can be 
+any file for which STIR understands time definitions (use get_time_frame_info to check). The simplest option is to use a simple text file, currently only very briefly described in the doxygen for class TimeFrameDefinitions). It goes like this for 4 frames of 5.5s, 3 frames of 10s, a gap of 40s, 1 frame of 10s
+
+	4 5.5
+	3 10
+	0 40
+	1 10
+
+This is the example provided here as the *.fdef file.

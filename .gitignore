@@ -66,6 +66,11 @@ install_manifest.txt
 *.manifest
 *.exp
 
+# Ignore Visual Studio Code User-specific files
+build/
+install/
+.vscode/
+
 # MATLAB
 
 *.pdf
@@ -74,4 +79,22 @@ install_manifest.txt
 # MATLAB
 *.asv
 *.mex*
+
+# Mac
+.DS_Store
+.cproject
+.project
+.settings
+
+# other stuff
+.cache
+*.idea
+*.user
+
+# GATE/ROOT test binary data that should not be saved
+examples/ROOT_files/ROOT_STIR_consistency/Gate_macros/main_GATE_macro_test*.mac
+examples/ROOT_files/ROOT_STIR_consistency/pretest_output/root_data_test*.root
+examples/ROOT_files/ROOT_STIR_consistency/pretest_output/root_header_test*.hroot
+examples/ROOT_files/ROOT_STIR_consistency/*voxel_data_*.*
+examples/ROOT_files/ROOT_STIR_consistency/pretest_output/stir_image*.*
 

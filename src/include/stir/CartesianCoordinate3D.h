@@ -3,12 +3,12 @@
 //
 //
 /*!
-  \file 
-  \ingroup Coordinate 
-  \brief defines the stir::CartesianCoordinate3D<coordT> class 
+  \file
+  \ingroup Coordinate
+  \brief defines the stir::CartesianCoordinate3D<coordT> class
 
-  \author Sanida Mustafovic 
-  \author Kris Thielemans 
+  \author Sanida Mustafovic
+  \author Kris Thielemans
   \author PARAPET project
 
 
@@ -19,19 +19,10 @@
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
-
 
 #include "stir/Coordinate3D.h"
 
@@ -41,7 +32,7 @@
    This work-around relies on the fact that you do not use 'typename'
    in the template parameters (use 'class' instead)
 */
-#define typename
+#  define typename
 #endif
 
 START_NAMESPACE_STIR
@@ -51,12 +42,11 @@ START_NAMESPACE_STIR
   \brief a templated class for 3-dimensional coordinates.
 
   It is derived from Coordinate3D<coordT>. The only new methods are
-   z(),y(),x(), corresponding resp. to 
+   z(),y(),x(), corresponding resp. to
    operator[](1), operator[](2), operator[](3)
 
    \warning The constructor uses the order CartesianCoordinate3D<coordT>(z,y,x)
 */
-
 
 template <class coordT>
 class CartesianCoordinate3D : public Coordinate3D<coordT>
@@ -70,6 +60,7 @@ public:
   inline CartesianCoordinate3D(const coordT&, const coordT&, const coordT&);
   inline CartesianCoordinate3D(const BasicCoordinate<3, coordT>& c);
   inline CartesianCoordinate3D& operator=(const BasicCoordinate<3, coordT>& c);
+  inline CartesianCoordinate3D& operator=(const coordT& c);
 #ifdef OLDDESIGN
   inline CartesianCoordinate3D(const Point3D& p);
 #endif
@@ -80,7 +71,6 @@ public:
   inline coordT y() const;
   inline coordT& x();
   inline coordT x() const;
-
 };
 
 END_NAMESPACE_STIR

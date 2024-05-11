@@ -4,30 +4,21 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
 /*!
 
   \file
-  \ingroup DataProcessor  
+  \ingroup DataProcessor
   \brief Declaration of class stir::ChainedDataProcessor
-    
+
   \author Kris Thielemans
-      
+
 */
 #ifndef __stir_ChainedDataProcessor_H__
 #define __stir_ChainedDataProcessor_H__
-
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
@@ -35,25 +26,24 @@
 
 START_NAMESPACE_STIR
 
-
 /*!
-  \ingroup DataProcessor  
+  \ingroup DataProcessor
   \brief A class in the DataProcessor hierarchy that calls
    2 DataProcessors in sequence.
-  
-  As it is derived from RegisteredParsingObject, it implements all the 
+
+  As it is derived from RegisteredParsingObject, it implements all the
   necessary things to parse parameter files etc.
   \warning The 2 argument version of  ChainedDataProcessor::apply
-  calls the first data processor with a temporary output data with 
-  the same characteristics as the input data. 
-  
+  calls the first data processor with a temporary output data with
+  the same characteristics as the input data.
+
 
   \warning ChainedDataProcessor::set_up builds only the data
-  processor of the first in the data processor chain. This 
+  processor of the first in the data processor chain. This
   is because at this point, we do not really know what the first
-  data processor will do to the data (it might change index 
-  ranges or so), so it is impossible to build the 2nd data 
-  processor without actually letting the first data processor 
+  data processor will do to the data (it might change index
+  ranges or so), so it is impossible to build the 2nd data
+  processor without actually letting the first data processor
   process the data (which might be far too expensive). This is not a real
   problem however, as  ChainedDataProcessor::apply is
   fine as it will  call virtual_set_up for the 2nd
@@ -69,50 +59,32 @@ START_NAMESPACE_STIR
  */
 
 template <typename DataT>
-class ChainedDataProcessor : 
-  public 
-    RegisteredParsingObject<
-        ChainedDataProcessor<DataT>,
-        DataProcessor<DataT>,
-        DataProcessor<DataT>
-    >
+class ChainedDataProcessor
+    : public RegisteredParsingObject<ChainedDataProcessor<DataT>, DataProcessor<DataT>, DataProcessor<DataT>>
 {
 private:
-  typedef 
-    RegisteredParsingObject<
-        ChainedDataProcessor<DataT>,
-        DataProcessor<DataT>,
-        DataProcessor<DataT>
-    >
-    base_type;
+  typedef RegisteredParsingObject<ChainedDataProcessor<DataT>, DataProcessor<DataT>, DataProcessor<DataT>> base_type;
+
 public:
-  static const char * const registered_name; 
-  
+  static const char* const registered_name;
+
   //! Construct given DataProcessor parameters
-  explicit
-  ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > apply_first=
-		       shared_ptr<DataProcessor<DataT> >(),
-		       shared_ptr<DataProcessor<DataT> > apply_second=
-		       shared_ptr<DataProcessor<DataT> >());
-  
+  explicit ChainedDataProcessor(shared_ptr<DataProcessor<DataT>> apply_first = shared_ptr<DataProcessor<DataT>>(),
+                                shared_ptr<DataProcessor<DataT>> apply_second = shared_ptr<DataProcessor<DataT>>());
+
 private:
-  
-  shared_ptr<DataProcessor<DataT> > apply_first;
-  shared_ptr<DataProcessor<DataT> > apply_second;
-  
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  
-  Succeeded virtual_set_up(const DataT& data);
+  shared_ptr<DataProcessor<DataT>> apply_first;
+  shared_ptr<DataProcessor<DataT>> apply_second;
 
-  void  virtual_apply(DataT& out_data, const DataT& in_data) const;
-  void  virtual_apply(DataT& data) const ;
-  
+  void set_defaults() override;
+  void initialise_keymap() override;
+
+  Succeeded virtual_set_up(const DataT& data) override;
+
+  void virtual_apply(DataT& out_data, const DataT& in_data) const override;
+  void virtual_apply(DataT& data) const override;
 };
-
 
 END_NAMESPACE_STIR
 
 #endif
-
-

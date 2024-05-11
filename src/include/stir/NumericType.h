@@ -3,15 +3,7 @@
     Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -20,11 +12,11 @@
 #define __stir_NumericType_H__
 
 /*!
-  \file 
-  \ingroup buildblock 
+  \file
+  \ingroup buildblock
   \brief This file declares the stir::NumericType class.
 
-  \author Kris Thielemans 
+  \author Kris Thielemans
   \author PARAPET project
 */
 /*
@@ -32,11 +24,11 @@
 
   - first version by Kris Thielemans
 
-  - KT 28/07/98 
+  - KT 28/07/98
   added two methods to NumericType:
   inline bool signed_type() const;
   inline bool integer_type() const;
-  
+
   - KT 15/12/99
   removed inlining. Gave troubles with gcc on NT.
   added method that returns Interfile info
@@ -59,16 +51,28 @@ START_NAMESPACE_STIR
   is signed.
   */
 
-
 class NumericType
 {
 public:
-  //! An enum for the supported types. 
-  // BIT has to be the first type, and UNKNOWN_TYPE has to be 
-  // the last name for the implementation of the 2nd NumericType constructor 
+  //! An enum for the supported types.
+  // BIT has to be the first type, and UNKNOWN_TYPE has to be
+  // the last name for the implementation of the 2nd NumericType constructor
   // to work
-  enum Type { BIT, SCHAR, UCHAR, SHORT, USHORT, INT, UINT, LONG, ULONG, 
-	 FLOAT, DOUBLE, UNKNOWN_TYPE };
+  enum Type
+  {
+    BIT,
+    SCHAR,
+    UCHAR,
+    SHORT,
+    USHORT,
+    INT,
+    UINT,
+    LONG,
+    ULONG,
+    FLOAT,
+    DOUBLE,
+    UNKNOWN_TYPE
+  };
 
   //! stores the current type
   Type id;
@@ -78,7 +82,7 @@ public:
 
   //! A constructor to work from named types a la Interfile
   /*!
-   Possible values for \a number_format are 
+   Possible values for \a number_format are
    <tt>bit</tt>, <tt>signed integer</tt>, <tt>unsigned integer</tt>, <tt>float</tt>
    Exact types are determined via the size_in_bytes parameter.
   */
@@ -90,7 +94,7 @@ public:
 
   //! as reported by sizeof(), so it is really size_in_sizeof_char
   std::size_t size_in_bytes() const;
-  
+
   std::size_t size_in_bits() const;
 
   //! returns true for all built-in types, except \c unsigned types
@@ -98,7 +102,6 @@ public:
 
   //! returns true for all built-in types, except \c float and \c double
   bool integer_type() const;
-
 
   //! returns the names and size a la Interfile. see NumericType(const string&,const std::size_t)
   void get_Interfile_info(std::string& number_format, std::size_t& size_in_bytes) const;
@@ -115,40 +118,61 @@ public:
   This is useful when writing code depending on the value of a NumericType enum.
 */
 template <int numeric_type_enum>
-struct TypeForNumericType {};
-
+struct TypeForNumericType
+{
+};
 
 #ifndef DOXYGEN_SKIP // disable definitions when running doxygen to avoid having all of this in the doc
 template <>
-struct TypeForNumericType<NumericType::SCHAR> 
-{ typedef signed char type; };
+struct TypeForNumericType<NumericType::SCHAR>
+{
+  typedef signed char type;
+};
 template <>
-struct TypeForNumericType<NumericType::UCHAR> 
-{ typedef unsigned char type; };
+struct TypeForNumericType<NumericType::UCHAR>
+{
+  typedef unsigned char type;
+};
 template <>
-struct TypeForNumericType<NumericType::SHORT> 
-{ typedef signed short type; };
+struct TypeForNumericType<NumericType::SHORT>
+{
+  typedef signed short type;
+};
 template <>
-struct TypeForNumericType<NumericType::USHORT> 
-{ typedef unsigned short type; };
+struct TypeForNumericType<NumericType::USHORT>
+{
+  typedef unsigned short type;
+};
 template <>
-struct TypeForNumericType<NumericType::INT> 
-{ typedef signed int type; };
+struct TypeForNumericType<NumericType::INT>
+{
+  typedef signed int type;
+};
 template <>
-struct TypeForNumericType<NumericType::UINT> 
-{ typedef unsigned int type; };
+struct TypeForNumericType<NumericType::UINT>
+{
+  typedef unsigned int type;
+};
 template <>
-struct TypeForNumericType<NumericType::LONG> 
-{ typedef signed long type; };
+struct TypeForNumericType<NumericType::LONG>
+{
+  typedef signed long type;
+};
 template <>
-struct TypeForNumericType<NumericType::ULONG> 
-{ typedef unsigned long type; };
+struct TypeForNumericType<NumericType::ULONG>
+{
+  typedef unsigned long type;
+};
 template <>
-struct TypeForNumericType<NumericType::FLOAT> 
-{ typedef float type; };
+struct TypeForNumericType<NumericType::FLOAT>
+{
+  typedef float type;
+};
 template <>
-struct TypeForNumericType<NumericType::DOUBLE> 
-{ typedef double type; };
+struct TypeForNumericType<NumericType::DOUBLE>
+{
+  typedef double type;
+};
 #endif
 
 END_NAMESPACE_STIR

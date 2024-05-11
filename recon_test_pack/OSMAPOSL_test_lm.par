@@ -1,0 +1,39 @@
+OSMAPOSLParameters := 
+objective function type:=  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
+	list mode filename := ${INPUT}
+        additive sinogram := ${ADD_SINO}
+	maximum absolute segment number to process :=  ${MAX_SEG_NUM}
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+   ; use multiple (almost) parallel LORs for every bin in the sinogram 
+   ; to avoid discretisation artefacts
+   number of rays in tangential direction to trace for each bin:= 1
+   ; you could disable some symmetries if you have enough memory
+   ; this would for instance allow you to increase the number of subsets
+   ; do_symmetry_90degrees_min_phi:=0
+  End Ray tracing matrix parameters :=
+
+        Bin Normalisation type := From ProjData
+	  Bin Normalisation From ProjData :=
+	   normalisation projdata filename:= ${NORM_PROJDATA}
+	End Bin Normalisation From ProjData:=
+
+	;num_events_to_use := 100
+        time frame definition filename := ${FRAMES}
+	recompute sensitivity :=1
+	use subset sensitivities:= 0
+	max cache size := ${cache} 
+	recompute cache := ${recompute_cache}
+        recompute sensitivity := ${recompute_sensitivity}
+	sensitivity filename:=  ${SENS}
+	zoom :=  1
+  xy output image size (in pixels) := 100
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
+enforce initial positivity condition:=  1
+number of subsets:= 1
+number of subiterations:= 1
+save estimates at subiteration intervals:= 1
+output filename prefix := ${filename}
+END := 

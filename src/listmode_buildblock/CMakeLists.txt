@@ -5,25 +5,56 @@ set(dir listmode_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	CListEvent 
-	CListModeData 
-	LmToProjData 
-        LmToProjDataBootstrap
-        CListModeDataECAT8_32bit
-        CListRecordECAT8_32bit
+        ListModeData.cxx
+        ListEvent.cxx
+        CListEvent.cxx
+        LmToProjDataAbstract.cxx
+	LmToProjData.cxx
+        LmToProjDataBootstrap.cxx
+	LmToProjDataWithRandomRejection.cxx
+        CListModeDataECAT8_32bit.cxx
+        CListRecordECAT8_32bit.cxx
+	CListModeDataSAFIR.cxx
 )
+
+if (HAVE_HDF5)
+list(APPEND ${dir_LIB_SOURCES}
+        CListModeDataGEHDF5.cxx
+        # CListRecordGEHDF5.cxx
+)
+endif()
 
 if (HAVE_ECAT)
   list(APPEND ${dir_LIB_SOURCES}
-	CListModeDataECAT 
-	CListRecordECAT962 
-	CListRecordECAT966 
+	CListModeDataECAT.cxx
+	CListRecordECAT962.cxx
+	CListRecordECAT966.cxx
   )
 endif()
+
+if (HAVE_UPENN)
+	list(APPEND ${dir_LIB_SOURCES}
+	CListModeDataPENN.cxx
+	CListRecordPENN.cxx)
+endif()
+
+if (HAVE_CERN_ROOT)
+	list(APPEND ${dir_LIB_SOURCES}
+		CListModeDataROOT.cxx
+		CListRecordROOT.cxx
+	)
+endif()
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    NiftyPET_listmode/LmToProjDataNiftyPET.cxx
+  )
+endif()
+
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
 include(stir_lib_target)
 
-target_link_libraries(listmode_buildblock IO data_buildblock )
+target_link_libraries(listmode_buildblock PUBLIC data_buildblock )

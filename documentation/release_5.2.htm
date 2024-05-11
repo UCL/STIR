@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 5.2</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 5.2</h1>
+
+<p>This version is 100% backwards compatible with STIR 5.0 as far as usage goes. However, there are <b> changes in the output of scatter estimation and ECAT8 normalisation</b>, see below for more information.
+</p>
+<h2>Overall summary</h2>
+
+<p>Of course, there is also the usual code-cleanup and 
+  improvements to the documentation. See also <a href="https://github.com/UCL/STIR/milestone/6">the
+    5.2 milestone on GitHub</a>.
+</p>
+    <p>Overall code management and assistance by Kris Thielemans (UCL and ASC). Other main contributors
+    were Daniel Deidda (NPL) and Markus Jehl (Positrigo).</p>
+
+<h2>Patch release info</h2>
+<ul>
+  <li> 5.2.0 released 30/10/2023</li>
+</ul>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+
+<h3>Bug fixes</h3>
+<ul>
+  <li>Scatter estimation was setting initial activity image to 1 at set-up, effectively ignoring the initial image, aside from geometric info.</li>
+  <li>Setting SPECTUB resolution model with STIR python or SIRF divided slope by 10 in error. The problem did not occur when set using parameter file</li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+  <li> The ECAT8 normalisation (used for the Siemens mMR) code now takes the 4th component <i>axial effects</i> into account.
+    These normalisation factors are therefore different (even up to ~10%). This gives improved axial uniformity in the images.
+    The use of the axial effects can be switched off by adding setting <tt>use_axial_effects_factors:=0</tt> to the
+    parameter file (see an example in <tt>examples/Siemens-mMR/correct_projdata_no_axial_effects.par</tt>), or the class member
+    of the same name.<br />
+    In addition, the Siemens normalisation header is now read (using a new class <code>InterfileNormHeaderSiemens</code>) such that
+    hard-coded variables for the Siemens mMR have been removed. Further testing of this functionality is still required however.
+    <br /><a href="https://github.com/UCL/STIR/pull/1182/">PR #1182</a>.
+  </li>
+  <li>Interfile header parsing now correctly identifies keywords that contain a colon by checking for <tt>:=</tt>.</li>
+  <li>
+    The <code>set_up()</code> method of the ray-tracing projection matrix now skips further processing
+    if it was already called with data of the same characteristics. This will means that any cached data
+    will be re-used, potentially leading to a speed-up when re-using it from Python.
+    <br /><a href="https://github.com/UCL/STIR/pull/1281/">PR #1281</a>.
+  </li>
+
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+  <li>The <tt>Discretised Shape3D</tt> shape/ROI has now an extra value <tt>label index</tt>. For ROIs, this allows
+    using a single volume with multiple ROIs encoded as labels, such as output by ITKSnap and many others.
+    When used as a shape in <tt>generate_image</tt>, it could be used to extract a single ROI from such a label image.
+    <br /><a href="https://github.com/UCL/STIR/pull/1196/">PR #1196</a>.
+  </li>
+  <li>Global variables in SPECTUB have been substituted by class members, such that multiple SPECTUB projectors can be used.
+    <br /><a href="https://github.com/UCL/STIR/pull/1169/">PR #1169</a>.
+  </li>
+  <li>Global variables in PinholeSPECTUB have been substituted by class members, such that multiple PinholeSPECTUB projectors can be used.
+    <br /><a href="https://github.com/UCL/STIR/pull/1212/">PR #1212</a>.
+  </li>
+  <li>Scatter estimation is now smoothed in axial direction for BlocksOnCylindrical scanners.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li><code>InverseSSRB</code> now works for BlocksOnCylindrical after a rewrite.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+/  </li>
+  <li>Parallelised function <code>set_fan_data_add_gaps_help</code> across segments to reduce computation time.
+    <br /><a href="https://github.com/UCL/STIR/pull/1168/">PR #1168</a>.
+  </li>
+  <li>New utility <tt>SPECT_dicom_to_interfile</tt> which reads a DICOM file with SPECT projection data and extracts the data and writes one or more Interfile 3.3 headers
+    (still somewhat preliminary).
+    <br /><a href="https://github.com/UCL/STIR/pull/1182/">PR #1182</a>.
+  </li>
+  <li>
+    The new <tt>stir_timings</tt> utility  is mostly useful for developers,
+    but you could use it to optimise the number of OpenMP threads to use for your data.
+    <br /><a href="https://github.com/UCL/STIR/pull/1237/">PR #1237</a>.
+  </li>
+  <li>New classes <code>SegmentIndices</code>, <code>ViewgramIndices</code> and <code>SinogramIndices</code>, used by <code>ProjData</code> related classes, as opposed
+    to having to specify all the elements directly, e.g. in C++
+    <pre>
+      auto sinogram = proj_data.get_sinogram(sinogram_indices);
+    </pre>
+    This makes these functions more future proof, in particular for TOF. The older functions are now deprecated.
+    Note that as <code>Bin</code> is now derived from <code>ViewgramIndices</code>, instantations of <code>Bin</code> can now be used to specify the indices as well in most places.
+    <br/>
+    There is still more work to do here, mostly related to the symmetries.
+    <br /><a href="https://github.com/UCL/STIR/pull/1273/">PR #1273</a>.
+  </li>
+</ul>
+
+<h4>Python (and MATLAB)</h4>
+<ul>
+  <li>Examples use <code>stir.ProjData.read_from_file</code> as opposed to <code>stir.ProjData_read_from_file</code>. The former is supported since SWIG 3.0, and the <a href="https://swig.org/Doc4.1/Python.html#Python_nn20">default from SWIG 4.1</a>.
+  </li>
+  <li>Addition of <code>DetectionPosition</code> and <code>DetectionPositionPair</code>.</li>
+  <li><code>bin.time_frame_num</code> is now no longer a function in Python, but acts like a variable
+    (as the other <code>Bin</code> members).
+  </li>
+  <li>Addition of <code>RadionuclideDB</code></li>
+</ul>
+
+<h3>New examples</h3>
+<ul>
+  <li><tt>examples/python/construct_projdata_demo.py</tt> illustrates constructing a <code>ProjDataInMemory</code></li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+  <li>Scatter estimation was resetting the  activity image to 1 before each iteration. This led to cases where the reconstructed image (and therefore the scatter estimation)
+  did not converge, especially when using a small number of sub-iterations.
+   Now, the reconstructed image is continuouslu updated between scatter iterations by default. This should also allow users to use less sub-iterations, therefore saving some time for the scatter estimation.
+   The old behaviour can be re-enabled by setting <code>restart_reconstruction_every_scatter_iteration</code>
+   to true either via a parameter file or via the <code>set_restart_reconstruction_every_scatter_iteration()</code> function.
+   <br /><a href="https://github.com/UCL/STIR/pull/1160/">PR #1160</a>. 
+  </li>
+  <li>energy resolution functions and keywords have now more documentation. <code>Scanner::check_consistency</code> also checks if the energy resolution is less than 20 (as it is FWHM/reference_energy).
+  <br /><a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.
+  </li>
+  <li>Errors now throw <code>std::runtime_error</code> instead of <code>std::string</code>.
+  <br /><a href="https://github.com/UCL/STIR/pull/1131/">PR #1131</a>.
+  </li>
+  <li>The parameter <code>use_view_offset</code> was removed from the <code>interpolate_projdata</code> functions. View-offset is now always taken into account.
+  <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li>The info, warning and error calls are thread safe now (which makes them slower), and the logging output in <code>distributable.cxx</code> was changed from verbosity 2 (which is the STIR default) to verbosity 3.
+    This is to reduce the default output during iterative reconstructions.
+  <br /><a href="https://github.com/UCL/STIR/pull/1243/">PR #1243</a>.
+  </li>
+  <li>The <code>Succeeded</code> class has a new method <code>bool succeeded()</code> enabling more concise code (avoiding the need for comparing with <code>Succeeded::yes</code> which is especially verbose in Python).
+  </li>
+  <li>The example files for the Siemens mMR now use lower min/max thresholds for the (single) scatter scale. This gives better results, see <a href="https://github.com/UCL/STIR/issues/1163/">Issue #1163</a>.
+  <br /><a href="https://github.com/UCL/STIR/pull/1279/">PR #1279</a>.
+  </li>
+</ul>
+
+<h3>Deprecated functionality and upcoming changes to required tool versions</h3>
+<ul>
+  <li>The following functions (previously used for upsampling the scatter estimate) have been
+    made obsolete or replaced, and will be removed in STIR version 6.0.0: <code>interpolate_axial_position</code>, <code>extend_sinogram_in_views</code> and <code>extend_segment_in_views</code>
+  </li>
+  <li>Constructors/functions in <code>ProjData</code> related classes that explicitly use <code>axial_pos_num</code>, <code>view_num</code> etc in their arguments are now deprecated,
+    and should be replaced by their respective versions that use <code>SegmentIndices</code>, <code>ViewgramIndices</code> or <code>SinogramIndices</code>. The former will not be
+    compatible with TOF information that will be introduced in version 6.0.0.
+  </li>
+  <li>Use of the AVW library to read Analyze files will be removed in 6.0, as this has not been checked in more than 15 years. Use ITK instead.</li>
+  <li>GE VOLPET and IE support will be removed in 6.0, as we have no files to test this, and it's obsolete anyway.</li>
+  <li>STIR version 6.0.0 will require C++ 14 (currently we require C++ 11, but already support C++ 20) and CMake 3.14.</li>
+</ul>
+
+<h3>Build system and dependencies</h3>
+<ul>
+  <li>CMake 3.12 is now required on Windows.</li>
+  <li>We now use CMake's <a href=https://gitlab.kitware.com/cmake/community/-/wikis/doc/tutorials/Object-Library>OBJECT library feature</a> for the registries. This avoids re-compilation of the registries for every executable and therefore speeds-up building time. Use of STIR in an external project is not affected as long as the recommended practice was followed. This is now documented in the User's Guide.
+    <br /><a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
+  </li>
+  <li>The <code>error</code> and <code>warning</code> functions are now no longer included from <code>common.h</code> and need to be included manually when used (as was already the case for <code>#include "stir/info.h"</code>).
+    <br /><a href="https://github.com/UCL/STIR/pull/1192/">PR #1192</a>.
+  </li>
+  <li>add .h and .i as dependencies for SWIG generated wrappers to make sure they get rebuild.
+    (Currently adding all .h files, which is too much, but CMake needs a fix before we can do
+    this properly).
+    <br /><a href="https://github.com/UCL/STIR/pull/1218/">PR #1218</a>.
+    </li>
+</ul>
+
+<h3>Changes for developers</h3>
+<ul>
+  <li>moved all functionality in <code>CListEventCylindricalScannerWithDiscreteDetectors</code> to template class
+    <code>CListEventScannerWithDiscreteDetectors</code> (templated in <code>ProjDataInfoT</code>). This enables
+    re-use for generic/blocksoncylindrical scanners.
+    <br /><a href="https://github.com/UCL/STIR/pull/1222/">PR #1222</a>.
+  </li>
+  <li>rewritten <code>ProjDataInMemory</code> to avoid streams, causing a speed-up of some
+    operations, and removing a limit of total size of 2GB.
+    <br /><a href="https://github.com/UCL/STIR/pull/1260/">PR #1260</a>.
+  </li>
+</ul>
+
+
+<h3>Known problems</h3>
+<ul>
+<li>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</li>
+</ul>
+
+
+<h3>Minor (?) bug fixes</h3>
+<ul>
+  <li>Small change in scatter simulation to how non-arccorrected bins are computed. Added a check in the construction of non-arccorrected projdata that the number of tangential bins is not larger than the maximum non-arccorrected bins.
+    <br /><a href="https://github.com/UCL/STIR/pull/1152/">PR #1152</a>.
+  </li>
+  <li><code>extend_segment_in_views</code> does not handle view offsets correctly and does not work for BlocksOnCylindrical scanners <br /><a href="https://github.com/UCL/STIR/issues/1177/">issue #1177</a>. A new function <code>extend_segment</code> was added that works for Cylindrical and BlocksOnCylindrical and allows extension in tangential and axial direction as well.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li><code>sample_function_on_regular_grid</code> did not handle offset correctly in all places <br /><a href="https://github.com/UCL/STIR/issues/1178/">issue #1178</a>.
+    <br /><a href="https://github.com/UCL/STIR/pull/1172/">PR #1172</a>.
+  </li>
+  <li>Ray tracing projection for BlocksOnCylindrical scanner geometries contained a bug where some bins were swapped across oblique segments <br /><a href="https://github.com/UCL/STIR/issues/1223/">issue #1223</a>. This sometimes lead to large artifacts in reconstructions.
+    <br /><a href="https://github.com/UCL/STIR/pull/1231/">PR #1231</a>.
+  </li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+  <li>Updated the STIR developers guide, which was quite out-of-date w.r.t. C++ features etc.</li>
+</ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+  <li>Updated headers of most images and projection data to avoid warnings.</li>
+</ul>
+
+<h3>Other changes to tests</h3>
+<ul>
+  <li><tt>test_Scanner.cxx</tt> tests for energy resolution, <a href="https://github.com/UCL/STIR/pull/1149/">PR #1149</a>.</li>
+  <li>
+    New file <tt>test_interpolate_projdata</tt>, <a href="https://github.com/UCL/STIR/pull/1141/">PR #1141</a>.
+  </li>
+</ul>
+</body>
+
+</html>

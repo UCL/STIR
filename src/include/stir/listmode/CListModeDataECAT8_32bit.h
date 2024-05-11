@@ -2,15 +2,7 @@
     Copyright (C) 2013-2014 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -18,7 +10,7 @@
   \file
   \ingroup listmode
   \brief Declaration of class stir::ecat::CListModeDataECAT8_32bit
-    
+
   \author Kris Thielemans
 */
 
@@ -29,18 +21,17 @@
 #include "stir/listmode/CListRecordECAT8_32bit.h"
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
-#include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include <iostream>
-#include <string>
-#include <utility>
 #include <vector>
 
 START_NAMESPACE_STIR
-namespace ecat {
+namespace ecat
+{
 
 //! A class that reads the listmode data for Siemens scanners
 /*!  \ingroup listmode
-    This file format is currently used by the Siemens Biograph PET/CT and mMR scanners. 
+    This file format is currently used by the Siemens Biograph PET/CT and mMR scanners.
     There's an Interfile-like header and a binary file with the actual list mode data.
     The name of the binary file is given by the value of the "name of data file" keyword
     in the header.
@@ -54,46 +45,32 @@ public:
   //! Construct fron the filename of the Interfile header
   CListModeDataECAT8_32bit(const std::string& listmode_filename_prefix);
 
-  virtual std::string
-    get_name() const;
+  std::string get_name() const override;
 
-  virtual 
-    shared_ptr <CListRecord> get_empty_record_sptr() const;
+  shared_ptr<CListRecord> get_empty_record_sptr() const override;
 
-  virtual 
-    Succeeded get_next_record(CListRecord& record) const;
+  Succeeded get_next_record(CListRecord& record) const override;
 
-  virtual 
-    Succeeded reset();
+  Succeeded reset() override;
 
-  virtual
-    SavedPosition save_get_position();
+  SavedPosition save_get_position() override;
 
-  virtual
-    Succeeded set_get_position(const SavedPosition&);
+  Succeeded set_get_position(const SavedPosition&) override;
 
   //! returns \c true, as ECAT listmode data stores delayed events (and prompts)
   /*! \todo this might depend on the acquisition parameters */
-  virtual bool has_delayeds() const { return true; }
+  bool has_delayeds() const override { return true; }
 
 private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
-  shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
-  InterfileHeader interfile_parser;
-  // members to store info from the interfile header.
-  // These tell us something about how the listmode is stored.
-  int axial_compression;
-  int maximum_ring_difference;
-  int number_of_projections;
-  int number_of_views;
-  int number_of_segments;
+  shared_ptr<InputStreamWithRecords<CListRecordT, bool>> current_lm_data_ptr;
+
+  InterfileListmodeHeaderSiemens interfile_parser;
+
   // std::vector<int> segment_table;
 
   Succeeded open_lm_file();
-
-
 };
 
 } // namespace ecat

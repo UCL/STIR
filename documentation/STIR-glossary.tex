@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{graphicx}
 \usepackage{hyperref}
-
+\usepackage{caption}
 \newcommand{\tab}{\hspace{5mm}}
 
 \begin{document}
@@ -14,11 +14,15 @@
 \end{center}
 
 \begin{center}
-\textit{Version 3.0}\\
+\textit{Version 6.0}\\
 Originally based on PARAPET Deliverable 4.1,
 Extended for Quantitative Reconstruction and motion compensation
 
 \end{center}
+
+SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+
+See STIR/LICENSE.txt for details.
 
 \section*{Introduction}
 The purpose of this document is to define the terms used by STIR, as not everyone in the nuclear 
@@ -26,35 +30,47 @@ medicine community uses the same words. In addition, it also gives a brief overv
 of data concepts. However, this is all kept brief. Please read additional material, for instance
 [Fah2002].
 
+Most of specifics of this document related to PET scanners, but a lot of terminology has clear
+correspondence for SPECT. However, most SPECT scanners rotate one or more gamma cameras around
+the patient, as opposed to have a ring of detectors.
+
 \section*{Basics}
 
 \begin{description}
-% ROW 2
+
 \item[Geometry] 
 A cylindrical geometry has been chosen to describe positron 
 tomographs made of a number of adjacent detector rings and reconstructed 
 image volumes. The geometry supports consequently two principal 
 directions \textit{axially} along the scanner cylinder and \textit{transaxially} 
 perpendicular to the cylinder axis.
-% ROW 3
+
 \item[Scanner] 
 Geometrically associated to the cylindrical volume defined by 
 the inner dimensions of the positron tomograph.
-% ROW 4
+
 \item[Detector ring ] 
 Geometrically associated to the cylindrical volume defined by 
 the dimensions of a detector ring. Note that because currently 
 Depth of Interaction is not taken into account, the effective ring radius 
 used in the building blocks is the sum of the inner ring radius 
 and an average depth of interaction (e.g. \ensuremath{\sim} 1cm for BGO).
-% ROW 5
+
 \item[Detector] 
 Sometimes called \textbf{detector crystal}. Geometrically associated 
 to the inner face of a detector element. The \textbf{scanner} is then 
 considered as a tessellation of \textbf{detectors} constructing adjacent \textbf{rings}. 
 For many scanners, detectors are organized in a block. For instance, 
-on the HR+ scanner, a detector block consists of 8x8 detectors.
-% ROW 6
+on the HR+ scanner, a detector block consists of 8x8 detectors. Current scanners
+have mini-blocks, related to the read-out.
+Blocks are often organised in \textbf{modules}, currently called \textbf{buckets} in STIR.
+
+\item[Time of Flight (TOF) for PET]
+Many modern PET scanners measure the difference in arrival time of the 2 gamma photons with
+a certain \textbf{TOF timing resolution} (often expressed in ps). In current scanners,
+the TOF information is discretised into \textbf{TOF bins}.
+
+
 \item[LOR (Line-Of-Response)] 
 Line joining the centres of two \textbf{detectors}. Ignoring scatter, 
 attenuation and other physical effects, the average number of 
@@ -65,12 +81,13 @@ nor scatter within the detectors. It can be shown that this line
 integral approximation works best for LORs that do not run parallel 
 to edges within the object. We say that the projector that uses 
 this model is a \textbf{ray tracing} projector.
-% ROW 7
+
 \item[TOR (Tube of response)] 
 Tube joining two \textbf{detectors}. 
-% ROW 8
+
 \item[Sinogram] 
-Set of \textbf{bins} corresponding to 1 segment and 1 \textbf{axial} position. 
+Set of \textbf{bins} corresponding to 1 \textbf{segment} and 1 \textbf{axial} position and (in STIR)
+1 TOF bin.
 Before \textbf{axial compression,} this corresponds to LORs in a \textbf{detector} \textbf{ring} 
 (\textit{direct} \textit{sinogram}) or between two different \textbf{detector} \textbf{rings} 
 (\textit{oblique} \textit{sinogram}). For a \textbf{scanner} of $n$ \textbf{detector 
@@ -79,26 +96,33 @@ sinograms} for a total of $n^2$ \textbf{sinograms}. With \textbf{axial
 compression}, the number of \textbf{direct sinograms} is $2n-1$. Conventionally, 
 the \textbf{view} angle in an oblique sinogram runs only over 180 
 degrees, meaning that only half of the detectors in each ring 
-are covered. The other half corresponds to the \textbf{sinogram} in 
-the opposite \textbf{segment} (with minus the average ring difference),
-% ROW 9
+are covered\footnote{In SPECT, rotations often cover 360 degrees.}.
+The other half corresponds to the \textbf{sinogram} in 
+the opposite \textbf{segment} (with minus the average ring difference).
+
+In PET, the number of tangential positions determines the ``fan-size''. Its maximum is
+equal to the number of detectors per ring. Scanners use far less
+you don’t want to look at coincidences between neighbouring crystals!).
+
 \item[View] 
 The azimuthal angle of an \textbf{LOR} (ignoring \textbf{interleaving}, 
-see the documentation of the ProjDataInfoCylindricalNoArcCorr 
-class, and \textbf{mashing}).
-% ROW 10
+see the documentation of the \texttt{ProjDataInfoCylindricalNoArcCorr}
+class).
+The maximum number of views is half the number of detectors per ring
+(this is again due to interleaving).
+
 \item[Bin] 
 A single element in a sinogram, completely specified by its \textbf{segment, 
-axial} \textbf{position, view} and \textbf{tangential position}.
-% ROW 11
-\item[Ring difference] 
+axial} \textbf{position, view}, \textbf{tangential position} and (in PET) \textbf{TOF bin}.
+
+\item[Ring difference (in PET)] 
 Number of \textbf{rings} between two \textbf{rings} associated to a \textbf{sinogram}. 
 If \textit{ringA} and \textit{ringB} are the ring numbers, the \textbf{ring 
 difference} is given by \textit{ringB} -- \textit{ringA}. Thus there can be \textit{positive} 
-and \textit{negative} \textbf{ring differences}. \linebreak
+and \textit{negative} \textbf{ring differences}.\\
 The (average) \textbf{ring difference} of a \textbf{direct sinogram} is 
 zero.
-% ROW 12
+
 \item[Michelogram] 
 Representation of \textbf{sinograms} on a square grid as shown in 
 Annex 1. If \textit{ringA} and \textit{ringB} are the ring numbers associated 
@@ -106,14 +130,14 @@ to a \textbf{sinogram}, \textit{ringA} is represented on the horizontal
 axis and \textit{ringB} on the vertical axis. \textbf{Positive ring differences} 
 are below the line representing \textbf{direct sinograms} and \textbf{negative 
 ring differences} above this line.
-% ROW 13
+
 \item[Segment] 
 Set of \textbf{merged} \textbf{sinograms} with a common average \textbf{ring 
 difference} as shown in Annex 1.
-% ROW 14
+
 \item[Viewgram] 
 Set of equal azimuth \textbf{merged} \textbf{LORs} of a \textbf{segment}.
-% ROW 15
+
 \item[Projection data]
 The set of all (measured) LORs, normally split into \textbf{segments} etc.
 The word ``projection'' is used because after various corrections and
@@ -125,95 +149,119 @@ least 1 \textbf{bin} with non-zero detection probability\textbf{.} In many
 cases, the term is also used for the smaller volume for which 
 there is at least 1 \textbf{bin} with non-zero detection probability 
 for every \textbf{view}. The latter FOV is usually cylindrical.
-% ROW 16
+
 \item[Image slice] 
 Geometrically associated to a cylindrical volume defined by 
 a slice of the \textbf{FOV}. By convention, a \textbf{slice} is half the 
 width of a \textbf{ring}. For a \textbf{scanner} of \textit{n} \textbf{detector} \textbf{rings}, 
 there are 2\textit{n}--1 \textbf{image slices}.
-% ROW 17
+
 \item[Direct plane] 
 \textbf{Image slice} centered on a \textbf{ring}. For a \textbf{scanner} of \textit{n} \textbf{detector} \textbf{rings}, 
 there are \textit{n} \textbf{direct planes}. The \textbf{FOV} is ended by two \textbf{direct 
 planes} centered on the first and last \textbf{rings}.
-% ROW 18
+
 \item[Cross plane] 
 \textbf{Image slice} in between two consecutive \textbf{direct planes}. \textbf{Direct 
 planes} are adjacent to \textbf{cross planes}. For a \textbf{scanner} of \textit{n} \textbf{detector} \textbf{rings}, 
 there are 2\textit{n}--1 \textbf{cross planes}.
 \end{description}
 
-\section*{Different data compressions used in PET data}
+\section*{Different (lossy) data compressions used}
 \begin{description}
-% ROW 21
+
 \item[Trimming] 
 Reduction of the number of \textbf{bins} in tangential direction without 
 changing the size of \textbf{bins}. \textbf{Trimming} is a type of \textbf{bin} 
 truncation.
-% ROW 22
-\item[Angular compression (Mashing)] 
+
+\item[Angular compression (view mashing)] 
 Reduction of the number of \textbf{views} by a multiple of two. As 
 an example, doing a \textbf{mashing} of 2 means that pairs of \textbf{views} 
 have been added 2 by 2 to form only one \textbf{view}.
-% ROW 23
-\item[Axial compression (Span)] 
+
+\item[Axial compression (Span), PET] 
 Reduction of the number of \textbf{sinograms} at different \textbf{ring 
 differences} as shown in Annex 1. \textbf{Span} is a number used by 
-Siemens/CTI to say how much axial compression has been used. It is always 
-an odd number. Higher span, more axial compression. Span 1 means 
-no axial compression. Note that GE scanners uses mixed data, 
-where segment 0 has span 3, while other segments have span 1 (or 2, depending on how you look at it, 
-see the Annex).
+Siemens/CTI to say how much axial compression has been used. 
+Higher span, more axial compression. Span 1 means 
+no axial compression. See the Annex for more information.
+Siemens/CTI always uses odd span. 
+Note that GE scanners uses mixed data, 
+where segment $0$ has span $3$, while other segments have span $2$. 
+In \textbf{STIR}, we call this \textit{span 2}. As a generalisation,
+\textbf{STIR} supports any even span (where segment $0$ has effective
+$\mathrm{span}+1$).
+Finally, for historical reasons \textbf{STIR} also support a different mixed
+format where segment $0$ has span $3$ but higher segments have span $1$,
+or indeed any mix ``spans-per-segment''.
+
+\item[SSRB]
+Originally, single slice rebinning was developed to collapse 3D PET data into non-oblique sinograms.
+In STIR, it is generalised to combine segments, optionally keeping some oblique segments.
+this effectively increases the \textbf{span}.
+
+\item[TOF mashing (PET)]
+Reduction of the number of \textbf{TOF bins} by combining adjacent bins. The \textbf{TOF mashing factor}
+is defined as the ratio of the \textbf{Maximum number of (unmashed) TOF time bins} supported
+by the scanner (in list-mode) over the actual number of TOF bins. Currently in STIR, this
+ratio has to be an integer. The size of a TOF bin is computed by multiplying the
+\textbf{TOF mashing factor} with the \textbf{size of unmashed TOF time bins}, with the latter
+defined as a scanner property.\\
+Note that many PET scanners use a \textbf{TOF mashing factor} greater than 1
+for their standard histogrammed projection data.
+
 \end{description}
 
 \section*{Terms used in quantitative PET reconstruction}
 \begin{description}
-% ROW 24
+
 \item[Scatter Point]
 Coordinate where a scatter event takes place. 
-% ROW 25
+
 \item[SSS - Single scatter simulation]
 Estimation of the probability to measure a coincidence event that one of
 the two photons has been scattered only once. 
-% ROW 26
+
 \item[B-Splines]
 Basis splines are a set of polynomial functions that have minimal support with 
 respect to a given degree, smoothness, and domain partition. In imaging they 
 are useful for performing very fast multidimensional interpolation calculations.
-% ROW 27
+
+
 \item[Inverse-SSRB]
 It is the pseudo-inverse operation of single slice rebinning which can be used 
 as the simplest way to extrapolate direct sinograms into indirect sinograms. 
-% ROW 28
+
 \item[Plasma Data]
 Radioactivity concentration in plasma (and blood) during the scanning acquisition.
 Usually it is measured in $\mathit{kBq/cm^3}$ over a time window of 1 second. 
-% ROW 29
+
 \item[Dynamic Data/Images]
 A stack of projection data or images through time.
-% ROW 30
+
 \item[Kinetic Model]
 The kinetic model describe the tracer exchange between plasma and tissue 
 and between tissue compartments.
-% ROW 31
+
 \item[Kinetic Parameters]
 The parameters of the kinetic model which are estimated such that 
 the model is in agreement with the acquired data. 
-% ROW 32
+
 \item[(Kinetic) Model Matrix]
 Linear kinetic models can be written with compact matrix operations, which 
 relate the dynamic images and the kinetic parameters with the kinetic model matrix. 
 This matrix can be seen as the application of the transformation from parametric 
 domain to the temporal domain. 
-% ROW 33
+
 \item[Patlak Plot]
 For irreversible tracers, after a certain period from tracer injection, 
 the free tracer in tissue reaches equilibrium with the radiotracer in plasma and 
 then the original model simplifies to a linear plot known as the Patlak Plot.
-% ROW 34
+
 \item[Parametric Image]
 An image whose voxels hold the values the kinetic parameters.
-% ROW 35
+
 \item[Parametric Image Reconstruction (PIR)]
 Estimation of the kinetic parameters from dynamic images for each voxel (indirect PIR). 
 The parametric images can also be reconstructed directly from dynamic projection data. 
@@ -240,36 +288,30 @@ Incorporates motion information after reconstruction to obtain a motion-free ima
 \newpage
  \section*{ ANNEX 1 :Michelogram}
 
-Michelogram of data for the ART scanner with a maximum \textbf{ring 
+Figure 1 shows the michelogram of data for the ART scanner with a maximum \textbf{ring 
 difference} of 17 and a \textbf{span} of 7. \\
 Segment 0 is on the diagonal. \\
 Each dot would correspond to a single sinogram if no axial compression 
 would be used. Axial compression consists in adding sinograms 
 together whose central LORs intersect the scanner axis 
 in the same point. This can be seen as a generalization of the 
-Single Slice Rebinning Algorithm. In the drawing below, the diagonal 
+Single Slice Rebinning Algorithm (\textbf{STIR}'s \textbf{SSRB} supports any span). 
+In the drawing below, the diagonal 
 lines connecting the dots indicate the sinograms that are added 
 together. The illustration is for \textbf{span} 7=4+3 (this terminology 
 was introduced because for some axial positions, 4 sinograms 
-are added, while for others only 3. Note that \textbf{span} is always 
-odd.).\\
-Note that STIR supports data with different \textbf{span} for each \textbf{segment}. 
-In particular, STIR currently interpretes the (3D) data organisation of the
-GE Advance and GE Discovery scanners as using segment 0 with span=3, while 
-other segments are span=1. Another interpretation of GE data is that segment 0 uses
-span=3, while other segments use span=2 (i.e. segment 1 contains ring differences +2 and +3), 
-see the slide on p.7 of [Fay2004].
+are added, while for others only 3. Note that for even \textbf{span}, segment 0
+has one more set of axial positions added than the oblique ones.).
+
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=6.in, height=6in]{graphics/STIR-glossaryFig1}
-\caption{Michelogram with span=7. \textbf{Warning}: due to historical 
+\captionsetup{singlelinecheck=off}
+\caption[Fig:span7]{Michelogram with span=7. \textbf{Warning}: due to historical 
 reasons, the axis labels are wrong. The horizontal axis corresponds to
-\textit{ringB}.}
-\end{center}
-\end{figure}
-
-
+\textit{ringB}.
+\\
 Legend: 
 \begin{description}
 \item[rdmin] the minimum ring difference
@@ -277,11 +319,25 @@ Legend:
 \item[average\_delta] the averaged ring difference. This is equal 
 to segment\_num*span if the span is the same for each segment.
 \end{description}
+}
+
+\end{center}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=6.in, height=6in]{graphics/STIR-glossary-Fig-span4}
+\caption{Michelogram with span=4.}
+\end{center}
+\end{figure}
 
 \section*{References}
-
+\noindent
 [Fah2002] FH Fahey, "Data Acquisition in PET Imaging", J Nucl Med Technol 2002; 30:39, 49.
 
+\noindent
 [Fah2004] FH Fahey, 2004 SNM Mid-Winter Educational Symposium slides, online at
 \url{http://interactive.snm.org/docs/Fahey%20presentation.pdf}
 \end{document}

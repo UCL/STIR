@@ -4,24 +4,22 @@
 #  Copyright (C) 2000 - 2001 PARAPET partners
 #  Copyright (C) 2001 - 2009-10-11, Hammersmith Imanet Ltd
 #  Copyright (C) 2011, Kris Thielemans
-#  Copyright (C) 2013 - 2014, University College London
+#  Copyright (C) 2013 - 2014, 2024, University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 #
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
 
-echo This script should work with STIR version 2.1, 2.2, 2.3, 2.4 and 3.0. If you have
+# Scripts should exit with error code when a test fails:
+if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
+    set -e
+fi
+
+echo This script should work with STIR version 6.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -98,16 +96,20 @@ echo --------- TESTS THAT USE INTERPOLATING BACKPROJECTOR --------
 echo
 echo ------------- Running OSMAPOSL for sensitivity ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
-${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> OSMAPOSL_test_for_sensitivity.log 2> OSMAPOSL_test_for_sensitivity_stderr.log 
-
-echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
-echo Running ${INSTALL_DIR}compare_image
-if ${INSTALL_DIR}compare_image RPTsens_seg4.hv my_RPTsens_seg4.hv;
+if ${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> OSMAPOSL_test_for_sensitivity.log 2> OSMAPOSL_test_for_sensitivity_stderr.log
 then
-echo ---- This test seems to be ok !;
+    echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
+    echo Running ${INSTALL_DIR}compare_image
+    if ${INSTALL_DIR}compare_image RPTsens_seg4.hv my_RPTsens_seg4.hv;
+    then
+        echo ---- This test seems to be ok !;
+    else
+        echo There were problems here!;
+        ThereWereErrors=1;
+    fi
 else
-echo There were problems here!;
-ThereWereErrors=1;
+    echo There were problems here!;
+    ThereWereErrors=1;
 fi
 
 echo
@@ -145,17 +147,22 @@ ${INSTALL_DIR}generate_image generate_uniform_image.par
 ${INSTALL_DIR}postfilter my_uniform_image_circular.hv my_uniform_image.hv postfilter_truncate_circular_FOV.par
 echo ------------- Running OSMAPOSL for sensitivity ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
-${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
-
-echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
-echo Running ${INSTALL_DIR}compare_image
-if ${INSTALL_DIR}compare_image RPTsens_seg3_PM.hv my_RPTsens_seg3_PM.hv;
+if ${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
 then
-echo ---- This test seems to be ok !;
+    echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
+    echo Running ${INSTALL_DIR}compare_image
+    if ${INSTALL_DIR}compare_image RPTsens_seg3_PM.hv my_RPTsens_seg3_PM.hv;
+    then
+        echo ---- This test seems to be ok !;
+    else
+        echo There were problems here!;
+        ThereWereErrors=1;
+    fi
 else
-echo There were problems here!;
-ThereWereErrors=1;
+    echo There were problems here!;
+    ThereWereErrors=1;
 fi
+
 
 echo
 echo -------- Running OSMAPOSL  with the MRP prior -------- 
@@ -247,6 +254,21 @@ echo There were problems here!;
 ThereWereErrors=1;
 fi
 
+${MPIRUN} ${INSTALL_DIR}OSSPS OSSPS_test_PM_QP_subsens1.par 1> OSSPS_PM_QP.log 2> OSSPS_PM_QP_stderr.log
+
+echo '---- Comparing output of OSSPS subiter 8 using subset sensitivity (should be identical up to tolerance)'
+echo Running ${INSTALL_DIR}compare_image
+# relax test for the outer-rim voxels as these turn out to be more unstable than the internal ones
+if ${INSTALL_DIR}compare_image -t 0.002 test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_subsens_8.hv -a
+   ${INSTALL_DIR}compare_image -r 1 test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_subsens_8.hv
+then
+  echo ---- This test seems to be ok !;
+  else
+  echo There were problems here!;
+  ThereWereErrors=1;
+fi
+
+
 echo
 echo ------------- tests on stir_math and correct_projdata ---------
   echo "first make up some randoms (just a projdata full of 1)"
@@ -287,6 +309,23 @@ echo ------------- tests on stir_math and correct_projdata ---------
      ThereWereErrors=1;
    fi
 
+  echo
+  echo ------------- Running KOSMAPOSL consistency test ------------- 
+  echo "(a Kernel with no neighbourhood should be equivalent to OSMAPOSL)"
+  echo Running ${INSTALL_DIR}KOSMAPOSL
+  ${MPIRUN} ${INSTALL_DIR}KOSMAPOSL KOSMAPOSL_test_consistency.par 1> KOSMAPOSL_test.log 2> KOSMAPOSL_test_stderr.log
+
+  echo '---- Comparing output of KOSMAPOSL subiter 5 (should be identical up to tolerance)'
+  echo Running ${INSTALL_DIR}compare_image
+  if ${INSTALL_DIR}compare_image my_test_image_k0_5.hv test_image_5.hv;
+  then
+  echo ---- This test seems to be ok !;
+  else
+  echo There were problems here!;
+  ThereWereErrors=1;
+  fi
+
+
 echo
 echo '--------------- End of tests -------------'
 echo
@@ -298,5 +337,6 @@ echo "Everything seems to be fine !"
 echo 'You could remove all generated files using "rm -f my_* *.log"'
 fi
 
+exit ${ThereWereErrors}
 
 

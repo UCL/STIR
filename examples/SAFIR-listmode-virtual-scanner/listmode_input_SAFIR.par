@@ -1,0 +1,6 @@
+CListModeDataSAFIR Parameters:=
+	listmode data filename:= point_5.clm.safir 
+	crystal map filename:= crystal_map_front.txt
+	template projection data filename:= safir_20.hs
+END CListModeDataSAFIR Parameters:=
+

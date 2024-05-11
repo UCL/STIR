@@ -7,19 +7,10 @@
 #    Copyright (C) 2013, 2015 University College London
 #    This file is part of STIR.
 #
-#    This file is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU Lesser General Public License as published by
-#    the Free Software Foundation; either version 2.1 of the License, or
-#    (at your option) any later version.
-
-#    This file is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Lesser General Public License for more details.
+#    SPDX-License-Identifier: Apache-2.0
 #
 #    See STIR/LICENSE.txt for details
 
-import py.test
 from stir import *
 import stirextra
 # for Python2 and itertools.zip->zip (as in Python 3) 
@@ -75,11 +66,11 @@ def test_Array3Diterator():
 
 def test_ProjData():
     s=Scanner.get_scanner_from_name("ECAT 962")
-    #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    #construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     #print projdatainfo
     projdata=ProjDataInMemory(ExamInfo(), projdatainfo)
     np=stirextra.to_numpy(projdata)

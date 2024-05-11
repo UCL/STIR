@@ -6,22 +6,16 @@
   \brief Declaration of class stir::PostsmoothingBackProjectorByBin
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2002- 2007, Hammersmith Imanet
+    Copyright (C) 2019, University College London
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
 
     See STIR/LICENSE.txt for details
@@ -33,64 +27,82 @@
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/shared_ptr.h"
 
-
 START_NAMESPACE_STIR
 
-template <typename elemT> class Viewgram;
-template <typename DataT> class DataProcessor;
+template <typename elemT>
+class Viewgram;
+template <typename DataT>
+class DataProcessor;
 /*!
   \brief A very preliminary class that first smooths the image, then back projects.
 
+  \warning. It assumes that the DataProcessor does not change
+  the size of the image.
 */
-class PostsmoothingBackProjectorByBin : 
-  public 
-    RegisteredParsingObject<PostsmoothingBackProjectorByBin,
-                            BackProjectorByBin>
+class PostsmoothingBackProjectorByBin : public RegisteredParsingObject<PostsmoothingBackProjectorByBin, BackProjectorByBin>
 {
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+public:
+#else
+private:
+#endif
+  typedef BackProjectorByBin base_type;
+
 public:
   //! Name which will be used when parsing a PostsmoothingBackProjectorByBin object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
   //! Default constructor (calls set_defaults())
   PostsmoothingBackProjectorByBin();
 
-  ~ PostsmoothingBackProjectorByBin();
+  ~PostsmoothingBackProjectorByBin() override;
 
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
-  */
-  virtual void set_up(           
-                      const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-                      const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
+   */
+  void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+              const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
+              ) override;
 
-
-  PostsmoothingBackProjectorByBin(
-                       const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,
-                       const shared_ptr<DataProcessor<DiscretisedDensity<3,float> > >&);
+  PostsmoothingBackProjectorByBin(const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,
+                                  const shared_ptr<DataProcessor<DiscretisedDensity<3, float>>>&);
 
   // Informs on which symmetries the projector handles
   // It should get data related by at least those symmetries.
   // Otherwise, a run-time error will occur (unless the derived
   // class has other behaviour).
-  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override;
 
+  BackProjectorByBin* get_original_back_projector_ptr() const;
+
+  PostsmoothingBackProjectorByBin* clone() const override;
 
 private:
-
   shared_ptr<BackProjectorByBin> original_back_projector_ptr;
-  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
 
-  void actual_back_project(DiscretisedDensity<3,float>&,
+#ifdef STIR_PROJECTORS_AS_V3
+  void actual_back_project(DiscretisedDensity<3, float>&,
                            const RelatedViewgrams<float>&,
-                           const int min_axial_pos_num, const int max_axial_pos_num,
-                           const int min_tangential_pos_num, const int max_tangential_pos_num);
+                           const int min_axial_pos_num,
+                           const int max_axial_pos_num,
+                           const int min_tangential_pos_num,
+                           const int max_tangential_pos_num);
+#endif
+  void actual_back_project(const RelatedViewgrams<float>&,
+                           const int min_axial_pos_num,
+                           const int max_axial_pos_num,
+                           const int min_tangential_pos_num,
+                           const int max_tangential_pos_num) override;
 
+  void actual_back_project(DiscretisedDensity<3, float>& density, const Bin& bin);
 
+  shared_ptr<DiscretisedDensity<3, float>> filtered_density_sptr;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
 END_NAMESPACE_STIR

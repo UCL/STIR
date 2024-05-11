@@ -1,0 +1,40 @@
+PostFiltering parameters :=
+; an example file using the HUToMu filter (or data processor) to convert
+; a CT image in Hounsfield Units to mu-values, followed by some Gaussian smoothing
+;
+; The HUToMu filter takes a file in JSON format specifying the piecewise-linear curves
+; for various systems, Xray voltages and gamma energies.
+; keywords below select the curve accordingly.
+; A sample file is currently located in the source of STIR
+; (currently available at https://raw.githubusercontent.com/UCL/STIR/f69bfc0971280901adda2649bf8fe85ac0583a87/src/config/ct_slopes.json)
+; This file is installed in your <install_prefix>/share folder
+; (use `stir_config --config-dir` to find its location)
+
+Postfilter type := Chained
+  Chained Data Processor Parameters:=
+
+  Data Processor to apply first:= HUToMu
+    HUToMu Parameters:=
+      slope filename := json_filename
+      ; next defaults to GENERIC
+      manufacturer_name := IN_CAPITALS
+      ; CT tube voltage (defaults to 120)
+      ;kilovoltage_peak :=
+      ; gamma energy (defaults to 511 for PET)
+      ;target_photon_energy :=
+    End HUToMu Parameters:=
+
+  ; Some smoothing of the CT is normally beneficial for PET.
+  ; The amount of smoothing is scanner specific though, and
+  ; also depends on any downsampling and
+  ; resolution recovery used in the projector
+  Data Processor to apply second:= Separable Gaussian
+    Separable Gaussian Filter Parameters :=
+      x-dir filter FWHM (in mm):= 6
+      y-dir filter FWHM (in mm):= 6
+      z-dir filter FWHM (in mm):= 6
+    END Separable Gaussian Filter Parameters :=
+
+  END Chained Data Processor Parameters:=
+
+End PostFiltering Parameters:=

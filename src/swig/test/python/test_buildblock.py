@@ -4,23 +4,24 @@
 #     py.test test_buildblock.py
 
 
-#    Copyright (C) 2013 University College London
+#    Copyright (C) 2013, 2023 University College London
 #    This file is part of STIR.
 #
-#    This file is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU Lesser General Public License as published by
-#    the Free Software Foundation; either version 2.1 of the License, or
-#    (at your option) any later version.
-
-#    This file is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Lesser General Public License for more details.
+#    SPDX-License-Identifier: Apache-2.0
 #
 #    See STIR/LICENSE.txt for details
 
-import py.test
+try:
+    import pytest
+except ImportError:
+    # No pytest, try older py.test
+    try:
+        import py.test as pytest
+    except ImportError:
+        raise ImportError('Tests require pytest or py<1.4')
+
 from stir import *
+import stirextra
 
 def test_Vector():
     dv=FloatVector(3)
@@ -60,7 +61,7 @@ def test_VectorWithOffset():
     v[2]=3
     assert v[2]==3
     #assert v[1]==0 #probably not initialised
-    with py.test.raises(IndexError):
+    with pytest.raises(IndexError):
         v[0] # check index-out-of-range
 
 def test_Array1D():
@@ -147,29 +148,185 @@ def test_FloatVoxelsOnCartesianGrid():
     # shouldn't change image constructed from array
     assert abs(image[ind]-1.4)<.001
 
+def test_zoom_image():
+    # create test image
+    origin=FloatCartesianCoordinate3D(3,1,6)
+    gridspacing=FloatCartesianCoordinate3D(1,1,2)
+    minind=Int3BasicCoordinate((0,-9,-9))
+    maxind=Int3BasicCoordinate(9)
+    indrange=IndexRange3D(minind,maxind)
+    image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    image.fill(1)
+    # find coordinate of middle of image for later use (independent of image sizes etc)
+    [min_in_mm, max_in_mm]=stirextra.get_physical_coordinates_for_bounding_box(image)
+    try:
+        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2.)
+    except:
+        # SWIG versions pre 3.0.11 had a bug, which we try to work around here
+        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm).__div__(2))
+
+    # test that we throw an exception if ZoomOptions is out-of-range
+    try:
+        zo=ZoomOptions(42)
+        assert False
+    except:
+        assert True
+
+    zoom=2
+    offset=1
+    new_size=6
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size)
+    ind=zoomed_image.get_indices_closest_to_physical_coordinates(middle_in_mm)
+    assert abs(zoomed_image[ind]-1./(zoom*zoom))<.001
+    # awkward syntax...
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_sum))
+    assert abs(zoomed_image[ind]-1./(zoom*zoom))<.001
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_values))
+    assert abs(zoomed_image[ind]-1)<.001
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_projections))
+    assert abs(zoomed_image[ind]-1./(zoom))<.001
+
+def test_DetectionPositionPair():
+    d1=DetectionPosition(1,2,0)
+    d2=DetectionPosition(4,5,6)
+    dp=DetectionPositionPair(d1,d2,3)
+    assert d1==dp.pos1
+    assert d2==dp.pos2
+    assert dp.timing_pos == 3
+    dp.pos1.tangential_coord = 7
+    assert dp.pos1.tangential_coord == 7
+    assert d1.tangential_coord == 1
+
 def test_Scanner():
-    s=Scanner.get_scanner_from_name("ECAT 962")
-    assert s.get_num_rings()==32
-    assert s.get_num_detectors_per_ring()==576
-    #l=s.get_all_names()
-    #print s
+    scanner=Scanner.get_scanner_from_name("ECAT 962")
+    assert scanner.get_num_rings()==32
+    assert scanner.get_num_detectors_per_ring()==576
+    #l=scanner.get_all_names()
+    #print scanner
     # does not work
     #for a in l:
     #    print a
+    scanner=Scanner.get_scanner_from_name("SAFIRDualRingPrototype")
+    scanner.set_scanner_geometry("BlocksOnCylindrical")
+    scanner.set_up()
+    d=DetectionPosition(1,1,0)
+    c=scanner.get_coordinate_for_det_pos(d)
+    d2=DetectionPosition();
+    s=scanner.find_detection_position_given_cartesian_coordinate(d2, c)
+    assert s.succeeded()
+    assert d==d2
 
+def test_Radionuclide():
+    modality = ImagingModality(ImagingModality.PT)
+    db = RadionuclideDB()
+    r = db.get_radionuclide(modality, "^18^Fluorine")
+    assert abs(r.get_half_life() - 6584) < 1
+    modality = ImagingModality(ImagingModality.NM)
+    r = db.get_radionuclide(modality, "^99m^Technetium")
+    assert abs(r.get_half_life() - 6.0058*3600) < 10
+
+def test_Bin():
+    segment_num=1;
+    view_num=2;
+    axial_pos_num=3;
+    tangential_pos_num=4;
+    bin=Bin(segment_num, view_num, axial_pos_num, tangential_pos_num);
+    assert bin.bin_value==0;
+    assert bin.segment_num==segment_num;
+    assert bin.view_num==view_num;
+    assert bin.axial_pos_num==axial_pos_num;
+    assert bin.tangential_pos_num==tangential_pos_num;
+    bin.segment_num=5;
+    assert bin.segment_num==5;
+    bin_value=0.3;
+    bin.bin_value=bin_value;
+    assert abs(bin.bin_value-bin_value)<.01;
+    bin=Bin(segment_num, view_num, axial_pos_num, tangential_pos_num, bin_value);
+    assert abs(bin.bin_value-bin_value)<.01;
+    bin.time_frame_num=3;
+    assert bin.time_frame_num==3;
+    
 def test_ProjDataInfo():
     s=Scanner.get_scanner_from_name("ECAT 962")
-    #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    #construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
-    #print projdatainfo
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    #print( projdatainfo)
     assert projdatainfo.get_scanner().get_num_rings()==32
+    # use arc-correction specific keywords
+    projdatainfo.set_tangential_sampling(5) # dangerous of course, but just for the test
+    assert projdatainfo.get_tangential_sampling() == 5
+    # extract sinogram
     sinogram=projdatainfo.get_empty_sinogram(1,2)
     assert sinogram.sum()==0
     assert sinogram.get_segment_num()==2
     assert sinogram.get_axial_pos_num()==1
     assert sinogram.get_num_views() == projdatainfo.get_num_views()
-    assert sinogram.get_proj_data_info() == projdatainfo
-    
+    print(sinogram.get_proj_data_info())
+    # TODO currently does not work due to TypeError
+    #assert sinogram.get_proj_data_info() == projdatainfo
+    assert sinogram.get_proj_data_info().parameter_info() == projdatainfo.parameter_info()
+
+
+def test_ProjData_from_to_Array3D():
+    # define a projection with some dummy data (filled with segment no.)
+    s=Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    for seg_idx in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1):
+        segment=projdata.get_empty_segment_by_sinogram(seg_idx)
+        segment.fill(seg_idx)
+        projdata.set_segment(segment)
+
+    # Check we actually put the data in (not just zeros)
+    assert all([all([x==s for x in projdata.get_segment_by_sinogram(s).flat()])
+                for s in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1)])
+
+    # convert to Array3D and back again
+    array3D=projdata.to_array()
+    new_projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    new_projdata.fill(array3D.flat())
+
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(),new_projdata.to_array().flat()))
+
+def test_xapyb_and_sapyb():
+    """
+    Test the xapyb and sapyb methods for FloatVoxelsOnCartesianGrid and ProjDataInMemory
+    """
+    test_value = 1.4
+    approx_val = pytest.approx(2*test_value + 3*test_value)
+
+    # Test FloatCartesianCoordinate3D
+    origin=FloatCartesianCoordinate3D(0,1,6)
+    gridspacing=FloatCartesianCoordinate3D(1,1,2)
+    indrange=IndexRange3D(Int3BasicCoordinate(3), Int3BasicCoordinate(9))
+    image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+
+    #  xapyb
+    image.fill(test_value)
+    image.xapyb(image, 2.0,image, 3.0)
+    assert image.find_max()==approx_val
+    assert image.find_min()==approx_val
+    # sapyb
+    image.fill(test_value)
+    image.sapyb(3,image,2)
+    assert image.find_max()==approx_val
+    assert image.find_min()==approx_val
+
+    # Test ProjData
+    s=Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+
+    projdata.fill(test_value)
+    projdata.xapyb(projdata, 2.0,projdata, 3.0)
+    assert projdata.to_array().find_max()==approx_val
+    assert projdata.to_array().find_min()==approx_val
+    # sapyb
+    projdata.fill(test_value)
+    projdata.sapyb(3,projdata,2)
+    assert projdata.to_array().find_max()==approx_val
+    assert projdata.to_array().find_min()==approx_val

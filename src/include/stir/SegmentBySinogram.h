@@ -3,17 +3,10 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -26,7 +19,7 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  \author Claire Labbe  
+  \author Claire Labbe
   \author PARAPET project
 
 
@@ -40,21 +33,21 @@
 
 START_NAMESPACE_STIR
 
-//forward declaration for use in convertion 
-template <typename elemT> class SegmentByView;
-
+// forward declaration for use in convertion
+template <typename elemT>
+class SegmentByView;
 
 /*!
   \ingroup projdata
-  \brief A class for storing (3d) projection data with a fixed segment_num.
+  \brief A class for storing (3d) projection data with fixed SegmentIndices.
 
   Storage order is as follows:
   \code
   segment_by_sino[view_num][axial_pos_num][tangential_pos_num]
-  \endcode  
+  \endcode
 */
 template <typename elemT>
-class SegmentBySinogram : public Segment<elemT>, public Array<3,elemT>
+class SegmentBySinogram : public Segment<elemT>, public Array<3, elemT>
 {
 private:
   typedef SegmentBySinogram<elemT> self_type;
@@ -64,53 +57,70 @@ public:
   typedef typename Segment<elemT>::StorageOrder StorageOrder;
 
   //! Constructor that sets the data to a given 3d Array
-  SegmentBySinogram(const Array<3,elemT>& v, 
-		    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-		    const int segment_num);
-  
-  //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
-  SegmentBySinogram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-		    const int segment_num);
+  SegmentBySinogram(const Array<3, elemT>& v,
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+                    const SegmentIndices& ind);
 
-  
+  //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
+  SegmentBySinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, const SegmentIndices& ind);
+
+  //! Constructor that sets the data to a given 3d Array
+  /*!
+    \deprecated Use version with SegmentIndices instead
+  */
+  SegmentBySinogram(const Array<3, elemT>& v,
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+                    const int segment_num,
+                    const int timing_pos_num = 0);
+
+  //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
+  /*!
+    \deprecated Use version with SegmentIndices instead
+  */
+  SegmentBySinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+                    const int segment_num,
+                    const int timing_pos_num = 0);
+
   //! Conversion from 1 storage order to the other
-  SegmentBySinogram (const SegmentByView<elemT>& );
-  //! Get storage order 
-  inline StorageOrder get_storage_order() const;
+  SegmentBySinogram(const SegmentByView<elemT>&);
+  //! Get storage order
+  inline StorageOrder get_storage_order() const override;
   //! Get number of axial positions
-  inline int get_num_axial_poss() const;
+  inline int get_num_axial_poss() const override;
   //! Get number of views
-  inline int get_num_views() const;
-  //! Get number of tangetial positions
-  inline int get_num_tangential_poss() const;
+  inline int get_num_views() const override;
+  //! Get number of tangential positions
+  inline int get_num_tangential_poss() const override;
   //! Get minimum axial position number
-  inline int get_min_axial_pos_num() const;
+  inline int get_min_axial_pos_num() const override;
   //! Get maximum axial position number
-  inline int get_max_axial_pos_num() const;
+  inline int get_max_axial_pos_num() const override;
   //! Get minimum view number
-  inline int get_min_view_num() const;
+  inline int get_min_view_num() const override;
   //! Get maximum view number
-  inline int get_max_view_num() const;
+  inline int get_max_view_num() const override;
   //! Get minimum tangetial position number
-  inline int get_min_tangential_pos_num()  const;
+  inline int get_min_tangential_pos_num() const override;
   //! Get maximum tangential position number
-  inline int get_max_tangential_pos_num()  const;
+  inline int get_max_tangential_pos_num() const override;
+  using Segment<elemT>::get_sinogram;
+  using Segment<elemT>::get_viewgram;
   //! Get sinogram
-  inline Sinogram<elemT> get_sinogram(int axial_pos_num) const;  
+  inline Sinogram<elemT> get_sinogram(int axial_pos_num) const override;
   //! Get viewgram
-  Viewgram<elemT> get_viewgram(int view_num) const;
+  Viewgram<elemT> get_viewgram(int view_num) const override;
   //! Set viewgram
-  void set_viewgram(const Viewgram<elemT>&);
+  void set_viewgram(const Viewgram<elemT>&) override;
   //! Set sinogram
-  inline void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num);  
-  inline void set_sinogram(const Sinogram<elemT>& s);
+  inline void set_sinogram(Sinogram<elemT> const& s, int axial_pos_num) override;
+  inline void set_sinogram(const Sinogram<elemT>& s) override;
 
   //! Overloading Array::grow
-  void grow(const IndexRange<3>& range);
+  void grow(const IndexRange<3>& range) override;
   //! Overloading Array::resize
-  void resize(const IndexRange<3>& range);
+  void resize(const IndexRange<3>& range) override;
 
-  virtual bool operator ==(const Segment<elemT>&) const;
+  bool operator==(const Segment<elemT>&) const override;
 };
 
 END_NAMESPACE_STIR

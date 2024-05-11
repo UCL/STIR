@@ -7,19 +7,17 @@
 #  Copyright (C) 2011-07-01 - 2013, Kris Thielemans
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 #
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
+
+# Scripts should exit with error code when a test fails:
+if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
+    set -e
+fi
 
 echo This script should work with STIR version 2.3, 2.4 and 3.0. If you have
 echo a later version, you might have to update your test pack.
@@ -125,5 +123,6 @@ echo "Everything seems to be fine !"
 echo 'You could remove all generated files using "rm -f my_* *.log"'
 fi
 
+exit ${ThereWereErrors}
 
 

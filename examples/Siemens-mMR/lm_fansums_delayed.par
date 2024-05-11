@@ -1,0 +1,10 @@
+lm_fansums Parameters:=
+input file := ${INPUT}
+frame definition file := ${FRAMES}
+output filename prefix := ${OUTPUT}
+tangential fan size := -1
+maximum absolute segment number to process := 
+store 'prompts' := 0
+increment to use for 'delayeds' := 1
+list event coordinates := 0
+end:=

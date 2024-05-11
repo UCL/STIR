@@ -14,18 +14,11 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
+    Copyright (C) 2023, 2024 University College London
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -34,6 +27,9 @@
 
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
+#include "stir/Bin.h"
+#include "stir/DetectionPosition.h"
+#include "stir/DetectionPositionPair.h"
 #include <iostream>
 #include <vector>
 
@@ -42,78 +38,119 @@ START_NAMESPACE_STIR
 /*!
   \brief Outputs a VectorWithOffset to a stream.
 
-  Output is of the form 
+  Output is of the form
   \verbatim
   {1, 2, 3}
   \endverbatim
-  with an endl at the end. 
-  
-  This can be used for higher dimensional arrays as well, where each 1D subobject 
+  with an endl at the end.
+
+  This can be used for higher dimensional arrays as well, where each 1D subobject
   will be on its own line.
 */
 
-
 template <typename elemT>
-inline 
-std::ostream& 
-operator<<(std::ostream& str, const VectorWithOffset<elemT>& v);
+inline std::ostream& operator<<(std::ostream& str, const VectorWithOffset<elemT>& v);
 
 /*!
   \brief Outputs a BasicCoordinate to a stream.
 
-  Output is of the form 
+  Output is of the form
   \verbatim
   {1, 2, 3}
   \endverbatim
-  with no endl at the end. 
+  with no endl at the end.
   */
 template <int num_dimensions, typename coordT>
-inline 
-std::ostream& 
-operator<<(std::ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
-
+inline std::ostream& operator<<(std::ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
 
 /*!
   \brief Outputs a vector to a stream.
 
-  Output is of the form 
+  Output is of the form
   \verbatim
   {1, 2, 3}
   \endverbatim
-  with an endl at the end. 
-  
+  with an endl at the end.
+
   For each element of the vector std::ostream::operator<<() will be called.
 */
 template <typename elemT>
-inline 
-std::ostream& 
-operator<<(std::ostream& str, const std::vector<elemT>& v);
+inline std::ostream& operator<<(std::ostream& str, const std::vector<elemT>& v);
+
+/*!
+  \brief Outputs a Bin to a stream.
+  \ingroup projdata
+
+  Output is of the form
+  \verbatim
+  [segment_num=xx,....., value=..]
+  \endverbatim
+*/
+inline std::ostream&
+operator<<(std::ostream& out, const Bin& bin)
+{
+  return out << "[segment_num=" << bin.segment_num() << ", axial_pos_num=" << bin.axial_pos_num()
+             << ", view_num=" << bin.view_num() << ", tangential_pos_num=" << bin.tangential_pos_num()
+             << ", timing_pos_num=" << bin.timing_pos_num() << ", time_frame_num=" << bin.time_frame_num()
+             << ", value=" << bin.get_bin_value() << "]";
+}
+
+/*!
+  \brief Outputs a DetectionPosition to a stream.
+  \ingroup projdata
+
+  Output is of the form
+  \verbatim
+  [tangential=..., axial=..., radial=...]
+  \endverbatim
+*/
+template <class T>
+inline std::ostream&
+operator<<(std::ostream& out, const DetectionPosition<T>& det_pos)
+{
+  return out << "[tangential=" << det_pos.tangential_coord() << ", axial=" << det_pos.axial_coord()
+             << ", radial=" << det_pos.radial_coord() << "]";
+}
+
+/*!
+  \brief Outputs a DetectionPosition to a stream.
+  \ingroup projdata
+
+  Output is of the form
+  \verbatim
+  [pos1=..., pos2=..., timing_pos=...]
+  \endverbatim
+*/
+template <class T>
+inline std::ostream&
+operator<<(std::ostream& out, const DetectionPositionPair<T>& det_pos)
+{
+  return out << "[pos1=" << det_pos.pos1() << ", pos2=" << det_pos.pos2() << ", timing_pos=" << det_pos.timing_pos() << "]";
+}
 
 /*!
   \brief Inputs a vector from a stream.
 
-  Input is of the form 
+  Input is of the form
   \verbatim
   {1, 2, 3}
   \endverbatim
-  
-  Input is stopped when either the beginning '{', an intermediate ',' or the 
-  trailing '}' is not found. The size of the vector will be the number of 
+
+  Input is stopped when either the beginning '{', an intermediate ',' or the
+  trailing '}' is not found. The size of the vector will be the number of
   correctly read elemT elements.
-  
+
   For each element of the vector std::istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
 template <typename elemT>
-inline 
-std::istream& 
-operator>>(std::istream& str, std::vector<elemT>& v);
+inline std::istream& operator>>(std::istream& str, std::vector<elemT>& v);
 
 /*!
   \brief Inputs a VectorWithOffset from a stream.
 
-  Input is of the form 
+  Input is of the form
   \verbatim
   {1, 2, 3}
   \endverbatim
@@ -122,12 +159,12 @@ operator>>(std::istream& str, std::vector<elemT>& v);
   \verbatim
   {{1,2}, {2,4,5}, {5}}
   \endverbatim
-  
-  
-  Input is stopped when either the beginning '{', an intermediate ',' or the 
-  trailing '}' is not found.  The size of the vector will be the number of 
+
+
+  Input is stopped when either the beginning '{', an intermediate ',' or the
+  trailing '}' is not found.  The size of the vector will be the number of
   correctly read elemT elements.
-  
+
   v.get_min_index() will be 0 at the end of the call.
 
   For each element of the vector std::istream::operator>>(element) will be called.
@@ -135,34 +172,29 @@ operator>>(std::istream& str, std::vector<elemT>& v);
   elemT needs to have a default constructor.
 */
 template <typename elemT>
-inline 
-std::istream& 
-operator>>(std::istream& str, VectorWithOffset<elemT>& v);
+inline std::istream& operator>>(std::istream& str, VectorWithOffset<elemT>& v);
 
 /*!
   \brief Inputs a coordinate from a stream.
 
-  Input is of the form 
+  Input is of the form
   \verbatim
   {1, 2, 3}
   \endverbatim
-  
-  Input is stopped when either the beginning '{', an intermediate ',' or the 
+
+  Input is stopped when either the beginning '{', an intermediate ',' or the
   trailing '}' is not found. If the number of correctly read elements is not \a num_dimensions,
   the last few will have undefined values.
-  
+
   For each element of the vector std::istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
 template <int num_dimensions, typename coordT>
-inline 
-std::istream& 
-operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v);
+inline std::istream& operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v);
 
 END_NAMESPACE_STIR
 
 #include "stir/stream.inl"
 
 #endif
-

@@ -1,0 +1,14 @@
+[
+     [ "^18^Fluorine", "18F", "F-18" ],
+     [ "^11^Carbon", "11C", "C-11" ],
+     [ "^13^Nitrogen", "13N", "N-13" ],
+     [ "^15^Oxygen", "15O", "O-15" ],
+     [ "^64^Copper", "64Cu", "Cu-64" ],
+     [ "^68^Gallium", "68Ga", "Ga-68" ],
+     [ "^68^Germanium", "68Ge", "Ge-68" ],
+     [ "^99m^Technetium", "99mTc", "Tc-99m" ],
+     [ "^131^Iodine", "131I", "I-131" ],
+     [ "^67^Gallium", "67Ga", "Ga-67" ],
+     [ "^177^Lutetium", "177Lu", "Lu-177" ],
+     [ "^90^Yttrium", "90Y", "Y-90" ]
+]

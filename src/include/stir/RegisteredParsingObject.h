@@ -4,15 +4,7 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -29,32 +21,16 @@
 #ifndef __stir_RegisteredParsingObject_H__
 #define __stir_RegisteredParsingObject_H__
 
-
 #include "stir/ParsingObject.h"
 #include <string>
 
 START_NAMESPACE_STIR
-
-
-//! Auxiliary class for RegisteredParsingObject
-/*!
-  \ingroup buildblock
-   This class simply makes a class derived from Base and ParsingObject. Its use
-    should be restricted to the default value of the RegisteredParsingObject
-    template.
-*/
-template <typename Base>
-class AddParser : public Base, public ParsingObject
-{};
-
-
-
 /*!
   \brief Parent class for all leaves in a RegisteredObject hierarchy that
   do parsing of parameter files.
   \ingroup buildblock
   \see RegisteredObject for an explanation why you would use this class.
-  
+
   RegisteredParsingObject::read_from_stream is implemented in terms of
   ParsingObject::parse.
 
@@ -72,7 +48,7 @@ class AddParser : public Base, public ParsingObject
 
   Use the 2 parameter form if there is no ParsingObject anywhere in the
   hierarchy yet. However, we recommend to immediately derive \a Base from
-  ParsingObject. 
+  ParsingObject.
 
   \par How to add a leaf to the registry at run-time.
   Constructing the hierarchy as above makes sure that everything is
@@ -87,7 +63,7 @@ class AddParser : public Base, public ParsingObject
    Derived::RegisterIt dummy;
   \endcode
   As soon as the variable is destructed, the leaf will be taken out of
-  the registry (but see todo). If you want to add it as long as the program runs, use 
+  the registry (but see todo). If you want to add it as long as the program runs, use
   a static variable.
 
   Currently, STIR has static variables in files for each module
@@ -97,40 +73,39 @@ class AddParser : public Base, public ParsingObject
   the variables in that file are never referenced, so would not include
   it in the final executable (to try to remove redundant object files).
 */
-template <typename Derived, typename Base, typename Parent = AddParser<Base> >
+template <typename Derived, typename Base, typename Parent = Base>
 class RegisteredParsingObject : public Parent
 {
 public:
   //! Construct a new object (of type Derived) by parsing the istream
-  /*! When the istream * is 0, questions are asked interactively. 
-  
-      \todo Currently, the return value is a \a Base*. Preferably, it should be a 
-      \a Derived*, but it seems the registration machinery would need extra 
+  /*! When the istream * is 0, questions are asked interactively.
+
+      \todo Currently, the return value is a \a Base*. Preferably, it should be a
+      \a Derived*, but it seems the registration machinery would need extra
       (unsafe) reinterpret_casts to get that to work.
       (TODO find a remedy).
   */
-inline static Base* read_from_stream(std::istream*); 
+  inline static Base* read_from_stream(std::istream*);
 
   //! Returns  Derived::registered_name
-  inline std::string get_registered_name() const;
+  inline std::string get_registered_name() const override;
   //! Returns a string with all parameters and their values, in a form suitable for parsing again
-  inline std::string parameter_info();
+  inline std::string parameter_info() override;
 
 public:
-
   //! A helper class to allow automatic registration.
   struct RegisterIt
   {
     //! Default constructor adds the type to the registry.
     RegisterIt()
     {
-      //std::cerr << "Adding " << Derived::registered_name <<" to registry"<<std::endl;
-      // note: VC 7.0 needs a '&' in front of read_from_stream for some reason
-      Parent::registry().add_to_registry(Derived::registered_name, &read_from_stream);  
+      // std::cerr << "Adding " << Derived::registered_name <<" to registry"<<std::endl;
+      //  note: VC 7.0 needs a '&' in front of read_from_stream for some reason
+      Parent::registry().add_to_registry(Derived::registered_name, &read_from_stream);
     }
-   
+
     /*! \brief Destructor should remove it from the registry.
-      \todo At present, the object remain in the registry, as there is 
+      \todo At present, the object remain in the registry, as there is
       a potential conflict in the order of destruction of the registry and
       the RegisterIt objects. This can be solved with shared_ptr s.
     */
@@ -148,13 +123,10 @@ public:
   };
   // RegisterIt needs to be a friend to have access to registry()
   friend struct RegisterIt;
-  
 };
-
 
 END_NAMESPACE_STIR
 
 #include "stir/RegisteredParsingObject.inl"
 
 #endif
-

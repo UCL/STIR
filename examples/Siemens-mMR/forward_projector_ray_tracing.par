@@ -1,0 +1,6 @@
+Forward Projector parameters:=
+; example par file for specifying the forward projector for e.g. fwdtest
+type:=Ray Tracing
+    Forward Projector Using Ray Tracing Parameters:=
+    End Forward Projector Using Ray Tracing Parameters:=
+end:=

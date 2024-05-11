@@ -1,0 +1,54 @@
+#  *********************************************************************
+#  * 																   *
+#  * Copyright (C) 2016, UCL										   *
+#  * This file is part of STIR.										   *
+#  * DISCLAIMER                                                        *
+#  *                                                                   *
+#  * SPDX-License-Identifier: Apache-2.0              *
+#  *********************************************************************
+#
+#  This macro has been created by
+#  Nikos Efthimiou
+#
+#  This script produces an output for a simple 4-ring PET Scanner. 
+#  Output from this macro is used in the recon_test_pack in STIR. 
+#  01 October 2016
+#
+
+/vis/disable
+
+/gate/geometry/setMaterialDatabase GateMaterials.db
+
+#     W O R L D
+/gate/world/geometry/setXLength 150. cm
+/gate/world/geometry/setYLength 150. cm
+/gate/world/geometry/setZLength 150. cm
+
+/control/execute geometry.mac
+
+#	I N I T I A L I Z E 
+/gate/run/initialize
+
+/control/execute digitizer.mac
+
+#	O U T P U T 
+/gate/output/root/enable
+/gate/output/root/setFileName ./output
+/gate/output/root/setRootHitFlag 0
+/gate/output/root/setRootSinglesFlag 0
+/gate/output/root/setRootCoincidencesFlag 1
+/gate/output/root/setRootdelayFlag 0
+
+
+#   R A N D O M
+# JamesRandom Ranlux64 MersenneTwister
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed 123456789
+/gate/random/verbose 1
+
+#	S T A R T 
+/gate/application/setTimeSlice     100. s
+/gate/application/setTimeStart     0. s
+/gate/application/setTimeStop      200. s
+
+/gate/application/startDAQ

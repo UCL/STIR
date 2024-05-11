@@ -1,0 +1,465 @@
+name: Build and ctest and recon_test_pack CI
+
+on:
+  push:
+    branches: 
+      - master
+      - tof_sino_UCL
+    paths-ignore:
+      - '.appveyor.yml'
+      - 'CITATION.cff'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
+  pull_request:
+    branches:
+      - master
+      - tof_sino_UCL
+    paths-ignore:
+      - '.appveyor.yml'
+      - 'CITATION.cff'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.htm'
+      - '**/*.tex'
+
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: false
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 9
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "ON"
+          ITK: "OFF"
+        - os: ubuntu-latest
+          compiler: clang
+          #compiler_version:
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          # currently using ITK 5.2 which doesn't like clang 14
+          ITK: "OFF"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 10
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
+          BUILD_TYPE: "Debug"
+          parallelproj: "OFF"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
+          BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-latest
+          compiler: gcc
+          compiler_version: 12
+          cuda_version: "12.1.0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: macOS-latest
+          compiler: gcc
+          compiler_version: 11
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Debug"
+          ROOT: "OFF"
+          ITK: "OFF"
+        # Currently disabled due to problems with listmode recon, see https://github.com/UCL/STIR/issues/1200
+        #- os: macOS-latest
+        #  compiler: clang
+        #  compiler_version: 16
+        #  BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+        #  parallelproj: "OFF"
+        #  BUILD_TYPE: "Release"
+        #  ROOT: "OFF"
+        #  ITK: "OFF"
+
+      # let's run all of them, as opposed to aborting when one fails
+      fail-fast: false
+
+    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+
+    steps:
+    - name: disk space
+      shell: bash
+      run: |
+          case ${{matrix.os}} in
+            (ubuntu* | macOS*)
+              df -h
+              # saves about 2GB
+              echo removing dotnet
+              sudo rm -rf /usr/share/dotnet
+              # saves about 10 GB
+              echo removing agent_tools
+              sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+              # saves about 10 GB
+              echo removing android files
+              sudo rm -rf /usr/local/lib/android
+              df -h
+              ;;
+            (windows*)
+              # no idea how to do this
+              ;;
+           esac
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: disk space
+      shell: bash
+      run: |
+          case ${{matrix.os}} in
+            (ubuntu* | macOS*)
+              sudo .github/workflows/GHA_increase_disk_space.sh
+              ;;
+            (windows*)
+              # no idea what to do here
+              ;;
+           esac
+
+    - name: set_compiler_variables
+      shell: bash
+      run: |
+          set -ex
+          if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+            CC="clang"
+            CXX="clang++"
+          elif test 'XX${{ matrix.compiler }}' = 'XXgcc'; then
+            CC="gcc"
+            CXX="g++"
+          fi
+          if test 'XX${{ matrix.compiler_version }}' != 'XX'; then
+            CC=${CC}-${{ matrix.compiler_version }}
+            CXX=${CXX}-${{ matrix.compiler_version }}            
+          fi
+          if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
+            if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+              brew install llvm@${{ matrix.compiler_version }}
+              if test XX${HOMEBREW_PREFIX} = XX; then
+                HOMEBREW_PREFIX=/usr/local
+              fi
+              LDFLAGS="-L$HOMEBREW_PREFIX/opt/llvm/lib/c++ -Wl,-rpath,$HOMEBREW_PREFIX/opt/llvm/lib/c++"
+              # make available to jobs below
+              echo LDFLAGS="$LDFLAGS" >> $GITHUB_ENV
+              CC="$HOMEBREW_PREFIX/opt/llvm/bin/clang"
+              CXX="$HOMEBREW_PREFIX/opt/llvm/bin/clang++"
+            fi
+          fi
+          export CC CXX
+          # make available to jobs below
+          echo CC="$CC" >> $GITHUB_ENV
+          echo CXX="$CXX" >> $GITHUB_ENV
+
+    - if: matrix.cuda_version != '0'
+      uses: Jimver/cuda-toolkit@v0.2.11
+      id: cuda-toolkit
+      with:
+          cuda: ${{ matrix.cuda_version }}
+          linux-local-args: '["--toolkit"]'
+
+    - name: install_dependencies
+      shell: bash
+      run: |
+          set -ex
+          # We will install some external dependencies here
+          CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
+          case ${{matrix.os}} in
+            (ubuntu*)
+              sudo apt update
+              # install compiler
+              if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
+                  # package is called clang, need libomp-dev for OpenMP support
+                  sudo apt install $CC libomp-dev
+              else
+                  sudo apt install $CXX
+              fi
+              # other dependencies
+              sudo apt install libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev
+              if test "${{matrix.ITK}}XX" == "ONXX"; then
+                sudo apt install libinsighttoolkit5-dev
+              fi
+              # free up some disk space
+              apt autoremove --purge && sudo apt clean
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+            (macOS*)
+              brew install boost swig python nlohmann-json
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+            (windows*)
+              # this compiles the whole thing so takes ages
+              vcpkg install boost-core hdf5 nlohmann-json
+              # swig is preinstalled and is currently not in vcpcg
+              vcpkg list
+              PYTHON_EXECUTABLE=$(which python3)
+              ;;
+          esac
+          echo PYTHON_EXECUTABLE="$PYTHON_EXECUTABLE" >> $GITHUB_ENV
+          ${PYTHON_EXECUTABLE} -m venv ${GITHUB_WORKSPACE}/my-env
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          #python -m pip install -U pip
+          case ${{matrix.os}} in
+            (macOS*)
+              # attempt to get round buggy Accelerate builds, see https://github.com/numpy/numpy/issues/15947
+              # but it didn't work, so commented out
+              # brew install openblas
+              # export OPENBLAS=$(brew --prefix openblas)
+              #python -m pip install --no-cache-dir --no-binary  numpy numpy # avoid the cached .whl!
+              python -m pip install numpy
+              ;;
+            (*)
+              python -m pip install numpy
+              ;;
+          esac
+          python -m pip install pytest
+
+          if test "${{matrix.parallelproj}}XX" == "ONXX"; then
+             git clone --depth 1 --branch v1.7.3 https://github.com/gschramm/parallelproj
+             mkdir parallelproj/build
+             cd parallelproj/build
+             if test "${{matrix.cuda_version}}" == "0"; then
+               extra_args="-DSKIP_CUDA_LIB:BOOL=ON"
+             fi
+             cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_args}
+             cmake --build . --target install --config Release
+             cd ../..
+             rm -rf parallelproj
+          fi
+
+          # Install ROOT (warning: currently only valid on Ubuntu)
+          if test "${{matrix.ROOT}}XX" == "ONXX"; then
+             ROOT_file=root_v6.28.12.Linux-ubuntu20-x86_64-gcc9.4.tar.gz
+             wget https://root.cern/download/"$ROOT_file"
+             tar -xzvf "$ROOT_file"
+             rm "$ROOT_file"
+             source root/bin/thisroot.sh
+          fi
+
+          # we'll install some dependencies with shared libraries, so need to let the OS know
+          # thisroot.sh also modified the path, so save that for the recon_test_pack
+          case ${{matrix.os}} in
+            (ubuntu*)
+              echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+              echo PATH="$PATH" >> $GITHUB_ENV
+              ;;
+            (macOS*)
+              echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$DYLD_FALLBACK_LIBRARY_PATH" >> $GITHUB_ENV
+              echo PATH="$PATH" >> $GITHUB_ENV
+              ;;
+            (windows*)
+              echo PATH="${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/bin:$PATH" >> $GITHUB_ENV
+              ;;
+          esac
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}
+        max-size: "2G"
+
+    - name: configure
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
+      run: |
+          set -ex
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          #export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          cmake --version
+          if test "XX$CC" != "XX"; then
+              $CC --version
+              $CXX --version
+          fi
+          CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
+          # make available to jobs below
+          echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
+          EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL"
+          echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
+          mkdir build
+          cd build
+          cmake -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
+          # report disk space
+          case ${{matrix.os}} in
+            (ubuntu* | macOS*)
+              df -h
+              ;;
+            (windows*)
+              # no idea how to do this
+              ;;
+           esac
+
+    - name: build
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          cd ${GITHUB_WORKSPACE}/build;
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
+
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
+
+    - name: ctest
+      shell: bash
+      env:
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          set -vx
+          cd ${GITHUB_WORKSPACE}/build
+          # find test exclusions. Complicated due to need of single -E argument and | pattern
+          if test ${{matrix.cuda_version}} != "0"; then
+              # No CUDA drivers on GitHub Actions
+              EXCLUDE="parallelproj|test_blocks_on_cylindrical_projectors"
+          fi
+          # don't run all of them in Debug mode as it takes too long
+          if test ${BUILD_TYPE} = Debug; then
+              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              EXCLUDE="${EXCLUDE_Debug}${EXCLUDE:+"|"}${EXCLUDE}"
+          fi
+          # prepend -E
+          if [ ! -z "${EXCLUDE}" ]; then
+              EXCLUDE="-E ${EXCLUDE}"
+          fi
+          # execute tests
+          ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
+
+    - name: C++ examples with STIR_LOCAL
+      shell: bash
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          # Run examples to see if they work
+          cd ${GITHUB_WORKSPACE}/examples/PET_simulation
+          ./run_simulation.sh 1> /dev/null
+
+          # Run the Demo executables
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++/using_STIR_LOCAL
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL
+
+          generate_image generate_image.par
+          forward_project sino.hs image.hv  small.hs
+
+          # Cannot test demo1 or demo2 as they require interactivity. Piping does not work.
+          ${EXE_LOC}/demo3 demo.par --display_off
+          ${EXE_LOC}/demo3 demoPM.par --display_off
+          ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
+          ${EXE_LOC}/demo5_line_search demo5_line_search.par
+
+    - name: remove build
+      shell: bash
+         # remove to create some disk space
+      run: |
+          set -x
+          cd ${GITHUB_WORKSPACE}
+          df -h .
+          rm -rf ./build
+          df -h .
+
+    - name: C++ examples with installed STIR
+      shell: bash
+      run: |
+          set -ex;
+          # build and run C++/using_installed_STIR
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
+          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+          cmake --build build/ --config Release  --target install
+          # run demo
+          demo_create_image
+          # just check if its output makes sense
+          list_image_info test.hv
+          rm -rf build
+
+    - name: recon_test_pack
+      shell: bash
+      env:
+          BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
+          BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          cd ${GITHUB_WORKSPACE}/recon_test_pack
+          ./run_tests.sh --nointbp
+          # don't run all of them in Debug mode as it takes too long
+          if test ${BUILD_TYPE} != Debug; then
+            ./run_test_simulate_and_recon.sh
+            ./run_test_listmode_recon.sh
+            ./run_test_simulate_and_recon_with_motion.sh
+            ./run_scatter_tests.sh
+            ./run_test_zoom_image.sh
+            ./run_ML_norm_tests.sh
+            if test "${{matrix.ROOT}}XX" == "ONXX"; then ./run_root_GATE.sh; fi
+            ./run_tests_modelling.sh
+            cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
+            ./run_SPECT_tests.sh
+          fi
+
+    - name: Upload recon_test_pack log files for debugging
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+          ${{ github.workspace }}/recon_test_pack/**/my_*v
+          ${{ github.workspace }}/recon_test_pack/**/my_*s
+        retention-days: 7
+
+    - name: remove recon_test_pack
+      shell: bash
+      run: |
+          rm -rf ${GITHUB_WORKSPACE}/recon_test_pack
+
+    - name: Python
+      shell: bash
+      run: |
+          set -ex
+          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          # Run Python tests, making sure we're using the correct Python interpreter
+          which python
+          export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/python
+          cd ${GITHUB_WORKSPACE}/src
+          case ${{matrix.os}} in
+            (macOS*)
+              echo skipping pytest due to numpy problem for now.
+              ;;
+            (*)
+              python -m pytest .
+              ;;
+          esac

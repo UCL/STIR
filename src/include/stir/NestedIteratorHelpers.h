@@ -4,15 +4,7 @@
     Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -20,23 +12,22 @@
 #define __stir_NestedIteratorHelpers__H__
 
 /*!
-  \file 
- 
+  \file
+
   \brief This file defines supporting function objects for stir::NestedIterator.
   \ingroup buildblock
 
   \author Kris Thielemans
-  
+
 */
 
 #include "stir/common.h"
 #include "boost/iterator/iterator_traits.hpp"
 #include "boost/pointee.hpp"
 
-
 START_NAMESPACE_STIR
 
-/*! \name Function objects that can be used for NestedIterator. 
+/*! \name Function objects that can be used for NestedIterator.
   \ingroup buildblock
 */
 //@{
@@ -152,14 +143,13 @@ class ConstPtrBeginEndAllFunction
 
 // new implementation
 
-
 //! Helper class for NestedIterator when the 1st level iterator refers to an ordinary iterator for the 2nd level iterator
 /*! \param TopLevelIterT type of the top-level iterator to be used for NestedIterator.
     \param RestIterT type of the 2nd level iter.
 
     This class can be used for the case where the 2nd level iterators can be obtained by using \c top_level_iter.begin() etc,
     e.g. for \c std::vector<std::vector<int> >
-    
+
     The default for \c RestIterT is suitable for most cases, as it finds \c RestIterT from the iterator traits
     of \c TopLevelIterT.
 */
@@ -171,26 +161,25 @@ public:
   typedef RestIterT rest_iter_type;
   //! function to get the first 2nd level iterator for a top-level iterator
   /*! returns \c (*iter).begin() */
-  inline RestIterT begin(const TopLevelIterT& iter) const
-  {  return iter->begin(); }
+  inline RestIterT begin(const TopLevelIterT& iter) const { return iter->begin(); }
   //! function to get the "end" 2nd level iterator for a top-level iterator
-  inline RestIterT end(const TopLevelIterT& iter) const
-  {  return iter->end(); }
+  inline RestIterT end(const TopLevelIterT& iter) const { return iter->end(); }
 };
 
-//! Helper class for NestedIterator when the 1st level iterator refers to pointers to an ordinary iterator for the 2nd level iterator
+//! Helper class for NestedIterator when the 1st level iterator refers to pointers to an ordinary iterator for the 2nd level
+//! iterator
 /*! \param TopLevelIterT type of the top-level iterator to be used for NestedIterator.
     \param RestIterT type of the 2nd level iter.
 
     This class can be used for the case where the 2nd level iterators can be obtained by using \c top_level_iter->begin() etc,
-    e.g. for \c std::vector<std::vector<int> *> or std::vector<shared_ptr<std::vector<int> > >. 
+    e.g. for \c std::vector<std::vector<int> *> or std::vector<shared_ptr<std::vector<int> > >.
 
     The default for \c RestIterT is suitable for most cases, as it finds \c RestIterT from the iterator traits
-    of \c TopLevelIterT. 
+    of \c TopLevelIterT.
 
     \see BeginEndFunction
 */
-template <class TopLevelIterT, 
+template <class TopLevelIterT,
           class RestIterT = typename boost::pointee<typename boost::iterator_value<TopLevelIterT>::type>::type::iterator>
 class PtrBeginEndFunction
 {
@@ -198,11 +187,9 @@ public:
   typedef RestIterT rest_iter_type;
   //! function to get the first 2nd level iterator for a top-level iterator
   /*! returns \c (**iter).begin() */
-  inline RestIterT begin(const TopLevelIterT& iter) const
-  {   return (**iter).begin(); }
+  inline RestIterT begin(const TopLevelIterT& iter) const { return (**iter).begin(); }
   //! function to get the "end" 2nd level iterator for a top-level iterator
-  inline RestIterT end(const TopLevelIterT& iter) const
-  {  return (**iter).end(); }
+  inline RestIterT end(const TopLevelIterT& iter) const { return (**iter).end(); }
 };
 
 //! Helper class for NestedIterator when the 1st level iterator refers to a stir full iterator for the 2nd level iterator
@@ -211,7 +198,7 @@ public:
 
     This class can be used for the case where the 2nd level iterators can be obtained by using \c top_level_iter.begin_all() etc,
     e.g. for \c std::vector<Array<2,float> >
-    
+
     The default for \c RestIterT is suitable for most cases, as it finds \c RestIterT from the iterator traits
     of \c TopLevelIterT.
 
@@ -222,69 +209,69 @@ class BeginEndAllFunction
 {
 public:
   typedef RestIterT rest_iter_type;
-  inline RestIterT begin(const TopLevelIterT& iter) const
-  {  return iter->begin_all(); }
-  inline RestIterT end(const TopLevelIterT& iter) const
-  {  return iter->end_all(); }
+  inline RestIterT begin(const TopLevelIterT& iter) const { return iter->begin_all(); }
+  inline RestIterT end(const TopLevelIterT& iter) const { return iter->end_all(); }
 };
 
-//! Helper class for NestedIterator when the 1st level iterator refers to a pointer to a stir full iterator for the 2nd level iterator
+//! Helper class for NestedIterator when the 1st level iterator refers to a pointer to a stir full iterator for the 2nd level
+//! iterator
 /*! \param TopLevelIterT type of the top-level iterator to be used for NestedIterator.
     \param RestIterT type of the 2nd level iter.
 
     This class can be used for the case where the 2nd level iterators can be obtained by using \c top_level_iter->begin_all() etc,
     e.g. for \c std::vector<Array<2,float> * > or std::vector<shared_ptr<Array<2,float> > >.
-    
+
     The default for \c RestIterT is suitable for most cases, as it finds \c RestIterT from the iterator traits
     of \c TopLevelIterT.
 
     \see BeginEndFunction, BeginEndAllFunction
 */
-template <class TopLevelIterT, 
+template <class TopLevelIterT,
           class RestIterT = typename boost::pointee<typename boost::iterator_value<TopLevelIterT>::type>::type::full_iterator>
 class PtrBeginEndAllFunction
 {
 public:
   typedef RestIterT rest_iter_type;
-  inline RestIterT begin(const TopLevelIterT& iter) const
-  {  return (**iter).begin_all(); }
-  inline RestIterT end(const TopLevelIterT& iter) const
-  {  return (**iter).end_all(); }
+  inline RestIterT begin(const TopLevelIterT& iter) const { return (**iter).begin_all(); }
+  inline RestIterT end(const TopLevelIterT& iter) const { return (**iter).end_all(); }
 };
 
 //! Convenience class where the 2nd level iterator is a \c const_iterator
 /*! This class just changes the default of BeginEndFunction. */
 template <class TopLevelIterT, class RestIterT = typename boost::iterator_value<TopLevelIterT>::type::const_iterator>
-class ConstBeginEndFunction 
-  : public BeginEndFunction<TopLevelIterT, RestIterT>
-{};
+class ConstBeginEndFunction : public BeginEndFunction<TopLevelIterT, RestIterT>
+{
+};
 
 //! Convenience class where the 2nd level iterator is a \c const_full_iterator
 /*! This class just changes the default of BeginEndAllFunction. */
 template <class TopLevelIterT, class RestIterT = typename boost::iterator_value<TopLevelIterT>::type::const_full_iterator>
-class ConstBeginEndAllFunction 
-  : public BeginEndAllFunction<TopLevelIterT, RestIterT>
-{};
+class ConstBeginEndAllFunction : public BeginEndAllFunction<TopLevelIterT, RestIterT>
+{
+};
 
 //! Convenience class where the 2nd level iterator is a \c const_iterator
 /*! This class just changes the default of PtrBeginEndFunction. */
 template <class TopLevelIterT>
-class ConstPtrBeginEndFunction 
-  : public PtrBeginEndFunction<TopLevelIterT, 
-                               typename boost::pointee<typename boost::iterator_value<TopLevelIterT>::type>::type::const_iterator>
-{};
+class ConstPtrBeginEndFunction
+    : public PtrBeginEndFunction<
+          TopLevelIterT,
+          typename boost::pointee<typename boost::iterator_value<TopLevelIterT>::type>::type::const_iterator>
+{
+};
 
 //! Convenience class where the 2nd level iterator is a \c const_full_iterator
 template <class TopLevelIterT>
 class ConstPtrBeginEndAllFunction
-  : public PtrBeginEndAllFunction<TopLevelIterT, 
-                                  typename boost::pointee<typename boost::iterator_value<TopLevelIterT>::type>::type::const_full_iterator>
-{};
+    : public PtrBeginEndAllFunction<
+          TopLevelIterT,
+          typename boost::pointee<typename boost::iterator_value<TopLevelIterT>::type>::type::const_full_iterator>
+{
+};
 
 #endif // #if between old and new implementation
 
 //@}
-
 
 END_NAMESPACE_STIR
 

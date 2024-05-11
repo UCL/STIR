@@ -5,7 +5,7 @@ set(dir display)
 
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir}_LIB_SOURCES 
-	  display_array
+	  display_array.cxx
 )
 
 find_package(X11)
@@ -23,15 +23,14 @@ set(GRAPHICS ${default_GRAPHICS}
 if( "${GRAPHICS}" STREQUAL "X")
 	set(${dir}_LIB_SOURCES 
 	  ${${dir}_LIB_SOURCES}
-	  gen screengen screen
+	  gen.c screengen.c screen.c
 	)
 	ADD_DEFINITIONS(-DSTIR_SIMPLE_BITMAPS -DSC_XWINDOWS)
 
 elseif("${GRAPHICS}" STREQUAL "PGM")
 	ADD_DEFINITIONS(-DSTIR_PGM)
-else()
-# TODO
-#ifeq "$(GRAPHICS)" "MATHLINK"
+elseif("$(GRAPHICS)" STREQUAL "MATHLINK")
+  message(FATAL_ERROR "Mathlink (i.e. Mathematica) support needs to be fixed. sorry.")
 # this presumably needs a Mathlink library, depends on your system though
 #GRAPH_LIBS =
 #GRAPHOPT = -DSTIR_MATHLINK
@@ -47,7 +46,7 @@ include(stir_lib_target)
 if( "${GRAPHICS}" STREQUAL "X")
 	find_package(Curses REQUIRED)
 	INCLUDE_DIRECTORIES(${X11_INCLUDE_DIR} ${CURSES_INCLUDE_DIR})
-	target_link_libraries(${dir} ${X11_LIBRARIES} ${CURSES_LIBRARY})
+	target_link_libraries(${dir} PUBLIC ${X11_LIBRARIES} ${CURSES_LIBRARY})
 endif()
 
-target_link_libraries(${dir} buildblock)
+target_link_libraries(${dir} PUBLIC buildblock)
