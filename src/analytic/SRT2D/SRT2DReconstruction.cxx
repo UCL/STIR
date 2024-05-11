@@ -652,7 +652,7 @@ void SRT2DReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int
 
 float SRT2DReconstruction::hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC) {
 	
-	float term, trm0, termd0, termd; 
+	float term, trm0, termd0; 
 	float d, d_div_6, minus_half_div_d;
 	
 	d = p[1]-p[0]; 
@@ -672,7 +672,7 @@ float SRT2DReconstruction::hilbert_der(float x, float f[], float ddf[], float p[
 	
 	for (int ip=0; ip<sp-2; ip++) {    
 		float trm1 = d_div_6 + minus_half_div_d*(p[ip+2]-x)*(p[ip+2]-x);
-		termd =  (f[ip+2]-f[ip+1])/d  + ddf[ip+1]*trm1 - ddf[ip+2]*trm0; 
+		float termd =  (f[ip+2]-f[ip+1])/d  + ddf[ip+1]*trm1 - ddf[ip+2]*trm0; 
 		term += (termd0-termd) * lg[ip+1]; 
 		termd0 = termd;
 		trm0 = trm1; 
@@ -684,12 +684,12 @@ float SRT2DReconstruction::hilbert_der(float x, float f[], float ddf[], float p[
 void SRT2DReconstruction::spline(float x[],float y[],int n, float y2[]) {
 	// function for nanural qubic spline.
 	int i, k;
-	float qn, sig, un;
-	float u[n];
+	float qn, un;
+	float u[n]; 
 	y2[0]=0.0;
 	u[0]=0.0;
 	for(i=1; i<n-1; i++) {
-		sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
+		float sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
 		float p=sig*y2[i-1]+2.0;
 		y2[i]=(sig-1.0)/p;
 		u[i]=(6.0*((y[i+1]-y[i])/(x[i+1]-x[i])-(y[i]-y[i-1])/(x[i]-x[i-1]))/(x[i+1]-x[i-1])-sig*u[i-1])/p;
