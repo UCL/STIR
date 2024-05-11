@@ -870,12 +870,12 @@ float SRT2DSPECTReconstruction::splint(float xa[], float ya[], float y2a[], int 
 void SRT2DSPECTReconstruction::spline(float x[],float y[],int n, float y2[]) {
 	// function for nanural qubic spline.
 	int i, k;
-	float qn, sig, un;
+	float qn, un;
 	float u[n];
 	y2[0]=0.0; 
 	u[0]=0.0;
 	for(i=1; i<n-1; i++) {
-		sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
+		float sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
 		float p=sig*y2[i-1]+2.0;
 		y2[i]=(sig-1.0)/p;
 		u[i]=(6.0*((y[i+1]-y[i])/(x[i+1]-x[i])-(y[i]-y[i-1])/(x[i]-x[i-1]))/(x[i+1]-x[i-1])-sig*u[i-1])/p;
