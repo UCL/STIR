@@ -38,7 +38,7 @@ ${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformation_registries.cxx
 )
 
-SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D analytic_SRT2D   analytic_SRT2DSPECT  iterative_OSMAPOSL  
+SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D   analytic_SRT2DSPECT  iterative_OSMAPOSL  
      iterative_OSSPS
       scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
       display  IO  data_buildblock numerics_buildblock  buildblock 
