@@ -5,15 +5,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -24,29 +16,42 @@
 
 
 # add the STIR include directory to the search path for the compiler
-include_directories ("${PROJECT_SOURCE_DIR}/src/include")
+SET (STIR_INCLUDE_DIR 
+     "${PROJECT_SOURCE_DIR}/src/include"
+)
 
-SET( STIR_IO_REGISTRIES ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx)
+# add STIR include directories before existing include paths such that
+# files there are used, as opposed to an existing STIR installation elsewhere
+include_directories (BEFORE "${STIR_INCLUDE_DIR}")
+
+# registries
+SET (STIR_IO_REGISTRIES
+     ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx
+     )
 
 SET ( STIR_REGISTRIES
 ${PROJECT_SOURCE_DIR}/src/buildblock/buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/data_buildblock/data_buildblock_registries.cxx
-${STIR_IO_REGISTRIES}
+${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/recon_buildblock/recon_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/Shape_buildblock/Shape_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformation_registries.cxx
+${PROJECT_SOURCE_DIR}/src/scatter_buildblock/scatter_registries.cxx
 )
 
-SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D   analytic_SRT2DSPECT  iterative_OSMAPOSL  
+# need to list IO first such that its dependencies on other libraries are resolved
+SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D analytic_SRT2DSPECT  iterative_OSMAPOSL   iterative_KOSMAPOSL
      iterative_OSSPS
       scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
-      display  IO  data_buildblock numerics_buildblock  buildblock 
+      display   data_buildblock numerics_buildblock buildblock
       spatial_transformation_buildblock
-      Shape_buildblock eval_buildblock  
-      # repeat for linking
-      numerics_buildblock modelling_buildblock listmode_buildblock)
+      Shape_buildblock eval_buildblock 
+)
 
+#copy to PARENT_SCOPE
+SET( STIR_REGISTRIES ${STIR_REGISTRIES} PARENT_SCOPE)
+SET( STIR_LIBRARIES ${STIR_LIBRARIES} PARENT_SCOPE)
 
 SET( STIR_DIRS
      buildblock
@@ -66,10 +71,11 @@ SET( STIR_DIRS
      modelling_utilities
      listmode_utilities
      analytic/FBP2D
- 		 analytic/SRT2D
-    analytic/SRT2DSPECT
+     analytic/SRT2D
+     analytic/SRT2DSPECT
      analytic/FBP3DRP
      iterative/OSMAPOSL  
+     iterative/KOSMAPOSL
      iterative/OSSPS
      iterative/POSMAPOSL  
      iterative/POSSPS
@@ -82,6 +88,10 @@ if (HAVE_ECAT)
   list(APPEND STIR_DIRS utilities/ecat)
 endif()
 
+if (HAVE_UPENN)
+  list(APPEND STIR_DIRS utilities/UPENN)
+endif()
+
 
 SET( STIR_TEST_DIRS
      recon_test  
@@ -89,3 +99,7 @@ SET( STIR_TEST_DIRS
      test/numerics
      test/modelling
 )
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND STIR_TEST_DIRS test/NiftyPET_projector)
+endif()
