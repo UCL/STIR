@@ -4,6 +4,7 @@
 #ifndef __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 #define __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 
+//author Dimitra Kyriakopoulou
  
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -13,11 +14,11 @@
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Array.h"
-#include <vector> 
+#include <vector>   
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
 #include <math.h>
-#include "stir/Bin.h"
+#include "stir/Bin.h" 
 #include "stir/round.h"  
 #include "stir/display.h"
 #include <algorithm>
@@ -126,15 +127,22 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing(); 
 
- inline void spline(float x[],float y[],int n, float y2[]);
+ /*inline void spline(float x[],float y[],int n, float y2[]);
 
 inline float hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC);
 inline float integ(float dist, int max, float ff[]);
 float splint(float xa[], float ya[], float y2a[], int n, float x);
 float hilbert_node(float x, float f[], float ddf[], float p[], int sp, float fn); 
-float hilbert_derivative(float x, float f[], float ddf[], float p[], int sp);
+//float hilbert_derivative(float x, float f[], float ddf[], float p[], int sp);
 void hilbert_der_double(float x, float f[], float ddf[], float f1[], float ddf1[], float p[], int sp, float *dhp, float *dh1p, float lg[]);
 float hilbert(float x, float f[], float ddf[], float p[], int sp, float lg[]);
+*/
+float hilbert_node(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn);
+float hilbert(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, std::vector<float>& lg);
+void hilbert_der_double(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& f1, const std::vector<float>& ddf1, const std::vector<float>& p, int sp, float* dhp, float* dh1p, const std::vector<float>& lg);
+float splint(const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x);
+void spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2);
+float integ(float dist, int max, float ff[]);
 
 void wiener(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa); 
 void median(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa); 
