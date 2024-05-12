@@ -1,3 +1,5 @@
+//author Dimitra Kyriakopoulou
+
 #include "stir/analytic/SRT2D/SRT2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
@@ -11,7 +13,7 @@
 #include "stir/round.h"
 #include "stir/display.h" 
 #include <algorithm>
-#include "stir/IO/interfile.h" 
+#include "stir/IO/interfile.h"  
 #include "stir/info.h" 
 #include <boost/format.hpp>   
  
@@ -260,13 +262,13 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
   //Old static array declarations: float f[sth][sp], ddf[sth][sp];
   // New dynamic declaration using std::vector
-  std::vector<std::vector<float>> f(sth, std::vector<float>(sp));
-  std::vector<std::vector<float>> ddf(sth, std::vector<float>(sp));
+  std::vector<std::vector<float>> f(sth, std::vector<float>(sp,0.0f));
+  std::vector<std::vector<float>> ddf(sth, std::vector<float>(sp,0.0f));
 
   // Old declarations: float f_ud[sth][sp], ddf_ud[sth][sp]; 
   // New declarations using std::vector of std::vector
-  std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp));
-  std::vector<std::vector<float>> ddf_ud(sth, std::vector<float>(sp));
+  std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp,0.0f));
+  std::vector<std::vector<float>> ddf_ud(sth, std::vector<float>(sp,0.0f));
 
 	//float f_ud[sth][sp], ddf_ud[sth][sp];
 	//float f1[sth][sp], ddf1[sth][sp];
@@ -278,24 +280,24 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	//float f1_th_ud[sth][sp], ddf1_th_ud[sth][sp];
 	
 	// Convert these arrays to std::vector<std::vector<float>>
-	std::vector<std::vector<float>> f1(sth, std::vector<float>(sp));
-	std::vector<std::vector<float>> ddf1(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> f1(sth, std::vector<float>(sp,0.0f));
+	std::vector<std::vector<float>> ddf1(sth, std::vector<float>(sp,0.0f));
 
-	std::vector<std::vector<float>> f1_ud(sth, std::vector<float>(sp));
-	std::vector<std::vector<float>> ddf1_ud(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> f1_ud(sth, std::vector<float>(sp,0.0f));
+	std::vector<std::vector<float>> ddf1_ud(sth, std::vector<float>(sp,0.0f));
 
 
-	std::vector<std::vector<float>> f_th(sth, std::vector<float>(sp));
-	std::vector<std::vector<float>> ddf_th(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> f_th(sth, std::vector<float>(sp,0.0f));
+	std::vector<std::vector<float>> ddf_th(sth, std::vector<float>(sp,0.0f));
 
-	std::vector<std::vector<float>> f_th_ud(sth, std::vector<float>(sp));
-	std::vector<std::vector<float>> ddf_th_ud(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> f_th_ud(sth, std::vector<float>(sp,0.0f));
+	std::vector<std::vector<float>> ddf_th_ud(sth, std::vector<float>(sp,0.0f));
 
-	std::vector<std::vector<float>> f1_th(sth, std::vector<float>(sp));
-	std::vector<std::vector<float>> ddf1_th(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> f1_th(sth, std::vector<float>(sp,0.0f));
+	std::vector<std::vector<float>> ddf1_th(sth, std::vector<float>(sp,0.0f));
 
-	std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp));
-	std::vector<std::vector<float>> ddf1_th_ud(sth, std::vector<float>(sp));
+	std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp,0.0f));
+	std::vector<std::vector<float>> ddf1_th_ud(sth, std::vector<float>(sp,0.0f));
 
 
   //	float lg[sp], termC[sth], termC_th[sth]; 
@@ -593,8 +595,8 @@ void SRT2DReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, in
 	    
 	for(int ia=0; ia<sa; ia++) { 
 		//float localMean[sx][sy], localVar[sx][sy], 
-    std::vector<std::vector<float>> localMean(sx, std::vector<float>(sy, 0));
-    std::vector<std::vector<float>> localVar(sx, std::vector<float>(sy, 0));
+    std::vector<std::vector<float>> localMean(sx, std::vector<float>(sy, 0.0f));
+    std::vector<std::vector<float>> localVar(sx, std::vector<float>(sy, 0.0f));
   
    float noise=0.; 
 		
@@ -747,13 +749,15 @@ float SRT2DReconstruction::hilbert_der(float x, const std::vector<float>& f, con
 	return term; 
 }
 
+
 //void SRT2DReconstruction::spline(float x[],float y[],int n, float y2[]) {
 void SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) {
 	// function for nanural qubic spline.
 	int i, k;
 	float qn, un;
-	float u[n]; 
-	y2[0]=0.0;
+//	float u[n]; 
+    std::vector<float> u(n);
+	y2[0]=0.0; 
 	u[0]=0.0;
 	for(i=1; i<n-1; i++) {
 		float sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
@@ -766,8 +770,10 @@ void SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<
 	y2[n-1]=(un-qn*u[n-2])/(qn*y2[n-2]+1.0);
 	for(k=n-2; k>=0; k--)
 		y2[k]=y2[k]*y2[k+1]+u[k];
-	return;
+	return; 
 }
+
+
 
 //float SRT2DReconstruction::integ(float dist, int max, float ff[]) {
 float SRT2DReconstruction::integ(float dist, int max, const std::vector<float>& ff) {
