@@ -1,3 +1,4 @@
+//author Dimitra Kyriakopoulou
      
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -16,7 +17,7 @@
 #include "stir/display.h"
 #include <algorithm>
 #include "stir/IO/interfile.h"
-#include "stir/info.h"
+#include "stir/info.h" 
 #include <boost/format.hpp>  
   
 #include "stir/RelatedViewgrams.h"
@@ -29,6 +30,11 @@
 #include "stir/num_threads.h"
 //using std::cerr; 
 //using std::endl;
+
+#include <cmath>// For M_PI and other math functions
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
  
 START_NAMESPACE_STIR
 
@@ -239,6 +245,7 @@ density_ptr->fill(0);
 //view=filter.view;
 	Viewgram<float> view_atten = atten_data_ptr->get_empty_viewgram(0,0); 
 
+ // Retrieve runtime-dependent sizes
 	const int sp = proj_data_ptr->get_num_tangential_poss(); 
 	const int sth = proj_data_ptr->get_num_views();
 	const int sa = proj_data_ptr->get_num_axial_poss(0);
@@ -269,27 +276,50 @@ RelatedViewgrams<float> viewgrams;
 	const int image_min_x = image.get_min_x();
 	const int image_min_y = image.get_min_y();
  		
-	float th[sth], p[sp], x1[sx], x2[sy]; 
-	float g[sa][sp], ddg[sa][sp];
+	//float th[sth], p[sp], x1[sx], x2[sy]; 
+	std::vector<float> th(sth,0), p(sp,0), x1(sx,0), x2(sy,0);
+	//	float g[sa][sp], ddg[sa][sp];
+	std::vector<std::vector<float>> g(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> ddg(sa, std::vector<float>(sp,0));
+
 
 	const int Nt = 8, Nmul = sth/Nt; 
-	float lg[sp], hilb[sa][sp], fcpe[sa][sp], fspe[sa][sp], fc[sa][sp], fs[sa][sp], ddfc[sa][sp], ddfs[sa][sp], dh1[Nt], dh2[Nt], f[sa][sp], ddf[sa][sp], t[Nt]; 
+	//	float lg[sp], 
+	std::vector<float> lg(sp,0);
+
+	float dh1[Nt], dh2[Nt], t[Nt];
+
+	//float hilb[sa][sp], fcpe[sa][sp], fspe[sa][sp], fc[sa][sp], fs[sa][sp], ddfc[sa][sp], ddfs[sa][sp], dh1[Nt], dh2[Nt], f[sa][sp], ddf[sa][sp], t[Nt]; 
+	std::vector<std::vector<float>> hilb(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> fcpe(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> fspe(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> fc(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> fs(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> ddfc(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> ddfs(sa, std::vector<float>(sp,0));
+
+	std::vector<std::vector<float>> f(sa, std::vector<float>(sp,0));
+	std::vector<std::vector<float>> ddf(sa, std::vector<float>(sp,0));
+
+
 	float rho, h, fcme_fin, fsme_fin, fc_fin, fs_fin, fcpe_fin, fspe_fin, hc_fin, hs_fin, I, Ft1, Ft2, rho1, rho2, tau, tau1, tau2, rx1, rx2; 
 	float gx, w, F; 
 	
 	//float rx1x2th[sa][sx][sy], lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1]; 
-float lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1]; 
+	//float lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1]; 
+	std::vector<std::vector<float>> lg1_cache(Nt/2, std::vector<float>(sp-1,0));
+	std::vector<std::vector<float>> lg2_cache(Nt/2, std::vector<float>(sp-1,0));
 
-float *** rx1x2th = reinterpret_cast<float ***>(malloc(sa * sizeof(float **)));
-for (int i = 0; i < sa; i++) {
-    rx1x2th[i] = reinterpret_cast<float **>(malloc(sx * sizeof(float *)));
-    for (int j = 0; j < sx; j++) {
-        rx1x2th[i][j] = reinterpret_cast<float *>(malloc(sy * sizeof(float)));
-        for (int k = 0; k < sy; k++) {
-            rx1x2th[i][j][k] = 0.; // Initialize to zero
-        }
-    }
-}
+	float *** rx1x2th = reinterpret_cast<float ***>(malloc(sa * sizeof(float **)));
+	for (int i = 0; i < sa; i++) {
+		  rx1x2th[i] = reinterpret_cast<float **>(malloc(sx * sizeof(float *)));
+		  for (int j = 0; j < sx; j++) {
+		      rx1x2th[i][j] = reinterpret_cast<float *>(malloc(sy * sizeof(float)));
+		      for (int k = 0; k < sy; k++) {
+		          rx1x2th[i][j][k] = 0.; // Initialize to zero
+		      }
+		  }
+	} 
  
 
 /* float *** rx1x2th = (float ***)malloc(sa*sizeof(float**));
@@ -299,10 +329,45 @@ for (int i = 0; i < sa; i++) {
               rx1x2th[i][j] = (float *)malloc(sy*sizeof(float));
 							for(int k=0; k<sy; k++) rx1x2th[i][j][k] = 0.; 
           }
-        }*/
+        } */
 
-	float f_cache[sa][Nt/2][sp], ddf_cache[sa][Nt/2][sp]; 
-	float f1_cache[sa][Nt/2][sp], ddf1_cache[sa][Nt/2][sp]; 
+//	float f_cache[sa][Nt/2][sp], ddf_cache[sa][Nt/2][sp]; 
+//	float f1_cache[sa][Nt/2][sp], ddf1_cache[sa][Nt/2][sp]; 
+  std::vector<std::vector<std::vector<float>>> f_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
+  std::vector<std::vector<std::vector<float>>> ddf_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
+  std::vector<std::vector<std::vector<float>>> f1_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
+  std::vector<std::vector<std::vector<float>>> ddf1_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
+/*
+// Create a 3D vector
+std::vector<std::vector<std::vector<float>>> f_cache;
+std::vector<std::vector<std::vector<float>>> ddf_cache;
+std::vector<std::vector<std::vector<float>>> f1_cache;
+std::vector<std::vector<std::vector<float>>> ddf1_cache;
+
+// Resize first dimension
+f_cache.resize(sa);
+ddf_cache.resize(sa);
+f1_cache.resize(sa);
+ddf1_cache.resize(sa);
+
+// Iterate over the first dimension
+for (int i = 0; i < sa; ++i) {
+    // Resize second dimension for each first dimension slice
+    f_cache[i].resize(Nt / 2);  // Make sure Nt/2 calculates to an integer value correctly
+    ddf_cache[i].resize(Nt / 2);
+		f1_cache[i].resize(Nt / 2);
+		ddf1_cache[i].resize(Nt / 2);
+    // Iterate over the second dimension
+    for (int j = 0; j < Nt / 2; ++j) {
+        // Resize third dimension for each second dimension slice and initialize values
+        f_cache[i][j].resize(sp, 0.0f);  // Initialize each float to 0.0
+        ddf_cache[i][j].resize(sp, 0.0f);
+        f1_cache[i][j].resize(sp, 0.0f);
+        ddf1_cache[i][j].resize(sp, 0.0f);
+    }
+}
+*/
+
 
 	#ifdef STIR_OPENMP
 	if (getenv("OMP_NUM_THREADS")==NULL) {
@@ -391,7 +456,8 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 	tau,a,b,tau1,tau2,w,rho1,rho2,lg1_cache,lg2_cache,f_node,h,fcme_fin,\
 	fsme_fin,fcpe_fin,fspe_fin,gx,fc_fin,fs_fin,hc_fin,hs_fin,rx1x2th,\
 	dh1,dh2,Ft1,Ft2,F,I,rx1,rx2)
-	#pragma omp for schedule(auto)  nowait
+//	#pragma omp for schedule(auto)  nowait
+	#pragma omp for schedule(dynamic)  nowait
 	#endif
 	for(int ith=0; ith<sth; ith++){
 
@@ -470,11 +536,17 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 				float C=1.0/6*(A*A*A-A)*(p2-p1)*(p2-p1);
 				float D=1.0/6*(B*B*B-B)*(p2-p1)*(p2-p1);
 				
+				/* 
 				for(int ip=0; ip<sp; ip++) { 
 					lg[ip] = log(fabs(p[ip]-rho)); 
 					if(fabs(p[ip]-rho)<2e-6) 
 						lg[ip] = 0.; 
+				}*/ 
+				for (int ip=0; ip<sp; ip++) {
+    				double val = fabs(rho - p[ip]);
+    				lg[ip] = val < 2e-6 ? 0. : std::log(val);  // Using std::log to specify the namespace
 				}
+
 				
 				// calculate I
 				tau=x2[ix2]*sin(th[ith])+x1[ix1]*cos(th[ith]);
@@ -539,8 +611,12 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 						////hilbert_der_double(rho2,f[Nmul*it],ddf[Nmul*it],f[Nmul*(it+Nt/2)],ddf[Nmul*(it+Nt/2)],p,sp,&dh2[it],&dh2[it+Nt/2]);
 						//hilbert_der_double(rho1,f_cache[ia][it],ddf_cache[ia][it],f_cache[ia][it+Nt/2],ddf_cache[ia][it+Nt/2],p,sp,&dh1[it],&dh1[it+Nt/2],lg1_cache[it]);
 						//hilbert_der_double(rho2,f_cache[ia][it],ddf_cache[ia][it],f_cache[ia][it+Nt/2],ddf_cache[ia][it+Nt/2],p,sp,&dh2[it],&dh2[it+Nt/2],lg2_cache[it]);
-						hilbert_der_double(rho1,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it+Nt/2],ddf1_cache[ia][it+Nt/2],p,sp,&dh1[it],&dh1[it+Nt/2],lg1_cache[it]);
-						hilbert_der_double(rho2,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it+Nt/2],ddf1_cache[ia][it+Nt/2],p,sp,&dh2[it],&dh2[it+Nt/2],lg2_cache[it]);
+
+						//hilbert_der_double(rho1,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it+Nt/2],ddf1_cache[ia][it+Nt/2],p,sp,&dh1[it],&dh1[it+Nt/2],lg1_cache[it]);
+						//hilbert_der_double(rho2,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it+Nt/2],ddf1_cache[ia][it+Nt/2],p,sp,&dh2[it],&dh2[it+Nt/2],lg2_cache[it]);
+						hilbert_der_double(rho1,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it],ddf1_cache[ia][it],p,sp,&dh1[it],&dh1[it+Nt/2],lg1_cache[it]);
+						hilbert_der_double(rho2,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it],ddf1_cache[ia][it],p,sp,&dh2[it],&dh2[it+Nt/2],lg2_cache[it]);
+
 						//dh1[it] = dh1[it+Nt/2] = dh2[it] = dh2[it+Nt/2] = 0; 
 					}
 					
@@ -567,7 +643,7 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 			for(int ix1=0; ix1<sx; ix1++) { 
 				//std::cerr << ix1 << ", "; 
 				for(int ix2=0; ix2<sy; ix2++) { 
-					aux=sqrt(1.0-x2[ix2]*x2[ix2]);
+					aux=sqrt(1.0-x2[ix2]*x2[ix2]); 
 					if(fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux) { 
 						continue;
 					}
@@ -614,9 +690,13 @@ void SRT2DSPECTReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int s
 	const int min_x = image.get_min_x();
 	const int min_y = image.get_min_y();
 	const int ws = 9; 
-	
+	    
 	for(int ia=0; ia<sa; ia++) { 
-		float localMean[sx][sy], localVar[sx][sy], noise=0.; 
+		//float localMean[sx][sy], localVar[sx][sy], 
+    std::vector<std::vector<float>> localMean(sx, std::vector<float>(sy, 0));
+    std::vector<std::vector<float>> localVar(sx, std::vector<float>(sy, 0));
+  
+   float noise=0.; 
 		
 		for(int i=0+1; i<sx-1; i++){ 
 			for(int j=0+1; j<sy-1; j++) { 
@@ -629,15 +709,21 @@ void SRT2DSPECTReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int s
 				
 				for(int k=-1; k<=1; k++) 
 					for(int l=-1; l<=1; l++) 
-						localVar[i][j] += pow(image[ia][min_x+i+k][min_y+j+l], 2)*1.; 
-				localVar[i][j] = localVar[i][j]/ws - pow(localMean[i][j], 2); 
-				
+				//		localVar[i][j] += std::pow(image[ia][min_x+i+k][min_y+j+l], 2)*1.; 
+				//localVar[i][j] = localVar[i][j]/ws - std::pow(localMean[i][j], 2); 
+        //Corrected version:
+				//localVar[i][j] += std::pow(static_cast<double>(image[ia][min_x+i+k][min_y+j+l]), 2.0); 
+				//localVar[i][j] = localVar[i][j]/ws - std::pow(static_cast<double>(localMean[i][j]), 2.0);
+
+				localVar[i][j] += image[ia][min_x+i+k][min_y+j+l] * image[ia][min_x+i+k] [min_y+j+l]; 
+			  localVar[i][j] = localVar[i][j]/ws - localMean[i][j] * localMean[i][j];
+
 				noise += localVar[i][j]; 
 			}
 		}
 		noise /= sx*sy; 
 		
-		for(int i=0+1; i<sx-1; i++) 
+		for(int i=0+1; i<sx-1; i++)  
 			for(int j=0+1; j<sy-1; j++) 
 				image[ia][min_x+i][min_y+j] = (image[ia][min_x+i][min_y+j] - localMean[i][j])/std::max(localVar[i][j], noise)* \
 								std::max(localVar[i][j] - noise, 0.f) + localMean[i][j]; 
@@ -646,14 +732,14 @@ void SRT2DSPECTReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int s
 }
 
 void SRT2DSPECTReconstruction::median(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa) { 
-	
-	const int min_x = image.get_min_x();
+		const int min_x = image.get_min_x();
 	const int min_y = image.get_min_y();
 	const int filter_size = 3;
 	const int offset = filter_size/2;
 	const int len = 4; 
-	double neighbors[9]; 
-	
+	//double neighbors[9]; 
+	std::vector<double> neighbors(filter_size * filter_size, 0);
+
 	for(int ia=0; ia<sa; ia++) { 
 		for(int i=0; i<9; i++) 
 			neighbors[i] = 0; 
@@ -664,15 +750,18 @@ void SRT2DSPECTReconstruction::median(VoxelsOnCartesianGrid<float>& image, int s
 					continue; 
 				for(int k=-offset; k<=offset; k++) { 
 					for(int l=-offset; l<=offset; l++) { 
-						neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];
-					}
+					//	neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];
+//          neighbors[(k + offset) * filter_size + (l + offset)] = image[ia][min_x + i + std::clamp(k + i, 0, sx - 1)][min_y + j + std::clamp(l + j, 0, sy - 1)];
+neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];			
+		}
 				}
-				std::sort(std::begin(neighbors), std::end(neighbors));
+				//std::sort(std::begin(neighbors), std::end(neighbors));
+        std::sort(neighbors.begin(), neighbors.end());
 				image[ia][min_x+i][min_y+j] = neighbors[len];
 			}
 		}
 	}
-	return; 
+	return;  
 
 }
 
@@ -701,7 +790,7 @@ void SRT2DSPECTReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx
 		float averagePixelValue = 0.; 
 		for(int i=0; i<sx; i++) { 
 			for(int j=0; j<sy; j++) { 
-				if(abs(image[ia][min_x+i][min_y+j])>0.1) { 
+				if(std::abs(image[ia][min_x+i][min_y+j])>0.1) { 
 					count++; 
 					averagePixelValue+=image[ia][min_x+i][min_y+j]; 
 				}
@@ -711,21 +800,22 @@ void SRT2DSPECTReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx
 		
 		float gamma_val = 1.; 
 		if(averagePixelValue>0.)
-			gamma_val = log(targetAverage) / log(averagePixelValue);
+			gamma_val = std::log(targetAverage) / std::log(averagePixelValue);
 		//img = img.^gamma; 
 		for(int i=0; i<sx; i++) 
 			for(int j=0; j<sy; j++) 
-				image[ia][min_x+i][min_y+j] = abs(image[ia][min_x+i][min_y+j])>1e-6 ? pow(image[ia][min_x+i][min_y+j],gamma_val) : image[ia][min_x+i][min_y+j]; 
+				image[ia][min_x+i][min_y+j] = std::abs(image[ia][min_x+i][min_y+j])>1e-6 ? std::pow(image[ia][min_x+i][min_y+j],gamma_val) : image[ia][min_x+i][min_y+j]; 
 		
 		// denormalize image
 		for(int i=0; i<sx; i++) 
 			for(int j=0; j<sy; j++) 
 				image[ia][min_x+i][min_y+j] = image[ia][min_x+i][min_y+j]*(max_val-min_val)+min_val; 
-	}
+	} 
 	return; 
 }
 
-float SRT2DSPECTReconstruction::hilbert_node(float x, float f[], float ddf[], float p[], int sp, float fn) 
+//float SRT2DSPECTReconstruction::hilbert_node(float x, float f[], float ddf[], float p[], int sp, float fn) 
+float SRT2DSPECTReconstruction::hilbert_node(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn)
 {
 	float dh; 
 	
@@ -745,7 +835,8 @@ float SRT2DSPECTReconstruction::hilbert_node(float x, float f[], float ddf[], fl
 	return dh; 
 }
 
-float SRT2DSPECTReconstruction::hilbert(float x, float f[], float ddf[], float p[], int sp, float lg[])
+//float SRT2DSPECTReconstruction::hilbert(float x, float f[], float ddf[], float p[], int sp, float lg[])
+float SRT2DSPECTReconstruction::hilbert(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, std::vector<float>& lg)
 {
 	float dh, Di; 
 	int i; 
@@ -787,8 +878,9 @@ float SRT2DSPECTReconstruction::hilbert(float x, float f[], float ddf[], float p
 	return dh; 
 }
 
-void SRT2DSPECTReconstruction::hilbert_der_double(float x, float f[], float ddf[], float f1[], float ddf1[], float p[], int sp, float *dhp, float *dh1p, float lg[]){
-
+//void SRT2DSPECTReconstruction::hilbert_der_double(float x, float f[], float ddf[], float f1[], float ddf1[], float p[], int sp, float *dhp, float *dh1p, float lg[])
+void SRT2DSPECTReconstruction::hilbert_der_double(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& f1, const std::vector<float>& ddf1, const std::vector<float>& p, int sp, float* dhp, float* dh1p, const std::vector<float>& lg)
+{
 	float dh, dh1, dp; 
 	dh = 0; dh1 = 0; dp = p[1]-p[2];     //float pix = 0., pi1x = 0.; 
 	for (int i=0; i<sp-1;i++) {
@@ -818,7 +910,7 @@ void SRT2DSPECTReconstruction::hilbert_der_double(float x, float f[], float ddf[
 	*dh1p = dh1; 
 }
 
-float SRT2DSPECTReconstruction::hilbert_derivative(float x, float f[], float ddf[], float p[], int sp)
+/*float SRT2DSPECTReconstruction::hilbert_derivative(float x, float f[], float ddf[], float p[], int sp)
 {
 	float dh,dp; 
 	
@@ -837,9 +929,10 @@ float SRT2DSPECTReconstruction::hilbert_derivative(float x, float f[], float ddf
 	}
 	dh = 2.0/(sp-1)*dh; 
 	return dh; 
-}
+}*/
 
-float SRT2DSPECTReconstruction::splint(float xa[], float ya[], float y2a[], int n, float x)
+//float SRT2DSPECTReconstruction::splint(float xa[], float ya[], float y2a[], int n, float x)
+float SRT2DSPECTReconstruction::splint(const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x)
 {
 	int  klo, khi; 
 	float h, a, b, y; 
@@ -867,12 +960,13 @@ float SRT2DSPECTReconstruction::splint(float xa[], float ya[], float y2a[], int 
 	return y; 
 }
 
-void SRT2DSPECTReconstruction::spline(float x[],float y[],int n, float y2[]) {
+void SRT2DSPECTReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) {
 	// function for nanural qubic spline.
 	int i, k;
 	float qn, un;
-	float u[n];
-	y2[0]=0.0; 
+//	float u[n]; 
+    std::vector<float> u(n);
+	y2[0]=0.0;
 	u[0]=0.0;
 	for(i=1; i<n-1; i++) {
 		float sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
@@ -888,7 +982,7 @@ void SRT2DSPECTReconstruction::spline(float x[],float y[],int n, float y2[]) {
 	return;
 }
 
-
+//float SRT2DSPECTReconstruction::integ(float dist, int max, float ff[]) {
 float SRT2DSPECTReconstruction::integ(float dist, int max, float ff[]) {
 	// function for the calculation of integrals (closed formula).
 	int k, intg;
@@ -898,6 +992,7 @@ float SRT2DSPECTReconstruction::integ(float dist, int max, float ff[]) {
 	}
 	return intg*dist/max;
 }
+
 
 
 END_NAMESPACE_STIR
