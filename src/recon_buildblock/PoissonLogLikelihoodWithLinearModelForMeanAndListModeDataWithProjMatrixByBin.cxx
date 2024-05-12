@@ -39,6 +39,7 @@
 #include "stir/FilePath.h"
 #include <iostream>
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include "stir/stream.h"
 #include "stir/listmode/ListModeData_dummy.h"
@@ -55,6 +56,7 @@
 
 #include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
 #include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
+#include "stir/recon_buildblock/distributable.txx"
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/distributed_functions.h"
 #endif
@@ -361,7 +363,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 template <typename TargetT>
 bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::load_listmode_cache_file(
-    unsigned int file_id)
+    unsigned int file_id) const
 {
   FilePath icache(this->get_cache_filename(file_id), false);
 
@@ -445,7 +447,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
 template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::read_listmode_batch(unsigned int ibatch)
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::read_listmode_batch(
+    unsigned int ibatch) const
 {
   double current_time = 0.;
   if (ibatch == 0)
@@ -598,7 +601,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
 template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::load_listmode_batch(unsigned int ibatch)
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::load_listmode_batch(
+    unsigned int ibatch) const
 {
   if (this->cache_lm_file)
     {
@@ -761,6 +765,126 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   return this->target_parameter_parser.create(this->get_input_data());
 }
 
+constexpr float max_quotient = 10000.F;
+
+/* gradient without the sensitivity term
+
+\sum_e A_e^t (y_e/(A_e lambda+ c))
+*/
+inline void
+LM_gradient(DiscretisedDensity<3, float>& output_image,
+            const ProjMatrixElemsForOneBin& row,
+            const float add_term,
+            const Bin& measured_bin,
+            const DiscretisedDensity<3, float>& input_image,
+            double* value_ptr)
+{
+  Bin fwd_bin = measured_bin;
+  fwd_bin.set_bin_value(0.0f);
+  row.forward_project(fwd_bin, input_image);
+  const auto fwd = fwd_bin.get_bin_value() + add_term;
+
+  if (measured_bin.get_bin_value() > max_quotient * fwd)
+    {
+      // cancel singularity
+      if (value_ptr)
+        {
+          const auto num = measured_bin.get_bin_value();
+          *value_ptr -= num * log(double(num / max_quotient));
+          return;
+        }
+    }
+  const auto measured_div_fwd = measured_bin.get_bin_value() / fwd;
+
+  fwd_bin.set_bin_value(measured_div_fwd);
+  row.back_project(output_image, fwd_bin);
+  if (value_ptr)
+    *value_ptr -= measured_bin.get_bin_value() * log(double(fwd));
+}
+
+/* Hessian
+
+\sum_e A_e^t (y_e/(A_e lambda+ c)^2 A_e rhs)
+*/
+inline void
+LM_Hessian(DiscretisedDensity<3, float>& output_image,
+           const ProjMatrixElemsForOneBin& row,
+           const float add_term,
+           const Bin& measured_bin,
+           const DiscretisedDensity<3, float>& input_image,
+           const DiscretisedDensity<3, float>& rhs)
+{
+  Bin fwd_bin = measured_bin;
+  fwd_bin.set_bin_value(0.0f);
+  row.forward_project(fwd_bin, input_image);
+  const auto fwd = fwd_bin.get_bin_value() + add_term;
+
+  if (measured_bin.get_bin_value() > max_quotient * fwd)
+    return; // cancel singularity
+  const auto measured_div_fwd2 = measured_bin.get_bin_value() / square(fwd);
+
+  // forward project rhs
+  fwd_bin.set_bin_value(0.0f);
+  row.forward_project(fwd_bin, rhs);
+  if (fwd_bin.get_bin_value() == 0)
+    return;
+
+  fwd_bin.set_bin_value(measured_div_fwd2 * fwd_bin.get_bin_value());
+  row.back_project(output_image, fwd_bin);
+}
+
+void
+LM_gradient_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
+                                      const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+                                      DiscretisedDensity<3, float>* output_image_ptr,
+                                      const DiscretisedDensity<3, float>* input_image_ptr,
+                                      const std::vector<BinAndCorr>& record_ptr,
+                                      const int subset_num,
+                                      const int num_subsets,
+                                      const bool has_add,
+                                      const bool accumulate,
+                                      double* value_ptr)
+{
+  LM_distributable_computation(PM_sptr,
+                               proj_data_info_sptr,
+                               output_image_ptr,
+                               input_image_ptr,
+                               record_ptr,
+                               subset_num,
+                               num_subsets,
+                               has_add,
+                               accumulate,
+                               value_ptr,
+                               LM_gradient);
+}
+
+void
+LM_Hessian_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
+                                     const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+                                     DiscretisedDensity<3, float>* output_image_ptr,
+                                     const DiscretisedDensity<3, float>* input_image_ptr,
+                                     const DiscretisedDensity<3, float>* rhs_ptr,
+                                     const std::vector<BinAndCorr>& record_ptr,
+                                     const int subset_num,
+                                     const int num_subsets,
+                                     const bool has_add,
+                                     const bool accumulate)
+{
+  using namespace std::placeholders;
+  auto H_func = std::bind(LM_Hessian, _1, _2, _3, _4, _5, std::cref(*rhs_ptr));
+  LM_distributable_computation(PM_sptr,
+                               proj_data_info_sptr,
+                               output_image_ptr,
+                               input_image_ptr,
+                               record_ptr,
+                               subset_num,
+                               num_subsets,
+                               has_add,
+                               /* accumulate = */ true,
+                               nullptr,
+                               H_func);
+}
+
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
@@ -780,15 +904,16 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
   while (true)
     {
       bool stop = this->load_listmode_batch(icache);
-      LM_distributable_computation(this->PM_sptr,
-                                   this->proj_data_info_sptr,
-                                   &gradient,
-                                   &current_estimate,
-                                   record_cache,
-                                   subset_num,
-                                   this->num_subsets,
-                                   this->has_add,
-                                   /* accumulate = */ icache != 0);
+      LM_gradient_distributable_computation(this->PM_sptr,
+                                            this->proj_data_info_sptr,
+                                            &gradient,
+                                            &current_estimate,
+                                            record_cache,
+                                            subset_num,
+                                            this->num_subsets,
+                                            this->has_add,
+                                            /* accumulate = */ icache != 0,
+                                            nullptr);
       ++icache;
       if (stop)
         break;
@@ -808,6 +933,50 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
           ++sensitivity_iter;
         }
     }
+}
+
+template <typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
+    TargetT>::actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                                        const TargetT& current_estimate,
+                                                                        const TargetT& rhs,
+                                                                        const int subset_num) const
+{
+  { // check characteristics
+
+    std::string explanation;
+    if (!output.has_same_characteristics(this->get_sensitivity(), explanation))
+      {
+        error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeData:\n"
+              "sensitivity and output for add_multiplication_with_approximate_Hessian_without_penalty\n"
+              "should have the same characteristics.\n%s",
+              explanation.c_str());
+        return Succeeded::no;
+      }
+  }
+  assert(subset_num >= 0);
+  assert(subset_num < this->num_subsets);
+
+  unsigned int icache = 0;
+  while (true)
+    {
+      bool stop = this->load_listmode_batch(icache);
+      LM_Hessian_distributable_computation(this->PM_sptr,
+                                           this->proj_data_info_sptr,
+                                           &output,
+                                           &current_estimate,
+                                           &rhs,
+                                           record_cache,
+                                           subset_num,
+                                           this->num_subsets,
+                                           this->has_add,
+                                           /* accumulate = */ icache != 0);
+      ++icache;
+      if (stop)
+        break;
+    }
+  return Succeeded::yes;
 }
 
 #ifdef _MSC_VER

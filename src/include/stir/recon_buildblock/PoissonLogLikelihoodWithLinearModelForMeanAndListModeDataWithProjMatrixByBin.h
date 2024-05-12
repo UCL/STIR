@@ -79,11 +79,15 @@ public:
    \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
    because the gradient will not be correct. Try <code>use_subset_sensitivities = true</code>.
    */
-
   void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                                       const TargetT& current_estimate,
                                                       const int subset_num,
                                                       const bool add_sensitivity) override;
+
+  Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                                      const TargetT& current_image_estimate,
+                                                                      const TargetT& input,
+                                                                      const int subset_num) const override;
 
   TargetT* construct_target_ptr() const override;
 
@@ -151,7 +155,7 @@ private:
   //! Cache of the current "batch" in the listmode file
   /*! \todo Move this higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
-  std::vector<BinAndCorr> record_cache;
+  mutable std::vector<BinAndCorr> record_cache;
 
   //! This function loads the next "batch" of data from the listmode file.
   /*!
@@ -161,7 +165,7 @@ private:
     \return \c true if there are no more events to read after this call, \c false otherwise
     \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
-  bool load_listmode_batch(unsigned int ibatch);
+  bool load_listmode_batch(unsigned int ibatch) const;
 
   //! This function reads the next "batch" of data from the listmode file.
   /*!
@@ -174,18 +178,18 @@ private:
     \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
     \warning This function has to be called in sequence.
    */
-  bool read_listmode_batch(unsigned int ibatch);
+  bool read_listmode_batch(unsigned int ibatch) const;
   //! This function caches the list-mode batches to file. It is run during set_up()
   /*! \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
   Succeeded cache_listmode_file();
 
   //! Reads the "batch" of data from the cache
-  bool load_listmode_cache_file(unsigned int file_id);
+  bool load_listmode_cache_file(unsigned int file_id) const;
   Succeeded write_listmode_cache_file(unsigned int file_id) const;
 
   unsigned int num_cache_files;
-  std::vector<double> end_time_per_batch;
+  mutable std::vector<double> end_time_per_batch;
 };
 
 END_NAMESPACE_STIR
