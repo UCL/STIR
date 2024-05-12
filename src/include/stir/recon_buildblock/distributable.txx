@@ -91,7 +91,7 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
     {
       info("Listmode gradient calculation: starting loop with 1 thread", 2);
       local_output_image_sptrs.resize(1, shared_ptr<DiscretisedDensity<3, float>>());
-      local_double_outs.resize(1, double_out_ptr);
+      local_double_out_ptrs.resize(1, double_out_ptr);
       local_counts.resize(1, 0);
       local_count2s.resize(1, 0);
       local_row.resize(1, ProjMatrixElemsForOneBin());
