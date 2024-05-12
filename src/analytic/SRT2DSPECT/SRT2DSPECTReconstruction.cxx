@@ -28,8 +28,8 @@
 #include <omp.h>
 #endif 
 #include "stir/num_threads.h"
-//using std::cerr; 
-//using std::endl;
+using std::cerr; 
+using std::endl;
 
 #include <cmath>// For M_PI and other math functions
 #ifndef M_PI
