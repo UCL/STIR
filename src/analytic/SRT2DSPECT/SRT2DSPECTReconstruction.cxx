@@ -575,7 +575,7 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 				}
 				 
 				for(int ia=0; ia<sa; ia++) { 
-				if(ia!=31 && ia!=70 && ia!=81 && ia!=100) continue; 
+				//if(ia!=31 && ia!=70 && ia!=81 && ia!=100) continue; 
 					f_node = A*f[ia][i]+B*f[ia][i+1]+C*ddf[ia][i]+D*ddf[ia][i+1];
 					
 					// calculate fcme, fsme, fc, fs, hc, hs
