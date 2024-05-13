@@ -78,7 +78,7 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
       if (double_out_ptr)
         {
           local_double_outs.resize(omp_get_max_threads(), 0.);
-          for (unsigned t = 0; t < omp_get_max_threads(); ++t)
+          for (int t = 0; t < omp_get_max_threads(); ++t)
             local_double_out_ptrs[t] = &local_double_outs[t];
         }
       local_counts.resize(omp_get_max_threads(), 0);
