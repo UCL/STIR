@@ -1,5 +1,4 @@
 /*
-    Copyright (C) 2011, Hammersmith Imanet Ltd
     Copyright (C) 2020-2024 University College London
     This file is part of STIR.
 
@@ -30,7 +29,7 @@
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #include "stir/recon_buildblock/LogcoshPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
-#include "stir/RunTests.h"
+#include "stir/recon_buildblock/test/ObjectiveFunctionTests.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/info.h"
@@ -57,7 +56,8 @@ START_NAMESPACE_STIR
   by evaluating the x^T Hx > 0 constraint.
 
 */
-class GeneralisedPriorTests : public RunTests
+class GeneralisedPriorTests
+    : public ObjectiveFunctionTests<GeneralisedPrior<DiscretisedDensity<3, float>>, DiscretisedDensity<3, float>>
 {
 public:
   //! Constructor that can take some input data to run the test with
@@ -83,11 +83,6 @@ protected:
   void run_tests_for_objective_function(const std::string& test_name,
                                         GeneralisedPrior<target_type>& objective_function,
                                         const shared_ptr<target_type>& target_sptr);
-
-  //! Tests the prior's gradient by comparing to the numerical gradient computed using perturbation response.
-  void test_gradient(const std::string& test_name,
-                     GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                     const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
 
   //! Test various configurations of the Hessian of the prior via accumulate_Hessian_times_input() for convexity
   /*!
@@ -152,7 +147,9 @@ GeneralisedPriorTests::run_tests_for_objective_function(const std::string& test_
   if (do_test_gradient)
     {
       std::cerr << "----- test " << test_name << "  --> Gradient\n";
-      test_gradient(test_name, objective_function, target_sptr);
+      using value_type = target_type::full_value_type;
+      const auto eps = static_cast<value_type>(1e-4F * target_sptr->find_max());
+      test_gradient(test_name, objective_function, *target_sptr, eps);
     }
 
   if (do_test_Hessian_convexity)
@@ -165,65 +162,6 @@ GeneralisedPriorTests::run_tests_for_objective_function(const std::string& test_
     {
       std::cerr << "----- test " << test_name << "  --> Hessian against numerical\n";
       test_Hessian_against_numerical(test_name, objective_function, target_sptr);
-    }
-}
-
-void
-GeneralisedPriorTests::test_gradient(const std::string& test_name,
-                                     GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                     const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr)
-{
-  using value_type = target_type::full_value_type;
-  // setup images
-  target_type& target(*target_sptr);
-  shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
-  shared_ptr<target_type> gradient_2_sptr(target.get_empty_copy());
-
-  info("Computing gradient", 3);
-  const int verbosity_default = Verbosity::get();
-  Verbosity::set(0);
-  objective_function.compute_gradient(*gradient_sptr, target);
-  Verbosity::set(verbosity_default);
-  this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), fabs(double(gradient_sptr->find_max()))) / 1000);
-
-  info("Computing objective function at target", 3);
-  const double value_at_target = objective_function.compute_value(target);
-  target_type::full_iterator target_iter = target.begin_all();
-  target_type::full_iterator gradient_iter = gradient_sptr->begin_all();
-  target_type::full_iterator gradient_2_iter = gradient_2_sptr->begin_all();
-
-  // setup perturbation response
-  const auto target_max = target_sptr->find_max();
-  const auto eps = static_cast<value_type>(1e-4F * target_max);
-  bool testOK = true;
-  info("Computing gradient of objective function by numerical differences (this will take a while)", 3);
-  while (target_iter != target.end_all()) // && testOK)
-    {
-      const float org_image_value = *target_iter;
-      *target_iter += eps; // perturb current voxel
-      const double value_at_inc = objective_function.compute_value(target);
-      *target_iter = org_image_value; // restore
-      const auto ngradient_at_iter = static_cast<value_type>((value_at_inc - value_at_target) / eps);
-      *gradient_2_iter = ngradient_at_iter;
-      const bool this_testOK = this->check_if_equal(ngradient_at_iter, *gradient_iter, "gradient");
-      testOK = testOK && this_testOK;
-      if (!this_testOK)
-        {
-          // std::cerr << "failure x=" << org_image_value << ", eps_Value = " << eps << '\n';
-        }
-      // for (int i=0; i<5 && target_iter!=target.end_all(); ++i)
-      {
-        ++gradient_2_iter;
-        ++target_iter;
-        ++gradient_iter;
-      }
-    }
-  if (!testOK)
-    {
-      std::cerr << "Numerical gradient test failed with for " + test_name + " prior\n";
-      info("Writing diagnostic files gradient" + test_name + ".hv, numerical_gradient" + test_name + ".hv");
-      write_to_file("gradient" + test_name + ".hv", *gradient_sptr);
-      write_to_file("numerical_gradient" + test_name + ".hv", *gradient_2_sptr);
     }
 }
 

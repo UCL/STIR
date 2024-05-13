@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2021, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -22,8 +22,10 @@
   where the 2 arguments are optional. See the class documentation for more info.
 
   \author Kris Thielemans
+  \author Robert Twyman Skelly
 */
 
+#include "stir/recon_buildblock/test/ObjectiveFunctionTests.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjData.h"
 #include "stir/ExamInfo.h"
@@ -39,7 +41,6 @@
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 //#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/distributable_main.h"
-#include "stir/RunTests.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/info.h"
@@ -47,10 +48,6 @@
 #include "stir/num_threads.h"
 #include <iostream>
 #include <memory>
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/variate_generator.hpp>
 
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/recon_buildblock/distributable_main.h"
@@ -78,7 +75,9 @@ START_NAMESPACE_STIR
   (even in voxels that do not contribute to these bins).
 
 */
-class PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests : public RunTests
+class PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests
+    : public ObjectiveFunctionTests<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>>,
+                                    DiscretisedDensity<3, float>>
 {
 public:
   //! Constructor that can take some input data to run the test with
@@ -91,7 +90,6 @@ public:
   */
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const* const proj_data_filename = 0,
                                                              char const* const density_filename = 0);
-  typedef DiscretisedDensity<3, float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
 
   void run_tests() override;
@@ -102,22 +100,13 @@ protected:
   shared_ptr<ProjData> proj_data_sptr;
   shared_ptr<ProjData> mult_proj_data_sptr;
   shared_ptr<ProjData> add_proj_data_sptr;
-  shared_ptr<GeneralisedObjectiveFunction<target_type>> objective_function_sptr;
+  shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>> objective_function_sptr;
 
   //! run the test
-  /*! Note that this function is not specific to PoissonLogLikelihoodWithLinearModelForMeanAndProjData */
-  void run_tests_for_objective_function(GeneralisedObjectiveFunction<target_type>& objective_function, target_type& target);
-
-  //! Test the gradient of the objective function by comparing to the numerical gradient via perturbation
-  void test_objective_function_gradient(GeneralisedObjectiveFunction<target_type>& objective_function, target_type& target);
-
-  //! Test the Hessian of the objective function by testing the (x^T Hx > 0) condition
-  void test_objective_function_Hessian_concavity(GeneralisedObjectiveFunction<target_type>& objective_function,
-                                                 target_type& target);
+  void run_tests_for_objective_function(objective_function_type& objective_function, target_type& target);
 
   //! Test the approximate Hessian of the objective function by testing the (x^T Hx > 0) condition
-  void test_objective_function_approximate_Hessian_concavity(GeneralisedObjectiveFunction<target_type>& objective_function,
-                                                             target_type& target);
+  void test_approximate_Hessian_concavity(objective_function_type& objective_function, target_type& target);
 };
 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(
@@ -128,86 +117,21 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::PoissonLogLikelihood
 
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_objective_function(
-    GeneralisedObjectiveFunction<PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type>& objective_function,
-    PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type& target)
+    objective_function_type& objective_function, target_type& target)
 {
   std::cerr << "----- testing Gradient\n";
-  test_objective_function_gradient(objective_function, target);
+  test_gradient("PoissonLLProjData", objective_function, target, 0.01F);
 
   std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_objective_function_Hessian_concavity(objective_function, target);
+  test_Hessian_concavity("PoissonLLProjData", objective_function, target);
 
   std::cerr << "----- testing approximate-Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_objective_function_approximate_Hessian_concavity(objective_function, target);
+  test_approximate_Hessian_concavity(objective_function, target);
 }
 
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_objective_function_gradient(
-    GeneralisedObjectiveFunction<target_type>& objective_function, target_type& target)
-{
-  shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
-  shared_ptr<target_type> gradient_2_sptr(target.get_empty_copy());
-  info("Computing gradient");
-  objective_function.compute_gradient(*gradient_sptr, target);
-  this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), double(gradient_sptr->find_max())) / 1000);
-  info("Computing objective function at target");
-  const double value_at_target = objective_function.compute_objective_function(target);
-  target_type::full_iterator target_iter = target.begin_all();
-  target_type::full_iterator gradient_iter = gradient_sptr->begin_all();
-  target_type::full_iterator gradient_2_iter = gradient_2_sptr->begin_all();
-  const float eps = 1e-2F;
-  bool testOK = true;
-  info("Computing gradient of objective function by numerical differences (this will take a while)");
-  while (target_iter != target.end_all())
-    {
-      *target_iter += eps;
-      const double value_at_inc = objective_function.compute_objective_function(target);
-      *target_iter -= eps;
-      const float gradient_at_iter = static_cast<float>((value_at_inc - value_at_target) / eps);
-      *gradient_2_iter++ = gradient_at_iter;
-      testOK = testOK && this->check_if_equal(gradient_at_iter, *gradient_iter, "gradient");
-      ++target_iter;
-      ++gradient_iter;
-    }
-  if (!testOK)
-    {
-      info("Writing diagnostic files target.hv, gradient.hv, numerical_gradient.hv");
-      write_to_file("target.hv", target);
-      write_to_file("gradient.hv", *gradient_sptr);
-      write_to_file("numerical_gradient.hv", *gradient_2_sptr);
-    }
-}
-
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_objective_function_Hessian_concavity(
-    GeneralisedObjectiveFunction<target_type>& objective_function, target_type& target)
-{
-  /// setup images
-  shared_ptr<target_type> output(target.get_empty_copy());
-
-  /// Compute H x
-  objective_function.accumulate_Hessian_times_input(*output, target, target);
-
-  /// Compute dot(x,(H x))
-  const float my_sum = std::inner_product(target.begin_all(), target.end_all(), output->begin_all(), 0.F);
-
-  // test for a CONCAVE function
-  if (this->check_if_less(my_sum, 0))
-    {
-      //    info("PASS: Computation of x^T H x = " + std::to_string(my_sum) + " < 0" (Hessian) and is therefore concave);
-    }
-  else
-    {
-      // print to console the FAILED configuration
-      info("FAIL: Computation of x^T H x = " + std::to_string(my_sum) + " > 0 (Hessian) and is therefore NOT concave"
-           + "\n >target image max=" + std::to_string(target.find_max())
-           + "\n >target image min=" + std::to_string(target.find_min()));
-    }
-}
-
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_objective_function_approximate_Hessian_concavity(
-    GeneralisedObjectiveFunction<target_type>& objective_function, target_type& target)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_approximate_Hessian_concavity(
+    objective_function_type& objective_function, target_type& target)
 {
   /// setup images
   shared_ptr<target_type> output(target.get_empty_copy());
@@ -376,6 +300,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests()
 {
   std::cerr << "Tests for PoissonLogLikelihoodWithLinearModelForMeanAndProjData\n";
+  const int verbosity_default = Verbosity::get();
+  Verbosity::set(0);
 
 #if 1
   shared_ptr<target_type> density_sptr;
@@ -390,6 +316,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests()
     return;
   this->run_tests_for_objective_function(*objective_function_sptr, *recon.get_initial_data_ptr());
 #endif
+  Verbosity::set(verbosity_default);
 }
 
 END_NAMESPACE_STIR

@@ -176,6 +176,9 @@ public:
   */
   double compute_objective_function(const TargetT& current_estimate);
 
+  //! Alias for compute_objective_function(const TargetT&)
+  double compute_value(const TargetT& current_estimate) { return compute_objective_function(current_estimate); }
+
   //! Fill any elements that we cannot estimate with a fixed value
   /*! In many cases, it is easier to use a larger target than what we can
     actually estimate. For instance, using a rectangular image while we estimate
