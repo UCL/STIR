@@ -74,6 +74,13 @@ public:
 
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin();
 
+  //! Computes the value of the objective function at the \a current_estimate.
+  /*!
+   \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
+   because the value will not be correct. Try <code>use_subset_sensitivities = true</code>.
+   */
+  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override;
+
   //! Computes the gradient of the objective function at the \a current_estimate overwriting \a gradient.
   /*!
    \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
@@ -107,13 +114,6 @@ public:
 #endif
 
 protected:
-  /*! \todo this function is not implemented yet and currently calls error() */
-  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override
-  { // TODO
-    error("compute_objective_function_without_penalty Not implemented yet");
-    return 0;
-  }
-
   Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr) override;
 
   void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;

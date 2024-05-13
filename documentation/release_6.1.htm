@@ -57,9 +57,15 @@ improvements to the documentation.
   Read TOF bin order from interfile header (see <a href=https://github.com/UCL/STIR/pull/1389> PR #1389</a>)
 </li>
 <li>
-  <code>GeneralisedObjectiveFunction</code> has 2 new papers to add compute full gradient
+  <code>PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin</code> can now compute the value
+  as well as <code>accumulate_Hessian_times_input</code>.
+  <br>
+  <a href=https://github.com/UCL/STIR/pull/1418> PR #1418</a>
+</li>
+<li>
+  <code>GeneralisedObjectiveFunction</code> has 2 new members to compute the full gradient
   (<code>compute_gradient</code> and <code>compute_gradient_without_penalty</code>). Previously,
-  only subset gradient were available.
+  only subset gradients were available.
   <br>
   <a href=https://github.com/UCL/STIR/pull/1418> PR #1418</a>
 </li>
@@ -68,6 +74,12 @@ improvements to the documentation.
 
 <h3>Changed functionality</h3>
 <ul>
+  <li>
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin</code> now computes the gradient
+    multi-threaded (if OpenMP is enabled), even if caching to file of the list-mode file is not enabled.
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1418> PR #1418</a>
+  </li>
   <li>
     Accumulation in computation of priors now uses doubles, which could result in slightly better precision. <a href=https://github.com/UCL/STIR/pull/1410>Part of PR #1410</a>.
   </li>
@@ -136,6 +148,13 @@ from the above):</H2>
 </ul>
 
 <h4>C++ tests</h4>
+<ul>
+  <li>
+    objective function and priors now have a numerical test for <code>accumulate_Hessian_times_input</code>
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1418> PR #1418</a>
+  </li>
+</ul>
 
 </body>
 
