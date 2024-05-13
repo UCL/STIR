@@ -360,6 +360,19 @@ jobs:
           # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
 
+    - name: Upload ctest log files for debugging
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ctest_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: |
+          ${{ github.workspace }}/build/**/*.log
+          ${{ github.workspace }}/build/**/*.hv
+          ${{ github.workspace }}/build/**/*.v
+          ${{ github.workspace }}/build/**/*.hs
+          ${{ github.workspace }}/build/**/*.s
+        retention-days: 7
+
     - name: C++ examples with STIR_LOCAL
       shell: bash
       run: |
@@ -432,11 +445,12 @@ jobs:
           fi
 
     - name: Upload recon_test_pack log files for debugging
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
-        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        path: |
+          ${{ github.workspace }}/recon_test_pack/**/*.log
           ${{ github.workspace }}/recon_test_pack/**/my_*v
           ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7
