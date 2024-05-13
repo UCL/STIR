@@ -147,12 +147,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_objective_funct
 {
   shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
   shared_ptr<target_type> gradient_2_sptr(target.get_empty_copy());
-  const int subset_num = 0;
   info("Computing gradient");
-  objective_function.compute_sub_gradient(*gradient_sptr, target, subset_num);
+  objective_function.compute_gradient(*gradient_sptr, target);
   this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), double(gradient_sptr->find_max())) / 1000);
   info("Computing objective function at target");
-  const double value_at_target = objective_function.compute_objective_function(target, subset_num);
+  const double value_at_target = objective_function.compute_objective_function(target);
   target_type::full_iterator target_iter = target.begin_all();
   target_type::full_iterator gradient_iter = gradient_sptr->begin_all();
   target_type::full_iterator gradient_2_iter = gradient_2_sptr->begin_all();
@@ -162,7 +161,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_objective_funct
   while (target_iter != target.end_all())
     {
       *target_iter += eps;
-      const double value_at_inc = objective_function.compute_objective_function(target, subset_num);
+      const double value_at_inc = objective_function.compute_objective_function(target);
       *target_iter -= eps;
       const float gradient_at_iter = static_cast<float>((value_at_inc - value_at_target) / eps);
       *gradient_2_iter++ = gradient_at_iter;
@@ -176,22 +175,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_objective_funct
       write_to_file("target.hv", target);
       write_to_file("gradient.hv", *gradient_sptr);
       write_to_file("numerical_gradient.hv", *gradient_2_sptr);
-#if 1
-      info("Writing diagnostic files subsens.hv, gradient-without-sens.hv, "
-           "proj_data.hs, mult_proj_data.hs and add_proj_data.hs");
-
-      write_to_file(
-          "subsens.hv",
-          reinterpret_cast<const PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>&>(objective_function)
-              .get_subset_sensitivity(subset_num));
-      gradient_sptr->fill(0.F);
-      reinterpret_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>&>(objective_function)
-          .compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_sptr, target, subset_num);
-      write_to_file("gradient-without-sens.hv", *gradient_sptr);
-      proj_data_sptr->write_to_file("proj_data.hs");
-      mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
-      add_proj_data_sptr->write_to_file("add_proj_data.hs");
-#endif
     }
 }
 
@@ -263,7 +246,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
                                                                                  /*max_delta=*/4,
                                                                                  /*num_views=*/16,
                                                                                  /*num_tang_poss=*/16));
-      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(ImagingModality::PT));
       proj_data_sptr.reset(new ProjDataInMemory(exam_info_sptr, proj_data_info_sptr));
       for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num)
         {
