@@ -162,6 +162,8 @@ GeneralisedPriorTests::run_tests_for_objective_function(const std::string& test_
     {
       std::cerr << "----- test " << test_name << "  --> Hessian against numerical\n";
       test_Hessian_against_numerical(test_name, objective_function, target_sptr);
+      std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
+      test_Hessian(test_name, objective_function, *target_sptr, 0.00001F);
     }
 }
 

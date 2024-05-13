@@ -46,6 +46,10 @@
 #include "stir/info.h"
 #include "stir/Succeeded.h"
 #include "stir/num_threads.h"
+#include <boost/random/uniform_01.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
 #include <iostream>
 #include <memory>
 
@@ -122,11 +126,23 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_object
   std::cerr << "----- testing Gradient\n";
   test_gradient("PoissonLLProjData", objective_function, target, 0.01F);
 
-  std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
+  std::cerr << "----- testing concavity via Hessian-vector product (accumulate_Hessian_times_input)\n";
   test_Hessian_concavity("PoissonLLProjData", objective_function, target);
 
   std::cerr << "----- testing approximate-Hessian-vector product (accumulate_Hessian_times_input)\n";
   test_approximate_Hessian_concavity(objective_function, target);
+
+  std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
+  test_Hessian("PoissonLLProjData", objective_function, target, 0.5F);
+
+  if (!this->is_everything_ok())
+    {
+      std::cerr << "Writing diagnostic files proj_data.hs, mult_proj_data.hs and add_proj_data.hs";
+
+      proj_data_sptr->write_to_file("proj_data.hs");
+      mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
+      add_proj_data_sptr->write_to_file("add_proj_data.hs");
+    }
 }
 
 void
@@ -202,7 +218,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
       CartesianCoordinate3D<float> origin(0, 0, 0);
       const float zoom = 1.F;
 
-      density_sptr.reset(new VoxelsOnCartesianGrid<float>(*proj_data_sptr->get_proj_data_info_sptr(), zoom, origin));
+      density_sptr.reset(new VoxelsOnCartesianGrid<float>(
+          proj_data_sptr->get_exam_info_sptr(), *proj_data_sptr->get_proj_data_info_sptr(), zoom, origin));
       // fill with random numbers between 0 and 1
       typedef boost::mt19937 base_generator_type;
       // initialize by reproducible seed
@@ -249,6 +266,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
                 value = float(fabs(seg_num * value - .2)); // needs to be positive for Poisson
                 *iter = value;
               }
+            segment /= 0.5F * segment.find_max(); // normalise to 2 (to avoid large numbers)
             mult_proj_data_sptr->set_segment(segment);
           }
       }
@@ -272,6 +290,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
                 value = float(fabs(seg_num * value - .3)); // needs to be positive for Poisson
                 *iter = value;
               }
+            segment /= 0.333F * segment.find_max(); // normalise to 3 (to avoid large numbers)
             add_proj_data_sptr->set_segment(segment);
           }
       }
