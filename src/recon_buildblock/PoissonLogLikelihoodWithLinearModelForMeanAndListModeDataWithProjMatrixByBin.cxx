@@ -751,13 +751,14 @@ constexpr float max_quotient = 10000.F;
 
 \sum_e A_e^t (y_e/(A_e lambda+ c))
 */
+template <bool do_gradient, bool do_value>
 inline void
-LM_gradient(DiscretisedDensity<3, float>& output_image,
-            const ProjMatrixElemsForOneBin& row,
-            const float add_term,
-            const Bin& measured_bin,
-            const DiscretisedDensity<3, float>& input_image,
-            double* value_ptr)
+LM_gradient_and_value(DiscretisedDensity<3, float>& output_image,
+                      const ProjMatrixElemsForOneBin& row,
+                      const float add_term,
+                      const Bin& measured_bin,
+                      const DiscretisedDensity<3, float>& input_image,
+                      double* value_ptr)
 {
   Bin fwd_bin = measured_bin;
   fwd_bin.set_bin_value(0.0f);
@@ -767,18 +768,22 @@ LM_gradient(DiscretisedDensity<3, float>& output_image,
   if (measured_bin.get_bin_value() > max_quotient * fwd)
     {
       // cancel singularity
-      if (value_ptr)
+      if (do_value)
         {
+          assert(value_ptr);
           const auto num = measured_bin.get_bin_value();
           *value_ptr -= num * log(double(num / max_quotient));
           return;
         }
     }
-  const auto measured_div_fwd = measured_bin.get_bin_value() / fwd;
+  if (do_gradient)
+    {
+      const auto measured_div_fwd = measured_bin.get_bin_value() / fwd;
 
-  fwd_bin.set_bin_value(measured_div_fwd);
-  row.back_project(output_image, fwd_bin);
-  if (value_ptr)
+      fwd_bin.set_bin_value(measured_div_fwd);
+      row.back_project(output_image, fwd_bin);
+    }
+  if (do_value)
     *value_ptr -= measured_bin.get_bin_value() * log(double(fwd));
 }
 
@@ -835,7 +840,7 @@ LM_gradient_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
                                has_add,
                                accumulate,
                                value_ptr,
-                               LM_gradient);
+                               LM_gradient_and_value<true, false>);
 }
 
 void
@@ -863,6 +868,45 @@ LM_Hessian_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
                                /* accumulate = */ true,
                                nullptr,
                                H_func);
+}
+
+template <typename TargetT>
+double
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
+    TargetT>::actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num)
+{
+  assert(subset_num >= 0);
+  assert(subset_num < this->num_subsets);
+  if (!this->get_use_subset_sensitivities() && this->num_subsets > 1)
+    error("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin::"
+          "actual_compute_subset_gradient_without_penalty(): cannot subtract subset sensitivity because "
+          "use_subset_sensitivities is false. This will result in an error in the gradient computation.");
+
+  double accum = 0.;
+  unsigned int icache = 0;
+  while (true)
+    {
+      bool stop = this->load_listmode_batch(icache);
+      LM_distributable_computation(this->PM_sptr,
+                                   this->proj_data_info_sptr,
+                                   nullptr,
+                                   &current_estimate,
+                                   record_cache,
+                                   subset_num,
+                                   this->num_subsets,
+                                   this->has_add,
+                                   /* accumulate */ true,
+                                   &accum,
+                                   LM_gradient_and_value<false, true>);
+      ++icache;
+      if (stop)
+        break;
+    }
+  std::inner_product(current_estimate.begin_all_const(),
+                     current_estimate.end_all_const(),
+                     this->get_subset_sensitivity(subset_num).begin_all_const(),
+                     accum);
+  return accum;
 }
 
 template <typename TargetT>
