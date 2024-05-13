@@ -804,7 +804,7 @@ LM_gradient(DiscretisedDensity<3, float>& output_image,
 
 /* Hessian
 
-\sum_e A_e^t (y_e/(A_e lambda+ c)^2 A_e rhs)
+\sum_e -A_e^t (y_e/(A_e lambda+ c)^2 A_e rhs)
 */
 inline void
 LM_Hessian(DiscretisedDensity<3, float>& output_image,
@@ -821,7 +821,7 @@ LM_Hessian(DiscretisedDensity<3, float>& output_image,
 
   if (measured_bin.get_bin_value() > max_quotient * fwd)
     return; // cancel singularity
-  const auto measured_div_fwd2 = measured_bin.get_bin_value() / square(fwd);
+  const auto measured_div_fwd2 = -measured_bin.get_bin_value() / square(fwd);
 
   // forward project rhs
   fwd_bin.set_bin_value(0.0f);
