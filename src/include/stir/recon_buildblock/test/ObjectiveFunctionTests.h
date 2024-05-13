@@ -106,10 +106,10 @@ ObjectiveFunctionTests<ObjectiveFunctionT, TargetT>::test_gradient(const std::st
   if (!testOK)
     {
       std::cerr << "Numerical gradient test failed with for " + test_name + "\n";
-      std::cerr << "Writing diagnostic files target.hv, gradient.hv, numerical_gradient.hv\n";
-      write_to_file("target.hv", target);
-      write_to_file("gradient.hv", *gradient_sptr);
-      write_to_file("numerical_gradient.hv", *gradient_2_sptr);
+      std::cerr << "Writing diagnostic files " << test_name << "_target.hv, *gradient.hv, *numerical_gradient.hv\n";
+      write_to_file(test_name + "_target.hv", target);
+      write_to_file(test_name + "_gradient.hv", *gradient_sptr);
+      write_to_file(test_name + "_numerical_gradient.hv", *gradient_2_sptr);
       return Succeeded::no;
     }
   else
@@ -156,12 +156,13 @@ ObjectiveFunctionTests<ObjectiveFunctionT, TargetT>::test_Hessian(const std::str
   if (!testOK)
     {
       std::cerr << "Numerical Hessian test failed with for " + test_name + "\n";
-      std::cerr << "Writing diagnostic files target.hv, gradient.hv, increment, numerical_gradient.hv, Hessian_times_increment\n";
-      write_to_file("target.hv", target);
-      write_to_file("gradient.hv", *gradient_sptr);
-      write_to_file("increment.hv", *increment_sptr);
-      write_to_file("gradient_at_increment.hv", *gradient_2_sptr);
-      write_to_file("Hessian_times_increment.hv", *output);
+      std::cerr << "Writing diagnostic files " << test_name
+                << "_target.hv, *gradient.hv, *increment, *numerical_gradient.hv, *Hessian_times_increment\n";
+      write_to_file(test_name + "_target.hv", target);
+      write_to_file(test_name + "_gradient.hv", *gradient_sptr);
+      write_to_file(test_name + "_increment.hv", *increment_sptr);
+      write_to_file(test_name + "_gradient_at_increment.hv", *gradient_2_sptr);
+      write_to_file(test_name + "_Hessian_times_increment.hv", *output);
       return Succeeded::no;
     }
   else
@@ -195,9 +196,13 @@ ObjectiveFunctionTests<ObjectiveFunctionT, TargetT>::test_Hessian_concavity(cons
   else
     {
       // print to console the FAILED configuration
-      info("FAIL: " + test_name + ": Computation of x^T H x = " + std::to_string(my_sum)
-           + " > 0 (Hessian) and is therefore NOT concave" + "\n >target image max=" + std::to_string(target.find_max())
-           + "\n >target image min=" + std::to_string(target.find_min()));
+      std::cerr << "FAIL: " + test_name + ": Computation of x^T H x = " + std::to_string(my_sum)
+                << " > 0 (Hessian) and is therefore NOT concave"
+                << "\n >target image max=" << target.find_max() << "\n >target image min=" << target.find_min()
+                << "\n >output image max=" << output->find_max() << "\n >output image min=" << output->find_min();
+      std::cerr << "Writing diagnostic files to " << test_name + "_concavity_out.hv etc\n.";
+      write_to_file(test_name + "_concavity_out.hv", *output);
+      write_to_file(test_name + "_target.hv", target);
       return Succeeded::no;
     }
 }
