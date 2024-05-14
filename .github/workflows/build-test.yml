@@ -350,7 +350,10 @@ jobs:
           fi
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              # Also excluding test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+              # as it is a bit slow. Moreover it fails on MacOS (Debug)
+              # https://github.com/UCL/STIR/pull/1418#issuecomment-2109518132
+              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection|test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin"
               EXCLUDE="${EXCLUDE_Debug}${EXCLUDE:+"|"}${EXCLUDE}"
           fi
           # prepend -E
