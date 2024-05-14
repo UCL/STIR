@@ -1,7 +1,7 @@
 name: Run pre-commit check
 on:
 - push
-#- pull_request
+- pull_request
 jobs:
   check:
     runs-on: ubuntu-latest
