@@ -124,16 +124,16 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_object
     objective_function_type& objective_function, target_type& target)
 {
   std::cerr << "----- testing Gradient\n";
-  test_gradient("PoissonLLListModeData", objective_function, target, 0.01F);
+  test_gradient("PoissonLLProjData", objective_function, target, 0.01F);
 
   std::cerr << "----- testing concavity via Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_Hessian_concavity("PoissonLLListModeData", objective_function, target);
+  test_Hessian_concavity("PoissonLLProjData", objective_function, target);
 
   std::cerr << "----- testing approximate-Hessian-vector product (accumulate_Hessian_times_input)\n";
   test_approximate_Hessian_concavity(objective_function, target);
 
   std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_Hessian("PoissonLLListModeData", objective_function, target, 0.5F);
+  test_Hessian("PoissonLLProjData", objective_function, target, 0.5F);
 
   if (!this->is_everything_ok())
     {

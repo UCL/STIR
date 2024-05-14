@@ -129,6 +129,7 @@ include(stir_test_exe_targets)
 # a test that uses MPI
 create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
 
+# pass list-mode file as argument
 ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin
   test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin "${CMAKE_SOURCE_DIR}/recon_test_pack/PET_ACQ_small.l.hdr.STIR")
 
