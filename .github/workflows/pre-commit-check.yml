@@ -1,41 +1,18 @@
-#name: Run pre-commit check
-#on:
-#- push
-#- pull_request
-#jobs:
-#  check:
-#    runs-on: ubuntu-latest
-#    name: pre-commit
-#    steps:
-#    - uses: actions/checkout@v4
-#    - uses: actions/setup-python@v5
-#    - run: sudo apt-get install -yqq clang-format
-#    - uses: pre-commit/action@v3.0.0
-
 name: Run pre-commit check
-
 on:
-  - push 
-  - pull_request 
-
+- push
+- pull_request
 jobs:
   check:
-    runs-on: ubuntu-latest  # Uses Ubuntu 20.04
+    runs-on: ubuntu-latest
     name: pre-commit
-
     steps:
     - uses: actions/checkout@v4
-
     - name: Setup Node.js 20.x  # Ensuring Node.js 20 is set up
       uses: actions/setup-node@v3
       with:
         node-version: '20.x'  # Use Node.js 20.x
 
     - uses: actions/setup-python@v5
-
-    - name: Install clang-format
-      run: sudo apt-get install -yqq clang-format
-
+    - run: sudo apt-get install -yqq clang-format
     - uses: pre-commit/action@v3.0.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
