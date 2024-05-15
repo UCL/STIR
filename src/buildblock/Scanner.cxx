@@ -1231,6 +1231,64 @@ Scanner::Scanner(Type scanner_type)
       );
       break;
 
+
+    case PSMR_3rings_scanner:
+      set_params(PSMR_3rings_scanner,
+                 string_list("PSMR_3rings_scanner"),
+                 3 * 14 * 6,// + 8,
+                 344,
+                 344,
+                 24 * 7 * 5,
+                 405.0 - 18/2,
+                 7.0F,
+                 2.85F,
+                 2.08626F,
+                 static_cast<float>(-0.11),
+                 14,//            int num_axial_blocks_per_bucket_v,
+                 5,  //            int num_transaxial_blocks_per_bucket_v,
+                 6, //            int num_axial_crystals_per_block_v,
+                 7,//            int num_transaxial_crystals_per_block_v,
+                 252, //            int num_axial_crystals_per_singles_unit_v,
+                 35,  //            int num_transaxial_crystals_per_singles_unit_v,
+                 1,
+                 0.0F, 511.F,
+#ifdef STIR_TOF
+                 1,
+                 2011.5F*2.F, // Size of coincidence window
+                 0.F
+#endif
+                 );
+      break;
+
+  case PSMR_3rings_scanner_TOF:
+    set_params(PSMR_3rings_scanner_TOF,
+               string_list("PSMR_3rings_scanner_TOF"),
+               3 * 14 * 6,// + 8,
+               344, 344,
+               24 * 7 * 5,
+               405.0 - 18/2,
+               7.0F,
+               2.85F,
+               2.08626F,
+               static_cast<float>(-0.11),
+               14,//            int num_axial_blocks_per_bucket_v,
+               5,  //            int num_transaxial_blocks_per_bucket_v,
+               6, //            int num_axial_crystals_per_block_v,
+               7,//            int num_transaxial_crystals_per_block_v,
+               252, //            int num_axial_crystals_per_singles_unit_v,
+               35,  //            int num_transaxial_crystals_per_singles_unit_v,
+               1,
+               0.0F, 511.F,
+#ifdef STIR_TOF
+               //               (short int)(2*3.51*1000 -1),
+               //               (float)(1.f),
+               (short int)(13), // 13 TOF bins
+               (float)(2011.5F*2.F/13), //
+               (float)(500.F)
+#endif
+               );
+    break;
+
     case User_defined_scanner: // zlong, 08-04-2004, Userdefined support
 
       set_params(User_defined_scanner,

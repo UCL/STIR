@@ -68,7 +68,7 @@ ProjMatrixByBin::enable_tof(const shared_ptr<const ProjDataInfo>& _proj_data_inf
 {
   if (v)
     {
-      if (proj_data_info_sptr->get_num_tof_poss() == 1) // This is a special case that we do a nonTOF backprojection with coincidence window.
+      if (proj_data_info_sptr->get_num_tof_poss() == 1 || proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution() == 0 ) // This is a special case that we do a nonTOF backprojection with coincidence window.
         {
           tof_enabled = false;
         }

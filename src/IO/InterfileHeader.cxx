@@ -612,19 +612,19 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   reference_energy = -1.f;
   add_key("Reference energy (in keV)", &reference_energy);
 
-  max_num_timing_poss = -1;
+  max_num_timing_poss = 1;
   add_key("Maximum number of (unmashed) TOF time bins", &max_num_timing_poss);
 #if STIR_VERSION < 070000
   add_alias_key("Maximum number of (unmashed) TOF time bins", "Number of TOF time bins");
 #endif
   timing_poss_sequence.clear();
   add_key("TOF bin order", &timing_poss_sequence);
-  size_of_timing_pos = -1.f;
+  size_of_timing_pos = 0.0f;
   add_key("Size of unmashed TOF time bins (ps)", &size_of_timing_pos);
 #if STIR_VERSION < 070000
   add_alias_key("Size of unmashed TOF time bins (ps)", "Size of timing bin (ps)");
 #endif
-  timing_resolution = -1.f;
+  timing_resolution = 0.0f;
   add_key("TOF timing resolution (ps)", &timing_resolution);
 #if STIR_VERSION < 070000
   add_alias_key("TOF timing resolution (ps)", "timing resolution (ps)");
@@ -1430,6 +1430,7 @@ InterfilePDFSHeader::post_processing()
       data_info_sptr.reset(new ProjDataInfoGenericNoArcCorr(
           scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
     }
+  std::cout << data_info_sptr->get_num_tof_poss()  << " " << num_timing_poss << std::endl;
   if (data_info_sptr->get_num_tof_poss() != num_timing_poss)
     error(boost::format("Interfile header parsing with TOF: inconsistency between number of TOF bins in data (%d), "
                         "TOF mashing factor (%d) and max number of TOF bins in scanner info (%d)")

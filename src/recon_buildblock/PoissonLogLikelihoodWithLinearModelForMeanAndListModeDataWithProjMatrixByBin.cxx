@@ -280,14 +280,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
           > 1)) // TODO this check needs to cover the case if we reconstruct only TOF bin 0
     {
       // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-      this->sens_proj_data_info_sptr = this->proj_data_info_sptr->create_non_tof_clone();
+      this->sens_proj_data_info_sptr = this->proj_data_info_sptr->create_single_tof_clone();
       // TODO disable caching of the matrix
       this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone());
       this->sens_backprojector_sptr->set_up(this->sens_proj_data_info_sptr, target_sptr);
     }
   else
     {
-      // just use the normal backprojector
+      // just use a signle TOF backprojector
       this->sens_proj_data_info_sptr = this->proj_data_info_sptr;
       this->sens_backprojector_sptr = projector_pair_sptr->get_back_projector_sptr();
     }
@@ -622,19 +622,31 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 {
   // TODO replace with call to distributable function
 
-  const int min_segment_num = this->proj_data_info_sptr->get_min_segment_num();
-  const int max_segment_num = this->proj_data_info_sptr->get_max_segment_num();
-
   info(boost::format("Calculating sensitivity for subset %1%") % subset_num);
 
   int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
   int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
-  if (min_timing_pos_num < 0 || max_timing_pos_num > 0)
+  if (min_timing_pos_num < 0 || max_timing_pos_num > 1)
     error("TOF code for sensitivity needs work");
 
   this->sens_backprojector_sptr->start_accumulating_in_new_target();
 
-  // warning: has to be same as subset scheme used as in distributable_computation
+  int runs = 1;
+  if((this->proj_data_info_sptr->get_max_segment_num() -
+       this->proj_data_info_sptr->get_min_segment_num()) > 100)
+    {
+      runs = ceil(this->proj_data_info_sptr->get_max_segment_num() -
+       this->proj_data_info_sptr->get_min_segment_num())/ 100;
+      }
+
+  info(boost::format("The  number of runs needed for the sensitivity image is %1%:  ") % runs);
+
+  for (int run = 0; run < runs; ++run)
+    {
+      const int min_segment_num = this->proj_data_info_sptr->get_min_segment_num();
+      const int max_segment_num = this->proj_data_info_sptr->get_max_segment_num();
+      info(boost::format("Current run %1% of %2%:  ") % run % runs);
+      // warning: has to be same as subset scheme used as in distributable_computation
 #ifdef STIR_OPENMP
 #  if _OPENMP < 201107
 #    pragma omp parallel for schedule(dynamic)
@@ -642,40 +654,45 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #    pragma omp parallel for collapse(2) schedule(dynamic)
 #  endif
 #endif
-  for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
-    {
-      for (int view = this->sens_proj_data_info_sptr->get_min_view_num() + subset_num;
-           view <= this->sens_proj_data_info_sptr->get_max_view_num();
-           view += this->num_subsets)
+      for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
         {
-          const ViewSegmentNumbers view_segment_num(view, segment_num);
-
-          if (!this->sens_backprojector_sptr->get_symmetries_used()->is_basic(view_segment_num))
-            continue;
-          // for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
-          {
-            shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used(
-                this->sens_backprojector_sptr->get_symmetries_used()->clone());
-
-            RelatedViewgrams<float> viewgrams = this->sens_proj_data_info_sptr->get_empty_related_viewgrams(
-                view_segment_num, symmetries_used, false); //, timing_pos_num);
-
-            viewgrams.fill(1.F);
-            // find efficiencies
+          for (int view = this->sens_proj_data_info_sptr->get_min_view_num() + subset_num;
+               view <= this->sens_proj_data_info_sptr->get_max_view_num();
+               view += this->num_subsets)
             {
-              this->normalisation_sptr->undo(viewgrams);
-            }
-            // backproject
-            {
-              const int min_ax_pos_num = viewgrams.get_min_axial_pos_num();
-              const int max_ax_pos_num = viewgrams.get_max_axial_pos_num();
+              const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-              this->sens_backprojector_sptr->back_project(viewgrams, min_ax_pos_num, max_ax_pos_num);
+              if (!this->sens_backprojector_sptr->get_symmetries_used()->is_basic(view_segment_num))
+                continue;
+
+              info(boost::format("Current seg %1%,  view: %1% ") % segment_num, view);
+              // for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
+              {
+                shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used(
+                    this->sens_backprojector_sptr->get_symmetries_used()->clone());
+
+                RelatedViewgrams<float> viewgrams = this->sens_proj_data_info_sptr->get_empty_related_viewgrams(
+                    view_segment_num, symmetries_used, false); //, timing_pos_num);
+
+                viewgrams.fill(1.F);
+                // find efficiencies
+                {
+                  this->normalisation_sptr->undo(viewgrams);
+                }
+                // backproject
+                {
+                  const int min_ax_pos_num = viewgrams.get_min_axial_pos_num();
+                  const int max_ax_pos_num = viewgrams.get_max_axial_pos_num();
+
+                  this->sens_backprojector_sptr->back_project(viewgrams, min_ax_pos_num, max_ax_pos_num);
+                }
+              }
             }
-          }
         }
+      this->sens_backprojector_sptr->get_output(sensitivity);
+      // Next run
     }
-  this->sens_backprojector_sptr->get_output(sensitivity);
+
 }
 
 template <typename TargetT>

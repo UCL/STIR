@@ -262,7 +262,7 @@ Scanner::get_timing_resolution() const
 bool
 Scanner::is_tof_ready() const
 {
-  return (max_num_of_timing_poss > 0 && size_timing_pos > 0.0f && timing_resolution > 0.0f);
+  return (max_num_of_timing_poss > 0 && size_timing_pos > 0.0f ); //&& timing_resolution > 0.0f);
 }
 
 std::string
