@@ -93,7 +93,7 @@ float
 ProjDataInfo::get_sampling_in_t(const Bin& bin) const
 {
   return std::abs(get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num() + 1, bin.tangential_pos_num()))
-             - get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num() - 1, bin.tangential_pos_num())))
+                  - get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num() - 1, bin.tangential_pos_num())))
          / 2;
 }
 
@@ -101,7 +101,7 @@ float
 ProjDataInfo::get_sampling_in_m(const Bin& bin) const
 {
   return std::abs(get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num() + 1, bin.tangential_pos_num()))
-             - get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num() - 1, bin.tangential_pos_num())))
+                  - get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num() - 1, bin.tangential_pos_num())))
          / 2;
 }
 
@@ -109,7 +109,7 @@ float
 ProjDataInfo::get_sampling_in_s(const Bin& bin) const
 {
   return std::abs(get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num() + 1))
-             - get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num() - 1)))
+                  - get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num() - 1)))
          / 2;
 }
 
