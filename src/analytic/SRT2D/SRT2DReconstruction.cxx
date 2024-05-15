@@ -8,7 +8,6 @@
 #include "stir/ArcCorrection.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
-// #include "stir/ProjDataInterfile.h"
 #include "stir/Bin.h"
 #include "stir/round.h"
 #include "stir/display.h" 
@@ -19,7 +18,7 @@
  
 using std::cerr;  
 using std::endl; 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP 
 #include <omp.h>
 #endif
 #include "stir/num_threads.h"
@@ -43,7 +42,6 @@ SRT2DReconstruction::
 set_defaults()
 {
   base_type::set_defaults();
-  thres_restr_bound=-pow(10,6); 
   num_segments_to_combine = -1; 
   zoom=1.0;
   filter_wiener=1; 
@@ -59,8 +57,6 @@ SRT2DReconstruction::initialise_keymap()
   parser.add_start_key("SRT2DParameters");
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
-  parser.add_key("threshold for restriction within boundary", &thres_restr_bound);
-  parser.add_key("threshold_per slice for restriction within boundary", &thres_restr_bound_vector);
   parser.add_key("zoom", &zoom);
   parser.add_key("wiener filter", &filter_wiener);
   parser.add_key("median filter", &filter_median);
@@ -73,7 +69,6 @@ ask_parameters()
 { 
   base_type::ask_parameters();
   num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
-  thres_restr_bound=ask_num("threshold for restriction within boundary",-pow(10,6),pow(10,6),-pow(10,6));
 }
 
 bool SRT2DReconstruction::post_processing()
@@ -110,8 +105,6 @@ set_up(shared_ptr <SRT2DReconstruction::TargetT > const& target_data_sptr)
 	}
     }
 
-  //if (is_null_ptr(back_projector_sptr))
-  //  error("Back projector not set.");
 
   return Succeeded::yes;
 }
@@ -125,7 +118,6 @@ SRT2DReconstruction::
 SRT2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename); 
-  //std::cerr<<parameter_info() << endl; 
 	info(boost::format("%1%") % parameter_info());
 }
 
@@ -135,13 +127,12 @@ SRT2DReconstruction::SRT2DReconstruction()
 }
 
 SRT2DReconstruction::
-SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const float thres_restr_bound_v,
+SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,  
 		      const int num_segments_to_combine_v, const float zoom_v, const int filter_wiener_v, 
 			  const int filter_median_v, const int filter_gamma_v)
 { 
   set_defaults();
   proj_data_ptr = proj_data_ptr_v;
-  thres_restr_bound=thres_restr_bound_v;
 	num_segments_to_combine = num_segments_to_combine_v;
   zoom=zoom_v;
   filter_wiener=filter_wiener_v; 
@@ -229,12 +220,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	Viewgram<float> view1 = proj_data_ptr->get_empty_viewgram(0,0); 
 	Viewgram<float> view_th = proj_data_ptr->get_empty_viewgram(0,0); 
 	Viewgram<float> view1_th = proj_data_ptr->get_empty_viewgram(0,0); 
-	/*cerr << "ax_min = " << proj_data_ptr->get_min_axial_pos_num(0) << 
-	 *	", ax_max = " << proj_data_ptr->get_max_axial_pos_num(0) << 
-	 *	", img_min = " << image.get_min_y() << 
-	 *	", img_max = " << image.get_max_y() << 
-	 *	", img_siz = " << image.get_y_size() << 
-	 *	 endl; */	
 
     // Retrieve runtime-dependent sizes
    const int sp = proj_data_ptr->get_num_tangential_poss();
@@ -255,31 +240,15 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	const int image_min_x = image.get_min_x();
 	const int image_min_y = image.get_min_y();
 
-    // Dynamically allocated vectors
-  //Old static array declarations: float th[sth], p[sp], p_ud[sp], x1[sx],  x2[sy];//hx[sth]
-  // New dynamic declarations using std::vector
+  // Dynamic declarations using std::vector
   std::vector<float> th(sth), p(sp), p_ud(sp), x1(sx), x2(sy);
 
-  //Old static array declarations: float f[sth][sp], ddf[sth][sp];
-  // New dynamic declaration using std::vector
   std::vector<std::vector<float>> f(sth, std::vector<float>(sp,0.0f));
   std::vector<std::vector<float>> ddf(sth, std::vector<float>(sp,0.0f));
 
-  // Old declarations: float f_ud[sth][sp], ddf_ud[sth][sp]; 
-  // New declarations using std::vector of std::vector
   std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp,0.0f));
   std::vector<std::vector<float>> ddf_ud(sth, std::vector<float>(sp,0.0f));
 
-	//float f_ud[sth][sp], ddf_ud[sth][sp];
-	//float f1[sth][sp], ddf1[sth][sp];
-	//float f1_ud[sth][sp], ddf1_ud[sth][sp];
-	
-	//float f_th[sth][sp], ddf_th[sth][sp];
-	//float f_th_ud[sth][sp], ddf_th_ud[sth][sp];
-	//float f1_th[sth][sp], ddf1_th[sth][sp];
-	//float f1_th_ud[sth][sp], ddf1_th_ud[sth][sp];
-	
-	// Convert these arrays to std::vector<std::vector<float>>
 	std::vector<std::vector<float>> f1(sth, std::vector<float>(sp,0.0f));
 	std::vector<std::vector<float>> ddf1(sth, std::vector<float>(sp,0.0f));
 
@@ -299,15 +268,9 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp,0.0f));
 	std::vector<std::vector<float>> ddf1_th_ud(sth, std::vector<float>(sp,0.0f));
 
-
-  //	float lg[sp], termC[sth], termC_th[sth]; 
   std::vector<float> lg(sp), termC(sth), termC_th(sth);
 	const float dp6 = 6.0/4.0*2.0/(sp-1.0);
-	
-	//Some constants.
-	//pp2= -1.0/(4*M_PI*M_PI); 
-	
-	
+		
 	#ifdef STIR_OPENMP
 	if (getenv("OMP_NUM_THREADS")==NULL) {
 		omp_set_num_threads(omp_get_num_procs());
@@ -324,7 +287,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	#endif
 	
 	
-	
 	// Put theta and p in arrays.
 	for(ith=0; ith<sth; ith++) 
 		th[ith]=ith*M_PI/sth; 
@@ -336,39 +298,13 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	
 	// Put x1 and x2 in arrays.
 	
-	//rr = 1.0*sx/((sp+1)*zoom); 
 	cerr << "sp = " << sp << endl; 
 	//-- Creation of the grid
 	for(k1=0; k1<sx; k1++)
-		//x1[k1]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k1/(sx-1); 
 		x1[k1] = -1.0*sx/((sp+1)*zoom) + k1*2.0*sx/((sp+1)*zoom)/(sx-1);
-	//x1[k1] = -1.0*sx/((sp+1)*zoom) + k1*2.0*((sp+1)*zoom)
-	////x1[k1]=-1.0+2.0*k1/(sx-1); 
 	for(k2=0; k2<sx; k2++) 
-		//x2[k2]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k2/(sx-1); 
 		x2[k2] = -1.0*sx/((sp+1)*zoom) + k2*2.0*sx/((sp+1)*zoom)/(sx-1);
-	////x2[k2]=-1.0+2.0*k2/(sx-1); 
 	
-	
-	/*	for(ix1=0; ix1<sx; ix1++) 
-	 *		x1[ix1]=-1.0+2.0*ix1/(sx-1); 
-	 *	
-	 *	for(ix2=0; ix2<sy; ix2++) 
-	 *		x2[ix2]=-1.0+2.0*ix2/(sy-1);*/
-	
-	// Calculate constants 
-	//dp = p[1]-p[0];
-	//dp6 = 6.0/4.0*dp;
-	
-/*	for(ia=0; ia<sa; ia++) { 
-		for(ix1=0; ix1<sx; ix1++){ 
-			for(ix2=0; ix2<sy; ix2++){  
-				image_pos= image.get_min_z() + 2*(ia - proj_data_ptr->get_min_axial_pos_num(0));
-				
-				image[image_pos][image_min_x +sx-ix1-1][image_min_y +ix2] = 0; 
-			}
-		}
-	}*/
 	
 	// Starting calculations per view
 	// 2D algorithm only  
@@ -399,11 +335,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 			if(fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux){ 
 				continue;
 			}		
-			x=x2[ix2]*cos(th[ith])-x1[ix1]*sin(th[ith]); 
-		/*	for (ip=0; ip<sp; ip++) {
-				lg[ip] = log(fabs(x-p[ip])); 
-if(fabs(p[ip]-x)<2e-6) lg[ip] = 0.; 			
-}*/
+			x=x2[ix2]*cos(th[0])-x1[ix1]*sin(th[0]); 
 for (ip=0; ip<sp; ip++) {
     double val = fabs(x - p[ip]);
     lg[ip] = val < 2e-6 ? 0. : std::log(val);  // Using std::log to specify the namespace
@@ -423,12 +355,9 @@ for (ip=0; ip<sp; ip++) {
 	shared(view, view1, view_th, view1_th,do_arc_correction, arc_correction, p,th,x1,x2,image) \
 	private(jth,ia, ip, f, f_ud,f1, f1_ud, ddf,f_th, f_th_ud, f1_th, f1_th_ud, ddf1, ddf_th, ddf1_th, \
 	ddf_ud, ddf1_ud, ddf_th_ud, ddf1_th_ud, termC, termC_th, ix2, ix1, aux, x, lg, image_pos)
-//	#pragma omp for schedule(auto)  nowait
 	#pragma omp for schedule(dynamic)  nowait
 	#endif
 	for(ith=1; ith<sth; ith++){
-		//image_pos= image.get_min_z() + 2*(ia - proj_data_ptr->get_min_axial_pos_num(0));
-		//std::cerr << "\nView " << ith << " of " << sth << std::endl;
 		
 		if(ith<sth2 ){ 
 			jth = sth2-ith; 
@@ -498,7 +427,6 @@ for (ip=0; ip<sp; ip++) {
 		//Starting the calculation of ff(x1,x2).
 		for(ix1=0; ix1<sx2; ix1++){
 			for(ix2=0; ix2<=ix1; ix2++){  
-				// If x1,x2 off range put ff(x1,x2)=0
 				aux=sqrt(1.0-x2[ix2]*x2[ix2]);
 				if(fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux){ 
 					continue;
@@ -506,10 +434,6 @@ for (ip=0; ip<sp; ip++) {
 				
 				// Computation of h_rho			
 				x=x2[ix2]*cos(th[ith])-x1[ix1]*sin(th[ith]); 
-				/*	for (ip=0; ip<sp; ip++) {
-				lg[ip] = log(fabs(x-p[ip])); 
-				if(fabs(p[ip]-x)<2e-6) lg[ip] = 0.; 	 		
-				}*/
 				for (ip=0; ip<sp; ip++) {
 				double val = fabs(x - p[ip]);
 				lg[ip] = val < 2e-6 ? 0. : std::log(val);  // Using std::log to specify the namespace
@@ -594,7 +518,6 @@ void SRT2DReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, in
 	const int ws = 9; 
 	    
 	for(int ia=0; ia<sa; ia++) { 
-		//float localMean[sx][sy], localVar[sx][sy], 
     std::vector<std::vector<float>> localMean(sx, std::vector<float>(sy, 0.0f));
     std::vector<std::vector<float>> localVar(sx, std::vector<float>(sy, 0.0f));
   
@@ -611,11 +534,6 @@ void SRT2DReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, in
 				
 				for(int k=-1; k<=1; k++) 
 					for(int l=-1; l<=1; l++) 
-				//		localVar[i][j] += std::pow(image[ia][min_x+i+k][min_y+j+l], 2)*1.; 
-				//localVar[i][j] = localVar[i][j]/ws - std::pow(localMean[i][j], 2); 
-        //Corrected version:
-				//localVar[i][j] += std::pow(static_cast<double>(image[ia][min_x+i+k][min_y+j+l]), 2.0); 
-				//localVar[i][j] = localVar[i][j]/ws - std::pow(static_cast<double>(localMean[i][j]), 2.0);
 
 				localVar[i][j] += image[ia][min_x+i+k][min_y+j+l] * image[ia][min_x+i+k] [min_y+j+l]; 
 			  localVar[i][j] = localVar[i][j]/ws - localMean[i][j] * localMean[i][j];
@@ -653,12 +571,9 @@ void SRT2DReconstruction::median(VoxelsOnCartesianGrid<float>& image, int sx, in
 					continue; 
 				for(int k=-offset; k<=offset; k++) { 
 					for(int l=-offset; l<=offset; l++) { 
-					//	neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];
-//          neighbors[(k + offset) * filter_size + (l + offset)] = image[ia][min_x + i + std::clamp(k + i, 0, sx - 1)][min_y + j + std::clamp(l + j, 0, sy - 1)];
 neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];			
 		}
 				}
-				//std::sort(std::begin(neighbors), std::end(neighbors));
         std::sort(neighbors.begin(), neighbors.end());
 				image[ia][min_x+i][min_y+j] = neighbors[len];
 			}
@@ -717,7 +632,6 @@ void SRT2DReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int
 	return; 
 }
 
-//float SRT2DReconstruction::hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC) {
 float SRT2DReconstruction::hilbert_der(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, const std::vector<float>& lg, float termC) {
 	
 	float term, trm0, termd0; 
@@ -748,14 +662,12 @@ float SRT2DReconstruction::hilbert_der(float x, const std::vector<float>& f, con
 	
 	return term; 
 }
+ 
 
-
-//void SRT2DReconstruction::spline(float x[],float y[],int n, float y2[]) {
 void SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) {
 	// function for nanural qubic spline.
 	int i, k;
 	float qn, un;
-//	float u[n]; 
     std::vector<float> u(n);
 	y2[0]=0.0; 
 	u[0]=0.0;
@@ -775,8 +687,7 @@ void SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<
 
 
 
-//float SRT2DReconstruction::integ(float dist, int max, float ff[]) {
-float SRT2DReconstruction::integ(float dist, int max, const std::vector<float>& ff) {
+float SRT2DReconstruction::integ(float dist, int max, const std::vector<float>& ff) { 
 	// function for the calculation of integrals (closed formula).
 	int k, intg;
 	intg=ff[0];
