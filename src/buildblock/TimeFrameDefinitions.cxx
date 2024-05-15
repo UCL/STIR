@@ -268,8 +268,8 @@ TimeFrameDefinitions::operator==(const TimeFrameDefinitions& t) const
   for (int frame = 0; frame < frame_times.size(); frame++)
     {
 
-      const bool is_identical = (abs(frame_times.at(frame).first - t.frame_times.at(frame).first) <= 10e-5)
-                                && (abs(frame_times.at(frame).second - t.frame_times.at(frame).second) <= 10e-5);
+      const bool is_identical = (std::abs(frame_times.at(frame).first - t.frame_times.at(frame).first) <= 10e-5)
+                                && (std::abs(frame_times.at(frame).second - t.frame_times.at(frame).second) <= 10e-5);
       if (!is_identical)
         return false;
     }
