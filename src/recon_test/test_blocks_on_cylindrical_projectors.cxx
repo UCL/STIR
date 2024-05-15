@@ -96,7 +96,7 @@ BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_
     {
       min_ring_diff_v[i] = i;
       max_ring_diff_v[i] = i;
-      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
+      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - std::abs(i);
     }
 
   auto proj_data_info_blocks_sptr
@@ -128,7 +128,7 @@ BlocksTests::set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_
     {
       min_ring_diff_v[i] = i;
       max_ring_diff_v[i] = i;
-      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
+      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - std::abs(i);
     }
 
   auto proj_data_info_blocks_sptr
@@ -369,7 +369,7 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
     {
       Bin bin(0, i, 0, 0);
       proj_data_info_blocks_sptr->get_LOR(lorB1, bin);
-      if (abs(lorB1.phi() - phi1) / phi1 <= 1E-2)
+      if (std::abs(lorB1.phi() - phi1) / phi1 <= 1E-2)
         {
           view1_num = i;
           break;
@@ -381,7 +381,7 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
     {
       Bin bin(0, i, 0, 0);
       proj_data_info_blocks_sptr->get_LOR(lorB2, bin);
-      if (abs(lorB2.phi() - phi2) / phi2 <= 1E-2)
+      if (std::abs(lorB2.phi() - phi2) / phi2 <= 1E-2)
         {
           view2_num = i;
           break;
@@ -821,11 +821,11 @@ BlocksTests::run_intersection_with_cylinder_test()
     const auto dot_product = line1.x() * line2.x() + line1.y() * line2.y() + line1.z() * line2.z();
     const auto length1 = sqrt(line1.x() * line1.x() + line1.y() * line1.y() + line1.z() * line1.z());
     const auto length2 = sqrt(line2.x() * line2.x() + line2.y() * line2.y() + line2.z() * line2.z());
-    return abs(dot_product) / length1 / length2 > 0.99;
+    return std::abs(dot_product) / length1 / length2 > 0.99;
   };
 
   auto point_is_on_cylinder = [](const CartesianCoordinate3D<float>& point, float radius) -> bool {
-    return abs(sqrt(point.x() * point.x() + point.y() * point.y()) - radius) < 0.1;
+    return std::abs(sqrt(point.x() * point.x() + point.y() * point.y()) - radius) < 0.1;
   };
 
   const auto segment_sequence = ProjData::standard_segment_sequence(*proj_data_info);

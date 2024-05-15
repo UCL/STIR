@@ -87,12 +87,12 @@ inverse_SSRB(ProjData& proj_data_4D, const ProjData& proj_data_3D)
                   // for the first slice there is no previous
                   const auto distance_to_previous = in_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0)
                                                         ? std::numeric_limits<float>::max()
-                                                        : abs(out_m - in_m.at(in_ax_pos_num - 1));
-                  const auto distance_to_current = abs(out_m - in_m.at(in_ax_pos_num));
+                                                        : std::abs(out_m - in_m.at(in_ax_pos_num - 1));
+                  const auto distance_to_current = std::abs(out_m - in_m.at(in_ax_pos_num));
                   // for the last slice there is no next
                   const auto distance_to_next = in_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0)
                                                     ? std::numeric_limits<float>::max()
-                                                    : abs(out_m - in_m.at(in_ax_pos_num + 1));
+                                                    : std::abs(out_m - in_m.at(in_ax_pos_num + 1));
                   if (distance_to_current <= distance_to_previous && distance_to_current <= distance_to_next)
                     {
                       if (distance_to_current <= 1E-4)

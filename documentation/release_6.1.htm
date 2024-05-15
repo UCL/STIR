@@ -7,27 +7,30 @@
   <body>
     <h1>Summary of changes in STIR release 6.1</h1>
 
-<p>This version is 95% backwards compatible with STIR 6.0 for the user (see below).
-Developers might need to make code changes as 
-detailed below.
-</p>
+    <p>
+      This version is 100% backwards compatible with STIR 6.0 for the user, except for the bug-fix in the RDP (see below).
+    </p>
+
 <h2>Overall summary</h2>
-<p>
-</p>
+    <p>
+      This version adds capability of using Parallelproj (CPU and GPU versions) for TOF data. In addition,
+      the list-mode objective function has several improvements, including speed-up by using multi-threading
+      if caching was not enabled.
+    </p>
 
+    <p>
+      Of course, there is also the usual code-cleanup and improvements to the documentation.
+    </p>
 
-<p>Of course, there is also the usual code-cleanup and 
-improvements to the documentation.
-</p>
-
-<p>This release contains mainly code written by Kris Thielemans (UCL).
-</p>
+    <p>
+      This release contains mainly code written by Nicole Jurjew (UCL) and Kris Thielemans (UCL).
+    </p>
 
 <h2>Patch release info</h2>
 <ul>
   <li>
-    6.1.0 released ?/?/2020<br>
-    <a href="https://github.com/UCL/STIR/milestone/4">GitHub Milestone 6.0</a>
+    6.1.0 released 15/05/2024<br>
+    <a href="https://github.com/UCL/STIR/milestone/10">GitHub Milestone 6.1</a>
   </li>
   <!--
       <li> 4.0.1 released 28/04/2020
@@ -39,14 +42,6 @@ improvements to the documentation.
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
-<h3>Changes breaking backwards compatibility from a user-perspective</h3>
-<h4>General</h4>
-<h4>Python (and MATLAB)</h4>
-
-<ul>
-  <li> </li>
-</ul>
-
 
 <h3>New functionality</h3>
 <ul>
@@ -54,7 +49,7 @@ improvements to the documentation.
   Add TOF capability of the parallelproj projector (see <a href=https://github.com/UCL/STIR/pull/1356>PR #1356</a>)
 </li>
 <li>
-  Read TOF bin order from interfile header (see <a href=https://github.com/UCL/STIR/pull/1389> PR #1389</a>)
+  It is now possible to read TOF bin order from the interfile header (see <a href=https://github.com/UCL/STIR/pull/1389> PR #1389</a>)
 </li>
 <li>
   <code>PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin</code> can now compute the value
@@ -88,7 +83,7 @@ improvements to the documentation.
 
 <h3>Bug fixes</h3>
 <ul>
-  <li>The Relative Difference Prior gave incorrect results, probably since switching to C++-14 in version 6.0, although we are not sure.
+  <li>The <strong>Relative Difference Prior gave incorrect results</strong>, probably since switching to C++-14 in version 6.0, although we are not sure.
     See <a href=https://github.com/UCL/STIR/pull/1410>PR #1410</a> and associated <a href=https://github.com/UCL/STIR/pull/1409>issue #1409</a>.
   </li>
   <li>
@@ -101,13 +96,6 @@ improvements to the documentation.
 <h3>Known problems</h3>
     <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</p>
 
-
-<h3>Documentation changes</h3>
-<ul>
-<li>Added documentation on new features</li> 
-<li>Also check the wiki in addition to the provided PDFs.
-</li>
- </ul>
 
 <H2>What's new for developers (aside from what should be obvious
 from the above):</H2>
@@ -129,28 +117,25 @@ from the above):</H2>
 
 <h3>Other code changes</h3>
 <ul>
-<li>
-</li>
+  <li>
+    Fixes an incompatibility with C++20.
+  </li>
 </ul>
 
 <h3>Build system</h3>
 <ul>
-<li>
-</li>
+  <li>
+    Force C++ version according to CERN ROOT versions: ROOT 6.28.10 needs C++17 and 6.30.2 needs C++20.
+    Also some fixes when relying on <code>root-config</code>.
+  </li>
 </ul>
 
 <h3>Test changes</h3>
-<h4>recon_test_pack changes</h4>
-<ul>
-  <li>
-    updated version number and added some clarification to the README.txt
-  </li>
-</ul>
 
 <h4>C++ tests</h4>
 <ul>
   <li>
-    objective function and priors now have a numerical test for <code>accumulate_Hessian_times_input</code>
+    Objective functions (both projection-data and list-mode) and priors now have a numerical test for <code>accumulate_Hessian_times_input</code>
     <br>
     <a href=https://github.com/UCL/STIR/pull/1418> PR #1418</a>
   </li>
