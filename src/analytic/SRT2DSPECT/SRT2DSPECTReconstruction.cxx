@@ -46,7 +46,6 @@ set_defaults()
 {
   base_type::set_defaults();
   attenuation_filename=""; 
-  thres_restr_bound=-pow(10,6); 
   num_segments_to_combine = -1;
   filter_wiener=0; 
   filter_median=0; 
