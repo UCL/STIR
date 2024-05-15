@@ -94,7 +94,7 @@ public:
   */
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const* const proj_data_filename = 0,
                                                              char const* const density_filename = 0);
-  void construct_input_data(shared_ptr<target_type>& density_sptr);
+  void construct_input_data(shared_ptr<target_type>& density_sptr, const bool TOF_or_not);
 
   void run_tests() override;
 
@@ -174,18 +174,37 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::test_approximate_Hes
 }
 
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data(shared_ptr<target_type>& density_sptr)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data(shared_ptr<target_type>& density_sptr,
+                                                                                 const bool TOF_or_not)
 {
   if (this->proj_data_filename == 0)
     {
+      shared_ptr<ProjDataInfo> proj_data_info_sptr;
       // construct a small scanner and sinogram
-      shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
-      scanner_sptr->set_num_rings(5);
-      shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+      if (TOF_or_not)
+        {
+          std::cerr << "------ TOF data ----\n";
+          shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Discovery690));
+          scanner_sptr->set_num_rings(4);
+          proj_data_info_sptr = std::move(ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                                                  /*span=*/3,
-                                                                                 /*max_delta=*/4,
+                                                                                 /*max_delta=*/2,
                                                                                  /*num_views=*/16,
-                                                                                 /*num_tang_poss=*/16));
+                                                                                 /*num_tang_poss=*/16,
+                                                                                 /* arccorrected=*/false,
+                                                                                 /* TOF_mash_factor=*/11));
+        }
+      else
+        {
+          std::cerr << "------ non-TOF data ----\n";
+          shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+          scanner_sptr->set_num_rings(5);
+          proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                                                  /*span=*/3,
+                                                                  /*max_delta=*/4,
+                                                                  /*num_views=*/16,
+                                                                  /*num_tang_poss=*/16));
+        }
       shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(ImagingModality::PT));
       proj_data_sptr.reset(new ProjDataInMemory(exam_info_sptr, proj_data_info_sptr));
       for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num)
@@ -251,24 +270,23 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
   // multiplicative term
   shared_ptr<BinNormalisation> bin_norm_sptr(new TrivialBinNormalisation());
   {
+
     mult_proj_data_sptr.reset(new ProjDataInMemory(proj_data_sptr->get_exam_info_sptr(),
-                                                   proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+                                                   proj_data_sptr->get_proj_data_info_sptr()->create_non_tof_clone()));
     for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num)
       {
-        for (int timing_pos_num = proj_data_sptr->get_min_tof_pos_num(); timing_pos_num <= proj_data_sptr->get_max_tof_pos_num();
-             ++timing_pos_num)
-          {
-            SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num, false, timing_pos_num);
-            // fill in some crazy values
-            float value = 0;
-            for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter)
-              {
-                value = float(fabs(seg_num * value - .2)); // needs to be positive for Poisson
-                *iter = value;
-              }
-            segment /= 0.5F * segment.find_max(); // normalise to 2 (to avoid large numbers)
-            mult_proj_data_sptr->set_segment(segment);
-          }
+        {
+          auto segment = mult_proj_data_sptr->get_empty_segment_by_view(seg_num);
+          // fill in some crazy values
+          float value = 0;
+          for (auto iter = segment.begin_all(); iter != segment.end_all(); ++iter)
+            {
+              value = float(fabs(seg_num * value - .2)); // needs to be positive for Poisson
+              *iter = value;
+            }
+          segment /= 0.5F * segment.find_max(); // normalise to 2 (to avoid large numbers)
+          mult_proj_data_sptr->set_segment(segment);
+        }
       }
     bin_norm_sptr.reset(new BinNormalisationFromProjData(mult_proj_data_sptr));
   }
@@ -305,8 +323,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
   shared_ptr<ProjectorByBinPair> proj_pair_sptr(new ProjectorByBinPairUsingProjMatrixByBin(proj_matrix_sptr));
   objective_function.set_projector_pair_sptr(proj_pair_sptr);
   /*
-  void set_frame_num(const int);
-  void set_frame_definitions(const TimeFrameDefinitions&);
+    void set_frame_num(const int);
+    void set_frame_definitions(const TimeFrameDefinitions&);
   */
   objective_function.set_normalisation_sptr(bin_norm_sptr);
   objective_function.set_additive_proj_data_sptr(add_proj_data_sptr);
@@ -323,9 +341,18 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests()
   Verbosity::set(0);
 
 #if 1
-  shared_ptr<target_type> density_sptr;
-  construct_input_data(density_sptr);
-  this->run_tests_for_objective_function(*this->objective_function_sptr, *density_sptr);
+  {
+    shared_ptr<target_type> density_sptr;
+    construct_input_data(density_sptr, /*TOF_or_not=*/false);
+    this->run_tests_for_objective_function(*this->objective_function_sptr, *density_sptr);
+  }
+  if (this->proj_data_filename == 0)
+    {
+      shared_ptr<target_type> density_sptr;
+      construct_input_data(density_sptr, /*TOF_or_not=*/true);
+      this->run_tests_for_objective_function(*this->objective_function_sptr, *density_sptr);
+    }
+
 #else
   // alternative that gets the objective function from an OSMAPOSL .par file
   // currently disabled
