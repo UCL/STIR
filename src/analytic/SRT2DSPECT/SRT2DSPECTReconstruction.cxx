@@ -2,17 +2,15 @@
      
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h" 
-#include "stir/ArcCorrection.h"
-#include "stir/analytic/FBP2D/RampFilter.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Array.h"
 #include <vector> 
 #include "stir/Sinogram.h"
-#include "stir/Viewgram.h"
+#include "stir/Viewgram.h" 
 #include <math.h>
-#include "stir/Bin.h"
+#include "stir/Bin.h" 
 #include "stir/round.h" 
 #include "stir/display.h"
 #include <algorithm>
@@ -20,10 +18,10 @@
 #include "stir/info.h" 
 #include <boost/format.hpp>  
   
-#include "stir/RelatedViewgrams.h"
 #include "stir/SegmentByView.h" 
-
- 
+#include "stir/ArcCorrection.h"
+#include "stir/shared_ptr.h"
+  
 #ifdef STIR_OPENMP
 #include <omp.h>
 #endif 
@@ -49,9 +47,6 @@ set_defaults()
   base_type::set_defaults();
   attenuation_filename=""; 
   thres_restr_bound=-pow(10,6); 
-alpha_ramp = 1;
-  fc_ramp = 0.5;
-  pad_in_s=1;
   num_segments_to_combine = -1;
   filter_wiener=0; 
   filter_median=0; 
@@ -66,8 +61,6 @@ SRT2DSPECTReconstruction::initialise_keymap()
   parser.add_start_key("SRT2DSPECTParameters");
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
-  parser.add_key("threshold for restriction within boundary", &thres_restr_bound);
-  parser.add_key("threshold_per slice for restriction within boundary", &thres_restr_bound_vector);
   parser.add_key("attenuation filename", &attenuation_filename); 
   parser.add_key("wiener filter", &filter_wiener);
   parser.add_key("median filter", &filter_median);
@@ -80,11 +73,7 @@ ask_parameters()
 { 
   base_type::ask_parameters();
   num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
-  thres_restr_bound=ask_num("threshold for restriction within boundary",-pow(10,6),pow(10,6),-pow(10,6));
   attenuation_filename=ask_string("attenuation filename"); 
-alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);    
-  fc_ramp =  ask_num(" Cut-off frequency for Ramp filter ? ",0.,.5, 0.5);
-  pad_in_s = ask_num("  Transaxial extension for FFT : ",0,1, 1); 
 }
 
 bool SRT2DSPECTReconstruction::post_processing()
@@ -92,7 +81,7 @@ bool SRT2DSPECTReconstruction::post_processing()
   return base_type::post_processing();
 }
 
-Succeeded
+Succeeded 
 SRT2DSPECTReconstruction::
 set_up(shared_ptr <SRT2DSPECTReconstruction::TargetT > const& target_data_sptr)
 {
@@ -122,9 +111,6 @@ atten_data_ptr= ProjData::read_from_file(attenuation_filename);
 	}
     }
 
-  //if (is_null_ptr(back_projector_sptr))
-  //  error("Back projector not set.");
-
   return Succeeded::yes;
 }
 
@@ -137,7 +123,6 @@ SRT2DSPECTReconstruction::
 SRT2DSPECTReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename); 
-  //std::cerr<<parameter_info() << endl; 
 	info(boost::format("%1%") % parameter_info());
 }
 
@@ -147,16 +132,12 @@ SRT2DSPECTReconstruction::SRT2DSPECTReconstruction()
 }
 
 SRT2DSPECTReconstruction:: 
-SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const double alpha_ramp_v,
-		    const double fc_ramp_v,const int pad_in_s_v, const float thres_restr_bound_v, const int filter_wiener_v, 
+SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const int num_segments_to_combine_v, const int filter_wiener_v, 
 			  const int filter_median_v, const int filter_gamma_v)
 { 
-  set_defaults();
+  set_defaults(); 
   proj_data_ptr = proj_data_ptr_v;
-  thres_restr_bound=thres_restr_bound_v;
-pad_in_s = pad_in_s_v;
- alpha_ramp = alpha_ramp_v;
-  fc_ramp = fc_ramp_v;
+	num_segments_to_combine = num_segments_to_combine_v;
   filter_wiener=filter_wiener_v; 
   filter_median=filter_median_v; 
   filter_gamma=filter_gamma_v; 
@@ -167,8 +148,8 @@ SRT2DSPECTReconstruction::
 actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 {
 
-/*	// perform SSRB
-  if (num_segments_to_combine>1)
+	// perform SSRB
+/*  if (num_segments_to_combine>1)
     {  
       const ProjDataInfoCylindrical& proj_data_info_cyl =
 	dynamic_cast<const ProjDataInfoCylindrical&>
@@ -186,11 +167,11 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	proj_data_to_FBP_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
       SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);
       proj_data_ptr = proj_data_to_FBP_ptr;
-    }
+    } 
   else
-    {
+    { 
       // just use the proj_data_ptr we have already
-    }*/ 
+    } */
 
 	// check if segment 0 has direct sinograms
   {
@@ -228,7 +209,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	return Succeeded::no;
       do_arc_correction = true;
       // TODO full_log
-      warning("FBP2D will arc-correct data first");
+      warning("SRT2DSPECT will arc-correct data first");
       arc_corrected_proj_data_info_sptr =
 	arc_correction.get_arc_corrected_proj_data_info_sptr();
       tangential_sampling =
@@ -239,10 +220,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 density_ptr->fill(0);
 	Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0,0); 
 	Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0,0); 
-
-//view=filter.apply(*view);
-//filter.apply(view);
-//view=filter.view;
 	Viewgram<float> view_atten = atten_data_ptr->get_empty_viewgram(0,0); 
 
  // Retrieve runtime-dependent sizes
@@ -250,21 +227,10 @@ density_ptr->fill(0);
 	const int sth = proj_data_ptr->get_num_views();
 	const int sa = proj_data_ptr->get_num_axial_poss(0);
 	
-// Ramp filter start 
-  // set ramp filter with appropriate sizes
- // const int fft_size = 
-  //  round(pow(2., ceil(log((double)(pad_in_s + 1)* arc_corrected_proj_data_info_sptr->get_num_tangential_poss()) / log(2.))));
-  
-  //RampFilter filter(tangential_sampling,fft_size, float(alpha_ramp), float(fc_ramp)); 
- // RampFilter filter(tangential_sampling,fft_size, float(.5), float(.25)); 
-//std::cout << "alpha_ramp " << alpha_ramp << ", fc_ramp " << fc_ramp << std::endl; 
-
-RelatedViewgrams<float> viewgrams;
-// Ramp filter end
+//	RelatedViewgrams<float> viewgrams;
 	
 	const int sx = image.get_x_size();
 	const int sy = image.get_y_size();
-	/*int sz = image.get_z_size(); */
 
 //c ----------------------------------------------
 //c The rest of the variables used by the program.
@@ -276,20 +242,15 @@ RelatedViewgrams<float> viewgrams;
 	const int image_min_x = image.get_min_x();
 	const int image_min_y = image.get_min_y();
  		
-	//float th[sth], p[sp], x1[sx], x2[sy]; 
 	std::vector<float> th(sth,0), p(sp,0), x1(sx,0), x2(sy,0);
-	//	float g[sa][sp], ddg[sa][sp];
 	std::vector<std::vector<float>> g(sa, std::vector<float>(sp,0));
 	std::vector<std::vector<float>> ddg(sa, std::vector<float>(sp,0));
 
-
 	const int Nt = 8, Nmul = sth/Nt; 
-	//	float lg[sp], 
 	std::vector<float> lg(sp,0);
 
 	float dh1[Nt], dh2[Nt], t[Nt];
 
-	//float hilb[sa][sp], fcpe[sa][sp], fspe[sa][sp], fc[sa][sp], fs[sa][sp], ddfc[sa][sp], ddfs[sa][sp], dh1[Nt], dh2[Nt], f[sa][sp], ddf[sa][sp], t[Nt]; 
 	std::vector<std::vector<float>> hilb(sa, std::vector<float>(sp,0));
 	std::vector<std::vector<float>> fcpe(sa, std::vector<float>(sp,0));
 	std::vector<std::vector<float>> fspe(sa, std::vector<float>(sp,0));
@@ -305,8 +266,6 @@ RelatedViewgrams<float> viewgrams;
 	float rho, h, fcme_fin, fsme_fin, fc_fin, fs_fin, fcpe_fin, fspe_fin, hc_fin, hs_fin, I, Ft1, Ft2, rho1, rho2, tau, tau1, tau2, rx1, rx2; 
 	float gx, w, F; 
 	
-	//float rx1x2th[sa][sx][sy], lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1]; 
-	//float lg1_cache[Nt/2][sp-1], lg2_cache[Nt/2][sp-1]; 
 	std::vector<std::vector<float>> lg1_cache(Nt/2, std::vector<float>(sp-1,0));
 	std::vector<std::vector<float>> lg2_cache(Nt/2, std::vector<float>(sp-1,0));
 
@@ -321,53 +280,10 @@ RelatedViewgrams<float> viewgrams;
 		  }
 	} 
  
-
-/* float *** rx1x2th = (float ***)malloc(sa*sizeof(float**));
-        for (int i = 0; i< sa; i++) {
-         rx1x2th[i] = (float **) malloc(sx*sizeof(float *));
-          for (int j = 0; j < sx; j++) {
-              rx1x2th[i][j] = (float *)malloc(sy*sizeof(float));
-							for(int k=0; k<sy; k++) rx1x2th[i][j][k] = 0.; 
-          }
-        } */
-
-//	float f_cache[sa][Nt/2][sp], ddf_cache[sa][Nt/2][sp]; 
-//	float f1_cache[sa][Nt/2][sp], ddf1_cache[sa][Nt/2][sp]; 
   std::vector<std::vector<std::vector<float>>> f_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
   std::vector<std::vector<std::vector<float>>> ddf_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
   std::vector<std::vector<std::vector<float>>> f1_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
   std::vector<std::vector<std::vector<float>>> ddf1_cache(sa, std::vector<std::vector<float>>(Nt/2, std::vector<float>(sp, 0)));
-/*
-// Create a 3D vector
-std::vector<std::vector<std::vector<float>>> f_cache;
-std::vector<std::vector<std::vector<float>>> ddf_cache;
-std::vector<std::vector<std::vector<float>>> f1_cache;
-std::vector<std::vector<std::vector<float>>> ddf1_cache;
-
-// Resize first dimension
-f_cache.resize(sa);
-ddf_cache.resize(sa);
-f1_cache.resize(sa);
-ddf1_cache.resize(sa);
-
-// Iterate over the first dimension
-for (int i = 0; i < sa; ++i) {
-    // Resize second dimension for each first dimension slice
-    f_cache[i].resize(Nt / 2);  // Make sure Nt/2 calculates to an integer value correctly
-    ddf_cache[i].resize(Nt / 2);
-		f1_cache[i].resize(Nt / 2);
-		ddf1_cache[i].resize(Nt / 2);
-    // Iterate over the second dimension
-    for (int j = 0; j < Nt / 2; ++j) {
-        // Resize third dimension for each second dimension slice and initialize values
-        f_cache[i][j].resize(sp, 0.0f);  // Initialize each float to 0.0
-        ddf_cache[i][j].resize(sp, 0.0f);
-        f1_cache[i][j].resize(sp, 0.0f);
-        ddf1_cache[i][j].resize(sp, 0.0f);
-    }
-}
-*/
-
 
 	#ifdef STIR_OPENMP
 	if (getenv("OMP_NUM_THREADS")==NULL) {
@@ -408,18 +324,11 @@ for (int i = 0; i < sa; ++i) {
 		if (do_arc_correction) {
 		  view_atten = arc_correction.do_arc_correction(view_atten);
 		}
-		//float mv = 1e-4; 
 		for(int ia=0; ia<sa; ia++) {
 			for(int ip=0; ip<sp; ip++){ 	 
 				f_cache[ia][it][ip] = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip];//*.15;
-				//mv = f_cache[ia][it][ip] > mv ? f_cache[ia][it][ip] : mv; 
 			}
 		}
-		//for(int ia=0; ia<sa; ia++) {
-		//	for(int ip=0; ip<sp; ip++){ 	
-		//		f_cache[ia][it][ip] *= 0.093/mv; 
-		//	}
-		//}
 		for(int ia=0; ia<sa; ia++){
 			spline(p,f_cache[ia][it],sp,ddf_cache[ia][it]);
 		}
@@ -436,17 +345,6 @@ for (int i = 0; i < sa; ++i) {
 		}
 	}
 
-//SegmentByView<float> sv(proj_data_ptr->get_proj_data_info_sptr(), 0); 
-//proj_data_ptr->get_segment_by_view (0) ; 
-//int iii=0;
-/*for (SegmentByView<float>::iterator viewgram_iter = sv.begin();
-             viewgram_iter != sv.end();
-             ++viewgram_iter)
-{
-std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
-//std::cout << ++iii << std::endl; 
-}	*/	 
-
 	//-- Starting calculations per view
 	// 2D algorithm only 
 	#ifdef STIR_OPENMP
@@ -456,16 +354,12 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 	tau,a,b,tau1,tau2,w,rho1,rho2,lg1_cache,lg2_cache,f_node,h,fcme_fin,\
 	fsme_fin,fcpe_fin,fspe_fin,gx,fc_fin,fs_fin,hc_fin,hs_fin,rx1x2th,\
 	dh1,dh2,Ft1,Ft2,F,I,rx1,rx2)
-//	#pragma omp for schedule(auto)  nowait
 	#pragma omp for schedule(dynamic)  nowait
 	#endif
 	for(int ith=0; ith<sth; ith++){
 
-		//image_pos= 2*ia;
-		//std::cerr << "\nView " << ith << " of " <<  sth << endl; 
 		info(boost::format("View %d of %d") % ith % sth);
 		 
-
 		//-- Loading the viewgram    
 		#ifdef STIR_OPENMP
 		#pragma omp critical
@@ -477,21 +371,12 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 				view = arc_correction.do_arc_correction(view);
 				view_atten = arc_correction.do_arc_correction(view_atten); 
 			}
-			//float mv = 1e-4; 
 			for(int ia=0; ia<sa; ia++) {
 				for(int ip=0; ip<sp; ip++){ 	 
 					g[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
 					f[ia][ip] = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]*.15;
-					
-					//f[ia][ip] = g[ia][ip]; 
-					//mv = f[ia][ip] > mv ? f[ia][ip] : mv; 
 				}
 			}
-			//for(int ia=0; ia<sa; ia++) {
-			//	for(int ip=0; ip<sp; ip++){ 	
-			//		f[ia][ip] = 0.093*f[ia][ip]/mv; 
-			//	}
-			//}
 
 		}
 		//-- Calculation of second derivative by use of function spline
@@ -508,8 +393,8 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 				fcpe[ia][ip] = exp(0.5*f[ia][ip])*cos(hilb[ia][ip]/(2*M_PI));
 				fspe[ia][ip] = exp(0.5*f[ia][ip])*sin(hilb[ia][ip]/(2*M_PI));
 
-				fc[ia][ip] = fcpe[ia][ip]*g[ia][ip]; //USE CORRECT EMISSION
-				fs[ia][ip] = fspe[ia][ip]*g[ia][ip]; //USE CORRECT EMISSION
+				fc[ia][ip] = fcpe[ia][ip]*g[ia][ip];  
+				fs[ia][ip] = fspe[ia][ip]*g[ia][ip];  
 				
 			}
 			//-- calculate ddfc, ddfs for all \rho, \theta
@@ -518,10 +403,7 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 		}
 
 		//---- calculate r(x1, x2, theta) 
-		//std::cerr << "\ncalculating r(x1,x2,th) ...\n"; 
-		////test
 		for(int ix1=0; ix1<sx; ix1++) { 
-			//std::cerr << ix1 << ", "; 
 			for(int ix2=0; ix2<sy; ix2++) { 
 				aux=sqrt(1.0-x2[ix2]*x2[ix2]);
 				if(fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux) continue;
@@ -536,12 +418,6 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 				float C=1.0/6*(A*A*A-A)*(p2-p1)*(p2-p1);
 				float D=1.0/6*(B*B*B-B)*(p2-p1)*(p2-p1);
 				
-				/* 
-				for(int ip=0; ip<sp; ip++) { 
-					lg[ip] = log(fabs(p[ip]-rho)); 
-					if(fabs(p[ip]-rho)<2e-6) 
-						lg[ip] = 0.; 
-				}*/ 
 				for (int ip=0; ip<sp; ip++) {
     				double val = fabs(rho - p[ip]);
     				lg[ip] = val < 2e-6 ? 0. : std::log(val);  // Using std::log to specify the namespace
@@ -575,8 +451,10 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 				}
 				 
 				for(int ia=0; ia<sa; ia++) { 
-				//if(ia!=31 && ia!=70 && ia!=81 && ia!=100) continue; 
-					f_node = A*f[ia][i]+B*f[ia][i+1]+C*ddf[ia][i]+D*ddf[ia][i+1];
+				//if(ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue; 
+		    if(ia!=70 && ia!=71 && ia!=72 &&ia!=73 && ia!=100) continue; 
+		
+				 f_node = A*f[ia][i]+B*f[ia][i+1]+C*ddf[ia][i]+D*ddf[ia][i+1];
 					
 					// calculate fcme, fsme, fc, fs, hc, hs
 					
@@ -591,33 +469,19 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 					
 					fc_fin = fcpe_fin*gx;
 					fs_fin = fspe_fin*gx;
-					//fc_fin = fcpe_fin*fx1x2th[ix1][ix2][ith]; //USE CORRECT EMISSION
-					//fs_fin = fspe_fin*fx1x2th[ix1][ix2][ith]; //USE CORRECT EMISSION
-
+					
 					hc_fin = hilbert(rho, fc[ia], ddfc[ia], p, sp, lg); 
 					hs_fin = hilbert(rho, fs[ia], ddfs[ia], p, sp, lg); 
 					
-					
 					rx1x2th[ia][ix1][ix2] = fcme_fin*(1.0/M_PI*hc_fin + 2.0*fs_fin) + fsme_fin*(1.0/M_PI*hs_fin-2.0*fc_fin);
 					 
-					
 					// calculate I
 					for(int it=0; it<Nt/2; it++){ 
 						rho1 = tau1*sin(th[ith]-t[it]) + rho*cos(th[ith]-t[it]);
 						rho2 = tau2*sin(th[ith]-t[it]) + rho*cos(th[ith]-t[it]); 				
-						//dh1[it] = hilbert_derivative(rho1,f[8*it],ddf[8*it],p,sp);
-						//dh2[it] = hilbert_derivative(rho2,f[8*it],ddf[8*it],p,sp);
-						////hilbert_der_double(rho1,f[Nmul*it],ddf[Nmul*it],f[Nmul*(it+Nt/2)],ddf[Nmul*(it+Nt/2)],p,sp,&dh1[it],&dh1[it+Nt/2]);
-						////hilbert_der_double(rho2,f[Nmul*it],ddf[Nmul*it],f[Nmul*(it+Nt/2)],ddf[Nmul*(it+Nt/2)],p,sp,&dh2[it],&dh2[it+Nt/2]);
-						//hilbert_der_double(rho1,f_cache[ia][it],ddf_cache[ia][it],f_cache[ia][it+Nt/2],ddf_cache[ia][it+Nt/2],p,sp,&dh1[it],&dh1[it+Nt/2],lg1_cache[it]);
-						//hilbert_der_double(rho2,f_cache[ia][it],ddf_cache[ia][it],f_cache[ia][it+Nt/2],ddf_cache[ia][it+Nt/2],p,sp,&dh2[it],&dh2[it+Nt/2],lg2_cache[it]);
-
-						//hilbert_der_double(rho1,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it+Nt/2],ddf1_cache[ia][it+Nt/2],p,sp,&dh1[it],&dh1[it+Nt/2],lg1_cache[it]);
-						//hilbert_der_double(rho2,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it+Nt/2],ddf1_cache[ia][it+Nt/2],p,sp,&dh2[it],&dh2[it+Nt/2],lg2_cache[it]);
 						hilbert_der_double(rho1,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it],ddf1_cache[ia][it],p,sp,&dh1[it],&dh1[it+Nt/2],lg1_cache[it]);
 						hilbert_der_double(rho2,f_cache[ia][it],ddf_cache[ia][it],f1_cache[ia][it],ddf1_cache[ia][it],p,sp,&dh2[it],&dh2[it+Nt/2],lg2_cache[it]);
 
-						//dh1[it] = dh1[it+Nt/2] = dh2[it] = dh2[it+Nt/2] = 0; 
 					}
 					
 					Ft1 = -1.0/(4.0*M_PI*M_PI)*integ(2*M_PI, Nt, dh1);
@@ -638,10 +502,8 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 		}
 
 		//---- calculate g(x1, x2) 
-		//std::cerr << "\ncalculating g(x1,x2) ...\n"; 
 		for(int ia=0; ia<sa; ia++) {
 			for(int ix1=0; ix1<sx; ix1++) { 
-				//std::cerr << ix1 << ", "; 
 				for(int ix2=0; ix2<sy; ix2++) { 
 					aux=sqrt(1.0-x2[ix2]*x2[ix2]); 
 					if(fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux) { 
@@ -664,7 +526,7 @@ std::for_each(viewgram_iter->begin(), viewgram_iter->end(), filter);
 					#pragma omp critical
 					#endif 
 					{
-						image[2*ia][image_min_x +sx-ix1-1][image_min_y + ix2] += 1.0/(4.0*M_PI)*(rx1*sin(th[ith]) - rx2*cos(th[ith]))*(2.0*M_PI/sth);
+						image[ia][image_min_x +sx-ix1-1][image_min_y + ix2] += 1.0/(4.0*M_PI)*(rx1*sin(th[ith]) - rx2*cos(th[ith]))*(2.0*M_PI/sth);
 					}
 				}
 		
@@ -692,7 +554,6 @@ void SRT2DSPECTReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int s
 	const int ws = 9; 
 	    
 	for(int ia=0; ia<sa; ia++) { 
-		//float localMean[sx][sy], localVar[sx][sy], 
     std::vector<std::vector<float>> localMean(sx, std::vector<float>(sy, 0));
     std::vector<std::vector<float>> localVar(sx, std::vector<float>(sy, 0));
   
@@ -709,13 +570,7 @@ void SRT2DSPECTReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int s
 				
 				for(int k=-1; k<=1; k++) 
 					for(int l=-1; l<=1; l++) 
-				//		localVar[i][j] += std::pow(image[ia][min_x+i+k][min_y+j+l], 2)*1.; 
-				//localVar[i][j] = localVar[i][j]/ws - std::pow(localMean[i][j], 2); 
-        //Corrected version:
-				//localVar[i][j] += std::pow(static_cast<double>(image[ia][min_x+i+k][min_y+j+l]), 2.0); 
-				//localVar[i][j] = localVar[i][j]/ws - std::pow(static_cast<double>(localMean[i][j]), 2.0);
-
-				localVar[i][j] += image[ia][min_x+i+k][min_y+j+l] * image[ia][min_x+i+k] [min_y+j+l]; 
+							localVar[i][j] += image[ia][min_x+i+k][min_y+j+l] * image[ia][min_x+i+k] [min_y+j+l]; 
 			  localVar[i][j] = localVar[i][j]/ws - localMean[i][j] * localMean[i][j];
 
 				noise += localVar[i][j]; 
@@ -750,13 +605,10 @@ void SRT2DSPECTReconstruction::median(VoxelsOnCartesianGrid<float>& image, int s
 					continue; 
 				for(int k=-offset; k<=offset; k++) { 
 					for(int l=-offset; l<=offset; l++) { 
-					//	neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];
-//          neighbors[(k + offset) * filter_size + (l + offset)] = image[ia][min_x + i + std::clamp(k + i, 0, sx - 1)][min_y + j + std::clamp(l + j, 0, sy - 1)];
-neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];			
+							neighbors[(k+offset)*filter_size + l+offset] = image[ia][min_x + i + (k+i<sx?k:0)][min_y + j + (j+l<sy?l:0)];			
 		}
 				}
-				//std::sort(std::begin(neighbors), std::end(neighbors));
-        std::sort(neighbors.begin(), neighbors.end());
+	      std::sort(neighbors.begin(), neighbors.end());
 				image[ia][min_x+i][min_y+j] = neighbors[len];
 			}
 		}
@@ -814,7 +666,6 @@ void SRT2DSPECTReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx
 	return; 
 }
 
-//float SRT2DSPECTReconstruction::hilbert_node(float x, float f[], float ddf[], float p[], int sp, float fn) 
 float SRT2DSPECTReconstruction::hilbert_node(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn)
 {
 	float dh; 
@@ -835,7 +686,6 @@ float SRT2DSPECTReconstruction::hilbert_node(float x, const std::vector<float>& 
 	return dh; 
 }
 
-//float SRT2DSPECTReconstruction::hilbert(float x, float f[], float ddf[], float p[], int sp, float lg[])
 float SRT2DSPECTReconstruction::hilbert(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, std::vector<float>& lg)
 {
 	float dh, Di; 
@@ -878,13 +728,11 @@ float SRT2DSPECTReconstruction::hilbert(float x, const std::vector<float>& f, co
 	return dh; 
 }
 
-//void SRT2DSPECTReconstruction::hilbert_der_double(float x, float f[], float ddf[], float f1[], float ddf1[], float p[], int sp, float *dhp, float *dh1p, float lg[])
 void SRT2DSPECTReconstruction::hilbert_der_double(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& f1, const std::vector<float>& ddf1, const std::vector<float>& p, int sp, float* dhp, float* dh1p, const std::vector<float>& lg)
 {
 	float dh, dh1, dp; 
 	dh = 0; dh1 = 0; dp = p[1]-p[2];     //float pix = 0., pi1x = 0.; 
 	for (int i=0; i<sp-1;i++) {
-		//lg = log( fabs( (p[i+1]-x)/(p[i]-x) ) ); 
 		float pix  = fabs(p[i]-x)>2e-6 ? f[i]/(p[i]-x) : 0.; 
 		float pi1x = fabs(p[i+1]-x)>2e-6 ? f[i+1]/(p[i+1]-x) : 0.; 
 		dh = dh + pix - pi1x 
@@ -910,28 +758,6 @@ void SRT2DSPECTReconstruction::hilbert_der_double(float x, const std::vector<flo
 	*dh1p = dh1; 
 }
 
-/*float SRT2DSPECTReconstruction::hilbert_derivative(float x, float f[], float ddf[], float p[], int sp)
-{
-	float dh,dp; 
-	
-	dh = 0; dp = p[0]-p[1]; 
-	for (int i=0; i<sp-1; i++) {
-		double lg = log( fabs( (p[i+1]-x)/(p[i]-x) ) ); 
-		if(fabs(p[i+1]-x)<2e-6 || fabs(p[i]-x)<2e-6) lg = 0.; 
-		dh = dh + f[i]/(p[i]-x) - f[i+1]/(p[i+1]-x) 
-			- 1.0/4*(p[i]-3*p[i+1]+2*x)*ddf[i]  
-			- 1.0/4*(3*p[i]-p[i+1]-2*x)*ddf[i+1]  
-			+ ( (f[i]-f[i+1])/dp  
-				- 1.0/6*(p[i]-p[i+1]-(3*(p[i+1]-x)*(p[i+1]-x))/dp)*ddf[i] 
-				+ 1.0/6*(p[i]-p[i+1]-(3*(p[i]-x)*(p[i]-x))/dp)*ddf[i+1] )  
-			*lg; 
-
-	}
-	dh = 2.0/(sp-1)*dh; 
-	return dh; 
-}*/
-
-//float SRT2DSPECTReconstruction::splint(float xa[], float ya[], float y2a[], int n, float x)
 float SRT2DSPECTReconstruction::splint(const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x)
 {
 	int  klo, khi; 
@@ -941,7 +767,6 @@ float SRT2DSPECTReconstruction::splint(const std::vector<float>& xa, const std::
 	khi = n;
 	while(khi-klo > 1) { 
 		int k = floor((khi+klo)/2.0);
-		//k = (khi+klo)/2; 
 		if(xa[k] > x) { 
 			khi = k;
 		} else {
@@ -964,7 +789,6 @@ void SRT2DSPECTReconstruction::spline(const std::vector<float>& x, const std::ve
 	// function for nanural qubic spline.
 	int i, k;
 	float qn, un;
-//	float u[n]; 
     std::vector<float> u(n);
 	y2[0]=0.0;
 	u[0]=0.0;
@@ -982,9 +806,7 @@ void SRT2DSPECTReconstruction::spline(const std::vector<float>& x, const std::ve
 	return;
 }
 
-//float SRT2DSPECTReconstruction::integ(float dist, int max, float ff[]) {
 float SRT2DSPECTReconstruction::integ(float dist, int max, float ff[]) {
-	// function for the calculation of integrals (closed formula).
 	int k, intg;
 	intg=ff[0];
 	for(k=1; k<max; k++) {
