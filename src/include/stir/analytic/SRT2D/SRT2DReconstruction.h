@@ -1,12 +1,10 @@
-//
-//
+
 #ifndef __stir_analytic_SRT2D_SRT2DReconstruction_H__
 #define __stir_analytic_SRT2D_SRT2DReconstruction_H__
 
 //author Dimitra Kyriakopoulou
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
-//#include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/RegisteredParsingObject.h"
 #include <string>
 #include <vector>
@@ -54,9 +52,10 @@ public:
   explicit 
     SRT2DReconstruction(const std::string& parameter_filename);
 
- SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const float thres_restr_bound_v=-pow(10,6), const int num_segments_to_combine=-1, const float zoom=1, const int filter_wiener=1, const int filter_median=0, const int filter_gamma=1);
+ SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const int num_segments_to_combine=-1, const float zoom=1, const int filter_wiener=1, const int filter_median=0, const int filter_gamma=1);
 
-  virtual std::string method_info() const;
+
+  virtual std::string method_info() const; 
 
   virtual void ask_parameters();
 
@@ -82,8 +81,6 @@ public:
   int filter_wiener; 
   int filter_median;  
   int filter_gamma; 
-	float thres_restr_bound;
-	std::vector<double> thres_restr_bound_vector;  
 
   private:
   Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr);
@@ -91,11 +88,6 @@ public:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing(); 
-
- //inline void spline(float x[],float y[],int n, float y2[]);
-
-//inline float hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC);
-//inline float integ(float dist, int max, float ff[]);
  
 void spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2);
 
