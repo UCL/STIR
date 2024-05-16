@@ -1,14 +1,13 @@
 //
 //
-/*! 
-  \file 
-  \ingroup FBP2D
-  \ingroup main_programs
-  \brief Main program for FBP2D reconstruction 
-  \author Kris Thielemans
+/*!
+  \file
+  \ingroup analytic
+  \brief Main program for SRT2D reconstruction
+  \author Dimitra Kyriakopoulou
 */
 /*
-    Copyright (C) 2003- 2004, Hammersmith Imanet
+    Copyright (C) 2024, University College London
 
     This file is part of STIR.
 
