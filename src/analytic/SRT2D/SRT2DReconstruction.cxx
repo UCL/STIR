@@ -312,8 +312,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		p_ud[sp-ip-1]=p[ip];
 	
 	// Put x1 and x2 in arrays.
-	
-	cerr << "sp = " << sp << endl; 
+	 
 	//-- Creation of the grid
 	for(k1=0; k1<sx; k1++)
 		x1[k1] = -1.0*sx/((sp+1)*zoom) + k1*2.0*sx/((sp+1)*zoom)/(sx-1);
