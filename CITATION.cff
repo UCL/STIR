@@ -32,31 +32,31 @@ authors:
     - family-names: Jehl
       given-names:  Markus
       affiliation:  Positrigo
+    - family-names: Borgeaud
+      given-names:  Tim
+      affiliation:  Hammersmith Imanet Ltd
     - family-names: Strugari
       given-names:  Matthew
       affiliation:  Dalhousie University (Canada)
     - family-names: Khateri
       given-names:  Parisa
       affiliation:  ETH Zuerich
-    - family-names: Beisel
-      given-names:  Tobias
     - family-names: Wadhwa
       given-names:  Palak
       affiliation:  University of Leeds (UK)
-    - family-names: Borgeaud
-      given-names:  Tim
-      affiliation:  Hammersmith Imanet Ltd
+    - family-names: Beisel
+      given-names:  Tobias
     - family-names: Emond
       given-names:  Elise
       affiliation:  University College London
-    - family-names: Jacobson
-      given-names:  Matthew
     - family-names: Gillman
       given-names:  Ashley
       orcid:        'https://orcid.org/0000-0001-9130-1092'
       affiliation:  >-
         Commonwealth Scientific and Industrial Research
         Organisation, and University of Queensland
+    - family-names: Jacobson
+      given-names:  Matthew
     - family-names: Zverovich
       given-names:  Alexey
       affiliation:  Brunel University (UK)
@@ -113,6 +113,9 @@ authors:
     - family-names: Valente
       given-names:  Patrick
       affiliation:  Brunel University (UK)
+    - family-names: Jurjew
+      given-names:  Nicole
+      affiliation:  University College London
     - family-names: Ovtchinnikov
       given-names:  Evgueni
       orcid:        'https://orcid.org/0000-0002-9359-6514'
@@ -127,9 +130,6 @@ authors:
     - family-names: Belluzzo
       given-names:  Damiano
       affiliation:  Hospedale San Raffaele Milano (Italy)
-    - family-names: Jurjew
-      given-names:  Nicole
-      affiliation:  University College London
     - family-names: Ching
       given-names:  Daniel
     - family-names: Hague
@@ -179,9 +179,13 @@ identifiers:
     - type: doi
       value: 10.1088/0031-9155/57/4/867
     - type: doi
+      value: 10.3389/fnume.2023.1134774
+    - type: doi
       value: 10.1186/s40658-019-0248-9
     - type: doi
       value: 10.3390/jimaging8060172
+    - type: doi
+      value: 10.1088/1361-6560/aaf9b9
     - type: doi
       value: 10.1109/NSSMIC.2018.8824341
     - type: doi

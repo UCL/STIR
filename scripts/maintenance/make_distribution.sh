@@ -64,7 +64,7 @@ set -e
 #fi
 
 
-read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, .zenodo.json? (press Ctrl-C if not)"
+read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, CITATION.cff? (press Ctrl-C if not)"
 
 mkdir -p ${DISTRIB}
 cd ${DISTRIB}
