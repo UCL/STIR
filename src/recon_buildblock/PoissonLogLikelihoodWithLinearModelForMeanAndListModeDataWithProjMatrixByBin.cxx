@@ -624,9 +624,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
   info(boost::format("Calculating sensitivity for subset %1%") % subset_num);
 
-  int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
-  int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
-  if (min_timing_pos_num < 0 || max_timing_pos_num > 1)
+  // int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
+  // int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
+  // if (min_timing_pos_num < 0 || max_timing_pos_num > 1)
+  if ( this->proj_data_info_sptr->get_num_tof_poss() > 1)
     error("TOF code for sensitivity needs work");
 
   this->sens_backprojector_sptr->start_accumulating_in_new_target();

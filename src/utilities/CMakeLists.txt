@@ -42,6 +42,7 @@ set(${dir_EXE_SOURCES}
 	get_time_frame_info.cxx
 	generate_image.cxx
 	list_ROI_values.cxx
+	cache_lm.cxx
 	zoom_image.cxx
 	find_fwhm_in_image.cxx
 	abs_image.cxx
