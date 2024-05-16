@@ -1430,7 +1430,6 @@ InterfilePDFSHeader::post_processing()
       data_info_sptr.reset(new ProjDataInfoGenericNoArcCorr(
           scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
     }
-  std::cout << data_info_sptr->get_num_tof_poss()  << " " << num_timing_poss << std::endl;
   if (data_info_sptr->get_num_tof_poss() != num_timing_poss)
     error(boost::format("Interfile header parsing with TOF: inconsistency between number of TOF bins in data (%d), "
                         "TOF mashing factor (%d) and max number of TOF bins in scanner info (%d)")
