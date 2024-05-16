@@ -1032,7 +1032,7 @@ InterfilePDFSHeader::post_processing()
         {
           warning("Inconsistent number of TOF bins (" + std::to_string(this->num_timing_poss)
                   + ") and size of the 'TOF bin order' list (" + std::to_string(this->timing_poss_sequence.size()) + ").");
-          // return true;
+          return true;
         }
     }
 
@@ -1042,8 +1042,8 @@ InterfilePDFSHeader::post_processing()
   bool originating_system_was_recognised = guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner;
   if (!originating_system_was_recognised)
     {
-      warning("Interfile warning: I did not recognise the scanner from 'originating_system' ("
-              + get_exam_info().originating_system + ")");
+      info("Interfile warning: I did not recognise the scanner from 'originating_system' (" + get_exam_info().originating_system
+           + "). Hopefully there is enough information present. I will check this now.");
     }
 
   bool mismatch_between_header_and_guess = false;
@@ -1313,35 +1313,37 @@ InterfilePDFSHeader::post_processing()
       // warn if the Interfile header does not provide enough info
 
       if (num_rings < 1)
-        warning("Interfile warning: 'number of rings' invalid.\n");
+        warning("Interfile warning: 'number of rings' invalid.");
       if (num_detectors_per_ring < 1)
-        warning("Interfile warning: 'num_detectors_per_ring' invalid.\n");
+        warning("Interfile warning: 'num_detectors_per_ring' invalid.");
 #if 0
     if (transaxial_FOV_diameter_in_cm < 0)
-      warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
+      warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.");
 #endif
       if (inner_ring_diameter_in_cm <= 0)
-        warning("Interfile warning: 'inner ring diameter (cm)' invalid. This might disastrous\n");
-      if (average_depth_of_interaction_in_cm <= 0)
-        warning("Interfile warning: 'average depth of interaction (cm)' invalid. This might be disastrous.\n");
+        warning("Interfile warning: 'inner ring diameter (cm)' invalid. This might be disastrous.");
+      if (average_depth_of_interaction_in_cm < 0)
+        warning("Interfile warning: 'average depth of interaction (cm)' invalid. This might be disastrous.");
       if (distance_between_rings_in_cm <= 0)
-        warning("Interfile warning: 'distance between rings (cm)' invalid.\n");
+        warning("Interfile warning: 'distance between rings (cm)' invalid.");
       if (default_bin_size_in_cm <= 0)
-        warning("Interfile warning: 'default_bin size (cm)' invalid.\n");
+        warning("Interfile warning: 'default_bin size (cm)' invalid. This will likely cause problems in image reconstruction "
+                "when setting image sizes via 'zoom' etc.");
       if (num_axial_crystals_per_singles_unit <= 0)
-        warning("Interfile warning: 'axial crystals per singles unit' invalid.\n");
+        warning("Interfile warning: 'axial crystals per singles unit' invalid (but currently only used for ECAT dead-time).");
       if (num_transaxial_crystals_per_singles_unit <= 0)
-        warning("Interfile warning: 'transaxial crystals per singles unit' invalid.\n");
-      // new variables for block geometry
-      if (axial_distance_between_crystals_in_cm <= 0)
-        warning("Interfile warning: 'distance between crystals in axial direction (cm)' invalid.\n");
-      if (transaxial_distance_between_crystals_in_cm <= 0)
-        warning("Interfile warning: 'distance between crystals in transaxial direction (cm)' invalid.\n");
-      if (axial_distance_between_blocks_in_cm <= 0)
-        warning("Interfile warning: 'distance between blocks in axial direction (cm)' invalid.\n");
-      if (transaxial_distance_between_blocks_in_cm <= 0)
-        warning("Interfile warning: 'distance between blocks in transaxial direction (cm)' invalid.\n");
-      // end of new variables for block geometry
+        warning("Interfile warning: 'transaxial crystals per singles unit' invalid (but currently only used for ECAT dead-time)");
+      if (scanner_geometry == "BlocksOnCylindrical")
+        {
+          if (axial_distance_between_crystals_in_cm <= 0)
+            warning("Interfile warning: 'distance between crystals in axial direction (cm)' invalid.");
+          if (transaxial_distance_between_crystals_in_cm <= 0)
+            warning("Interfile warning: 'distance between crystals in transaxial direction (cm)' invalid.");
+          if (axial_distance_between_blocks_in_cm <= 0)
+            warning("Interfile warning: 'distance between blocks in axial direction (cm)' invalid.");
+          if (transaxial_distance_between_blocks_in_cm <= 0)
+            warning("Interfile warning: 'distance between blocks in transaxial direction (cm)' invalid.");
+        }
     }
 
   // finally, we construct a new scanner object with
@@ -1382,8 +1384,8 @@ InterfilePDFSHeader::post_processing()
       || scanner_sptr_from_file->get_type() == Scanner::User_defined_scanner || mismatch_between_header_and_guess
       || !is_consistent)
     {
-      warning(boost::format("Interfile parsing ended up with the following scanner:\n%s\n")
-              % scanner_sptr_from_file->parameter_info());
+      info(boost::format("Interfile parsing ended up with the following scanner:\n%s\n")
+           % scanner_sptr_from_file->parameter_info());
     }
 
   // float azimuthal_angle_sampling =_PI/num_views;
