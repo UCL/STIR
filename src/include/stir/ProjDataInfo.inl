@@ -49,7 +49,11 @@ ProjDataInfo::create_single_tof_clone() const
 {
   shared_ptr<ProjDataInfo> sptr(this->clone());
   int a  = sptr->get_num_tof_poss();
-  sptr->set_tof_mash_factor(a);
+  if (a > 0)
+    sptr->set_tof_mash_factor(a);
+  // - TODO: remove this later
+  // int b  = sptr->get_num_tof_poss();
+  // std::cout <<"Old number of TOF poss " << a << " new number of TOF poss " << b << std::endl;
   return sptr;
 }
 

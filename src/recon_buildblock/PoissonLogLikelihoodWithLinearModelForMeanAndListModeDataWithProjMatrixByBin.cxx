@@ -632,12 +632,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   this->sens_backprojector_sptr->start_accumulating_in_new_target();
 
   int runs = 1;
-  if((this->proj_data_info_sptr->get_max_segment_num() -
-       this->proj_data_info_sptr->get_min_segment_num()) > 100)
-    {
-      runs = ceil(this->proj_data_info_sptr->get_max_segment_num() -
-       this->proj_data_info_sptr->get_min_segment_num())/ 100;
-      }
+
+  //TODO: For long scanners we should run better split this. - Let's discuss more.
+  // if((this->proj_data_info_sptr->get_max_segment_num() -
+  //      this->proj_data_info_sptr->get_min_segment_num()) > 100)
+  //   {
+  //     runs = ceil(this->proj_data_info_sptr->get_max_segment_num() -
+  //      this->proj_data_info_sptr->get_min_segment_num())/ 100;
+  //     }
 
   info(boost::format("The  number of runs needed for the sensitivity image is %1%:  ") % runs);
 
