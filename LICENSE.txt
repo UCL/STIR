@@ -1,4 +1,4 @@
-Licensing information for STIR 6.0.0
+Licensing information for STIR 6.1.0
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -209,6 +209,7 @@ Explicit list of files that carry the PARAPET license
 ./src/include/stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h
 ./src/include/stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h
 ./src/include/stir/recon_buildblock/ProjMatrixElemsForOneBin.h
+./src/include/stir/recon_buildblock/distributable.txx
 ./src/include/stir/recon_buildblock/RelatedBins.h
 ./src/include/stir/recon_buildblock/RelatedDensels.inl
 ./src/include/stir/recon_buildblock/ProjMatrixByBin.h
