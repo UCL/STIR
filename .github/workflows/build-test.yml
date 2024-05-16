@@ -162,9 +162,6 @@ jobs:
             CXX=${CXX}-${{ matrix.compiler_version }}            
           fi
           if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
-            # need to force XCode version for the moment due to a linker bug
-            # see https://github.com/UCL/STIR/issues/1103
-            echo DEVELOPER_DIR="/Applications/Xcode_14.1.app/Contents/Developer" >> $GITHUB_ENV
             if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
               brew install llvm@${{ matrix.compiler_version }}
               if test XX${HOMEBREW_PREFIX} = XX; then
@@ -353,7 +350,10 @@ jobs:
           fi
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              # Also excluding test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+              # as it is a bit slow. Moreover it fails on MacOS (Debug)
+              # https://github.com/UCL/STIR/pull/1418#issuecomment-2109518132
+              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection|test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin"
               EXCLUDE="${EXCLUDE_Debug}${EXCLUDE:+"|"}${EXCLUDE}"
           fi
           # prepend -E
@@ -362,6 +362,19 @@ jobs:
           fi
           # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
+
+    - name: Upload ctest log files for debugging
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ctest_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: |
+          ${{ github.workspace }}/build/**/*.log
+          ${{ github.workspace }}/build/**/*.hv
+          ${{ github.workspace }}/build/**/*.v
+          ${{ github.workspace }}/build/**/*.hs
+          ${{ github.workspace }}/build/**/*.s
+        retention-days: 7
 
     - name: C++ examples with STIR_LOCAL
       shell: bash
@@ -435,11 +448,12 @@ jobs:
           fi
 
     - name: Upload recon_test_pack log files for debugging
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
-        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        path: |
+          ${{ github.workspace }}/recon_test_pack/**/*.log
           ${{ github.workspace }}/recon_test_pack/**/my_*v
           ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7

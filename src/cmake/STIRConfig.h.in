@@ -52,6 +52,10 @@ namespace stir {
 
 #include "boost/config.hpp"
 
+// 2 variables set via CMake
+#cmakedefine BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE
+#cmakedefine LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE
+
 #cmakedefine HAVE_ECAT
 #ifdef HAVE_ECAT
 #define HAVE_LLN_MATRIX

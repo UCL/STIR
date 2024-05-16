@@ -54,9 +54,9 @@ endif()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
-set(VERSION_MINOR   0)
+set(VERSION_MINOR   1)
 set(VERSION_PATCH   0)
-set(VERSION   060000) # only used in STIRConfig.h.in and swig/CMakeLists.txt
+set(VERSION   060100) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -121,7 +121,13 @@ if(NOT DISABLE_CERN_ROOT)
   find_package(CERN_ROOT)
   if (CERN_ROOT_FOUND)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.23.99)
+    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
+        message(STATUS "ROOT Version is >= 6.30. Setting the minimum CXX version to 20.")
+        UseCXX(20)
+    elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.27.99)
+        message(STATUS "ROOT Version is >= 6.28. Setting the minimum CXX version to 17.")
+        UseCXX(17)
+    elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.23.99)
         message(STATUS "ROOT Version is >= 6.24. Setting the minimum CXX version to 14.")
         UseCXX(14)
     endif()

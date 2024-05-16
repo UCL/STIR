@@ -57,6 +57,7 @@ install_manifest.txt
 ~$*
 *~
 *.bak
+\#*#
 
 # Ignore Visual Studio User-specific files
 *.suo

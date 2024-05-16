@@ -65,7 +65,7 @@ public:
   inline void set_num_samples(int num_samples);
 
   //! Returns the maximum sample value
-  inline int get_maximum_sample_value() const;
+  inline double get_maximum_sample_value() const;
   //! Sets the maximum sample value
   inline void set_maximum_sample_value(double maximum_sample_value);
 
