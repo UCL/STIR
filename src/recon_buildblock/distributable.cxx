@@ -685,10 +685,10 @@ LM_distributable_computation_template(const shared_ptr<ProjMatrixByBin> PM_sptr,
 
         PM_sptr->get_proj_matrix_elems_for_one_bin(local_row[thread_num], measured_bin);
         call_back(*local_output_image_sptrs[thread_num],
-                  measured_bin,
-                  *input_image_ptr,
                   local_row[thread_num],
-                  has_add ? record.my_corr : 0);
+                  has_add ? record.my_corr : 0.F,
+                  measured_bin,
+                  *input_image_ptr);
       }
   }
 #ifdef STIR_OPENMP
@@ -710,25 +710,25 @@ LM_distributable_computation_template(const shared_ptr<ProjMatrixByBin> PM_sptr,
 
 constexpr float max_quotient = 10000.F;
 
+/* gradient without the sensitivity term
+
+\sum_e A_e^t (y_e/(A_e lambda+ c))
+*/
 inline void
 LM_gradient(DiscretisedDensity<3, float>& output_image,
-            const Bin& measured_bin,
-            const DiscretisedDensity<3, float>& input_image,
             const ProjMatrixElemsForOneBin& row,
-            const float add_term)
+            const float add_term,
+            const Bin& measured_bin,
+            const DiscretisedDensity<3, float>& input_image)
 {
   Bin fwd_bin = measured_bin;
   fwd_bin.set_bin_value(0.0f);
   row.forward_project(fwd_bin, input_image);
+  const auto fwd = fwd_bin.get_bin_value() + add_term;
 
-  if (add_term)
-    fwd_bin.set_bin_value(fwd_bin.get_bin_value() + add_term);
-
-  float measured_div_fwd = 0.F;
-  if (measured_bin.get_bin_value() <= max_quotient * fwd_bin.get_bin_value())
-    measured_div_fwd = measured_bin.get_bin_value() / fwd_bin.get_bin_value();
-  else
-    return;
+  if (measured_bin.get_bin_value() > max_quotient * fwd)
+    return; // cancel singularity
+  const auto measured_div_fwd = measured_bin.get_bin_value() / fwd;
 
   fwd_bin.set_bin_value(measured_div_fwd);
   row.back_project(output_image, fwd_bin);
@@ -736,30 +736,28 @@ LM_gradient(DiscretisedDensity<3, float>& output_image,
 
 /* Hessian
 
-\sum_e A_e^t (y_e/(A_e lambda+ c)^2 A_e x)
+\sum_e A_e^t (y_e/(A_e lambda+ c)^2 A_e rhs)
 */
 inline void
 LM_Hessian(DiscretisedDensity<3, float>& output_image,
+           const ProjMatrixElemsForOneBin& row,
+           const float add_term,
            const Bin& measured_bin,
            const DiscretisedDensity<3, float>& input_image,
-           const DiscretisedDensity<3, float>& rhs,
-           const ProjMatrixElemsForOneBin& row,
-           const float add_term)
+           const DiscretisedDensity<3, float>& rhs)
 {
   Bin fwd_bin = measured_bin;
   fwd_bin.set_bin_value(0.0f);
   row.forward_project(fwd_bin, input_image);
+  const auto fwd = fwd_bin.get_bin_value() + add_term;
 
-  if (add_term)
-    fwd_bin.set_bin_value(fwd_bin.get_bin_value() + add_term);
+  if (measured_bin.get_bin_value() > max_quotient * fwd)
+    return; // cancel singularity
+  const auto measured_div_fwd2 = measured_bin.get_bin_value() / square(fwd);
 
-  if (measured_bin.get_bin_value() > max_quotient * fwd_bin.get_bin_value())
-    return;
-  float measured_div_fwd2 = measured_bin.get_bin_value() / square(fwd_bin.get_bin_value());
-
+  // forward project rhs
   fwd_bin.set_bin_value(0.0f);
   row.forward_project(fwd_bin, rhs);
-
   if (fwd_bin.get_bin_value() == 0)
     return;
 

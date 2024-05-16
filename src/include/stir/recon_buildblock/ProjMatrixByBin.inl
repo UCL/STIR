@@ -152,7 +152,7 @@ ProjMatrixByBin::get_tof_value(const float d1, const float d2) const
     {
        if (this->tof_enabled)
         {
-             return 0.5f * (erf_interpolation(d2_n) - erf_interpolation(d1_n));
+             return static_cast<float>(0.5 * (erf_interpolation(d2_n) - erf_interpolation(d1_n)));
         }
        else
          {
