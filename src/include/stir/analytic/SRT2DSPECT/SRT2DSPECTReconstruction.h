@@ -1,10 +1,26 @@
 //
-// $Id: SRT2DSPECTReconstruction.h $
 //
 #ifndef __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 #define __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2020, University College London
+    This file is part of STIR.
 
-//author Dimitra Kyriakopoulou
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup analytic
+
+  \brief declares the stir::SRT2DSPECTReconstruction class
+
+  \author Dimitra Kyriakopoulou
+
+*/
  
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
