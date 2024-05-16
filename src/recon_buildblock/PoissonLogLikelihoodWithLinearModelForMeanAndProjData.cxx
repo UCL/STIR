@@ -706,7 +706,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_s
   if (!this->distributable_computation_already_setup)
     error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData internal error: setup_distributable_computation not called "
           "(gradient calculation)");
-  if (add_sensitivity)
+  if (!add_sensitivity)
     this->ensure_norm_is_set_up();
   distributable_compute_gradient(this->projector_pair_ptr->get_forward_projector_sptr(),
                                  this->projector_pair_ptr->get_back_projector_sptr(),
@@ -1225,7 +1225,7 @@ distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& forward_
 {
   if (add_sensitivity)
     {
-      // Within the RPC process, subtract ones before to back projection ( backproj[ y/ybar - 1] )
+      // Within the RPC process, only do div/truncate ( backproj[ y/ybar ] )
       distributable_computation(forward_projector_sptr,
                                 back_projector_sptr,
                                 symmetries_sptr,
@@ -1250,7 +1250,7 @@ distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& forward_
     }
   else if (!add_sensitivity)
     {
-      // Within the RPC process, only do div/truncate ( backproj[ y/ybar ] )
+      // Within the RPC process, subtract ones before to back projection ( backproj[ y/ybar - eff*1] )
       distributable_computation(forward_projector_sptr,
                                 back_projector_sptr,
                                 symmetries_sptr,
