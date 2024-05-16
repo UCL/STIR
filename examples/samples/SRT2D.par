@@ -1,17 +1,14 @@
 SRT2DParameters :=
+input file := sino_hof_no_noise.hs
 
-input file :=hof_29_11_image.hs
+xy output image size (in pixels) := -1  
+z output image size (in pixels) := -1
+zoom := 1 
 
-xy output image size (in pixels) := 100
-zoom := 1
+wiener filter := 1
+median filter := 0
+gamma filter  := 1
 
+output filename prefix := SRT2D
 
-output filename prefix := hof_SRT
-
-threshold for restriction within boundary := 2.5
-
-;threshold_per slice for restriction within boundary  := {6.34, 2.22, 4.61, 5, 6.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 5,6.34, 2.22, 4.61, 5, 6.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61}
-
-;threshold_per slice for restriction within boundary  := {6.34, 2.22, 4.61, 5, 6.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 5,6.34, 2.22, 4.61, 5, 6.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61, 56.34, 2.22, 4.61}
-;threshold_per slice for restriction within boundary  := {10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000,10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000,10000,10000,5,10000,10000, 5, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000,10000}
-END
+END :=
