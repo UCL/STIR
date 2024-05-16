@@ -29,7 +29,7 @@
 <h2>Patch release info</h2>
 <ul>
   <li>
-    6.1.0 released 15/05/2024<br>
+    6.1.0 released 16/05/2024<br>
     <a href="https://github.com/UCL/STIR/milestone/10">GitHub Milestone 6.1</a>
   </li>
   <!--
@@ -88,9 +88,17 @@
   </li>
   <li>
       Our checks for determining system byte-order were out-of-date and in particular did not work on MacOS 14 on ARM.
-      We now use CMake's <code>CMAKE_CXX_BYTE_ORDER</code> (available since CMake 3.20).
-      See <a href=https://github.com/UCL/STIR/pull/1412>PR #1412</a>.
+      We now use CMake's <code>CMAKE_CXX_BYTE_ORDER</code> (available since CMake 3.20). This could potentially affect reading of list-mode data
+      (which would otherwise be garbled).
+      <br>
+      Fixed in <a href=https://github.com/UCL/STIR/pull/1412>PR #1412</a>.
   </li>
+  <li>
+    The listmode objective function did not loop over TOF bins when computing the Hessian. This would give different results in OSSPS
+    for computing the "denominator".
+    <br>
+    Fixed in <a href=https://github.com/UCL/STIR/pull/1427>issue #1427</a>.
+    </li>
 </ul>
 
 <h3>Known problems</h3>
@@ -108,10 +116,16 @@ from the above):</H2>
     </li>
 </ul>
 
-<h3>New functionality</h3>
+<h3>Bug fixes</h3>
 <ul>
-<li>
-</li>
+  <li>
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code> had a (minor?) problem with TOF data
+    that when computing the gradient, the normalisation object was not set-up with the TOF data,
+    but non-TOF instead. This did not happen in our normal reconstruction code, and would have thrown an error
+    if it occured.
+    <br>
+    Fixed in <a href=https://github.com/UCL/STIR/pull/1427>issue #1427</a>.
+  </li>
 </ul>
 
 
