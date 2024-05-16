@@ -87,7 +87,7 @@ class Succeeded;
           coincidence window then the reconstruction will essential be nonTOF but the
             projector will restrict the size of the LOR to the size of the coincidence window.
       \li \c The scanner will be classified as TOF enabled when the numer of TOF bins and
-TOF bin size are  >1 and >0, respectively. If the energy resolution is not set that will be fine
+TOF bin size are  >1 and >0, respectively. If the timing resolution is not set that will be fine
 as long as the final TOF possitions is 1. Then we just restict the size of the LOR.
 
       A further complication is that some scanners (including many Siemens scanners)

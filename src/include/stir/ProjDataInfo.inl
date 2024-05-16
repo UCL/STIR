@@ -198,7 +198,7 @@ ProjDataInfo::is_tof_data() const
     {
       if (num_tof_bins != 1)
         {
-          error("Non-TOF data with inconsistent Time-of-Flight bin number - Aborted operation.");
+          warning("Non-TOF data with inconsistent Time-of-Flight bin number - Note. As we are updating the scanner template style please make sure to have one TOF position (whole coincidence window for nonTOF scanners).");
         }
       return false;
     }
