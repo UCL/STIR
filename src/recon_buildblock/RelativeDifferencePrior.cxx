@@ -577,7 +577,7 @@ RelativeDifferencePrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensit
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
 
-              /// At this point, we have j = [z][y][x]
+              // At this point, we have j = [z][y][x]
               // The next for loops will have k = [z+dz][y+dy][x+dx]
               // The following computes
               //(H_{wf} y)_j =
