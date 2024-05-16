@@ -1,4 +1,19 @@
-//author Dimitra Kyriakopoulou
+/*
+    Copyright (C) 2024 University College London
+
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0  
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup analytic
+  \brief Implementation of class stir::SRT2DReconstruction
+
+  \author Dimitra Kyriakopoulou 
+*/
 
 #include "stir/analytic/SRT2D/SRT2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -162,9 +177,9 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 			    1, 0,
 			    (num_segments_to_combine-1)/2 ));
 		shared_ptr<ProjData> 
-			proj_data_to_FBP_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
-		SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);
-		proj_data_ptr = proj_data_to_FBP_ptr;
+			proj_data_to_SRT_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
+		SSRB(*proj_data_to_SRT_ptr, *proj_data_ptr);
+		proj_data_ptr = proj_data_to_SRT_ptr;
     }
   else
     {
@@ -207,7 +222,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 			return Succeeded::no;
 		do_arc_correction = true;
 		// TODO full_log
-		warning("FBP2D will arc-correct data first");
+		warning("SRT2D will arc-correct data first");
       arc_corrected_proj_data_info_sptr =
 	arc_correction.get_arc_corrected_proj_data_info_sptr();
       tangential_sampling =
