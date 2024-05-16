@@ -60,8 +60,8 @@ formats (you can get e.g. RTF or LaTeX output by simply running
 doxygen on the source files that come in the STIR distribution). 
 
 \subsection{Language support}
-STIR is written in C++ and currently requires C++-11, but it is compatible with newer versions of the C++ standard.
-We will enforce C++-14 from STIR 6.0.
+STIR is written in C++ and currently requires C++-14, but it is compatible with newer versions of the C++ standard.
+We will enforce C++-16 from STIR 6.2.
 
 Python and MATLAB support is provided via \R2Lurl{http://www.swig.org/}{SWIG}. This means that Python/MATLAB interfaces follow
 the C++ classes closely, although some differences are required as these languages do not support templates for instance.
@@ -170,8 +170,8 @@ position.
 view.
 \end{itemize} 
 
-Note that in STIR version 6.0, Time-of-Flight (TOF) will be supported. This introduces another
-index. However, \texttt{Sinogram} and \texttt{Viewgram} will remain 2D objects, and \texttt{Segment*} 3D.
+Note that since STIR version 6.0, Time-of-Flight (TOF) is supported. This introduces another
+index. However, \texttt{Sinogram} and \texttt{Viewgram} remain 2D objects, and \texttt{Segment*} 3D.
 This will also be the case once we have layers and energy windows.
 In STIR 5.2, we have therefore introduced new classes
 \texttt{SinogramIndices}, \texttt{ViewgramIndices}\footnote{Replacing \texttt{ViewSegmentNumbers} in previous versions of STIR.}
@@ -897,7 +897,7 @@ concentrate on computing the 'independent' part of $P_{bv}$.
 \end{itemize}
 
 
-At the moment, we have three derived classes:
+At the moment, we have the following derived classes:
 \begin{itemize}
 \item 
 \texttt{ProjMatrixByBinUsingRayTracing} uses essentially the same 
@@ -916,6 +916,10 @@ support provided by \texttt{ProjMatrixByBin}, only the 'independent'
 part of the projection matrix needs to be stored. Our current 
 implementation does not yet provide a very compact format for 
 storing the elements (although they are of course stored sparsely).
+\item
+\texttt{ProjMatrixByBinSPECTUB} is for parallel hole SPECT
+\item
+\texttt{ProjMatrixByBinPinholeSPECTUB} is for multi-pinhole SPECT
 \end{itemize}
 
 \begin{figure}[htbp]
@@ -956,8 +960,10 @@ of EMML with non-matching forward and back projectors, the 'gradient'
 that is computed is generally not the gradient of the
 log-likelihood that corresponds to the forward projector.
 However, one hopes that it still points towards the optimum.
-The corresponding objective function is implemented in the class\\
-\texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.
+The corresponding objective function is implemented in the classes\\
+\texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData} for
+projection data and \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin}
+for list-mode data. There are classes for dynamic and gated data as well.
 
 There can be different objective function that use common operations.
 For instance, the objective function could implement a least squares

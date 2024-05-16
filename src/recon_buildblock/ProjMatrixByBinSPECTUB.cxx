@@ -322,10 +322,10 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
   wmh.prj = prj;
   // wmh.NpixAngOS = vol.Npix * prj.NangOS;
 
-  if (abs(wmh.prj.thcm - vox.thcm) > .01F)
+  if (std::abs(wmh.prj.thcm - vox.thcm) > .01F)
     error(boost::format("SPECTUB Matrix (probably) only works with equal z-sampling for projection data (%1%) and image (%2%)")
           % (wmh.prj.thcm * 10) % (vol.thcm * 10));
-  if (abs(wmh.prj.Nsli - vol.Nsli) > .01F)
+  if (std::abs(wmh.prj.Nsli - vol.Nsli) > .01F)
     error(boost::format(
               "SPECTUB Matrix (probably) only works with equal number of slices for projection data (%1%) and image (%2%)")
           % wmh.prj.Nsli % vol.Nsli);

@@ -192,6 +192,18 @@ else()
     set(STIR_USE_BOOST_SHARED_PTR ON)
 endif()
 
+# Byte order
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+    # Use CMake to find byte order of target system.
+    # We create some variables that are then used in config.h.in
+    if (CMAKE_CXX_BYTE_ORDER STREQUAL "BIG_ENDIAN")
+        set(BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a big_endian system")
+    elseif (CMAKE_CXX_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
+        set(LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a little_endian system")
+    endif()
+endif()
 
 #### Create stir/config.h
 
