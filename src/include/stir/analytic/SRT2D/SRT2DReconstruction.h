@@ -1,8 +1,26 @@
-
+//
+//
 #ifndef __stir_analytic_SRT2D_SRT2DReconstruction_H__
 #define __stir_analytic_SRT2D_SRT2DReconstruction_H__
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2020, University College London
+    This file is part of STIR.
 
-//author Dimitra Kyriakopoulou
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup analytic
+
+  \brief declares the stir::SRT2DReconstruction class
+
+  \author Dimitra Kyriakopoulou
+
+*/
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/RegisteredParsingObject.h"
