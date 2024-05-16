@@ -196,7 +196,7 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
 
           min_tof_pos_num = 0;
-          max_tof_pos_num = 1;
+          max_tof_pos_num = 0;
           num_tof_bins = 1;
           // Upper and lower boundaries of the timing poss;
           tof_bin_boundaries_mm.recycle();
