@@ -444,10 +444,15 @@ iterate_efficiencies(Array<1, float>& efficiencies, const Array<1, float>& data_
       else
         {
           // const float denominator = inner_product(efficiencies,model[a]);
-          float denominator = 0;
+          double denominator = 0;
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : denominator)
+#  endif
+#endif
           for (int b = model.get_min_index(a); b <= model.get_max_index(a); ++b)
-            denominator += efficiencies[b % num_detectors] * model(a, b);
-          efficiencies[a] = data_fan_sums[a] / denominator;
+            denominator += static_cast<double>(efficiencies[b % num_detectors] * model(a, b));
+          efficiencies[a] = data_fan_sums[a] / static_cast<float>(denominator);
         }
     }
 }
@@ -2010,12 +2015,17 @@ iterate_efficiencies(DetectorEfficiencies& efficiencies, const Array<2, float>& 
           efficiencies[ra][a] = 0;
         else
           {
-            float denominator = 0;
+            double denominator = 0;
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for collapse(2) reduction(+ : denominator)
+#  endif
+#endif
             for (int rb = model.get_min_rb(ra); rb <= model.get_max_rb(ra); ++rb)
               for (int b = model.get_min_b(a); b <= model.get_max_b(a); ++b)
-                denominator += efficiencies[rb][b % num_detectors_per_ring] * model(ra, a, rb, b);
+                denominator += static_cast<double>(efficiencies[rb][b % num_detectors_per_ring] * model(ra, a, rb, b));
 
-            efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
+            efficiencies[ra][a] = data_fan_sums[ra][a] / static_cast<float>(denominator);
           }
       }
 }
@@ -2039,12 +2049,17 @@ iterate_efficiencies(DetectorEfficiencies& efficiencies,
           efficiencies[ra][a] = 0;
         else
           {
-            float denominator = 0;
+            double denominator = 0;
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for collapse(2) reduction(+ : denominator)
+#  endif
+#endif
             for (int rb = max(ra - max_ring_diff, 0); rb <= min(ra + max_ring_diff, num_rings - 1); ++rb)
               for (int b = a + num_detectors_per_ring / 2 - half_fan_size; b <= a + num_detectors_per_ring / 2 + half_fan_size;
                    ++b)
                 denominator += efficiencies[rb][b % num_detectors_per_ring];
-            efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
+            efficiencies[ra][a] = data_fan_sums[ra][a] / static_cast<float>(denominator);
           }
 #ifdef WRITE_ALL
         {
