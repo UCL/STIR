@@ -178,11 +178,11 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
       tof_mash_factor = new_num;
       if (tof_mash_factor > scanner_ptr->get_max_num_timing_poss())
         {
-        error("ProjDataInfo::set_tof_mash_factor: TOF mashing factor (" + std::to_string(tof_mash_factor)
+        warning("ProjDataInfo::set_tof_mash_factor: TOF mashing factor (" + std::to_string(tof_mash_factor)
               + +") must be smaller than or equal to the scanner's number of max timing bins ("
               + std::to_string(scanner_ptr->get_max_num_timing_poss()) + ").");
         }
-      else if (tof_mash_factor == num_tof_bins)
+      else if (tof_mash_factor == scanner_ptr->get_max_num_timing_poss())
         // This is a special case that we just want boundaries for the coincidence window.
         {
 

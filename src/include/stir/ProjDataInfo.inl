@@ -196,10 +196,10 @@ ProjDataInfo::is_tof_data() const
   // First case: if tof_mash_factor == 0, scanner is not tof ready and no tof data
   if (tof_mash_factor == 0)
     {
-      if (num_tof_bins != 1)
-        {
-          warning("Non-TOF data with inconsistent Time-of-Flight bin number - Note. As we are updating the scanner template style please make sure to have one TOF position (whole coincidence window for nonTOF scanners).");
-        }
+      // if (num_tof_bins != 1)
+      //   {
+      //     warning("Non-TOF data with inconsistent Time-of-Flight bin number - Note. As we are updating the scanner template style please make sure to have one TOF position (whole coincidence window for nonTOF scanners).");
+      //   }
       return false;
     }
   // Second case: when tof_mash_factor is strictly positive, it means we have TOF data
