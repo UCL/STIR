@@ -1090,19 +1090,27 @@ make_fan_data_remove_gaps_help(FanProjData& fan_data,
   fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
 
   shared_ptr<SegmentBySinogram<float>> segment_ptr;
-  Bin bin;
 
-  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();
-       ++bin.segment_num())
+  int max_views = num_detectors_per_ring / 2;
+  for (int iseg = proj_data.get_min_segment_num(); iseg <= proj_data.get_max_segment_num();
+       ++iseg)
     {
-      segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
-
-      for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-           bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-           ++bin.axial_pos_num())
-        for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
-          for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num())
+      segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(iseg)));
+      std::cout << " > Segment num: " << iseg<< std::endl;
+      int min_axial = proj_data.get_min_axial_pos_num(iseg);
+      int max_axial = proj_data.get_max_axial_pos_num(iseg);
+#ifdef STIR_OPENMP
+#pragma omp parallel for collapse(3) schedule(dynamic)
+#endif
+      for (int iaxial = min_axial; iaxial <=max_axial ; ++iaxial)
+        {
+        for (int iview = 0;  iview < max_views; iview++)
+          {
+          for (int itang = -half_fan_size; itang <= half_fan_size; ++itang)
             {
+
+              Bin bin(iseg, iview, iaxial, itang);
+
               int ra = 0, a = 0;
               int rb = 0, b = 0;
 
@@ -1128,9 +1136,21 @@ make_fan_data_remove_gaps_help(FanProjData& fan_data,
                 continue;
               int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
+#ifdef STIR_OPENMP
+#  pragma omp critical(FANPROJDATAWRITE)
+#endif
+              try
+                {
               fan_data(new_ra, new_a, new_rb, new_b) = fan_data(new_rb, new_b, new_ra, new_a)
                   = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+                }
+              catch(...)
+                {
+
+                }
             }
+          }
+        }
     }
 }
 

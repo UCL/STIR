@@ -160,7 +160,7 @@ private:
   int num_detectors_per_ring;
 };
 
-class FanProjData : private Array<4, float>
+class FanProjData : public Array<4, float>
 {
 public:
   FanProjData();

@@ -21,6 +21,7 @@ set(${dir_EXE_SOURCES}
 	manip_projdata.cxx
 	display_projdata.cxx
 	do_linear_regression.cxx
+	construct_fanProjData_fromProjData
 	postfilter.cxx
 	compare_projdata.cxx
 	compare_image.cxx
