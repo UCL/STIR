@@ -151,6 +151,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
       else // Use LM cache to make all data, not blocks for now.
         {
           make_all_fan_data_from_cache(data_fan_sums, measured_geo_data, measured_data);
+          threshold_for_KL = data_fan_sums.find_max() / 100000000.F;
         }
       if (do_display && do_block)
         display(measured_block_data, "raw block data from measurements");
