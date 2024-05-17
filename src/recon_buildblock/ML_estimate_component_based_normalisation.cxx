@@ -108,11 +108,11 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
   BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
   BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
-  if(!use_model_fansums)
+  if (!use_model_fansums)
     make_fan_data_remove_gaps(model_fan_data, model_data);
   else
     {
-    load_fan_data(model_fan_data, model_data, model_fansums_filename);
+      load_fan_data(model_fan_data, model_data, model_fansums_filename);
     }
 
   {
@@ -122,7 +122,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
     // compute factors dependent on the data
     {
 
-      if(!use_lm_cache)
+      if (!use_lm_cache)
         {
           make_fan_data_remove_gaps(measured_fan_data, measured_data);
 
@@ -145,14 +145,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
           make_fan_sum_data(data_fan_sums, measured_fan_data);
           make_geo_data(measured_geo_data, measured_fan_data);
-          make_block_data(measured_block_data, measured_fan_data);
+          if (do_block)
+            make_block_data(measured_block_data, measured_fan_data);
         }
-      else//Use LM cache to make all data, not blocks for now.
+      else // Use LM cache to make all data, not blocks for now.
         {
-          make_all_fan_data_from_cache(
-                                       data_fan_sums, measured_geo_data, measured_data);
+          make_all_fan_data_from_cache(data_fan_sums, measured_geo_data, measured_data);
         }
-      if (do_display)
+      if (do_display && do_block)
         display(measured_block_data, "raw block data from measurements");
 
       /* {
@@ -195,7 +195,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
           fan_data = model_fan_data;
           std::cout << "Applying geo norm..." << std::endl;
           apply_geo_norm(fan_data, norm_geo_data);
-          if(do_block)
+          if (do_block)
             {
               std::cout << "Applying block norm..." << std::endl;
               apply_block_norm(fan_data, norm_block_data);
@@ -225,7 +225,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                   // now restore for further iterations
                   fan_data = model_fan_data;
                   apply_geo_norm(fan_data, norm_geo_data);
-                  apply_block_norm(fan_data, norm_block_data);
+                  if (do_block)
+                    apply_block_norm(fan_data, norm_block_data);
                 }
               if (do_display)
                 {
@@ -235,7 +236,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                   // now restore for further iterations
                   fan_data = model_fan_data;
                   apply_geo_norm(fan_data, norm_geo_data);
-                  apply_block_norm(fan_data, norm_block_data);
+                  if (do_block)
+                    apply_block_norm(fan_data, norm_block_data);
                 }
             }
         } // end efficiencies
@@ -244,7 +246,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
         fan_data = model_fan_data;
         apply_efficiencies(fan_data, efficiencies);
-        apply_block_norm(fan_data, norm_block_data);
+        if (do_block)
+          apply_block_norm(fan_data, norm_block_data);
 
         if (do_geo)
           iterate_geo_norm(norm_geo_data, measured_geo_data, fan_data);
@@ -285,7 +288,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
           apply_efficiencies(fan_data, efficiencies);
           apply_geo_norm(fan_data, norm_geo_data);
           if (do_block)
-            iterate_block_norm(norm_block_data, measured_block_data, fan_data);
+            {
+              iterate_block_norm(norm_block_data, measured_block_data, fan_data);
 #if 0
                  { // check
                  for (int a=0; a<measured_block_data.get_length(); ++a)
@@ -295,6 +299,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                  a,b,measured_block_data[a][b]);
                  }
 #endif
+            }
           {
             char* out_filename = new char[out_filename_prefix.size() + 30];
             sprintf(out_filename, "%s_%s_%d.out", out_filename_prefix.c_str(), "block", iter_num);
@@ -302,12 +307,12 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             out << norm_block_data;
             delete[] out_filename;
           }
-          if (do_KL)
+          if (do_KL && do_block)
             {
               apply_block_norm(fan_data, norm_block_data);
               info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
             }
-          if (do_display)
+          if (do_display && do_block)
             {
               fan_data.fill(1);
               apply_block_norm(fan_data, norm_block_data);
@@ -324,11 +329,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                num_physical_transaxial_crystals_per_basic_unit / 2,
                                num_physical_rings,
                                num_physical_detectors_per_ring); // inputes have to be modified
-            BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
             make_fan_sum_data(fan_sums, fan_data);
             make_geo_data(geo_data, fan_data);
-            make_block_data(block_data, measured_fan_data);
+            if (do_block)
+              {
+                BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+                make_block_data(block_data, measured_fan_data);
+              }
 
             info(boost::format("KL on fans: %1%, %2") % KL(measured_fan_data, fan_data, 0) % KL(measured_geo_data, geo_data, 0));
           }
