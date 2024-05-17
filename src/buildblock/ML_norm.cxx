@@ -29,6 +29,9 @@
 #include "stir/stream.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/NumericType.h"
+#include "stir/ByteOrder.h"
+#include "stir/IO/read_data.h"
 
 #ifdef STIR_OPENMP
 #  include <omp.h>
@@ -1058,7 +1061,8 @@ make_fan_data_remove_gaps_help(FanProjData& fan_data,
                                int max_delta,
                                int fan_size,
                                const TProjDataInfo& proj_data_info,
-                               const ProjData& proj_data)
+                               const ProjData& proj_data,
+                               const std::string read_from_filename)
 {
   if (proj_data.get_proj_data_info_sptr()->is_tof_data())
     error("make_fan_data: Incompatible with TOF data. Abort.");
@@ -1089,73 +1093,158 @@ make_fan_data_remove_gaps_help(FanProjData& fan_data,
   const int num_physical_rings = num_rings - (num_axial_blocks - 1) * num_virtual_axial_crystals_per_block;
   fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
 
-  shared_ptr<SegmentBySinogram<float>> segment_ptr;
-
-  int max_views = num_detectors_per_ring / 2;
-  for (int iseg = proj_data.get_min_segment_num(); iseg <= proj_data.get_max_segment_num();
-       ++iseg)
+  if(read_from_filename != "")
     {
-      segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(iseg)));
-      std::cout << " > Segment num: " << iseg<< std::endl;
-      int min_axial = proj_data.get_min_axial_pos_num(iseg);
-      int max_axial = proj_data.get_max_axial_pos_num(iseg);
+      info("Loading model fansums from the disk ...");
+      shared_ptr<std::iostream> fan_stream(
+          new std::fstream(read_from_filename, std::ios::in | std::ios::binary));
+
+      float scale = 1.f;
+
+      info("Reading  from  disk...");
+      if(read_data(*fan_stream, fan_data, NumericType::Type::FLOAT,scale,
+                    ByteOrder::Order::little_endian) == Succeeded::no)
+        error("Error writing FanProjData\n");
+    }
+  else
+    {
+
+      shared_ptr<SegmentBySinogram<float>> segment_ptr;
+
+      int max_views = num_detectors_per_ring / 2;
+      for (int iseg = proj_data.get_min_segment_num(); iseg <= proj_data.get_max_segment_num();
+           ++iseg)
+        {
+          segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(iseg)));
+          std::cout << " > Segment num: " << iseg<< std::endl;
+          int min_axial = proj_data.get_min_axial_pos_num(iseg);
+          int max_axial = proj_data.get_max_axial_pos_num(iseg);
 #ifdef STIR_OPENMP
 #pragma omp parallel for collapse(3) schedule(dynamic)
 #endif
-      for (int iaxial = min_axial; iaxial <=max_axial ; ++iaxial)
-        {
-        for (int iview = 0;  iview < max_views; iview++)
-          {
-          for (int itang = -half_fan_size; itang <= half_fan_size; ++itang)
+          for (int iaxial = min_axial; iaxial <=max_axial ; ++iaxial)
             {
+              for (int iview = 0;  iview < max_views; iview++)
+                {
+                  for (int itang = -half_fan_size; itang <= half_fan_size; ++itang)
+                    {
 
-              Bin bin(iseg, iview, iaxial, itang);
+                      Bin bin(iseg, iview, iaxial, itang);
 
-              int ra = 0, a = 0;
-              int rb = 0, b = 0;
+                      int ra = 0, a = 0;
+                      int rb = 0, b = 0;
 
-              proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
-              int a_in_block = a % num_transaxial_crystals_per_block;
+                      proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
+                      int a_in_block = a % num_transaxial_crystals_per_block;
 
-              if (a_in_block >= num_physical_transaxial_crystals_per_block)
-                continue;
-              int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+                      if (a_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                      int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
 
-              int ra_in_block = ra % num_axial_crystals_per_block;
-              if (ra_in_block >= num_physical_axial_crystals_per_block)
-                continue;
-              int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+                      int ra_in_block = ra % num_axial_crystals_per_block;
+                      if (ra_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                      int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
-              int b_in_block = b % num_transaxial_crystals_per_block;
-              if (b_in_block >= num_physical_transaxial_crystals_per_block)
-                continue;
-              int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+                      int b_in_block = b % num_transaxial_crystals_per_block;
+                      if (b_in_block >= num_physical_transaxial_crystals_per_block)
+                        continue;
+                      int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
 
-              int rb_in_block = rb % num_axial_crystals_per_block;
-              if (rb_in_block >= num_physical_axial_crystals_per_block)
-                continue;
-              int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+                      int rb_in_block = rb % num_axial_crystals_per_block;
+                      if (rb_in_block >= num_physical_axial_crystals_per_block)
+                        continue;
+                      int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
 #ifdef STIR_OPENMP
 #  pragma omp critical(FANPROJDATAWRITE)
 #endif
-              try
-                {
-              fan_data(new_ra, new_a, new_rb, new_b) = fan_data(new_rb, new_b, new_ra, new_a)
-                  = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-                }
-              catch(...)
-                {
+                      try
+                        {
+                          fan_data(new_ra, new_a, new_rb, new_b) = fan_data(new_rb, new_b, new_ra, new_a)
+                              = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+                        }
+                      catch(...)
+                        {
 
+                        }
+                    }
                 }
             }
-          }
         }
     }
 }
 
+
 void
-make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data)
+load_fan_data(FanProjData& fan_data, const ProjData& proj_data,
+              const std::string fan_filename)
+{
+  int num_rings;
+  int num_detectors_per_ring;
+  int fan_size;
+  int max_delta;
+
+  if (proj_data.get_proj_data_info_sptr()->is_tof_data())
+    error("make_fan_data: Incompatible with TOF data. Abort.");
+
+  const ProjDataInfo& proj_data_info = *proj_data.get_proj_data_info_sptr();
+  get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, proj_data_info);
+
+  // if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
+  //   {
+  //     auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&proj_data_info);
+  //   }
+  // else
+  //   {
+  //     auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&proj_data_info);
+  //   }
+
+  if (proj_data.get_proj_data_info_sptr()->is_tof_data())
+    error("make_fan_data: Incompatible with TOF data. Abort.");
+
+  const int half_fan_size = fan_size / 2;
+  const int num_virtual_axial_crystals_per_block = proj_data_info.get_scanner_sptr()->get_num_virtual_axial_crystals_per_block();
+
+  const int num_virtual_transaxial_crystals_per_block
+      = proj_data_info.get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
+
+  const int num_transaxial_blocks = proj_data_info.get_scanner_sptr()->get_num_transaxial_blocks();
+  const int num_axial_blocks = proj_data_info.get_scanner_sptr()->get_num_axial_blocks();
+  const int num_transaxial_crystals_per_block = proj_data_info.get_scanner_sptr()->get_num_transaxial_crystals_per_block();
+  const int num_axial_crystals_per_block = proj_data_info.get_scanner_sptr()->get_num_axial_crystals_per_block();
+
+  // const int num_physical_transaxial_crystals_per_block
+  //     = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+
+  // const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
+
+  const int num_transaxial_blocks_in_fansize = fan_size / (num_transaxial_crystals_per_block);
+  const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize * num_virtual_transaxial_crystals_per_block;
+  const int new_half_fan_size = new_fan_size / 2;
+  const int num_axial_blocks_in_max_delta = max_delta / (num_axial_crystals_per_block);
+  const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
+  const int num_physical_detectors_per_ring
+      = num_detectors_per_ring - num_transaxial_blocks * num_virtual_transaxial_crystals_per_block;
+  const int num_physical_rings = num_rings - (num_axial_blocks - 1) * num_virtual_axial_crystals_per_block;
+  fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
+
+      info("Loading model fansums from the disk ...");
+      shared_ptr<std::iostream> fan_stream(
+          new std::fstream(fan_filename, std::ios::in | std::ios::binary));
+
+      float scale = 1.f;
+
+      info("Reading  from  disk...");
+      if(read_data(*fan_stream, fan_data, NumericType::Type::FLOAT,scale,
+                    ByteOrder::Order::little_endian) == Succeeded::no)
+        error("Error writing FanProjData\n");
+
+}
+
+void
+make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data,
+                           const std::string model_fan_filename)
 {
   int num_rings;
   int num_detectors_per_ring;
@@ -1173,14 +1262,14 @@ make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data)
       auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&proj_data_info);
 
       make_fan_data_remove_gaps_help(
-          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
+          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data, model_fan_filename);
     }
   else
     {
       auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&proj_data_info);
 
       make_fan_data_remove_gaps_help(
-          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
+          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data, model_fan_filename);
     }
 }
 

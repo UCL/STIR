@@ -32,6 +32,9 @@ void ML_estimate_component_based_normalisation(const std::string& out_filename_p
                                                bool do_block,
                                                bool do_symmetry_per_block,
                                                bool do_KL,
-                                               bool do_display);
+                                               bool do_display,
+                                               bool use_lm_cache,
+                                               bool use_mode_fansums,
+                                               std::string model_fansums_filename);
 
 END_NAMESPACE_STIR

@@ -32,6 +32,10 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include "stir/IO/read_data.h"
+#include "stir/FilePath.h"
+#include <iostream>
+#include <fstream>
 
 START_NAMESPACE_STIR
 
@@ -45,7 +49,10 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                           bool do_block,
                                           bool do_symmetry_per_block,
                                           bool do_KL,
-                                          bool do_display)
+                                          bool do_display,
+                                          bool use_lm_cache,
+                                          bool use_model_fansums,
+                                          std::string model_fansums_filename)
 {
 
   const int num_transaxial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
@@ -101,7 +108,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
   BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
   BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
-  make_fan_data_remove_gaps(model_fan_data, model_data);
+  if(!use_model_fansums)
+    make_fan_data_remove_gaps(model_fan_data, model_data);
+  else
+    {
+    load_fan_data(model_fan_data, model_data, model_fansums_filename);
+    }
+
+  return; //Stop here for now! : Debug
   {
     // next could be local if KL is not computed below
     FanProjData measured_fan_data;

@@ -25,13 +25,17 @@
 #include <iostream>
 #include <string>
 
+#include "stir/FilePath.h"
+
 static void
 print_usage_and_exit(const std::string& program_name)
 {
   std::cerr << "Usage: " << program_name
-            << " [--display | --print-KL | --include-block-timing-model | --for-symmetry-per-block] \\\n"
+            << " [--display | --print-KL | --include-block-timing-model | --for-symmetry-per-block | --model-in-fansums | --use-listmode-cache] \\\n"
             << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
-            << " set num_iterations to 0 to do only efficiencies\n";
+            << " set num_iterations to 0 to do only efficiencies\n"
+            << " NOTE: If you already have the model fansums they need to be in the same path as the projdata with the same name and suffix .fsum\n";
+
   exit(EXIT_FAILURE);
 }
 
@@ -50,6 +54,10 @@ main(int argc, char** argv)
   bool do_geo = true;
   bool do_block = false;
   bool do_symmetry_per_block = false;
+
+  bool use_lm_cache = false;
+  bool use_model_fansums = false;
+  std::string model_fansums_filename;
 
   // first process command line options
   while (argc > 0 && argv[0][0] == '-' && argc >= 1)
@@ -84,6 +92,18 @@ main(int argc, char** argv)
           --argc;
           ++argv;
         }
+      else if (strcmp(argv[0], "--model-in-fansums") == 0)
+        {
+          use_model_fansums = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--use-listmode-cache") == 0)
+        {
+          use_lm_cache = true;
+          --argc;
+          ++argv;
+        }
       else
         print_usage_and_exit(program_name);
     }
@@ -98,7 +118,20 @@ main(int argc, char** argv)
     }
   const int num_eff_iterations = atoi(argv[5]);
   const int num_iterations = atoi(argv[4]);
+
   shared_ptr<ProjData> model_data = ProjData::read_from_file(argv[3]);
+  FilePath fp(argv[3] );
+  fp.replace_extension(".fsum");
+  if (!fp.exists(fp.get_as_string()))
+    {
+      warning("We could not find a fansum model. Defaulting to ProjData.");
+      use_model_fansums = false;
+    }
+  else
+    model_fansums_filename = fp.get_as_string();
+
+  // std::cout << fp.get_as_string() << std::endl;
+  // return 0;
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
   const std::string out_filename_prefix = argv[1];
 
@@ -114,7 +147,9 @@ main(int argc, char** argv)
                                             do_block,
                                             do_symmetry_per_block,
                                             do_KL,
-                                            do_display);
+                                            do_display,
+                                            use_lm_cache,
+                                            use_model_fansums, model_fansums_filename);
 
   timer.stop();
   info(boost::format("CPU time %1% secs") % timer.value());
