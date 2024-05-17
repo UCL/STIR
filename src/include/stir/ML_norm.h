@@ -205,7 +205,12 @@ private:
 
 typedef FanProjData BlockData3D;
 
-void make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data, const std::string model_fan_filename = "");
+void make_all_fan_data_from_cache(
+                                  Array<2, float>& data_fan_sums,
+                                  GeoData3D& geo_data,
+                                  const ProjData& proj_data);
+
+void make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data);
 
 void load_fan_data(FanProjData& fan_data, const ProjData& proj_data, const std::string fan_filename = "");
 

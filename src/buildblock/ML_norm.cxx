@@ -32,6 +32,7 @@
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/IO/read_data.h"
+#include "stir/FilePath.h"
 
 #ifdef STIR_OPENMP
 #  include <omp.h>
@@ -42,6 +43,69 @@ using std::min;
 using std::max;
 
 START_NAMESPACE_STIR
+
+        //! TODO: Move this function somewhere else. All cache functions should be together
+        std::string get_cache_path()
+{
+  return FilePath::get_current_working_directory();
+}
+
+//! TODO: Move this function somewhere else. All cache functions should be together
+std::string get_cache_filename(unsigned int file_id)
+{
+  std::string cache_filename = "my_CACHE" + std::to_string(file_id) + ".bin";
+  FilePath icache(cache_filename, false);
+  icache.prepend_directory_name(get_cache_path());
+  return icache.get_as_string();
+}
+
+//! TODO: Move this function somewhere else. All cache functions should be together
+bool load_listmode_cache_file(
+    unsigned int file_id, std::vector<BinAndCorr>& record_cache)
+{
+  FilePath icache(get_cache_filename(file_id), false);
+
+  record_cache.clear();
+
+  if (icache.is_regular_file())
+    {
+      info(boost::format("Loading Listmode cache from disk %1%") % icache.get_as_string());
+      std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary | std::ios::ate);
+
+      const std::size_t num_records = fin.tellg() / sizeof(Bin);
+      try
+        {
+          record_cache.reserve(num_records + 1); // add 1 to avoid reallocation when overruning (see below)
+        }
+      catch (...)
+        {
+          error("Listmode: cannot allocate cache for " + std::to_string(num_records + 1) + " records");
+        }
+      if (!fin)
+        error("Error opening cache file \"" + icache.get_as_string() + "\" for reading.");
+
+      fin.clear();
+      fin.seekg(0);
+
+      while (!fin.eof())
+        {
+          BinAndCorr tmp;
+          fin.read((char*)&tmp, sizeof(Bin));
+          record_cache.push_back(tmp);
+        }
+      // The while will push one junk record
+      record_cache.pop_back();
+      fin.close();
+    }
+  else
+    {
+      warning("Cannot find Listmode cache on disk. Please recompute it or do not set the  max cache size. Abort.");
+      return false; // need to return something to avoid compiler warning
+    }
+
+  info(boost::format("Cached Events: %1% ") % record_cache.size(), 2);
+  return true;
+}
 
 DetPairData::DetPairData()
 {}
@@ -1051,6 +1115,8 @@ set_det_pair_data(ProjData& proj_data, const DetPairData& det_pair_data, const i
     }
 }
 
+
+
 /// **** This function make fan_data from projecion file while removing the intermodule gaps **** ////
 /// *** fan_data doesn't have gaps, proj_data has gaps *** ///
 template <class TProjDataInfo>
@@ -1061,8 +1127,7 @@ make_fan_data_remove_gaps_help(FanProjData& fan_data,
                                int max_delta,
                                int fan_size,
                                const TProjDataInfo& proj_data_info,
-                               const ProjData& proj_data,
-                               const std::string read_from_filename)
+                               const ProjData& proj_data)
 {
   if (proj_data.get_proj_data_info_sptr()->is_tof_data())
     error("make_fan_data: Incompatible with TOF data. Abort.");
@@ -1093,20 +1158,7 @@ make_fan_data_remove_gaps_help(FanProjData& fan_data,
   const int num_physical_rings = num_rings - (num_axial_blocks - 1) * num_virtual_axial_crystals_per_block;
   fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
 
-  if(read_from_filename != "")
-    {
-      info("Loading model fansums from the disk ...");
-      shared_ptr<std::iostream> fan_stream(
-          new std::fstream(read_from_filename, std::ios::in | std::ios::binary));
 
-      float scale = 1.f;
-
-      info("Reading  from  disk...");
-      if(read_data(*fan_stream, fan_data, NumericType::Type::FLOAT,scale,
-                    ByteOrder::Order::little_endian) == Succeeded::no)
-        error("Error writing FanProjData\n");
-    }
-  else
     {
 
       shared_ptr<SegmentBySinogram<float>> segment_ptr;
@@ -1214,10 +1266,10 @@ load_fan_data(FanProjData& fan_data, const ProjData& proj_data,
   const int num_transaxial_crystals_per_block = proj_data_info.get_scanner_sptr()->get_num_transaxial_crystals_per_block();
   const int num_axial_crystals_per_block = proj_data_info.get_scanner_sptr()->get_num_axial_crystals_per_block();
 
-  // const int num_physical_transaxial_crystals_per_block
-  //     = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+         // const int num_physical_transaxial_crystals_per_block
+         //     = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
 
-  // const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
+         // const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
 
   const int num_transaxial_blocks_in_fansize = fan_size / (num_transaxial_crystals_per_block);
   const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize * num_virtual_transaxial_crystals_per_block;
@@ -1229,22 +1281,211 @@ load_fan_data(FanProjData& fan_data, const ProjData& proj_data,
   const int num_physical_rings = num_rings - (num_axial_blocks - 1) * num_virtual_axial_crystals_per_block;
   fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
 
-      info("Loading model fansums from the disk ...");
-      shared_ptr<std::iostream> fan_stream(
-          new std::fstream(fan_filename, std::ios::in | std::ios::binary));
+  info("Loading model fansums from the disk ...");
+  shared_ptr<std::iostream> fan_stream(
+      new std::fstream(fan_filename, std::ios::in | std::ios::binary));
 
-      float scale = 1.f;
+  float scale = 1.f;
 
-      info("Reading  from  disk...");
-      if(read_data(*fan_stream, fan_data, NumericType::Type::FLOAT,scale,
-                    ByteOrder::Order::little_endian) == Succeeded::no)
-        error("Error writing FanProjData\n");
+  info("Reading  from  disk...");
+  if(read_data(*fan_stream, fan_data, NumericType::Type::FLOAT,scale,
+                ByteOrder::Order::little_endian) == Succeeded::no)
+    error("Error writing FanProjData\n");
 
 }
 
 void
-make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data,
-                           const std::string model_fan_filename)
+make_all_fan_data_from_cache(
+                             Array<2, float>& data_fan_sums,
+                             GeoData3D& geo_data,
+                             const ProjData& proj_data)
+{
+
+  int num_rings;
+  int num_detectors_per_ring;
+  int fan_size;
+  int max_delta;
+  get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
+
+  auto proj_data_info_ptr
+      = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&(*proj_data.get_proj_data_info_sptr()));
+
+  data_fan_sums.fill(0);
+  geo_data.fill(0);
+
+
+  const int half_fan_size = fan_size / 2;
+  const int num_virtual_axial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_virtual_axial_crystals_per_block();
+
+  const int num_virtual_transaxial_crystals_per_block
+      = proj_data_info_ptr->get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
+
+  const int num_transaxial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_blocks();
+  const int num_axial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_blocks();
+  const int num_transaxial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block();
+  const int num_axial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_crystals_per_block();
+
+  const int num_physical_transaxial_crystals_per_block
+      = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
+
+  const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
+
+  const int num_transaxial_blocks_in_fansize = fan_size / (num_transaxial_crystals_per_block);
+  const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize * num_virtual_transaxial_crystals_per_block;
+  const int new_half_fan_size = new_fan_size / 2;
+  const int num_axial_blocks_in_max_delta = max_delta / (num_axial_crystals_per_block);
+  const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
+  const int num_physical_detectors_per_ring
+      = num_detectors_per_ring - num_transaxial_blocks * num_virtual_transaxial_crystals_per_block;
+  const int num_physical_rings = num_rings - (num_axial_blocks - 1) * num_virtual_axial_crystals_per_block;
+
+  //This now is the old "work" from make_geo_data
+ FanProjData fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
+
+ //
+  const int num_axial_detectors = fan_data.get_num_rings();
+  const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();
+  // const int num_axial_crystals_per_block = geo_data.get_num_axial_crystals_per_block();
+  // const int num_transaxial_crystals_per_block = geo_data.get_half_num_transaxial_crystals_per_block() * 2;
+  // const int num_transaxial_blocks = num_transaxial_detectors / num_transaxial_crystals_per_block;
+  // const int num_axial_blocks = num_axial_detectors / num_axial_crystals_per_block;
+
+  fan_data.fill(0);
+
+  int ibatch = 0;
+  std::vector<BinAndCorr> record_cache;
+
+  while(true)//While we keep getting cache files.
+    {
+
+      if (!load_listmode_cache_file(ibatch, record_cache))
+        {
+          info("No more cache files in directory. Finished");
+          break;
+        }
+
+#ifdef STIR_OPENMP
+#  pragma omp for schedule(dynamic)
+#endif
+      for(long int ievent = 0; ievent < static_cast<long>(record_cache.size()); ++ievent)
+        {
+
+          auto& record = record_cache.at(ievent);
+          if (record.my_bin.get_bin_value() == 0.0f) // shouldn't happen really, but a check probably doesn't hurt
+            continue;
+
+          if (ievent % 1000000L == 0)
+            std::cout << "\r" << ievent << " events used" << std::flush;
+
+          const Bin& measured_bin = record.my_bin;
+          int ra = 0, a = 0;
+          int rb = 0, b = 0;
+
+          proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, measured_bin);
+
+          data_fan_sums[ra][a] += 1;
+          data_fan_sums[rb][b] += 1;
+
+          // I don't think we need this.
+          int a_in_block = a % num_transaxial_crystals_per_block;
+          if (a_in_block >= num_physical_transaxial_crystals_per_block)
+            continue;
+          int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+          int ra_in_block = ra % num_axial_crystals_per_block;
+          if (ra_in_block >= num_physical_axial_crystals_per_block)
+            continue;
+          int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+          int b_in_block = b % num_transaxial_crystals_per_block;
+          if (b_in_block >= num_physical_transaxial_crystals_per_block)
+            continue;
+          int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+
+          int rb_in_block = rb % num_axial_crystals_per_block;
+          if (rb_in_block >= num_physical_axial_crystals_per_block)
+            continue;
+          int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+
+          if (new_ra >= fan_data.get_min_ra() && new_ra <= fan_data.get_max_ra() &&
+              new_a >= fan_data.get_min_a() && new_a <= fan_data.get_max_a() &&
+              new_rb >= max(ra, fan_data.get_min_b(new_ra)) && new_rb <= fan_data.get_max_rb(new_ra) &&
+              new_b > fan_data.get_min_b(new_a) && new_b <= fan_data.get_max_b(new_a) )
+            {
+              const int ma = num_transaxial_detectors - 1 - new_a;
+              const int mb = (2 * num_transaxial_detectors - 1 - new_b) % num_transaxial_detectors;
+              const int mra = num_axial_detectors - 1 - new_ra;
+              const int mrb = (num_axial_detectors - 1 - new_rb);
+
+              if ( new_ra != mra &&  new_rb != mrb)
+                {
+                  fan_data( new_ra,  new_a,  new_rb,  new_b) +=1;
+                  fan_data( new_ra,  ma,  new_rb,  new_b) +=1;
+                  fan_data( mra,  new_a,  mrb,  new_b) +=1;
+                  fan_data( mra,  ma,  mrb,  mb) +=1;
+                }
+              else
+                {
+                  fan_data( new_ra,  new_a,  new_rb,  new_b)  +=1;
+                  fan_data( new_ra,  ma,  new_rb,  mb)  +=1;
+                }
+            }
+        }
+
+      ibatch++;
+    }
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for collapse(2) schedule(dynamic)
+#endif
+  for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+    //  for (int a = 0; a <= num_transaxial_detectors/2; ++a)
+    for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
+      // loop rb from ra to avoid double counting
+      // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+      for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+          {
+
+                   // rotation
+
+            for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
+              {
+
+                for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
+                  {
+
+                    const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
+                    const int new_det_num_a = (a + transaxial_det_inc) % num_transaxial_detectors;
+                    const int new_det_num_b = (b + transaxial_det_inc) % num_transaxial_detectors;
+                    const int axial_det_inc = axial_block_num * num_axial_crystals_per_block;
+                    const int new_ring_num_a = ra + axial_det_inc;
+                    const int new_ring_num_b = rb + axial_det_inc;
+
+                    if (fan_data.is_in_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b))
+                      {
+#ifdef STIR_OPENMP
+#  pragma omp critical(FANPROJDATAWRITE)
+#endif
+                        try
+                          {
+                      geo_data(ra, a, rb, b % num_transaxial_detectors)
+                          += fan_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b);
+                          }
+                        catch(...)
+                          {
+
+                          }
+                      }
+                  }
+              }
+          }
+
+}
+
+
+void
+make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data)
 {
   int num_rings;
   int num_detectors_per_ring;
@@ -1262,14 +1503,14 @@ make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data,
       auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&proj_data_info);
 
       make_fan_data_remove_gaps_help(
-          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data, model_fan_filename);
+          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
     }
   else
     {
       auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&proj_data_info);
 
       make_fan_data_remove_gaps_help(
-          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data, model_fan_filename);
+          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
     }
 }
 

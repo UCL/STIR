@@ -105,8 +105,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                           num_physical_rings,
                           num_physical_detectors_per_ring); // inputes have to be modified
 
-  BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
-  BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+  BlockData3D measured_block_data;//(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+  BlockData3D norm_block_data;//(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
   if(!use_model_fansums)
     make_fan_data_remove_gaps(model_fan_data, model_data);
@@ -115,35 +115,43 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
     load_fan_data(model_fan_data, model_data, model_fansums_filename);
     }
 
-  return; //Stop here for now! : Debug
   {
     // next could be local if KL is not computed below
     FanProjData measured_fan_data;
     float threshold_for_KL;
     // compute factors dependent on the data
     {
-      make_fan_data_remove_gaps(measured_fan_data, measured_data);
 
-      /* TEMP FIX */
-      for (int ra = model_fan_data.get_min_ra(); ra <= model_fan_data.get_max_ra(); ++ra)
+      if(!use_lm_cache)
         {
-          for (int a = model_fan_data.get_min_a(); a <= model_fan_data.get_max_a(); ++a)
+          make_fan_data_remove_gaps(measured_fan_data, measured_data);
+
+          /* TEMP FIX */
+          for (int ra = model_fan_data.get_min_ra(); ra <= model_fan_data.get_max_ra(); ++ra)
             {
-              for (int rb = std::max(ra, model_fan_data.get_min_rb(ra)); rb <= model_fan_data.get_max_rb(ra); ++rb)
+              for (int a = model_fan_data.get_min_a(); a <= model_fan_data.get_max_a(); ++a)
                 {
-                  for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)
-                    if (model_fan_data(ra, a, rb, b) == 0)
-                      measured_fan_data(ra, a, rb, b) = 0;
+                  for (int rb = std::max(ra, model_fan_data.get_min_rb(ra)); rb <= model_fan_data.get_max_rb(ra); ++rb)
+                    {
+                      for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)
+                        if (model_fan_data(ra, a, rb, b) == 0)
+                          measured_fan_data(ra, a, rb, b) = 0;
+                    }
                 }
             }
+
+          threshold_for_KL = measured_fan_data.find_max() / 100000.F;
+          // display(measured_fan_data, "measured data");
+
+          make_fan_sum_data(data_fan_sums, measured_fan_data);
+          make_geo_data(measured_geo_data, measured_fan_data);
+          make_block_data(measured_block_data, measured_fan_data);
         }
-
-      threshold_for_KL = measured_fan_data.find_max() / 100000.F;
-      // display(measured_fan_data, "measured data");
-
-      make_fan_sum_data(data_fan_sums, measured_fan_data);
-      make_geo_data(measured_geo_data, measured_fan_data);
-      make_block_data(measured_block_data, measured_fan_data);
+      else//Use LM cache to make all data, not blocks for now.
+        {
+          make_all_fan_data_from_cache(
+                                       data_fan_sums, measured_geo_data, measured_data);
+        }
       if (do_display)
         display(measured_block_data, "raw block data from measurements");
 
