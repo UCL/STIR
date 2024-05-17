@@ -1275,7 +1275,7 @@ Scanner::Scanner(Type scanner_type)
                5,  //            int num_transaxial_blocks_per_bucket_v,
                6, //            int num_axial_crystals_per_block_v,
                7,//            int num_transaxial_crystals_per_block_v,
-               252, //            int num_axial_crystals_per_singles_unit_v,
+               84, //            int num_axial_crystals_per_singles_unit_v,
                35,  //            int num_transaxial_crystals_per_singles_unit_v,
                1,
                0.0F, 511.F,
