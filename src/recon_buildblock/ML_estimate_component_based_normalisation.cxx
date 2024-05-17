@@ -105,8 +105,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                           num_physical_rings,
                           num_physical_detectors_per_ring); // inputes have to be modified
 
-  BlockData3D measured_block_data;//(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
-  BlockData3D norm_block_data;//(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+  BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+  BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
   if(!use_model_fansums)
     make_fan_data_remove_gaps(model_fan_data, model_data);
