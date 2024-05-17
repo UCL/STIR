@@ -181,21 +181,30 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
     for (int iter_num = 1; iter_num <= std::max(num_iterations, 1); ++iter_num)
       {
+        std::cout << "Iteration number: " << iter_num << std::endl;
         if (iter_num == 1)
           {
+            std::cout << "Calculating sums: " << iter_num << std::endl;
             efficiencies.fill(sqrt(data_fan_sums.sum() / model_fan_data.sum()));
+            std::cout << "Finished sums." << iter_num << std::endl;
             norm_geo_data.fill(1);
             norm_block_data.fill(1);
           }
         // efficiencies
         {
           fan_data = model_fan_data;
+          std::cout << "Applying geo norm..." << std::endl;
           apply_geo_norm(fan_data, norm_geo_data);
-          apply_block_norm(fan_data, norm_block_data);
+          if(do_block)
+            {
+              std::cout << "Applying block norm..." << std::endl;
+              apply_block_norm(fan_data, norm_block_data);
+            }
           if (do_display)
             display(fan_data, "model*geo*block");
           for (int eff_iter_num = 1; eff_iter_num <= num_eff_iterations; ++eff_iter_num)
             {
+              std::cout << "Efficiency iteration number: " << iter_num << std::endl;
               iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
               {
                 char* out_filename = new char[out_filename_prefix.size() + 30];

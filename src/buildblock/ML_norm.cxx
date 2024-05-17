@@ -1320,20 +1320,20 @@ make_all_fan_data_from_cache(
   const int num_virtual_transaxial_crystals_per_block
       = proj_data_info_ptr->get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
 
-  const int num_transaxial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_blocks();
-  const int num_axial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_blocks();
-  const int num_transaxial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block();
-  const int num_axial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_crystals_per_block();
+   int num_transaxial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_blocks();
+   int num_axial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_blocks();
+   int num_transaxial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block();
+  int num_axial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_crystals_per_block();
 
-  const int num_physical_transaxial_crystals_per_block
+ int num_physical_transaxial_crystals_per_block
       = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
 
   const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
 
-  const int num_transaxial_blocks_in_fansize = fan_size / (num_transaxial_crystals_per_block);
+ int num_transaxial_blocks_in_fansize = fan_size / (num_transaxial_crystals_per_block);
   const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize * num_virtual_transaxial_crystals_per_block;
   const int new_half_fan_size = new_fan_size / 2;
-  const int num_axial_blocks_in_max_delta = max_delta / (num_axial_crystals_per_block);
+  int num_axial_blocks_in_max_delta = max_delta / (num_axial_crystals_per_block);
   const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
   const int num_physical_detectors_per_ring
       = num_detectors_per_ring - num_transaxial_blocks * num_virtual_transaxial_crystals_per_block;
@@ -1345,10 +1345,10 @@ make_all_fan_data_from_cache(
  //
   const int num_axial_detectors = fan_data.get_num_rings();
   const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();
-  // const int num_axial_crystals_per_block = geo_data.get_num_axial_crystals_per_block();
-  // const int num_transaxial_crystals_per_block = geo_data.get_half_num_transaxial_crystals_per_block() * 2;
-  // const int num_transaxial_blocks = num_transaxial_detectors / num_transaxial_crystals_per_block;
-  // const int num_axial_blocks = num_axial_detectors / num_axial_crystals_per_block;
+  num_axial_crystals_per_block = geo_data.get_num_axial_crystals_per_block();
+  num_transaxial_crystals_per_block = geo_data.get_half_num_transaxial_crystals_per_block() * 2;
+  num_transaxial_blocks = num_transaxial_detectors / num_transaxial_crystals_per_block;
+  num_axial_blocks = num_axial_detectors / num_axial_crystals_per_block;
 
   fan_data.fill(0);
 
@@ -1383,8 +1383,16 @@ make_all_fan_data_from_cache(
 
           proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, measured_bin);
 
-          data_fan_sums[ra][a] += 1;
-          data_fan_sums[rb][b] += 1;
+#ifdef STIR_OPENMP
+#  pragma omp critical(DATAFANWRITE)
+#endif
+          try
+            {
+              data_fan_sums[ra][a] += 1;
+              data_fan_sums[rb][b] += 1;
+            }
+          catch(...)
+            {}
 
           // I don't think we need this.
           int a_in_block = a % num_transaxial_crystals_per_block;
@@ -1419,15 +1427,31 @@ make_all_fan_data_from_cache(
 
               if ( new_ra != mra &&  new_rb != mrb)
                 {
-                  fan_data( new_ra,  new_a,  new_rb,  new_b) +=1;
-                  fan_data( new_ra,  ma,  new_rb,  new_b) +=1;
-                  fan_data( mra,  new_a,  mrb,  new_b) +=1;
-                  fan_data( mra,  ma,  mrb,  mb) +=1;
+#ifdef STIR_OPENMP
+#  pragma omp critical(FANPROJDATAWRITE)
+#endif
+                  try
+                    {
+                      fan_data( new_ra,  new_a,  new_rb,  new_b) +=1;
+                      fan_data( new_ra,  ma,  new_rb,  new_b) +=1;
+                      fan_data( mra,  new_a,  mrb,  new_b) +=1;
+                      fan_data( mra,  ma,  mrb,  mb) +=1;
+                    }
+                  catch(...)
+                    {}
                 }
               else
                 {
-                  fan_data( new_ra,  new_a,  new_rb,  new_b)  +=1;
-                  fan_data( new_ra,  ma,  new_rb,  mb)  +=1;
+#ifdef STIR_OPENMP
+#  pragma omp critical(FANPROJDATAWRITE)
+#endif
+                  try
+                    {
+                      fan_data( new_ra,  new_a,  new_rb,  new_b)  +=1;
+                      fan_data( new_ra,  ma,  new_rb,  mb)  +=1;
+                    }
+                  catch(...)
+                    {}
                 }
             }
         }
@@ -1435,26 +1459,27 @@ make_all_fan_data_from_cache(
       ibatch++;
     }
 
+  record_cache.clear();
+
+  //TODO duplicate geo.
+
 #ifdef STIR_OPENMP
-#pragma omp parallel for collapse(2) schedule(dynamic)
+#pragma omp parallel for collapse(4) schedule(dynamic)
 #endif
   for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
     //  for (int a = 0; a <= num_transaxial_detectors/2; ++a)
     for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
-      // loop rb from ra to avoid double counting
-      // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
-      for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
-        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
-          {
-
-                   // rotation
-
-            for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
-              {
-
-                for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
+      for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
+        {
+          for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
+            {
+              // loop rb from ra to avoid double counting
+              // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+              for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+                for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
                   {
 
+                           // rotation
                     const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
                     const int new_det_num_a = (a + transaxial_det_inc) % num_transaxial_detectors;
                     const int new_det_num_b = (b + transaxial_det_inc) % num_transaxial_detectors;
@@ -1469,8 +1494,8 @@ make_all_fan_data_from_cache(
 #endif
                         try
                           {
-                      geo_data(ra, a, rb, b % num_transaxial_detectors)
-                          += fan_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b);
+                            geo_data(ra, a, rb, b % num_transaxial_detectors)
+                                += fan_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b);
                           }
                         catch(...)
                           {
@@ -1480,7 +1505,6 @@ make_all_fan_data_from_cache(
                   }
               }
           }
-
 }
 
 
@@ -1705,15 +1729,11 @@ apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool appl
       for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
         for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
           {
-
             // rotation
-
             for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
               {
-
                 for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
                   {
-
                     const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
                     const int new_det_num_a = (a + transaxial_det_inc) % num_transaxial_detectors;
                     const int new_det_num_b = (b + transaxial_det_inc) % num_transaxial_detectors;
@@ -1734,11 +1754,9 @@ apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool appl
                       work(new_ring_num_a, ma, new_ring_num_b, mb) = geo_data(ra, a, rb, b % num_transaxial_detectors);
 
                     if (work.is_in_data(mra, new_det_num_a, mrb, new_det_num_b))
-
                       work(mra, new_det_num_a, mrb, new_det_num_b) = geo_data(ra, a, rb, b % num_transaxial_detectors);
 
                     if (work.is_in_data(mra, ma, mrb, mb))
-
                       work(mra, ma, mrb, mb) = geo_data(ra, a, rb, b % num_transaxial_detectors);
                   }
               }
@@ -1984,6 +2002,7 @@ iterate_efficiencies(DetectorEfficiencies& efficiencies, const Array<2, float>& 
   assert(model.get_max_ra() == data_fan_sums.get_max_index());
   assert(model.get_min_a() == data_fan_sums[data_fan_sums.get_min_index()].get_min_index());
   assert(model.get_max_a() == data_fan_sums[data_fan_sums.get_min_index()].get_max_index());
+
   for (int ra = model.get_min_ra(); ra <= model.get_max_ra(); ++ra)
     for (int a = model.get_min_a(); a <= model.get_max_a(); ++a)
       {
@@ -1995,6 +2014,7 @@ iterate_efficiencies(DetectorEfficiencies& efficiencies, const Array<2, float>& 
             for (int rb = model.get_min_rb(ra); rb <= model.get_max_rb(ra); ++rb)
               for (int b = model.get_min_b(a); b <= model.get_max_b(a); ++b)
                 denominator += efficiencies[rb][b % num_detectors_per_ring] * model(ra, a, rb, b);
+
             efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
           }
       }
