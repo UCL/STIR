@@ -3,10 +3,16 @@
 
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #include "stir/DiscretisedDensity.h"
-#include <cuda_runtime.h>
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
+
+// Define a native cpp struct to hold the dimensions of a CUDA grid or block
+struct cppdim3 {
+    int x;
+    int y;
+    int z;
+};
 
 template <typename elemT>
 class CudaRelativeDifferencePrior : public RelativeDifferencePrior<elemT> {
@@ -27,9 +33,16 @@ class CudaRelativeDifferencePrior : public RelativeDifferencePrior<elemT> {
         Succeeded set_up_cuda(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr);
     protected:
         int z_dim, y_dim, x_dim;
-        dim3 grid_dim, block_dim;
+        cppdim3 cpp_grid_dim, cpp_block_dim;
         bool cuda_set_up = false;
 };
+
+// Specialization for float
+template <>
+const char* const CudaRelativeDifferencePrior<float>::registered_name = "CudaRelativeDifferencePrior";
+
+// Ensure the class is registered
+template class CudaRelativeDifferencePrior<float>;
 
 END_NAMESPACE_STIR
 

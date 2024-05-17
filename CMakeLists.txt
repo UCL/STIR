@@ -195,20 +195,15 @@ endif()
 
 if(NOT DISABLE_STIR_CUDA)
   ## check 
+  enable_language(CUDA)
   find_package(CUDAToolkit REQUIRED)
-  find_package(CUDA REQUIRED)
   if("${CMAKE_VERSION}" VERSION_LESS "3.23")
     message(FATAL_ERROR "CMake 3.23 or newer is required to use CMAKE_CUDA_ARCHITECTURES set to 'all'")
   else()
     set(CMAKE_CUDA_ARCHITECTURES "all")
   endif()
-  if (CUDAToolkit_FOUND)
-    if(STIR_WITH_CUDA)
-      enable_language(CUDA)
-      message(STATUS "STIR CUDA support enabled. Using CUDA version ${CUDAToolkit_VERSION}.")
-      set(STIR_WITH_CUDA ON)
-    endif()
-  endif()
+  message(STATUS "STIR CUDA support enabled. Using CUDA version ${CUDAToolkit_VERSION}.")
+  set(STIR_WITH_CUDA ON)
 endif()
 
 # Parallelproj
