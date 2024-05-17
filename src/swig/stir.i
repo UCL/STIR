@@ -576,7 +576,10 @@
 %newobject *::get_empty_copy;
 %newobject *::read_from_file;
 
+// SWIG complains "Warning 503: Can't wrap 'stir::swap' unless renamed to a valid identifier."
+// But it's probably dangerous to expose swap anyway, so let's ignore it.
 %ignore **::swap;
+%ignore stir::swap;
 %ignore *::ask_parameters;
 %ignore *::create_shared_clone;
 %ignore *::read_from_stream;
