@@ -320,7 +320,7 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
   max_tof_pos_num = 0;
   tof_increament_in_mm = 0.f;
   tof_mash_factor = 0;
-  num_tof_bins = 0;
+  num_tof_bins = 1;
 }
 
 // TOF version.
