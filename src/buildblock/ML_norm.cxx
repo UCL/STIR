@@ -1767,6 +1767,11 @@ apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool appl
               }
           }
 
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for collapse(2)
+#  endif
+#endif
   for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
       //    for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
@@ -1777,8 +1782,18 @@ apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool appl
             if (fan_data(ra, a, rb, b) == 0)
               continue;
             if (apply)
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp atomic
+#  endif
+#endif
               fan_data(ra, a, rb, b) *= work(ra, a, rb, b % num_transaxial_detectors);
             else
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp atomic
+#  endif
+#endif
               fan_data(ra, a, rb, b) /= work(ra, a, rb, b % num_transaxial_detectors);
           }
 }
@@ -1787,6 +1802,11 @@ void
 apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficiencies, const bool apply)
 {
   const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for collapse(2)
+#  endif
+#endif
   for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
       // loop rb from ra to avoid double counting
@@ -1796,8 +1816,18 @@ apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficienci
             if (fan_data(ra, a, rb, b) == 0)
               continue;
             if (apply)
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp atomic
+#  endif
+#endif
               fan_data(ra, a, rb, b) *= efficiencies[ra][a] * efficiencies[rb][b % num_detectors_per_ring];
             else
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp atomic
+#  endif
+#endif
               fan_data(ra, a, rb, b) /= efficiencies[ra][a] * efficiencies[rb][b % num_detectors_per_ring];
           }
 }
