@@ -48,7 +48,7 @@ shared_ptr<ProjDataInfo>
 ProjDataInfo::create_single_tof_clone() const
 {
   shared_ptr<ProjDataInfo> sptr(this->clone());
-  int a  = sptr->get_num_tof_poss();
+  int a = sptr->get_num_tof_poss();
   if (a > 0)
     sptr->set_tof_mash_factor(a);
   // - TODO: remove this later
@@ -90,8 +90,12 @@ ProjDataInfo::get_num_tof_poss() const
 int
 ProjDataInfo::get_tof_bin(const double delta) const
 {
-  if (!is_tof_data())
-    return 0;
+  if (this->get_num_tof_poss() == 1)
+    {
+      assert(min_tof_pos_num == 0);
+      assert(max_tof_pos_num == 0);
+      return 0;
+    }
 
   for (int i = min_tof_pos_num; i <= max_tof_pos_num; ++i)
     {
@@ -198,7 +202,8 @@ ProjDataInfo::is_tof_data() const
     {
       if (num_tof_bins != 1)
         {
-          warning("Non-TOF data with inconsistent Time-of-Flight bin number - Note. As we are updating the scanner template style please make sure to have one TOF position (whole coincidence window for nonTOF scanners).");
+          warning("Non-TOF data with inconsistent Time-of-Flight bin number - Note. As we are updating the scanner template "
+                  "style please make sure to have one TOF position (whole coincidence window for nonTOF scanners).");
         }
       return false;
     }

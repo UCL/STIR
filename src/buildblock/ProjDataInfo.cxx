@@ -177,41 +177,9 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
     {
       tof_mash_factor = new_num;
       if (tof_mash_factor > scanner_ptr->get_max_num_timing_poss())
-        {
         error("ProjDataInfo::set_tof_mash_factor: TOF mashing factor (" + std::to_string(tof_mash_factor)
               + +") must be smaller than or equal to the scanner's number of max timing bins ("
               + std::to_string(scanner_ptr->get_max_num_timing_poss()) + ").");
-        }
-      else if (tof_mash_factor == num_tof_bins)
-        // This is a special case that we just want boundaries for the coincidence window.
-        {
-
-          Bin bin;
-          bin.timing_pos_num() = min_tof_pos_num;
-          //Get lowest low
-          float cur_low = get_k(bin) - get_sampling_in_k(bin) / 2.f;
-          //Get highest high
-          bin.timing_pos_num() = max_tof_pos_num;
-          float cur_high = get_k(bin) + get_sampling_in_k(bin) / 2.f;
-
-
-          min_tof_pos_num = 0;
-          max_tof_pos_num = 0;
-          num_tof_bins = 1;
-          // Upper and lower boundaries of the timing poss;
-          tof_bin_boundaries_mm.recycle();
-          tof_bin_boundaries_mm.grow(min_tof_pos_num, max_tof_pos_num);
-          tof_bin_boundaries_ps.recycle();
-          tof_bin_boundaries_ps.grow(min_tof_pos_num, max_tof_pos_num);
-
-          tof_bin_boundaries_mm[0].low_lim = cur_low;
-          tof_bin_boundaries_mm[0].high_lim = cur_high;
-
-          tof_bin_boundaries_ps[0].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[0].low_lim));
-          tof_bin_boundaries_ps[0].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[0].high_lim));
-
-          return;
-        }
 
 #if 0
         // KT: code disabled as buggy but currently not needed
@@ -320,7 +288,7 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
   max_tof_pos_num = 0;
   tof_increament_in_mm = 0.f;
   tof_mash_factor = 0;
-  num_tof_bins = 0;
+  num_tof_bins = 1;
 }
 
 // TOF version.
