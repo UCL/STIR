@@ -185,7 +185,8 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
       else if (tof_mash_factor == scanner_ptr->get_max_num_timing_poss())
         // This is a special case that we just want boundaries for the coincidence window.
         {
-
+          // Now, initialise the mashed TOF bins.
+          tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
           Bin bin;
           bin.timing_pos_num() = min_tof_pos_num;
           //Get lowest low

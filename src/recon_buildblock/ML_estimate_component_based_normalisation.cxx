@@ -254,6 +254,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             {
               std::cout << "Efficiency iteration number: " << iter_num << std::endl;
               iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
+               std::cout << "Finished efficiency iteration number: " << iter_num << std::endl;
               {
                 char* out_filename = new char[out_filename_prefix.size() + 30];
                 sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
@@ -263,6 +264,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
               }
               if (do_KL)
                 {
+                  std::cout<< "Calculating KL" << std::endl;
                   apply_efficiencies(fan_data, efficiencies);
                   std::cerr << "measured*norm min " << measured_fan_data.find_min() << " ,max " << measured_fan_data.find_max()
                             << std::endl;
@@ -290,8 +292,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             }
         } // end efficiencies
 
-        // geo norm
-
+        std::cout << "geo norm" << std::endl;
+        std::cout << "Copying model to fan_data..." << std::endl;
         fan_data = model_fan_data;
         apply_efficiencies(fan_data, efficiencies);
         if (do_block)
