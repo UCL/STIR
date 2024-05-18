@@ -124,7 +124,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
       load_fan_data(model_fan_data, model_data, model_fansums_filename);
     }
 
-  float model_fan_data_sum = 0;
+  double model_fan_data_sum = 0.f;
 
   {
     std::vector<shared_ptr<float>> local_model_fan_data_sum;
@@ -159,7 +159,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
     // next could be local if KL is not computed below
     FanProjData measured_fan_data;
     float threshold_for_KL;
-    float data_fan_sum = 0;
+    double data_fan_sum = 0;
     // compute factors dependent on the data
     {
 
@@ -195,8 +195,18 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
         {
           // TODO: The TEMP fix is not applied. So until then, keep the model source slightly bigger than the actual measuremnts
           // to avoid divisions by zero.
-          data_fan_sum = make_all_fan_data_from_cache(data_fan_sums, measured_geo_data, measured_data);
-          threshold_for_KL = data_fan_sums.find_max() / 100000000.F;
+          data_fan_sum = make_all_fan_data_from_cache(measured_fan_data, measured_data, model_fan_data);
+          float dd = data_fan_sums.find_max();
+          std::cout << "Data fan sum max " << dd << std::endl;
+          threshold_for_KL =dd / 100000000.F;
+
+          std::cout << "1. Making fan sum data .. " << std::endl;
+          make_fan_sum_data(data_fan_sums, measured_fan_data);
+          std::cout << "fan sum data min/max " <<  data_fan_sums.find_min() << " " << data_fan_sums.find_max() << std::endl;
+
+          std::cout << "2. Making fan geo data .. " << std::endl;
+          make_geo_data(measured_geo_data, measured_fan_data);
+          std::cout << "measured_geo_data min/max " <<  measured_geo_data.find_min() << " " << measured_geo_data.find_max() << std::endl;
         }
       if (do_display && do_block)
         display(measured_block_data, "raw block data from measurements");
@@ -232,6 +242,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
           {
             std::cout << "Calculating sums: " << std::endl;
             float value = sqrt(data_fan_sum / model_fan_data_sum);
+            std::cout << "Ratio: " << value << std::endl;
             efficiencies.fill(value);
             std::cout << "Finished sums." << std::endl;
             norm_geo_data.fill(1);
@@ -332,7 +343,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             display(fan_data, "geo norm");
           }
 
-        // block norm
+        if(do_block) //norm
         {
           fan_data = model_fan_data;
           apply_efficiencies(fan_data, efficiencies);

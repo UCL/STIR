@@ -205,10 +205,10 @@ private:
 
 typedef FanProjData BlockData3D;
 
-float make_all_fan_data_from_cache(
-                                  Array<2, float>& data_fan_sums,
-                                  GeoData3D& geo_data,
-                                  const ProjData& proj_data);
+double make_all_fan_data_from_cache(
+                                  FanProjData& fan_data,
+                                  const ProjData& proj_data,
+            const FanProjData& model);
 
 void make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data);
 

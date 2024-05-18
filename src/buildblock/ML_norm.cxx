@@ -1163,72 +1163,48 @@ make_fan_data_remove_gaps_help(FanProjData& fan_data,
   const int num_physical_rings = num_rings - (num_axial_blocks - 1) * num_virtual_axial_crystals_per_block;
   fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
 
+  shared_ptr<SegmentBySinogram<float>> segment_ptr;
+  Bin bin;
 
+  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();
+       ++bin.segment_num())
     {
+      segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
 
-      shared_ptr<SegmentBySinogram<float>> segment_ptr;
-
-      int max_views = num_detectors_per_ring / 2;
-      for (int iseg = proj_data.get_min_segment_num(); iseg <= proj_data.get_max_segment_num();
-           ++iseg)
-        {
-          segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(iseg)));
-          std::cout << " > Segment num: " << iseg<< std::endl;
-          int min_axial = proj_data.get_min_axial_pos_num(iseg);
-          int max_axial = proj_data.get_max_axial_pos_num(iseg);
-#ifdef STIR_OPENMP
-#pragma omp parallel for collapse(3) schedule(dynamic)
-#endif
-          for (int iaxial = min_axial; iaxial <=max_axial ; ++iaxial)
+      for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+           bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+           ++bin.axial_pos_num())
+        for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
+          for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num())
             {
-              for (int iview = 0;  iview < max_views; iview++)
-                {
-                  for (int itang = -half_fan_size; itang <= half_fan_size; ++itang)
-                    {
+              int ra = 0, a = 0;
+              int rb = 0, b = 0;
 
-                      Bin bin(iseg, iview, iaxial, itang);
+              proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
+              int a_in_block = a % num_transaxial_crystals_per_block;
 
-                      int ra = 0, a = 0;
-                      int rb = 0, b = 0;
+              if (a_in_block >= num_physical_transaxial_crystals_per_block)
+                continue;
+              int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
 
-                      proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
-                      int a_in_block = a % num_transaxial_crystals_per_block;
+              int ra_in_block = ra % num_axial_crystals_per_block;
+              if (ra_in_block >= num_physical_axial_crystals_per_block)
+                continue;
+              int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
-                      if (a_in_block >= num_physical_transaxial_crystals_per_block)
-                        continue;
-                      int new_a = a - (a / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
+              int b_in_block = b % num_transaxial_crystals_per_block;
+              if (b_in_block >= num_physical_transaxial_crystals_per_block)
+                continue;
+              int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
 
-                      int ra_in_block = ra % num_axial_crystals_per_block;
-                      if (ra_in_block >= num_physical_axial_crystals_per_block)
-                        continue;
-                      int new_ra = ra - (ra / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
+              int rb_in_block = rb % num_axial_crystals_per_block;
+              if (rb_in_block >= num_physical_axial_crystals_per_block)
+                continue;
+              int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
-                      int b_in_block = b % num_transaxial_crystals_per_block;
-                      if (b_in_block >= num_physical_transaxial_crystals_per_block)
-                        continue;
-                      int new_b = b - (b / num_transaxial_crystals_per_block) * num_virtual_transaxial_crystals_per_block;
-
-                      int rb_in_block = rb % num_axial_crystals_per_block;
-                      if (rb_in_block >= num_physical_axial_crystals_per_block)
-                        continue;
-                      int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
-
-#ifdef STIR_OPENMP
-#  pragma omp critical(FANPROJDATAWRITE)
-#endif
-                      try
-                        {
-                          fan_data(new_ra, new_a, new_rb, new_b) = fan_data(new_rb, new_b, new_ra, new_a)
-                              = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-                        }
-                      catch(...)
-                        {
-
-                        }
-                    }
-                }
+              fan_data(new_ra, new_a, new_rb, new_b) = fan_data(new_rb, new_b, new_ra, new_a)
+                  = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
             }
-        }
     }
 }
 
@@ -1299,26 +1275,24 @@ load_fan_data(FanProjData& fan_data, const ProjData& proj_data,
 
 }
 
-float
+double
 make_all_fan_data_from_cache(
-                             Array<2, float>& data_fan_sums,
-                             GeoData3D& geo_data,
-                             const ProjData& proj_data)
+                             FanProjData& fan_data,
+                             const ProjData& proj_data,
+    const FanProjData& model)
 {
 
   int num_rings;
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
+  // get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
 
   auto proj_data_info_ptr
       = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&(*proj_data.get_proj_data_info_sptr()));
+  get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr);
 
-  data_fan_sums.fill(0);
-  geo_data.fill(0);
-
-  long int return_value = 0;
+  double return_value = 0;
 
   const int half_fan_size = fan_size / 2;
   const int num_virtual_axial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_virtual_axial_crystals_per_block();
@@ -1326,39 +1300,30 @@ make_all_fan_data_from_cache(
   const int num_virtual_transaxial_crystals_per_block
       = proj_data_info_ptr->get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
 
-   int num_transaxial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_blocks();
-   int num_axial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_blocks();
-   int num_transaxial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block();
-  int num_axial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_crystals_per_block();
+  const int num_transaxial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_blocks();
+  const int num_axial_blocks = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_blocks();
+  const int num_transaxial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block();
+  const int num_axial_crystals_per_block = proj_data_info_ptr->get_scanner_sptr()->get_num_axial_crystals_per_block();
 
- int num_physical_transaxial_crystals_per_block
+  const int num_physical_transaxial_crystals_per_block
       = num_transaxial_crystals_per_block - num_virtual_transaxial_crystals_per_block;
 
   const int num_physical_axial_crystals_per_block = num_axial_crystals_per_block - num_virtual_axial_crystals_per_block;
 
- int num_transaxial_blocks_in_fansize = fan_size / (num_transaxial_crystals_per_block);
+  const int num_transaxial_blocks_in_fansize = fan_size / (num_transaxial_crystals_per_block);
   const int new_fan_size = fan_size - num_transaxial_blocks_in_fansize * num_virtual_transaxial_crystals_per_block;
   const int new_half_fan_size = new_fan_size / 2;
-  int num_axial_blocks_in_max_delta = max_delta / (num_axial_crystals_per_block);
+  const int num_axial_blocks_in_max_delta = max_delta / (num_axial_crystals_per_block);
   const int new_max_delta = max_delta - (num_axial_blocks_in_max_delta)*num_virtual_axial_crystals_per_block;
   const int num_physical_detectors_per_ring
       = num_detectors_per_ring - num_transaxial_blocks * num_virtual_transaxial_crystals_per_block;
   const int num_physical_rings = num_rings - (num_axial_blocks - 1) * num_virtual_axial_crystals_per_block;
-
-  //This now is the old "work" from make_geo_data
- FanProjData fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
-
- //
-  const int num_axial_detectors = fan_data.get_num_rings();
-  const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();
-  num_axial_crystals_per_block = geo_data.get_num_axial_crystals_per_block();
-  num_transaxial_crystals_per_block = geo_data.get_half_num_transaxial_crystals_per_block() * 2;
-  num_transaxial_blocks = num_transaxial_detectors / num_transaxial_crystals_per_block;
-  num_axial_blocks = num_axial_detectors / num_axial_crystals_per_block;
+  fan_data = FanProjData(num_physical_rings, num_physical_detectors_per_ring, new_max_delta, 2 * new_half_fan_size + 1);
 
   fan_data.fill(0);
 
   int ibatch = 0;
+  long int used_events = 0;
   std::vector<BinAndCorr> record_cache;
 
   while(true)//While we keep getting cache files.
@@ -1380,26 +1345,14 @@ make_all_fan_data_from_cache(
           if (record.my_bin.get_bin_value() == 0.0f) // shouldn't happen really, but a check probably doesn't hurt
             continue;
 
-          if (ievent % 1000000L == 0)
-            std::cout << "\r" << ievent << " events used" << std::flush;
+          if (used_events % 1000000L == 0)
+            std::cout << "\r" << used_events << " events used" << std::flush;
 
           const Bin& measured_bin = record.my_bin;
           int ra = 0, a = 0;
           int rb = 0, b = 0;
 
           proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, measured_bin);
-
-#ifdef STIR_OPENMP
-#  pragma omp critical(DATAFANWRITE)
-#endif
-          try
-            {
-              data_fan_sums[ra][a] += 1;
-              data_fan_sums[rb][b] += 1;
-              return_value += 2;
-            }
-          catch(...)
-            {}
 
           // I don't think we need this.
           int a_in_block = a % num_transaxial_crystals_per_block;
@@ -1422,133 +1375,139 @@ make_all_fan_data_from_cache(
             continue;
           int new_rb = rb - (rb / num_axial_crystals_per_block) * num_virtual_axial_crystals_per_block;
 
-          if (new_ra >= fan_data.get_min_ra() && new_ra <= fan_data.get_max_ra() &&
-              new_a >= fan_data.get_min_a() && new_a <= fan_data.get_max_a() &&
-              new_rb >= max(ra, fan_data.get_min_b(new_ra)) && new_rb <= fan_data.get_max_rb(new_ra) &&
-              new_b > fan_data.get_min_b(new_a) && new_b <= fan_data.get_max_b(new_a) )
+          // std::cout << "NI" << new_ra << "  " << new_a << "  " << new_rb << " " << new_b << std::endl;
+          if (fan_data.is_in_data(new_ra, new_a, new_rb, new_b))
             {
-              const int ma = num_transaxial_detectors - 1 - new_a;
-              const int mb = (2 * num_transaxial_detectors - 1 - new_b) % num_transaxial_detectors;
-              const int mra = num_axial_detectors - 1 - new_ra;
-              const int mrb = (num_axial_detectors - 1 - new_rb);
-
-              if ( new_ra != mra &&  new_rb != mrb)
+              if(model(new_ra, new_a, new_rb, new_b) > 0)
                 {
 #ifdef STIR_OPENMP
-#  pragma omp critical(FANPROJDATAWRITE)
+#  pragma omp critical
 #endif
-                  try
-                    {
-                      fan_data( new_ra,  new_a,  new_rb,  new_b) +=1;
-                      fan_data( new_ra,  ma,  new_rb,  new_b) +=1;
-                      fan_data( mra,  new_a,  mrb,  new_b) +=1;
-                      fan_data( mra,  ma,  mrb,  mb) +=1;
-                    }
-                  catch(...)
-                    {}
-                }
-              else
-                {
-#ifdef STIR_OPENMP
-#  pragma omp critical(FANPROJDATAWRITE)
-#endif
-                  try
-                    {
-                      fan_data( new_ra,  new_a,  new_rb,  new_b)  +=1;
-                      fan_data( new_ra,  ma,  new_rb,  mb)  +=1;
-                    }
-                  catch(...)
-                    {}
+                  {
+                    used_events+=1;
+                    fan_data(new_ra, new_a, new_rb, new_b) += 1;
+                    fan_data(new_rb, new_b, new_ra, new_a) +=1;
+                  }
+                  //               if ( new_ra != mra &&  new_rb != mrb)
+                  //                 {
+                  // #ifdef STIR_OPENMP
+                  // #  pragma omp critical(FANPROJDATAWRITE)
+                  // #endif
+                  //                   try
+                  //                     {
+                  //                       fan_data( new_ra,  new_a,  new_rb,  new_b) +=1;
+                  //                       fan_data( new_ra,  ma,  new_rb,  new_b) +=1;
+                  //                       fan_data( mra,  new_a,  mrb,  new_b) +=1;
+                  //                       fan_data( mra,  ma,  mrb,  mb) +=1;
+                  //                     }
+                  //                   catch(...)
+                  //                     {}
+                  //                 }
+                  //               else
+                  //                 {
+                  // #ifdef STIR_OPENMP
+                  // #  pragma omp critical(FANPROJDATAWRITE)
+                  // #endif
+                  //                   try
+                  //                     {
+                  //                       fan_data( new_ra,  new_a,  new_rb,  new_b)  +=1;
+                  //                       fan_data( new_ra,  ma,  new_rb,  mb)  +=1;
+                  //                     }
+                  //                   catch(...)
+                  //                     {}
+                  //                 }
                 }
             }
         }
 
       ibatch++;
+      record_cache.clear();
     }
 
+  return_value = used_events;
   record_cache.clear();
 
-  std::vector<shared_ptr<GeoData3D>> local_geo_sptrs;
-  int num_threads = 20;
-#ifdef STIR_OPENMP
-#  pragma omp single
-  {
-  std::cout << "Converting fan data to geo data..." << std::endl;
-  std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
-
-  local_geo_sptrs.resize(num_threads, shared_ptr<GeoData3D>());
-
-  for (int i = 0; i < num_threads; i++)
-    {
-      std::cout << "Allocated data to geo data... " << i<< std::endl;
-      local_geo_sptrs[i].reset(new GeoData3D(geo_data.size(),
-                                             geo_data[0].size(),
-                                             geo_data[0][0].size(),
-                                             geo_data[0][0][0].size()));
-      local_geo_sptrs[i]->fill(0);
-    }
-  }
-  #endif
-
-std::cout << "Starting geo loops... " << std::endl;
-#ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic) collapse(4) num_threads(num_threads)
-#endif
-  for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
-    {
-      for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
-        for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
-          {
-            for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
-              {
-                // loop rb from ra to avoid double counting
-                // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
-                for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
-                  for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
-                    {
-
-#ifdef STIR_OPENMP
-                      const int thread_num = omp_get_thread_num();
-#else
-                      const int thread_num = 0;
-#endif
-
-                      const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
-                      const int new_det_num_a = (a + transaxial_det_inc) % num_transaxial_detectors;
-                      const int new_det_num_b = (b + transaxial_det_inc) % num_transaxial_detectors;
-                      const int axial_det_inc = axial_block_num * num_axial_crystals_per_block;
-                      const int new_ring_num_a = ra + axial_det_inc;
-                      const int new_ring_num_b = rb + axial_det_inc;
-
-                      if (fan_data.is_in_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b))
-                        {
+//   std::vector<shared_ptr<GeoData3D>> local_geo_sptrs;
+//   int num_threads = 10;
 // #ifdef STIR_OPENMP
-// #  pragma omp critical(FANPROJDATAWRITE)
+// #  pragma omp single
+//   {
+//   std::cout << "Converting fan data to geo data..." << std::endl;
+//   std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+
+//   local_geo_sptrs.resize(num_threads, shared_ptr<GeoData3D>());
+
+//   for (int i = 0; i < num_threads; i++)
+//     {
+//       std::cout << "Allocated data to geo data... " << i<< std::endl;
+//       local_geo_sptrs[i].reset(new GeoData3D(geo_data.size(),
+//                                              geo_data[0].size(),
+//                                              geo_data[0][0].size(),
+//                                              geo_data[0][0][0].size()));
+//       local_geo_sptrs[i]->fill(0);
+//     }
+//   }
+//   #endif
+
+// std::cout << "Starting geo loops... " << std::endl;
+// #ifdef STIR_OPENMP
+// #pragma omp parallel for schedule(dynamic) collapse(4) num_threads(num_threads)
 // #endif
-                          try
-                            {
-                              (*local_geo_sptrs[thread_num])(ra, a, rb, b % num_transaxial_detectors)
-                                  += fan_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b);
-                            }
-                          catch(...)
-                            {
+//   for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+//     {
+//       for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
+//         for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
+//           {
+//             for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
+//               {
+//                 // loop rb from ra to avoid double counting
+//                 // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+//                 for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+//                   for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+//                     {
 
-                            }
-                        }
-                    }
-              }
-          }
-    }
+// #ifdef STIR_OPENMP
+//                       const int thread_num = omp_get_thread_num();
+// #else
+//                       const int thread_num = 0;
+// #endif
 
-  std::cout<<"Now flattening the geo data ..." << std::endl;
-#ifdef STIR_OPENMP
-  // flatten data constructed by threads
-  {
-        for (int i = 0; i < static_cast<int>(local_geo_sptrs.size()); ++i)
-          if (!is_null_ptr(local_geo_sptrs[i])) // only accumulate if a thread filled something in
-            geo_data += *(local_geo_sptrs[i]);
-  }
-#endif
+//                       const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
+//                       const int new_det_num_a = (a + transaxial_det_inc) % num_transaxial_detectors;
+//                       const int new_det_num_b = (b + transaxial_det_inc) % num_transaxial_detectors;
+//                       const int axial_det_inc = axial_block_num * num_axial_crystals_per_block;
+//                       const int new_ring_num_a = ra + axial_det_inc;
+//                       const int new_ring_num_b = rb + axial_det_inc;
+
+//                       if (fan_data.is_in_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b))
+//                         {
+// // #ifdef STIR_OPENMP
+// // #  pragma omp critical(FANPROJDATAWRITE)
+// // #endif
+//                           try
+//                             {
+//                               (*local_geo_sptrs[thread_num])(ra, a, rb, b % num_transaxial_detectors)
+//                                   += fan_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b);
+//                             }
+//                           catch(...)
+//                             {
+
+//                             }
+//                         }
+//                     }
+//               }
+//           }
+    // }
+
+//   std::cout<<"Now flattening the geo data ..." << std::endl;
+// #ifdef STIR_OPENMP
+//   // flatten data constructed by threads
+//   {
+//         for (int i = 0; i < static_cast<int>(local_geo_sptrs.size()); ++i)
+//           if (!is_null_ptr(local_geo_sptrs[i])) // only accumulate if a thread filled something in
+//             geo_data += *(local_geo_sptrs[i]);
+//   }
+// #endif
 
         return return_value;
 // omp_set_num_threads(omp_get_max_threads());
@@ -1759,19 +1718,13 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData& geo_data, const bool a
 void
 apply_geo_norm(FanProjData& fan_data, const GeoData3D& geo_data, const bool apply)
 {
- //TODO this function
+
   const int num_axial_detectors = fan_data.get_num_rings();
   const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();
   const int num_axial_crystals_per_block = geo_data.get_num_axial_crystals_per_block();
   const int num_transaxial_crystals_per_block = geo_data.get_half_num_transaxial_crystals_per_block() * 2;
   const int num_transaxial_blocks = num_transaxial_detectors / num_transaxial_crystals_per_block;
   const int num_axial_blocks = num_axial_detectors / num_axial_crystals_per_block;
-
-  // std::vector<shared_ptr<GeoData3D>> local_geo_sptrs;
-  // int num_threads = 20;
-
-  // FanProjData work = fan_data;
-  // work.fill(0);
 
   std::vector<shared_ptr<FanProjData>> local_work_sptrs;
   int num_threads = 3;
@@ -1855,7 +1808,7 @@ std::cout<<"Now flattening the FanProjData data ..." << std::endl;
       (*local_work_sptrs[0]) += (*local_work_sptrs[i]);
 }
 #endif
-
+std::cout<<"Loop over fan_data ..." << std::endl;
 #ifdef STIR_OPENMP
 #  if _OPENMP >= 201107
 #    pragma omp parallel for collapse(2)
@@ -1886,12 +1839,14 @@ std::cout<<"Now flattening the FanProjData data ..." << std::endl;
               fan_data(ra, a, rb, b) /= (*local_work_sptrs[0])(ra, a, rb, b % num_transaxial_detectors);
           }
   local_work_sptrs.clear();
+  std::cout<<"Finished Loop over fan_data ..." << std::endl;
 }
 
 void
 apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficiencies, const bool apply)
 {
   const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
+
 #ifdef STIR_OPENMP
 #  if _OPENMP >= 201107
 #    pragma omp parallel for collapse(2)
@@ -1925,9 +1880,48 @@ apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficienci
 void
 make_fan_sum_data(Array<2, float>& data_fan_sums, const FanProjData& fan_data)
 {
+  std::vector<shared_ptr<Array<2, float>>> local_fan_sptrs;
+  int num_threads = 30;
+#ifdef STIR_OPENMP
+#  pragma omp single
+  {
+    std::cout << "Converting fan data to fan sum data..." << std::endl;
+    std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+
+    local_fan_sptrs.resize(num_threads, shared_ptr<Array<2, float>>());
+
+    for (int i = 0; i < num_threads; i++)
+      {
+        std::cout << "Allocated data to fan sum data... " << i<< std::endl;
+        local_fan_sptrs[i].reset(new Array<2, float>(data_fan_sums));
+        local_fan_sptrs[i]->fill(0);
+      }
+  }
+#endif
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic) collapse(2) num_threads(num_threads)
+#endif
   for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
-      data_fan_sums[ra][a] = fan_data.sum(ra, a);
+      {
+#ifdef STIR_OPENMP
+        const int thread_num = omp_get_thread_num();
+#else
+        const int thread_num = 0;
+#endif
+        (*local_fan_sptrs[thread_num])[ra][a] = fan_data.sum(ra, a);
+      }
+
+  data_fan_sums.fill(0.f);
+  std::cout<<"Now flattening the fan sums ..." << std::endl;
+#ifdef STIR_OPENMP
+  // flatten data constructed by threads
+  {
+    for (int i = 0; i < static_cast<int>(local_fan_sptrs.size()); ++i)
+        data_fan_sums += (*local_fan_sptrs[i]);
+  }
+#endif
+  local_fan_sptrs.clear();
 }
 
 template <class TProjDataInfo>
@@ -2037,59 +2031,149 @@ make_geo_data(GeoData3D& geo_data, const FanProjData& fan_data)
 
   // transaxial and axial mirroring
 
+    std::vector<shared_ptr<FanProjData>> local_geo_sptrs;
+    int num_threads = 3;
+  #ifdef STIR_OPENMP
+  #  pragma omp single
+    {
+    std::cout << "Converting fan data to geo data..." << std::endl;
+    std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+
+    local_geo_sptrs.resize(num_threads, shared_ptr<FanProjData>());
+
+    for (int i = 0; i < num_threads; i++)
+      {
+        std::cout << "Allocated data to geo data... " << i<< std::endl;
+        local_geo_sptrs[i].reset(new FanProjData(fan_data.size(),
+                                               fan_data[0].size(),
+                                               fan_data[0][0].size(),
+                                               fan_data[0][0][0].size()));
+        local_geo_sptrs[i]->fill(0);
+      }
+    }
+    #endif
+
   FanProjData work = fan_data;
   work.fill(0);
-
-  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
-    for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
-      // 1// for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
-      for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
-        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+    std::cout << "Starting geo loops... This is  slow" << std::endl;
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic) collapse(2) num_threads(num_threads)
+#endif
+    for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+      {
+        for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
           {
-
-            const int ma = num_transaxial_detectors - 1 - a;
-            const int mb = (2 * num_transaxial_detectors - 1 - b) % num_transaxial_detectors;
-            const int mra = num_axial_detectors - 1 - ra;
-            const int mrb = (num_axial_detectors - 1 - rb);
-
-            if (ra != mra && rb != mrb)
-              work(ra, a, rb, b)
-                  = fan_data(ra, a, rb, b) + fan_data(ra, ma, rb, mb) + fan_data(mra, a, mrb, b) + fan_data(mra, ma, mrb, mb);
-            else
-              work(ra, a, rb, b) = fan_data(ra, a, rb, b) + fan_data(ra, ma, rb, mb);
-          }
-
-  geo_data.fill(0);
-
-  for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
-    //  for (int a = 0; a <= num_transaxial_detectors/2; ++a)
-    for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
-      // loop rb from ra to avoid double counting
-      // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
-      for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
-        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
-          {
-
-            // rotation
-
-            for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
+            // 1// for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+            for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
               {
-
-                for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
+                for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
                   {
 
-                    const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
-                    const int new_det_num_a = (a + transaxial_det_inc) % num_transaxial_detectors;
-                    const int new_det_num_b = (b + transaxial_det_inc) % num_transaxial_detectors;
-                    const int axial_det_inc = axial_block_num * num_axial_crystals_per_block;
-                    const int new_ring_num_a = ra + axial_det_inc;
-                    const int new_ring_num_b = rb + axial_det_inc;
-                    if (fan_data.is_in_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b))
-                      geo_data(ra, a, rb, b % num_transaxial_detectors)
-                          += work(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b);
+#ifdef STIR_OPENMP
+                  const int thread_num = omp_get_thread_num();
+#else
+                  const int thread_num = 0;
+#endif
+                    const int ma = num_transaxial_detectors - 1 - a;
+                    const int mb = (2 * num_transaxial_detectors - 1 - b) % num_transaxial_detectors;
+                    const int mra = num_axial_detectors - 1 - ra;
+                    const int mrb = (num_axial_detectors - 1 - rb);
+
+                    if (ra != mra && rb != mrb)
+                      (*local_geo_sptrs[thread_num])(ra, a, rb, b)
+                          = fan_data(ra, a, rb, b) + fan_data(ra, ma, rb, mb) + fan_data(mra, a, mrb, b) + fan_data(mra, ma, mrb, mb);
+                    else
+                      (*local_geo_sptrs[thread_num])(ra, a, rb, b) = fan_data(ra, a, rb, b) + fan_data(ra, ma, rb, mb);
                   }
               }
           }
+      }
+
+      std::cout<<"Now flattening the geo data ...This is very slow" << std::endl;
+    #ifdef STIR_OPENMP
+      // flatten data constructed by threads
+      {
+            for (int i = 0; i < static_cast<int>(local_geo_sptrs.size()); ++i)
+              if (!is_null_ptr(local_geo_sptrs[i])) // only accumulate if a thread filled something in
+                work+= (*local_geo_sptrs[i]);
+      }
+    #endif
+
+      local_geo_sptrs.clear();
+      geo_data.fill(0);
+
+      std::vector<shared_ptr<GeoData3D>> local_gg_sptrs;
+     num_threads = 30;
+#ifdef STIR_OPENMP
+#  pragma omp single
+
+      {
+        std::cout << "Converting fan data to fan GEO data..." << std::endl;
+        std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+
+        local_gg_sptrs.resize(num_threads, shared_ptr<GeoData3D>());
+
+        for (int i = 0; i < num_threads; i++)
+          {
+            std::cout << "Allocated data to fan sum data... " << i<< std::endl;
+            local_gg_sptrs[i].reset(new GeoData3D(geo_data.size(),
+                                                  geo_data[0].size(),
+                                                  geo_data[0][0].size(),
+                                                  geo_data[0][0][0].size()));
+            local_gg_sptrs[i]->fill(0);
+          }
+      }
+#endif
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic) collapse(4) num_threads(num_threads -1 )
+#endif
+      for (int axial_block_num = 0; axial_block_num < num_axial_blocks; ++axial_block_num)
+        {
+          for (int transaxial_block_num = 0; transaxial_block_num < num_transaxial_blocks; ++transaxial_block_num)
+            {
+              for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
+                //  for (int a = 0; a <= num_transaxial_detectors/2; ++a)
+                for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
+                  {
+                    // loop rb from ra to avoid double counting
+                    // for (int rb = fan_data.get_min_ra(); rb <= fan_data.get_max_ra(); ++rb)
+                    for (int rb = max(ra, fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+                      for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+                        {
+                          // rotation
+                          const int transaxial_det_inc = transaxial_block_num * num_transaxial_crystals_per_block;
+                          const int new_det_num_a = (a + transaxial_det_inc) % num_transaxial_detectors;
+                          const int new_det_num_b = (b + transaxial_det_inc) % num_transaxial_detectors;
+                          const int axial_det_inc = axial_block_num * num_axial_crystals_per_block;
+                          const int new_ring_num_a = ra + axial_det_inc;
+                          const int new_ring_num_b = rb + axial_det_inc;
+                          if (fan_data.is_in_data(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b))
+                            {
+#ifdef STIR_OPENMP
+                              const int thread_num = omp_get_thread_num();
+#else
+                              const int thread_num = 0;
+#endif
+                              (*local_gg_sptrs[thread_num])(ra, a, rb, b % num_transaxial_detectors)
+                                  += work(new_ring_num_a, new_det_num_a, new_ring_num_b, new_det_num_b);
+                            }
+                        }
+                  }
+            }
+        }
+
+  std::cout<<"Now flattening the final geo data ..." << std::endl;
+#ifdef STIR_OPENMP
+  // flatten data constructed by threads
+  {
+    for (int i = 0; i < static_cast<int>(local_gg_sptrs.size()); ++i)
+      if (!is_null_ptr(local_gg_sptrs[i])) // only accumulate if a thread filled something in
+        geo_data += (*local_gg_sptrs[i]);
+  }
+#endif
+
+  local_gg_sptrs.clear();
 }
 
 void
@@ -2129,8 +2213,12 @@ iterate_efficiencies(DetectorEfficiencies& efficiencies, const Array<2, float>& 
   assert(model.get_max_a() == data_fan_sums[data_fan_sums.get_min_index()].get_max_index());
 
   for (int ra = model.get_min_ra(); ra <= model.get_max_ra(); ++ra)
+    {
+      std::cout <<">> ra: " << ra << " from "<< model.get_min_ra() << " to " <<model.get_max_ra() << std::endl;
     for (int a = model.get_min_a(); a <= model.get_max_a(); ++a)
       {
+
+        // std::cout <<" >a: " << a << " from "<< model.get_min_a() << " to " <<model.get_max_a() << std::endl;
         if (data_fan_sums[ra][a] == 0)
           efficiencies[ra][a] = 0;
         else
@@ -2148,6 +2236,7 @@ iterate_efficiencies(DetectorEfficiencies& efficiencies, const Array<2, float>& 
             efficiencies[ra][a] = data_fan_sums[ra][a] / static_cast<float>(denominator);
           }
       }
+    }
 }
 
 // version without model
@@ -2208,24 +2297,69 @@ iterate_geo_norm(GeoData3D& norm_geo_data, const GeoData3D& measured_geo_data, c
   make_geo_data(norm_geo_data, model);
   // norm_geo_data = measured_geo_data / norm_geo_data;
 
+  std::vector<shared_ptr<GeoData3D>> local_geo_sptrs;
+  int num_threads = 10;
+#ifdef STIR_OPENMP
+#  pragma omp single
+  {
+    std::cout << "Converting fan data to geo data..." << std::endl;
+    std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+
+    local_geo_sptrs.resize(num_threads, shared_ptr<GeoData3D>());
+
+    for (int i = 0; i < num_threads; i++)
+      {
+        std::cout << "Allocated data to geo data... " << i<< std::endl;
+        local_geo_sptrs[i].reset(new GeoData3D(norm_geo_data.size(),
+                                               norm_geo_data[0].size(),
+                                               norm_geo_data[0][0].size(),
+                                               norm_geo_data[0][0][0].size()));
+        local_geo_sptrs[i]->fill(0);
+      }
+  }
+#endif
+
   const int num_axial_crystals_per_block = measured_geo_data.get_num_axial_crystals_per_block();
   const int num_transaxial_crystals_per_block = measured_geo_data.get_half_num_transaxial_crystals_per_block() * 2;
 
   const float threshold = measured_geo_data.find_max() / 10000.F;
 
+  std::cout << "Iterating over geo norm" << std::endl;
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic) collapse(2) num_threads(num_threads)
+#endif
   for (int ra = 0; ra < num_axial_crystals_per_block; ++ra)
-    for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
-      // loop rb from ra to avoid double counting
-      //   for (int rb = model.get_min_ra(); rb <= model.get_max_ra(); ++rb)
-      for (int rb = max(ra, model.get_min_rb(ra)); rb <= model.get_max_rb(ra); ++rb)
-        for (int b = model.get_min_b(a); b <= model.get_max_b(a); ++b)
-          {
+    {
+      for (int a = 0; a < num_transaxial_crystals_per_block / 2; ++a)
+        {
+          // loop rb from ra to avoid double counting
+          //   for (int rb = model.get_min_ra(); rb <= model.get_max_ra(); ++rb)
+#ifdef STIR_OPENMP
+          const int thread_num = omp_get_thread_num();
+#else
+          const int thread_num = 0;
+#endif
+          for (int rb = max(ra, model.get_min_rb(ra)); rb <= model.get_max_rb(ra); ++rb)
+            for (int b = model.get_min_b(a); b <= model.get_max_b(a); ++b)
+              {
 
-            norm_geo_data(ra, a, rb, b) = (measured_geo_data(ra, a, rb, b) >= threshold
-                                           || measured_geo_data(ra, a, rb, b) < 10000 * norm_geo_data(ra, a, rb, b))
-                                              ? measured_geo_data(ra, a, rb, b) / norm_geo_data(ra, a, rb, b)
-                                              : 0;
-          }
+                (*local_geo_sptrs[thread_num])(ra, a, rb, b) = (measured_geo_data(ra, a, rb, b) >= threshold
+                                                                || measured_geo_data(ra, a, rb, b) < 10000 * norm_geo_data(ra, a, rb, b))
+                                                                   ? measured_geo_data(ra, a, rb, b) / norm_geo_data(ra, a, rb, b)
+                                                                   : 0;
+              }
+        }
+    }
+
+  std::cout<<"Now flattening the geo data ..." << std::endl;
+#ifdef STIR_OPENMP
+  // flatten data constructed by threads
+  {
+    for (int i = 0; i < static_cast<int>(local_geo_sptrs.size()); ++i)
+      if (!is_null_ptr(local_geo_sptrs[i])) // only accumulate if a thread filled something in
+        norm_geo_data += *(local_geo_sptrs[i]);
+  }
+#endif
 }
 
 void
