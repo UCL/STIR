@@ -252,8 +252,7 @@ endif()
 
 # create an object library with all the "registries"
 # Warning: dependencies for object libraries are not transitive!
-add_library(stir_registries OBJECT ${STIR_REGISTRIES}
-    include/stir/LmCache.h)
+add_library(stir_registries OBJECT ${STIR_REGISTRIES})
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
