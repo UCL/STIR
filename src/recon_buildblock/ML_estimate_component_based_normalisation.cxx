@@ -125,12 +125,18 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
     }
 
   float model_fan_data_sum = 0;
+
   {
-    std::vector<float> local_model_fan_data_sum;
-    local_model_fan_data_sum.resize(omp_get_num_threads(), sizeof(float));
+    std::vector<shared_ptr<float>> local_model_fan_data_sum;
+    int num_threads = 50;
+    std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+
+    local_model_fan_data_sum.resize(num_threads, shared_ptr<float>());
+  for (int i = 0; i < num_threads; i++)
+      local_model_fan_data_sum[i].reset(new float(0.0));
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic) num_threads(num_threads)
 #endif
     for(int i = 0; i<model_fan_data.size(); i++)
       {
@@ -139,14 +145,16 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 #else
         const int thread_num = 0;
 #endif
-        local_model_fan_data_sum[thread_num] = model_fan_data[i].sum();
+        *local_model_fan_data_sum[thread_num] += model_fan_data[i].sum();
       }
 
     for(int i = 0; i < local_model_fan_data_sum.size(); ++i)
-      model_fan_data_sum +=local_model_fan_data_sum[i];
+      model_fan_data_sum += *local_model_fan_data_sum[i];
+
+    local_model_fan_data_sum.clear();
     std::cout << "Model sum: " <<  model_fan_data_sum << std::endl;
   }
-
+  std::cout << ">>><<<: " << std::endl;
   {
     // next could be local if KL is not computed below
     FanProjData measured_fan_data;
