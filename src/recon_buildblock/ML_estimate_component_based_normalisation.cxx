@@ -28,6 +28,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/ProjData.h"
+#include "stir/num_threads.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <string>
@@ -127,9 +128,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
   {
     std::vector<shared_ptr<float>> local_model_fan_data_sum;
-    int num_threads = 50;
-    std::cout << "We will be using " << num_threads
-              << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+    const int num_threads = std::min(50, get_default_num_threads());
 
     local_model_fan_data_sum.resize(num_threads, shared_ptr<float>());
     for (int i = 0; i < num_threads; i++)
