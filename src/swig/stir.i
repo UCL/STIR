@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2023 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2024 University College London
     Copyright (C) 2022 National Physical Laboratory
     Copyright (C) 2022 Positrigo
     This file is part of STIR.
@@ -155,6 +155,8 @@
 #include "stir/multiply_crystal_factors.h"
 #include "stir/decay_correction_factor.h"
 #include "stir/ML_norm.h"
+#include "stir/data/randoms_from_singles.h"
+#include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
 #include "stir/spatial_transformation/InvertAxis.h"
 
 #include "stir/scatter/ScatterEstimation.h"
@@ -1061,7 +1063,10 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir_reconstruction.i"
 
 %include "stir/multiply_crystal_factors.h"
+%include "stir/data/randoms_from_singles.h"
 %include "stir/decay_correction_factor.h"
+
+%include "stir_ML_norm.i"
 
 %shared_ptr(stir::ScatterSimulation);
 %shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
@@ -1080,16 +1085,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 
 %shared_ptr(stir::CreateTailMaskFromACFs);
 %include "stir/scatter/CreateTailMaskFromACFs.h"
-
-%shared_ptr(stir::FanProjData);
-%shared_ptr(stir::GeoData3D);
-%ignore operator<<;
-%ignore operator>>;
-%ignore stir::DetPairData::operator()(const int a, const int b) const;
-%ignore stir::DetPairData3D::operator()(const int a, const int b) const;
-%ignore stir::FanProjData::operator()(const int, const int, const int, const int) const;
-%ignore stir::GeoData3D::operator()(const int, const int, const int, const int) const;
-%include "stir/ML_norm.h"
 
 %shared_ptr(stir::InvertAxis);
 %include "stir/spatial_transformation/InvertAxis.h"
