@@ -93,6 +93,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
   FanProjData model_fan_data;
   FanProjData fan_data;
+  std::cout<<"Allocating ..." << std::endl;
   DetectorEfficiencies data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
   DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
@@ -100,13 +101,21 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                               num_physical_transaxial_crystals_per_basic_unit / 2,
                               num_physical_rings,
                               num_physical_detectors_per_ring); // inputes have to be modified
+
   GeoData3D norm_geo_data(num_physical_axial_crystals_per_basic_unit,
                           num_physical_transaxial_crystals_per_basic_unit / 2,
                           num_physical_rings,
                           num_physical_detectors_per_ring); // inputes have to be modified
 
-  BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
-  BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+  BlockData3D measured_block_data;
+  BlockData3D norm_block_data;
+
+  if(do_block)
+    {
+      measured_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+      norm_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+    }
+
 
   if (!use_model_fansums)
     make_fan_data_remove_gaps(model_fan_data, model_data);
@@ -115,10 +124,34 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
       load_fan_data(model_fan_data, model_data, model_fansums_filename);
     }
 
+  float model_fan_data_sum = 0;
+  {
+    std::vector<float> local_model_fan_data_sum;
+    local_model_fan_data_sum.resize(omp_get_num_threads(), sizeof(float));
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
+    for(int i = 0; i<model_fan_data.size(); i++)
+      {
+#ifdef STIR_OPENMP
+        const int thread_num = omp_get_thread_num();
+#else
+        const int thread_num = 0;
+#endif
+        local_model_fan_data_sum[thread_num] = model_fan_data[i].sum();
+      }
+
+    for(int i = 0; i < local_model_fan_data_sum.size(); ++i)
+      model_fan_data_sum +=local_model_fan_data_sum[i];
+    std::cout << "Model sum: " <<  model_fan_data_sum << std::endl;
+  }
+
   {
     // next could be local if KL is not computed below
     FanProjData measured_fan_data;
     float threshold_for_KL;
+    float data_fan_sum = 0;
     // compute factors dependent on the data
     {
 
@@ -147,10 +180,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
           make_geo_data(measured_geo_data, measured_fan_data);
           if (do_block)
             make_block_data(measured_block_data, measured_fan_data);
+
+          data_fan_sum = data_fan_sums.sum();
         }
       else // Use LM cache to make all data, not blocks for now.
         {
-          make_all_fan_data_from_cache(data_fan_sums, measured_geo_data, measured_data);
+          // TODO: The TEMP fix is not applied. So until then, keep the model source slightly bigger than the actual measuremnts
+          // to avoid divisions by zero.
+          data_fan_sum = make_all_fan_data_from_cache(data_fan_sums, measured_geo_data, measured_data);
           threshold_for_KL = data_fan_sums.find_max() / 100000000.F;
         }
       if (do_display && do_block)
@@ -185,8 +222,9 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
         std::cout << "Iteration number: " << iter_num << std::endl;
         if (iter_num == 1)
           {
-            std::cout << "Calculating sums: " << iter_num << std::endl;
-            efficiencies.fill(sqrt(data_fan_sums.sum() / model_fan_data.sum()));
+            std::cout << "Calculating sums: " << std::endl;
+            float value = sqrt(data_fan_sum / model_fan_data_sum);
+            efficiencies.fill(value);
             std::cout << "Finished sums." << iter_num << std::endl;
             norm_geo_data.fill(1);
             norm_block_data.fill(1);

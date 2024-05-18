@@ -205,7 +205,7 @@ private:
 
 typedef FanProjData BlockData3D;
 
-void make_all_fan_data_from_cache(
+float make_all_fan_data_from_cache(
                                   Array<2, float>& data_fan_sums,
                                   GeoData3D& geo_data,
                                   const ProjData& proj_data);
