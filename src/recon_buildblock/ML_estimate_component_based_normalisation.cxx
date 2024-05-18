@@ -28,6 +28,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/ProjData.h"
+#include "stir/num_threads.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <string>
@@ -51,7 +52,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                           bool do_KL,
                                           bool do_display,
                                           bool use_lm_cache,
-                                          bool use_model_fansums,
+                                          bool use_model_fan_data,
                                           std::string model_fansums_filename)
 {
 
@@ -93,7 +94,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
   FanProjData model_fan_data;
   FanProjData fan_data;
-  std::cout<<"Allocating ..." << std::endl;
+  std::cout << "Allocating ..." << std::endl;
   DetectorEfficiencies data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
   DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
@@ -110,14 +111,13 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
   BlockData3D measured_block_data;
   BlockData3D norm_block_data;
 
-  if(do_block)
+  if (do_block)
     {
       measured_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
       norm_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
     }
 
-
-  if (!use_model_fansums)
+  if (!use_model_fan_data)
     make_fan_data_remove_gaps(model_fan_data, model_data);
   else
     {
@@ -128,17 +128,16 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
   {
     std::vector<shared_ptr<float>> local_model_fan_data_sum;
-    int num_threads = 50;
-    std::cout << "We will be using " << num_threads << " threads... If your machine does not support that please contact sb from STIR" << std::endl;
+    const int num_threads = std::min(50, get_default_num_threads());
 
     local_model_fan_data_sum.resize(num_threads, shared_ptr<float>());
-  for (int i = 0; i < num_threads; i++)
+    for (int i = 0; i < num_threads; i++)
       local_model_fan_data_sum[i].reset(new float(0.0));
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(num_threads)
+#  pragma omp parallel for schedule(dynamic) num_threads(num_threads)
 #endif
-    for(int i = 0; i<model_fan_data.size(); i++)
+    for (int i = 0; i < model_fan_data.size(); i++)
       {
 #ifdef STIR_OPENMP
         const int thread_num = omp_get_thread_num();
@@ -148,11 +147,11 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
         *local_model_fan_data_sum[thread_num] += model_fan_data[i].sum();
       }
 
-    for(int i = 0; i < local_model_fan_data_sum.size(); ++i)
+    for (int i = 0; i < local_model_fan_data_sum.size(); ++i)
       model_fan_data_sum += *local_model_fan_data_sum[i];
 
     local_model_fan_data_sum.clear();
-    std::cout << "Model sum: " <<  model_fan_data_sum << std::endl;
+    std::cout << "Model sum: " << model_fan_data_sum << std::endl;
   }
   std::cout << ">>><<<: " << std::endl;
   {
@@ -265,7 +264,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             {
               std::cout << "Efficiency iteration number: " << iter_num << std::endl;
               iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
-               std::cout << "Finished efficiency iteration number: " << iter_num << std::endl;
+              std::cout << "Finished efficiency iteration number: " << iter_num << std::endl;
               {
                 char* out_filename = new char[out_filename_prefix.size() + 30];
                 sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
@@ -275,7 +274,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
               }
               if (do_KL)
                 {
-                  std::cout<< "Calculating KL" << std::endl;
+                  std::cout << "Calculating KL" << std::endl;
                   apply_efficiencies(fan_data, efficiencies);
                   std::cerr << "measured*norm min " << measured_fan_data.find_min() << " ,max " << measured_fan_data.find_max()
                             << std::endl;
