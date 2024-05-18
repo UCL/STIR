@@ -233,12 +233,13 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             std::cout << "Calculating sums: " << std::endl;
             float value = sqrt(data_fan_sum / model_fan_data_sum);
             efficiencies.fill(value);
-            std::cout << "Finished sums." << iter_num << std::endl;
+            std::cout << "Finished sums." << std::endl;
             norm_geo_data.fill(1);
             norm_block_data.fill(1);
           }
         // efficiencies
         {
+          std::cout << "Copying model to fan_data..." << std::endl;
           fan_data = model_fan_data;
           std::cout << "Applying geo norm..." << std::endl;
           apply_geo_norm(fan_data, norm_geo_data);
