@@ -211,6 +211,10 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
           tof_bin_boundaries_ps[0].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[0].low_lim));
           tof_bin_boundaries_ps[0].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[0].high_lim));
 
+          info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") % 0 % tof_bin_boundaries_mm[0].low_lim
+               % tof_bin_boundaries_mm[0].high_lim % tof_bin_boundaries_ps[0].low_lim % tof_bin_boundaries_ps[0].high_lim
+               % get_sampling_in_k(bin));
+
           return;
         }
 
