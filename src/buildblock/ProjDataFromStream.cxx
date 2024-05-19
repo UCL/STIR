@@ -79,7 +79,7 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_in
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 
-  if (proj_data_info_sptr->get_num_tof_poss() > 1)
+  if (proj_data_info_sptr->is_tof_data())
     activate_TOF();
 }
 
