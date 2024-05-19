@@ -1201,7 +1201,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
 
   // it's PET data if we get here
   // N.E. Added timing locations
-  const bool is_TOF = pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1;
+  const bool is_TOF = pdfs.get_proj_data_info_sptr()->is_tof_data();
   output_header << "number of dimensions := " + std::to_string(is_TOF ? 5 : 4) + "\n";
 
   // TODO support more ?
