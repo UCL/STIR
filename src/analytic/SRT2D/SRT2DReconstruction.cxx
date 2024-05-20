@@ -214,13 +214,18 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
 
   VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
   Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0, 0);
-  Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0, 0);
+  Viewgram<float> view = proj_data_ptr->get_viewgram(0, 0);
+  if (do_arc_correction)
+    {
+      // need to do this here to get correct dimensions
+      view = arc_correction.do_arc_correction(view);
+    }
   Viewgram<float> view1 = proj_data_ptr->get_empty_viewgram(0, 0);
   Viewgram<float> view_th = proj_data_ptr->get_empty_viewgram(0, 0);
   Viewgram<float> view1_th = proj_data_ptr->get_empty_viewgram(0, 0);
 
   // Retrieve runtime-dependent sizes
-  const int sp = proj_data_ptr->get_num_tangential_poss();
+  const int sp = view.get_num_tangential_poss();
   const int sth = proj_data_ptr->get_num_views();
   const int sa = proj_data_ptr->get_num_axial_poss(0);
   const int sx = image.get_x_size();
@@ -311,11 +316,13 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   // -----
   // special case of ith=0
   // -----
+  /* already done above for view 0
   view = proj_data_ptr->get_viewgram(0, 0);
   if (do_arc_correction)
     {
       view = arc_correction.do_arc_correction(view);
     }
+  */
   for (ia = 0; ia < sa; ia++)
     {
       for (ip = 0; ip < sp; ip++)
