@@ -100,19 +100,23 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # warning: currently OSMAPOSL needs to be run before OSSPS as 
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
-for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
+for recon in FBP2D FBP3DRP SRT2D OSMAPOSL OSSPS; do
   echo "========== Testing `command -v ${recon}`"
   for parfile in ${recon}_test_sim*.par; do
     for dataSuffix in "" "$TOF_suffix"; do
       echo "===== data suffix: \"$dataSuffix\""
       # test first if analytic reconstruction and if so, run pre-correction
-      isFBP=0
+      is_analytic=0
       if expr "$recon" : FBP > /dev/null; then
+        is_analytic=1
+      elif expr "$recon" : SRT > /dev/null; then
+        is_analytic=1
+      fi
+      if [ $is_analytic = 1 ]; then
         if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
-          echo "Skipping TOF as not yet supported for FBP"
+          echo "Skipping TOF as not yet supported for FBP etc"
           break
         fi
-        isFBP=1
         suffix=$zero_view_suffix
         export suffix
         echo "Running precorrection"
@@ -148,7 +152,7 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
       output_filename=`awk -F':='  '/output[ _]*filename[ _]*prefix/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' "$parfile"`
       # substitute env variables (e.g. to fill in suffix)
       output_filename=`eval echo "${output_filename}"`
-      if [ ${isFBP} -eq 0 ]; then
+      if [ ${is_analytic} -eq 0 ]; then
           # iterative algorithm, so we need to append the num_subiterations
           num_subiterations=`awk -F':='  '/number[ _]*of[ _]*subiterations/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
           output_filename=${output_filename}_${num_subiterations}
