@@ -30,7 +30,7 @@ Alternative:
 
 3. Install clang-format (but use correct version). At the time of writing, on Ubuntu 22.04, you can do
    ```sh
-    sudo apt install clang-format
+   sudo apt install clang-format
    ```
 
 ## Enable pre-commit hooks
