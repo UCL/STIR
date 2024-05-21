@@ -15,36 +15,37 @@ conda env create --file pre-commit-environment.yml
 conda activate pre-commit-env
 ```
 
-### Alternative
-You first need to have Python and pip
+Alternative:
 
-### Install [pre-commit](https://pre-commit.com)
-See https://pre-commit.com/#install but the following might work.
+1. Install Python and pip
 
-    pip install pre-commit
+2. Install [pre-commit](https://pre-commit.com). See https://pre-commit.com/#install but the following might work.
+   ```sh
+   pip install pre-commit
+   ```
+   If this fails with a permission error, try adding `--user` to the command. If that fails with a message about `PyYAML` and `distutils`, try
+   ```sh
+   pip install --ignore-installed PyYAML
+   ```
 
-If this fails with a permission error, try adding `--user` to the command.
-
-If that fails with a message about `PyYAML` and `distutils`, try
-
-    pip install --ignore-installed PyYAML
-
-### Install clang-format (correct version)
-At the time of writing, the `clang-format` version in `pre-commit-environment.yml`
-is the same default version in Ubuntu 22.04, so if you are using that, you could do
-
+3. Install clang-format (but use correct version). At the time of writing, on Ubuntu 22.04, you can do
+   ```sh
     sudo apt install clang-format
+   ```
 
 ## Enable pre-commit hooks
+
 ```sh
 cd /whereever/STIR
 pre-commit install
 ```
 
-If you need to work with a branch that was forked prior to in inclusion of clang-format, you will need to temporarily disable/uninstall pre-commit again:
+If you need to work with a branch that was forked prior to our use of `clang-format`, you will need to temporarily disable/uninstall pre-commit again:
 
     pre-commit uninstall
 
 or one-off with
 
     git commit --no-verify
+
+You will then need to run `pre-commit run --all-files` when done before we will merge your pull request.
