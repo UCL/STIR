@@ -2,6 +2,7 @@
 #define __stir_IO_read_data_H__
 /*
     Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
