@@ -8,11 +8,10 @@ jobs:
     name: pre-commit
     steps:
     - uses: actions/checkout@v4
-#    - name: Setup Node.js 20.x  # Ensuring Node.js 20 is set up
-#      uses: actions/setup-node@v3
-#      with:
-#        node-version: '20.x'  # Use Node.js 20.x
-    
-    - uses: actions/setup-python@v5
-    - run: sudo apt-get install -yqq clang-format
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+          activate-environment: pre-commit-env
+          environment-file: pre-commit-environment.yml
+          auto-activate-base: false
+
     - uses: pre-commit/action@v3.0.0

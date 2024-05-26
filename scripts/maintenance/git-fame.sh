@@ -17,6 +17,7 @@
 # Note that various files were apparently not in git before 2003 (rel_1_10) (they were in CVS).
 # Also, some files did not have correct authorship.
 # The output therefore needs manual ordering (see below)
+git config --local blame.ignoreRevsFile .git-blame-ignore-revs
 git fame -wMC  --excl '\.(eps|root|ahv|hv|v|hs|s|scan|l|hdr|rtf|gz|if|pdf|safir|options|png|cls|sty)$|external_helpers|crystal_map|collimator.*txt|Doxyfile.in|LICENSE.txt|LICENSES' \
   | tee git-fame-output.txt
 exit
