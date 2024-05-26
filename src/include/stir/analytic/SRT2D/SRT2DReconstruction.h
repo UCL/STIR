@@ -17,7 +17,7 @@
   \brief declares the stir::SRT2DReconstruction class
 
   \author Dimitra Kyriakopoulou
-
+  \author Kris Thielemans 
 */
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
@@ -62,7 +62,7 @@ public:
 
   SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
                       const int num_segments_to_combine = -1,
-                      const float zoom = 1,
+                     //const float zoom = 0.5,
                       const int filter_wiener = 1,
                       const int filter_median = 0,
                       const int filter_gamma = 1);
@@ -88,8 +88,8 @@ protected: // make parameters protected such that doc shows always up in doxygen
       2 (filtered-viewgrams). Defaults to 0.
    */
   int display_level;
-  float zoom;
-  int filter_wiener;
+  //float zoom;
+  int filter_wiener; 
   int filter_median;
   int filter_gamma;
 
