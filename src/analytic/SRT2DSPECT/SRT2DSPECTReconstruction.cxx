@@ -13,6 +13,7 @@
   \brief Implementation of class stir::SRT2DSPECTReconstruction
 
   \author Dimitra Kyriakopoulou
+  \author Kris Thielemans
 */
 
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
@@ -26,14 +27,14 @@
 #include "stir/Viewgram.h"
 #include <math.h>
 #include "stir/Bin.h"
-#include "stir/round.h"
-#include "stir/display.h"
+#include "stir/round.h" 
+#include "stir/display.h" 
 #include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
 
-#include "stir/SegmentByView.h"
+#include "stir/SegmentByView.h" 
 #include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
 
@@ -222,11 +223,18 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
   density_ptr->fill(0);
   Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0, 0);
-  Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0, 0);
+ // Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0, 0);
+ Viewgram<float> view = proj_data_ptr->get_viewgram(0, 0);
+  if (do_arc_correction)
+    {
+      // need to do this here to get correct dimensions
+      view = arc_correction.do_arc_correction(view);
+    }
+
   Viewgram<float> view_atten = atten_data_ptr->get_empty_viewgram(0, 0);
 
   // Retrieve runtime-dependent sizes
-  const int sp = proj_data_ptr->get_num_tangential_poss();
+  const int sp = view.get_num_tangential_poss(); //const int sp = proj_data_ptr->get_num_tangential_poss();
   const int sth = proj_data_ptr->get_num_views();
   const int sa = proj_data_ptr->get_num_axial_poss(0);
 
@@ -239,8 +247,9 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   // c The rest of the variables used by the program.
   // c ----------------------------------------------
   int i, j, k1, k2;
-
+  int ith,ia, ip, ix1, ix2;   //extra
   float aux, a, b, f_node;
+  float x; //extra
 
   const int image_min_x = image.get_min_x();
   const int image_min_y = image.get_min_y();
@@ -358,7 +367,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
         }
       for (int ia = 0; ia < sa; ia++)
         {
-          for (int ip = 0; ip < sp; ip++)
+          for (int ip = 0; ip < sp; ip++) 
             {
               ddf1_cache[ia][it][sp - ip - 1] = ddf_cache[ia][it][ip];
             }
@@ -367,57 +376,14 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 
 //-- Starting calculations per view
 // 2D algorithm only
+// At the moment, the parallelization produces artifacts that the non-parallelized version does not have. Therefore, I must be doing something wrong ... 
 #ifdef STIR_OPENMP
-#  pragma omp parallel shared(view, do_arc_correction, arc_correction, p, th, x1, x2, f_cache, ddf_cache, image) private(        \
-      g,                                                                                                                         \
-      f,                                                                                                                         \
-      ddg,                                                                                                                       \
-      ddf,                                                                                                                       \
-      hilb,                                                                                                                      \
-      fcpe,                                                                                                                      \
-      fspe,                                                                                                                      \
-      fc,                                                                                                                        \
-      fs,                                                                                                                        \
-      ddfc,                                                                                                                      \
-      ddfs,                                                                                                                      \
-      aux,                                                                                                                       \
-      rho,                                                                                                                       \
-      lg,                                                                                                                        \
-      tau,                                                                                                                       \
-      a,                                                                                                                         \
-      b,                                                                                                                         \
-      tau1,                                                                                                                      \
-      tau2,                                                                                                                      \
-      w,                                                                                                                         \
-      rho1,                                                                                                                      \
-      rho2,                                                                                                                      \
-      lg1_cache,                                                                                                                 \
-      lg2_cache,                                                                                                                 \
-      f_node,                                                                                                                    \
-      h,                                                                                                                         \
-      fcme_fin,                                                                                                                  \
-      fsme_fin,                                                                                                                  \
-      fcpe_fin,                                                                                                                  \
-      fspe_fin,                                                                                                                  \
-      gx,                                                                                                                        \
-      fc_fin,                                                                                                                    \
-      fs_fin,                                                                                                                    \
-      hc_fin,                                                                                                                    \
-      hs_fin,                                                                                                                    \
-      rx1x2th,                                                                                                                   \
-      dh1,                                                                                                                       \
-      dh2,                                                                                                                       \
-      Ft1,                                                                                                                       \
-      Ft2,                                                                                                                       \
-      F,                                                                                                                         \
-      I,                                                                                                                         \
-      rx1,                                                                                                                       \
-      rx2)
+#  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux, rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx, fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \
+    shared(view, view_atten, do_arc_correction, arc_correction, p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2)
 #  pragma omp for schedule(dynamic) nowait
-#endif
-  for (int ith = 0; ith < sth; ith++)
+#endif 
+  for (ith = 0; ith < sth; ith++)
     {
-
       info(boost::format("View %d of %d") % ith % sth);
 
 //-- Loading the viewgram
@@ -432,27 +398,29 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
             view = arc_correction.do_arc_correction(view);
             view_atten = arc_correction.do_arc_correction(view_atten);
           }
-        for (int ia = 0; ia < sa; ia++)
+      for (ia = 0; ia < sa; ia++)
           {
-            for (int ip = 0; ip < sp; ip++)
+ 
+            for (ip = 0; ip < sp; ip++)
               {
                 g[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
                 f[ia][ip]
-                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip] * .15;
-              }
+                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]* .15;             
+							}
           }
+
       }
       //-- Calculation of second derivative by use of function spline
-      for (int ia = 0; ia < sa; ia++)
+      for (ia = 0; ia < sa; ia++)
         {
           spline(p, g[ia], sp, ddg[ia]);
           spline(p, f[ia], sp, ddf[ia]);
         }
 
       //---- calculate h(rho,theta) for all rho, theta
-      for (int ia = 0; ia < sa; ia++)
+      for (ia = 0; ia < sa; ia++)
         {
-          for (int ip = 0; ip < sp; ip++)
+          for (ip = 0; ip < sp; ip++)
             {
               hilb[ia][ip] = hilbert_node(p[ip], f[ia], ddf[ia], p, sp, f[ia][ip]);
 
@@ -468,12 +436,12 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
         }
 
       //---- calculate r(x1, x2, theta)
-      for (int ix1 = 0; ix1 < sx; ix1++)
+      for (ix1 = 0; ix1 < sx; ix1++)
         {
-          for (int ix2 = 0; ix2 < sy; ix2++)
+          for (ix2 = 0; ix2 < sy; ix2++)
             {
-              aux = sqrt(1.0 - x2[ix2] * x2[ix2]);
-              if (fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux)
+              aux = sqrt(1. - x2[ix2] * x2[ix2]);
+              if (fabs(x2[ix2]) >= 1. || fabs(x1[ix1]) >= aux)
                 continue;
 
               rho = x2[ix2] * cos(th[ith]) - x1[ix1] * sin(th[ith]);
@@ -486,7 +454,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               float C = 1.0 / 6 * (A * A * A - A) * (p2 - p1) * (p2 - p1);
               float D = 1.0 / 6 * (B * B * B - B) * (p2 - p1) * (p2 - p1);
 
-              for (int ip = 0; ip < sp; ip++)
+              for (ip = 0; ip < sp; ip++)
                 {
                   double val = fabs(rho - p[ip]);
                   lg[ip] = val < 2e-6 ? 0. : std::log(val); // Using std::log to specify the namespace
@@ -514,7 +482,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   rho1 = tau1 * sin(th[ith] - t[it]) + rho * cos(th[ith] - t[it]);
                   rho2 = tau2 * sin(th[ith] - t[it]) + rho * cos(th[ith] - t[it]);
 
-                  for (int ip = 0; ip < sp - 1; ip++)
+                  for (ip = 0; ip < sp - 1; ip++)
                     {
                       lg1_cache[it][ip] = log(fabs((p[ip + 1] - rho1) / (p[ip] - rho1)));
                       if (fabs(p[ip + 1] - rho1) < 2e-6 || fabs(p[ip] - rho1) < 2e-6)
@@ -523,12 +491,12 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                       if (fabs(p[ip + 1] - rho2) < 2e-6 || fabs(p[ip] - rho2) < 2e-6)
                         lg2_cache[it][ip] = 0.;
                     }
-                }
+                } 
 
-              for (int ia = 0; ia < sa; ia++)
+              for (ia = 0; ia < sa; ia++)
                 {
                   // if(ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue;
-
+									
                   f_node = A * f[ia][i] + B * f[ia][i + 1] + C * ddf[ia][i] + D * ddf[ia][i + 1];
 
                   // calculate fcme, fsme, fc, fs, hc, hs
@@ -548,8 +516,11 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   hc_fin = hilbert(rho, fc[ia], ddfc[ia], p, sp, lg);
                   hs_fin = hilbert(rho, fs[ia], ddfs[ia], p, sp, lg);
 
+                  //rx1x2th[ia][ix1][ix2]
+                  //    = fcme_fin * (1.0 / M_PI * hc_fin + 2.0 * fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - 2.0 * fc_fin);
                   rx1x2th[ia][ix1][ix2]
-                      = fcme_fin * (1.0 / M_PI * hc_fin + 2.0 * fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - 2.0 * fc_fin);
+                      = fcme_fin * (1.0 / M_PI * hc_fin + fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - fc_fin);
+
 
                   // calculate I
                   for (int it = 0; it < Nt / 2; it++)
@@ -582,24 +553,19 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   Ft2 = -1.0 / (4.0 * M_PI * M_PI) * integ(2 * M_PI, Nt, dh2);
                   F = w * Ft1 + w * Ft2;
 
-                  // if(tau>=0) {
-                  //	I = exp(F);
-                  // } else {
                   I = exp(f_node - F);
-                  //}
 
-                  // calculate r
                   rx1x2th[ia][ix1][ix2] = I * rx1x2th[ia][ix1][ix2];
                 }
             }
         }
 
       //---- calculate g(x1, x2)
-      for (int ia = 0; ia < sa; ia++)
+      for (ia = 0; ia < sa; ia++)
         {
-          for (int ix1 = 0; ix1 < sx; ix1++)
+          for (ix1 = 0; ix1 < sx; ix1++)
             {
-              for (int ix2 = 0; ix2 < sy; ix2++)
+              for (ix2 = 0; ix2 < sy; ix2++)
                 {
                   aux = sqrt(1.0 - x2[ix2] * x2[ix2]);
                   if (fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux)
@@ -640,6 +606,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
             }
         }
     } // slice
+
 
   // apply Wiener filter
   if (filter_wiener != 0)
