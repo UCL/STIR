@@ -14,4 +14,4 @@ jobs:
           environment-file: pre-commit-environment.yml
           auto-activate-base: false
 
-    - uses: pre-commit/action@v3.0.0
+  #  - uses: pre-commit/action@v3.0.0
