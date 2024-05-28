@@ -24,6 +24,7 @@
 */
 
 #include "stir/ProjDataInMemory.h"
+#include "stir/copy_fill.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/SegmentByView.h"
@@ -94,7 +95,7 @@ copy_data_from_buffer(const Array<1, float>& buffer, Array<num_dimensions, float
 #endif
   {
     const float* ptr = buffer.get_const_data_ptr() + offset;
-    std::copy(ptr, ptr + array.size_all(), array.begin_all());
+    fill_from(array, ptr, ptr + array.size_all());
     buffer.release_const_data_ptr();
   }
 }
@@ -108,7 +109,7 @@ copy_data_to_buffer(Array<1, float>& buffer, const Array<num_dimensions, float>&
 #endif
   {
     float* ptr = buffer.get_data_ptr() + offset;
-    std::copy(array.begin_all(), array.end_all(), ptr);
+    copy_to(array, ptr);
     buffer.release_data_ptr();
   }
 }
