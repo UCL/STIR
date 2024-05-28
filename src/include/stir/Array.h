@@ -229,13 +229,15 @@ public:
   //! return minimum of all the elements
   inline elemT find_min() const;
 
-  //! Fill elements with value n (overrides VectorWithOffset::fill)
+  //! Fill elements with value \c n
+  /*!
+    hides VectorWithOffset::fill
+   */
   inline void fill(const elemT& n);
-
-  //! Sets elements below value to the value (overrides VectorWithOffset::fill)
+  //! Sets elements below value to the value
   inline void apply_lower_threshold(const elemT& l);
 
-  //! Sets elements above value to the value (overrides VectorWithOffset::fill)
+  //! Sets elements above value to the value
   inline void apply_upper_threshold(const elemT& u);
 
   //! checks if the index range is 'regular'
