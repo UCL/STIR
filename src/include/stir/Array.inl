@@ -24,6 +24,7 @@
 // include for min,max definitions
 #include <algorithm>
 #include "stir/assign.h"
+#include "stir/HigherPrecision.h"
 #include "stir/error.h"
 //#include "stir/info.h"
 //#include <string>
@@ -322,11 +323,11 @@ elemT
 Array<num_dimensions, elemT>::sum() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum();
-  return acc;
+  return static_cast<elemT>(acc);
 }
 
 template <int num_dimensions, typename elemT>
@@ -334,11 +335,11 @@ elemT
 Array<num_dimensions, elemT>::sum_positive() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum_positive();
-  return acc;
+  return static_cast<elemT>(acc);
 }
 
 template <int num_dimensions, typename elemT>
@@ -711,11 +712,11 @@ elemT
 Array<1, elemT>::sum() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
   for (int i = this->get_min_index(); i <= this->get_max_index(); acc += this->num[i++])
     {}
-  return acc;
+  return static_cast<elemT>(acc);
 };
 
 template <class elemT>
@@ -723,14 +724,14 @@ elemT
 Array<1, elemT>::sum_positive() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     {
       if (this->num[i] > 0)
         acc += this->num[i];
     }
-  return acc;
+  return static_cast<elemT>(acc);
 };
 
 template <class elemT>

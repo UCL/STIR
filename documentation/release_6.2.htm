@@ -43,11 +43,20 @@
 
 <h3>New functionality</h3>
 <ul>
+  <li>
+    <code>ProjDataInMemory</code> now has same methods for numerical operations as <code>Array</code>,
+    i.e. =,-,*,/,+=,-=,*=,/=,<code>find_max()</code>,<code>find_min()</code>,<code>sum()</code>.<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
+  </li>
 </ul>
 
 
 <h3>Changed functionality</h3>
 <ul>
+  <li>
+    <code>Array::sum()</code> (and hence images etc) now accumulates in a variable at higher precision to avoid loss of precision.<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
+  </li>
 </ul>
 
 
