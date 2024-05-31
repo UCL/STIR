@@ -30,6 +30,7 @@
 #include "stir/SegmentByView.h"
 #include "stir/Bin.h"
 #include "stir/is_null_ptr.h"
+#include "stir/numerics/norm.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -359,6 +360,148 @@ void
 ProjDataInMemory::set_bin_value(const Bin& bin)
 {
   buffer[this->get_index(bin)] = bin.get_bin_value();
+}
+
+float
+ProjDataInMemory::sum() const
+{
+  return buffer.sum();
+}
+
+float
+ProjDataInMemory::find_max() const
+{
+  return buffer.find_max();
+}
+
+float
+ProjDataInMemory::find_min() const
+{
+  return buffer.find_min();
+}
+
+double
+ProjDataInMemory::norm() const
+{
+  return stir::norm(this->buffer);
+}
+
+double
+ProjDataInMemory::norm_squared() const
+{
+  return stir::norm_squared(this->buffer);
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator+=(const ProjDataInMemory& v)
+{
+  this->buffer += v.buffer;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator-=(const ProjDataInMemory& v)
+{
+  this->buffer -= v.buffer;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator*=(const ProjDataInMemory& v)
+{
+  this->buffer *= v.buffer;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator/=(const ProjDataInMemory& v)
+{
+  this->buffer /= v.buffer;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator+=(const float v)
+{
+  this->buffer += v;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator-=(const float v)
+{
+  this->buffer -= v;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator*=(const float v)
+{
+  this->buffer *= v;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator/=(const float v)
+{
+  this->buffer /= v;
+  return *this;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator+(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c += iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator-(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c -= iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator*(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c *= iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator/(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c /= iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator+(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c += a;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator-(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c -= a;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator*(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c *= a;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator/(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c /= a;
 }
 
 void

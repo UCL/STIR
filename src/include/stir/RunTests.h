@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2005, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
-    Copyright (C) 2013, 2020, 2022, 2023 University College London
+    Copyright (C) 2013, 2020, 2022, 2023, 2024 University College London
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
@@ -27,6 +27,7 @@
 #include "stir/stream.h"
 #include "stir/Bin.h"
 #include "stir/DetectionPosition.h"
+#include "stir/ProjDataInMemory.h"
 #include <iostream>
 #include <typeinfo>
 #include <vector>
@@ -178,6 +179,8 @@ public:
       }
     return all_equal;
   }
+
+  bool check_if_equal(const ProjDataInMemory& t1, const ProjDataInMemory& t2, const std::string& str = "");
 
   // VC 6.0 needs definition of template members in the class def unfortunately.
   template <int n>
@@ -432,6 +435,25 @@ RunTests::check_if_equal(const unsigned long long a, const unsigned long long b,
   return this->check_if_equal_generic(a, b, str);
 }
 #endif
+
+bool
+RunTests::check_if_equal(const ProjDataInMemory& t1, const ProjDataInMemory& t2, const std::string& str)
+{
+  if (*t1.get_proj_data_info_sptr() != *t2.get_proj_data_info_sptr())
+    {
+      std::cerr << "Error: unequal proj_data_info. " << str << std::endl;
+      return everything_ok = false;
+    }
+
+  for (auto i1 = t1.begin(), i2 = t2.begin(); i1 != t1.end(); ++i1, ++i2)
+    {
+      if (!check_if_equal(*i1, *i2, str))
+        {
+          return everything_ok = false;
+        }
+    }
+  return true;
+}
 
 bool
 RunTests::check_if_zero(const short a, const std::string& str)
