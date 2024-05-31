@@ -43,7 +43,9 @@
 
 #include "stir/ArrayFunction.h"
 #include "stir/array_index_functions.h"
+#include "stir/copy_fill.h"
 #include <functional>
+#include <algorithm>
 
 // for open_read/write_binary
 #include "stir/utilities.h"
@@ -730,6 +732,28 @@ ArrayTests::run_tests()
       {
         Array<3, float>::full_iterator titer = test.begin_all();
         Array<3, float>::const_full_iterator ctiter = titer; // this should compile
+      }
+    }
+    // fill_from/copy_to
+    {
+      // make data a bit more interesting
+      std::iota(test3.begin_all(), test3.end_all(), 1.5F);
+      // regular
+      {
+        Array<3, float> data_to_fill(test3.get_index_range());
+        fill_from(data_to_fill, test3.begin_all(), test3.end_all());
+        check_if_equal(test3, data_to_fill, "test on 3D fill_from");
+        copy_to(test3, data_to_fill.begin_all());
+        check_if_equal(test3, data_to_fill, "test on 3D copy_to");
+      }
+      // irregular
+      {
+        test3[0][1].resize(-1, 2);
+        Array<3, float> data_to_fill(test3.get_index_range());
+        fill_from(data_to_fill, test3.begin_all(), test3.end_all());
+        check_if_equal(test3, data_to_fill, "test on 3D fill_from, irregular range");
+        copy_to(test3, data_to_fill.begin_all());
+        check_if_equal(test3, data_to_fill, "test on 3D copy_to, irregular range");
       }
     }
   }
