@@ -4,7 +4,7 @@
   \file
   \ingroup utilities
 
-\brief Construct FanProjData from ProjData
+\brief Construct stir::FanProjData from stir::ProjData
 
 \author Nikos Efthimiou
 

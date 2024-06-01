@@ -94,7 +94,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
   FanProjData model_fan_data;
   FanProjData fan_data;
-  std::cout << "Allocating ..." << std::endl;
+  info("Allocating memory ...", 3);
   DetectorEfficiencies data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
   DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
@@ -151,9 +151,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
       model_fan_data_sum += *local_model_fan_data_sum[i];
 
     local_model_fan_data_sum.clear();
-    std::cout << "Model sum: " << model_fan_data_sum << std::endl;
+    info("Model sum of fan data: " + std::to_string(model_fan_data_sum), 3);
   }
-  std::cout << ">>><<<: " << std::endl;
   {
     // next could be local if KL is not computed below
     FanProjData measured_fan_data;
@@ -196,16 +195,16 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
           // to avoid divisions by zero.
           data_fan_sum = make_all_fan_data_from_cache(measured_fan_data, measured_data, model_fan_data);
           float dd = data_fan_sums.find_max();
-          std::cout << "Data fan sum max " << dd << std::endl;
+          info("Data fan sum max: " + std::to_string(dd), 3);
           threshold_for_KL =dd / 100000000.F;
 
-          std::cout << "1. Making fan sum data .. " << std::endl;
+          info("1. Making fan sum data .. ", 3);
           make_fan_sum_data(data_fan_sums, measured_fan_data);
-          std::cout << "fan sum data min/max " <<  data_fan_sums.find_min() << " " << data_fan_sums.find_max() << std::endl;
+          info("fan sum data min/max " + std::to_string(data_fan_sums.find_min()) + "/" + std::to_string(data_fan_sums.find_max()), 3);
 
-          std::cout << "2. Making fan geo data .. " << std::endl;
+          info("2. Making fan geo data .. ", 3);
           make_geo_data(measured_geo_data, measured_fan_data);
-          std::cout << "measured_geo_data min/max " <<  measured_geo_data.find_min() << " " << measured_geo_data.find_max() << std::endl;
+           info("measured_geo_data min/max " + std::to_string(measured_geo_data.find_min()) + "/" + std::to_string(measured_geo_data.find_max()), 3);;
         }
       if (do_display && do_block)
         display(measured_block_data, "raw block data from measurements");
@@ -239,32 +238,31 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
         std::cout << "Iteration number: " << iter_num << std::endl;
         if (iter_num == 1)
           {
-            std::cout << "Calculating sums: " << std::endl;
+            info("Calculating sums om fan_data ...", 3);
             float value = sqrt(data_fan_sum / model_fan_data_sum);
-            std::cout << "Ratio: " << value << std::endl;
+            info("Ratio: " + std::to_string(value), 3);
             efficiencies.fill(value);
-            std::cout << "Finished sums." << std::endl;
             norm_geo_data.fill(1);
             norm_block_data.fill(1);
           }
         // efficiencies
         {
-          std::cout << "Copying model to fan_data..." << std::endl;
+          info("Copying model to fan_data...", 3);
           fan_data = model_fan_data;
-          std::cout << "Applying geo norm..." << std::endl;
+          info("Applying geo norm...", 3);
           apply_geo_norm(fan_data, norm_geo_data);
           if (do_block)
             {
-              std::cout << "Applying block norm..." << std::endl;
+              info("Applying block norm...", 3);
               apply_block_norm(fan_data, norm_block_data);
             }
           if (do_display)
             display(fan_data, "model*geo*block");
           for (int eff_iter_num = 1; eff_iter_num <= num_eff_iterations; ++eff_iter_num)
             {
-              std::cout << "Efficiency iteration number: " << iter_num << std::endl;
+              info("Efficiency iteration number: " + std::to_string(iter_num), 3);
               iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
-              std::cout << "Finished efficiency iteration number: " << iter_num << std::endl;
+              info("Finished efficiency iteration", 3);
               {
                 char* out_filename = new char[out_filename_prefix.size() + 30];
                 sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
@@ -274,7 +272,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
               }
               if (do_KL)
                 {
-                  std::cout << "Calculating KL" << std::endl;
+                  info("Calculating KL", 3);
                   apply_efficiencies(fan_data, efficiencies);
                   std::cerr << "measured*norm min " << measured_fan_data.find_min() << " ,max " << measured_fan_data.find_max()
                             << std::endl;
@@ -302,8 +300,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             }
         } // end efficiencies
 
-        std::cout << "geo norm" << std::endl;
-        std::cout << "Copying model to fan_data..." << std::endl;
+        info("Starting geo norm", 3);
+        info("Copying model to fan_data...", 3);
         fan_data = model_fan_data;
         apply_efficiencies(fan_data, efficiencies);
         if (do_block)
