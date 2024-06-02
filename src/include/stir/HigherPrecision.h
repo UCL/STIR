@@ -11,12 +11,12 @@
 /*!
   \file
   \ingroup buildblock
-  \brief class HigherPrecision
+  \brief class stir::HigherPrecision
 
   \author Kris Thielemans
 */
 #ifndef __stir_HigherPrecision__H__
-#  define _stir_HigherPrecision__H__
+#  define __stir_HigherPrecision__H__
 
 #  include "stir/common.h"
 #  include <complex>
@@ -25,6 +25,8 @@ START_NAMESPACE_STIR
 
 //! Helper class to get a type with higher precision
 /*! Specialisations convert float to double, and double to long double
+
+  \ingroup buildblock
  */
 template <class T>
 struct HigherPrecision
