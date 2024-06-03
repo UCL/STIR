@@ -256,8 +256,10 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                 Bin out_bin(out_segment_num, 0, out_ax_pos_num, 0, out_timing_pos_num);
 
                 // get edges of TOF bin, currently only exposed via sampling
-                const float out_lower_k = out_proj_data_info_sptr->get_k(out_bin) - out_proj_data_info_sptr->get_sampling_in_k(out_bin)/2;
-                const float out_higher_k = out_proj_data_info_sptr->get_k(out_bin) + out_proj_data_info_sptr->get_sampling_in_k(out_bin)/2;
+                const float out_lower_k
+                    = out_proj_data_info_sptr->get_k(out_bin) - out_proj_data_info_sptr->get_sampling_in_k(out_bin) / 2;
+                const float out_higher_k
+                    = out_proj_data_info_sptr->get_k(out_bin) + out_proj_data_info_sptr->get_sampling_in_k(out_bin) / 2;
 
                 for (int in_timing_pos_num = in_proj_data.get_min_tof_pos_num();
                      in_timing_pos_num <= in_proj_data.get_max_tof_pos_num();
@@ -274,13 +276,13 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                             ++num_in_ax_pos;
 
                             in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num, false, in_timing_pos_num);
-                            
+
                             Bin in_bin(in_segment_num, 0, in_ax_pos_num, 0, in_timing_pos_num);
                             const float in_k = in_proj_data_info_sptr->get_k(in_bin);
-                            
+
                             // check if in_timing_pos_num is in the range for the out bin or not
                             if (in_k < out_lower_k || in_k >= out_higher_k)
-                            continue;
+                              continue;
                             for (int in_view_num = in_proj_data.get_min_view_num();
                                  in_view_num <= in_proj_data.get_max_view_num();
                                  ++in_view_num)
