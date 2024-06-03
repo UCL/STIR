@@ -214,7 +214,7 @@ typename VectorWithOffset<T>::reverse_iterator
 VectorWithOffset<T>::rbegin()
 {
   this->check_state();
-  return boost::make_reverse_iterator(end());
+  return std::make_reverse_iterator(end());
 }
 
 template <class T>
@@ -222,7 +222,7 @@ typename VectorWithOffset<T>::const_reverse_iterator
 VectorWithOffset<T>::rbegin() const
 {
   this->check_state();
-  return boost::make_reverse_iterator(end());
+  return std::make_reverse_iterator(end());
 }
 
 template <class T>
@@ -230,7 +230,7 @@ typename VectorWithOffset<T>::reverse_iterator
 VectorWithOffset<T>::rend()
 {
   this->check_state();
-  return boost::make_reverse_iterator(begin());
+  return std::make_reverse_iterator(begin());
 }
 
 template <class T>
@@ -238,7 +238,7 @@ typename VectorWithOffset<T>::const_reverse_iterator
 VectorWithOffset<T>::rend() const
 {
   this->check_state();
-  return boost::make_reverse_iterator(begin());
+  return std::make_reverse_iterator(begin());
 }
 
 template <class T>
