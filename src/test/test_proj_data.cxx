@@ -111,23 +111,39 @@ ProjDataTests::run_tests_on_proj_data(ProjData& proj_data)
     // fill with values 0, 1, 2, ... to have something non-trivial
     std::iota(proj_data2.begin(), proj_data2.end(), 0.F);
     proj_data.fill(proj_data2);
+    const auto norm2 = proj_data2.norm();
     ProjDataInMemory proj_data3(proj_data2);
-    // check if equal by subtracting
-    proj_data3.sapyb(1.F, proj_data2, -1.F);
-    check(norm(proj_data3.begin(), proj_data3.end()) <= 0.0001F * norm(proj_data2.begin(), proj_data2.end()),
-          "fill(ProjDataInMemory&");
+    {
+      const auto norm3 = proj_data3.norm();
+      // check if equal by subtracting
+      proj_data3.sapyb(1.F, proj_data2, -1.F);
+      const auto normdiff = proj_data3.norm();
+      check(normdiff <= 0.0001F * norm2,
+            "fill(ProjDataInMemory&): norms org " + std::to_string(norm2) + " filled " + std::to_string(norm3) + " diff "
+                + std::to_string(normdiff));
+    }
     // test fill_from
-    fill_from(proj_data3, proj_data2.begin_all(), proj_data2.end_all());
-    // check if equal by subtracting
-    proj_data3.sapyb(1.F, proj_data2, -1.F);
-    check(norm(proj_data3.begin(), proj_data3.end()) <= 0.0001F * norm(proj_data2.begin(), proj_data2.end()),
-          "fill_from(ProjDataInMemory&");
+    {
+      fill_from(proj_data3, proj_data2.begin_all(), proj_data2.end_all());
+      const auto norm3 = proj_data3.norm();
+      // check if equal by subtracting
+      proj_data3.sapyb(1.F, proj_data2, -1.F);
+      const auto normdiff = proj_data3.norm();
+      check(normdiff <= 0.0001F * norm2,
+            "fill_from(ProjDataInMemory&): norms org " + std::to_string(norm2) + " filled " + std::to_string(norm3) + " diff "
+                + std::to_string(normdiff));
+    }
     // test copy_to
-    copy_to(proj_data2, proj_data3.begin_all());
-    // check if equal by subtracting
-    proj_data3.sapyb(1.F, proj_data2, -1.F);
-    check(norm(proj_data3.begin(), proj_data3.end()) <= 0.0001F * norm(proj_data2.begin(), proj_data2.end()),
-          "copy_to(ProjDataInMemory&");
+    {
+      copy_to(proj_data2, proj_data3.begin_all());
+      const auto norm3 = proj_data3.norm();
+      // check if equal by subtracting
+      proj_data3.sapyb(1.F, proj_data2, -1.F);
+      const auto normdiff = proj_data3.norm();
+      check(normdiff <= 0.0001F * norm2,
+            "copy_to(ProjDataInMemory&): norms org " + std::to_string(norm2) + " filled " + std::to_string(norm3) + " diff "
+                + std::to_string(normdiff));
+    }
   }
   timer.stop();
   std::cerr << "-- CPU Time " << timer.value() << '\n';
