@@ -1,5 +1,3 @@
-//
-//
 /*
     Copyright (C) 2024, University College London
     This file is part of STIR.
@@ -16,10 +14,10 @@
   \author Kris Thielemans
 */
 #ifndef __stir_HigherPrecision__H__
-#  define __stir_HigherPrecision__H__
+#define __stir_HigherPrecision__H__
 
-#  include "stir/common.h"
-#  include <complex>
+#include "stir/common.h"
+#include <complex>
 
 START_NAMESPACE_STIR
 
