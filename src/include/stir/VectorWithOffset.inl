@@ -567,10 +567,7 @@ void
 VectorWithOffset<T>::fill(const T& n)
 {
   this->check_state();
-  // TODO use std::fill() if we can use namespaces (to avoid name conflicts)
-  // std::fill(begin(), end(), n);
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
-    num[i] = n;
+  std::fill(this->begin(), this->end(), n);
   this->check_state();
 }
 
