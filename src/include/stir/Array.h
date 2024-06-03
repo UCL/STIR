@@ -3,6 +3,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -34,6 +35,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/IndexRange.h"
 #include "stir/deprecated.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 class NumericType;
@@ -134,19 +136,51 @@ public:
   //! Construct an Array of given range of indices, elements are initialised to 0
   inline explicit Array(const IndexRange<num_dimensions>&);
 
+  //! Construct an Array pointing to existing contiguous data
+  /*!
+    \arg data_sptr should point to a contiguous block of correct size.
+    The constructed Array will essentially be a "view" of the
+       \c data_sptr.get() block. Therefore, any modifications to the array will modify the data at \c data_sptr.get().
+    This will be true until the Array is resized.
+
+    The C-array \data_ptr will be accessed with the last dimension running fastest
+    ("row-major" order).
+  */
+  inline Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr);
+
 #ifndef SWIG
-  //! Construct an Array from an object of its base_type
-  inline Array(const base_type& t);
-#else
   // swig 2.0.4 gets confused by base_type (due to numeric template arguments)
   // therefore, we declare this constructor using the "self" type,
   // i.e. it's just a copy-constructor.
   // This is less powerful as in C++, but swig-generated interfaces don't need to know about the base_type anyway
-  inline Array(const self& t);
+  //! Construct an Array from an object of its base_type
+  inline Array(const base_type& t);
 #endif
+
+  //! Copy constructor
+  // implementation needed as the above doesn't disable the auto-generated copy-constructor
+  inline Array(const self& t);
 
   //! virtual destructor, frees up any allocated memory
   inline ~Array() override;
+
+  //! Swap content/members of 2 objects
+  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
+  friend inline void swap(Array& first, Array& second) // nothrow
+  {
+    using std::swap;
+    //  swap the members of two objects
+    swap(static_cast<base_type&>(first), static_cast<base_type&>(second));
+    swap(first._allocated_full_data_ptr, second._allocated_full_data_ptr);
+  }
+
+  //! move constructor
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
+  Array(Array&& other) noexcept;
+
+  //! assignment operator
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
+  Array& operator=(Array other);
 
   /*! @name functions returning full_iterators*/
   //@{
@@ -169,14 +203,18 @@ public:
   //! return the total number of elements in this array
   inline size_t size_all() const;
 
-  /* Implementation note: grow() and resize() are inline such that they are
-     defined for any type you happen to use for elemT. Otherwise, we would
-     need instantiation in Array.cxx.
-  */
   //! change the array to a new range of indices, new elements are set to 0
+  /*! Current behaviour is that when resizing to a smaller array, the same memory
+    will be used. However, when growing any of the dimensions, a new Array
+    will be allocated and the data copied.
+
+    If the array points to an existing block of data, resizing is therefore problematic.
+    When growing the array, the resized array will no longer point to the original block
+    of data.
+  */
   inline virtual void resize(const IndexRange<num_dimensions>& range);
 
-  //! grow the array to a new range of indices, new elements are set to 0
+  //! alias for resize()
   virtual inline void grow(const IndexRange<num_dimensions>& range);
 
   //! return sum of all elements
@@ -191,13 +229,15 @@ public:
   //! return minimum of all the elements
   inline elemT find_min() const;
 
-  //! Fill elements with value n (overrides VectorWithOffset::fill)
+  //! Fill elements with value \c n
+  /*!
+    hides VectorWithOffset::fill
+   */
   inline void fill(const elemT& n);
-
-  //! Sets elements below value to the value (overrides VectorWithOffset::fill)
+  //! Sets elements below value to the value
   inline void apply_lower_threshold(const elemT& l);
 
-  //! Sets elements above value to the value (overrides VectorWithOffset::fill)
+  //! Sets elements above value to the value
   inline void apply_upper_threshold(const elemT& u);
 
   //! checks if the index range is 'regular'
@@ -250,6 +290,44 @@ public:
   //! set values of the array to self*a+y*b where a and b are scalar or arrays
   template <class T>
   inline void sapyb(const T& a, const Array& y, const T& b);
+
+  //! \name access to the data via a pointer
+  //@{
+  //! return if the array is contiguous in memory
+  bool is_contiguous() const;
+
+  //! member function for access to the data via a elemT*
+  inline elemT* get_full_data_ptr();
+
+  //! member function for access to the data via a const elemT*
+  inline const elemT* get_const_full_data_ptr() const;
+
+  //! signal end of access to elemT*
+  inline void release_full_data_ptr();
+
+  //! signal end of access to const elemT*
+  inline void release_const_full_data_ptr() const;
+  //@}
+
+private:
+  //! boolean to test if get_full_data_ptr is called
+  // This variable is declared mutable such that get_const_full_data_ptr() can change it.
+  mutable bool _full_pointer_access;
+
+  //! A pointer to the allocated chunk if the array is constructed that way, zero otherwise
+  shared_ptr<elemT[]> _allocated_full_data_ptr;
+
+  //! change the array to a new range of indices, pointing to \c data_ptr
+  /*!
+    \arg data_ptr should point to a contiguous block of correct size
+
+    The C-array \data_ptr will be accessed with the last dimension running fastest
+    ("row-major" order).
+  */
+  inline void init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data);
+  // Make sure that we can access init() recursively
+  template <int num_dimensions2, class elemT2>
+  friend class Array;
 };
 
 /**************************************************
@@ -307,11 +385,45 @@ public:
   //! constructor given first and last indices, initialising elements to 0
   inline Array(const int min_index, const int max_index);
 
+  //! constructor given an IndexRange<1>, pointing to existing contiguous data
+  /*!
+    \arg data_ptr should point to a contiguous block of correct size.
+    The constructed Array will essentially be a "view" of the
+    \c data_sptr block. Therefore, any modifications to the array will modify the data at \a data_sptr.
+    This will be the case until the Array is resized.
+  */
+  inline Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr);
+
+  //! constructor given an IndexRange<1> from existing contiguous data (will copy)
+  /*!
+    \arg data_ptr should point to a contiguous block of correct size.
+  */
+  inline Array(const IndexRange<1>& range, const elemT* const data_ptr);
+
   //! constructor from basetype
   inline Array(const NumericVectorWithOffset<elemT, elemT>& il);
 
+  //! Copy constructor
+  // implementation needed as the above doesn't replace the normal copy-constructor
+  // and the auto-generated is disabled because of the move constructor
+  inline Array(const self& t);
+
+  //! move constructor
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
+  Array(Array&& other) noexcept;
+
   //! virtual destructor
   inline ~Array() override;
+
+  //! Swap content/members of 2 objects
+  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
+  friend inline void swap(Array& first, Array& second) // nothrow
+  {
+    swap(static_cast<base_type&>(first), static_cast<base_type&>(second));
+  }
+
+  //! assignment
+  inline Array& operator=(const Array& other);
 
   /*! @name functions returning full_iterators*/
   //@{
@@ -346,6 +458,38 @@ public:
 
   // Array::resize initialises new elements to 0
   inline void resize(const int min_index, const int max_index) override;
+
+  //! \name access to the data via a pointer
+  //@{
+  //! return if the array is contiguous in memory (always \c true)
+  bool is_contiguous() const
+  {
+    return true;
+  }
+  //! member function for access to the data via a elemT*
+  inline elemT* get_full_data_ptr()
+  {
+    return this->get_data_ptr();
+  }
+
+  //! member function for access to the data via a const elemT*
+  inline const elemT* get_const_full_data_ptr() const
+  {
+    return this->get_const_data_ptr();
+  }
+
+  //! signal end of access to elemT*
+  inline void release_full_data_ptr()
+  {
+    this->release_data_ptr();
+  }
+
+  //! signal end of access to const elemT*
+  inline void release_const_full_data_ptr() const
+  {
+    this->release_const_data_ptr();
+  }
+  //@}
 
   //! return sum of all elements
   inline elemT sum() const;
@@ -424,6 +568,17 @@ public:
 
   inline const elemT& at(const BasicCoordinate<1, int>& c) const;
   //@}
+
+private:
+  // Make sure we can call init() recursively.
+  template <int num_dimensions2, class elemT2>
+  friend class Array;
+
+  //! change vector with new index range and point to \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline void init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data);
 };
 
 END_NAMESPACE_STIR
