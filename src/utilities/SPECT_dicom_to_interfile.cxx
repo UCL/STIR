@@ -22,11 +22,18 @@
 */
 #include <iostream>
 #include <fstream>
+#include <memory>
+#include <string>
 
 #include <boost/format.hpp>
 
 #include <gdcmReader.h>
 #include <gdcmStringFilter.h>
+#include <gdcmValue.h>
+#include <gdcmImageChangeTransferSyntax.h>
+#include <gdcmAttribute.h>
+#include <gdcmImageReader.h>
+#include <gdcmImageWriter.h>
 
 #include "stir/info.h"
 #include "stir/error.h"
@@ -66,8 +73,10 @@ class SPECTDICOMData
 public:
   SPECTDICOMData(const std::string& DICOM_filename) { dicom_filename = DICOM_filename; };
   stir::Succeeded get_interfile_header(std::string& output_header, const std::string& data_filename, const int dataset_num) const;
-  stir::Succeeded get_proj_data(const std::string& output_file) const;
-  stir::Succeeded open_dicom_file();
+  stir::Succeeded get_proj_data(const std::string& output_file, const std::string& input_file = "" ) const;
+  stir::Succeeded open_dicom_file(bool is_planar);
+  void set_dicom_filename(const std::string& DICOM_filename) { dicom_filename = DICOM_filename; };
+  bool is_planar;
   int num_energy_windows = 1;
   int num_frames = 0;
   int num_of_projections = 0;
@@ -705,12 +714,19 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
 }
 
 stir::Succeeded
-SPECTDICOMData::get_proj_data(const std::string& output_file) const
+SPECTDICOMData::get_proj_data(const std::string& output_file, const std::string& input_file ) const
 {
 
-  std::unique_ptr<gdcm::Reader> DICOM_reader(new gdcm::Reader);
-  DICOM_reader->SetFileName(dicom_filename.c_str());
-
+  std::unique_ptr<gdcm::ImageReader> DICOM_reader(new gdcm::ImageReader);
+  if (input_file.empty())
+    {
+      DICOM_reader->SetFileName(dicom_filename.c_str());
+    }
+  else
+    {
+      DICOM_reader->SetFileName(input_file.c_str());
+    }
+  
   try
     {
       if (!DICOM_reader->Read())
@@ -726,24 +742,38 @@ SPECTDICOMData::get_proj_data(const std::string& output_file) const
     }
 
   const gdcm::File& file = DICOM_reader->GetFile();
-
   const gdcm::DataElement& de = file.GetDataSet().GetDataElement(gdcm::Tag(0x7fe0, 0x0010));
-  const gdcm::ByteValue* bv = de.GetByteValue();
+  const gdcm::ByteValue* bv = de.GetByteValue(); // Only works when data are not compressed.
+  
+  // Check if the pixel data pointer is NULL, if so the data may be compressed.
   if (!bv)
     {
-      stir::warning("GDCM GetByteValue failed on x7fe0, 0x0010");
-      return stir::Succeeded::no;
-    }
-  /*
-  std::string tmpFile = "tmp.s";
-  std::ofstream outfile(tmpFile.c_str(), std::ios::out | std::ios::binary);
+      stir::warning(boost::format("SPECTDICOMData: decompressing pixel data from: %1%") % dicom_filename);
+      gdcm::ImageChangeTransferSyntax change;
+      change.SetTransferSyntax(gdcm::TransferSyntax::ImplicitVRLittleEndian);
+      change.SetInput(DICOM_reader->GetImage());
 
-  if (!outfile.is_open()) {
-    std::cerr << "Unable to write proj data to " << tmpFile;
-    return stir::Succeeded::no;
-  }
-  bv->WriteBuffer(outfile);
-  outfile.close();*/
+      // Assert that the change in transfer syntax was successful. Return otherwise.
+      if (!change.Change())
+        {
+          stir::error(boost::format("SPECTDICOMData: decompression failed.") % dicom_filename);
+          return stir::Succeeded::no;
+        }
+
+      // Write a new file using the uncompressed transfer syntax.
+      const std::string uncompressed_dicom_filename = dicom_filename + std::string(".uncmp");
+      gdcm::ImageWriter writer;
+      writer.SetImage(change.GetOutput());
+      writer.SetFile(DICOM_reader->GetFile());
+      writer.SetFileName(uncompressed_dicom_filename.c_str());
+      if (!writer.Write())
+        {
+          return stir::Succeeded::no;
+        }
+
+       return get_proj_data(output_file, uncompressed_dicom_filename);
+
+    }
 
   uint64_t len0 = (uint64_t)bv->GetLength() / 2;
   std::cout << "Number of data points = " << len0 << std::endl;
