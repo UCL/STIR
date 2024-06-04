@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -34,6 +35,10 @@ template <int num_dimensions, class IStreamT, class elemT>
 inline Succeeded
 read_data_help(is_not_1d, IStreamT& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order)
 {
+  if (data.is_contiguous())
+    return read_data_1d(s, data, byte_order);
+
+  // otherwise, recurse
   for (typename Array<num_dimensions, elemT>::iterator iter = data.begin(); iter != data.end(); ++iter)
     {
       if (read_data(s, *iter, byte_order) == Succeeded::no)

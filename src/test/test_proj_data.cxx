@@ -2,6 +2,7 @@
 
   \file
   \ingroup test
+  \ingroup projdata
 
   \brief Test program for stir::ProjData and stir::ProjDataInMemory
 
@@ -10,7 +11,7 @@
 
 */
 /*
-    Copyright (C) 2015, 2020, 2022 University College London
+    Copyright (C) 2015, 2020, 2022, 2024 University College London
     Copyright (C) 2020, National Physical Laboratory
     This file is part of STIR.
 
@@ -115,6 +116,18 @@ ProjDataTests::run_tests_on_proj_data(ProjData& proj_data)
     proj_data3.sapyb(1.F, proj_data2, -1.F);
     check(norm(proj_data3.begin(), proj_data3.end()) <= 0.0001F * norm(proj_data2.begin(), proj_data2.end()),
           "fill(ProjDataInMemory&");
+    // test fill_from
+    fill_from(proj_data3, proj_data2.begin_all(), proj_data2.end_all());
+    // check if equal by subtracting
+    proj_data3.sapyb(1.F, proj_data2, -1.F);
+    check(norm(proj_data3.begin(), proj_data3.end()) <= 0.0001F * norm(proj_data2.begin(), proj_data2.end()),
+          "fill_from(ProjDataInMemory&");
+    // test copy_to
+    copy_to(proj_data2, proj_data3.begin_all());
+    // check if equal by subtracting
+    proj_data3.sapyb(1.F, proj_data2, -1.F);
+    check(norm(proj_data3.begin(), proj_data3.end()) <= 0.0001F * norm(proj_data2.begin(), proj_data2.end()),
+          "copy_to(ProjDataInMemory&");
   }
   timer.stop();
   std::cerr << "-- CPU Time " << timer.value() << '\n';

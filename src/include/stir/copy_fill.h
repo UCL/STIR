@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 University College London
+    Copyright (C) 2020, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -16,6 +16,7 @@
   \author Kris Thielemans
 */
 
+#include "stir/Array.h"
 #include "stir/ProjDataInMemory.h"
 
 START_NAMESPACE_STIR
@@ -42,6 +43,49 @@ struct CopyFill
   static void fill_from(T& stir_object, iterT iter, iterT iter_end)
   {
     std::copy(iter, iter_end, stir_object.begin_all());
+  }
+};
+
+//! Helper class for stir::copy_to and stir::fill_from
+/*! Specialisation that uses underlying 1D iterators for contiguous Array objects
+ */
+template <int num_dimensions, class elemT>
+struct CopyFill<Array<num_dimensions, elemT>>
+{
+  typedef Array<num_dimensions, elemT> Array_type;
+
+  template <typename iterT>
+  static iterT copy_to(const Array_type& stir_array, iterT iter)
+  {
+    if (stir_array.is_contiguous())
+      {
+        // std::cerr << "Using 1D std::copy for copy_to\n";
+        auto beg = stir_array.get_const_full_data_ptr();
+        auto ret = std::copy(beg, beg + stir_array.size_all(), iter);
+        stir_array.release_const_full_data_ptr();
+        return ret;
+      }
+    else
+      {
+        // std::cerr<<"Using normal std::copy for copy_to\n";
+        return std::copy(stir_array.begin_all(), stir_array.end_all(), iter);
+      }
+  }
+
+  template <typename iterT>
+  static void fill_from(Array_type& stir_array, iterT iter, iterT iter_end)
+  {
+    if (stir_array.is_contiguous())
+      {
+        // std::cerr << "Using 1D std::copy for fill_from\n";
+        std::copy(iter, iter_end, stir_array.get_full_data_ptr());
+        stir_array.release_full_data_ptr();
+      }
+    else
+      {
+        // std::cerr<<"Using normal std::copy for fill_from\n";
+        std::copy(iter, iter_end, stir_array.begin_all());
+      }
   }
 };
 

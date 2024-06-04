@@ -33,7 +33,7 @@ include(src/cmake/SetC++Version.cmake)
 
 # minimum C++ version required (you can still ask for a more recent one
 # by setting CMAKE_CXX_STANDARD)
-UseCXX(14)
+UseCXX(17)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -54,9 +54,9 @@ endif()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
-set(VERSION_MINOR   1)
+set(VERSION_MINOR   2)
 set(VERSION_PATCH   0)
-set(VERSION   060100) # only used in STIRConfig.h.in and swig/CMakeLists.txt
+set(VERSION   060200) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -119,18 +119,12 @@ if(NOT DISABLE_LLN_MATRIX)
 endif()
 
 if(NOT DISABLE_CERN_ROOT)
-  find_package(CERN_ROOT)
+  find_package(CERN_ROOT 6.28.00) # required for C++17
   if (CERN_ROOT_FOUND)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
     if (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
         message(STATUS "ROOT Version is >= 6.30. Setting the minimum CXX version to 20.")
         UseCXX(20)
-    elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.27.99)
-        message(STATUS "ROOT Version is >= 6.28. Setting the minimum CXX version to 17.")
-        UseCXX(17)
-    elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.23.99)
-        message(STATUS "ROOT Version is >= 6.24. Setting the minimum CXX version to 14.")
-        UseCXX(14)
     endif()
   endif()
 endif()
