@@ -39,15 +39,16 @@ bool
 Array<num_dimensions, elemT>::is_contiguous() const
 {
   auto mem = &(*this->begin_all());
-  for (auto i = this->get_min_index(); i < this->get_max_index(); ++i)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); ++i)
     {
       if (!(*this)[i].is_contiguous())
         return false;
+      if (i == this->get_max_index())
+        return true;
       mem += (*this)[i].size_all();
       if (mem != &(*(*this)[i + 1].begin_all()))
         return false;
     }
-  return true;
 }
 
 template <int num_dimensions, typename elemT>
