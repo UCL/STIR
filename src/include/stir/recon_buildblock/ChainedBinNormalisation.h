@@ -90,11 +90,14 @@ public:
   /*! Calls set_up for the BinNormalisation members. */
   Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
 
+  // import all apply/undo methods from base-class (we'll override some below)
+  using base_type::apply;
+  using base_type::undo;
+
   //! Normalise some data
   /*!
     This calls apply() of the 2 BinNormalisation members
   */
-
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 #if 0
   virtual void apply(ProjData&) const override;
