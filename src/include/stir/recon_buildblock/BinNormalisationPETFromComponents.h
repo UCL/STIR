@@ -98,11 +98,14 @@ public:
   /*! Compares the stored ProjDataInfo  with the ProjDataInfo supplied. */
   Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
 
+  // import all apply/undo methods from base-class (we'll override some below)
+  using base_type::apply;
+  using base_type::undo;
+
   //! Normalise some data
   /*!
     This means \c divide with the efficiency model. 0/0 is set to 0.
   */
-
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   using base_type::apply;
