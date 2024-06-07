@@ -58,6 +58,10 @@ public:
 
   float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
 
+  // import all apply/undo methods from base-class (we'll override some below)
+  using base_type::apply;
+  using base_type::undo;
+
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   void undo(RelatedViewgrams<float>& viewgrams) const override;

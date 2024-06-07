@@ -11,7 +11,7 @@
 
 */
 /*
-    Copyright (C) 2020 University College London
+    Copyright (C) 2020, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -29,6 +29,7 @@
 #include "stir/Scanner.h"
 #include "stir/copy_fill.h"
 #include "stir/error.h"
+#include <string>
 START_NAMESPACE_STIR
 
 /*!
@@ -109,6 +110,143 @@ ProjDataInMemoryTests::run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shar
     *pd_iter++ = a * (*x_iter++) + b * (*y_iter++);
 
   check_proj_data_are_equal_and_non_zero(pd1, pd3);
+
+  // numeric operations
+  {
+    {
+      auto res1 = pd1 + pd2;
+      {
+        ProjDataInMemory res2(pd1);
+        res2.sapyb(1.F, pd2, 1.F);
+        check_if_equal(res1, res2, "+ vs sapyb");
+      }
+      {
+        ProjDataInMemory res2(pd1);
+        res2 += pd2;
+        check_if_equal(res1, res2, "+ vs +=");
+      }
+      {
+        check_if_equal(norm(pd1 + pd1), 2 * norm(pd1), "norm of x+x");
+      }
+    }
+    {
+      auto res1 = pd1 - pd2;
+      {
+        ProjDataInMemory res2(pd1);
+        res2.sapyb(1.F, pd2, -1.F);
+        check_if_equal(res1, res2, "- vs sapyb");
+      }
+      {
+        ProjDataInMemory res2(pd1);
+        res2 -= pd2;
+        check_if_equal(res1, res2, "- vs -=");
+      }
+      {
+        res1 += pd2;
+        check_if_equal(pd1, res1, "- vs +=");
+      }
+      {
+        check_if_zero(norm(pd1 - pd1), "norm of x-x");
+      }
+    }
+    {
+      auto res1 = pd1 * pd2;
+      {
+        ProjDataInMemory res2(pd1);
+        for (auto i1 = res2.begin(), i2 = pd2.begin(); i1 != res2.end(); ++i1, ++i2)
+          *i1 *= *i2;
+        check_if_equal(res1, res2, "* vs loop");
+      }
+      {
+        ProjDataInMemory res2(pd1);
+        res2 *= pd2;
+        check_if_equal(res1, res2, "* vs *=");
+      }
+      {
+        res1 /= pd2;
+        check_if_equal(pd1, res1, "* vs /=");
+      }
+    }
+    {
+      auto res1 = pd1 / pd2;
+      {
+        ProjDataInMemory res2(pd1);
+        for (auto i1 = res2.begin(), i2 = pd2.begin(); i1 != res2.end(); ++i1, ++i2)
+          *i1 /= *i2;
+        check_if_equal(res1, res2, "/ vs loop");
+      }
+      {
+        ProjDataInMemory res2(pd1);
+        res2 /= pd2;
+        check_if_equal(res1, res2, "/ vs /=");
+      }
+      {
+        res1 *= pd2;
+        check_if_equal(pd1, res1, "/ vs *=");
+      }
+      {
+        // assumes that all elements are !=0
+        check_if_equal(norm_squared(pd1 / pd1), static_cast<double>(pd1.size_all()), "norm of x/x");
+      }
+    }
+    // now with floats
+    {
+      auto res1 = pd1 + 5.6F;
+      check_if_equal(res1.find_max(), pd1.find_max() + 5.6F, "max(x + 5.6F)");
+      {
+        ProjDataInMemory res2(pd1);
+        res2 += 5.6F;
+        check_if_equal(res1, res2, "+ vs += float");
+      }
+      {
+        res1 -= pd1;
+        res1 /= 5.6F;
+        check_if_equal(norm_squared(res1), static_cast<double>(pd1.size_all()), "norm of x + 5.6");
+      }
+    }
+    {
+      auto res1 = pd1 - 5.6F;
+      check_if_equal(res1.find_min(), pd1.find_min() - 5.6F, "min(x - 5.6F)");
+      {
+        ProjDataInMemory res2(pd1);
+        res2 -= 5.6F;
+        check_if_equal(res1, res2, "- vs -= float");
+      }
+      {
+        res1 += 5.6F;
+        check_if_equal(res1, pd1, "- vs += float");
+      }
+    }
+    {
+      auto res1 = pd1 * 5.6F;
+      check_if_equal(norm(res1), norm(pd1) * 5.6F, "norm of x*5.6");
+      check_if_equal(res1.sum(), pd1.sum() * 5.6F, "sum(x * 5.6F)");
+
+      {
+        ProjDataInMemory res2(pd1);
+        res2 *= 5.6F;
+        check_if_equal(res1, res2, "* vs *= float");
+      }
+      {
+        res1 /= 5.6F;
+        check_if_equal(res1, pd1, "* vs /= float");
+      }
+    }
+    {
+      auto res1 = pd1 / 5.6F;
+      check_if_equal(norm(res1), norm(pd1) / 5.6F, "norm of x/float");
+
+      {
+        ProjDataInMemory res2(pd1);
+        res2 /= 5.6F;
+        check_if_equal(res1, res2, "/ vs /= float");
+      }
+      {
+        res1 /= 1 / 5.6F;
+        check_if_equal(res1, pd1, "/ vs /= float 2");
+      }
+    }
+  }
 }
 
 void

@@ -266,7 +266,7 @@ ProjMatrixByBinUsingRayTracing::set_up(
 
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
-  if (abs(origin.x()) > .05F || abs(origin.y()) > .05F)
+  if (std::abs(origin.x()) > .05F || std::abs(origin.y()) > .05F)
     error("ProjMatrixByBinUsingRayTracing sadly doesn't support shifted x/y origin yet");
   image_info_sptr->get_regular_range(min_index, max_index);
 

@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Summary of changes in STIR release 6.2</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 6.2</h1>
+
+    <p>
+      This version is 100% backwards compatible with STIR 6.1. However, C++-17 is now required.
+    </p>
+
+<h2>Overall summary</h2>
+    <p>
+     
+    </p>
+
+    <p>
+      Of course, there is also the usual code-cleanup and improvements to the documentation.
+    </p>
+
+    <p>
+      This release contains mainly code written by Nicole Jurjew (UCL) and Kris Thielemans (UCL).
+    </p>
+
+<h2>Patch release info</h2>
+<ul>
+  <li>
+    6.2.0 released ??/2024<br>
+    <a href="https://github.com/UCL/STIR/milestone/11">GitHub Milestone 6.2</a>
+  </li>
+  <!--
+      <li> 4.0.1 released 28/04/2020
+        <ul>
+          <li><a href=https://github.com/UCL/STIR/pull/513>PR 513</a>  (suppress warnings with clang)</li>
+        </ul>
+        -->
+</ul>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+
+
+<h3>New functionality</h3>
+<ul>
+  <li>
+    <code>ProjDataInMemory</code> now has same methods for numerical operations as <code>Array</code>,
+    i.e. =,-,*,/,+=,-=,*=,/=,<code>find_max()</code>,<code>find_min()</code>,<code>sum()</code>.<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
+  </li>
+</ul>
+
+
+<h3>Changed functionality</h3>
+<ul>
+  <li>
+    <code>Array::sum()</code> (and hence images etc) now accumulates in a variable at higher precision to avoid loss of precision.<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
+  </li>
+</ul>
+
+
+<h3>Bug fixes</h3>
+<ul>
+</ul>
+
+<h3>Build system</h3>
+<ul
+  <li>
+    C++-17 is now required.
+  </li>
+</ul>
+
+<h3>Known problems</h3>
+    <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</p>
+
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Changed functionality</h3>
+<ul>
+    <li>
+      <code>Array</code> classes by default use contiguous memory allocation (as opposed to a sequence of 1D vectors).
+      This could speed up memory allocation and destruction of arrays with a high number of underlying 1D vectors. It also allows reading/writing
+      data in one call to the C++ library, as opposed to many small calls. Also added move constructors to the <code>Array</code>,
+      <code>VectorWithOffset</code> classes.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1236>PR #1236</a> and <a href=https://github.com/UCL/STIR/pull/1438>PR #1438</a>.
+    </li>
+</ul>
+
+<h3>Bug fixes</h3>
+<ul>
+  <li>
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code> had a (minor?) problem with TOF data
+    that when computing the gradient, the normalisation object was not set-up with the TOF data,
+    but non-TOF instead. This did not happen in our normal reconstruction code, and would have thrown an error
+    if it occured.
+    <br>
+    Fixed in <a href=https://github.com/UCL/STIR/pull/1427>issue #1427</a>.
+  </li>
+</ul>
+
+
+<h3>Other code changes</h3>
+<ul>
+  <li>
+    Fixes an incompatibility with C++20.
+  </li>
+</ul>
+
+<h3>Build system</h3>
+<ul>
+  <li>
+    Force C++ version according to CERN ROOT versions: ROOT 6.28.10 needs C++17 and 6.30.2 needs C++20.
+    Also some fixes when relying on <code>root-config</code>.
+  </li>
+</ul>
+
+<h3>Test changes</h3>
+
+<h4>C++ tests</h4>
+<ul>
+  <li>
+    Objective functions (both projection-data and list-mode) and priors now have a numerical test for <code>accumulate_Hessian_times_input</code>
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1418> PR #1418</a>
+  </li>
+</ul>
+
+</body>
+
+</html>

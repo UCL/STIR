@@ -92,9 +92,11 @@ set(swig_stir_dependencies
   stir_coordinates.i
   stir_dataprocessors.i
   stir_exam.i
+  stir_LOR.i
   stir_normalisation.i
   stir_objectivefunctions.i
   stir_priors.i
+  stir_projdata_coords.i
   stir_projdata.i
   stir_listmode.i
   stir_projectors.i

@@ -8,6 +8,9 @@ jobs:
     name: pre-commit
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-    - run: sudo apt-get install -yqq clang-format
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+          activate-environment: pre-commit-env
+          environment-file: pre-commit-environment.yml
+          auto-activate-base: false
     - uses: pre-commit/action@v3.0.0
