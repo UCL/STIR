@@ -49,6 +49,7 @@ Array<num_dimensions, elemT>::is_contiguous() const
       if (mem != &(*(*this)[i + 1].begin_all()))
         return false;
     }
+  return true;
 }
 
 template <int num_dimensions, typename elemT>
