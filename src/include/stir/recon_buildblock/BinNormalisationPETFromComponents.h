@@ -108,13 +108,12 @@ public:
   */
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 
-  using base_type::apply;
   //! Undo the normalisation of some data
   /*!
     This means \c multiply with the efficiency model.
   */
   void undo(RelatedViewgrams<float>& viewgrams) const override;
-  using base_type::undo;
+
   float get_bin_efficiency(const Bin& bin) const override;
 
 #if 0
