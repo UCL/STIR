@@ -102,6 +102,11 @@ class ProjDataInMemory;
 */
 class ProjData : public ExamData
 {
+#ifdef SWIG
+ public: // SWIG needs self_type exposed
+#endif
+  typedef ProjData self_type;
+
 public:
   //! A static member to get the projection data from a file
   static shared_ptr<ProjData> read_from_file(const std::string& filename, const std::ios::openmode open_mode = std::ios::in);
@@ -371,6 +376,47 @@ public:
   //! writes data to a file in Interfile format
   Succeeded write_to_file(const std::string& filename) const;
 
+  //! @name arithmetic operations
+  ///@{
+  //! return sum of all elements
+  virtual float sum() const;
+
+  //! return maximum value of all elements
+  virtual float find_max() const;
+
+  //! return minimum value of all elements
+  virtual float find_min() const;
+
+  //! return L2-norm (sqrt of sum of squares)
+  virtual double norm() const;
+
+  //! return L2-norm squared (sum of squares)
+  virtual double norm_squared() const;
+
+  //! adding elements of \c v to the current data
+  virtual self_type& operator+=(const self_type& v);
+
+  //! subtracting elements of \c v from the current data
+  virtual self_type& operator-=(const self_type& v);
+
+  //! multiplying elements of the current data with elements of \c v
+  virtual self_type& operator*=(const self_type& v);
+
+  //! dividing all elements of the current data by elements of \c v
+  virtual self_type& operator/=(const self_type& v);
+
+  //! adding an \c float to the elements of the current data
+  virtual self_type& operator+=(const float v);
+
+  //! subtracting an \c float from the elements of the current data
+  virtual self_type& operator-=(const float v);
+
+  //! multiplying the elements of the current data with an \c float
+  virtual self_type& operator*=(const float v);
+
+  //! dividing the elements of the current data by an \c float
+  virtual self_type& operator/=(const float v);
+
   //! \deprecated a*x+b*y (use xapyb)
   STIR_DEPRECATED virtual void axpby(const float a, const ProjData& x, const float b, const ProjData& y);
 
@@ -385,6 +431,7 @@ public:
 
   //! set values of the array to self*a+y*b where a, b and y are ProjData
   virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
+  ///@}
 
 protected:
   shared_ptr<const ProjDataInfo> proj_data_info_sptr;

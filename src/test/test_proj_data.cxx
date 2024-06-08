@@ -312,6 +312,28 @@ ProjDataTests::run_tests_on_proj_data(ProjData& proj_data)
   }
   timer.stop();
   std::cerr << "-- CPU Time " << timer.value() << '\n';
+
+  std::cerr << "\ntest norm(), sum(), find_min(), find_max())\n";
+  timer.reset();
+  timer.start();
+  {
+    ProjDataInMemory proj_data2(proj_data.get_exam_info_sptr(), proj_data.get_proj_data_info_sptr());
+    // fill with values 1, 2, ... to have something non-trivial
+    std::iota(proj_data2.begin(), proj_data2.end(), 1.F);
+    proj_data.fill(proj_data2);
+    {
+      const double n = static_cast<double>(proj_data.size_all());
+      const double sum_of_ints = n * (n + 1) / 2.;
+      const double sum_of_squares = n * (n + 1) * (2 * n + 1) / 6.;
+
+      check_if_equal(static_cast<double>(proj_data.norm()), std::sqrt(sum_of_squares), "norm");
+      check_if_equal(static_cast<double>(proj_data.sum()), sum_of_ints, "sum");
+      check_if_equal(proj_data.find_min(), 1.F, "find_min");
+      check_if_equal(proj_data.find_max(), float(n), "find_max");
+    }
+  }
+  timer.stop();
+  std::cerr << "-- CPU Time " << timer.value() << '\n';
 }
 
 void
