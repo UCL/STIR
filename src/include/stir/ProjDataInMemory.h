@@ -42,6 +42,7 @@ class ProjDataInMemory : public ProjData
  public:
 #endif
   typedef ProjDataInMemory self_type;
+  typedef ProjData base_type;
 
 public:
   //! constructor with only info, but no data
@@ -106,19 +107,19 @@ public:
   //! @name arithmetic operations
   ///@{
   //! return sum of all elements
-  float sum() const;
+  float sum() const override;
 
   //! return maximum value of all elements
-  float find_max() const;
+  float find_max() const override;
 
   //! return minimum value of all elements
-  float find_min() const;
+  float find_min() const override;
 
   //! return L2-norm (sqrt of sum of squares)
-  double norm() const;
+  double norm() const override;
 
   //! return L2-norm squared (sum of squares)
-  double norm_squared() const;
+  double norm_squared() const override;
 
   //! elem by elem addition
   self_type operator+(const self_type& iv) const;
@@ -146,29 +147,29 @@ public:
 
   // corresponding assignment operators
 
-  //! adding elements of \c v to the current vector
-  self_type& operator+=(const self_type& v);
+  //! adding elements of \c v to the current data
+  self_type& operator+=(const base_type& v) override;
 
-  //! subtracting elements of \c v from the current vector
-  self_type& operator-=(const self_type& v);
+  //! subtracting elements of \c v from the current data
+  self_type& operator-=(const base_type& v) override;
 
-  //! multiplying elements of the current vector with elements of \c v
-  self_type& operator*=(const self_type& v);
+  //! multiplying elements of the current data with elements of \c v
+  self_type& operator*=(const base_type& v) override;
 
-  //! dividing all elements of the current vector by elements of \c v
-  self_type& operator/=(const self_type& v);
+  //! dividing all elements of the current data by elements of \c v
+  self_type& operator/=(const base_type& v) override;
 
-  //! adding an \c float to the elements of the current vector
-  self_type& operator+=(const float v);
+  //! adding an \c float to the elements of the current data
+  self_type& operator+=(const float v) override;
 
-  //! subtracting an \c float from the elements of the current vector
-  self_type& operator-=(const float v);
+  //! subtracting an \c float from the elements of the current data
+  self_type& operator-=(const float v) override;
 
-  //! multiplying the elements of the current vector with an \c float
-  self_type& operator*=(const float v);
+  //! multiplying the elements of the current data with an \c float
+  self_type& operator*=(const float v) override;
 
-  //! dividing the elements of the current vector by an \c float
-  self_type& operator/=(const float v);
+  //! dividing the elements of the current data by an \c float
+  self_type& operator/=(const float v) override;
 
   //! \deprecated a*x+b*y (use xapyb)
   STIR_DEPRECATED void axpby(const float a, const ProjData& x, const float b, const ProjData& y) override;

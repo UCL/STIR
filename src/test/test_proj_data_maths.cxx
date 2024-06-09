@@ -4,10 +4,12 @@
 
   \file
   \ingroup test
+  \ingroup projdata
 
   \brief Test maths of stir::ProjData
 
   \author Richard Brown
+  \author Kris Thielemans
 
 */
 /*
@@ -34,6 +36,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup test
+  \ingroup projdata
   \brief Test class for ProjDataInMemory
 */
 class ProjDataInMemoryTests : public RunTests
@@ -46,12 +49,12 @@ private:
 };
 
 static void
-check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y)
+check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y, const std::string& name)
 {
   const size_t n = x.size_all();
   const size_t ny = y.size_all();
   if (n != ny)
-    error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
+    error("ProjData::" + name + " and ProjDataInMemory::" + name + " mismatch");
 
   // Create arrays
   std::vector<float> arr1(n), arr2(n);
@@ -61,11 +64,11 @@ check_proj_data_are_equal_and_non_zero(const ProjData& x, const ProjData& y)
   // Check for mismatch
   for (unsigned i = 0; i < n; ++i)
     if (std::abs(arr1[i] - arr2[i]) > 1e-4f)
-      error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
+      error("ProjData::" + name + " and ProjDataInMemory::" + name + " mismatch");
 
   // Check for non-zero
   if (std::abs(*std::max_element(arr1.begin(), arr1.end())) < 1e-4f)
-    error("ProjData::xapyb and ProjDataInMemory::xapyb mismatch");
+    error("ProjData::" + name + " and ProjDataInMemory::" + name + " mismatch");
 }
 
 void
@@ -89,16 +92,16 @@ ProjDataInMemoryTests::run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shar
   const float b = 3.f;
   pd1.xapyb(x1, a, y1, b);
   pd2.ProjData::xapyb(x2, a, y2, b);
-  check_proj_data_are_equal_and_non_zero(pd1, pd2);
+  check_proj_data_are_equal_and_non_zero(pd1, pd2, "xapyb");
 
   // Check sapby with general and ProjDataInMemory methods
   ProjDataInMemory out1(x1);
   out1.sapyb(a, y1, b);
-  check_proj_data_are_equal_and_non_zero(pd1, out1);
+  check_proj_data_are_equal_and_non_zero(pd1, out1, "sapyb");
 
   ProjDataInMemory out2(x1);
   out2.ProjData::sapyb(a, y1, b);
-  check_proj_data_are_equal_and_non_zero(pd1, out2);
+  check_proj_data_are_equal_and_non_zero(pd1, out2, "sapyb");
 
   // Check using iterators
   ProjDataInMemory pd3(pd1);
@@ -109,7 +112,10 @@ ProjDataInMemoryTests::run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shar
   while (pd_iter != pd3.end())
     *pd_iter++ = a * (*x_iter++) + b * (*y_iter++);
 
-  check_proj_data_are_equal_and_non_zero(pd1, pd3);
+  check_proj_data_are_equal_and_non_zero(pd1, pd3, "fill");
+
+  // clang-format 14.0 makes a complete mess of the stuff below, so we'll switch if off
+  // clang-format off
 
   // numeric operations
   {
@@ -129,6 +135,7 @@ ProjDataInMemoryTests::run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shar
         check_if_equal(norm(pd1 + pd1), 2 * norm(pd1), "norm of x+x");
       }
     }
+
     {
       auto res1 = pd1 - pd2;
       {
@@ -247,6 +254,55 @@ ProjDataInMemoryTests::run_tests(shared_ptr<const ExamInfo> exam_info_sptr, shar
       }
     }
   }
+
+  // numeric operations ProjDataInMemory vs ProjData (check if inverse operation)
+  {
+    ProjDataInMemory pd1_copy(pd1);
+    // with ProjData arg
+    {
+      pd1_copy += pd2;
+      pd1_copy.ProjData::operator-=(pd2);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::+=(ProjData&) vs ProjData::-=");
+    }
+    {
+      pd1_copy -= pd2;
+      pd1_copy.ProjData::operator+=(pd2);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::-=(ProjData&) vs ProjData::+=");
+    }
+    {
+      pd1_copy *= pd2;
+      pd1_copy.ProjData::operator/=(pd2);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::*=(ProjData&) vs ProjData::/=");
+    }
+    {
+      pd1_copy /= pd2;
+      pd1_copy.ProjData::operator*=(pd2);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::/=(ProjData&) vs ProjData::*=");
+    }
+    // with float arg
+    const float arg = 5.9F;
+    {
+      pd1_copy += arg;
+      pd1_copy.ProjData::operator-=(arg);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::+=(float) vs ProjData::-=");
+    }
+    {
+      pd1_copy -= arg;
+      pd1_copy.ProjData::operator+=(arg);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::-=(float) vs ProjData::+=");
+    }
+    {
+      pd1_copy *= arg;
+      pd1_copy.ProjData::operator/=(arg);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::*=(float) vs ProjData::/=");
+    }
+    {
+      pd1_copy /= arg;
+      pd1_copy.ProjData::operator*=(arg);
+      check_if_equal(pd1, pd1_copy, "ProjDataInMemory::/=(float) vs ProjData::*=");
+    }
+  }
+// clang-format on
 }
 
 void

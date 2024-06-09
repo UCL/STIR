@@ -44,9 +44,11 @@
 <h3>New functionality</h3>
 <ul>
   <li>
-    <code>ProjDataInMemory</code> now has same methods for numerical operations as <code>Array</code>,
-    i.e. =,-,*,/,+=,-=,*=,/=,<code>find_max()</code>,<code>find_min()</code>,<code>sum()</code>.<br>
-    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
+    <code>ProjData</code> now has most of the methods for numerical operations as <code>Array</code>,
+    i.e. +=,-=,*=,/=,<code>find_max()</code>,<code>find_min()</code>,<code>sum()</code>.
+    <code>ProjDataInMemory</code> adds =,-,*,/ (as well as overloads that are faster than the implementations
+    in <code>ProjData</code>).<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a> and <a href=https://github.com/UCL/STIR/pull/1448>PR #1448</a>
   </li>
 </ul>
 
