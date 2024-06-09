@@ -149,6 +149,7 @@ public:
   void create_std_vector()
   {
     std::vector<float> tmp(this->v1.size());
+    tmp[0] = 1; // assign something to avoid compiler warnings of unused variable
   }
   //! create proj_data in memory object
   void create_proj_data_in_mem_no_init()
