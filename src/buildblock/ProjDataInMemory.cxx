@@ -393,30 +393,44 @@ ProjDataInMemory::norm_squared() const
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator+=(const ProjDataInMemory& v)
+ProjDataInMemory::operator+=(const base_type& v)
 {
-  this->buffer += v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer += vp->buffer;
+  else
+    base_type::operator+=(v);
+
   return *this;
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator-=(const ProjDataInMemory& v)
+ProjDataInMemory::operator-=(const base_type& v)
 {
-  this->buffer -= v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer -= vp->buffer;
+  else
+    base_type::operator-=(v);
   return *this;
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator*=(const ProjDataInMemory& v)
+ProjDataInMemory::operator*=(const base_type& v)
 {
-  this->buffer *= v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer *= vp->buffer;
+  else
+    base_type::operator*=(v);
   return *this;
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator/=(const ProjDataInMemory& v)
+ProjDataInMemory::operator/=(const base_type& v)
 {
-  this->buffer /= v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer /= vp->buffer;
+  else
+    base_type::operator/=(v);
+
   return *this;
 }
 

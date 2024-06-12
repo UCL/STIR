@@ -39,10 +39,12 @@ bool
 Array<num_dimensions, elemT>::is_contiguous() const
 {
   auto mem = &(*this->begin_all());
-  for (auto i = this->get_min_index(); i < this->get_max_index(); ++i)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); ++i)
     {
       if (!(*this)[i].is_contiguous())
         return false;
+      if (i == this->get_max_index())
+        return true;
       mem += (*this)[i].size_all();
       if (mem != &(*(*this)[i + 1].begin_all()))
         return false;
@@ -739,8 +741,13 @@ Array<1, elemT>::sum() const
   this->check_state();
   typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
-  for (int i = this->get_min_index(); i <= this->get_max_index(); acc += this->num[i++])
-    {}
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
+  for (int i = this->get_min_index(); i <= this->get_max_index(); ++i)
+    acc += this->num[i];
   return static_cast<elemT>(acc);
 };
 
@@ -751,6 +758,11 @@ Array<1, elemT>::sum_positive() const
   this->check_state();
   typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     {
       if (this->num[i] > 0)

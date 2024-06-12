@@ -143,7 +143,7 @@ public:
        \c data_sptr.get() block. Therefore, any modifications to the array will modify the data at \c data_sptr.get().
     This will be true until the Array is resized.
 
-    The C-array \data_ptr will be accessed with the last dimension running fastest
+    The C-array \a data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
   */
   inline Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr);

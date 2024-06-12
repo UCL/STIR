@@ -44,9 +44,11 @@
 <h3>New functionality</h3>
 <ul>
   <li>
-    <code>ProjDataInMemory</code> now has same methods for numerical operations as <code>Array</code>,
-    i.e. =,-,*,/,+=,-=,*=,/=,<code>find_max()</code>,<code>find_min()</code>,<code>sum()</code>.<br>
-    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
+    <code>ProjData</code> now has most of the methods for numerical operations as <code>Array</code>,
+    i.e. +=,-=,*=,/=,<code>find_max()</code>,<code>find_min()</code>,<code>sum()</code>.
+    <code>ProjDataInMemory</code> adds =,-,*,/ (as well as overloads that are faster than the implementations
+    in <code>ProjData</code>).<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a> and <a href=https://github.com/UCL/STIR/pull/1448>PR #1448</a>
   </li>
 </ul>
 
@@ -98,7 +100,7 @@ from the above):</H2>
     but non-TOF instead. This did not happen in our normal reconstruction code, and would have thrown an error
     if it occured.
     <br>
-    Fixed in <a href=https://github.com/UCL/STIR/pull/1427>issue #1427</a>.
+    Fixed in <a href=https://github.com/UCL/STIR/pull/1427>PR #1427</a>.
   </li>
 </ul>
 
@@ -106,7 +108,12 @@ from the above):</H2>
 <h3>Other code changes</h3>
 <ul>
   <li>
-    Fixes an incompatibility with C++20.
+    Fixed an incompatibility with C++20.
+  </li>
+  <li>
+    Enabled OpenMP for <code>Array</code> members <code>find_max(), find_min(), sum(), sum_positivie()</code>.
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1449>PR #1449</a>.
   </li>
 </ul>
 

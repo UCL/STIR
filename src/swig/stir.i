@@ -1038,9 +1038,10 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir_exam.i"
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
+%include "stir_projdata_coords.i"
+%include "stir/DataSymmetriesForViewSegmentNumbers.h"
 %include "stir_projdata.i"
 %include "stir_listmode.i"
-%include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 %include "stir_voxels.i"
 %include "stir_voxels_IO.i"
