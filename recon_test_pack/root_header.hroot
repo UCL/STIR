@@ -14,6 +14,7 @@ View offset (degrees)					 := 0
 Maximum number of (unmashed) TOF time bins := 5
 Size of unmashed TOF time bins (ps)        := 820.0
 TOF timing resolution (ps)                 := 400.0
+TOF mashing factor:= 1
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
