@@ -67,7 +67,7 @@
               stir::ProjMatrixByBin
   >;
 
-%include "stir/recon_buildblock/ProjMatrixByBinPinholeSPECTUB.h"
+%include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 
 %template (internalRPProjMatrixByBinPinholeSPECTUB) stir::RegisteredParsingObject<
 	      stir::ProjMatrixByBinPinholeSPECTUB,
