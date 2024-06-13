@@ -71,9 +71,12 @@ ScatterEstimation::set_half_filter_width(unsigned int arg)
 }
 
 void
-ScatterEstimation::set_downsample_scanner(bool downsample_scanner, int downsampled_detectors_per_ring)
+ScatterEstimation::set_downsample_scanner(bool downsample_scanner,
+                                          int downsampled_number_of_rings,
+                                          int downsampled_detectors_per_ring)
 {
   this->downsample_scanner_bool = downsample_scanner;
+  this->downsampled_number_of_rings = downsampled_number_of_rings;
   this->downsampled_detectors_per_ring = downsampled_detectors_per_ring;
 }
 
