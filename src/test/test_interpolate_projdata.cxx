@@ -78,10 +78,10 @@ InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
         {
           for (auto tang = segment.get_min_tangential_pos_num(); tang <= segment.get_max_tangential_pos_num(); tang++)
             {
-              auto voxel1 = abs(segment[increasing_index][view][tang]);
-              auto voxel2 = abs(segment[decreasing_index][view][tang]);
-              if (abs(voxel1 - voxel2) > maxAbsDifference)
-                maxAbsDifference = abs(voxel1 - voxel2);
+              auto voxel1 = std::abs(segment[increasing_index][view][tang]);
+              auto voxel2 = std::abs(segment[decreasing_index][view][tang]);
+              if (std::abs(voxel1 - voxel2) > maxAbsDifference)
+                maxAbsDifference = std::abs(voxel1 - voxel2);
               if (voxel1 > 0)
                 {
                   sumAbsValues += voxel1;
@@ -114,8 +114,8 @@ InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
             {
               auto voxel1 = segment[axial][view][tang];
               auto voxel2 = segment[axial][view + segment.get_num_views() / 2][tang];
-              if (abs(voxel1 - voxel2) > maxAbsDifference)
-                maxAbsDifference = abs(voxel1 - voxel2);
+              if (std::abs(voxel1 - voxel2) > maxAbsDifference)
+                maxAbsDifference = std::abs(voxel1 - voxel2);
               if (voxel1 > 0)
                 {
                   sumAbsValues += voxel1;
@@ -149,7 +149,7 @@ InterpolationTests::compare_segment(const SegmentBySinogram<float>& segment1,
         {
           for (auto tang = segment1.get_min_tangential_pos_num(); tang <= segment1.get_max_tangential_pos_num(); tang++)
             {
-              sumAbsDifference += abs(segment1[axial][view][tang] - segment2[axial][view][tang]);
+              sumAbsDifference += std::abs(segment1[axial][view][tang] - segment2[axial][view][tang]);
             }
         }
     }
@@ -496,7 +496,7 @@ InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
                                      "BlocksOnCylindrical",
                                      10.0,
                                      16.0,
-                                     60.0,
+                                     120.0,
                                      96.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(

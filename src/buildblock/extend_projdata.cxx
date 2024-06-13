@@ -74,9 +74,9 @@ extend_segment(const SegmentBySinogram<float>& segment,
   const auto average_phi_sampling = phi_range / (segment.get_proj_data_info_sptr()->get_num_views() - 1);
   // check if 360 or 180 degrees
   // use a rather large tolerance to cope with non-uniform sampling in BlocksOnCylindrical
-  if (abs(phi_range - 2 * _PI) < 5 * average_phi_sampling)
+  if (std::abs(phi_range - 2 * _PI) < 5 * average_phi_sampling)
     flip_views = false; // if views cover 360°, we can simply wrap around
-  else if ((abs(phi_range - _PI) < 5 * average_phi_sampling) && (segment.get_segment_num() == 0))
+  else if ((std::abs(phi_range - _PI) < 5 * average_phi_sampling) && (segment.get_segment_num() == 0))
     flip_views = true; // if views cover 180°, the tangential positions need to be flipped
   else
     {
@@ -97,7 +97,7 @@ extend_segment(const SegmentBySinogram<float>& segment,
             }
           else if (flip_views)
             {
-              const int sym_dim = std::min(abs(min_dim[3]), max_dim[3]);
+              const int sym_dim = std::min(std::abs(min_dim[3]), max_dim[3]);
               for (int tang_pos = -sym_dim; tang_pos <= sym_dim; tang_pos++)
                 {
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]

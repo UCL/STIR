@@ -26,6 +26,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
         test_FBP3DRP.cxx
         test_priors.cxx
         test_blocks_on_cylindrical_projectors.cxx
+        test_geometry_blocks_on_cylindrical.cxx
 )
 
 
@@ -35,6 +36,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         recontest.cxx
         test_data_processor_projectors.cxx
         test_OSMAPOSL.cxx
+        test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin.cxx
 )
 
 if (DOWNLOAD_ZENODO_TEST_DATA)
@@ -126,6 +128,10 @@ include(stir_test_exe_targets)
 
 # a test that uses MPI
 create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" $<TARGET_OBJECTS:stir_registries>)
+
+# pass list-mode file as argument
+ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin
+  test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin "${CMAKE_SOURCE_DIR}/recon_test_pack/PET_ACQ_small.l.hdr.STIR")
 
 # fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
 if (BUILD_TESTING)

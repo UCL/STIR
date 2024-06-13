@@ -70,7 +70,7 @@ jobs:
           compiler: gcc
           compiler_version: 12
           cuda_version: "0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "ON"
           ROOT: "OFF"
@@ -79,7 +79,7 @@ jobs:
           compiler: gcc
           compiler_version: 12
           cuda_version: "12.1.0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "OFF"
@@ -162,9 +162,6 @@ jobs:
             CXX=${CXX}-${{ matrix.compiler_version }}            
           fi
           if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
-            # need to force XCode version for the moment due to a linker bug
-            # see https://github.com/UCL/STIR/issues/1103
-            echo DEVELOPER_DIR="/Applications/Xcode_14.1.app/Contents/Developer" >> $GITHUB_ENV
             if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
               brew install llvm@${{ matrix.compiler_version }}
               if test XX${HOMEBREW_PREFIX} = XX; then
@@ -211,7 +208,7 @@ jobs:
                 sudo apt install libinsighttoolkit5-dev
               fi
               # free up some disk space
-              sudo apt clean
+              apt autoremove --purge && sudo apt clean
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
@@ -255,12 +252,15 @@ jobs:
              cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_args}
              cmake --build . --target install --config Release
              cd ../..
+             rm -rf parallelproj
           fi
 
           # Install ROOT (warning: currently only valid on Ubuntu)
           if test "${{matrix.ROOT}}XX" == "ONXX"; then
-             wget https://root.cern/download/root_v6.24.02.Linux-ubuntu20-x86_64-gcc9.3.tar.gz
-             tar -xzvf root_v6.24.02.Linux-ubuntu20-x86_64-gcc9.3.tar.gz
+             ROOT_file=root_v6.28.12.Linux-ubuntu20-x86_64-gcc9.4.tar.gz
+             wget https://root.cern/download/"$ROOT_file"
+             tar -xzvf "$ROOT_file"
+             rm "$ROOT_file"
              source root/bin/thisroot.sh
           fi
 
@@ -330,6 +330,12 @@ jobs:
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
           cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
 
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
+
     - name: ctest
       shell: bash
       env:
@@ -344,7 +350,10 @@ jobs:
           fi
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              # Also excluding test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+              # as it is a bit slow. Moreover it fails on MacOS (Debug)
+              # https://github.com/UCL/STIR/pull/1418#issuecomment-2109518132
+              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection|test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin"
               EXCLUDE="${EXCLUDE_Debug}${EXCLUDE:+"|"}${EXCLUDE}"
           fi
           # prepend -E
@@ -353,6 +362,66 @@ jobs:
           fi
           # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
+
+    - name: Upload ctest log files for debugging
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ctest_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: |
+          ${{ github.workspace }}/build/**/*.log
+          ${{ github.workspace }}/build/**/*.hv
+          ${{ github.workspace }}/build/**/*.v
+          ${{ github.workspace }}/build/**/*.hs
+          ${{ github.workspace }}/build/**/*.s
+        retention-days: 7
+
+    - name: C++ examples with STIR_LOCAL
+      shell: bash
+      run: |
+          set -ex;
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          # Run examples to see if they work
+          cd ${GITHUB_WORKSPACE}/examples/PET_simulation
+          ./run_simulation.sh 1> /dev/null
+
+          # Run the Demo executables
+          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++/using_STIR_LOCAL
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL
+
+          generate_image generate_image.par
+          forward_project sino.hs image.hv  small.hs
+
+          # Cannot test demo1 or demo2 as they require interactivity. Piping does not work.
+          ${EXE_LOC}/demo3 demo.par --display_off
+          ${EXE_LOC}/demo3 demoPM.par --display_off
+          ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
+          ${EXE_LOC}/demo5_line_search demo5_line_search.par
+
+    - name: remove build
+      shell: bash
+         # remove to create some disk space
+      run: |
+          set -x
+          cd ${GITHUB_WORKSPACE}
+          df -h .
+          rm -rf ./build
+          df -h .
+
+    - name: C++ examples with installed STIR
+      shell: bash
+      run: |
+          set -ex;
+          # build and run C++/using_installed_STIR
+          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
+          cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
+          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+          cmake --build build/ --config Release  --target install
+          # run demo
+          demo_create_image
+          # just check if its output makes sense
+          list_image_info test.hv
+          rm -rf build
 
     - name: recon_test_pack
       shell: bash
@@ -378,52 +447,21 @@ jobs:
             ./run_SPECT_tests.sh
           fi
 
-    - name: Upload log files for debugging
-      uses: actions/upload-artifact@v3
+    - name: Upload recon_test_pack log files for debugging
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
-        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        path: |
+          ${{ github.workspace }}/recon_test_pack/**/*.log
           ${{ github.workspace }}/recon_test_pack/**/my_*v
           ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7
 
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session if triggered
-      uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 15
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
-
-    - name: examples
+    - name: remove recon_test_pack
       shell: bash
       run: |
-          set -ex;
-          PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
-          # Run examples to see if they work
-          cd ${GITHUB_WORKSPACE}/examples/PET_simulation
-          ./run_simulation.sh 1> /dev/null
-
-          # Run the Demo executables
-          EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++/using_STIR_LOCAL
-          cd ${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL
-
-          generate_image generate_image.par
-          forward_project sino.hs image.hv  small.hs
-
-          # Cannot test demo1 or demo2 as they require interactivity. Piping does not work.
-          ${EXE_LOC}/demo3 demo.par --display_off
-          ${EXE_LOC}/demo3 demoPM.par --display_off
-          ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
-          ${EXE_LOC}/demo5_line_search demo5_line_search.par
-
-          # build and run C++/using_installed_STIR
-          cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
-          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-          cmake --build build/ --config Release  --target install
-          # run demo
-          demo_create_image
-          # just check if its output makes sense
-          list_image_info test.hv
+          rm -rf ${GITHUB_WORKSPACE}/recon_test_pack
 
     - name: Python
       shell: bash

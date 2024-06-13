@@ -1,5 +1,5 @@
 
-README file for STIR recon_test_pack version 3.0 (and later versions?)
+README file for STIR recon_test_pack version 6.1 (and later versions?)
 ----------------------------------------------------------------------
 
 This test pack runs some simple tests to check if various STIR reconstruction

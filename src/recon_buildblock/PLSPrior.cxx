@@ -498,12 +498,12 @@ PLSPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_image
                  (penalty[z][y][x]) * (*kappa_ptr)[z][y][x];
               */
 
-              elemT current = (*penalty_sptr)[z][y][x];
+              double current = (*penalty_sptr)[z][y][x];
 
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x];
 
-              result += static_cast<double>(current);
+              result += current;
             }
         }
     }

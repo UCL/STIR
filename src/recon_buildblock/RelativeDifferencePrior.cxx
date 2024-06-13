@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2019, Hammersmith Imanet Ltd
-    Copyright (C) 2019- 2020, UCL
+    Copyright (C) 2019- 2024, UCL
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -31,9 +31,9 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <algorithm>
+#include <cmath>
 using std::min;
 using std::max;
-
 /* Pretty horrible code because we don't have an iterator of neigbhourhoods yet
  */
 
@@ -267,6 +267,29 @@ compute_weights(Array<3, float>& weights, const CartesianCoordinate3D<float>& gr
 
 template <typename elemT>
 double
+RelativeDifferencePrior<elemT>::value(const elemT x, const elemT y) const
+{
+  return 0.5 * (square(static_cast<double>(x - y)) / (x + y + this->gamma * std::abs(x - y) + this->epsilon));
+}
+
+template <typename elemT>
+elemT
+RelativeDifferencePrior<elemT>::derivative_10(const elemT x, const elemT y) const
+{
+  if (this->epsilon == 0.0 && x == 0 && y == 0)
+    {
+      // handle 0/0 by taking the limit with x=y->0
+      // note that the limit y=0,x->0 is 1/(1+gamma)
+      return elemT(0);
+    }
+
+  const double num = (static_cast<double>(x - y) * (this->gamma * std::abs(x - y) + x + 3 * y + 2 * this->epsilon));
+  const double denom_sqrt = static_cast<double>(x + y) + this->gamma * std::abs(x - y) + this->epsilon;
+  return static_cast<elemT>(num / (denom_sqrt * denom_sqrt));
+}
+
+template <typename elemT>
+double
 RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   if (this->penalisation_factor == 0)
@@ -317,7 +340,7 @@ RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
-                      elemT current;
+                      double current;
                       if (this->epsilon == 0.0 && current_image_estimate[z][y][x] == 0.0
                           && current_image_estimate[z + dz][y + dy][x + dx] == 0.0)
                         {
@@ -326,18 +349,13 @@ RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>
                         }
                       else
                         {
-                          current = weights[dz][dy][dx] * 0.5
-                                    * (pow(current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx], 2)
-                                       / (current_image_estimate[z][y][x] + current_image_estimate[z + dz][y + dy][x + dx]
-                                          + this->gamma
-                                                * abs(current_image_estimate[z][y][x]
-                                                      - current_image_estimate[z + dz][y + dy][x + dx])
-                                          + this->epsilon));
+                          current = weights[dz][dy][dx]
+                                    * value(current_image_estimate[z][y][x], current_image_estimate[z + dz][y + dy][x + dx]);
                         }
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
 
-                      result += static_cast<double>(current);
+                      result += current;
                     }
             }
         }
@@ -394,41 +412,21 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
 
-              elemT gradient = 0;
+              double gradient = 0;
               for (int dz = min_dz; dz <= max_dz; ++dz)
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
-
-                      elemT current;
-                      if (this->epsilon == 0.0 && current_image_estimate[z][y][x] == 0.0
-                          && current_image_estimate[z + dz][y + dy][x + dx] == 0.0)
-                        {
-                          // handle the undefined nature of the gradient
-                          current = 0.0;
-                        }
-                      else
-                        {
-                          current
-                              = weights[dz][dy][dx]
-                                * (((current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx])
-                                    * (this->gamma
-                                           * abs(current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx])
-                                       + current_image_estimate[z][y][x] + 3 * current_image_estimate[z + dz][y + dy][x + dx]
-                                       + 2 * this->epsilon))
-                                   / (square((current_image_estimate[z][y][x] + current_image_estimate[z + dz][y + dy][x + dx])
-                                             + this->gamma
-                                                   * abs(current_image_estimate[z][y][x]
-                                                         - current_image_estimate[z + dz][y + dy][x + dx])
-                                             + this->epsilon)));
-                        }
+                      double current
+                          = weights[dz][dy][dx]
+                            * derivative_10(current_image_estimate[z][y][x], current_image_estimate[z + dz][y + dy][x + dx]);
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
 
                       gradient += current;
                     }
 
-              prior_gradient[z][y][x] = gradient * this->penalisation_factor;
+              prior_gradient[z][y][x] = static_cast<elemT>(gradient * this->penalisation_factor);
             }
         }
     }
@@ -579,7 +577,7 @@ RelativeDifferencePrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensit
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
 
-              /// At this point, we have j = [z][y][x]
+              // At this point, we have j = [z][y][x]
               // The next for loops will have k = [z+dz][y+dy][x+dx]
               // The following computes
               //(H_{wf} y)_j =
@@ -626,9 +624,9 @@ elemT
 RelativeDifferencePrior<elemT>::derivative_20(const elemT x_j, const elemT x_k) const
 {
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
-    return 2 * pow(2 * x_k + this->epsilon, 2) / pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
+    return 2 * pow(2 * x_k + this->epsilon, 2) / pow(x_j + x_k + this->gamma * std::abs(x_j - x_k) + this->epsilon, 3);
   else
-    return 0.0;
+    return INFINITY;
 }
 
 template <typename elemT>
@@ -637,9 +635,9 @@ RelativeDifferencePrior<elemT>::derivative_11(const elemT x_j, const elemT x_k) 
 {
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
     return -2 * (2 * x_j + this->epsilon) * (2 * x_k + this->epsilon)
-           / pow(x_j + x_k + this->gamma * abs(x_j - x_k) + this->epsilon, 3);
+           / pow(x_j + x_k + this->gamma * std::abs(x_j - x_k) + this->epsilon, 3);
   else
-    return 0.0;
+    return INFINITY;
 }
 
 #ifdef _MSC_VER

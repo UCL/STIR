@@ -178,14 +178,14 @@ public:
 
   //******************** projection operations ********************//
 
-  //! back project a single bin
+  //! back project a single bin (accumulates)
   void back_project(DiscretisedDensity<3, float>&, const Bin&) const;
 
-  //! forward project into a single bin
+  //! forward project into a single bin (accumulates)
   void forward_project(Bin&, const DiscretisedDensity<3, float>&) const;
-  //! back project related bins
+  //! back project related bins (accumulates)
   void back_project(DiscretisedDensity<3, float>&, const RelatedBins&) const;
-  //! forward project related bins
+  //! forward project related bins (accumulates)
   void forward_project(RelatedBins&, const DiscretisedDensity<3, float>&) const;
 
 private:

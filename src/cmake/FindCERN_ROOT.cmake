@@ -3,7 +3,7 @@
 # @Author Nikos Efthimiou (nikos.efthimiou AT gmail.com)
 # @Author Kris Thielemans
 # @Author the ROOT team
-# @Atuhor Rebert Twyman (improved documentation)
+# @Author Robert Twyman (improved documentation)
 
 ## CMAKE ARGS
 #
@@ -37,7 +37,7 @@
 
 # This file contains lines from FindROOT.cmake distributed in ROOT 6.08.
 # Therefore, this file is presumably licensed under the LGPL 2.1.
-# New parts Copyright 2016, 2020, 2023 University College London
+# New parts Copyright 2016, 2020, 2023, 2024 University College London
 
 if (NOT DEFINED ROOTSYS)
   set(ROOTSYS "$ENV{ROOTSYS}")
@@ -153,7 +153,11 @@ else()
 
 endif()
 
+# root-config reports version as 6.26/10. This might also happen in other cases. Convert it to 6.26.10
+string(REPLACE "/" "." CERN_ROOT_VERSION "${CERN_ROOT_VERSION}")
+
 if (CERN_ROOT_DEBUG)
+  message(STATUS "CERN_ROOT_VERSION: ${CERN_ROOT_VERSION}")
   message(STATUS "CERN_ROOT_INCLUDE_DIRS: ${CERN_ROOT_INCLUDE_DIRS}")
   message(STATUS "AVAILABLE ROOT LIBRARIES: ${CERN_ROOT_LIBRARIES}")
   if (TARGET ROOT::Tree)
@@ -164,4 +168,6 @@ if (CERN_ROOT_DEBUG)
 endif()
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT "CERN ROOT not found. If you do have it, set ROOT_DIR (preferred), ROOTSYS or add root-config to your path" CERN_ROOT_VERSION CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT FAIL_MESSAGE "CERN ROOT not found. If you do have it, set ROOT_DIR (preferred), ROOTSYS or add root-config to your path"
+  VERSION_VAR CERN_ROOT_VERSION
+  REQUIRED_VARS CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS)
