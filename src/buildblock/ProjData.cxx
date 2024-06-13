@@ -98,10 +98,6 @@ ProjData::read_from_file(const string& filename, const std::ios::openmode openmo
       }
   }
 
-  fstream* input = new fstream(actual_filename.c_str(), openmode | ios::binary);
-  if (!*input)
-    error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
-
   const FileSignature file_signature(actual_filename);
   const char* signature = file_signature.get_signature();
 
