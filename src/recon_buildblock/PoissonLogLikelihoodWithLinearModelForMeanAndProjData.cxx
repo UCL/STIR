@@ -639,13 +639,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
           return Succeeded::no;
         }
 
-      if (auto norm_pd_ptr = dynamic_cast<BinNormalisationFromProjData const *>(this->normalisation_sptr.get()))
+      if (!this->use_tofsens && proj_data_info_sptr->is_tof_data() && normalisation_sptr->is_TOF_only_norm())
         {
-          if (!this->use_tofsens && norm_pd_ptr->get_norm_proj_data_sptr()->get_num_tof_poss() > 1)
-            {
-              info("Detected TOF normalisation data, so using time-of-flight sensitivities");
-              this->use_tofsens = true;
-            }
+          info("Detected TOF normalisation data, so using time-of-flight sensitivities");
+          this->use_tofsens = true;
         }
 
       if (this->sensitivity_uses_same_projector())

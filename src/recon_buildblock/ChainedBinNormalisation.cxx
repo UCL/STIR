@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,7 +13,7 @@
   \file
   \ingroup normalisation
 
-  \brief Implementation for class ChainedBinNormalisation
+  \brief Implementation for class stir::ChainedBinNormalisation
 
   \author Kris Thielemans
 */
@@ -64,6 +65,14 @@ ChainedBinNormalisation::ChainedBinNormalisation(shared_ptr<BinNormalisation> co
 {
   post_processing();
 }
+
+bool
+ChainedBinNormalisation::is_TOF_only_norm() const
+{
+  return (this->apply_first && this->apply_first->is_TOF_only_norm()) ||
+    (this->apply_second && this->apply_second->is_TOF_only_norm());
+}
+
 
 Succeeded
 ChainedBinNormalisation::set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,
