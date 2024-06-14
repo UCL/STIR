@@ -53,6 +53,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 
 #include "stir/ProjDataInMemory.h"
 
@@ -636,6 +637,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
   this->distributable_computation_already_setup = false;
   // similar for norm
   this->norm_already_setup = false;
+
+  if (auto norm_pd_ptr = dynamic_cast<BinNormalisationFromProjData const*>(this->normalisation_sptr.get()))
+    {
+      if (!this->use_tofsens && norm_pd_ptr->get_norm_proj_data_sptr()->get_num_tof_poss() > 1)
+        {
+          info("Detected TOF normalisation data, so using time-of-flight sensitivities");
+          this->use_tofsens = true;
+        }
+    }
 
   if (this->get_recompute_sensitivity())
     {
