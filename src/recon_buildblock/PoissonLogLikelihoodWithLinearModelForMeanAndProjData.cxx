@@ -33,7 +33,7 @@
 #include "stir/error.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
-
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/DiscretisedDensity.h"
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/DistributedCachingInformation.h"
@@ -626,12 +626,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
   // TODO check compatibility between symmetries for forward and backprojector
   this->symmetries_sptr.reset(this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
 
-  if (is_null_ptr(this->normalisation_sptr))
-    {
-      error("Invalid normalisation object");
-      return Succeeded::no;
-    }
-
   // we postpone calling setup_distributable_computation until we know which projectors we will use
   this->distributable_computation_already_setup = false;
   // similar for norm
@@ -639,6 +633,21 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
 
   if (this->get_recompute_sensitivity())
     {
+      if (is_null_ptr(this->normalisation_sptr))
+        {
+          error("Invalid normalisation object");
+          return Succeeded::no;
+        }
+
+      if (auto norm_pd_ptr = dynamic_cast<BinNormalisationFromProjData const *>(this->normalisation_sptr.get()))
+        {
+          if (!this->use_tofsens && norm_pd_ptr->get_norm_proj_data_sptr()->get_num_tof_poss() > 1)
+            {
+              info("Detected TOF normalisation data, so using time-of-flight sensitivities");
+              this->use_tofsens = true;
+            }
+        }
+
       if (this->sensitivity_uses_same_projector())
         {
           this->sens_backprojector_sptr = projector_pair_ptr->get_back_projector_sptr();
