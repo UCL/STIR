@@ -69,10 +69,9 @@ ChainedBinNormalisation::ChainedBinNormalisation(shared_ptr<BinNormalisation> co
 bool
 ChainedBinNormalisation::is_TOF_only_norm() const
 {
-  return (this->apply_first && this->apply_first->is_TOF_only_norm()) ||
-    (this->apply_second && this->apply_second->is_TOF_only_norm());
+  return (this->apply_first && this->apply_first->is_TOF_only_norm())
+         || (this->apply_second && this->apply_second->is_TOF_only_norm());
 }
-
 
 Succeeded
 ChainedBinNormalisation::set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,
