@@ -59,6 +59,15 @@
     <code>Array::sum()</code> (and hence images etc) now accumulates in a variable at higher precision to avoid loss of precision.<br>
     <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
   </li>
+  <li>
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code> now attempts to auto-detect
+    if it should compute sensitivity using TOF back-projection or not. It does this by
+    checking if its normalisation object can only handle TOF data or not.
+    This should mean that the <tt>use time-of-flight sensitivities</tt> keyword should now
+    rarely (if ever) be necessary.
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1458>PR #1458</a>
+    </li>
 </ul>
 
 

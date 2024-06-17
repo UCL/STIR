@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
-    Copyright (C) 2023, University College London
+    Copyright (C) 2023, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -69,6 +69,14 @@ BinNormalisationFromProjData::BinNormalisationFromProjData(const std::string& fi
 BinNormalisationFromProjData::BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
     : norm_proj_data_ptr(norm_proj_data_ptr)
 {}
+
+bool
+BinNormalisationFromProjData::is_TOF_only_norm() const
+{
+  if (!this->get_norm_proj_data_sptr())
+    error("BinNormalisationFromProjData: projection data not set.");
+  return this->get_norm_proj_data_sptr()->get_num_tof_poss() > 1;
+}
 
 Succeeded
 BinNormalisationFromProjData::set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,
