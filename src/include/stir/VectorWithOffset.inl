@@ -276,8 +276,8 @@ template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr)
     : length(static_cast<unsigned>(max_index - min_index) + 1),
       start(min_index),
-      pointer_access(false),
-      allocated_memory_sptr(nullptr) // we don't own the data
+      allocated_memory_sptr(nullptr), // we don't own the data
+      pointer_access(false)      
 {
   this->begin_allocated_memory = data_ptr;
   this->end_allocated_memory = end_of_data_ptr;
