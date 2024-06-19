@@ -29,6 +29,7 @@
   \author Ottavia Bertolli
   \author PARAPET project
   \author Parisa Khateri
+  \author Robert Twyman Skelly
 */
 
 #include "stir/Scanner.h"
@@ -1490,6 +1491,7 @@ Scanner::set_params(Type type_v,
 void
 Scanner::set_scanner_geometry(const std::string& new_scanner_geometry)
 {
+  info(boost::format("Scanner::set_scanner_geometry: setting scanner_geometry to %1%") % new_scanner_geometry);
   scanner_geometry = new_scanner_geometry;
   _already_setup = false;
 }
@@ -1667,12 +1669,12 @@ Scanner::check_consistency() const
 
         // exclusion of generic as 'get_num_axial_crystals_per_block()' is sometimes false for asymmetric detectors and not
         // important for generic
-        if (dets_axial != (get_num_rings() + get_num_virtual_axial_crystals_per_block()) && scanner_geometry != "Generic")
+        if (dets_axial != get_num_axial_crystals() && scanner_geometry != "Generic")
           {
             warning("Scanner %s: inconsistent axial block info: %d vs %d",
                     this->get_name().c_str(),
                     dets_axial,
-                    get_num_rings() + get_num_virtual_axial_crystals_per_block());
+                    get_num_axial_crystals());
             return Succeeded::no;
           }
       }
@@ -1682,17 +1684,6 @@ Scanner::check_consistency() const
       warning("Scanner %s: axial bucket info is not set (probably irrelevant unless you use dead-time correction that needs this "
               "info)",
               this->get_name().c_str());
-    else
-      {
-        const int blocks_axial = get_num_axial_buckets() * get_num_axial_blocks_per_bucket();
-        // exclusion of generic as 'get_num_axial_blocks_per_bucket()' is sometimes false for asymmetric detectors and not
-        // important for generic
-        if (blocks_axial != get_num_axial_blocks() && scanner_geometry != "Generic")
-          {
-            warning("Scanner %s: inconsistent axial block/bucket info", this->get_name().c_str());
-            return Succeeded::no;
-          }
-      }
   }
   // checks on singles units
   {
@@ -1795,13 +1786,14 @@ Scanner::check_consistency() const
       if (round(get_transaxial_block_spacing() * get_num_transaxial_blocks_per_bucket() * 1000.0) / 1000.0
           < round(2 * inner_ring_radius * tan(_PI / 2 / get_num_transaxial_buckets()) * 1000.0) / 1000.0)
         {
-          warning("Scanner %s: inconsistent transaxial spacing:\n"
-                  "\ttransaxial_block_spacing %f muliplied by num_transaxial_blocks_per_bucket %d should fit into a polygon that "
-                  "encircles a cylinder with inner_ring_radius %f",
-                  this->get_name().c_str(),
-                  get_transaxial_block_spacing(),
-                  get_num_transaxial_blocks_per_bucket(),
-                  get_inner_ring_radius());
+          warning(
+              "Scanner %s: inconsistent transaxial spacing:\n"
+              "\ttransaxial_block_spacing %f multiplied by num_transaxial_blocks_per_bucket %d should fit into a polygon that "
+              "encircles a cylinder with inner_ring_radius %f",
+              this->get_name().c_str(),
+              get_transaxial_block_spacing(),
+              get_num_transaxial_blocks_per_bucket(),
+              get_inner_ring_radius());
           return Succeeded::no;
         }
     }
@@ -1962,7 +1954,8 @@ Scanner::parameter_info() const
     }
 
   // block/bucket description
-  s << "  Number of blocks per bucket in transaxial direction         := " << get_num_transaxial_blocks_per_bucket() << '\n'
+  s << "  Number of buckets in axial direction                        := " << get_num_axial_buckets() << '\n'
+    << "  Number of blocks per bucket in transaxial direction         := " << get_num_transaxial_blocks_per_bucket() << '\n'
     << "  Number of blocks per bucket in axial direction              := " << get_num_axial_blocks_per_bucket() << '\n'
     << "  Number of crystals per block in axial direction             := " << get_num_axial_crystals_per_block() << '\n'
     << "  Number of crystals per block in transaxial direction        := " << get_num_transaxial_crystals_per_block() << '\n'
@@ -1978,14 +1971,14 @@ Scanner::parameter_info() const
     {
       s << "  Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := " << get_scanner_geometry() << '\n';
     }
-  if (get_axial_crystal_spacing() >= 0)
-    s << "  Distance between crystals in axial direction (cm)           := " << get_axial_crystal_spacing() / 10 << '\n';
-  if (get_transaxial_crystal_spacing() >= 0)
-    s << "  Distance between crystals in transaxial direction (cm)      := " << get_transaxial_crystal_spacing() / 10 << '\n';
-  if (get_axial_block_spacing() >= 0)
-    s << "  Distance between blocks in axial direction (cm)             := " << get_axial_block_spacing() / 10 << '\n';
-  if (get_transaxial_block_spacing() >= 0)
-    s << "  Distance between blocks in transaxial direction (cm)        := " << get_transaxial_block_spacing() / 10 << '\n';
+  if (get_axial_crystal_spacing() >= 0 || get_num_axial_crystals_per_block() > 1)
+    s << "  Crystal spacing/pitch in axial direction (cm)           := " << get_axial_crystal_spacing() / 10 << '\n';
+  if (get_transaxial_crystal_spacing() >= 0 || get_num_transaxial_crystals_per_block() > 1)
+    s << "  Crystal spacing/pitch in transaxial direction (cm)      := " << get_transaxial_crystal_spacing() / 10 << '\n';
+  if (get_axial_block_spacing() >= 0 || get_num_axial_blocks_per_bucket() > 1)
+    s << "  Block spacing/pitch in axial direction (cm)             := " << get_axial_block_spacing() / 10 << '\n';
+  if (get_transaxial_block_spacing() >= 0 || get_num_transaxial_blocks_per_bucket() > 1)
+    s << "  Block spacing/pitch in transaxial direction (cm)        := " << get_transaxial_block_spacing() / 10 << '\n';
 
   s << "End scanner parameters:=\n";
 
@@ -2070,13 +2063,21 @@ Scanner::ask_parameters()
 
       float BinSize = ask_num("Enter default (tangential) bin size after arc-correction (in mm):", 0.F, 60.F, 3.75F);
       float intrTilt = ask_num("Enter intrinsic_tilt (in degrees):", -180.F, 360.F, 0.F);
-      int TransBlocksPerBucket = ask_num("Enter number of transaxial blocks per bucket: ", 0, 10, 2);
-      int AxialBlocksPerBucket = ask_num("Enter number of axial blocks per bucket: ", 0, 10, 6);
-      int AxialCrystalsPerBlock = ask_num("Enter number of axial crystals per block: ", 0, 16, 8);
-      int TransaxialCrystalsPerBlock = ask_num("Enter number of transaxial crystals per block: ", 0, 16, 8);
-      int AxialCrstalsPerSinglesUnit = ask_num("Enter number of axial crystals per singles unit: ", 0, NoRings, 1);
+
+      // Helper function: if x / y = 3.33, divideAndRoundUp rounds this up to 4. If x / y = 3.0, it would leave it as 3.
+      auto divideAndRoundUp = [](int x, int y) -> int { return (x + y - 1) / y; };
+      int AxialCrystalsPerBlock = ask_num("Enter number of axial crystals per block: ", 1, NoRings, 8);
+      int AxialBlocksPerBucket
+          = ask_num("Enter number of axial blocks per bucket: ", 1, divideAndRoundUp(NoRings, AxialCrystalsPerBlock), 6);
+      int AxialCrystalsPerSinglesUnit = ask_num("Enter number of axial crystals per singles unit: ", 1, NoRings, 1);
+
+      int TransaxialCrystalsPerBlock = ask_num("Enter number of transaxial crystals per block: ", 1, num_detectors_per_ring, 8);
+      int TransBlocksPerBucket = ask_num("Enter number of transaxial blocks per bucket: ",
+                                         1,
+                                         divideAndRoundUp(num_detectors_per_ring, TransaxialCrystalsPerBlock),
+                                         2);
       int TransaxialCrystalsPerSinglesUnit
-          = ask_num("Enter number of transaxial crystals per singles unit: ", 0, num_detectors_per_ring, 1);
+          = ask_num("Enter number of transaxial crystals per singles unit: ", 1, num_detectors_per_ring, 1);
 
       short int Num_TOF_bins = ask_num("Number of TOF time bins :", 0, 800, 0);
       float Size_TOF_bin = ask_num("Size of timing bin (ps) :", 0.0f, 100.0f, 0.0f);
@@ -2095,10 +2096,11 @@ Scanner::ask_parameters()
       const string ScannerGeometry
           = ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
 
-      float AxialCrystalSpacing = ask_num("Enter crystal spacing in axial direction (in mm): ", 0.F, 30.F, 6.75F);
-      float TransaxialCrystalSpacing = ask_num("Enter crystal spacing in transaxial direction (in mm): ", 0.F, 30.F, 6.75F);
-      float AxialBlockSpacing = ask_num("Enter block spacing in axial direction (in mm): ", 0.F, 360.F, 54.F);
-      float TransaxialBlockSpacing = ask_num("Enter block spacing in transaxial direction (in mm): ", 0.F, 360.F, 54.F);
+      float AxialCrystalSpacing = ask_num("Enter crystal spacing/pitch in axial direction (in mm): ", 0.F, 30.F, 6.75F);
+      float AxialBlockSpacing = ask_num("Enter block spacing/pitch in axial direction (in mm): ", 0.F, 360.F, 54.F);
+      float AxialBucketSpacing = ask_num("Enter bucket spacing/pitch in axial direction (in mm): ", 0.F, 360.F, 54.F);
+      float TransaxialCrystalSpacing = ask_num("Enter crystal spacing/pitch in transaxial direction (in mm): ", 0.F, 30.F, 6.75F);
+      float TransaxialBlockSpacing = ask_num("Enter block spacing/pitch in transaxial direction (in mm): ", 0.F, 360.F, 54.F);
 
       string crystal_map_file_name = "";
       if (ScannerGeometry == "Generic")
@@ -2123,7 +2125,7 @@ Scanner::ask_parameters()
                                 TransBlocksPerBucket,
                                 AxialCrystalsPerBlock,
                                 TransaxialCrystalsPerBlock,
-                                AxialCrstalsPerSinglesUnit,
+                                AxialCrystalsPerSinglesUnit,
                                 TransaxialCrystalsPerSinglesUnit,
                                 num_detector_layers,
                                 EnergyResolution,
