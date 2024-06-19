@@ -23,6 +23,7 @@
 //#include "stir/display.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/IndexRange.h"
 #include "stir/BasicCoordinate.h"
 #include "stir/Sinogram.h"
@@ -259,11 +260,12 @@ interpolate_projdata(ProjData& proj_data_out,
             }
 
           // define a function to translate indices in the output proj data to indices in input proj data
-          index_converter = [&proj_data_out_info, m_offset, m_sampling, scale_factor](
+          index_converter = [&proj_data_out_info, &proj_data_in_info, m_offset, m_sampling, scale_factor](
                                 const BasicCoordinate<3, int>& index_out) -> BasicCoordinate<3, double> {
             // translate index on output to coordinate
             auto bin
-                = Bin(0 /* segment */, index_out[2] /* view */, index_out[1] /* axial pos */, index_out[3] /* tangential pos */);
+                = Bin(0 /* segment */, index_out[2] /* view */, index_out[1] /* axial pos */, index_out[3] /* tangential pos
+                */);
             auto out_m = proj_data_out_info.get_m(bin);
 
             // translate to indices in input proj data
@@ -271,6 +273,120 @@ interpolate_projdata(ProjData& proj_data_out,
             index_in[1] = (out_m - m_offset) / m_sampling;
             index_in[2] = index_out[2] / scale_factor;
             index_in[3] = index_out[3] / scale_factor;
+
+            // now check that we don't inadvertently jump from one module to the next
+            int det1_num_out, det2_num_out;
+            // const ProjDataInfoGenericNoArcCorr* proj_data_info_blk_ptr
+            //   = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(proj_data_info_sptr.get());
+            const auto proj_data_out_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_out_info);
+            // static_cast<stir::ProjDataInfoGenericNoArcCorr>(proj_data_out_info).
+            proj_data_out_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_out,
+                                                                                 det2_num_out,
+                                                                                 index_out[2], /*view*/
+                                                                                 index_out[3] /* tangential pos */);
+            const int dets_per_module_out = proj_data_out_info.get_scanner_sptr()->get_num_detectors_per_ring()
+                                            / proj_data_out_info.get_scanner_sptr()->get_num_transaxial_buckets();
+            const int det1_module = std::floor(det1_num_out / dets_per_module_out);
+            const int det2_module = std::floor(det2_num_out / dets_per_module_out);
+
+            const auto proj_data_in_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_in_info);
+            int floor_view, ceil_view;
+            int flip_tangential = 1;
+            if (std::floor(index_in[2]) < 0)
+              {
+                floor_view = proj_data_in_info_ptr->get_num_views() + std::floor(index_in[2]);
+                flip_tangential = -1;
+              }
+            else
+              floor_view = std::floor(index_in[2]);
+            if (std::ceil(index_in[2]) > proj_data_in_info_ptr->get_max_view_num())
+              {
+                ceil_view = int(std::ceil(index_in[2])) % proj_data_in_info_ptr->get_num_views();
+                flip_tangential = -1;
+              }
+            else
+              ceil_view = std::ceil(index_in[2]);
+
+            int floor_tang, ceil_tang;
+            if (flip_tangential * std::floor(index_in[3]) < proj_data_in_info_ptr->get_min_tangential_pos_num())
+              floor_tang = proj_data_in_info_ptr->get_min_tangential_pos_num();
+            else if (flip_tangential * std::floor(index_in[3]) > proj_data_in_info_ptr->get_max_tangential_pos_num())
+              floor_tang = proj_data_in_info_ptr->get_max_tangential_pos_num();
+            else
+              floor_tang = flip_tangential * std::ceil(index_in[3]);
+            if (flip_tangential * std::ceil(index_in[3]) < proj_data_in_info_ptr->get_min_tangential_pos_num())
+              ceil_tang = proj_data_in_info_ptr->get_min_tangential_pos_num();
+            else if (flip_tangential * std::ceil(index_in[3]) > proj_data_in_info_ptr->get_max_tangential_pos_num())
+              ceil_tang = proj_data_in_info_ptr->get_max_tangential_pos_num();
+            else
+              ceil_tang = flip_tangential * std::ceil(index_in[3]);
+
+            const int dets_per_module_in = proj_data_in_info.get_scanner_sptr()->get_num_detectors_per_ring()
+                                           / proj_data_in_info.get_scanner_sptr()->get_num_transaxial_buckets();
+            int det1_num_in_ff, det2_num_in_ff;
+            // static_cast<stir::ProjDataInfoGenericNoArcCorr>(proj_data_in_info).
+            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_ff,
+                                                                                det2_num_in_ff,
+                                                                                floor_view, /* view */
+                                                                                floor_tang /* tangential pos */);
+            const int det1_module_ff = std::floor(det1_num_in_ff / dets_per_module_in);
+            const int det2_module_ff = std::floor(det2_num_in_ff / dets_per_module_in);
+            int det1_num_in_fc, det2_num_in_fc;
+            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_fc,
+                                                                                det2_num_in_fc,
+                                                                                floor_view, /* view */
+                                                                                ceil_tang /* tangential pos */);
+            const int det1_module_fc = std::floor(det1_num_in_fc / dets_per_module_in);
+            const int det2_module_fc = std::floor(det2_num_in_fc / dets_per_module_in);
+            int det1_num_in_cf, det2_num_in_cf;
+            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_cf,
+                                                                                det2_num_in_cf,
+                                                                                ceil_view, /* view */
+                                                                                floor_tang /* tangential pos */);
+            const int det1_module_cf = std::floor(det1_num_in_cf / dets_per_module_in);
+            const int det2_module_cf = std::floor(det2_num_in_cf / dets_per_module_in);
+            int det1_num_in_cc, det2_num_in_cc;
+            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_cc,
+                                                                                det2_num_in_cc,
+                                                                                ceil_view, /* view */
+                                                                                ceil_tang /* tangential pos */);
+            const int det1_module_cc = std::floor(det1_num_in_cc / dets_per_module_in);
+            const int det2_module_cc = std::floor(det2_num_in_cc / dets_per_module_in);
+
+            bool exceeded = false;
+            int x = 0, y = 0; // use x to encode whether view should be floor'ed or ceil'ed and y for tangential pos
+            if (det1_module_ff != det1_module || det2_module_ff != det2_module)
+              {
+                x++, y++;
+                exceeded = true;
+              }
+            if (det1_module_fc != det1_module || det2_module_fc != det2_module)
+              {
+                x++, y--;
+                exceeded = true;
+              }
+            if (det1_module_cf != det1_module || det2_module_cf != det2_module)
+              {
+                x--, y++;
+                exceeded = true;
+              }
+            if (det1_module_cc != det1_module || det2_module_cc != det2_module)
+              {
+                x--, y--;
+                exceeded = true;
+              }
+
+            if (exceeded)
+              {
+                if (x >= 0)
+                  index_in[2] = std::ceil(index_in[2]);
+                else
+                  index_in[2] = std::floor(index_in[2]);
+                if (y >= 0)
+                  index_in[3] = std::ceil(index_in[3]);
+                else
+                  index_in[3] = std::floor(index_in[3]);
+              }
 
             return index_in;
           };
