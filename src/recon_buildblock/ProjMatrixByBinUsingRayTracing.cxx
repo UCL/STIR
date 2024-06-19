@@ -264,6 +264,13 @@ ProjMatrixByBinUsingRayTracing::set_up(
 
   ProjMatrixByBin::set_up(proj_data_info_sptr_v, density_info_sptr_v);
 
+  if (proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical" && !use_actual_detector_boundaries)
+    {
+      warning("Setting use_actual_detector_boundaries to true, since this is the only supported setting for "
+              "BlocksOnCylindrical geometry");
+      use_actual_detector_boundaries = true;
+    }
+
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
   if (std::abs(origin.x()) > .05F || std::abs(origin.y()) > .05F)
