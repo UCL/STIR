@@ -251,7 +251,7 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                 // get_m could be replaced by get_t
                 const float out_m = out_proj_data_info_sptr->get_m(Bin(out_segment_num, 0, out_ax_pos_num, out_timing_pos_num));
 
-                unsigned int num_in_ax_pos = 0;
+                unsigned int num_in_sinos = 0;
 
                 Bin out_bin(out_segment_num, 0, out_ax_pos_num, 0, out_timing_pos_num);
 
@@ -273,16 +273,14 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                             = in_proj_data_info_sptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, in_timing_pos_num));
                         if (fabs(out_m - in_m) < 1E-4)
                           {
-                            ++num_in_ax_pos;
-
-                            in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num, false, in_timing_pos_num);
-
                             Bin in_bin(in_segment_num, 0, in_ax_pos_num, 0, in_timing_pos_num);
                             const float in_k = in_proj_data_info_sptr->get_k(in_bin);
 
                             // check if in_timing_pos_num is in the range for the out bin or not
                             if (in_k < out_lower_k || in_k >= out_higher_k)
                               continue;
+                            in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num, false, in_timing_pos_num);
+                            ++num_in_sinos;
                             for (int in_view_num = in_proj_data.get_min_view_num();
                                  in_view_num <= in_proj_data.get_max_view_num();
                                  ++in_view_num)
@@ -297,9 +295,9 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                             break; // out of loop over ax_pos as we found where to put it
                           }
                       }
-                if (do_norm && num_in_ax_pos != 0)
-                  out_sino /= static_cast<float>(num_in_ax_pos * num_views_to_combine);
-                if (num_in_ax_pos == 0)
+                if (do_norm && num_in_sinos != 0)
+                  out_sino /= static_cast<float>(num_in_sinos * num_views_to_combine);
+                if (num_in_sinos == 0)
                   warning("SSRB: no sinograms contributing to output segment %d, ax_pos %d\n", out_segment_num, out_ax_pos_num);
 
                 out_proj_data.set_sinogram(out_sino);
