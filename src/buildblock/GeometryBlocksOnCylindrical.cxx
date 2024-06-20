@@ -92,12 +92,9 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
                     - ax_blocks_gap * (num_axial_blocks_per_bucket * num_axial_buckets - 1))
                   / 2;
   float start_y = -1 * scanner.get_effective_ring_radius();
-  float start_x
-      = -1 * r
-        * sin(csi_minus_csiGaps); //(
-                                  //								((num_transaxial_blocks_per_bucket-1)/2.)*transaxial_block_spacing
-  //							+ ((num_transaxial_crystals_per_block-1)/2.)*transaxial_crystal_spacing
-  //											); //the first crystal in the bucket
+  float start_x = -1 // the first crystal in the bucket
+                  * (((num_transaxial_blocks_per_bucket - 1) / 2.) * transaxial_block_spacing
+                     + ((num_transaxial_crystals_per_block - 1) / 2.) * transaxial_crystal_spacing);
 
   stir::CartesianCoordinate3D<float> start_point(start_z, start_y, start_x);
 
