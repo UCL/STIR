@@ -41,7 +41,7 @@ ${PROJECT_SOURCE_DIR}/src/scatter_buildblock/scatter_registries.cxx
 )
 
 # need to list IO first such that its dependencies on other libraries are resolved
-SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL   iterative_KOSMAPOSL
+SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D analytic_SRT2DSPECT  iterative_OSMAPOSL   iterative_KOSMAPOSL
      iterative_OSSPS
       scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
       display   data_buildblock numerics_buildblock buildblock
@@ -71,6 +71,8 @@ SET( STIR_DIRS
      modelling_utilities
      listmode_utilities
      analytic/FBP2D
+     analytic/SRT2D
+     analytic/SRT2DSPECT
      analytic/FBP3DRP
      iterative/OSMAPOSL  
      iterative/KOSMAPOSL
