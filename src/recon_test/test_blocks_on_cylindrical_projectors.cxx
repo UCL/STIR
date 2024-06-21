@@ -364,27 +364,29 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
   forw_projector2.forward_project(*projdata2, *image2_sptr);
 
   int view1_num = 0, view2_num = 0;
+  float min_diff = std::numeric_limits<float>::max();
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB1;
   for (int i = 0; i < projdata->get_max_view_num(); i++)
     {
       Bin bin(0, i, 0, 0);
       proj_data_info_blocks_sptr->get_LOR(lorB1, bin);
-      if (std::abs(lorB1.phi() - phi1) / phi1 <= 1E-2)
+      if (std::abs(lorB1.phi() - phi1) < min_diff)
         {
+          min_diff = std::abs(lorB1.phi() - phi1);
           view1_num = i;
-          break;
         }
     }
 
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB2;
+  min_diff = std::numeric_limits<float>::max();
   for (int i = 0; i < projdata2->get_max_view_num(); i++)
     {
       Bin bin(0, i, 0, 0);
       proj_data_info_blocks_sptr->get_LOR(lorB2, bin);
-      if (std::abs(lorB2.phi() - phi2) / phi2 <= 1E-2)
+      if (std::abs(lorB2.phi() - phi2) < min_diff)
         {
+          min_diff = std::abs(lorB2.phi() - phi2);
           view2_num = i;
-          break;
         }
     }
 
@@ -393,23 +395,25 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
 
   //    find the tang position with the max value
   int tang1_num = 0, tang2_num = 0;
+  min_diff = std::numeric_limits<float>::max();
   for (int tang = projdata->get_min_tangential_pos_num(); tang < projdata->get_max_tangential_pos_num(); tang++)
     {
 
-      if ((max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang)) / max1 < 1E-3)
+      if ((max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang)) < min_diff)
         {
+          min_diff = (max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang));
           tang1_num = tang;
-          break;
         }
     }
 
+  min_diff = std::numeric_limits<float>::max();
   for (int tang = projdata2->get_min_tangential_pos_num(); tang < projdata2->get_max_tangential_pos_num(); tang++)
     {
 
-      if ((max2 - projdata2->get_sinogram(0, 0).at(view2_num).at(tang)) / max2 < 1E-3)
+      if ((max2 - projdata2->get_sinogram(0, 0).at(view2_num).at(tang)) < min_diff)
         {
+          min_diff = (max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang));
           tang2_num = tang;
-          break;
         }
     }
 
