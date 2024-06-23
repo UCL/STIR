@@ -8,7 +8,8 @@
     <h1>Summary of changes in STIR release 6.2</h1>
 
     <p>
-      This version is 100% backwards compatible with STIR 6.1. However, C++-17 is now required.
+      This version is 100% backwards compatible with STIR 6.1, aside from the default of the
+      tail-fitting of the scatter estimator (see below). However, C++-17 is now required.
     </p>
 
 <h2>Overall summary</h2>
@@ -55,6 +56,15 @@
 
 <h3>Changed functionality</h3>
 <ul>
+  <li>
+    The default minimum scale factor for tail-fitting in the scatter estimation is now 0.05 (was 0.4).
+    This (temporarily) resolves a problem that for the Siemens mMR, the default factor was too large
+    (see <a href=https://github.com/UCL/STIR/issues/1280>issue #1280</a>.<br>
+    <strong>WARNING:</strong><i>This potentially changes your scatter estimates</i>. (You can check log files
+    of the scatter estimation to see what the scaling factors are.) However,
+    the Siemens mMR example files already lowered the default scale factor to .1, so if you used
+    those, you will get identical results.
+  </li>
   <li>
     <code>Array::sum()</code> (and hence images etc) now accumulates in a variable at higher precision to avoid loss of precision.<br>
     <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
