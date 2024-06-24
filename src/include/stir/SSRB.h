@@ -91,7 +91,7 @@ ProjDataInfo* SSRB(const ProjDataInfo& in_proj_data_info,
   Default value -1 means 'do all segments'.
   \param do_normalisation (default true) wether to normalise the output sinograms
   corresponding to how many input sinograms contribute to them.
-  \param num_tof_bins_to_combine currently has to be 1. If it doesn't, error() will be called.
+  \param num_tof_bins_to_combine defaults to 1, so TOF bins are not combined.
 
   \see SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
