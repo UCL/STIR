@@ -96,9 +96,9 @@ Radionuclide::get_modality(bool check) const
 bool
 Radionuclide::operator==(const Radionuclide& r) const
 {
-  return (abs(energy - r.energy) <= 1E-1 || (energy <= 0 && r.energy <= 0))
-         && (abs(branching_ratio - r.branching_ratio) <= 1E-1 || (branching_ratio <= 0 && r.branching_ratio <= 0))
-         && (abs(half_life - r.half_life) <= 1 || (r.half_life <= 0 && r.half_life <= 0)) && (modality == r.modality);
+  return (std::abs(energy - r.energy) <= 1E-1 || (energy <= 0 && r.energy <= 0))
+         && (std::abs(branching_ratio - r.branching_ratio) <= 1E-1 || (branching_ratio <= 0 && r.branching_ratio <= 0))
+         && (std::abs(half_life - r.half_life) <= 1 || (r.half_life <= 0 && r.half_life <= 0)) && (modality == r.modality);
 }
 
 END_NAMESPACE_STIR

@@ -34,15 +34,15 @@ namespace detail
 
   This function might propagate any exceptions by std::istream::read.
  */
-template <class elemT>
-inline Succeeded read_data_1d(std::istream& s, Array<1, elemT>& data, const ByteOrder byte_order);
+template <int num_dimensions, class elemT>
+inline Succeeded read_data_1d(std::istream& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order);
 
 /* \ingroup Array_IO_detail
   \brief  This is the (internal) function that does the actual reading from a FILE*.
   \internal
  */
-template <class elemT>
-inline Succeeded read_data_1d(FILE*&, Array<1, elemT>& data, const ByteOrder byte_order);
+template <int num_dimensions, class elemT>
+inline Succeeded read_data_1d(FILE*&, Array<num_dimensions, elemT>& data, const ByteOrder byte_order);
 
 } // end namespace detail
 END_NAMESPACE_STIR

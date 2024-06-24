@@ -579,6 +579,10 @@
 %newobject *::get_empty_copy;
 %newobject *::read_from_file;
 
+// SWIG complains "Warning 503: Can't wrap 'stir::swap' unless renamed to a valid identifier."
+// But it's probably dangerous to expose swap anyway, so let's ignore it.
+%ignore **::swap;
+%ignore stir::swap;
 %ignore *::ask_parameters;
 %ignore *::create_shared_clone;
 %ignore *::read_from_stream;
@@ -586,6 +590,10 @@
 %ignore *::get_const_data_ptr;
 %ignore *::release_data_ptr;
 %ignore *::release_const_data_ptr;
+%ignore *::get_full_data_ptr;
+%ignore *::get_const_full_data_ptr;
+%ignore *::release_full_data_ptr;
+%ignore *::release_const_full_data_ptr;
 
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
@@ -1031,9 +1039,10 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir_exam.i"
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
+%include "stir_projdata_coords.i"
+%include "stir/DataSymmetriesForViewSegmentNumbers.h"
 %include "stir_projdata.i"
 %include "stir_listmode.i"
-%include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 %include "stir_voxels.i"
 %include "stir_voxels_IO.i"

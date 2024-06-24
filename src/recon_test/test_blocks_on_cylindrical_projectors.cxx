@@ -96,7 +96,7 @@ BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_
     {
       min_ring_diff_v[i] = i;
       max_ring_diff_v[i] = i;
-      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
+      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - std::abs(i);
     }
 
   auto proj_data_info_blocks_sptr
@@ -128,7 +128,7 @@ BlocksTests::set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_
     {
       min_ring_diff_v[i] = i;
       max_ring_diff_v[i] = i;
-      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - abs(i);
+      num_axial_pos_per_segment[i] = scanner_sptr->get_num_rings() - std::abs(i);
     }
 
   auto proj_data_info_blocks_sptr
@@ -364,27 +364,29 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
   forw_projector2.forward_project(*projdata2, *image2_sptr);
 
   int view1_num = 0, view2_num = 0;
+  float min_diff = std::numeric_limits<float>::max();
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB1;
   for (int i = 0; i < projdata->get_max_view_num(); i++)
     {
       Bin bin(0, i, 0, 0);
       proj_data_info_blocks_sptr->get_LOR(lorB1, bin);
-      if (abs(lorB1.phi() - phi1) / phi1 <= 1E-2)
+      if (std::abs(lorB1.phi() - phi1) < min_diff)
         {
+          min_diff = std::abs(lorB1.phi() - phi1);
           view1_num = i;
-          break;
         }
     }
 
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB2;
+  min_diff = std::numeric_limits<float>::max();
   for (int i = 0; i < projdata2->get_max_view_num(); i++)
     {
       Bin bin(0, i, 0, 0);
       proj_data_info_blocks_sptr->get_LOR(lorB2, bin);
-      if (abs(lorB2.phi() - phi2) / phi2 <= 1E-2)
+      if (std::abs(lorB2.phi() - phi2) < min_diff)
         {
+          min_diff = std::abs(lorB2.phi() - phi2);
           view2_num = i;
-          break;
         }
     }
 
@@ -393,23 +395,25 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
 
   //    find the tang position with the max value
   int tang1_num = 0, tang2_num = 0;
+  min_diff = std::numeric_limits<float>::max();
   for (int tang = projdata->get_min_tangential_pos_num(); tang < projdata->get_max_tangential_pos_num(); tang++)
     {
 
-      if ((max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang)) / max1 < 1E-3)
+      if ((max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang)) < min_diff)
         {
+          min_diff = (max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang));
           tang1_num = tang;
-          break;
         }
     }
 
+  min_diff = std::numeric_limits<float>::max();
   for (int tang = projdata2->get_min_tangential_pos_num(); tang < projdata2->get_max_tangential_pos_num(); tang++)
     {
 
-      if ((max2 - projdata2->get_sinogram(0, 0).at(view2_num).at(tang)) / max2 < 1E-3)
+      if ((max2 - projdata2->get_sinogram(0, 0).at(view2_num).at(tang)) < min_diff)
         {
+          min_diff = (max1 - projdata->get_sinogram(0, 0).at(view1_num).at(tang));
           tang2_num = tang;
-          break;
         }
     }
 
@@ -821,11 +825,11 @@ BlocksTests::run_intersection_with_cylinder_test()
     const auto dot_product = line1.x() * line2.x() + line1.y() * line2.y() + line1.z() * line2.z();
     const auto length1 = sqrt(line1.x() * line1.x() + line1.y() * line1.y() + line1.z() * line1.z());
     const auto length2 = sqrt(line2.x() * line2.x() + line2.y() * line2.y() + line2.z() * line2.z());
-    return abs(dot_product) / length1 / length2 > 0.99;
+    return std::abs(dot_product) / length1 / length2 > 0.99;
   };
 
   auto point_is_on_cylinder = [](const CartesianCoordinate3D<float>& point, float radius) -> bool {
-    return abs(sqrt(point.x() * point.x() + point.y() * point.y()) - radius) < 0.1;
+    return std::abs(sqrt(point.x() * point.x() + point.y() * point.y()) - radius) < 0.1;
   };
 
   const auto segment_sequence = ProjData::standard_segment_sequence(*proj_data_info);

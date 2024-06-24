@@ -22,6 +22,7 @@
 
 #include "stir/common.h"
 #include <iterator>
+#include "boost/iterator/iterator_adaptor.hpp"
 
 START_NAMESPACE_STIR
 
@@ -40,6 +41,7 @@ START_NAMESPACE_STIR
   class that uses FullArrayIterator implements end_all(). See the implementation of
   Array::end_all().
 
+  \todo use std::enable_if and std::is_convertible as opposed to boost::enable_if_convertible
   \internal
 */
 template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
