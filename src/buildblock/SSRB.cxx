@@ -256,10 +256,16 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                 Bin out_bin(out_segment_num, 0, out_ax_pos_num, 0, out_timing_pos_num);
 
                 // get edges of TOF bin, currently only exposed via sampling
+                // for non-TOF data, the sampling in k is 0, therefore condition below is never met
+                // therefore: for non-TOF set out_lower_k to -1E20F and out_higher_k to 1E20F
                 const float out_lower_k
-                    = out_proj_data_info_sptr->get_k(out_bin) - out_proj_data_info_sptr->get_sampling_in_k(out_bin) / 2;
+                    = out_proj_data_info_sptr->is_tof_data()
+                          ? (out_proj_data_info_sptr->get_k(out_bin) - out_proj_data_info_sptr->get_sampling_in_k(out_bin) / 2)
+                          : -1E20F;
                 const float out_higher_k
-                    = out_proj_data_info_sptr->get_k(out_bin) + out_proj_data_info_sptr->get_sampling_in_k(out_bin) / 2;
+                    = out_proj_data_info_sptr->is_tof_data()
+                          ? (out_proj_data_info_sptr->get_k(out_bin) + out_proj_data_info_sptr->get_sampling_in_k(out_bin) / 2)
+                          : 1E20F;
 
                 for (int in_timing_pos_num = in_proj_data.get_min_tof_pos_num();
                      in_timing_pos_num <= in_proj_data.get_max_tof_pos_num();
