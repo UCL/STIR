@@ -264,7 +264,7 @@ InterpolationTests::scatter_interpolation_test_blocks()
                                      150,
                                      127,
                                      4.3,
-                                     20.0,
+                                     24.0,
                                      2.0,
                                      -0.38956 /* 0.0 */,
                                      1,
