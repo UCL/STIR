@@ -843,16 +843,19 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       new_num_dets = this->proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
       approx_num_non_arccorrected_bins = this->proj_data_info_sptr->get_num_tangential_poss();
       // preserve the length of the scanner the following includes gaps
-      float scanner_length_block = new_scanner_sptr->get_num_axial_buckets() * new_scanner_sptr->get_num_axial_blocks_per_bucket()
-                                   * new_scanner_sptr->get_axial_block_spacing();
+      float scanner_length_block
+          = old_scanner_ptr->get_num_axial_buckets() * old_scanner_ptr->get_num_axial_blocks_per_bucket()
+                * old_scanner_ptr->get_axial_block_spacing()
+            - (old_scanner_ptr->get_axial_block_spacing()
+               - old_scanner_ptr->get_num_axial_crystals_per_block() * old_scanner_ptr->get_axial_crystal_spacing());
       new_scanner_sptr->set_num_axial_blocks_per_bucket(1);
       //        new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
 
       new_scanner_sptr->set_num_rings(new_num_rings);
-      //        float transaxial_bucket_spacing=old_scanner_ptr->get_transaxial_block_spacing()
-      //                *old_scanner_ptr->get_num_transaxial_blocks_per_bucket();
-      float new_ring_spacing = scanner_length_block / new_scanner_sptr->get_num_rings();
-      //        int num_trans_buckets=old_scanner_ptr->get_num_transaxial_buckets();
+      // float transaxial_bucket_spacing
+      //     = old_scanner_ptr->get_transaxial_block_spacing() * old_scanner_ptr->get_num_transaxial_blocks_per_bucket();
+      float new_ring_spacing = scanner_length_block / (new_scanner_sptr->get_num_rings() - 1);
+      // int num_trans_buckets = old_scanner_ptr->get_num_transaxial_buckets();
       // get a new number of detectors that is a multiple of the number of buckets to preserve scanner shape
       //        float frac,whole;
       //        frac = std::modf(float(new_num_dets/new_scanner_sptr->get_num_transaxial_buckets()), &whole);

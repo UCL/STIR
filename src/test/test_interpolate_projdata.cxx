@@ -252,9 +252,9 @@ InterpolationTests::scatter_interpolation_test_blocks()
                          01.F,
                          -1.F,
                          "BlocksOnCylindrical",
+                         4.13793, // 120 / (30 - 1)
                          4.0,
-                         4.0,
-                         24.0,
+                         24.83,
                          24.0);
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
                                      "Some_symmetric_scanner",
@@ -280,9 +280,9 @@ InterpolationTests::scatter_interpolation_test_blocks()
                                      01.F,
                                      -1.F,
                                      "BlocksOnCylindrical",
-                                     20.0,
+                                     24.0, // 120 / (6 - 1),
                                      4.0,
-                                     120.0,
+                                     144.0,
                                      24.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(
