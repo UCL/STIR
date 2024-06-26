@@ -656,7 +656,7 @@ private:
                   short int max_num_of_timing_poss_v = -1.0f,
                   float size_timing_pos_v = -1.0f,
                   float timing_resolution_v = -1.0f,
-                  const std::string& scanner_geometry_v = "Cylindrical",
+                  const std::string& scanner_geometry_v = "",
                   float axial_crystal_spacing_v = -1.0f,
                   float transaxial_crystal_spacing_v = -1.0f,
                   float axial_block_spacing_v = -1.0f,
