@@ -424,6 +424,10 @@ public:
   inline float get_axial_block_spacing() const;
   //! get block spacing in transaxial direction
   inline float get_transaxial_block_spacing() const;
+  /*! get total axial length covered by the detectors (incl. any gaps between blocks etc.)
+    \todo Need to update this function when enabling different spacing between blocks and buckets etc.
+  */
+  inline float get_axial_length() const;
   //@} (end of get block geometry info)
 
   //! \name functions to get generic geometry info
@@ -652,7 +656,7 @@ private:
                   short int max_num_of_timing_poss_v = -1.0f,
                   float size_timing_pos_v = -1.0f,
                   float timing_resolution_v = -1.0f,
-                  const std::string& scanner_geometry_v = "",
+                  const std::string& scanner_geometry_v = "Cylindrical",
                   float axial_crystal_spacing_v = -1.0f,
                   float transaxial_crystal_spacing_v = -1.0f,
                   float axial_block_spacing_v = -1.0f,
