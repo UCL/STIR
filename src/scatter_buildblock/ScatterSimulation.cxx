@@ -828,7 +828,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                            * proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
 
           new_num_rings = round(total_axial_length / 20.F + 0.5F);
-          new_num_rings = min(new_num_rings, 2); // set number of rings to at least 2
+          new_num_rings = max(new_num_rings, 2); // set number of rings to at least 2
         }
       else
         return Succeeded::no;
