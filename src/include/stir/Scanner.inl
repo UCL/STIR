@@ -295,6 +295,13 @@ Scanner::get_axial_block_spacing() const
   return axial_block_spacing;
 }
 
+float
+Scanner::get_axial_length() const
+{
+  return get_num_axial_buckets() * get_num_axial_blocks_per_bucket() * get_axial_block_spacing()
+         - (get_axial_block_spacing() - (get_num_axial_crystals_per_block() - 1) * get_axial_crystal_spacing());
+}
+
 std::string
 Scanner::get_crystal_map_file_name() const
 {

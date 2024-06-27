@@ -83,14 +83,12 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
   //    estimate the angle covered by half bucket, csi
   float csi = _PI / num_transaxial_buckets;
   float trans_blocks_gap = transaxial_block_spacing - num_transaxial_crystals_per_block * transaxial_crystal_spacing;
-  float ax_blocks_gap = axial_block_spacing - num_axial_crystals_per_block * axial_crystal_spacing;
+  float ax_blocks_gap = axial_block_spacing - (num_axial_crystals_per_block - 1) * axial_crystal_spacing;
   float csi_minus_csiGaps = csi - (csi / transaxial_block_spacing * 2) * (transaxial_crystal_spacing / 2 + trans_blocks_gap);
   //    distance between the center of the scannner and the first crystal in the bucket, r=Reffective/cos(csi)
   float r = scanner.get_effective_ring_radius() / cos(csi_minus_csiGaps);
 
-  float start_z = -(axial_block_spacing * (num_axial_blocks_per_bucket)*num_axial_buckets - axial_crystal_spacing
-                    - ax_blocks_gap * (num_axial_blocks_per_bucket * num_axial_buckets - 1))
-                  / 2;
+  float start_z = -(axial_block_spacing * num_axial_blocks_per_bucket * num_axial_buckets - ax_blocks_gap) / 2;
   float start_y = -1 * scanner.get_effective_ring_radius();
   float start_x = -1 // the first crystal in the bucket
                   * (((num_transaxial_blocks_per_bucket - 1) / 2.) * transaxial_block_spacing
@@ -121,7 +119,8 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
 
                 // calculate cartesian coordinate for a given detector
                 stir::CartesianCoordinate3D<float> transformation_matrix(
-                    ax_block_num * axial_block_spacing + ax_crys_num * axial_crystal_spacing,
+                    (ax_block_num + ax_bucket_num * num_axial_blocks_per_bucket) * axial_block_spacing
+                        + ax_crys_num * axial_crystal_spacing,
                     0.,
                     trans_block_num * transaxial_block_spacing + trans_crys_num * transaxial_crystal_spacing);
                 float alpha = scanner.get_intrinsic_azimuthal_tilt() + trans_bucket_num * (2 * _PI) / num_transaxial_buckets

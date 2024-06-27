@@ -236,7 +236,7 @@ InterpolationTests::scatter_interpolation_test_blocks()
                          150,
                          127,
                          4.3,
-                         4.0,
+                         4.13793, // total scanner length of 120mm divided by (rings - 1) to get the spacing
                          2.0,
                          -0.38956 /* 0.0 */,
                          5,
@@ -252,9 +252,9 @@ InterpolationTests::scatter_interpolation_test_blocks()
                          01.F,
                          -1.F,
                          "BlocksOnCylindrical",
+                         4.13793, // total scanner length of 120mm divided by (rings - 1) to get the spacing
                          4.0,
-                         4.0,
-                         24.0,
+                         24.83, // ring spacing multiplied by number of crystals per block
                          24.0);
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
                                      "Some_symmetric_scanner",
@@ -264,7 +264,7 @@ InterpolationTests::scatter_interpolation_test_blocks()
                                      150,
                                      127,
                                      4.3,
-                                     20.0,
+                                     24.0, // total scanner length of 120mm divided by (rings - 1) to get the spacing
                                      2.0,
                                      -0.38956 /* 0.0 */,
                                      1,
@@ -280,9 +280,9 @@ InterpolationTests::scatter_interpolation_test_blocks()
                                      01.F,
                                      -1.F,
                                      "BlocksOnCylindrical",
-                                     20.0,
+                                     24.0, // total scanner length of 120mm divided by (rings - 1) to get the spacing
                                      4.0,
-                                     120.0,
+                                     144.0, // ring spacing multiplied by number of crystals per block
                                      24.0);
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(
