@@ -48,6 +48,7 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewgramIndices.h"
 #include "stir/is_null_ptr.h"
+#include "stir/numerics/norm.h"
 #include <cstring>
 #include <fstream>
 #include <algorithm>
@@ -96,10 +97,6 @@ ProjData::read_from_file(const string& filename, const std::ios::openmode openmo
         actual_filename.resize(comma_pos);
       }
   }
-
-  fstream* input = new fstream(actual_filename.c_str(), openmode | ios::binary);
-  if (!*input)
-    error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
 
   const FileSignature file_signature(actual_filename);
   const char* signature = file_signature.get_signature();
@@ -476,6 +473,167 @@ void
 ProjData::sapyb(const ProjData& a, const ProjData& y, const ProjData& b)
 {
   this->xapyb(*this, a, y, b);
+}
+
+float
+ProjData::sum() const
+{
+  double t = 0.;
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s = this->get_min_segment_num(); s <= this->get_max_segment_num(); ++s)
+      {
+        const SegmentIndices ind(s, timing_pos_num);
+        t += this->get_segment_by_sinogram(ind).sum();
+      }
+  return static_cast<float>(t);
+}
+
+float
+ProjData::find_max() const
+{
+  float t = 0;
+  bool init = true;
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s = this->get_min_segment_num(); s <= this->get_max_segment_num(); ++s)
+      {
+        const SegmentIndices ind(s, timing_pos_num);
+        const auto t_seg = this->get_segment_by_sinogram(ind).find_max();
+        if (init)
+          {
+            init = false;
+            t = t_seg;
+          }
+        else
+          {
+            t = std::max(t, t_seg);
+          }
+      }
+  return t;
+}
+
+float
+ProjData::find_min() const
+{
+  float t = 0;
+  bool init = true;
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s = this->get_min_segment_num(); s <= this->get_max_segment_num(); ++s)
+      {
+        const SegmentIndices ind(s, timing_pos_num);
+        const auto t_seg = this->get_segment_by_sinogram(ind).find_min();
+        if (init)
+          {
+            init = false;
+            t = t_seg;
+          }
+        else
+          {
+            t = std::min(t, t_seg);
+          }
+      }
+  return t;
+}
+
+double
+ProjData::norm_squared() const
+{
+  double t = 0.;
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s = this->get_min_segment_num(); s <= this->get_max_segment_num(); ++s)
+      {
+        const SegmentIndices ind(s, timing_pos_num);
+        const auto seg = this->get_segment_by_sinogram(ind);
+        t += stir::norm_squared(seg.begin_all(), seg.end_all());
+      }
+  return t;
+}
+
+double
+ProjData::norm() const
+{
+  return std::sqrt(this->norm_squared());
+}
+
+// static helper functions to iterate over segment and apply a function
+
+// func(s1, s2) is supposed to modify s1
+template <typename Func>
+static ProjData&
+apply_func(ProjData& self, const ProjData& arg, Func func)
+{
+  for (int timing_pos_num = self.get_min_tof_pos_num(); timing_pos_num <= self.get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s = self.get_min_segment_num(); s <= self.get_max_segment_num(); ++s)
+      {
+        const SegmentIndices ind(s, timing_pos_num);
+        auto seg = self.get_segment_by_sinogram(ind);
+        func(seg, arg.get_segment_by_sinogram(ind));
+        self.set_segment(seg);
+      }
+  return self;
+}
+
+// func(s1) is supposed to modify s1
+template <typename Func>
+static ProjData&
+apply_func(ProjData& self, Func func)
+{
+  for (int timing_pos_num = self.get_min_tof_pos_num(); timing_pos_num <= self.get_max_tof_pos_num(); ++timing_pos_num)
+    for (int s = self.get_min_segment_num(); s <= self.get_max_segment_num(); ++s)
+      {
+        const SegmentIndices ind(s, timing_pos_num);
+        auto seg = self.get_segment_by_sinogram(ind);
+        func(seg);
+        self.set_segment(seg);
+      }
+  return self;
+}
+
+ProjData&
+ProjData::operator+=(const ProjData& arg)
+{
+  return apply_func(*this, arg, [](SegmentBySinogram<float>& s, const SegmentBySinogram<float>& s_arg) { s += s_arg; });
+}
+
+ProjData&
+ProjData::operator-=(const ProjData& arg)
+{
+  return apply_func(*this, arg, [](SegmentBySinogram<float>& s, const SegmentBySinogram<float>& s_arg) { s -= s_arg; });
+}
+
+ProjData&
+ProjData::operator*=(const ProjData& arg)
+{
+  return apply_func(*this, arg, [](SegmentBySinogram<float>& s, const SegmentBySinogram<float>& s_arg) { s *= s_arg; });
+}
+
+ProjData&
+ProjData::operator/=(const ProjData& arg)
+{
+  return apply_func(*this, arg, [](SegmentBySinogram<float>& s, const SegmentBySinogram<float>& s_arg) { s /= s_arg; });
+}
+
+ProjData&
+ProjData::operator+=(float arg)
+{
+  return apply_func(*this, [arg](SegmentBySinogram<float>& s) { s += arg; });
+}
+
+ProjData&
+ProjData::operator-=(float arg)
+{
+  return apply_func(*this, [arg](SegmentBySinogram<float>& s) { s -= arg; });
+}
+
+ProjData&
+ProjData::operator*=(float arg)
+{
+  return apply_func(*this, [arg](SegmentBySinogram<float>& s) { s *= arg; });
+}
+
+ProjData&
+ProjData::operator/=(float arg)
+{
+  return apply_func(*this, [arg](SegmentBySinogram<float>& s) { s /= arg; });
 }
 
 std::vector<int>
