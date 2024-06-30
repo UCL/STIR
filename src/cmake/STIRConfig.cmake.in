@@ -143,6 +143,12 @@ if(@STIR_WITH_NiftyPET_PROJECTOR@)
   set(STIR_WITH_NiftyPET_PROJECTOR TRUE)
 endif()
 
+if(@STIR_WITH_CUDA@)
+  find_package(CUDAToolkit REQUIRED)
+  enable_language(CUDA)
+  set(STIR_WITH_CUDA TRUE)
+endif()
+
 if(@STIR_WITH_Parallelproj_PROJECTOR@)
   find_package(parallelproj REQUIRED CONFIG)
   set(STIR_WITH_Parallelproj_PROJECTOR TRUE)
