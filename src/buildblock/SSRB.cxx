@@ -247,7 +247,7 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                 out_sino = out_proj_data.get_empty_sinogram(out_bin);
                 const float out_m = out_proj_data_info_sptr->get_m(out_bin);
 
-                unsigned int num_in_sinos = 0;
+                unsigned int num_in_ax_pos = 0;
 
                 // get edges of TOF bin, currently only exposed via sampling
                 // for non-TOF data, the sampling in k is 0, which is incorrect and would lead to the TOF condition below never
@@ -273,13 +273,15 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                         const float in_m = in_proj_data_info_sptr->get_m(in_bin);
                         if (fabs(out_m - in_m) < 1E-4)
                           {
-                            const float in_k = in_proj_data_info_sptr->get_k(in_bin);
+                            if (in_timing_pos_num == in_proj_data.get_min_tof_pos_num())
+                              ++num_in_ax_pos; // count number of in_sinograms contributing (ignoring TOF)
 
+                            const float in_k = in_proj_data_info_sptr->get_k(in_bin);
                             // check if in_timing_pos_num is in the range for the out bin or not
                             if (in_k < out_lower_k || in_k >= out_higher_k)
                               continue;
                             in_sino = in_proj_data.get_sinogram(in_bin);
-                            ++num_in_sinos;
+
                             for (int in_view_num = in_proj_data.get_min_view_num();
                                  in_view_num <= in_proj_data.get_max_view_num();
                                  ++in_view_num)
@@ -294,10 +296,11 @@ SSRB(ProjData& out_proj_data, const ProjData& in_proj_data, const bool do_norm)
                             break; // out of loop over ax_pos as we found where to put it
                           }
                       }
-                if (do_norm && num_in_sinos != 0)
-                  out_sino /= static_cast<float>(num_in_sinos * num_views_to_combine);
-                if (num_in_sinos == 0)
-                  warning("SSRB: no sinograms contributing to output segment %d, ax_pos %d\n", out_segment_num, out_ax_pos_num);
+                if (do_norm && num_in_ax_pos != 0)
+                  out_sino /= static_cast<float>(num_in_ax_pos * num_views_to_combine);
+                if (num_in_ax_pos == 0)
+                  warning("SSRB: no sinograms contributing to output segment " + std::to_string(out_segment_num) + ", ax_pos "
+                          + std::to_string(out_ax_pos_num) + ", tof_pos_num " + std::to_string(out_timing_pos_num));
 
                 out_proj_data.set_sinogram(out_sino);
               }
