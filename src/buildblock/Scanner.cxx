@@ -1101,13 +1101,13 @@ Scanner::Scanner(Type scanner_type)
                  -1,    // reference_energy_v
                  (short int)1,
                  0.F,
-                 0.F,  // non-TOF
-                 "",   // scanner_geometry_v
-                 2.2,  // axial_crystal_spacing_v
-                 2.2,  // transaxial_crystal_spacing_v
-                 18.1, // axial_block_spacing_v
-                 33.6, // transaxial_block_spacing_v
-                 ""    // crystal_map_file_name_v
+                 0.F,                   // non-TOF
+                 "BlocksOnCylindrical", // scanner_geometry_v
+                 2.2,                   // axial_crystal_spacing_v
+                 2.2,                   // transaxial_crystal_spacing_v
+                 18.1,                  // axial_block_spacing_v
+                 33.6,                  // transaxial_block_spacing_v
+                 ""                     // crystal_map_file_name_v
       );
       break;
 
