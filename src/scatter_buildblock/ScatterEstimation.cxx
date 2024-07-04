@@ -88,7 +88,7 @@ ScatterEstimation::set_defaults()
   this->output_scatter_estimate_prefix = "";
   this->output_additive_estimate_prefix = "";
   this->num_scatter_iterations = 5;
-  this->min_scale_value = 0.4f;
+  this->min_scale_value = 0.05f;
   this->max_scale_value = 100.f;
   this->half_filter_width = 3;
 }

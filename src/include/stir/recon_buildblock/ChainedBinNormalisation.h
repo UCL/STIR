@@ -4,7 +4,7 @@
   \file
   \ingroup normalisation
 
-  \brief Declaration of class ChainedBinNormalisation
+  \brief Declaration of class stir::ChainedBinNormalisation
 
   \author Kris Thielemans
 */
@@ -136,6 +136,12 @@ public:
   //! Returns the is_trivial() status of the second normalisation object.
   //! \warning Currently, if the object has not been set the function throws an error.
   virtual bool is_second_trivial() const;
+
+  //! returns if the object can only handle TOF data
+  /*!
+    Checks if either of the normalisation objects can only handle TOF.
+  */
+  virtual bool is_TOF_only_norm() const override;
 
   virtual shared_ptr<BinNormalisation> get_first_norm() const;
 

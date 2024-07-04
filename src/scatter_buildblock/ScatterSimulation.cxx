@@ -820,7 +820,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 {
   if (new_num_rings <= 0)
     {
-      if (downsample_scanner_rings > 0)
+      if (downsample_scanner_rings > 1)
         new_num_rings = downsample_scanner_rings;
       else if (!is_null_ptr(proj_data_info_sptr))
         {
@@ -828,6 +828,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                            * proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
 
           new_num_rings = round(total_axial_length / 20.F + 0.5F);
+          new_num_rings = max(new_num_rings, 2); // set number of rings to at least 2
         }
       else
         return Succeeded::no;
@@ -849,16 +850,15 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       approx_num_non_arccorrected_bins = ceil(this->proj_data_info_sptr->get_num_tangential_poss() * float(new_num_dets)
                                               / old_scanner_ptr->get_num_detectors_per_ring())
                                          + 1;
-      // preserve the length of the scanner the following includes gaps
-      float scanner_length_block = new_scanner_sptr->get_num_axial_buckets() * new_scanner_sptr->get_num_axial_blocks_per_bucket()
-                                   * new_scanner_sptr->get_axial_block_spacing();
+      // preserve the length of the scanner, but place crystals equidistantly
+      float scanner_length = old_scanner_ptr->get_axial_length();
+      float new_ring_spacing = scanner_length / (new_num_rings - 1);
       new_scanner_sptr->set_num_axial_blocks_per_bucket(1);
       new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
 
       new_scanner_sptr->set_num_rings(new_num_rings);
       float transaxial_bucket_spacing
           = old_scanner_ptr->get_transaxial_block_spacing() * old_scanner_ptr->get_num_transaxial_blocks_per_bucket();
-      float new_ring_spacing = scanner_length_block / new_scanner_sptr->get_num_rings();
       int num_trans_buckets = old_scanner_ptr->get_num_transaxial_buckets();
       // get a new number of detectors that is a multiple of the number of buckets to preserve scanner shape
       new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);

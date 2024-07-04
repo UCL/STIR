@@ -76,6 +76,12 @@ public:
   */
   bool is_trivial() const override;
 
+  //! returns if the object can only handle TOF data
+  /*!
+    Checks if the underlying "projection data" are TOF or not.
+  */
+  virtual bool is_TOF_only_norm() const override;
+
   //! Checks if we can handle certain projection data.
   /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors
       with the ProjDataInfo supplied. */
