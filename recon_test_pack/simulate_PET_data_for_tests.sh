@@ -91,7 +91,7 @@ fi
 if [ "$TOF" -eq 0 ]; then
   : ${view_mash:=1}
   : ${span:=2}
-  : ${max_rd:=2}
+  : ${max_rd:=3}
   echo "===  create template sinogram (DSTE with view_mash=${view_mash}, max_ring_diff=${max_rd})"
   template_sino=my_DSTE_3D_vm${view_mash}_span${span}_rd${max_rd}_template.hs
   cat > my_input.txt <<EOF
