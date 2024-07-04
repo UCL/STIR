@@ -5,9 +5,8 @@
 #include "stir/IndexRange3D.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
 #include <cuda_runtime.h>
-// include std and error
-#include <iostream>
 #include <numeric>
 
 extern "C" __global__ void
@@ -211,7 +210,7 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
   const DiscretisedDensityOnCartesianGrid<3, elemT>& current_image_cast
       = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, elemT>&>(current_image_estimate);
 
-  if (this->cuda_set_up == false)
+  if (this->_already_set_up == false)
     {
       error("CudaRelativeDifferencePrior: set_up_cuda has not been called\n");
     }
@@ -321,7 +320,7 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
   const DiscretisedDensityOnCartesianGrid<3, elemT>& current_image_cast
       = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, elemT>&>(current_image_estimate);
 
-  if (this->cuda_set_up == false)
+  if (this->_already_set_up == false)
     {
       error("CudaRelativeDifferencePrior: set_up_cuda has not been called\n");
     }
@@ -425,7 +424,6 @@ template <typename elemT>
 Succeeded
 CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr)
 {
-  // Optionally call RelativeDifferencePrior's set_up if it adds value
   if (RelativeDifferencePrior<elemT>::set_up(target_sptr) == Succeeded::no)
     {
       return Succeeded::no;
@@ -452,18 +450,14 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
   //  Check if z_dim is 1 or only 2D is true and return an error if it is
   if (this->z_dim == 1 || this->only_2D)
     {
-      std::cerr << "CudaRelativeDifferencePriorClass: This prior requires a 3D image and only works for a 3x3x3 neighbourhood"
-                << std::endl;
+      error("CudaRelativeDifferencePriorClass: This prior requires a 3D image and only works for a 3x3x3 neighbourhood");
       return Succeeded::no;
     }
   compute_weights(this->weights, target_cast.get_grid_spacing(), this->only_2D);
-  this->cuda_set_up = true;
+  this->_already_set_up = true;
   return Succeeded::yes;
 }
 
-// template class CudaRelativeDifferencePrior<float>::CudaRelativeDifferencePrior() : base_type<float>() {}
-// template class CudaRelativeDifferencePrior<float>::CudaRelativeDifferencePrior(const bool only_2D, float penalization_factor,
-// float gamma, float epsilon) : base_type<elemT>(only_2D, penalization_factor, gamma, epsilon) {}
 template class CudaRelativeDifferencePrior<float>;
 
 END_NAMESPACE_STIR
