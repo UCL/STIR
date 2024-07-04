@@ -169,7 +169,7 @@ compute_weights(Array<3, float>& weights, const CartesianCoordinate3D<float>& gr
             }
         }
 }
-/* 
+
 template <typename elemT>
 void CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
                                                  const DiscretisedDensity<3, elemT>& current_image_estimate)
@@ -356,9 +356,9 @@ double CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensit
     cudaFree(d_tmp_value);
     return totalValue;
 }
- */
+
 template <typename elemT>
-Succeeded CudaRelativeDifferencePrior<elemT>::set_up_cuda(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr){
+Succeeded CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr){
     // Optionally call RelativeDifferencePrior's set_up if it adds value
     if (RelativeDifferencePrior<elemT>::set_up(target_sptr) == Succeeded::no) {
         return Succeeded::no;
