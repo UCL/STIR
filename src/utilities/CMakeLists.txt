@@ -59,6 +59,7 @@ set(${dir_EXE_SOURCES}
         shift_image.cxx
         stir_config.cxx
         stir_list_registries.cxx
+		cuda_rdp_test.cxx
         shift_image_origin.cxx
         warp_and_accumulate_gated_images.cxx
         warp_image.cxx
