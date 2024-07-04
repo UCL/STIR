@@ -77,6 +77,8 @@ template <typename Derived, typename Base, typename Parent = Base>
 class RegisteredParsingObject : public Parent
 {
 public:
+  using Parent::Parent;
+
   //! Construct a new object (of type Derived) by parsing the istream
   /*! When the istream * is 0, questions are asked interactively.
 
