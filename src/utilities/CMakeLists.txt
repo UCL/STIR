@@ -59,7 +59,6 @@ set(${dir_EXE_SOURCES}
         shift_image.cxx
         stir_config.cxx
         stir_list_registries.cxx
-		cuda_rdp_test.cxx
         shift_image_origin.cxx
         warp_and_accumulate_gated_images.cxx
         warp_image.cxx
@@ -93,4 +92,8 @@ if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values.cxx)
 endif()
 
+if (STIR_WITH_CUDA)
+  list(APPEND ${dir_EXE_SOURCES} cuda_rdp_test.cxx)
+endif()
+              
 include(stir_exe_targets)
