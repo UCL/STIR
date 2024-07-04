@@ -102,7 +102,15 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # and reuses its subset sensitivities
 for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
   echo "========== Testing `command -v ${recon}`"
-  for parfile in ${recon}_test_sim*.par; do
+  # check if we have CUDA code and parallelproj  
+  if stir_list_registries |grep -i cuda > /dev/null
+  then
+      if stir_list_registries |grep -i parallelproj > /dev/null
+      then
+        extra_par_files=`ls CUDA/${recon}_test_sim*.par 2> /dev/null`
+      fi
+  fi
+  for parfile in ${recon}_test_sim*.par ${extra_par_files}; do
     for dataSuffix in "" "$TOF_suffix"; do
       echo "===== data suffix: \"$dataSuffix\""
       # test first if analytic reconstruction and if so, run pre-correction
@@ -136,7 +144,7 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
 
       # run actual reconstruction
       echo "Running ${recon} ${parfile}"
-      logfile="my_${parfile}${suffix}.log"
+      logfile="my_`basename ${parfile}`${suffix}.log"
       ${MPIRUN} ${recon} ${parfile} > "$logfile" 2>&1
       if [ $? -ne 0 ]; then
           echo "Error running reconstruction. CHECK RECONSTRUCTION LOG \"$logfile\""
