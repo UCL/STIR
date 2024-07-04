@@ -77,23 +77,25 @@ print_usage_and_exit(const std::string& prog_name)
 {
   cerr << "Usage:\n\n"
        << "Two options:\n"
-       << "\t - Classical STIR SSRB method\n"
+       << "Classical STIR SSRB method:\n"
        << prog_name << " [-t num_tangential_poss_to_trim] \\\n"
        << "\toutput_filename input_projdata_name \\\n"
        << "\t[num_segments_to_combine \\\n"
-       << "\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process ]]]]\n"
-       << "num_segments_to_combine has to be odd. It is used as the number of segments\n"
-       << "  in the original data to combine.\n"
-       << "num_views_to_combine has to be at least 1 (which is the default)\n"
-       << "num_tangential_poss_to_trim has to be smaller than the available number\n"
-       << "  of tangential positions.\n"
-       << "do_norm has to be 1 (normalise the result, which is the default) or 0\n"
-       << "max_in_segment_num_to_process defaults to all segments\n"
-       << "\n\t - Template Based SSRB method\n"
-       << prog_name << "--template template_projdata_filename output_filename input_projdata_name [do_norm]\n"
-       << "template_projdata_filename the format of the output sinogram.\n"
-       << "output_filename, input_projdata_name, and do_norm are as above.\n"
-       << "SSRB act in the same way as Classical but allows for even num_segments_to_combine.\n";
+       << "\t[num_views_to_combine [do_norm [max_in_segment_num_to_process\\\n"
+       << "\t[num_tof_bins_to_combine ]]]]]\n"
+       << "\t-num_segments_to_combine has to be odd. It is used as the number of segments\n"
+       << "\t  in the original data to combine.\n"
+       << "\t-num_views_to_combine has to be at least 1 (which is the default)\n"
+       << "\t-num_tangential_poss_to_trim has to be smaller than the available number\n"
+       << "\t  of tangential positions.\n"
+       << "\t-do_norm has to be 1 (normalise the result, which is the default) or 0\n"
+       << "\t-max_in_segment_num_to_process defaults to all segments\n"
+       << "\t-num_tof_bins_to_combine defaults to 1, so TOF bins are not combined\n"
+       << "\nTemplate Based SSRB method:\n"
+       << prog_name << " --template template_projdata_filename output_filename input_projdata_name [do_norm]\n"
+       << "\t-template_projdata_filename the format of the output sinogram.\n"
+       << "\t-output_filename, input_projdata_name, and do_norm are as above.\n"
+       << "\tSSRB acts in the same way as Classical but allows for even num_segments_to_combine.\n";
   exit(EXIT_FAILURE);
 }
 
@@ -114,6 +116,7 @@ classic_SSRB(int argc, char** argv)
   const int num_views_to_combine = argc <= 4 ? 1 : atoi(argv[4]);
   const bool do_norm = argc <= 5 ? true : atoi(argv[5]) != 0;
   const int max_segment_num_to_process = argc <= 6 ? -1 : atoi(argv[6]);
+  const int num_tof_bins_to_combine = argc <= 7 ? 1 : atoi(argv[7]);
   // do standard SSRB
   SSRB(output_filename,
        *in_projdata_ptr,
@@ -121,7 +124,8 @@ classic_SSRB(int argc, char** argv)
        num_views_to_combine,
        num_tangential_poss_to_trim,
        do_norm,
-       max_segment_num_to_process);
+       max_segment_num_to_process,
+       num_tof_bins_to_combine);
 }
 
 void
@@ -140,7 +144,7 @@ template_based_SSRB(int argc, char** argv)
 int
 main(int argc, char** argv)
 {
-  if (argc > 7 || argc < 3)
+  if (argc > 8 || argc < 3)
     {
       print_usage_and_exit(argv[0]);
     }
