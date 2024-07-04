@@ -241,11 +241,21 @@ interpolate_projdata(ProjData& proj_data_out,
         }
       else
         { // for BlocksOnCylindrical, views and tangential positions are scaled by a fixed value
-          auto scale_factor
-              = (double)proj_data_out_info.get_num_tangential_poss() / (double)proj_data_in_info.get_num_tangential_poss();
+          auto transaxial_bucket_size_in = (proj_data_in_info.get_scanner_sptr()->get_num_transaxial_blocks_per_bucket() - 1)
+                                               * proj_data_in_info.get_scanner_sptr()->get_transaxial_block_spacing()
+                                           + (proj_data_in_info.get_scanner_sptr()->get_num_transaxial_crystals_per_block() - 1)
+                                                 * proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
+          auto transaxial_bucket_size_out = (proj_data_out_info.get_scanner_sptr()->get_num_transaxial_blocks_per_bucket() - 1)
+                                                * proj_data_out_info.get_scanner_sptr()->get_transaxial_block_spacing()
+                                            + (proj_data_out_info.get_scanner_sptr()->get_num_transaxial_crystals_per_block() - 1)
+                                                  * proj_data_out_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
+          // TODO: for now assuming the bucket sizes are the same (so ignoring the above and not adding an offset when translating
+          // crystal positions)
+          auto scale_factor = (double)proj_data_out_info.get_scanner_sptr()->get_transaxial_crystal_spacing()
+                              / (double)proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
 
           // only extending in axial direction - an extension of 2 was found to be sufficient
-          proj_data_interpolator.set_coef(extend_segment(segment, 0, 2, 0));
+          proj_data_interpolator.set_coef(extend_segment(segment, 5, 2, 5));
 
           auto m_offset = proj_data_in_info.get_m(Bin(0, 0, 0, 0));
           auto m_sampling = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
@@ -271,121 +281,178 @@ interpolate_projdata(ProjData& proj_data_out,
             // translate to indices in input proj data
             BasicCoordinate<3, double> index_in;
             index_in[1] = (out_m - m_offset) / m_sampling;
-            index_in[2] = index_out[2] / scale_factor;
-            index_in[3] = index_out[3] / scale_factor;
 
-            // now check that we don't inadvertently jump from one module to the next
             int det1_num_out, det2_num_out;
-            // const ProjDataInfoGenericNoArcCorr* proj_data_info_blk_ptr
-            //   = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(proj_data_info_sptr.get());
             const auto proj_data_out_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_out_info);
-            // static_cast<stir::ProjDataInfoGenericNoArcCorr>(proj_data_out_info).
             proj_data_out_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_out,
                                                                                  det2_num_out,
                                                                                  index_out[2], /*view*/
                                                                                  index_out[3] /* tangential pos */);
-            const int dets_per_module_out = proj_data_out_info.get_scanner_sptr()->get_num_detectors_per_ring()
-                                            / proj_data_out_info.get_scanner_sptr()->get_num_transaxial_buckets();
+            const int dets_per_module_out = proj_data_out_info.get_scanner_sptr()->get_num_transaxial_crystals_per_bucket();
             const int det1_module = std::floor(det1_num_out / dets_per_module_out);
             const int det2_module = std::floor(det2_num_out / dets_per_module_out);
 
             const auto proj_data_in_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_in_info);
-            int floor_view, ceil_view;
-            int flip_tangential = 1;
-            if (std::floor(index_in[2]) < 0)
-              {
-                floor_view = proj_data_in_info_ptr->get_num_views() + std::floor(index_in[2]);
-                flip_tangential = -1;
-              }
-            else
-              floor_view = std::floor(index_in[2]);
-            if (std::ceil(index_in[2]) > proj_data_in_info_ptr->get_max_view_num())
-              {
-                ceil_view = int(std::ceil(index_in[2])) % proj_data_in_info_ptr->get_num_views();
-                flip_tangential = -1;
-              }
-            else
-              ceil_view = std::ceil(index_in[2]);
+            const int dets_per_module_in = proj_data_in_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_bucket();
+            double crystal1_num_in
+                = det1_module * dets_per_module_in + static_cast<double>(det1_num_out % dets_per_module_out) * scale_factor;
+            double crystal2_num_in
+                = det2_module * dets_per_module_in + static_cast<double>(det2_num_out % dets_per_module_out) * scale_factor;
+            auto crystal1_num_in_floor
+                = std::max(static_cast<int>(std::floor(crystal1_num_in)), det1_module * dets_per_module_in);
+            auto crystal1_num_in_ceil
+                = std::min(static_cast<int>(std::ceil(crystal1_num_in)), (det1_module + 1) * dets_per_module_in - 1);
+            auto crystal2_num_in_floor
+                = std::max(static_cast<int>(std::floor(crystal2_num_in)), det2_module * dets_per_module_in);
+            auto crystal2_num_in_ceil
+                = std::min(static_cast<int>(std::ceil(crystal2_num_in)), (det2_module + 1) * dets_per_module_in - 1);
 
-            int floor_tang, ceil_tang;
-            if (flip_tangential * std::floor(index_in[3]) < proj_data_in_info_ptr->get_min_tangential_pos_num())
-              floor_tang = proj_data_in_info_ptr->get_min_tangential_pos_num();
-            else if (flip_tangential * std::floor(index_in[3]) > proj_data_in_info_ptr->get_max_tangential_pos_num())
-              floor_tang = proj_data_in_info_ptr->get_max_tangential_pos_num();
-            else
-              floor_tang = flip_tangential * std::ceil(index_in[3]);
-            if (flip_tangential * std::ceil(index_in[3]) < proj_data_in_info_ptr->get_min_tangential_pos_num())
-              ceil_tang = proj_data_in_info_ptr->get_min_tangential_pos_num();
-            else if (flip_tangential * std::ceil(index_in[3]) > proj_data_in_info_ptr->get_max_tangential_pos_num())
-              ceil_tang = proj_data_in_info_ptr->get_max_tangential_pos_num();
-            else
-              ceil_tang = flip_tangential * std::ceil(index_in[3]);
+            int ground_truth_view, ground_truth_tang;
+            proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(ground_truth_view,
+                                                                                ground_truth_tang,
+                                                                                static_cast<int>(std::round(crystal1_num_in)),
+                                                                                static_cast<int>(std::round(crystal2_num_in)));
 
-            const int dets_per_module_in = proj_data_in_info.get_scanner_sptr()->get_num_detectors_per_ring()
-                                           / proj_data_in_info.get_scanner_sptr()->get_num_transaxial_buckets();
-            int det1_num_in_ff, det2_num_in_ff;
-            // static_cast<stir::ProjDataInfoGenericNoArcCorr>(proj_data_in_info).
-            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_ff,
-                                                                                det2_num_in_ff,
-                                                                                floor_view, /* view */
-                                                                                floor_tang /* tangential pos */);
-            const int det1_module_ff = std::floor(det1_num_in_ff / dets_per_module_in);
-            const int det2_module_ff = std::floor(det2_num_in_ff / dets_per_module_in);
-            int det1_num_in_fc, det2_num_in_fc;
-            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_fc,
-                                                                                det2_num_in_fc,
-                                                                                floor_view, /* view */
-                                                                                ceil_tang /* tangential pos */);
-            const int det1_module_fc = std::floor(det1_num_in_fc / dets_per_module_in);
-            const int det2_module_fc = std::floor(det2_num_in_fc / dets_per_module_in);
-            int det1_num_in_cf, det2_num_in_cf;
-            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_cf,
-                                                                                det2_num_in_cf,
-                                                                                ceil_view, /* view */
-                                                                                floor_tang /* tangential pos */);
-            const int det1_module_cf = std::floor(det1_num_in_cf / dets_per_module_in);
-            const int det2_module_cf = std::floor(det2_num_in_cf / dets_per_module_in);
-            int det1_num_in_cc, det2_num_in_cc;
-            proj_data_in_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_in_cc,
-                                                                                det2_num_in_cc,
-                                                                                ceil_view, /* view */
-                                                                                ceil_tang /* tangential pos */);
-            const int det1_module_cc = std::floor(det1_num_in_cc / dets_per_module_in);
-            const int det2_module_cc = std::floor(det2_num_in_cc / dets_per_module_in);
-
-            bool exceeded = false;
-            int x = 0, y = 0; // use x to encode whether view should be floor'ed or ceil'ed and y for tangential pos
-            if (det1_module_ff != det1_module || det2_module_ff != det2_module)
+            // in this case we can skip parts of the interpolation
+            if (crystal1_num_in_floor == crystal1_num_in_ceil)
               {
-                x++, y++;
-                exceeded = true;
-              }
-            if (det1_module_fc != det1_module || det2_module_fc != det2_module)
-              {
-                x++, y--;
-                exceeded = true;
-              }
-            if (det1_module_cf != det1_module || det2_module_cf != det2_module)
-              {
-                x--, y++;
-                exceeded = true;
-              }
-            if (det1_module_cc != det1_module || det2_module_cc != det2_module)
-              {
-                x--, y--;
-                exceeded = true;
-              }
-
-            if (exceeded)
-              {
-                if (x >= 0)
-                  index_in[2] = std::ceil(index_in[2]);
+                if (crystal2_num_in_floor == crystal2_num_in_ceil)
+                  {
+                    int one_view, one_tang;
+                    proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                        one_view, one_tang, crystal1_num_in_floor, crystal2_num_in_floor);
+                    index_in[2] = one_view;
+                    index_in[3] = one_tang;
+                  }
                 else
-                  index_in[2] = std::floor(index_in[2]);
-                if (y >= 0)
-                  index_in[3] = std::ceil(index_in[3]);
-                else
-                  index_in[3] = std::floor(index_in[3]);
+                  {
+                    int ff_view, fc_view;
+                    int ff_tang, fc_tang;
+                    proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                        ff_view, ff_tang, crystal1_num_in_floor, crystal2_num_in_floor);
+                    proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                        fc_view, fc_tang, crystal1_num_in_floor, crystal2_num_in_ceil);
+
+                    // check if one of the views or tangential positions is out of line
+                    if (abs(ff_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                      {
+                        if (ff_view < ground_truth_view)
+                          ff_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                        else
+                          ff_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                        ff_tang = std::min(std::max(-ff_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                           proj_data_in_info_ptr->get_max_tangential_pos_num());
+                      }
+                    if (abs(fc_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                      {
+                        if (fc_view < ground_truth_view)
+                          fc_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                        else
+                          fc_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                        fc_tang = std::min(std::max(-fc_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                           proj_data_in_info_ptr->get_max_tangential_pos_num());
+                      }
+
+                    index_in[2] = ff_view * (crystal2_num_in_ceil - crystal2_num_in)
+                                  + fc_view * (crystal2_num_in - crystal2_num_in_floor);
+                    index_in[3] = ff_tang * (crystal2_num_in_ceil - crystal2_num_in)
+                                  + fc_tang * (crystal2_num_in - crystal2_num_in_floor);
+                  }
+              }
+            else if (crystal2_num_in_floor == crystal2_num_in_ceil)
+              {
+                int ff_view, cf_view;
+                int ff_tang, cf_tang;
+                proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                    ff_view, ff_tang, crystal1_num_in_floor, crystal2_num_in_floor);
+                proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                    cf_view, cf_tang, crystal1_num_in_ceil, crystal2_num_in_floor);
+
+                // check if one of the views or tangential positions is out of line
+                if (abs(ff_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                  {
+                    if (ff_view < ground_truth_view)
+                      ff_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                    else
+                      ff_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                    ff_tang = std::min(std::max(-ff_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                       proj_data_in_info_ptr->get_max_tangential_pos_num());
+                  }
+                if (abs(cf_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                  {
+                    if (cf_view < ground_truth_view)
+                      cf_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                    else
+                      cf_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                    cf_tang = std::min(std::max(-cf_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                       proj_data_in_info_ptr->get_max_tangential_pos_num());
+                  }
+
+                index_in[2]
+                    = ff_view * (crystal1_num_in_ceil - crystal1_num_in) + cf_view * (crystal1_num_in - crystal1_num_in_floor);
+                index_in[3]
+                    = ff_tang * (crystal1_num_in_ceil - crystal1_num_in) + cf_tang * (crystal1_num_in - crystal1_num_in_floor);
+              }
+            else // in this case we need to do a bilinear interpolation
+              {
+                int ff_view, fc_view, cf_view, cc_view;
+                int ff_tang, fc_tang, cf_tang, cc_tang;
+                proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                    ff_view, ff_tang, crystal1_num_in_floor, crystal2_num_in_floor);
+                proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                    fc_view, fc_tang, crystal1_num_in_floor, crystal2_num_in_ceil);
+                proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                    cf_view, cf_tang, crystal1_num_in_ceil, crystal2_num_in_floor);
+                proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
+                    cc_view, cc_tang, crystal1_num_in_ceil, crystal2_num_in_ceil);
+
+                // check if one of the views or tangential positions is out of line
+                if (abs(ff_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                  {
+                    if (ff_view < ground_truth_view)
+                      ff_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                    else
+                      ff_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                    ff_tang = std::min(std::max(-ff_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                       proj_data_in_info_ptr->get_max_tangential_pos_num());
+                  }
+                if (abs(fc_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                  {
+                    if (fc_view < ground_truth_view)
+                      fc_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                    else
+                      fc_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                    fc_tang = std::min(std::max(-fc_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                       proj_data_in_info_ptr->get_max_tangential_pos_num());
+                  }
+                if (abs(cf_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                  {
+                    if (cf_view < ground_truth_view)
+                      cf_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                    else
+                      cf_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                    cf_tang = std::min(std::max(-cf_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                       proj_data_in_info_ptr->get_max_tangential_pos_num());
+                  }
+                if (abs(cc_view - ground_truth_view) > proj_data_in_info_ptr->get_num_views() / 2)
+                  {
+                    if (cc_view < ground_truth_view)
+                      cc_view += proj_data_in_info_ptr->get_num_views(); // extend at the end
+                    else
+                      cc_view -= proj_data_in_info_ptr->get_num_views(); // extend at the front
+                    cc_tang = std::min(std::max(-cc_tang, proj_data_in_info_ptr->get_min_tangential_pos_num()),
+                                       proj_data_in_info_ptr->get_max_tangential_pos_num());
+                  }
+
+                // for the next two, we need to do a bilinear interpolation
+                index_in[2] = ff_view * (crystal1_num_in_ceil - crystal1_num_in) * (crystal2_num_in_ceil - crystal2_num_in)
+                              + fc_view * (crystal1_num_in_ceil - crystal1_num_in) * (crystal2_num_in - crystal2_num_in_floor)
+                              + cf_view * (crystal1_num_in - crystal1_num_in_floor) * (crystal2_num_in_ceil - crystal2_num_in)
+                              + cc_view * (crystal1_num_in - crystal1_num_in_floor) * (crystal2_num_in - crystal2_num_in_floor);
+                index_in[3] = ff_tang * (crystal1_num_in_ceil - crystal1_num_in) * (crystal2_num_in_ceil - crystal2_num_in)
+                              + fc_tang * (crystal1_num_in_ceil - crystal1_num_in) * (crystal2_num_in - crystal2_num_in_floor)
+                              + cf_tang * (crystal1_num_in - crystal1_num_in_floor) * (crystal2_num_in_ceil - crystal2_num_in)
+                              + cc_tang * (crystal1_num_in - crystal1_num_in_floor) * (crystal2_num_in - crystal2_num_in_floor);
               }
 
             return index_in;

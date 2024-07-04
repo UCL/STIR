@@ -821,17 +821,18 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
   if (new_num_rings <= 0)
     {
       if (downsample_scanner_rings > 1)
-        new_num_rings = downsample_scanner_rings;
-      else if (!is_null_ptr(proj_data_info_sptr))
-        {
-          const float total_axial_length = proj_data_info_sptr->get_scanner_sptr()->get_num_rings()
-                                           * proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
+        if (downsample_scanner_rings > 1)
+          new_num_rings = downsample_scanner_rings;
+        else if (!is_null_ptr(proj_data_info_sptr))
+          {
+            const float total_axial_length = proj_data_info_sptr->get_scanner_sptr()->get_num_rings()
+                                             * proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
 
-          new_num_rings = round(total_axial_length / 20.F + 0.5F);
-          new_num_rings = max(new_num_rings, 2); // set number of rings to at least 2
-        }
-      else
-        return Succeeded::no;
+            new_num_rings = round(total_axial_length / 20.F + 0.5F);
+            new_num_rings = max(new_num_rings, 2); // set number of rings to at least 2
+          }
+        else
+          return Succeeded::no;
     }
 
   const Scanner* const old_scanner_ptr = this->proj_data_info_sptr->get_scanner_ptr();
@@ -870,9 +871,20 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       new_scanner_sptr->set_num_axial_crystals_per_block(new_num_rings);
       new_scanner_sptr->set_axial_block_spacing(new_ring_spacing * new_num_rings);
 
+      float transaxial_bucket_width
+          = old_scanner_ptr->get_transaxial_block_spacing() * (old_scanner_ptr->get_num_transaxial_blocks_per_bucket() - 1)
+            + old_scanner_ptr->get_transaxial_crystal_spacing() * (old_scanner_ptr->get_num_transaxial_crystals_per_block() - 1);
+
+      int num_trans_buckets = old_scanner_ptr->get_num_transaxial_buckets();
+      // get a new number of detectors that is a multiple of the number of buckets to preserve scanner shape
+      new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
+      int new_transaxial_dets_per_bucket = new_num_dets / num_trans_buckets;
+      float new_det_spacing = transaxial_bucket_width / (new_transaxial_dets_per_bucket - 1);
+
+      new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
       new_scanner_sptr->set_num_transaxial_crystals_per_block(new_transaxial_dets_per_bucket);
       new_scanner_sptr->set_transaxial_crystal_spacing(new_det_spacing);
-      new_scanner_sptr->set_transaxial_block_spacing(transaxial_bucket_spacing);
+      new_scanner_sptr->set_transaxial_block_spacing(new_transaxial_dets_per_bucket * new_det_spacing);
     }
   else
     {

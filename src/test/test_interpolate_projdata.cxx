@@ -56,6 +56,7 @@ private:
   void scatter_interpolation_test_cyl();
   void scatter_interpolation_test_blocks_asymmetric();
   void scatter_interpolation_test_cyl_asymmetric();
+  void scatter_interpolation_test_blocks_downsampled();
 
   void check_symmetry(const SegmentBySinogram<float>& segment);
   void compare_segment(const SegmentBySinogram<float>& segment1, const SegmentBySinogram<float>& segment2, float maxDiff);
@@ -676,12 +677,141 @@ InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
 }
 
 void
+InterpolationTests::scatter_interpolation_test_blocks_downsampled()
+{
+  info("Performing downampled interpolation test for BlocksOnCylindrical scanner");
+  auto time_frame_def = TimeFrameDefinitions();
+  time_frame_def.set_num_time_frames(1);
+  time_frame_def.set_time_frame(1, 0, 1e9);
+  auto exam_info = ExamInfo();
+  exam_info.set_high_energy_thres(650);
+  exam_info.set_low_energy_thres(425);
+  exam_info.set_time_frame_definitions(time_frame_def);
+
+  // define the original scanner and a downsampled one, as it would be used for scatter simulation
+  auto scanner = Scanner(Scanner::User_defined_scanner,
+                         "NeuroLF_10mm",
+                         256,
+                         48,
+                         180,
+                         180,
+                         134,
+                         6.99,
+                         3.313,
+                         1.6565,
+                         -3.1091819,
+                         6,
+                         4,
+                         8,
+                         8,
+                         1,
+                         1,
+                         1,
+                         0.14,
+                         511,
+                         1,
+                         0,
+                         500,
+                         "BlocksOnCylindrical",
+                         3.313,
+                         3.313,
+                         27.36,
+                         27.36);
+  auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
+                                     "NeuroLF_10mm",
+                                     128,
+                                     8,
+                                     91,
+                                     180,
+                                     127,
+                                     6.99,
+                                     22.8559,
+                                     3.46,
+                                     -3.1091819,
+                                     1,
+                                     1,
+                                     8,
+                                     16,
+                                     1,
+                                     1,
+                                     1,
+                                     0.17,
+                                     511,
+                                     1,
+                                     0,
+                                     500,
+                                     "BlocksOnCylindrical",
+                                     22.8559,
+                                     7.01807,
+                                     182.848,
+                                     112.290);
+
+  auto proj_data_info = shared_ptr<ProjDataInfo>(
+      std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 47, 128, 180, false)));
+  auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(
+      std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(downsampled_scanner), 1, 0, 64, 91, false)));
+
+  auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
+  // auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
+
+  // // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
+  // auto emission_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
+  // auto cyl_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
+  // auto cylinder = EllipsoidalCylinder(40, 40, 20, CartesianCoordinate3D<float>(90, 100, 0));
+  // cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
+  // auto box = Box3D(20, 20, 20, CartesianCoordinate3D<float>(40, -20, 70));
+  // box.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
+  // emission_map += cyl_map;
+
+  // // project the cylinder onto the full-scale scanner proj data
+  // auto pm = ProjMatrixByBinUsingRayTracing();
+  // pm.set_use_actual_detector_boundaries(true);
+  // pm.enable_cache(false);
+  // auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
+  // forw_proj.set_up(proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
+  // auto full_size_model_sino = ProjDataInMemory(proj_data);
+  // full_size_model_sino.fill(0);
+  // forw_proj.forward_project(full_size_model_sino, emission_map);
+
+  // // also project onto the downsampled scanner
+  // emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  // cyl_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  // cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
+  // box.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
+  // emission_map += cyl_map;
+  // forw_proj.set_up(downsampled_proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
+  // auto downsampled_model_sino = ProjDataInMemory(downsampled_proj_data);
+  // downsampled_model_sino.fill(0);
+  // forw_proj.forward_project(downsampled_model_sino, emission_map);
+
+  // // write the proj data to file
+  // downsampled_model_sino.write_to_file("downsampled_sino_asym.hs");
+  // full_size_model_sino.write_to_file("full_size_sino_asym.hs");
+
+  auto downsampled_model_sino = std::make_shared<ProjDataInMemory>(
+      *(ProjDataInMemory::read_from_file("/workspace/stir-public/test_data/downsampled_sino_neurolf.hs")));
+
+  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
+  auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
+  interpolate_projdata(interpolated_direct_proj_data, *downsampled_model_sino, BSpline::linear, false);
+  auto interpolated_proj_data = ProjDataInMemory(proj_data);
+  inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
+
+  // write the proj data to file
+  interpolated_proj_data.write_to_file("interpolated_sino_asym.hs");
+
+  // compare to ground truth
+  // compare_segment_shape(full_size_model_sino.get_segment_by_sinogram(0), interpolated_proj_data.get_segment_by_sinogram(0), 2);
+}
+
+void
 InterpolationTests::run_tests()
 {
   scatter_interpolation_test_blocks();
   scatter_interpolation_test_cyl();
   scatter_interpolation_test_blocks_asymmetric();
   scatter_interpolation_test_cyl_asymmetric();
+  scatter_interpolation_test_blocks_downsampled();
 }
 
 END_NAMESPACE_STIR
