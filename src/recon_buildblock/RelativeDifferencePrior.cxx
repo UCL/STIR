@@ -109,7 +109,7 @@ RelativeDifferencePrior<elemT>::post_processing()
 
 template <typename elemT>
 Succeeded
-RelativeDifferencePrior<elemT>::set_up(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr)
+RelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr)
 {
   base_type::set_up(target_sptr);
 

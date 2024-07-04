@@ -358,7 +358,7 @@ double CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensit
 }
 
 template <typename elemT>
-Succeeded CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr){
+Succeeded CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr){
     // Optionally call RelativeDifferencePrior's set_up if it adds value
     if (RelativeDifferencePrior<elemT>::set_up(target_sptr) == Succeeded::no) {
         return Succeeded::no;

@@ -39,7 +39,7 @@ public:
   void compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
                         const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
-  Succeeded set_up(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr) override;
+  Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
 protected:
   int z_dim, y_dim, x_dim;
