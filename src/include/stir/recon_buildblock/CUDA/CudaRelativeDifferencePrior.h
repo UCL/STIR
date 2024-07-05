@@ -26,8 +26,11 @@ private:
 public:
   // Name which will be used when parsing a GeneralisedPrior object
   inline static const char* const registered_name = "Cuda Relative Difference Prior";
-  // Constructors
+#ifndef SWIG
+  // import constructors from base_type
+  // Note: currently disabled for SWIG as that needs SWIG 4.2
   using base_type::base_type;
+#endif
 
   // Overridden methods
   double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate) override;
