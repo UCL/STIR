@@ -38,6 +38,7 @@ void
 GeneralisedPrior<elemT>::set_penalisation_factor(const float new_penalisation_factor)
 {
   penalisation_factor = new_penalisation_factor;
+  this->_already_set_up = false;
 }
 
 END_NAMESPACE_STIR

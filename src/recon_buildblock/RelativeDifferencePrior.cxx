@@ -135,6 +135,7 @@ RelativeDifferencePrior<elemT>::set_defaults()
   this->weights.recycle();
   this->gamma = 2;
   this->epsilon = 0.0;
+  this->_already_set_up = false;
 }
 
 template <>
@@ -212,6 +213,7 @@ void
 RelativeDifferencePrior<elemT>::set_weights(const Array<3, float>& w)
 {
   this->weights = w;
+  this->_already_set_up = false;
 }
 
 //! get current kappa image
@@ -232,6 +234,7 @@ void
 RelativeDifferencePrior<elemT>::set_kappa_sptr(const shared_ptr<DiscretisedDensity<3, elemT>>& k)
 {
   this->kappa_ptr = k;
+  this->_already_set_up = false;
 }
 
 // TODO move to set_up
