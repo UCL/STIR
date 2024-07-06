@@ -105,11 +105,11 @@ computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
             }
         }
     }
-  tmp_grad[inputIndex] = penalisation_factor * voxel_gradient;
+  tmp_grad[inputIndex] = static_cast<float>(penalisation_factor * voxel_gradient);
 }
 
 extern "C" __global__ void
-computeCudaRelativeDifferencePriorValueKernel(double* tmp_value,
+computeCudaRelativeDifferencePriorValueKernel(float* tmp_value,
                                               const float* image,
                                               const float* weights,
                                               const float* kappa,
@@ -179,7 +179,7 @@ computeCudaRelativeDifferencePriorValueKernel(double* tmp_value,
             }
         }
     }
-  tmp_value[inputIndex] = penalisation_factor * sum;
+  tmp_value[inputIndex] = static_cast<float>(penalisation_factor * sum);
 }
 
 static void
@@ -324,11 +324,11 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
 
   // GPU memory pointers
   float* d_image_data;
-  double* d_tmp_value;
+  float* d_tmp_value;
 
   // Allocate memory on the GPU
   cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
-  cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(double));
+  cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(float));
 
   // Copy data from host to device
   array_to_device(d_image_data, current_image_estimate);
@@ -358,7 +358,7 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
     }
 
   // Allocate host memory for the result and copy from device to host
-  Array<3, double> tmp_value(current_image_estimate.get_index_range());
+  Array<3, float> tmp_value(current_image_estimate.get_index_range());
   array_to_host(tmp_value, d_tmp_value);
 
   // Compute the total value from tmp_value
