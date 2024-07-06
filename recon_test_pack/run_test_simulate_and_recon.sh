@@ -3,7 +3,7 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-#  Copyright (C) 2014, 2022 University College London
+#  Copyright (C) 2014, 2022, 2024 University College London
 #  This file is part of STIR.
 #
 #  SPDX-License-Identifier: Apache-2.0
@@ -13,13 +13,7 @@
 # Author Kris Thielemans
 # 
 
-# Scripts should exit with error code when a test fails:
-if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
-    # The code runs inside Travis or GHA
-    set -e
-fi
-
-echo This script should work with STIR version 6.0. If you have
+echo This script should work with STIR version 6.2. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -62,6 +56,8 @@ if [ $# -eq 1 ]; then
 fi
 
 echo "Using `command -v OSMAPOSL`"
+echo "Using `command -v OSSPS`"
+echo "Using `command -v FBP2D`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
