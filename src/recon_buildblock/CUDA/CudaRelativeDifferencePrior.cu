@@ -21,7 +21,7 @@
 #include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
-#include "stir/DiscretisedDensityOnCartesianGrid.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IndexRange3D.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
@@ -58,7 +58,7 @@ computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
   const int inputIndex = z * y_dim * x_dim + y * x_dim + x;
 
   // Define a single voxel gradient variable
-  double voxel_gradient = 0.0f;
+  double voxel_gradient = 0.0;
 
   // Define the neighbourhood
   int min_dz = -1;
@@ -244,17 +244,10 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
 
   this->check(current_image_estimate);
 
-  const DiscretisedDensityOnCartesianGrid<3, elemT>& current_image_cast
-      = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, elemT>&>(current_image_estimate);
-
   if (this->_already_set_up == false)
     {
-      error("CudaRelativeDifferencePrior: set_up_cuda has not been called\n");
+      error("CudaRelativeDifferencePrior: set_up has not been called");
     }
-
-  const int z_dim = this->z_dim;
-  const int y_dim = this->y_dim;
-  const int x_dim = this->x_dim;
 
   float *d_image_data, *d_gradient_data;
 
@@ -274,9 +267,9 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
                                                                                       this->gamma,
                                                                                       this->epsilon,
                                                                                       this->penalisation_factor,
-                                                                                      z_dim,
-                                                                                      y_dim,
-                                                                                      x_dim);
+                                                                                      this->z_dim,
+                                                                                      this->y_dim,
+                                                                                      this->x_dim);
 
   // Check for any errors during kernel execution
   cudaError_t cuda_error = cudaGetLastError();
@@ -309,18 +302,10 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
 
   this->check(current_image_estimate);
 
-  const DiscretisedDensityOnCartesianGrid<3, elemT>& current_image_cast
-      = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, elemT>&>(current_image_estimate);
-
   if (this->_already_set_up == false)
     {
-      error("CudaRelativeDifferencePrior: set_up_cuda has not been called\n");
+      error("CudaRelativeDifferencePrior: set_up has not been called");
     }
-
-  // Assuming z_dim, y_dim, and x_dim are correctly set
-  const int z_dim = this->z_dim;
-  const int y_dim = this->y_dim;
-  const int x_dim = this->x_dim;
 
   // GPU memory pointers
   float* d_image_data;
@@ -343,9 +328,9 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
                                                                                    this->gamma,
                                                                                    this->epsilon,
                                                                                    this->penalisation_factor,
-                                                                                   z_dim,
-                                                                                   y_dim,
-                                                                                   x_dim);
+                                                                                   this->z_dim,
+                                                                                   this->y_dim,
+                                                                                   this->x_dim);
 
   // Check for any errors during kernel execution
   cudaError_t cuda_error = cudaGetLastError();
@@ -379,12 +364,11 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
       return Succeeded::no;
     }
   // Get the number of voxels in each dimension
-  const DiscretisedDensityOnCartesianGrid<3, float>& target_cast
-      = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, float>&>(*target_sptr);
-
-  this->z_dim = target_cast.get_max_index() - target_cast.get_min_index() + 1;
-  this->y_dim = target_cast[0].get_max_index() - target_cast[0].get_min_index() + 1;
-  this->x_dim = target_cast[0][0].get_max_index() - target_cast[0][0].get_min_index() + 1;
+  auto& target_cast = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*target_sptr);
+  auto sizes = target_cast.get_lengths();
+  this->z_dim = sizes[1];
+  this->y_dim = sizes[2];
+  this->x_dim = sizes[3];
 
   // Set the thread block and grid dimensions using std::tuple
   this->block_dim.x = 8;
