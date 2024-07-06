@@ -171,6 +171,11 @@ be selected at run-time.
 */
 
 /*!
+\defgroup CUDA Items relating to CUDA and STIR buildblock objects.
+\ingroup buildblock
+*/
+
+/*!
 \defgroup data_buildblock Acquisition data building blocks
 \ingroup STIR_library
 Library with building blocks for reading scan data

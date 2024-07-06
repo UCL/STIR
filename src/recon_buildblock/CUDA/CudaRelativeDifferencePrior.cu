@@ -1,3 +1,23 @@
+/*
+    Copyright (C) 2020, 2024, University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+
+/*!
+  \file
+  \ingroup priors
+  \ingroup CUDA
+  \brief implementation of the stir::CudaRelativeDifferencePrior class
+
+  \author Imraj Singh
+  \author Kris Thielemans
+  \author Robert Twyman
+*/
+
 #include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
@@ -6,8 +26,11 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
+#include "stir/cuda_utilities.h"
 #include <cuda_runtime.h>
 #include <numeric>
+
+START_NAMESPACE_STIR
 
 extern "C" __global__ void
 computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
@@ -159,8 +182,6 @@ computeCudaRelativeDifferencePriorValueKernel(double* tmp_value,
   tmp_value[inputIndex] = penalisation_factor * sum;
 }
 
-START_NAMESPACE_STIR
-
 static void
 compute_weights(Array<3, float>& weights, const CartesianCoordinate3D<float>& grid_spacing, const bool only_2D)
 {
@@ -228,11 +249,6 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
   const int y_dim = this->y_dim;
   const int x_dim = this->x_dim;
 
-  std::vector<float> image_data(current_image_estimate.size_all());
-  std::vector<float> weights_data(this->weights.size_all());
-  std::copy(current_image_estimate.begin_all(), current_image_estimate.end_all(), image_data.begin());
-  std::copy(this->weights.begin_all(), this->weights.end_all(), weights_data.begin());
-
   float *d_image_data, *d_weights_data, *d_gradient_data;
 
   // Allocate memory on the GPU
@@ -241,16 +257,14 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
   cudaMalloc(&d_gradient_data, prior_gradient.size_all() * sizeof(float));
 
   // Copy data from host to device
-  cudaMemcpy(d_image_data, image_data.data(), current_image_estimate.size_all() * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_weights_data, weights_data.data(), this->weights.size_all() * sizeof(float), cudaMemcpyHostToDevice);
+  array_to_device(d_image_data, current_image_estimate);
+  array_to_device(d_weights_data, this->weights);
 
   if (do_kappa)
     {
-      std::vector<float> kappa_data(current_image_estimate.size_all());
-      std::copy(kappa_ptr->begin_all(), kappa_ptr->end_all(), kappa_data.begin());
       float* d_kappa;
       cudaMalloc(&d_kappa, current_image_estimate.size_all() * sizeof(float));
-      cudaMemcpy(d_kappa, kappa_data.data(), current_image_estimate.size_all() * sizeof(float), cudaMemcpyHostToDevice);
+      array_to_device(d_kappa, *kappa_ptr);
       computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_gradient_data,
                                                                                           d_image_data,
                                                                                           d_weights_data,
@@ -290,13 +304,7 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       error(std::string("CUDA error in compute_value kernel execution: ") + err);
     }
 
-  // Allocate host memory for the result and copy from device to host
-  std::vector<float> gradient_data(current_image_estimate.size_all());
-  cudaMemcpy(gradient_data.data(), d_gradient_data, current_image_estimate.size_all() * sizeof(float), cudaMemcpyDeviceToHost);
-
-  // Copy the gradient data to the prior_gradient
-  std::copy(gradient_data.begin(), gradient_data.end(), prior_gradient.begin_all());
-
+  array_to_host(prior_gradient, d_gradient_data);
   // Cleanup
   cudaFree(d_image_data);
   cudaFree(d_weights_data);
