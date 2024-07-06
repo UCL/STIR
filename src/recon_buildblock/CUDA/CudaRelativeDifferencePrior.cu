@@ -213,6 +213,22 @@ compute_weights(Array<3, float>& weights, const CartesianCoordinate3D<float>& gr
 
 template <typename elemT>
 void
+CudaRelativeDifferencePrior<elemT>::set_defaults()
+{
+  base_type::set_defaults();
+}
+
+template <typename elemT>
+CudaRelativeDifferencePrior<elemT>::~CudaRelativeDifferencePrior()
+{
+  if (this->d_weights_data)
+    cudaFree(this->d_weights_data);
+  if (this->d_kappa_data)
+    cudaFree(this->d_kappa_data);
+}
+
+template <typename elemT>
+void
 CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
                                                      const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
@@ -236,78 +252,45 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       error("CudaRelativeDifferencePrior: set_up_cuda has not been called\n");
     }
 
-  if (this->weights.get_length() == 0)
-    {
-      compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
-    }
-  auto kappa_ptr = this->get_kappa_sptr();
-  const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int z_dim = this->z_dim;
   const int y_dim = this->y_dim;
   const int x_dim = this->x_dim;
 
-  float *d_image_data, *d_weights_data, *d_gradient_data;
+  float *d_image_data, *d_gradient_data;
 
   // Allocate memory on the GPU
   cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
-  cudaMalloc(&d_weights_data, this->weights.size_all() * sizeof(float));
   cudaMalloc(&d_gradient_data, prior_gradient.size_all() * sizeof(float));
 
   // Copy data from host to device
   array_to_device(d_image_data, current_image_estimate);
-  array_to_device(d_weights_data, this->weights);
 
-  if (do_kappa)
-    {
-      float* d_kappa;
-      cudaMalloc(&d_kappa, current_image_estimate.size_all() * sizeof(float));
-      array_to_device(d_kappa, *kappa_ptr);
-      computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_gradient_data,
-                                                                                          d_image_data,
-                                                                                          d_weights_data,
-                                                                                          d_kappa,
-                                                                                          do_kappa,
-                                                                                          this->gamma,
-                                                                                          this->epsilon,
-                                                                                          this->penalisation_factor,
-                                                                                          z_dim,
-                                                                                          y_dim,
-                                                                                          x_dim);
-      cudaFree(d_kappa);
-    }
-  else
-    {
-      computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_gradient_data,
-                                                                                          d_image_data,
-                                                                                          d_weights_data,
-                                                                                          nullptr,
-                                                                                          do_kappa,
-                                                                                          this->gamma,
-                                                                                          this->epsilon,
-                                                                                          this->penalisation_factor,
-                                                                                          z_dim,
-                                                                                          y_dim,
-                                                                                          x_dim);
-    }
+  const bool do_kappa = !this->get_kappa_sptr();
+  computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_gradient_data,
+                                                                                      d_image_data,
+                                                                                      this->d_weights_data,
+                                                                                      do_kappa ? this->d_kappa_data : nullptr,
+                                                                                      do_kappa,
+                                                                                      this->gamma,
+                                                                                      this->epsilon,
+                                                                                      this->penalisation_factor,
+                                                                                      z_dim,
+                                                                                      y_dim,
+                                                                                      x_dim);
 
   // Check for any errors during kernel execution
   cudaError_t cuda_error = cudaGetLastError();
   if (cuda_error != cudaSuccess)
     {
       cudaFree(d_image_data);
-      cudaFree(d_weights_data);
       cudaFree(d_gradient_data);
       const char* err = cudaGetErrorString(cuda_error);
-      error(std::string("CUDA error in compute_value kernel execution: ") + err);
+      error(std::string("CUDA error in compute_gradient kernel execution: ") + err);
     }
 
   array_to_host(prior_gradient, d_gradient_data);
   // Cleanup
   cudaFree(d_image_data);
-  cudaFree(d_weights_data);
   cudaFree(d_gradient_data);
 }
 
@@ -334,97 +317,55 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
       error("CudaRelativeDifferencePrior: set_up_cuda has not been called\n");
     }
 
-  if (this->weights.get_length() == 0)
-    {
-      compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
-    }
-  // Need to get the kappa image
-  auto kappa_ptr = this->get_kappa_sptr();
-  const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
-
   // Assuming z_dim, y_dim, and x_dim are correctly set
   const int z_dim = this->z_dim;
   const int y_dim = this->y_dim;
   const int x_dim = this->x_dim;
 
-  std::vector<float> image_data(current_image_estimate.size_all());
-  std::vector<float> weights_data(this->weights.size_all());
-  std::copy(current_image_estimate.begin_all(), current_image_estimate.end_all(), image_data.begin());
-  std::copy(this->weights.begin_all(), this->weights.end_all(), weights_data.begin());
-
   // GPU memory pointers
-  float *d_image_data, *d_weights_data;
+  float* d_image_data;
   double* d_tmp_value;
 
   // Allocate memory on the GPU
   cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
-  cudaMalloc(&d_weights_data, this->weights.size_all() * sizeof(float)); // Assuming weights is also a flat vector
   cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(double));
 
   // Copy data from host to device
-  cudaMemcpy(d_image_data, image_data.data(), current_image_estimate.size_all() * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_weights_data, weights_data.data(), this->weights.size_all() * sizeof(float), cudaMemcpyHostToDevice);
+  array_to_device(d_image_data, current_image_estimate);
 
+  const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   // Launch the kernel
-  if (do_kappa)
-    {
-      std::vector<float> kappa_data(current_image_estimate.size_all());
-      std::copy(kappa_ptr->begin_all(), kappa_ptr->end_all(), kappa_data.begin());
-      float* d_kappa;
-      cudaMalloc(&d_kappa, current_image_estimate.size_all() * sizeof(float));
-      cudaMemcpy(d_kappa, kappa_data.data(), current_image_estimate.size_all() * sizeof(float), cudaMemcpyHostToDevice);
-      computeCudaRelativeDifferencePriorValueKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_tmp_value,
-                                                                                       d_image_data,
-                                                                                       d_weights_data,
-                                                                                       d_kappa,
-                                                                                       do_kappa,
-                                                                                       this->gamma,
-                                                                                       this->epsilon,
-                                                                                       this->penalisation_factor,
-                                                                                       z_dim,
-                                                                                       y_dim,
-                                                                                       x_dim);
-      cudaFree(d_kappa);
-    }
-  else
-    {
-      computeCudaRelativeDifferencePriorValueKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_tmp_value,
-                                                                                       d_image_data,
-                                                                                       d_weights_data,
-                                                                                       nullptr,
-                                                                                       do_kappa,
-                                                                                       this->gamma,
-                                                                                       this->epsilon,
-                                                                                       this->penalisation_factor,
-                                                                                       z_dim,
-                                                                                       y_dim,
-                                                                                       x_dim);
-    }
+  computeCudaRelativeDifferencePriorValueKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_tmp_value,
+                                                                                   d_image_data,
+                                                                                   this->d_weights_data,
+                                                                                   do_kappa ? this->d_kappa_data : nullptr,
+                                                                                   do_kappa,
+                                                                                   this->gamma,
+                                                                                   this->epsilon,
+                                                                                   this->penalisation_factor,
+                                                                                   z_dim,
+                                                                                   y_dim,
+                                                                                   x_dim);
 
   // Check for any errors during kernel execution
   cudaError_t cuda_error = cudaGetLastError();
   if (cuda_error != cudaSuccess)
     {
       cudaFree(d_image_data);
-      cudaFree(d_weights_data);
       cudaFree(d_tmp_value);
-      // error("CUDA error in compute_value kernel execution: " << cudaGetErrorString(cuda_error));
-      return 0.0; // Handle error appropriately
+      const char* err = cudaGetErrorString(cuda_error);
+      error(std::string("CUDA error in compute_value kernel execution: ") + err);
     }
 
   // Allocate host memory for the result and copy from device to host
-  std::vector<double> tmp_value(current_image_estimate.size_all());
-  cudaMemcpy(tmp_value.data(), d_tmp_value, current_image_estimate.size_all() * sizeof(double), cudaMemcpyDeviceToHost);
+  Array<3, double> tmp_value(current_image_estimate.get_index_range());
+  array_to_host(tmp_value, d_tmp_value);
 
-  // Compute the total value from tmp_value if necessary
-  double totalValue = std::accumulate(tmp_value.begin(), tmp_value.end(), 0.0);
+  // Compute the total value from tmp_value
+  double totalValue = tmp_value.sum();
 
   // Cleanup
   cudaFree(d_image_data);
-  cudaFree(d_weights_data);
   cudaFree(d_tmp_value);
   return totalValue;
 }
@@ -462,7 +403,26 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
       error("CudaRelativeDifferencePriorClass: This prior requires a 3D image and only works for a 3x3x3 neighbourhood");
       return Succeeded::no;
     }
-  compute_weights(this->weights, target_cast.get_grid_spacing(), this->only_2D);
+  {
+    compute_weights(this->weights, target_cast.get_grid_spacing(), this->only_2D);
+    if (this->d_weights_data)
+      cudaFree(this->d_weights_data);
+    cudaMalloc(&d_weights_data, this->weights.size_all() * sizeof(float));
+    array_to_device(this->d_weights_data, this->weights);
+  }
+  {
+    if (this->d_kappa_data)
+      cudaFree(this->d_kappa_data);
+    auto kappa_ptr = this->get_kappa_sptr();
+    const bool do_kappa = !is_null_ptr(kappa_ptr);
+    if (do_kappa)
+      {
+        if (!kappa_ptr->has_same_characteristics(*target_sptr))
+          error("RelativeDifferencePrior: kappa image does not have the same index range as the reconstructed image");
+        cudaMalloc(&this->d_kappa_data, kappa_ptr->size_all() * sizeof(float));
+        array_to_device(this->d_kappa_data, *kappa_ptr);
+      }
+  }
   this->_already_set_up = true;
   return Succeeded::yes;
 }

@@ -12,7 +12,6 @@
 int
 main(int argc, char** argv)
 {
-  // Use namespace stir
   using namespace stir;
   // Define the target type to keep things pretty
   typedef DiscretisedDensity<3, float> target_type;
@@ -33,14 +32,14 @@ main(int argc, char** argv)
 
   /////// setup prior objects
   CudaRelativeDifferencePrior<float> prior_cuda(only_2D, kappa, gamma, epsilon);
-  prior_cuda.set_up(density_sptr);
   prior_cuda.set_kappa_sptr(density_sptr);
   prior_cuda.set_penalisation_factor(0.1f);
+  prior_cuda.set_up(density_sptr);
 
   RelativeDifferencePrior<float> prior_cpu(only_2D, kappa, gamma, epsilon);
-  prior_cpu.set_up(density_sptr);
   prior_cpu.set_kappa_sptr(density_sptr);
   prior_cpu.set_penalisation_factor(0.1f);
+  prior_cpu.set_up(density_sptr);
 
   /////// Compute and add prior gradients to density_sptr
   prior_cuda.compute_gradient(*gradient_cuda_sptr, *density_sptr);
@@ -53,35 +52,52 @@ main(int argc, char** argv)
   output_file_format_sptr->write_to_file(gradient_cuda_filename, *gradient_cuda_sptr);
   std::string gradient_cpu_filename = "rdp_gradient_cpu";
   output_file_format_sptr->write_to_file(gradient_cpu_filename, *gradient_cpu_sptr);
+  *gradient_cuda_sptr -= *gradient_cpu_sptr;
+  const auto norm_diff = norm(gradient_cuda_sptr->begin_all(), gradient_cuda_sptr->end_all());
+  const auto norm_org = norm(gradient_cpu_sptr->begin_all(), gradient_cpu_sptr->end_all());
+  std::cout << "norms: diff of gradients: " << norm_diff << " org: " << norm_org << " rel: " << norm_diff / norm_org << std::endl;
 
   // Print two prior values and difference
   std::cout << "The Prior Value (CUDA) = " << cuda_prior_value << "\n";
   std::cout << "The Prior Value (CPU) = " << cpu_prior_value << "\n";
   std::cout << "Difference = " << cuda_prior_value - cpu_prior_value << "\n";
 
+#ifdef NDEBUG
+  // timings
   auto start = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < 10; i++)
     {
       double cuda_prior_value = prior_cuda.compute_value(*density_sptr);
-      prior_cuda.compute_gradient(*gradient_cuda_sptr, *density_sptr);
     }
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;
-  std::cout << "CUDA time = " << elapsed_seconds.count() << "s\n";
+  std::cout << "Value CUDA time = " << elapsed_seconds.count() << "s\n";
 
   start = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < 10; i++)
     {
       double cpu_prior_value = prior_cpu.compute_value(*density_sptr);
+    }
+  end = std::chrono::high_resolution_clock::now();
+  elapsed_seconds = end - start;
+  std::cout << "Value CPU time = " << elapsed_seconds.count() << "s\n";
+  start = std::chrono::high_resolution_clock::now();
+  for (int i = 0; i < 10; i++)
+    {
+      prior_cuda.compute_gradient(*gradient_cuda_sptr, *density_sptr);
+    }
+  end = std::chrono::high_resolution_clock::now();
+  elapsed_seconds = end - start;
+  std::cout << "Gradient CUDA time = " << elapsed_seconds.count() << "s\n";
+
+  start = std::chrono::high_resolution_clock::now();
+  for (int i = 0; i < 10; i++)
+    {
       prior_cpu.compute_gradient(*gradient_cpu_sptr, *density_sptr);
     }
   end = std::chrono::high_resolution_clock::now();
   elapsed_seconds = end - start;
-  std::cout << "CPU time = " << elapsed_seconds.count() << "s\n";
-
-  *gradient_cuda_sptr -= *gradient_cpu_sptr;
-  const auto norm_diff = norm(gradient_cuda_sptr->begin_all(), gradient_cuda_sptr->end_all());
-  const auto norm_org = norm(gradient_cpu_sptr->begin_all(), gradient_cpu_sptr->end_all());
-  std::cout << "relative norm of diff of gradients: " << norm_diff / norm_org << std::endl;
+  std::cout << "Gradient CPU time = " << elapsed_seconds.count() << "s\n";
+#endif
   return EXIT_SUCCESS;
 }
