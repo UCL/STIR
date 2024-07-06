@@ -98,12 +98,20 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # and reuses its subset sensitivities
 for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
   echo "========== Testing `command -v ${recon}`"
-  # check if we have CUDA code and parallelproj  
+  # Check if we have CUDA code and parallelproj.
+  # If so, check for test files in CUDA/*
   if stir_list_registries |grep -i cuda > /dev/null
   then
       if stir_list_registries |grep -i parallelproj > /dev/null
       then
-        extra_par_files=`ls CUDA/${recon}_test_sim*.par 2> /dev/null`
+          extra_par_files=`ls CUDA/${recon}_test_sim*.par 2> /dev/null`
+          if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+              # The code runs inside Travis or GHA
+              if [ -n "$extra_par_files" ]; then
+                  echo "Not running ${extra_par_files} due to no CUDA run-time"
+                  extra_par_files=""
+              fi
+          fi
       fi
   fi
   for parfile in ${recon}_test_sim*.par ${extra_par_files}; do
