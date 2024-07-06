@@ -77,9 +77,9 @@ template <typename Derived, typename Base, typename Parent = Base>
 class RegisteredParsingObject : public Parent
 {
 public:
-#ifndef SWIG
   // import constructors from Parent
-  // Note: currently disabled for SWIG as that needs SWIG 4.2
+  // Note: disabled for older SWIG as that generates an error before 4.2, and a warning for 4.2
+#if !defined(SWIG) || (SWIG_VERSION >= 0x040300)
   using Parent::Parent;
 #endif
 
