@@ -286,7 +286,8 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       cudaFree(d_image_data);
       cudaFree(d_weights_data);
       cudaFree(d_gradient_data);
-      // error("CUDA error in compute_value kernel execution: " << cudaGetErrorString(cuda_error));
+      const char* err = cudaGetErrorString(cuda_error);
+      error(std::string("CUDA error in compute_value kernel execution: ") + err);
     }
 
   // Allocate host memory for the result and copy from device to host
