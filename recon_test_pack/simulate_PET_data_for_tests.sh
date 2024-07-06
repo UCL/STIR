@@ -53,10 +53,10 @@ do
     shift 1
   elif test "$1" = "--help"
   then
-    echo "Usage: `basename $0` [--force_zero_view_offset]  [--suffix sometext] [install_dir]"
+    echo "Usage: $(basename "$0") [--force_zero_view_offset] [--suffix sometext] [install_dir]"
     echo "(where [] means that an argument is optional)"
     exit 1
-  else
+else
     echo Warning: Unknown option "$1"
     echo rerun with --help for more info.
     exit 1
@@ -106,21 +106,18 @@ atten_output_file="my_atten_image_SPECT_modified.hv"
 comment_out_line "$atten_input_file" "$atten_output_file"
 
 
-if [ "$SPECT" -eq 1 ]; then
-  echo "===  create SPECT sinogram template"
-  template_sino_SPECT=SPECT_test_Interfile_header.hs
-else
+if [ "$SPECT" -eq 0 ]; then
   if [ "$TOF" -eq 0 ]; then
     echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
     template_sino=my_DSTE_3D_rd3_template.hs
     cat > my_input.txt <<EOF
 Discovery STE
 
-1
+1 
 n
 
 0
-2
+2 
 EOF
   else
     echo "===  create template sinogram (D690 in 3D with view-mash =2, TOF-mash=11, max ring diff 3 to save time)"
@@ -147,28 +144,29 @@ EOF
   awk '/END OF INTERFILE/ { print "number of energy windows := 1\nenergy window lower level[1] := 350\nenergy window upper level[1] :=  650\nEnergy resolution := 0.22\nReference energy (in keV) := 511" }1 ' \
       ${template_sino} > tmp_header.hs
   mv tmp_header.hs ${template_sino}
-
   if [ $force_zero_view_offset -eq 1 ]; then
     if [ "$TOF" -eq 1 ]; then
         echo "$0 would need work to be used with both TOF and zero-offset. Exiting"
         exit 1
     fi
-    new_template_sino=my_DSTE_3D_rd2_template$suffix.hs
-    force_view_offset_to_zero.sh ${new_template_sino} ${template_sino}
-    template_sino=${new_template_sino}
+    new_template_sino="my_DSTE_3D_rd2_template${suffix}.hs"
+    force_view_offset_to_zero.sh "${new_template_sino}" "${template_sino}"
+    template_sino="${new_template_sino}"
   fi
 fi
 
+
+
+
 if [ "$SPECT" -eq 1 ]; then
   # create SPECT sinograms
-  ./simulate_data.sh my_uniform_cylinder_SPECT.hv my_atten_image_SPECT_modified.hv SPECT_test_Interfile_header.hs 10 ${suffix}
+  ./simulate_data.sh "my_uniform_cylinder_SPECT.hv" "my_atten_image_SPECT_modified.hv" "SPECT_test_Interfile_header.hs" 10 "${suffix}"
   if [ $? -ne 0 ]; then
     echo "Error running SPECT simulation"
-    exit 1
-  fi
+       exit 1
+     fi
 else
-  # create PET sinograms
-  ./simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino} 10 ${suffix}
+  ./simulate_data.sh "my_uniform_cylinder.hv" "my_atten_image.hv" "${template_sino}" 10 "${suffix}"
   if [ $? -ne 0 ]; then
     echo "Error running PET simulation"
     exit 1
