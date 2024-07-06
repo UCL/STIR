@@ -4,6 +4,7 @@
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
 #  Copyright (C) 2014, 2022 University College London
+#  Copyright (C) 2024 University College London
 #  This file is part of STIR.
 #
 #  SPDX-License-Identifier: Apache-2.0
@@ -11,7 +12,7 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# 
+# Author Dimitra Kyriakopoulou
 
 # Scripts should exit with error code when a test fails:
 if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
@@ -87,6 +88,13 @@ if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
 fi
+## SPECT data
+SPECT_suffix=_SPECT 
+./simulate_PET_data_for_tests.sh --SPECT --suffix "$SPECT_suffix"
+if [ $? -ne 0 ]; then
+  echo "Error running simulation"
+  exit 1
+fi
 
 error_log_files=""
 
@@ -100,7 +108,7 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # warning: currently OSMAPOSL needs to be run before OSSPS as 
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
-for recon in FBP2D FBP3DRP SRT2D OSMAPOSL OSSPS; do
+for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT OSMAPOSL OSSPS ; do #FBP2D FBP3DRP SRT2D SRT2DSPECT OSMAPOSL OSSPS
   echo "========== Testing `command -v ${recon}`"
   for parfile in ${recon}_test_sim*.par; do
     for dataSuffix in "" "$TOF_suffix"; do
@@ -111,20 +119,29 @@ for recon in FBP2D FBP3DRP SRT2D OSMAPOSL OSSPS; do
         is_analytic=1
       elif expr "$recon" : SRT > /dev/null; then
         is_analytic=1
+      elif expr "$recon" : GRD > /dev/null; then
+        is_analytic=1
+      elif expr "$recon" : NIF > /dev/null; then
+        is_analytic=1
       fi
       if [ $is_analytic = 1 ]; then
         if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
-          echo "Skipping TOF as not yet supported for FBP etc"
+          echo "Skipping TOF as not yet supported for FBP, SRT, and GRD"
           break
         fi
-        suffix=$zero_view_suffix
-        export suffix
-        echo "Running precorrection"
-        correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
-        if [ $? -ne 0 ]; then
-            echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
-            error_log_files="${error_log_files} my_correct_projdata_simulation.log"
-            break
+				if expr "$recon" : SRT2DSPECT > /dev/null || expr "$recon" : NIF2D > /dev/null; then
+						suffix=$SPECT_suffix
+						export suffix
+        else   
+          suffix=$zero_view_suffix
+          export suffix
+		      echo "Running precorrection"
+		      correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
+		      if [ $? -ne 0 ]; then
+		          echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+		          error_log_files="${error_log_files} my_correct_projdata_simulation.log"
+		          break
+		      fi
         fi
       else
           suffix="$dataSuffix"
@@ -194,4 +211,3 @@ else
  tail ${error_log_files}
  exit 1
 fi
-
