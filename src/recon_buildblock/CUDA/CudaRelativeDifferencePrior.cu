@@ -258,7 +258,9 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
   // Copy data from host to device
   array_to_device(d_image_data, current_image_estimate);
 
-  const bool do_kappa = !this->get_kappa_sptr();
+  const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
+  if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
+    error("CudaRelativeDifferencePrior internal error: inconsistent CPU and device kappa");
   computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_gradient_data,
                                                                                       d_image_data,
                                                                                       this->d_weights_data,
@@ -319,6 +321,8 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
   array_to_device(d_image_data, current_image_estimate);
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
+  if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
+    error("CudaRelativeDifferencePrior internal error: inconsistent CPU and device kappa");
   // Launch the kernel
   computeCudaRelativeDifferencePriorValueKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_tmp_value,
                                                                                    d_image_data,
