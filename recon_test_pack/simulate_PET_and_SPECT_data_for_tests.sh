@@ -108,7 +108,7 @@ comment_out_line "$atten_input_file" "$atten_output_file"
 
 if [ "$SPECT" -eq 1 ]; then
   echo "===  create SPECT sinogram template"
-  template_sino_SPECT=SPECT_Interfile_header.hs
+  template_sino_SPECT=SPECT_test_Interfile_header.hs
 else
   if [ "$TOF" -eq 0 ]; then
     echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
@@ -116,11 +116,11 @@ else
     cat > my_input.txt <<EOF
 Discovery STE
 
-1#23
+1
 n
 
 0
-2#23
+2
 EOF
   else
     echo "===  create template sinogram (D690 in 3D with view-mash =2, TOF-mash=11, max ring diff 3 to save time)"
@@ -161,7 +161,7 @@ fi
 
 if [ "$SPECT" -eq 1 ]; then
   # create SPECT sinograms
-  ./simulate_data.sh my_uniform_cylinder_SPECT.hv my_atten_image_SPECT_modified.hv SPECT_Interfile_header.hs 10 ${suffix}
+  ./simulate_data.sh my_uniform_cylinder_SPECT.hv my_atten_image_SPECT_modified.hv SPECT_test_Interfile_header.hs 10 ${suffix}
   if [ $? -ne 0 ]; then
     echo "Error running SPECT simulation"
     exit 1
