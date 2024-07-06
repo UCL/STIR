@@ -3,7 +3,7 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-#  Copyright 2024 University College London
+#  Copyright (C) 2024 University College London
 #  This file is part of STIR.
 #
 #  SPDX-License-Identifier: Apache-2.0
@@ -38,18 +38,18 @@ fi
 # Check if the suffix is "_SPECT"
 if [ "$suffix" = "_SPECT" ]; then
 
-	echo "===  create line integrals for SPECT sinogram"
-	forward_project my_sino$suffix.hs  ${emission_image} ${template_sino} forward_project.par > my_create_SPECT_sino${suffix}.log 2>&1
+	echo "=== create line integrals for SPECT sinogram"
+	forward_project "my_sino${suffix}.hs" "${emission_image}" "${template_sino}" forward_project.par > "my_create_SPECT_sino${suffix}.log" 2>&1
 	if [ $? -ne 0 ]; then 
-		echo "ERROR running forward_project for SPECT sinogram. Check my_create_SPECT_sino${suffix}.log"; exit 1;
+			echo "ERROR running forward_project for SPECT sinogram. Check my_create_SPECT_sino${suffix}.log"; exit 1;
 	fi
 
 
 	echo "===  create line integrals for attenuation SPECT sinogram"
-	forward_project my_attenuation_sino$suffix.hs  ${atten_image} ${template_sino} > my_create_attenuation_sino${suffix}.log 2>&1
+	forward_project "my_attenuation_sino$suffix.hs" "${atten_image}" "${template_sino}" > "my_create_attenuation_sino${suffix}.log" 2>&1
 	if [ $? -ne 0 ]; then 
 		echo "ERROR running forward_project for attenuation sinogram. Check my_create_attenuation_sino${suffix}.log"; exit 1;
-	fi
+  fi
 
 else
 
