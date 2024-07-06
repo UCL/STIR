@@ -15,31 +15,32 @@
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
 */
+
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/Array.h"
+#include "stir/Array.h" 
 #include <vector>
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
 #include <math.h>
 #include "stir/Bin.h"
-#include "stir/round.h" 
-#include "stir/display.h" 
+#include "stir/round.h"
+#include "stir/display.h"
 #include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
 
-#include "stir/SegmentByView.h" 
+#include "stir/SegmentByView.h"
 #include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
 
-#ifdef STIR_OPENMP
+/*#ifdef STIR_OPENMP 
 #  include <omp.h>
-#endif
+#endif*/
 #include "stir/num_threads.h"
 using std::cerr;
 using std::endl;
@@ -135,7 +136,7 @@ SRT2DSPECTReconstruction::SRT2DSPECTReconstruction(const std::string& parameter_
 }
 
 SRT2DSPECTReconstruction::SRT2DSPECTReconstruction()
-{ 
+{
   set_defaults();
 }
 
@@ -158,7 +159,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 {
 
   // perform SSRB
-  /*  if (num_segments_to_combine>1)
+    if (num_segments_to_combine>1)
       {
         const ProjDataInfoCylindrical& proj_data_info_cyl =
           dynamic_cast<const ProjDataInfoCylindrical&>
@@ -180,7 +181,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
     else
       {
         // just use the proj_data_ptr we have already
-      } */
+      }  
 
   // check if segment 0 has direct sinograms
   {
@@ -299,7 +300,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   std::vector<std::vector<std::vector<float>>> f1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
   std::vector<std::vector<std::vector<float>>> ddf1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
 
-#ifdef STIR_OPENMP
+/*#ifdef STIR_OPENMP
   if (getenv("OMP_NUM_THREADS") == NULL)
     {
       omp_set_num_threads(omp_get_num_procs());
@@ -314,10 +315,10 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
       if (atoi(getenv("OMP_NUM_THREADS")) == 1)
         warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using "
                 "USE_OPENMP=TRUE.");
-    }
+    }*/
 // cerr<<"Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export
 // OMP_NUM_THREADS=<num_threads>\""<<endl; shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
-#endif
+//#endif
 
   // c --------------------------
   // c Put theta and p in arrays.
@@ -351,6 +352,8 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               f_cache[ia][it][ip]
                   = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]; //*.15;
             }
+
+
         }
       for (int ia = 0; ia < sa; ia++)
         {
@@ -375,31 +378,23 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 
 //-- Starting calculations per view
 // 2D algorithm only
-// At the moment, the parallelization produces artifacts that the non-parallelized version does not have. Therefore, I must be doing something wrong ... 
-
-  // Create local copies of the member variables
-  auto local_proj_data_ptr = this->proj_data_ptr;
-  auto local_atten_data_ptr = this->atten_data_ptr;
-
-#ifdef STIR_OPENMP
-#  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux, rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx, fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2, local_proj_data_ptr, local_atten_data_ptr) \
-    shared(view, view_atten, do_arc_correction, arc_correction, p, th, x1, x2, image, rx1x2th) private(ith, ia, ip, ix1, ix2)
-#  pragma omp for schedule(dynamic) nowait 
-#endif
-
+// At the moment, the parallelization produces artifacts that the non-parallelized version does not have. That's why it's commented out.  
+/*#ifdef STIR_OPENMP
+#  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux, rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx, fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \
+    shared(view, view_atten, do_arc_correction, arc_correction, p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2)
+#  pragma omp for schedule(dynamic) nowait
+#endif */
   for (ith = 0; ith < sth; ith++)
     {
       info(boost::format("View %d of %d") % ith % sth);
 
 //-- Loading the viewgram
-#ifdef STIR_OPENMP
+/*#ifdef STIR_OPENMP 
 #  pragma omp critical
-#endif 
+#endif*/
       {
-      view = local_proj_data_ptr->get_viewgram(ith, 0);
-      view_atten = local_atten_data_ptr->get_viewgram(ith, 0);
-    //    view = proj_data_ptr->get_viewgram(ith, 0);
-     //   view_atten = atten_data_ptr->get_viewgram(ith, 0);
+        view = proj_data_ptr->get_viewgram(ith, 0);
+        view_atten = atten_data_ptr->get_viewgram(ith, 0);
         if (do_arc_correction)
           {
             view = arc_correction.do_arc_correction(view);
@@ -412,7 +407,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               {
                 g[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
                 f[ia][ip]
-                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]* .15;             
+                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]* 0.1;
 							}
           }
 
@@ -464,7 +459,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               for (ip = 0; ip < sp; ip++)
                 {
                   double val = fabs(rho - p[ip]);
-                  lg[ip] = val < 2e-6 ? 0. : std::log(val); // Using std::log to specify the namespace
+                  lg[ip] = val < 2e-6 ? 0. : std::log(val); 
                 }
 
               // calculate I
@@ -498,12 +493,13 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                       if (fabs(p[ip + 1] - rho2) < 2e-6 || fabs(p[ip] - rho2) < 2e-6)
                         lg2_cache[it][ip] = 0.;
                     }
-                } 
+                }
 
               for (ia = 0; ia < sa; ia++)
-                {
-                   if(ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue;
-									
+                { 
+                 // Example of how to choose particular slices to be reconstructed
+                 // if(ia!=20 && ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue; 
+
                   f_node = A * f[ia][i] + B * f[ia][i + 1] + C * ddf[ia][i] + D * ddf[ia][i + 1];
 
                   // calculate fcme, fsme, fc, fs, hc, hs
@@ -523,8 +519,6 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   hc_fin = hilbert(rho, fc[ia], ddfc[ia], p, sp, lg);
                   hs_fin = hilbert(rho, fs[ia], ddfs[ia], p, sp, lg);
 
-                  //rx1x2th[ia][ix1][ix2]
-                  //    = fcme_fin * (1.0 / M_PI * hc_fin + 2.0 * fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - 2.0 * fc_fin);
                   rx1x2th[ia][ix1][ix2]
                       = fcme_fin * (1.0 / M_PI * hc_fin + fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - fc_fin);
 
@@ -601,17 +595,19 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                       rx2 = (3.0 * rx1x2th[ia][ix1][ix2] - 4.0 * rx1x2th[ia][ix1][ix2 - 1] + rx1x2th[ia][ix1][ix2 - 2])
                             / (2.0 * (2.0 / (sy - 1)));
                     }
-
-#ifdef STIR_OPENMP
+  
+/*#ifdef STIR_OPENMP 
 #  pragma omp critical
-#endif
+#endif*/
                   {
                     image[ia][image_min_x + sx - ix1 - 1][image_min_y + ix2]
-                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth);
+                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth)*6.23;
+									
+
                   }
-                }
+                } 
             }
-        }
+        } 
     } // slice
 
 
@@ -972,4 +968,3 @@ SRT2DSPECTReconstruction::integ(float dist, int max, float ff[])
 }
 
 END_NAMESPACE_STIR
-
