@@ -6,7 +6,7 @@
   \brief Main program for SRT2DSPECT reconstruction
   \author Dimitra Kyriakopoulou
 */
-/*
+/* 
     Copyright (C) 2024, University College London
 
     This file is part of STIR.
