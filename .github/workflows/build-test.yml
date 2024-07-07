@@ -5,6 +5,7 @@ on:
     branches: 
       - master
       - tof_sino_UCL
+      - SRT2D  
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
