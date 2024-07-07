@@ -602,6 +602,27 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char** argv)
 {
+  // option processing
+  bool do_cuda_tests = true;
+  while (argc > 1 && strncmp(argv[1], "--", 2) == 0)
+    {
+      if (strcmp(argv[1], "--help") == 0)
+        {
+          std::cerr << "Usage:\n"
+                    << "    test_priors [--skip-cuda] [image_filename]\n";
+          exit(EXIT_SUCCESS);
+        }
+      else if (strcmp(argv[1], "--skip-cuda") == 0)
+        do_cuda_tests = false;
+      else
+        {
+          std::cerr << "Unknown option: " << argv[1] << "\nUse --help for more information\n";
+          exit(EXIT_FAILURE);
+        }
+      --argc;
+      ++argv;
+    }
+
   set_default_num_threads();
 
   bool everything_ok = true;
@@ -617,11 +638,12 @@ main(int argc, char** argv)
     everything_ok = everything_ok && tests.is_everything_ok();
   }
 #ifdef STIR_WITH_CUDA
-  {
-    RelativeDifferencePriorTests<CudaRelativeDifferencePrior<float>> tests(argc > 1 ? argv[1] : nullptr);
-    tests.run_tests();
-    everything_ok = everything_ok && tests.is_everything_ok();
-  }
+  if (do_cuda_tests)
+    {
+      RelativeDifferencePriorTests<CudaRelativeDifferencePrior<float>> tests(argc > 1 ? argv[1] : nullptr);
+      tests.run_tests();
+      everything_ok = everything_ok && tests.is_everything_ok();
+    }
 #endif
   {
     PLSPriorTests tests(argc > 1 ? argv[1] : nullptr);
