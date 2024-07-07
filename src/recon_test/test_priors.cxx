@@ -277,7 +277,7 @@ GeneralisedPriorTests::test_Hessian_against_numerical(const std::string& test_na
     return;
 
   /// Setup
-  const float eps = 1e-3F;
+  const float eps = 1e-4F * target_sptr->find_max();
   bool testOK = true;
   const int verbosity_default = Verbosity::get();
 
@@ -346,7 +346,7 @@ GeneralisedPriorTests::test_Hessian_against_numerical(const std::string& test_na
             while (numerical_Hessian_iter != pert_grad_and_numerical_Hessian_sptr->end_all())
               {
                 testOK
-                    = testOK && this->check_if_less(std::abs(*Hessian_iter - *numerical_Hessian_iter), max_H * 0.01F, "Hessian");
+                    = testOK && this->check_if_less(std::abs(*Hessian_iter - *numerical_Hessian_iter), max_H * 0.005F, "Hessian");
                 ++numerical_Hessian_iter;
                 ++Hessian_iter;
               }
