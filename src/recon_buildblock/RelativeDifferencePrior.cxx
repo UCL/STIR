@@ -122,6 +122,13 @@ RelativeDifferencePrior<elemT>::check(DiscretisedDensity<3, elemT> const& curren
 {
   // Do base-class check
   base_type::check(current_image_estimate);
+  if (!is_null_ptr(this->kappa_ptr))
+    {
+      std::string explanation;
+      if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
+        error(std::string(registered_name)
+              + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
+    }
 }
 
 template <typename elemT>
@@ -312,9 +319,6 @@ RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
-
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -389,8 +393,6 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -475,9 +477,6 @@ RelativeDifferencePrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& pr
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int z = coords[1];
   const int y = coords[2];
   const int x = coords[3];
@@ -553,9 +552,6 @@ RelativeDifferencePrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensit
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();

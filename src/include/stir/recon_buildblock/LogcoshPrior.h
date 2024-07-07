@@ -175,6 +175,9 @@ protected:
   void initialise_keymap() override;
   bool post_processing() override;
 
+  //! Check that the prior is ready to be used
+  void check(DiscretisedDensity<3, elemT> const& current_image_estimate) const override;
+
 private:
   //! Spatially variant penalty penalty image ptr
   shared_ptr<DiscretisedDensity<3, elemT>> kappa_ptr;
