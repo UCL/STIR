@@ -33,12 +33,14 @@ GeneralisedPrior<elemT>::get_penalisation_factor() const
   return penalisation_factor;
 }
 
+/*!
+  \warning Currently we allow the penalisation factor to be set \b after calling set_up().
+*/
 template <typename elemT>
 void
 GeneralisedPrior<elemT>::set_penalisation_factor(const float new_penalisation_factor)
 {
   penalisation_factor = new_penalisation_factor;
-  this->_already_set_up = false;
 }
 
 END_NAMESPACE_STIR

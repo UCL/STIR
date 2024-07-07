@@ -27,6 +27,9 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#ifdef STIR_WITH_CUDA
+#  include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#endif
 #include "stir/recon_buildblock/LogcoshPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/test/ObjectiveFunctionTests.h"
@@ -47,7 +50,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup test
-  \brief Test class for QuadraticPrior, RelativeDifferencePrior, and LogcoshPrior
+  \brief Test class for QuadraticPrior, RelativeDifferencePrior, CudaRelativeDifferencePrior and LogcoshPrior
 
   This test compares the result of GeneralisedPrior::compute_gradient()
   with a numerical gradient computed by using the
@@ -419,6 +422,7 @@ QuadraticPriorTests::run_tests()
  \ingroup recontest
  \ingroup priors
 */
+template <class RDP>
 class RelativeDifferencePriorTests : public GeneralisedPriorTests
 {
 public:
@@ -429,10 +433,11 @@ public:
   void run_tests() override;
 };
 
+template <class RDP>
 void
-RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
-                                                 RelativeDifferencePrior<float>& rdp,
-                                                 const shared_ptr<DiscretisedDensity<3, float>>& target_sptr)
+RelativeDifferencePriorTests<RDP>::run_specific_tests(const std::string& test_name,
+                                                      RelativeDifferencePrior<float>& rdp,
+                                                      const shared_ptr<DiscretisedDensity<3, float>>& target_sptr)
 {
   std::cerr << "----- test " << test_name << "  --> RDP gradient limit tests\n";
   shared_ptr<target_type> grad_sptr(target_sptr->get_empty_copy());
@@ -484,28 +489,29 @@ RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
   }
 }
 
+template <class RDP>
 void
-RelativeDifferencePriorTests::run_tests()
+RelativeDifferencePriorTests<RDP>::run_tests()
 {
   shared_ptr<target_type> density_sptr;
   construct_input_data(density_sptr);
-
-  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0\n";
+  const std::string name(RDP::registered_name);
+  std::cerr << "\n\nTests for " << name << " with epsilon = 0\n";
   {
     // gamma is default and epsilon is 0.0
-    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.F);
+    RDP objective_function(false, 1.F, 2.F, 0.F);
     this->configure_prior_tests(
         true, true, false); // RDP, with epsilon = 0.0, will fail the numerical Hessian test (it can become infinity)
-    this->run_tests_for_objective_function("RDP_no_kappa_no_eps", objective_function, density_sptr);
-    this->run_specific_tests("RDP_specific_no_kappa_no_eps", objective_function, density_sptr);
+    this->run_tests_for_objective_function(name + "_no_kappa_no_eps", objective_function, density_sptr);
+    this->run_specific_tests(name + "_specific_no_kappa_no_eps", objective_function, density_sptr);
   }
-  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0.1\n";
+  std::cerr << "\n\nTests for " << name << " with epsilon = 0.1\n";
   {
     // gamma is default and epsilon is "small"
-    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.1F);
+    RDP objective_function(false, 1.F, 2.F, 0.1F);
     this->configure_prior_tests(true, true, true); // With a large enough epsilon the RDP Hessian numerical test will pass
-    this->run_tests_for_objective_function("RDP_no_kappa_with_eps", objective_function, density_sptr);
-    this->run_specific_tests("RDP_specific_no_kappa_with_eps", objective_function, density_sptr);
+    this->run_tests_for_objective_function(name + "_no_kappa_with_eps", objective_function, density_sptr);
+    this->run_specific_tests(name + "_specific_no_kappa_with_eps", objective_function, density_sptr);
   }
 }
 
@@ -583,10 +589,17 @@ main(int argc, char** argv)
     everything_ok = everything_ok && tests.is_everything_ok();
   }
   {
-    RelativeDifferencePriorTests tests(argc > 1 ? argv[1] : nullptr);
+    RelativeDifferencePriorTests<RelativeDifferencePrior<float>> tests(argc > 1 ? argv[1] : nullptr);
     tests.run_tests();
     everything_ok = everything_ok && tests.is_everything_ok();
   }
+#ifdef STIR_WITH_CUDA
+  {
+    RelativeDifferencePriorTests<CudaRelativeDifferencePrior<float>> tests(argc > 1 ? argv[1] : nullptr);
+    tests.run_tests();
+    everything_ok = everything_ok && tests.is_everything_ok();
+  }
+#endif
   {
     PLSPriorTests tests(argc > 1 ? argv[1] : nullptr);
     tests.run_tests();
