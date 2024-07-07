@@ -143,7 +143,7 @@ public:
        \c data_sptr.get() block. Therefore, any modifications to the array will modify the data at \c data_sptr.get().
     This will be true until the Array is resized.
 
-    The C-array \data_ptr will be accessed with the last dimension running fastest
+    The C-array \a data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
   */
   inline Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr);
@@ -229,13 +229,15 @@ public:
   //! return minimum of all the elements
   inline elemT find_min() const;
 
-  //! Fill elements with value n (overrides VectorWithOffset::fill)
+  //! Fill elements with value \c n
+  /*!
+    hides VectorWithOffset::fill
+   */
   inline void fill(const elemT& n);
-
-  //! Sets elements below value to the value (overrides VectorWithOffset::fill)
+  //! Sets elements below value to the value
   inline void apply_lower_threshold(const elemT& l);
 
-  //! Sets elements above value to the value (overrides VectorWithOffset::fill)
+  //! Sets elements above value to the value
   inline void apply_upper_threshold(const elemT& u);
 
   //! checks if the index range is 'regular'

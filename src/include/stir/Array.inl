@@ -24,6 +24,7 @@
 // include for min,max definitions
 #include <algorithm>
 #include "stir/assign.h"
+#include "stir/HigherPrecision.h"
 #include "stir/error.h"
 //#include "stir/info.h"
 //#include <string>
@@ -38,10 +39,12 @@ bool
 Array<num_dimensions, elemT>::is_contiguous() const
 {
   auto mem = &(*this->begin_all());
-  for (auto i = this->get_min_index(); i < this->get_max_index(); ++i)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); ++i)
     {
       if (!(*this)[i].is_contiguous())
         return false;
+      if (i == this->get_max_index())
+        return true;
       mem += (*this)[i].size_all();
       if (mem != &(*(*this)[i + 1].begin_all()))
         return false;
@@ -237,6 +240,11 @@ Array<num_dimensions, elemT>::size_all() const
 {
   this->check_state();
   size_t acc = 0;
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].size_all();
   return acc;
@@ -322,11 +330,16 @@ elemT
 Array<num_dimensions, elemT>::sum() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum();
-  return acc;
+  return static_cast<elemT>(acc);
 }
 
 template <int num_dimensions, typename elemT>
@@ -334,11 +347,16 @@ elemT
 Array<num_dimensions, elemT>::sum_positive() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum_positive();
-  return acc;
+  return static_cast<elemT>(acc);
 }
 
 template <int num_dimensions, typename elemT>
@@ -349,6 +367,11 @@ Array<num_dimensions, elemT>::find_max() const
   if (this->size() > 0)
     {
       elemT maxval = this->num[this->get_min_index()].find_max();
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(max : maxval)
+#  endif
+#endif
       for (int i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
         {
           maxval = std::max(this->num[i].find_max(), maxval);
@@ -370,6 +393,11 @@ Array<num_dimensions, elemT>::find_min() const
   if (this->size() > 0)
     {
       elemT minval = this->num[this->get_min_index()].find_min();
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(min : minval)
+#  endif
+#endif
       for (int i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
         {
           minval = std::min(this->num[i].find_min(), minval);
@@ -711,11 +739,16 @@ elemT
 Array<1, elemT>::sum() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
-  for (int i = this->get_min_index(); i <= this->get_max_index(); acc += this->num[i++])
-    {}
-  return acc;
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
+  for (int i = this->get_min_index(); i <= this->get_max_index(); ++i)
+    acc += this->num[i];
+  return static_cast<elemT>(acc);
 };
 
 template <class elemT>
@@ -723,14 +756,19 @@ elemT
 Array<1, elemT>::sum_positive() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     {
       if (this->num[i] > 0)
         acc += this->num[i];
     }
-  return acc;
+  return static_cast<elemT>(acc);
 };
 
 template <class elemT>

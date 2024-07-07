@@ -37,6 +37,13 @@ class Succeeded;
 */
 class ProjDataInMemory : public ProjData
 {
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
+#endif
+  typedef ProjDataInMemory self_type;
+  typedef ProjData base_type;
+
 public:
   //! constructor with only info, but no data
   /*!
@@ -57,39 +64,21 @@ public:
 
   Viewgram<float> get_viewgram(const int view_num,
                                const int segment_num,
-                               const bool make_num_tangential_poss_odd = false
-#ifdef STIR_TOF
-                               ,
-                               const int timing_pos = 0
-#endif
-  ) const override;
+                               const bool make_num_tangential_poss_odd = false,
+                               const int timing_pos = 0) const override;
   Succeeded set_viewgram(const Viewgram<float>& v) override;
 
   Sinogram<float> get_sinogram(const int ax_pos_num,
                                const int segment_num,
-                               const bool make_num_tangential_poss_odd = false
-#ifdef STIR_TOF
-                               ,
-                               const int timing_pos = 0
-#endif
-  ) const override;
+                               const bool make_num_tangential_poss_odd = false,
+                               const int timing_pos = 0) const override;
 
   Succeeded set_sinogram(const Sinogram<float>& s) override;
 
   //! Get all sinograms for the given segment
-  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num
-#ifdef STIR_TOF
-                                                   ,
-                                                   const int timing_pos = 0
-#endif
-  ) const override;
+  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num, const int timing_pos = 0) const override;
   //! Get all viewgrams for the given segment
-  SegmentByView<float> get_segment_by_view(const int segment_num
-#ifdef STIR_TOF
-                                           ,
-                                           const int timing_pos = 0
-#endif
-  ) const override;
+  SegmentByView<float> get_segment_by_view(const int segment_num, const int timing_pos = 0) const override;
 
   //! Set all sinograms for the given segment
   Succeeded set_segment(const SegmentBySinogram<float>&) override;
@@ -115,6 +104,73 @@ public:
 
   void set_bin_value(const Bin& bin);
 
+  //! @name arithmetic operations
+  ///@{
+  //! return sum of all elements
+  float sum() const override;
+
+  //! return maximum value of all elements
+  float find_max() const override;
+
+  //! return minimum value of all elements
+  float find_min() const override;
+
+  //! return L2-norm (sqrt of sum of squares)
+  double norm() const override;
+
+  //! return L2-norm squared (sum of squares)
+  double norm_squared() const override;
+
+  //! elem by elem addition
+  self_type operator+(const self_type& iv) const;
+
+  //! elem by elem subtraction
+  self_type operator-(const self_type& iv) const;
+
+  //! elem by elem multiplication
+  self_type operator*(const self_type& iv) const;
+
+  //! elem by elem division
+  self_type operator/(const self_type& iv) const;
+
+  //! addition with a 'float'
+  self_type operator+(const float a) const;
+
+  //! subtraction with a 'float'
+  self_type operator-(const float a) const;
+
+  //! multiplication with a 'float'
+  self_type operator*(const float a) const;
+
+  //! division with a 'float'
+  self_type operator/(const float a) const;
+
+  // corresponding assignment operators
+
+  //! adding elements of \c v to the current data
+  self_type& operator+=(const base_type& v) override;
+
+  //! subtracting elements of \c v from the current data
+  self_type& operator-=(const base_type& v) override;
+
+  //! multiplying elements of the current data with elements of \c v
+  self_type& operator*=(const base_type& v) override;
+
+  //! dividing all elements of the current data by elements of \c v
+  self_type& operator/=(const base_type& v) override;
+
+  //! adding an \c float to the elements of the current data
+  self_type& operator+=(const float v) override;
+
+  //! subtracting an \c float from the elements of the current data
+  self_type& operator-=(const float v) override;
+
+  //! multiplying the elements of the current data with an \c float
+  self_type& operator*=(const float v) override;
+
+  //! dividing the elements of the current data by an \c float
+  self_type& operator/=(const float v) override;
+
   //! \deprecated a*x+b*y (use xapyb)
   STIR_DEPRECATED void axpby(const float a, const ProjData& x, const float b, const ProjData& y) override;
 
@@ -137,6 +193,7 @@ public:
   /// This implementation requires that a, b and y are ProjDataInMemory
   /// (else falls back on general method)
   void sapyb(const ProjData& a, const ProjData& y, const ProjData& b) override;
+  ///@}
 
   /** @name iterator typedefs
    *  iterator typedefs
@@ -149,42 +206,42 @@ public:
   ///@}
 
   //! start value for iterating through all elements in the array, see iterator
-  inline iterator begin()
+  iterator begin()
   {
     return buffer.begin();
   }
   //! start value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator begin() const
+  const_iterator begin() const
   {
     return buffer.begin();
   }
   //! end value for iterating through all elements in the array, see iterator
-  inline iterator end()
+  iterator end()
   {
     return buffer.end();
   }
   //! end value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator end() const
+  const_iterator end() const
   {
     return buffer.end();
   }
   //! start value for iterating through all elements in the array, see iterator
-  inline iterator begin_all()
+  iterator begin_all()
   {
     return buffer.begin_all();
   }
   //! start value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator begin_all() const
+  const_iterator begin_all() const
   {
     return buffer.begin_all();
   }
   //! end value for iterating through all elements in the array, see iterator
-  inline iterator end_all()
+  iterator end_all()
   {
     return buffer.end_all();
   }
   //! end value for iterating through all elements in the (const) array, see iterator
-  inline const_iterator end_all() const
+  const_iterator end_all() const
   {
     return buffer.end_all();
   }
@@ -192,25 +249,25 @@ public:
   //! \name access to the data via a pointer
   //@{
   //! member function for access to the data via a float*
-  inline float* get_data_ptr()
+  float* get_data_ptr()
   {
     return buffer.get_data_ptr();
   }
 
   //! member function for access to the data via a const float*
-  inline const float* get_const_data_ptr() const
+  const float* get_const_data_ptr() const
   {
     return buffer.get_const_data_ptr();
   }
 
   //! signal end of access to float*
-  inline void release_data_ptr()
+  void release_data_ptr()
   {
     buffer.release_data_ptr();
   }
 
   //! signal end of access to const float*
-  inline void release_const_data_ptr() const
+  void release_const_data_ptr() const
   {
     buffer.release_const_data_ptr();
   }
@@ -235,6 +292,18 @@ private:
   /*! Throws if out-of-range or other error */
   std::streamoff get_index(const Bin&) const;
 };
+
+inline double
+norm(const ProjDataInMemory& p)
+{
+  return p.norm();
+}
+
+inline double
+norm_squared(const ProjDataInMemory& p)
+{
+  return p.norm_squared();
+}
 
 END_NAMESPACE_STIR
 

@@ -14,7 +14,7 @@
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2016, University of Hull
-    Copyright (C) 2016, 2019, 2020, 2023, UCL
+    Copyright (C) 2016, 2019, 2020, 2023, 2024, UCL
     Copyright (C) 2020,  Rutherford Appleton Laboratory STFC
     This file is part of STIR.
 
@@ -24,11 +24,13 @@
 */
 
 #include "stir/ProjDataInMemory.h"
+#include "stir/copy_fill.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/SegmentByView.h"
 #include "stir/Bin.h"
 #include "stir/is_null_ptr.h"
+#include "stir/numerics/norm.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -94,7 +96,7 @@ copy_data_from_buffer(const Array<1, float>& buffer, Array<num_dimensions, float
 #endif
   {
     const float* ptr = buffer.get_const_data_ptr() + offset;
-    std::copy(ptr, ptr + array.size_all(), array.begin_all());
+    fill_from(array, ptr, ptr + array.size_all());
     buffer.release_const_data_ptr();
   }
 }
@@ -108,7 +110,7 @@ copy_data_to_buffer(Array<1, float>& buffer, const Array<num_dimensions, float>&
 #endif
   {
     float* ptr = buffer.get_data_ptr() + offset;
-    std::copy(array.begin_all(), array.end_all(), ptr);
+    copy_to(array, ptr);
     buffer.release_data_ptr();
   }
 }
@@ -117,30 +119,11 @@ copy_data_to_buffer(Array<1, float>& buffer, const Array<num_dimensions, float>&
 Viewgram<float>
 ProjDataInMemory::get_viewgram(const int view_num,
                                const int segment_num,
-                               const bool make_num_tangential_poss_odd
-#ifdef STIR_TOF
-                               ,
-                               const int timing_pos
-#endif
-) const
+                               const bool make_num_tangential_poss_odd,
+                               const int timing_pos) const
 {
-  Viewgram<float> viewgram(proj_data_info_sptr,
-                           view_num,
-                           segment_num
-#ifdef STIR_TOF
-                           ,
-                           timing_pos
-#endif
-  );
-  Bin bin(segment_num,
-          view_num,
-          this->get_min_axial_pos_num(segment_num),
-          this->get_min_tangential_pos_num()
-#ifdef STIR_TOF
-              ,
-          timing_pos
-#endif
-  );
+  Bin bin(segment_num, view_num, this->get_min_axial_pos_num(segment_num), this->get_min_tangential_pos_num(), timing_pos);
+  Viewgram<float> viewgram(proj_data_info_sptr, bin);
 
   for (bin.axial_pos_num() = get_min_axial_pos_num(segment_num); bin.axial_pos_num() <= get_max_axial_pos_num(segment_num);
        bin.axial_pos_num()++)
@@ -176,19 +159,9 @@ ProjDataInMemory::set_viewgram(const Viewgram<float>& v)
     }
   const int segment_num = v.get_segment_num();
   const int view_num = v.get_view_num();
-#ifdef STIR_TOF
   const int timing_pos = v.get_timing_pos_num();
-#endif
 
-  Bin bin(segment_num,
-          view_num,
-          this->get_min_axial_pos_num(segment_num),
-          this->get_min_tangential_pos_num()
-#ifdef STIR_TOF
-              ,
-          timing_pos
-#endif
-  );
+  Bin bin(segment_num, view_num, this->get_min_axial_pos_num(segment_num), this->get_min_tangential_pos_num(), timing_pos);
 
   for (bin.axial_pos_num() = get_min_axial_pos_num(segment_num); bin.axial_pos_num() <= get_max_axial_pos_num(segment_num);
        bin.axial_pos_num()++)
@@ -208,10 +181,8 @@ ProjDataInMemory::get_index(const Bin& this_bin) const
   if (!(this_bin.axial_pos_num() >= get_min_axial_pos_num(this_bin.segment_num())
         && this_bin.axial_pos_num() <= get_max_axial_pos_num(this_bin.segment_num())))
     error("ProjDataInMemory::this->get_index: axial_pos_num out of range : %d", this_bin.axial_pos_num());
-#ifdef STIR_TOF
   if (!(this_bin.timing_pos_num() >= get_min_tof_pos_num() && this_bin.timing_pos_num() <= get_max_tof_pos_num()))
     error("ProjDataInMemory::this->get_index: timing_pos_num out of range : %d", this_bin.timing_pos_num());
-#endif
 
   const int index = static_cast<int>(std::find(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num())
                                      - segment_sequence.begin());
@@ -225,7 +196,6 @@ ProjDataInMemory::get_index(const Bin& this_bin) const
 
   // Now we are just in front of  the correct segment
   {
-#ifdef STIR_TOF
     if (proj_data_info_sptr->get_num_tof_poss() > 1)
       {
         const int timing_index
@@ -235,7 +205,6 @@ ProjDataInMemory::get_index(const Bin& this_bin) const
         assert(offset_3d_data > 0);
         segment_offset += static_cast<streamoff>(timing_index) * offset_3d_data;
       }
-#endif
     // skip axial positions
     const streamoff ax_pos_offset = (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) * get_num_views()
                                     * get_num_tangential_poss();
@@ -255,30 +224,11 @@ ProjDataInMemory::get_index(const Bin& this_bin) const
 Sinogram<float>
 ProjDataInMemory::get_sinogram(const int ax_pos_num,
                                const int segment_num,
-                               const bool make_num_tangential_poss_odd
-#ifdef STIR_TOF
-                               ,
-                               const int timing_pos
-#endif
-) const
+                               const bool make_num_tangential_poss_odd,
+                               const int timing_pos) const
 {
-  Sinogram<float> sinogram(proj_data_info_sptr,
-                           ax_pos_num,
-                           segment_num
-#ifdef STIR_TOF
-                           ,
-                           timing_pos
-#endif
-  );
-  Bin bin(segment_num,
-          this->get_min_view_num(),
-          ax_pos_num,
-          this->get_min_tangential_pos_num()
-#ifdef STIR_TOF
-              ,
-          timing_pos
-#endif
-  );
+  Sinogram<float> sinogram(proj_data_info_sptr, ax_pos_num, segment_num, timing_pos);
+  Bin bin(segment_num, this->get_min_view_num(), ax_pos_num, this->get_min_tangential_pos_num(), timing_pos);
 
   detail::copy_data_from_buffer(this->buffer, sinogram, this->get_index(bin));
 
@@ -307,66 +257,31 @@ ProjDataInMemory::set_sinogram(const Sinogram<float>& s)
     }
   int segment_num = s.get_segment_num();
   int ax_pos_num = s.get_axial_pos_num();
-#ifdef STIR_TOF
   int timing_pos = s.get_timing_pos_num();
-#endif
-  Bin bin(segment_num,
-          this->get_min_view_num(),
-          ax_pos_num,
-          this->get_min_tangential_pos_num()
-#ifdef STIR_TOF
-              ,
-          timing_pos
-#endif
-  );
+  Bin bin(segment_num, this->get_min_view_num(), ax_pos_num, this->get_min_tangential_pos_num(), timing_pos);
 
   detail::copy_data_to_buffer(this->buffer, s, this->get_index(bin));
   return Succeeded::yes;
 }
 
 SegmentBySinogram<float>
-ProjDataInMemory::get_segment_by_sinogram(const int segment_num
-#ifdef STIR_TOF
-                                          ,
-                                          const int timing_pos_num
-#endif
-) const
+ProjDataInMemory::get_segment_by_sinogram(const int segment_num, const int timing_pos_num) const
 {
-  SegmentBySinogram<float> segment(proj_data_info_sptr,
-                                   segment_num
-#ifdef STIR_TOF
-                                   ,
-                                   timing_pos_num
-#endif
-  );
   const Bin bin(segment_num,
                 this->get_min_view_num(),
                 this->get_min_axial_pos_num(segment_num),
-                this->get_min_tangential_pos_num()
-#ifdef STIR_TOF
-                    ,
-                timing_pos_num
-#endif
-  );
+                this->get_min_tangential_pos_num(),
+                timing_pos_num);
+  SegmentBySinogram<float> segment(proj_data_info_sptr, bin);
   detail::copy_data_from_buffer(this->buffer, segment, this->get_index(bin));
   return segment;
 }
 
 SegmentByView<float>
-ProjDataInMemory::get_segment_by_view(const int segment_num
-#ifdef STIR_TOF
-                                      ,
-                                      const int timing_pos
-#endif
-) const
+ProjDataInMemory::get_segment_by_view(const int segment_num, const int timing_pos) const
 {
   // TODO rewrite in terms of get_sinogram as this doubles memory temporarily
-  return SegmentByView<float>(get_segment_by_sinogram(segment_num
-#ifdef STIR_TOF
-                                                      ,
-                                                      timing_pos
-#endif
-                                                      ));
+  return SegmentByView<float>(get_segment_by_sinogram(segment_num, timing_pos));
 }
 
 Succeeded
@@ -387,12 +302,8 @@ ProjDataInMemory::set_segment(const SegmentBySinogram<float>& segmentbysinogram_
   const Bin bin(segment_num,
                 this->get_min_view_num(),
                 this->get_min_axial_pos_num(segment_num),
-                this->get_min_tangential_pos_num()
-#ifdef STIR_TOF
-                    ,
-                segmentbysinogram_v.get_timing_pos_num()
-#endif
-  );
+                this->get_min_tangential_pos_num(),
+                segmentbysinogram_v.get_timing_pos_num());
 
   detail::copy_data_to_buffer(this->buffer, segmentbysinogram_v, this->get_index(bin));
   return Succeeded::yes;
@@ -449,6 +360,162 @@ void
 ProjDataInMemory::set_bin_value(const Bin& bin)
 {
   buffer[this->get_index(bin)] = bin.get_bin_value();
+}
+
+float
+ProjDataInMemory::sum() const
+{
+  return buffer.sum();
+}
+
+float
+ProjDataInMemory::find_max() const
+{
+  return buffer.find_max();
+}
+
+float
+ProjDataInMemory::find_min() const
+{
+  return buffer.find_min();
+}
+
+double
+ProjDataInMemory::norm() const
+{
+  return stir::norm(this->buffer);
+}
+
+double
+ProjDataInMemory::norm_squared() const
+{
+  return stir::norm_squared(this->buffer);
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator+=(const base_type& v)
+{
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer += vp->buffer;
+  else
+    base_type::operator+=(v);
+
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator-=(const base_type& v)
+{
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer -= vp->buffer;
+  else
+    base_type::operator-=(v);
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator*=(const base_type& v)
+{
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer *= vp->buffer;
+  else
+    base_type::operator*=(v);
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator/=(const base_type& v)
+{
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer /= vp->buffer;
+  else
+    base_type::operator/=(v);
+
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator+=(const float v)
+{
+  this->buffer += v;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator-=(const float v)
+{
+  this->buffer -= v;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator*=(const float v)
+{
+  this->buffer *= v;
+  return *this;
+}
+
+ProjDataInMemory&
+ProjDataInMemory::operator/=(const float v)
+{
+  this->buffer /= v;
+  return *this;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator+(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c += iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator-(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c -= iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator*(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c *= iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator/(const ProjDataInMemory& iv) const
+{
+  ProjDataInMemory c(*this);
+  return c /= iv;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator+(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c += a;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator-(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c -= a;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator*(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c *= a;
+}
+
+ProjDataInMemory
+ProjDataInMemory::operator/(const float a) const
+{
+  ProjDataInMemory c(*this);
+  return c /= a;
 }
 
 void

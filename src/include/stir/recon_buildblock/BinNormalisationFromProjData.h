@@ -76,17 +76,26 @@ public:
   */
   bool is_trivial() const override;
 
+  //! returns if the object can only handle TOF data
+  /*!
+    Checks if the underlying "projection data" are TOF or not.
+  */
+  virtual bool is_TOF_only_norm() const override;
+
   //! Checks if we can handle certain projection data.
   /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors
       with the ProjDataInfo supplied. */
   Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+
+  // import all apply/undo methods from base-class (we'll override some below)
+  using base_type::apply;
+  using base_type::undo;
 
   //! Normalise some data
   /*!
     This means \c multiply with the data in the projdata object
     passed in the constructor.
   */
-
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 
   //! Undo the normalisation of some data
