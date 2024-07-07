@@ -23,13 +23,6 @@
 
 START_NAMESPACE_STIR
 
-struct cppdim3
-{
-  int x;
-  int y;
-  int z;
-};
-
 /*!
   \ingroup priors
   \ingroup CUDA
@@ -73,6 +66,13 @@ public:
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
 protected:
+  struct cppdim3
+  {
+    int x;
+    int y;
+    int z;
+  };
+
   int z_dim, y_dim, x_dim;
   cppdim3 block_dim;
   cppdim3 grid_dim;

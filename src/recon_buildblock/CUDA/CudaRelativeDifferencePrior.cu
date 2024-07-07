@@ -385,7 +385,7 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
   // Get the number of voxels in each dimension
   auto& target_cast = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*target_sptr);
   auto sizes = target_cast.get_lengths();
-  this->z_dim = sizes[1];
+  this->z_dim = sizes[1]; // note: 1-offset in BasicCoordinate sadly
   this->y_dim = sizes[2];
   this->x_dim = sizes[3];
 
