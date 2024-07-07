@@ -30,6 +30,16 @@ struct cppdim3
   int z;
 };
 
+/*!
+  \ingroup priors
+  \ingroup CUDA
+  \brief CUDA implementation of the Relative Difference prior
+
+  \see RelativeDifferencePrior. Results should be identical.
+
+  \todo Limitation: currently only weights of size 3x3x3 are supported. Therefore, single slice
+  images will lead to an error being thrown.
+*/
 template <typename elemT>
 class CudaRelativeDifferencePrior : public RegisteredParsingObject<CudaRelativeDifferencePrior<elemT>,
                                                                    GeneralisedPrior<DiscretisedDensity<3, elemT>>,

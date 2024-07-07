@@ -254,7 +254,14 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
   // Allocate memory on the GPU
   cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
   cudaMalloc(&d_gradient_data, prior_gradient.size_all() * sizeof(float));
-
+  {
+    cudaError_t cuda_error = cudaGetLastError();
+    if (cuda_error != cudaSuccess)
+      {
+        const char* err = cudaGetErrorString(cuda_error);
+        error(std::string("CUDA failed to allocate memory in compute_gradient kernel execution: ") + err);
+      }
+  }
   // Copy data from host to device
   array_to_device(d_image_data, current_image_estimate);
 
@@ -316,6 +323,14 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
   // Allocate memory on the GPU
   cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
   cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(float));
+  {
+    cudaError_t cuda_error = cudaGetLastError();
+    if (cuda_error != cudaSuccess)
+      {
+        const char* err = cudaGetErrorString(cuda_error);
+        error(std::string("CUDA failed to allocate memory in compute_value kernel execution: ") + err);
+      }
+  }
 
   // Copy data from host to device
   array_to_device(d_image_data, current_image_estimate);
@@ -391,13 +406,22 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
       error("CudaRelativeDifferencePriorClass: This prior requires a 3D image and only works for a 3x3x3 neighbourhood");
       return Succeeded::no;
     }
+  if (this->weights.get_length() == 0)
+    {
+      compute_weights(this->weights, target_cast.get_grid_spacing(), this->only_2D);
+      if (this->d_weights_data)
+        cudaFree(this->d_weights_data);
+      cudaMalloc(&d_weights_data, this->weights.size_all() * sizeof(float));
+      array_to_device(this->d_weights_data, this->weights);
+    }
+  // check 3x3x3 (kernel limitation)
   {
-    compute_weights(this->weights, target_cast.get_grid_spacing(), this->only_2D);
-    if (this->d_weights_data)
-      cudaFree(this->d_weights_data);
-    cudaMalloc(&d_weights_data, this->weights.size_all() * sizeof(float));
-    array_to_device(this->d_weights_data, this->weights);
+    BasicCoordinate<3, int> min_ind, max_ind;
+    if (!this->weights.get_regular_range(min_ind, max_ind) || (min_ind != make_coordinate(-1, -1, -1))
+        || (max_ind != make_coordinate(1, 1, 1)))
+      error("CudaRelativeDifferencePrior: Currently only support 3x3x3 weights. Sorry.");
   }
+
   {
     if (this->d_kappa_data)
       cudaFree(this->d_kappa_data);
