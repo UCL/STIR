@@ -92,10 +92,10 @@ computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
               const int neighbourIndex = (z + dz) * y_dim * x_dim + (y + dy) * x_dim + (x + dx);
               const int weightsIndex = (dz + 1) * 9 + (dy + 1) * 3 + (dx + 1);
               const float diff = (image[inputIndex] - image[neighbourIndex]);
-              const float diff_abs = abs(diff);
+              const float diff_abs = std::abs(diff);
               const float add = (image[inputIndex] + image[neighbourIndex]);
               const float add_3 = (image[inputIndex] + 3 * image[neighbourIndex]);
-              double current = weights[weightsIndex] * (diff * (gamma * diff_abs + add_3))
+              double current = weights[weightsIndex] * (diff * (gamma * diff_abs + add_3 + 2 * epsilon))
                                / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));
               if (do_kappa)
                 {
@@ -108,8 +108,12 @@ computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
   tmp_grad[inputIndex] = static_cast<float>(penalisation_factor * voxel_gradient);
 }
 
+// typedef for the value (array) in the CUDA kernel
+// We need double for numerical accuracy accordingy to test_priors.cxx
+typedef double value_type;
+
 extern "C" __global__ void
-computeCudaRelativeDifferencePriorValueKernel(float* tmp_value,
+computeCudaRelativeDifferencePriorValueKernel(value_type* tmp_value,
                                               const float* image,
                                               const float* weights,
                                               const float* kappa,
@@ -170,7 +174,7 @@ computeCudaRelativeDifferencePriorValueKernel(float* tmp_value,
 
               const float diff = (image[inputIndex] - image[neighbourIndex]);
               const float add = (image[inputIndex] + image[neighbourIndex]);
-              double current = (weights[weightsIndex] * 0.5 * diff * diff) / (add + gamma * abs(diff) + epsilon);
+              double current = (weights[weightsIndex] * 0.5 * diff * diff) / (add + gamma * std::abs(diff) + epsilon);
               if (do_kappa)
                 {
                   current *= kappa[inputIndex] * kappa[neighbourIndex];
@@ -179,7 +183,7 @@ computeCudaRelativeDifferencePriorValueKernel(float* tmp_value,
             }
         }
     }
-  tmp_value[inputIndex] = static_cast<float>(penalisation_factor * sum);
+  tmp_value[inputIndex] = static_cast<value_type>(penalisation_factor * sum);
 }
 
 static void
@@ -318,11 +322,11 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
 
   // GPU memory pointers
   float* d_image_data;
-  float* d_tmp_value;
+  value_type* d_tmp_value;
 
   // Allocate memory on the GPU
   cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
-  cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(float));
+  cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(value_type));
   {
     cudaError_t cuda_error = cudaGetLastError();
     if (cuda_error != cudaSuccess)
@@ -362,7 +366,7 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
     }
 
   // Allocate host memory for the result and copy from device to host
-  Array<3, float> tmp_value(current_image_estimate.get_index_range());
+  Array<3, value_type> tmp_value(current_image_estimate.get_index_range());
   array_to_host(tmp_value, d_tmp_value);
 
   // Compute the total value from tmp_value
