@@ -32,11 +32,12 @@
 
 START_NAMESPACE_STIR
 
-extern "C" __global__ void
-computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
-                                                 const float* image,
+template <class elemT>
+__global__ static void
+computeCudaRelativeDifferencePriorGradientKernel(elemT* tmp_grad,
+                                                 const elemT* image,
                                                  const float* weights,
-                                                 const float* kappa,
+                                                 const elemT* kappa,
                                                  const bool do_kappa,
                                                  const float gamma,
                                                  const float epsilon,
@@ -91,10 +92,10 @@ computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
             {
               const int neighbourIndex = (z + dz) * y_dim * x_dim + (y + dy) * x_dim + (x + dx);
               const int weightsIndex = (dz + 1) * 9 + (dy + 1) * 3 + (dx + 1);
-              const float diff = (image[inputIndex] - image[neighbourIndex]);
-              const float diff_abs = std::abs(diff);
-              const float add = (image[inputIndex] + image[neighbourIndex]);
-              const float add_3 = (image[inputIndex] + 3 * image[neighbourIndex]);
+              const elemT diff = (image[inputIndex] - image[neighbourIndex]);
+              const elemT diff_abs = std::abs(diff);
+              const elemT add = (image[inputIndex] + image[neighbourIndex]);
+              const elemT add_3 = (image[inputIndex] + 3 * image[neighbourIndex]);
               double current = weights[weightsIndex] * (diff * (gamma * diff_abs + add_3 + 2 * epsilon))
                                / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));
               if (do_kappa)
@@ -105,18 +106,19 @@ computeCudaRelativeDifferencePriorGradientKernel(float* tmp_grad,
             }
         }
     }
-  tmp_grad[inputIndex] = static_cast<float>(penalisation_factor * voxel_gradient);
+  tmp_grad[inputIndex] = static_cast<elemT>(penalisation_factor * voxel_gradient);
 }
 
 // typedef for the value (array) in the CUDA kernel
 // We need double for numerical accuracy accordingy to test_priors.cxx
 typedef double value_type;
 
-extern "C" __global__ void
+template <class elemT>
+__global__ static void
 computeCudaRelativeDifferencePriorValueKernel(value_type* tmp_value,
-                                              const float* image,
+                                              const elemT* image,
                                               const float* weights,
-                                              const float* kappa,
+                                              const elemT* kappa,
                                               const bool do_kappa,
                                               const float gamma,
                                               const float epsilon,
@@ -172,8 +174,8 @@ computeCudaRelativeDifferencePriorValueKernel(value_type* tmp_value,
               const int neighbourIndex = (z + dz) * y_dim * x_dim + (y + dy) * x_dim + (x + dx);
               const int weightsIndex = (dz + 1) * 9 + (dy + 1) * 3 + (dx + 1);
 
-              const float diff = (image[inputIndex] - image[neighbourIndex]);
-              const float add = (image[inputIndex] + image[neighbourIndex]);
+              const elemT diff = (image[inputIndex] - image[neighbourIndex]);
+              const elemT add = (image[inputIndex] + image[neighbourIndex]);
               double current = (weights[weightsIndex] * 0.5 * diff * diff) / (add + gamma * std::abs(diff) + epsilon);
               if (do_kappa)
                 {
@@ -253,11 +255,11 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  float *d_image_data, *d_gradient_data;
+  elemT *d_image_data, *d_gradient_data;
 
   // Allocate memory on the GPU
-  cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
-  cudaMalloc(&d_gradient_data, prior_gradient.size_all() * sizeof(float));
+  cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(elemT));
+  cudaMalloc(&d_gradient_data, prior_gradient.size_all() * sizeof(elemT));
   {
     cudaError_t cuda_error = cudaGetLastError();
     if (cuda_error != cudaSuccess)
@@ -321,11 +323,11 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
     }
 
   // GPU memory pointers
-  float* d_image_data;
+  elemT* d_image_data;
   value_type* d_tmp_value;
 
   // Allocate memory on the GPU
-  cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(float));
+  cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(elemT));
   cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(value_type));
   {
     cudaError_t cuda_error = cudaGetLastError();
@@ -387,7 +389,7 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
       return Succeeded::no;
     }
   // Get the number of voxels in each dimension
-  auto& target_cast = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*target_sptr);
+  auto& target_cast = dynamic_cast<const VoxelsOnCartesianGrid<elemT>&>(*target_sptr);
   auto sizes = target_cast.get_lengths();
   this->z_dim = sizes[1]; // note: 1-offset in BasicCoordinate sadly
   this->y_dim = sizes[2];
@@ -435,7 +437,7 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
       {
         if (!kappa_ptr->has_same_characteristics(*target_sptr))
           error("RelativeDifferencePrior: kappa image does not have the same index range as the reconstructed image");
-        cudaMalloc(&this->d_kappa_data, kappa_ptr->size_all() * sizeof(float));
+        cudaMalloc(&this->d_kappa_data, kappa_ptr->size_all() * sizeof(elemT));
         array_to_device(this->d_kappa_data, *kappa_ptr);
       }
   }
