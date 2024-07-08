@@ -534,6 +534,7 @@ RelativeDifferencePriorTests<RDP>::run_tests()
   }
 }
 
+#ifdef STIR_WITH_CUDA
 /*!
  \brief tests for CudaRelativeDifferencePrior
  \ingroup recontest
@@ -584,6 +585,7 @@ CudaRelativeDifferencePriorTests::run_specific_tests(const std::string& test_nam
   const auto norm_org = norm(non_cuda_grad_sptr->begin_all(), non_cuda_grad_sptr->end_all());
   check_if_less(norm_diff, norm_org * 0.001, "CUDA - non-CUDA RDP gradient norm");
 }
+#endif // STIR_WITH_CUDA
 
 /*!
  \brief tests for PLSPrior
