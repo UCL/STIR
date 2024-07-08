@@ -91,9 +91,5 @@ endif()
 if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values.cxx)
 endif()
-
-if (STIR_WITH_CUDA)
-  list(APPEND ${dir_EXE_SOURCES} cuda_rdp_test.cxx)
-endif()
               
 include(stir_exe_targets)
