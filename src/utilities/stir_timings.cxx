@@ -34,6 +34,10 @@
 #endif
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+#include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#ifdef STIR_WITH_CUDA
+#  include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#endif
 //#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/distributable_main.h"
 #include "stir/warning.h"
@@ -50,10 +54,10 @@ static void
 print_usage_and_exit()
 {
   std::cerr << "\nUsage:\nstir_timings [--name some_string] [--threads num_threads] [--runs num_runs]\\\n"
-            << "\t[--skip-BB 1] [--skip-PP 1] [--skip-PMRT 1]\\\n"
+            << "\t[--skip-BB 1] [--skip-PP 1] [--skip-PMRT 1] [--skip-priors 1]\\\n"
             << "\t[--image image_filename]\\\n"
             << "\t--template-projdata template_proj_data_filename\n\n"
-            << "skip BB: basic building blocks; PP: Parallelproj; PMRT: ray-tracing matrix\n\n"
+            << "skip BB: basic building blocks; PP: Parallelproj; PMRT: ray-tracing matrix; priors: prior timing\n\n"
             << "Timings are reported to stdout as:\n"
             << "name\ttiming_name\tCPU_time_in_ms\twall-clock_time_in_ms\n";
   std::exit(EXIT_FAILURE);
@@ -69,10 +73,10 @@ public:
   //! Use as prefix for all output
   std::string name;
   // variables that select timings
-  bool skip_BB;   //! skip basic building blocks
-  bool skip_PMRT; //! skip ProjMatrixByBinUsingRayTracing
-  bool skip_PP;   //! skip Parallelproj
-
+  bool skip_BB;     //! skip basic building blocks
+  bool skip_PMRT;   //! skip ProjMatrixByBinUsingRayTracing
+  bool skip_PP;     //! skip Parallelproj
+  bool skip_priors; //! skip GeneralisedPrior
   // variables used for running timings
   shared_ptr<VoxelsOnCartesianGrid<float>> image_sptr;
   shared_ptr<ProjData> output_proj_data_sptr;
@@ -89,6 +93,7 @@ public:
   shared_ptr<ExamInfo> exam_info_sptr;
   shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>>> objective_function_sptr;
 
+  shared_ptr<GeneralisedPrior<DiscretisedDensity<3, float>>> prior_sptr;
   // basic methods
   Timings(const std::string& image_filename, const std::string& template_proj_data_filename)
   {
@@ -249,6 +254,21 @@ public:
     this->objective_function_sptr->compute_sub_gradient_without_penalty_plus_sensitivity(*im, *this->image_sptr, 0);
     delete im;
   }
+
+  void prior_grad()
+  {
+    auto im = this->image_sptr->clone();
+    this->prior_sptr->compute_gradient(*im, *this->image_sptr);
+    delete im;
+  }
+
+  void prior_value()
+  {
+    auto im = this->image_sptr->clone();
+    auto v = this->prior_sptr->compute_value(*this->image_sptr);
+    v += 2; // to avoid compiler warning about unused variable
+    delete im;
+  }
 };
 
 void
@@ -328,6 +348,26 @@ Timings::run_all(const unsigned runs)
     }
 #endif
   // write_to_file("my_timings_backproj.hv", *this->image_sptr);
+
+  if (!skip_priors)
+    {
+      {
+        this->prior_sptr = std::make_shared<RelativeDifferencePrior<float>>(false, 1.F, 2.F, 0.1F);
+        this->prior_sptr->set_up(this->image_sptr);
+        this->run_it(&Timings::prior_value, "RDP_value", runs * 10);
+        this->run_it(&Timings::prior_grad, "RDP_grad", runs * 10);
+        this->prior_sptr = nullptr;
+      }
+#ifdef STIR_WITH_CUDA
+      {
+        this->prior_sptr = std::make_shared<CudaRelativeDifferencePrior<float>>(false, 1.F, 2.F, 0.1F);
+        this->prior_sptr->set_up(this->image_sptr);
+        this->run_it(&Timings::prior_value, "Cuda_RDP_value", runs * 30);
+        this->run_it(&Timings::prior_grad, "Cuda_RDP_grad", runs * 30);
+        this->prior_sptr = nullptr;
+      }
+#endif
+    }
 }
 
 void
@@ -411,6 +451,7 @@ main(int argc, char** argv)
   bool skip_BB = false;
   bool skip_PMRT = false;
   bool skip_PP = false;
+  bool skip_priors = false;
   // prefix output with this string
   std::string name;
 
@@ -434,6 +475,8 @@ main(int argc, char** argv)
         skip_PMRT = std::atoi(argv[1]) != 0;
       else if (!strcmp(argv[0], "--skip-PP"))
         skip_PP = std::atoi(argv[1]) != 0;
+      else if (!strcmp(argv[0], "--skip-priors"))
+        skip_priors = std::atoi(argv[1]) != 0;
       else
         print_usage_and_exit();
       argv += 2;
@@ -451,6 +494,7 @@ main(int argc, char** argv)
   timings.skip_BB = skip_BB;
   timings.skip_PMRT = skip_PMRT;
   timings.skip_PP = skip_PP;
+  timings.skip_priors = skip_priors;
 
   timings.run_all(num_runs);
   return EXIT_SUCCESS;

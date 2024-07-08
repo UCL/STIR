@@ -24,7 +24,6 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DataSymmetriesForBins_PET_CartesianGrid.cxx
         test_FBP2D.cxx
         test_FBP3DRP.cxx
-        test_priors.cxx
         test_blocks_on_cylindrical_projectors.cxx
         test_geometry_blocks_on_cylindrical.cxx
 )
@@ -37,6 +36,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         test_data_processor_projectors.cxx
         test_OSMAPOSL.cxx
         test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin.cxx
+        test_priors.cxx
 )
 
 if (DOWNLOAD_ZENODO_TEST_DATA)
@@ -149,3 +149,8 @@ if (parallelproj_FOUND)
   ADD_TEST(test_OSMAPOSL_parallelproj  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_parallelproj.par)
 endif()
 
+if (SKIP_CUDA_TESTS)
+  set (CUDA_TEST_ARG "--skip-cuda")
+endif()
+
+ADD_TEST(test_priors test_priors ${CUDA_TEST_ARG})

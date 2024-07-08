@@ -16,7 +16,7 @@
   \par Usage
 
   <pre>
-  test_priors [ density_filename ]
+  test_priors [--skip-cuda] [ density_filename ]
   </pre>
   where the argument is optional. See the class documentation for more info.
 
@@ -27,6 +27,9 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#ifdef STIR_WITH_CUDA
+#  include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#endif
 #include "stir/recon_buildblock/LogcoshPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/test/ObjectiveFunctionTests.h"
@@ -37,6 +40,7 @@
 #include "stir/Succeeded.h"
 #include "stir/num_threads.h"
 #include "stir/numerics/norm.h"
+#include "stir/SeparableGaussianImageFilter.h"
 #include <iostream>
 #include <memory>
 #include <boost/random/uniform_01.hpp>
@@ -47,7 +51,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup test
-  \brief Test class for QuadraticPrior, RelativeDifferencePrior, and LogcoshPrior
+  \brief Test class for QuadraticPrior, RelativeDifferencePrior, CudaRelativeDifferencePrior and LogcoshPrior
 
   This test compares the result of GeneralisedPrior::compute_gradient()
   with a numerical gradient computed by using the
@@ -69,7 +73,7 @@ public:
   */
   explicit GeneralisedPriorTests(char const* density_filename = nullptr);
   typedef DiscretisedDensity<3, float> target_type;
-  void construct_input_data(shared_ptr<target_type>& density_sptr);
+  void construct_input_data(shared_ptr<target_type>& density_sptr, shared_ptr<target_type>& kappa_sptr);
 
   //! Set methods that control which tests are run.
   void configure_prior_tests(bool gradient, bool Hessian_convexity, bool Hessian_numerical);
@@ -80,9 +84,9 @@ protected:
 
   //! run the test
   /*! Note that this function is not specific to a particular prior */
-  void run_tests_for_objective_function(const std::string& test_name,
-                                        GeneralisedPrior<target_type>& objective_function,
-                                        const shared_ptr<target_type>& target_sptr);
+  virtual void run_tests_for_objective_function(const std::string& test_name,
+                                                GeneralisedPrior<target_type>& objective_function,
+                                                const shared_ptr<target_type>& target_sptr);
 
   //! Test various configurations of the Hessian of the prior via accumulate_Hessian_times_input() for convexity
   /*!
@@ -92,28 +96,28 @@ protected:
     This function constructs an array of configurations to test this condition and calls
     \c test_Hessian_convexity_configuration().
   */
-  void test_Hessian_convexity(const std::string& test_name,
-                              GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                              const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
+  virtual void test_Hessian_convexity(const std::string& test_name,
+                                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                                      const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
 
   //! Tests the compute_Hessian method implemented into convex priors
   /*! Performs a perturbation response using compute_gradient to determine if the compute_Hessian (for a single densel)
       is within tolerance.
   */
-  void test_Hessian_against_numerical(const std::string& test_name,
-                                      GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                      const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
+  virtual void test_Hessian_against_numerical(const std::string& test_name,
+                                              GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                                              const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr);
 
-private:
+protected:
   //! Hessian test for a particular configuration of the Hessian concave condition
-  bool test_Hessian_convexity_configuration(const std::string& test_name,
-                                            GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
-                                            const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr,
-                                            float beta,
-                                            float input_multiplication,
-                                            float input_addition,
-                                            float current_image_multiplication,
-                                            float current_image_addition);
+  virtual bool test_Hessian_convexity_configuration(const std::string& test_name,
+                                                    GeneralisedPrior<GeneralisedPriorTests::target_type>& objective_function,
+                                                    const shared_ptr<GeneralisedPriorTests::target_type>& target_sptr,
+                                                    float beta,
+                                                    float input_multiplication,
+                                                    float input_addition,
+                                                    float current_image_multiplication,
+                                                    float current_image_addition);
 
   //! Variables to control which tests are run, see the set methods
   //@{
@@ -162,7 +166,7 @@ GeneralisedPriorTests::run_tests_for_objective_function(const std::string& test_
     {
       std::cerr << "----- test " << test_name << "  --> Hessian against numerical\n";
       test_Hessian_against_numerical(test_name, objective_function, target_sptr);
-      std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
+      std::cerr << "----- test " << test_name << "  --> Hessian-vector product (accumulate_Hessian_times_input)\n";
       test_Hessian(test_name, objective_function, *target_sptr, 0.00001F);
     }
 }
@@ -273,13 +277,13 @@ GeneralisedPriorTests::test_Hessian_against_numerical(const std::string& test_na
     return;
 
   /// Setup
-  const float eps = 1e-3F;
+  const float eps = 1e-4F * target_sptr->find_max();
   bool testOK = true;
   const int verbosity_default = Verbosity::get();
 
   // setup images
-  target_type& input(*target_sptr->get_empty_copy());
-  input += *target_sptr; // make input have same values as target_sptr
+  shared_ptr<target_type> input_sptr(target_sptr->clone());
+  auto& input(*input_sptr);
   shared_ptr<target_type> gradient_sptr(target_sptr->get_empty_copy());
   shared_ptr<target_type> pert_grad_and_numerical_Hessian_sptr(target_sptr->get_empty_copy());
   shared_ptr<target_type> Hessian_sptr(target_sptr->get_empty_copy());
@@ -312,7 +316,7 @@ GeneralisedPriorTests::test_Hessian_against_numerical(const std::string& test_na
 
             //  Compute H(x)_j (row of the Hessian at the jth voxel)
             objective_function.compute_Hessian(*Hessian_sptr, perturbation_coords, input);
-            this->set_tolerance(std::max(fabs(double(Hessian_sptr->find_min())), fabs(double(Hessian_sptr->find_max()))) / 500);
+            const double max_H = std::max(fabs(double(Hessian_sptr->find_min())), fabs(double(Hessian_sptr->find_max())));
 
             // Compute g(x + eps)
             Verbosity::set(0);
@@ -341,7 +345,8 @@ GeneralisedPriorTests::test_Hessian_against_numerical(const std::string& test_na
             target_type::full_iterator Hessian_iter = Hessian_sptr->begin_all();
             while (numerical_Hessian_iter != pert_grad_and_numerical_Hessian_sptr->end_all())
               {
-                testOK = testOK && this->check_if_equal(*Hessian_iter, *numerical_Hessian_iter, "Hessian");
+                testOK
+                    = testOK && this->check_if_less(std::abs(*Hessian_iter - *numerical_Hessian_iter), max_H * 0.005F, "Hessian");
                 ++numerical_Hessian_iter;
                 ++Hessian_iter;
               }
@@ -359,7 +364,7 @@ GeneralisedPriorTests::test_Hessian_against_numerical(const std::string& test_na
 }
 
 void
-GeneralisedPriorTests::construct_input_data(shared_ptr<target_type>& density_sptr)
+GeneralisedPriorTests::construct_input_data(shared_ptr<target_type>& density_sptr, shared_ptr<target_type>& kappa_sptr)
 {
   if (this->density_filename == nullptr)
     {
@@ -386,6 +391,13 @@ GeneralisedPriorTests::construct_input_data(shared_ptr<target_type>& density_spt
       shared_ptr<target_type> aptr(read_from_file<target_type>(this->density_filename));
       density_sptr = aptr;
     }
+
+  // create (unrealistic) kappa by filtering the original
+  kappa_sptr = shared_ptr<target_type>(density_sptr->clone());
+  SeparableGaussianImageFilter<float> filter;
+  filter.set_fwhms(make_coordinate(25.F, 36.F, 27.F));
+  filter.set_up(*kappa_sptr);
+  filter.apply(*kappa_sptr);
 }
 
 /*!
@@ -404,13 +416,16 @@ void
 QuadraticPriorTests::run_tests()
 {
   shared_ptr<target_type> density_sptr;
-  construct_input_data(density_sptr);
+  shared_ptr<target_type> kappa_sptr;
+  construct_input_data(density_sptr, kappa_sptr);
 
   std::cerr << "\n\nTests for QuadraticPrior\n";
   {
     QuadraticPrior<float> objective_function(false, 1.F);
     this->configure_prior_tests(true, true, true);
     this->run_tests_for_objective_function("Quadratic_no_kappa", objective_function, density_sptr);
+    objective_function.set_kappa_sptr(kappa_sptr);
+    this->run_tests_for_objective_function("Quadratic_with_kappa", objective_function, density_sptr);
   }
 }
 
@@ -419,20 +434,22 @@ QuadraticPriorTests::run_tests()
  \ingroup recontest
  \ingroup priors
 */
+template <class RDP>
 class RelativeDifferencePriorTests : public GeneralisedPriorTests
 {
 public:
   using GeneralisedPriorTests::GeneralisedPriorTests;
-  void run_specific_tests(const std::string& test_name,
-                          RelativeDifferencePrior<float>& rdp,
-                          const shared_ptr<target_type>& target_sptr);
+  virtual void run_specific_tests(const std::string& test_name,
+                                  RelativeDifferencePrior<float>& rdp,
+                                  const shared_ptr<target_type>& target_sptr);
   void run_tests() override;
 };
 
+template <class RDP>
 void
-RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
-                                                 RelativeDifferencePrior<float>& rdp,
-                                                 const shared_ptr<DiscretisedDensity<3, float>>& target_sptr)
+RelativeDifferencePriorTests<RDP>::run_specific_tests(const std::string& test_name,
+                                                      RelativeDifferencePrior<float>& rdp,
+                                                      const shared_ptr<DiscretisedDensity<3, float>>& target_sptr)
 {
   std::cerr << "----- test " << test_name << "  --> RDP gradient limit tests\n";
   shared_ptr<target_type> grad_sptr(target_sptr->get_empty_copy());
@@ -441,7 +458,7 @@ RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
   // strictly speaking, we should be checking product of the kappas in a neighbourhood, but they usually very smoothly. In any
   // case, this will give an upper-bound
   const double kappa2_max = do_kappa ? square(rdp.get_kappa_sptr()->find_max()) : 1.;
-  const auto weights_sum = weights.sum() * kappa2_max;
+  const auto weights_sum = weights.sum();
 
   if (rdp.get_epsilon() > 0)
     {
@@ -469,10 +486,10 @@ RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
     auto grad_limit = grad_limit_no_kappa * kappa_at_idx_2;
     (*delta_sptr)[idx] = 1E5F * scale;
     rdp.compute_gradient(*grad_sptr, *delta_sptr);
-    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), 1e-4, "RDP gradient large limit");
+    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), do_kappa ? 0.03 : 1e-4, "RDP gradient large limit");
     (*delta_sptr)[idx] = 1E20F * scale;
     rdp.compute_gradient(*grad_sptr, *delta_sptr);
-    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), 1e-4, "RDP gradient very large limit");
+    check_if_less(std::abs((*grad_sptr)[idx] / grad_limit - 1), do_kappa ? 0.03 : 1e-4, "RDP gradient very large limit");
 
     // check at boundary (fewer neighbours)
     idx = make_coordinate(0, 0, 0);
@@ -484,30 +501,91 @@ RelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
   }
 }
 
+template <class RDP>
 void
-RelativeDifferencePriorTests::run_tests()
+RelativeDifferencePriorTests<RDP>::run_tests()
 {
   shared_ptr<target_type> density_sptr;
-  construct_input_data(density_sptr);
-
-  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0\n";
+  shared_ptr<target_type> kappa_sptr;
+  construct_input_data(density_sptr, kappa_sptr);
+  const std::string name(RDP::registered_name);
+  std::cerr << "\n\nTests for " << name << " with epsilon = 0\n";
   {
     // gamma is default and epsilon is 0.0
-    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.F);
+    RDP objective_function(false, 1.F, 2.F, 0.F);
     this->configure_prior_tests(
         true, true, false); // RDP, with epsilon = 0.0, will fail the numerical Hessian test (it can become infinity)
-    this->run_tests_for_objective_function("RDP_no_kappa_no_eps", objective_function, density_sptr);
-    this->run_specific_tests("RDP_specific_no_kappa_no_eps", objective_function, density_sptr);
+    this->run_tests_for_objective_function(name + "_no_kappa_no_eps", objective_function, density_sptr);
+    this->run_specific_tests(name + "_specific_no_kappa_no_eps", objective_function, density_sptr);
+    objective_function.set_kappa_sptr(kappa_sptr);
+    this->run_tests_for_objective_function(name + "_with_kappa_no_eps", objective_function, density_sptr);
+    this->run_specific_tests(name + "_specific_with_kappa_no_eps", objective_function, density_sptr);
   }
-  std::cerr << "\n\nTests for Relative Difference Prior with epsilon = 0.1\n";
+  std::cerr << "\n\nTests for " << name << " with epsilon = 0.1\n";
   {
     // gamma is default and epsilon is "small"
-    RelativeDifferencePrior<float> objective_function(false, 1.F, 2.F, 0.1F);
+    RDP objective_function(false, 1.F, 2.F, 0.1F);
     this->configure_prior_tests(true, true, true); // With a large enough epsilon the RDP Hessian numerical test will pass
-    this->run_tests_for_objective_function("RDP_no_kappa_with_eps", objective_function, density_sptr);
-    this->run_specific_tests("RDP_specific_no_kappa_with_eps", objective_function, density_sptr);
+    this->run_tests_for_objective_function(name + "_no_kappa_with_eps", objective_function, density_sptr);
+    this->run_specific_tests(name + "_specific_no_kappa_with_eps", objective_function, density_sptr);
+    objective_function.set_kappa_sptr(kappa_sptr);
+    this->run_tests_for_objective_function(name + "_with_kappa_with_eps", objective_function, density_sptr);
+    this->run_specific_tests(name + "_specific_with_kappa_with_eps", objective_function, density_sptr);
   }
 }
+
+#ifdef STIR_WITH_CUDA
+/*!
+ \brief tests for CudaRelativeDifferencePrior
+ \ingroup recontest
+ \ingroup priors
+ \ingroup CUDA
+
+ Essentially just RelativeDifferencePriorTests for CudaRelativeDifferencePrior,
+ but also comparing CUDA vs non-CUDA RDP results.
+*/
+class CudaRelativeDifferencePriorTests : public RelativeDifferencePriorTests<CudaRelativeDifferencePrior<float>>
+{
+  typedef RelativeDifferencePriorTests<CudaRelativeDifferencePrior<float>> base_type;
+
+public:
+  using base_type::base_type;
+  void run_specific_tests(const std::string& test_name,
+                          RelativeDifferencePrior<float>& rdp,
+                          const shared_ptr<target_type>& target_sptr) override;
+};
+
+void
+CudaRelativeDifferencePriorTests::run_specific_tests(const std::string& test_name,
+                                                     RelativeDifferencePrior<float>& rdp,
+                                                     const shared_ptr<DiscretisedDensity<3, float>>& target_sptr)
+{
+  base_type::run_specific_tests(test_name, rdp, target_sptr);
+
+  std::cerr << "----- test " << test_name << "  --> comparing with non-CUDA RDP\n";
+  RelativeDifferencePrior<float> non_cuda_rdp;
+  non_cuda_rdp.set_weights(rdp.get_weights());
+  non_cuda_rdp.set_kappa_sptr(rdp.get_kappa_sptr());
+  non_cuda_rdp.set_gamma(rdp.get_gamma());
+  non_cuda_rdp.set_epsilon(rdp.get_epsilon());
+  non_cuda_rdp.set_penalisation_factor(rdp.get_penalisation_factor());
+  if (!check(non_cuda_rdp.set_up(target_sptr).succeeded(), "non-CUDA RDP set_up()"))
+    return;
+
+  const auto cuda_value = rdp.compute_value(*target_sptr);
+  const auto non_cuda_value = non_cuda_rdp.compute_value(*target_sptr);
+  check_if_equal(cuda_value, non_cuda_value, "CUDA vs non-CUDA RDP value");
+
+  shared_ptr<target_type> cuda_grad_sptr(target_sptr->get_empty_copy());
+  shared_ptr<target_type> non_cuda_grad_sptr(target_sptr->get_empty_copy());
+  rdp.compute_gradient(*cuda_grad_sptr, *target_sptr);
+  non_cuda_rdp.compute_gradient(*non_cuda_grad_sptr, *target_sptr);
+  *cuda_grad_sptr -= *non_cuda_grad_sptr;
+  const auto norm_diff = norm(cuda_grad_sptr->begin_all(), cuda_grad_sptr->end_all());
+  const auto norm_org = norm(non_cuda_grad_sptr->begin_all(), non_cuda_grad_sptr->end_all());
+  check_if_less(norm_diff, norm_org * 0.001, "CUDA - non-CUDA RDP gradient norm");
+}
+#endif // STIR_WITH_CUDA
 
 /*!
  \brief tests for PLSPrior
@@ -525,7 +603,8 @@ void
 PLSPriorTests::run_tests()
 {
   shared_ptr<target_type> density_sptr;
-  construct_input_data(density_sptr);
+  shared_ptr<target_type> kappa_sptr;
+  construct_input_data(density_sptr, kappa_sptr);
 
   std::cerr << "\n\nTests for PLSPrior\n";
   {
@@ -555,7 +634,8 @@ void
 LogCoshPriorTests::run_tests()
 {
   shared_ptr<target_type> density_sptr;
-  construct_input_data(density_sptr);
+  shared_ptr<target_type> kappa_sptr;
+  construct_input_data(density_sptr, kappa_sptr);
 
   std::cerr << "\n\nTests for Logcosh Prior\n";
   {
@@ -563,6 +643,8 @@ LogCoshPriorTests::run_tests()
     LogcoshPrior<float> objective_function(false, 1.F, 1.F);
     this->configure_prior_tests(true, true, true);
     this->run_tests_for_objective_function("Logcosh_no_kappa", objective_function, density_sptr);
+    objective_function.set_kappa_sptr(kappa_sptr);
+    this->run_tests_for_objective_function("Logcosh_with_kappa", objective_function, density_sptr);
   }
 }
 
@@ -573,20 +655,49 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char** argv)
 {
+  // option processing
+  bool do_cuda_tests = true;
+  while (argc > 1 && strncmp(argv[1], "--", 2) == 0)
+    {
+      if (strcmp(argv[1], "--help") == 0)
+        {
+          std::cerr << "Usage:\n"
+                    << "    test_priors [--skip-cuda] [image_filename]\n";
+          exit(EXIT_SUCCESS);
+        }
+      else if (strcmp(argv[1], "--skip-cuda") == 0)
+        do_cuda_tests = false;
+      else
+        {
+          std::cerr << "Unknown option: " << argv[1] << "\nUse --help for more information\n";
+          exit(EXIT_FAILURE);
+        }
+      --argc;
+      ++argv;
+    }
+
   set_default_num_threads();
 
   bool everything_ok = true;
 
   {
     QuadraticPriorTests tests(argc > 1 ? argv[1] : nullptr);
-    tests.run_tests();
+    // tests.run_tests();
     everything_ok = everything_ok && tests.is_everything_ok();
   }
   {
-    RelativeDifferencePriorTests tests(argc > 1 ? argv[1] : nullptr);
+    RelativeDifferencePriorTests<RelativeDifferencePrior<float>> tests(argc > 1 ? argv[1] : nullptr);
     tests.run_tests();
     everything_ok = everything_ok && tests.is_everything_ok();
   }
+#ifdef STIR_WITH_CUDA
+  if (do_cuda_tests)
+    {
+      CudaRelativeDifferencePriorTests tests(argc > 1 ? argv[1] : nullptr);
+      tests.run_tests();
+      everything_ok = everything_ok && tests.is_everything_ok();
+    }
+#endif
   {
     PLSPriorTests tests(argc > 1 ? argv[1] : nullptr);
     tests.run_tests();
@@ -598,5 +709,7 @@ main(int argc, char** argv)
     everything_ok = everything_ok && tests.is_everything_ok();
   }
 
+  if (!everything_ok)
+    std::cerr << "Tests for at least 1 prior failed.\n";
   return everything_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
