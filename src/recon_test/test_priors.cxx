@@ -16,7 +16,7 @@
   \par Usage
 
   <pre>
-  test_priors [ density_filename ]
+  test_priors [--skip-cuda] [ density_filename ]
   </pre>
   where the argument is optional. See the class documentation for more info.
 
