@@ -160,7 +160,7 @@ public:
   void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3, elemT>>&);
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr);
+  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
   bool is_convex() const override;
 

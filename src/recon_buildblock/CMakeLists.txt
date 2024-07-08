@@ -126,9 +126,13 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
   )
 endif()
 
+if (STIR_WITH_CUDA)
+  list(APPEND ${dir_LIB_SOURCES}
+    CUDA/CudaRelativeDifferencePrior.cu
+  )
+endif()
 
 include(stir_lib_target)
-
 
 if (STIR_MPI)
   target_link_libraries(recon_buildblock PUBLIC ${MPI_CXX_LIBRARIES})
@@ -154,4 +158,8 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
   if (parallelproj_built_with_CUDA)
     target_link_libraries(recon_buildblock PUBLIC parallelproj::parallelproj_cuda)
   endif()
+endif()
+
+if (STIR_WITH_CUDA)
+  target_link_libraries(recon_buildblock PUBLIC CUDA::cudart)
 endif()
