@@ -124,6 +124,11 @@ Succeeded
 BinNormalisationFromAttenuationImage::set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,
                                              const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
+  if (proj_data_info_ptr->get_num_tof_poss() > 1)
+    error("BinNormalisationFromAttenuationImage limitation: currently can only handle non_TOF data.\n"
+          "You currently have to follow a 2 step procedure:\n"
+          "   1) compute ACF factors without TOF\n"
+          "   2) use this as input for BinNormalisationFromProjData");
   base_type::set_up(exam_info_sptr, proj_data_info_ptr);
   forward_projector_ptr->set_up(proj_data_info_ptr, attenuation_image_ptr);
   forward_projector_ptr->set_input(*attenuation_image_ptr);
