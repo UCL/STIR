@@ -240,20 +240,7 @@ interpolate_projdata(ProjData& proj_data_out,
           };
         }
       else
-        { // for BlocksOnCylindrical, views and tangential positions are scaled by a fixed value
-          auto transaxial_bucket_size_in = (proj_data_in_info.get_scanner_sptr()->get_num_transaxial_blocks_per_bucket() - 1)
-                                               * proj_data_in_info.get_scanner_sptr()->get_transaxial_block_spacing()
-                                           + (proj_data_in_info.get_scanner_sptr()->get_num_transaxial_crystals_per_block() - 1)
-                                                 * proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
-          auto transaxial_bucket_size_out = (proj_data_out_info.get_scanner_sptr()->get_num_transaxial_blocks_per_bucket() - 1)
-                                                * proj_data_out_info.get_scanner_sptr()->get_transaxial_block_spacing()
-                                            + (proj_data_out_info.get_scanner_sptr()->get_num_transaxial_crystals_per_block() - 1)
-                                                  * proj_data_out_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
-          // TODO: for now assuming the bucket sizes are the same (so ignoring the above and not adding an offset when translating
-          // crystal positions)
-          auto scale_factor = (double)proj_data_out_info.get_scanner_sptr()->get_transaxial_crystal_spacing()
-                              / (double)proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
-
+        {
           // only extending in axial direction - an extension of 2 was found to be sufficient
           proj_data_interpolator.set_coef(extend_segment(segment, 5, 2, 5));
 
@@ -270,7 +257,7 @@ interpolate_projdata(ProjData& proj_data_out,
             }
 
           // define a function to translate indices in the output proj data to indices in input proj data
-          index_converter = [&proj_data_out_info, &proj_data_in_info, m_offset, m_sampling, scale_factor](
+          index_converter = [&proj_data_out_info, &proj_data_in_info, m_offset, m_sampling](
                                 const BasicCoordinate<3, int>& index_out) -> BasicCoordinate<3, double> {
             // translate index on output to coordinate
             auto bin
@@ -294,10 +281,30 @@ interpolate_projdata(ProjData& proj_data_out,
 
             const auto proj_data_in_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_in_info);
             const int dets_per_module_in = proj_data_in_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_bucket();
+            double crystal1_out_module_idx = det1_num_out % dets_per_module_out;
+            double crystal1_out_module_pos
+                = static_cast<double>(
+                      std::floor(crystal1_out_module_idx
+                                 / proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block()))
+                      * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_block_spacing()
+                  + static_cast<double>(static_cast<int>(crystal1_out_module_idx)
+                                        % proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block())
+                        * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_crystal_spacing();
             double crystal1_num_in
-                = det1_module * dets_per_module_in + static_cast<double>(det1_num_out % dets_per_module_out) * scale_factor;
+                = det1_module * dets_per_module_in
+                  + crystal1_out_module_pos / proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
+            double crystal2_out_module_idx = det2_num_out % dets_per_module_out;
+            double crystal2_out_module_pos
+                = static_cast<double>(
+                      std::floor(crystal2_out_module_idx
+                                 / proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block()))
+                      * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_block_spacing()
+                  + static_cast<double>(static_cast<int>(crystal2_out_module_idx)
+                                        % proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block())
+                        * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_crystal_spacing();
             double crystal2_num_in
-                = det2_module * dets_per_module_in + static_cast<double>(det2_num_out % dets_per_module_out) * scale_factor;
+                = det2_module * dets_per_module_in
+                  + crystal2_out_module_pos / proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
             auto crystal1_num_in_floor
                 = std::max(static_cast<int>(std::floor(crystal1_num_in)), det1_module * dets_per_module_in);
             auto crystal1_num_in_ceil
