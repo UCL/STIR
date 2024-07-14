@@ -9,7 +9,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
-#      
+#       
 # Author Kris Thielemans
 # Author Dimitra Kyriakopoulou
 
