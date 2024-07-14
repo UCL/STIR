@@ -189,3 +189,4 @@ else
     echo "Error running PET simulation"
     exit 1
   fi
+fi
