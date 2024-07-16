@@ -272,6 +272,14 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
       if (!out_range.get_regular_range(min_out, max_out))
         warning("Output must be regular range!");
 
+      // confirm that proj_data_in has equidistant sampling in m
+      for (auto axial_pos = proj_data_in_info.get_min_axial_pos_num(0); axial_pos <= proj_data_in_info.get_max_axial_pos_num(0);
+           axial_pos++)
+        {
+          if (abs(m_sampling - proj_data_in_info.get_sampling_in_m(Bin(0, 0, axial_pos, 0))) > 1E-4)
+            error("input projdata to interpolate_projdata are not equidistantly sampled in m.");
+        }
+
       BasicCoordinate<3, int> index_out;
       for (index_out[1] = min_out[1]; index_out[1] <= max_out[1]; ++index_out[1])
         {
@@ -279,16 +287,6 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
             {
               for (index_out[3] = min_out[3]; index_out[3] <= max_out[3]; ++index_out[3])
                 {
-
-                  // confirm that proj_data_in has equidistant sampling in m
-                  for (auto axial_pos = proj_data_in_info.get_min_axial_pos_num(0);
-                       axial_pos <= proj_data_in_info.get_max_axial_pos_num(0);
-                       axial_pos++)
-                    {
-                      if (abs(m_sampling - proj_data_in_info.get_sampling_in_m(Bin(0, 0, axial_pos, 0))) > 1E-4)
-                        error("input projdata to interpolate_projdata are not equidistantly sampled in m.");
-                    }
-
                   // translate index on output to coordinate
                   auto bin
                 = Bin(0 /* segment */, index_out[2] /* view */, 
@@ -372,8 +370,10 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                           int one_view, one_tang;
                           proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
                               one_view, one_tang, crystal1_num_in_floor, crystal2_num_in_floor);
+                          one_tang = std::min(std::max(proj_data_in_info_ptr->get_min_tangential_pos_num(), one_tang),
+                                              proj_data_in_info_ptr->get_max_tangential_pos_num());
 
-                          index_in[1] = axial_floor;
+                          index_in[1] = std::max(axial_floor, proj_data_in_info_ptr->get_min_axial_pos_num(0));
                           index_in[2] = one_view;
                           index_in[3] = one_tang;
                           sino_3D_out[index_out] += segment[index_in] * (axial_ceil - axial_idx);
@@ -395,7 +395,7 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                           fc_tang = std::min(std::max(proj_data_in_info_ptr->get_min_tangential_pos_num(), fc_tang),
                                              proj_data_in_info_ptr->get_max_tangential_pos_num());
 
-                          index_in[1] = axial_floor;
+                          index_in[1] = std::max(axial_floor, proj_data_in_info_ptr->get_min_axial_pos_num(0));
                           index_in[2] = ff_view;
                           index_in[3] = ff_tang;
                           sino_3D_out[index_out]
@@ -427,7 +427,7 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                       cf_tang = std::min(std::max(proj_data_in_info_ptr->get_min_tangential_pos_num(), cf_tang),
                                          proj_data_in_info_ptr->get_max_tangential_pos_num());
 
-                      index_in[1] = axial_floor;
+                      index_in[1] = std::max(axial_floor, proj_data_in_info_ptr->get_min_axial_pos_num(0));
                       index_in[2] = ff_view;
                       index_in[3] = ff_tang;
                       sino_3D_out[index_out]
@@ -444,7 +444,7 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                       sino_3D_out[index_out]
                           += segment[index_in] * (axial_idx - axial_floor) * (crystal1_num_in_ceil - crystal1_num_in);
                     }
-                  else // in this case we need to do a bilinear interpolation
+                  else // in this case we need to do a trilinear interpolation
                     {
                       int ff_view, fc_view, cf_view, cc_view;
                       int ff_tang, fc_tang, cf_tang, cc_tang;
@@ -467,7 +467,7 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                       cc_tang = std::min(std::max(proj_data_in_info_ptr->get_min_tangential_pos_num(), cc_tang),
                                          proj_data_in_info_ptr->get_max_tangential_pos_num());
 
-                      index_in[1] = axial_floor;
+                      index_in[1] = std::max(axial_floor, proj_data_in_info_ptr->get_min_axial_pos_num(0));
                       index_in[2] = ff_view;
                       index_in[3] = ff_tang;
                       sino_3D_out[index_out] += segment[index_in] * (axial_ceil - axial_idx)

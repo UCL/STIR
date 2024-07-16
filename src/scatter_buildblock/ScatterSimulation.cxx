@@ -847,6 +847,10 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
           new_num_dets = this->proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
         }
 
+      // STIR does not like block spacings that are smaller than number of crystals times crystal spacing,
+      // therefore add a 1% extension on top for the downsampled scanner, to avoid running into floating point issues
+      const float block_spacing_factor = 1.01;
+
       // extend the bins by a small amount to avoid edge-effects, at the expense of longer computation time
       approx_num_non_arccorrected_bins = ceil(this->proj_data_info_sptr->get_num_tangential_poss() * float(new_num_dets)
                                               / old_scanner_ptr->get_num_detectors_per_ring())
@@ -866,7 +870,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       new_scanner_sptr->set_axial_crystal_spacing(new_ring_spacing);
       new_scanner_sptr->set_ring_spacing(new_ring_spacing);
       new_scanner_sptr->set_num_axial_crystals_per_block(new_num_rings);
-      new_scanner_sptr->set_axial_block_spacing(new_ring_spacing * new_num_rings);
+      new_scanner_sptr->set_axial_block_spacing(new_ring_spacing * new_num_rings * block_spacing_factor);
 
       float transaxial_bucket_width
           = old_scanner_ptr->get_transaxial_block_spacing() * (old_scanner_ptr->get_num_transaxial_blocks_per_bucket() - 1)
@@ -881,7 +885,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
       new_scanner_sptr->set_num_transaxial_crystals_per_block(new_transaxial_dets_per_bucket);
       new_scanner_sptr->set_transaxial_crystal_spacing(new_det_spacing);
-      new_scanner_sptr->set_transaxial_block_spacing(new_transaxial_dets_per_bucket * new_det_spacing);
+      new_scanner_sptr->set_transaxial_block_spacing(new_transaxial_dets_per_bucket * new_det_spacing * block_spacing_factor);
     }
   else
     {
