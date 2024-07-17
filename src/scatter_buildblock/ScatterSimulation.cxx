@@ -821,18 +821,17 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
   if (new_num_rings <= 0)
     {
       if (downsample_scanner_rings > 1)
-        if (downsample_scanner_rings > 1)
-          new_num_rings = downsample_scanner_rings;
-        else if (!is_null_ptr(proj_data_info_sptr))
-          {
-            const float total_axial_length = proj_data_info_sptr->get_scanner_sptr()->get_num_rings()
-                                             * proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
+        new_num_rings = downsample_scanner_rings;
+      else if (!is_null_ptr(proj_data_info_sptr))
+        {
+          const float total_axial_length = proj_data_info_sptr->get_scanner_sptr()->get_num_rings()
+                                           * proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
 
-            new_num_rings = round(total_axial_length / 20.F + 0.5F);
-            new_num_rings = max(new_num_rings, 2); // set number of rings to at least 2
-          }
-        else
-          return Succeeded::no;
+          new_num_rings = round(total_axial_length / 20.F + 0.5F);
+          new_num_rings = max(new_num_rings, 2); // set number of rings to at least 2
+        }
+      else
+        return Succeeded::no;
     }
 
   const Scanner* const old_scanner_ptr = this->proj_data_info_sptr->get_scanner_ptr();
