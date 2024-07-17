@@ -94,7 +94,7 @@ SeparableGaussianArrayFilter<num_dimensions, elemT>::construct_filter(bool norma
       {
         std::stringstream ss;
         ss << "Gaussian filter dim[" << i << "] =" << filter_coefficients;
-        info(ss.str(), 2);
+        info(ss.str(), 3);
       }
 
       this->all_1d_array_filters[i - 1].reset(new ArrayFilter1DUsingConvolution<float>(filter_coefficients));

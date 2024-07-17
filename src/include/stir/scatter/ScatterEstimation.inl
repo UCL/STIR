@@ -42,6 +42,7 @@ ScatterEstimation::set_mask_image_sptr(const shared_ptr<const DiscretisedDensity
 {
   this->_already_setup = false;
   this->mask_image_sptr = arg;
+  this->set_recompute_mask_image(false);
 }
 
 void
@@ -49,6 +50,7 @@ ScatterEstimation::set_mask_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
   this->_already_setup = false;
   this->mask_projdata_sptr = arg;
+  this->set_recompute_mask_projdata(false);
 }
 
 void

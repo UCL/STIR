@@ -107,11 +107,10 @@ ProjDataInfoCylindrical::ProjDataInfoCylindrical(const shared_ptr<Scanner>& scan
     for (int segment_num = get_min_segment_num(); segment_num <= get_max_segment_num(); ++segment_num)
       if (min_ring_diff[segment_num] > max_ring_diff[segment_num])
         {
-          warning("ProjDataInfoCylindrical: min_ring_difference %d is larger than max_ring_difference %d for segment %d. "
-                  "Swapping them around",
-                  min_ring_diff[segment_num],
-                  max_ring_diff[segment_num],
-                  segment_num);
+          warning(boost::format(
+                      "ProjDataInfoCylindrical: min_ring_difference %d is larger than max_ring_difference %d for segment %d. "
+                      "Swapping them around")
+                  % min_ring_diff[segment_num] % max_ring_diff[segment_num] % segment_num);
           std::swap(min_ring_diff[segment_num], max_ring_diff[segment_num]);
         }
   }
@@ -199,11 +198,11 @@ ProjDataInfoCylindrical::initialise_ring_diff_arrays() const
               // check that it was integer
               if (fabs(ax_pos_num_offset[segment_num] - ((num_rings - 1) - 2 * m_offset[segment_num] / ring_spacing)) > 1E-4)
                 {
-                  error("ProjDataInfoCylindrical: in segment %d, the axial positions\n"
-                        "do not correspond to the usual locations between physical rings.\n"
-                        "This is suspicious and can make things go wrong in STIR, so I abort.\n"
-                        "Check the number of axial positions in this segment.",
-                        segment_num);
+                  error(boost::format("ProjDataInfoCylindrical: in segment %d, the axial positions\n"
+                                      "do not correspond to the usual locations between physical rings.\n"
+                                      "This is suspicious and can make things go wrong in STIR, so I abort.\n"
+                                      "Check the number of axial positions in this segment.")
+                        % segment_num);
                 }
             }
 
@@ -215,10 +214,12 @@ ProjDataInfoCylindrical::initialise_ring_diff_arrays() const
               // ring1+ring2 = 2*ring2 + ring_diff
               assert(get_min_ring_difference(segment_num) == get_max_ring_difference(segment_num));
               if ((get_max_ring_difference(segment_num) - ax_pos_num_offset[segment_num]) % 2 != 0)
-                warning("ProjDataInfoCylindrical: the number of axial positions in "
-                        "segment %d is such that current conventions will place "
-                        "the LORs shifted with respect to the physical rings.",
-                        segment_num);
+                warning(boost::format("ProjDataInfoCylindrical: the number of axial positions %d in "
+                                      "segment %d (ring_diff %d) is such that current conventions will place "
+                                      "the LORs shifted with respect to the physical rings %d.")
+                        % get_num_axial_poss(segment_num) % segment_num
+                        % get_min_ring_difference(segment_num) // equal to max here, as per the if()
+                        % get_scanner_ptr()->get_num_rings());
             }
         }
     }
@@ -255,7 +256,7 @@ ProjDataInfoCylindrical::initialise_ring_diff_arrays() const
             }
           if (segment_num > get_max_segment_num())
             {
-              warning("ProjDataInfoCylindrical: ring difference %d does not belong to a segment", ring_diff);
+              warning(boost::format("ProjDataInfoCylindrical: ring difference %d does not belong to a segment") % ring_diff);
             }
         }
     }

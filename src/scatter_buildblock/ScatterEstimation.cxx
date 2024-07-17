@@ -437,6 +437,18 @@ ScatterEstimation::set_normalisation_sptr(const shared_ptr<BinNormalisation> arg
   this->multiplicative_binnorm_sptr.reset();
 }
 
+void
+ScatterEstimation::set_recompute_mask_image(bool arg)
+{
+  this->recompute_mask_image = arg;
+}
+
+void
+ScatterEstimation::set_recompute_mask_projdata(bool arg)
+{
+  this->recompute_mask_projdata = arg;
+}
+
 bool
 ScatterEstimation::already_setup() const
 {

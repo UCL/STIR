@@ -167,6 +167,9 @@ public:
   /*! \c arg will not be modified */
   inline void set_mask_proj_data_sptr(const shared_ptr<ProjData> arg);
 
+  void set_recompute_mask_image(bool arg);
+  void set_recompute_mask_projdata(bool arg);
+
   inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
 
   inline void set_num_iterations(int);

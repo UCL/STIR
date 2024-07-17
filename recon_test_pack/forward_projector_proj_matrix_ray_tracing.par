@@ -4,6 +4,7 @@ type:=Matrix
   Forward Projector Using Matrix Parameters :=
   Matrix type := Ray Tracing
   Ray tracing matrix parameters :=
+   disable caching:= 1
    number of rays in tangential direction to trace for each bin := 10
   End Ray tracing matrix parameters :=
   End Forward Projector Using Matrix Parameters :=

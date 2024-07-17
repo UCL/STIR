@@ -143,6 +143,21 @@ LogcoshPrior<elemT>::LogcoshPrior(const bool only_2D_v, float penalisation_facto
 }
 
 template <typename elemT>
+void
+LogcoshPrior<elemT>::check(DiscretisedDensity<3, elemT> const& current_image_estimate) const
+{
+  // Do base-class check
+  base_type::check(current_image_estimate);
+  if (!is_null_ptr(this->kappa_ptr))
+    {
+      std::string explanation;
+      if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
+        error(std::string(registered_name)
+              + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
+    }
+}
+
+template <typename elemT>
 bool
 LogcoshPrior<elemT>::is_convex() const
 {
@@ -251,9 +266,6 @@ LogcoshPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_i
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
-
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -323,8 +335,6 @@ LogcoshPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradie
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -409,9 +419,6 @@ LogcoshPrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int z = coords[1];
   const int y = coords[2];
   const int x = coords[3];
@@ -478,9 +485,6 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3, elemT>&
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -549,9 +553,6 @@ LogcoshPrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();
