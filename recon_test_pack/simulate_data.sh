@@ -41,7 +41,7 @@ if [ "$suffix" = "_SPECT" ]; then
 	echo "=== create line integrals for SPECT sinogram"
 	forward_project "my_sino${suffix}.hs" "${emission_image}" "${template_sino}" forward_project.par > "my_create_sino${suffix}.log" 2>&1
 	if [ $? -ne 0 ]; then 
-			echo "ERROR running forward_project for SPECT sinogram. Check my_create_SPECT_sino${suffix}.log"; exit 1;
+			echo "ERROR running forward_project for SPECT sinogram. Check my_create_sino${suffix}.log"; exit 1;
 	fi
 
 
