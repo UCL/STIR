@@ -386,8 +386,6 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 #endif */
   for (ith = 0; ith < sth; ith++)
     {
-      info(boost::format("View %d of %d") % ith % sth);
-
 //-- Loading the viewgram
 /*#ifdef STIR_OPENMP 
 #  pragma omp critical
