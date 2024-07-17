@@ -258,7 +258,6 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
   auto m_offset = proj_data_in_info.get_m(Bin(0, 0, 0, 0));
   auto m_sampling = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
 
-  // initialise interpolator
   for (int k = proj_data_out_info.get_min_tof_pos_num(); k <= proj_data_out_info.get_max_tof_pos_num(); ++k)
     {
       SegmentBySinogram<float> segment
@@ -304,6 +303,7 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                         axial_floor--;
                     }
 
+                  // find the two crystals for this bin and on which buckets (modules) they are
                   int det1_num_out, det2_num_out;
                   const auto proj_data_out_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_out_info);
                   proj_data_out_info_ptr->get_det_num_pair_for_view_tangential_pos_num(det1_num_out,
@@ -314,6 +314,7 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                   const int det1_module = std::floor(det1_num_out / dets_per_module_out);
                   const int det2_module = std::floor(det2_num_out / dets_per_module_out);
 
+                  // translate the crystal position on each module from the full size scanner to the downsampled scanner
                   const auto proj_data_in_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_in_info);
                   const int dets_per_module_in
                       = proj_data_in_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_bucket();
@@ -351,13 +352,6 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                       = std::max(static_cast<int>(std::floor(crystal2_num_in)), det2_module * dets_per_module_in);
                   auto crystal2_num_in_ceil
                       = std::min(static_cast<int>(std::ceil(crystal2_num_in)), (det2_module + 1) * dets_per_module_in - 1);
-
-                  int ground_truth_view, ground_truth_tang;
-                  proj_data_in_info_ptr->get_view_tangential_pos_num_for_det_num_pair(
-                      ground_truth_view,
-                      ground_truth_tang,
-                      static_cast<int>(std::round(crystal1_num_in)),
-                      static_cast<int>(std::round(crystal2_num_in)));
 
                   // translate to indices in input proj data
                   BasicCoordinate<3, int> index_in;
