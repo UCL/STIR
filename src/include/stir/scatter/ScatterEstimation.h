@@ -174,6 +174,7 @@ public:
 
   inline void set_num_iterations(int);
 
+  inline unsigned int get_half_filter_width() const;
   inline void set_half_filter_width(unsigned int);
 
   inline void

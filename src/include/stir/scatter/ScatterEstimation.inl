@@ -66,6 +66,12 @@ ScatterEstimation::set_num_iterations(int arg)
   this->num_scatter_iterations = arg;
 }
 
+unsigned int
+ScatterEstimation::get_half_filter_width() const
+{
+  return this->half_filter_width;
+}
+
 void
 ScatterEstimation::set_half_filter_width(unsigned int arg)
 {
