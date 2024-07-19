@@ -54,15 +54,15 @@
 
 #include "stir/HighResWallClockTimer.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <boost/format.hpp>
 using std::ofstream;
 using std::ifstream;
-using std::plus;
 using std::cerr;
 using std::endl;
+using std::FILE;
 
 START_NAMESPACE_STIR
 
@@ -472,10 +472,17 @@ ArrayTests::run_tests()
 
       Array<2, float> t2 = t2fp + testfp;
       check_if_equal(t2[3][2], 5.5F, "test operator +(Array2D)");
+      {
+        // tests using apply_binary_func_element_wise, reproducing + and -
+        Array<2, float> t2func(t2fp.get_index_range());
+        apply_binary_func_element_wise(t2func, t2fp, testfp, std::plus<>());
+        check_if_equal(t2, t2func, "test apply_binary_func_element_wise (Array2D)");
+        in_place_apply_binary_func_element_wise(t2func, testfp, std::minus<>());
+        check_if_equal(t2fp, t2func, "test in_place_apply_binary_func_element_wise (Array2D)");
+      }
       t2fp += testfp;
       check_if_equal(t2fp[3][2], 5.5F, "test operator +=(Array2D)");
       check_if_equal(t2, t2fp, "test comparing Array2D+= and +");
-
       {
         BasicCoordinate<2, int> c;
         c[1] = 3;
@@ -686,7 +693,7 @@ ArrayTests::run_tests()
       check_if_zero(test3.sum() - 2 * tmp2.sum() - tmp.sum(), "test operator-(float)");
     }
 
-    in_place_apply_function(test3ter, std::bind(plus<float>(), std::placeholders::_1, 4.F));
+    in_place_apply_function(test3ter, std::bind(std::plus<float>(), std::placeholders::_1, 4.F));
     test3quat += 4.F;
     check_if_equal(test3quat, test3ter, "test in_place_apply_function and operator+=(NUMBER)");
 
@@ -754,6 +761,60 @@ ArrayTests::run_tests()
         check_if_equal(test3, data_to_fill, "test on 3D fill_from, irregular range");
         copy_to(test3, data_to_fill.begin_all());
         check_if_equal(test3, data_to_fill, "test on 3D copy_to, irregular range");
+      }
+    }
+
+    {
+      // tests using apply_binary_func_element_wise, reproducing + and -
+      IndexRange<3> range(Coordinate3D<int>(0, 0, 1), Coordinate3D<int>(2, 2, 3));
+      Array<3, float> test(range), test1(range), test2(range);
+      std::iota(test2.begin_all(), test2.end_all(), -4.65F);
+      std::transform(test2.begin_all(), test2.end_all(), test1.begin_all(), [](auto a) { return square(a); });
+      test.fill(-1000.F);
+      apply_binary_func_element_wise(
+          test, test1, test2, [](auto a, auto b) { return a > b; }, [](auto a, auto b) { return b; });
+      {
+        auto test1_iter = test1.begin_all_const();
+        auto test2_iter = test2.begin_all_const();
+        for (auto test_iter = test.begin_all(); test_iter != test.end_all(); ++test_iter, ++test1_iter, ++test2_iter)
+          {
+            check_if_equal(*test_iter,
+                           *test1_iter > *test2_iter ? *test2_iter : -1000.F,
+                           "test apply_binary_func_element_wise with predicate");
+          }
+      }
+
+      Array<3, bool> where(range);
+      apply_binary_func_element_wise(where, test1, test2, [](auto a, auto b) { return a > b; });
+      {
+        Array<3, float> test_with_where(range);
+        test_with_where.fill(-1000.F);
+        apply_binary_func_element_wise(test_with_where, test1, test2, where, [](auto a, auto b) { return b; });
+        check_if_equal(test, test_with_where, "test apply_binary_func_element_wise with 'where;");
+      }
+
+      test = test1;
+      in_place_apply_binary_func_element_wise(
+          test, test2, [](auto a, auto b) { return a > b; }, [](auto a, auto b) { return b; });
+      {
+        auto test1_iter = test1.begin_all_const();
+        auto test2_iter = test2.begin_all_const();
+        for (auto test_iter = test.begin_all(); test_iter != test.end_all(); ++test_iter, ++test1_iter, ++test2_iter)
+          {
+            check_if_equal(
+                *test_iter, std::min(*test1_iter, *test2_iter), "test in_place_apply_binary_func_element_wise with predicate");
+          }
+      }
+      test = test1;
+      in_place_apply_binary_func_element_wise(test, test2, where, [](auto a, auto b) { return b; });
+      {
+        auto test1_iter = test1.begin_all_const();
+        auto test2_iter = test2.begin_all_const();
+        for (auto test_iter = test.begin_all(); test_iter != test.end_all(); ++test_iter, ++test1_iter, ++test2_iter)
+          {
+            check_if_equal(
+                *test_iter, std::min(*test1_iter, *test2_iter), "test in_place_apply_binary_func_element_wise with 'where'");
+          }
       }
     }
   }
