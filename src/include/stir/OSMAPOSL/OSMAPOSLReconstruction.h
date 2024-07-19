@@ -150,12 +150,6 @@ protected:
   //! determines whether non-positive values in the initial image will be set to small positive ones
   bool enforce_initial_positivity;
 
-  //! determines wether voxels outside a circular FOV will be set to 0 or not
-  /*! Currently this circular FOV is slightly smaller than the actual image size (1 pixel at each end or so).
-      \deprecated
-  */
-  bool do_rim_truncation;
-
   //! subiteration interval at which to apply inter-update filters
   int inter_update_filter_interval;
 

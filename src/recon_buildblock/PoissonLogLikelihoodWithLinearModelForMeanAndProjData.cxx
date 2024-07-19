@@ -780,49 +780,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_o
   return accum;
 }
 
-#if 0
-template<typename TargetT>
-float 
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-sum_projection_data() const
-{
-  
-  float counts=0.0F;
-  
-  for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; ++segment_num)
-  {
-	  for (int timing_pos_num = -max_timing_pos_num_to_process; timing_pos_num <= max_timing_pos_num_to_process; ++timing_pos_num)
-	  {
-		for (int view_num = proj_data_sptr->get_min_view_num();
-			 view_num <= proj_data_sptr->get_max_view_num();
-			 ++view_num)
-		{
-
-		  Viewgram<float>  viewgram=proj_data_sptr->get_viewgram(view_num,segment_num,false,timing_pos_num);
-
-		  //first adjust data
-
-		  // KT 05/07/2000 made parameters.zero_seg0_end_planes int
-		  if(segment_num==0 && zero_seg0_end_planes!=0)
-		  {
-			viewgram[viewgram.get_min_axial_pos_num()].fill(0);
-			viewgram[viewgram.get_max_axial_pos_num()].fill(0);
-		  }
-
-		  truncate_rim(viewgram,rim_truncation_sino);
-
-		  //now take totals
-		  counts+=viewgram.sum();
-		}
-	  }
-  }
-  
-  return counts;
-  
-}
-
-#endif
-
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::add_subset_sensitivity(TargetT& sensitivity,
