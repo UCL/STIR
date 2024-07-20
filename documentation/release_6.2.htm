@@ -91,6 +91,21 @@
     <br>
     <a href=https://github.com/UCL/STIR/pull/1464>PR #1464</a>
     </li>
+  <li>
+    <tt>SPECT_dicom_to_interfile</tt> improvements:
+    <ul>
+      <li>remove requirement for the <tt>is_planar</tt> parameters.    
+        As STIR can only read SPECT sinograms, we now read/set all fields
+        from a planar scan as well. There is therefore no need anymore for
+        the boolean, and it is just ignored.    
+        Output of a conversion of planar data is now directly readable into STIR.
+      </li>
+      <li>
+        do checks if sequences are present to avoid seg-faults
+      </li>
+    </ul>
+    See <a href=https://github.com/UCL/STIR/pull/1473>PR #1473</a>
+  </li>
 </ul>
 
 
