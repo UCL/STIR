@@ -27,6 +27,7 @@
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/ArrayFunction.h"
 #include "stir/stream.h"
 #include "stir/info.h"
 #include "stir/warning.h"
@@ -1140,11 +1141,22 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
       // final_viewgram starts as measured data
       RelatedViewgrams<float> final_viewgram = this->get_proj_data().get_related_viewgrams(vg_idx_to_process[i], symmetries_sptr);
       {
+#if 0
         // Mult input_viewgram
         final_viewgram *= input_viewgrams_vec[i];
+        // Divide final_viewgram by ybar_sq_viewgram
         int tmp1 = 0, tmp2 = 0; // ignore counters returned by divide_and_truncate
-        // Divide final_viewgeam by ybar_sq_viewgram
         divide_and_truncate(final_viewgram, ybar_sq_viewgram, 0, tmp1, tmp2);
+#else
+        // use division where 0/x = 0, but truncate measured data to be >= 0 (as in the value and gradient)
+        constexpr auto div = [](float a, float b) { return a <= 0.F ? 0.F : a / b; };
+        auto f_iter = final_viewgram.begin();
+        auto yb_sq_iter = ybar_sq_viewgram.begin();
+        for (; f_iter != final_viewgram.end(); ++f_iter, ++yb_sq_iter)
+          in_place_apply_binary_func_element_wise(*f_iter, *yb_sq_iter, div);
+        // Mult input_viewgram
+        final_viewgram *= input_viewgrams_vec[i];
+#endif
       }
 
       // back-project final_viewgram
