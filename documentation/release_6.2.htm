@@ -106,6 +106,13 @@
     handled. Also, downsampling of <code>BlocksOnCylindrical</code> scanners in scatter simulation was inaccurate.<br>
     <a href=https://github.com/UCL/STIR/pull/1466>PR #1466</a>
   </li>
+  <li>
+    The "Hessian times input" calculations of the Poisson log-likelihood for projection data
+    were incorrect when the forward projection of the "input" contains negatives.
+    We now detect this and throw an error if it occurs. A proper fix
+    will have to be for later.<br>
+    See <a href="https://github.com/UCL/STIR/issues/1461">Issue #1461</a>
+  </li>
 </ul>
 
 <h3>Build system</h3>
