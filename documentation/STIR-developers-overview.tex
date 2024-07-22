@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 6.0}}
+\textbf{\textit{version 6.2}}
 
 \end{center}
 
@@ -60,8 +60,8 @@ formats (you can get e.g. RTF or LaTeX output by simply running
 doxygen on the source files that come in the STIR distribution). 
 
 \subsection{Language support}
-STIR is written in C++ and currently requires C++-14, but it is compatible with newer versions of the C++ standard.
-We will enforce C++-16 from STIR 6.2.
+STIR is written in C++ and currently requires C++-17, but it is compatible with newer versions of the C++ standard.
+We will enforce C++-20 from STIR 7.0 (possibly earlier).
 
 Python and MATLAB support is provided via \R2Lurl{http://www.swig.org/}{SWIG}. This means that Python/MATLAB interfaces follow
 the C++ classes closely, although some differences are required as these languages do not support templates for instance.
@@ -392,7 +392,7 @@ is not slowed down. If an assertion is false, the program aborts
 with info on the file and line number where the assertion failed.
 
 \subsection{C++ conventions}
-STIR uses C++-14 and is compatible with C++-20 to the best of our knowledge.
+STIR uses C++-17 and is compatible with C++-20 to the best of our knowledge.
 For legacy reasons, we have some preprocessor 
 macros (see \textit{stir/common.h}) to define the stir namespace (see below).
 These should disappear at a 
@@ -621,6 +621,12 @@ private:
   typedef ProjDataInfoCylindrical self_type;
 };
 \end{verbatim}
+
+\section{CUDA support}
+STIR 6.2 introduced first versions of some CUDA code. The include file
+\texttt{cuda\_utilities.h} contains some helpers classes to copy
+arrays to/from the device. This is still work-in-progress as objects
+cannot remain on the device.
 
 \section{
 Overview of classes}
