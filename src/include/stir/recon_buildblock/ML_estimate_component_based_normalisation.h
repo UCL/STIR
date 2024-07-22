@@ -9,10 +9,11 @@
 /*!
  \file
  \ingroup recon_buildblock
- \brief Declaration of ML_estimate_component_based_normalisation
+ \brief Declaration of stir::ML_estimate_component_based_normalisation
  \author Kris Thielemans
  */
 #include "stir/common.h"
+#include <string>
 
 START_NAMESPACE_STIR
 

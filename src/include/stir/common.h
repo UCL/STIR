@@ -72,7 +72,9 @@
 #include <cstring>
 #include <cmath>
 #include <cassert>
-#include <boost/math/constants/constants.hpp>
+#if __cplusplus >= 202002L
+#  include <numbers>
+#endif
 
 //*************** namespace macros
 #define START_NAMESPACE_STIR                                                                                                     \
@@ -128,10 +130,16 @@
 //***************
 START_NAMESPACE_STIR
 
+#ifndef _PI
+#  if __cplusplus >= 202002L
 //! The constant pi to high precision.
 /*! \ingroup buildblock */
-#ifndef _PI
-#  define _PI boost::math::constants::pi<double>()
+#    define _PI std::numbers::pi
+#  else
+//! The constant pi to high precision.
+/*! \ingroup buildblock */
+#    define _PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062
+#  endif
 #endif
 
 //! Define the speed of light in mm / ps
