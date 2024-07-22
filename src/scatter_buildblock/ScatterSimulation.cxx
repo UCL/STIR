@@ -861,9 +861,6 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       new_scanner_sptr->set_num_transaxial_blocks_per_bucket(1);
 
       new_scanner_sptr->set_num_rings(new_num_rings);
-      float transaxial_bucket_spacing
-          = old_scanner_ptr->get_transaxial_block_spacing() * old_scanner_ptr->get_num_transaxial_blocks_per_bucket();
-      // get a new number of detectors that is a multiple of the number of buckets to preserve scanner shape
       new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
 
       new_scanner_sptr->set_axial_crystal_spacing(new_ring_spacing);
