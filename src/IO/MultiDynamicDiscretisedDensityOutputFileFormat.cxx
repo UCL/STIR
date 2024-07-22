@@ -93,7 +93,7 @@ MultiDynamicDiscretisedDensityOutputFileFormat::actual_write_to_file(std::string
   // Create all the filenames
   VectorWithOffset<std::string> individual_filenames(1, int(density.get_num_time_frames()));
   for (int i = 1; i <= int(density.get_num_time_frames()); i++)
-    individual_filenames[i] = filename + "_" + boost::lexical_cast<std::string>(i);
+    individual_filenames[i] = filename + "_" + std::to_string(i);
 
   // Write each individual image
   for (int i = 1; i <= int(density.get_num_time_frames()); i++)
