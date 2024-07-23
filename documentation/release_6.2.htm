@@ -7,14 +7,18 @@
   <body>
     <h1>Summary of changes in STIR release 6.2</h1>
 
-    <p>
-      This version is 100% backwards compatible with STIR 6.1, aside from the default of the
-      tail-fitting of the scatter estimator (see below). However, C++-17 is now required.
-    </p>
 
 <h2>Overall summary</h2>
     <p>
-     
+      This version is 100% backwards compatible with STIR 6.1, aside from a bug fix for
+      the blocks-on-cylindrical set-up which caused the wrong geometry, and a changed
+      default of the tail-fitting of the scatter estimator (see below). However,
+      C++-17 is now required.
+    </p>
+    <p>
+      Main new features are the capability to mash TOF bins (via <tt>SSRB</tt> utility/code)
+      and a CUDA version of the Relative Difference Prior. There are also some
+      import bug fixes, as well as some speed-up (hopefully) in the use of arrays.
     </p>
 
     <p>
@@ -29,15 +33,9 @@
 <h2>Patch release info</h2>
 <ul>
   <li>
-    6.2.0 released ??/2024<br>
+    6.2.0 released 23/07/2024<br>
     <a href="https://github.com/UCL/STIR/milestone/11">GitHub Milestone 6.2</a>
   </li>
-  <!--
-      <li> 4.0.1 released 28/04/2020
-        <ul>
-          <li><a href=https://github.com/UCL/STIR/pull/513>PR 513</a>  (suppress warnings with clang)</li>
-        </ul>
-        -->
 </ul>
 
 <h2> Summary for end users (also to be read by developers)</h2>
@@ -56,7 +54,7 @@
     New prior <code>CudaRelativeDifferencePrior</code> (use <tt>Cuda Relative Difference Prior</tt> in <tt>.par</tt> files), only
     available if the CUDA toolkit is found during building. Results are identical to <code>RelativeDifferencePrior</code>
     up to numerical rounding issues. However, the code is currently limited to 3x3x3 weights.<br>
-    Added timings for the RDP (both non-CUDA and CUDA) tothe  <tt>stir_timings</tt> utility.<br>
+    Added timings for the RDP (both non-CUDA and CUDA) to the <tt>stir_timings</tt> utility.<br>
     <a href=https://github.com/UCL/STIR/pull/1408>PR #1408</a>
   </li>
 </ul>
@@ -70,7 +68,7 @@
     (see <a href=https://github.com/UCL/STIR/issues/1280>issue #1280</a>.<br>
     <strong>WARNING:</strong><i>This potentially changes your scatter estimates</i>. (You can check log files
     of the scatter estimation to see what the scaling factors are.) However,
-    the Siemens mMR example files already lowered the default scale factor to .1, so if you used
+    the Siemens mMR example files already lowered the default scale factor to .1, so if you use(d)
     those, you will get identical results.
   </li>
   <li>
@@ -94,10 +92,10 @@
   <li>
     <tt>SPECT_dicom_to_interfile</tt> improvements:
     <ul>
-      <li>remove requirement for the <tt>is_planar</tt> parameters.    
+      <li>remove requirement for the <tt>is_planar</tt> parameters.
         As STIR can only read SPECT sinograms, we now read/set all fields
         from a planar scan as well. There is therefore no need anymore for
-        the boolean, and it is just ignored.    
+        the boolean, and it is just ignored.
         Output of a conversion of planar data is now directly readable into STIR.
       </li>
       <li>
@@ -131,9 +129,18 @@
 </ul>
 
 <h3>Build system</h3>
-<ul
+<ul>
   <li>
     C++-17 is now required.
+  </li>
+  <li>
+    Force C++ version according to CERN ROOT versions: ROOT 6.28.10 needs C++17 and 6.30.2 needs C++20.
+    Also some fixes when relying on <code>root-config</code>.
+  </li>
+  <li>
+    Optionally enable CUDA as a CMake language (for the CUDA RDP). <strong>You should use CMake 3.23 or later</strong>
+    if you use CUDA. If you have the CUDA Toolkit but an old version of CMake that you cannot update,
+    you will have to set <tt>DISABLE_STIR_CUDA</tt> to <tt>ON</tt>.
   </li>
 </ul>
 
@@ -175,24 +182,12 @@ from the above):</H2>
     Fixed an incompatibility with C++20.
   </li>
   <li>
-    Enabled OpenMP for <code>Array</code> members <code>find_max(), find_min(), sum(), sum_positivie()</code>.
+    Enabled OpenMP for <code>Array</code> members <code>find_max(), find_min(), sum(), sum_positive()</code>.
     <br>
     <a href=https://github.com/UCL/STIR/pull/1449>PR #1449</a>.
   </li>
   <li>
     Changes to allow reading Siemens Biograph Vision data: iSSRB and SSRB are now included in the SWIG interface; minor changes to a shell script altering e7tools headers.
-  </li>
-</ul>
-
-<h3>Build system</h3>
-<ul>
-  <li>
-    Force C++ version according to CERN ROOT versions: ROOT 6.28.10 needs C++17 and 6.30.2 needs C++20.
-    Also some fixes when relying on <code>root-config</code>.
-  </li>
-  <li>
-    Optionally enable CUDA as a CMake language (for the CUDA RDP). <strong>You should use CMake 3.23 or later</strong>
-    if you use CUDA.
   </li>
 </ul>
 
@@ -210,8 +205,8 @@ from the above):</H2>
 <h4>recon_test_pack</h4>
 <ul>
   <li>
-    The output of <tt>simulate_PET_data_for_tests.sh</tt> can now varied by setting environment variables, e.g.
-    <code>max_rd</code>.
+    The output of <tt>simulate_PET_data_for_tests.sh</tt> can now be varied by setting environment variables, e.g.
+    <code>max_rd</code>. (Do not forget to unset those variables afterwards!)
   </li>
   <li>
     New test <tt>run_test_SSRB.sh</tt>
