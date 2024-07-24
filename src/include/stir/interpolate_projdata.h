@@ -59,6 +59,8 @@ Succeeded interpolate_projdata(ProjData& proj_data_out,
                                const ProjData& proj_data_in,
                                const BasicCoordinate<3, BSpline::BSplineType>& these_types,
                                const bool remove_interleaving);
+Succeeded
+interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjData& proj_data_in, bool remove_interleaving);
 //@}
 
 END_NAMESPACE_STIR

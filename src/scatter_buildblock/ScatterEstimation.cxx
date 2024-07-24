@@ -23,6 +23,7 @@
 #include "stir/recon_buildblock/ChainedBinNormalisation.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/inverse_SSRB.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -77,6 +78,8 @@ ScatterEstimation::set_defaults()
   this->override_scanner_template = true;
   this->override_density_image = true;
   this->downsample_scanner_bool = true;
+  this->downsampled_number_of_rings = -1;
+  this->downsampled_detectors_per_ring = -1;
   this->remove_interleaving = true;
   this->atten_image_filename = "";
   this->atten_coeff_filename = "";
@@ -124,6 +127,8 @@ ScatterEstimation::initialise_keymap()
   this->parser.add_parsing_key("Scatter Simulation type", &this->scatter_simulation_sptr);
   this->parser.add_key("scatter simulation parameter filename", &this->scatter_sim_par_filename);
   this->parser.add_key("use scanner downsampling in scatter simulation", &this->downsample_scanner_bool);
+  this->parser.add_key("override number of downsampled rings", &this->downsampled_number_of_rings);
+  this->parser.add_key("override number of downsampled detectors per ring", &this->downsampled_detectors_per_ring);
 
   this->parser.add_key("override attenuation image", &this->override_density_image);
   this->parser.add_key("override scanner template", &this->override_scanner_template);
@@ -597,7 +602,7 @@ ScatterEstimation::set_up()
     }
 
   if (this->downsample_scanner_bool)
-    this->scatter_simulation_sptr->downsample_scanner();
+    this->scatter_simulation_sptr->downsample_scanner(this->downsampled_number_of_rings, this->downsampled_detectors_per_ring);
 
   // Check if Load a mask proj_data
 
@@ -834,7 +839,7 @@ ScatterEstimation::process_data()
   float local_min_scale_value = 0.5f;
   float local_max_scale_value = 0.5f;
 
-  stir::BSpline::BSplineType spline_type = stir::BSpline::quadratic;
+  stir::BSpline::BSplineType spline_type = stir::BSpline::linear;
 
   // This has been set to 2D or 3D in the set_up()
   shared_ptr<ProjData> unscaled_est_projdata_sptr(
@@ -1026,16 +1031,13 @@ ScatterEstimation::process_data()
               shared_ptr<BinNormalisation> normalisation_factors_3d_sptr
                   = this->get_normalisation_object_sptr(this->multiplicative_binnorm_sptr);
 
-              upsample_and_fit_scatter_estimate(*scatter_estimate_sptr,
-                                                *this->input_projdata_sptr,
-                                                *temp_projdata,
-                                                *normalisation_factors_3d_sptr,
-                                                *this->input_projdata_sptr,
-                                                1.0f,
-                                                1.0f,
-                                                1,
-                                                spline_type,
-                                                false);
+              ProjDataInMemory interpolated_scatter(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                    this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+              inverse_SSRB(interpolated_scatter, *temp_projdata);
+              normalisation_factors_3d_sptr->set_up(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                    this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+              normalisation_factors_3d_sptr->undo(interpolated_scatter);
+              scatter_estimate_sptr->fill(interpolated_scatter);
             }
           else
             {
