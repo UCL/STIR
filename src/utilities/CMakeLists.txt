@@ -21,6 +21,7 @@ set(${dir_EXE_SOURCES}
 	manip_projdata.cxx
 	display_projdata.cxx
 	do_linear_regression.cxx
+	construct_fanProjData_fromProjData
 	postfilter.cxx
 	compare_projdata.cxx
 	compare_image.cxx
@@ -42,6 +43,7 @@ set(${dir_EXE_SOURCES}
 	get_time_frame_info.cxx
 	generate_image.cxx
 	list_ROI_values.cxx
+	cache_lm.cxx
 	zoom_image.cxx
 	find_fwhm_in_image.cxx
 	abs_image.cxx
