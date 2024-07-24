@@ -127,7 +127,7 @@ ScatterEstimation::initialise_keymap()
   this->parser.add_parsing_key("Scatter Simulation type", &this->scatter_simulation_sptr);
   this->parser.add_key("scatter simulation parameter filename", &this->scatter_sim_par_filename);
   this->parser.add_key("use scanner downsampling in scatter simulation", &this->downsample_scanner_bool);
-  this->parser.add_key("override number of rings", &this->downsampled_number_of_rings);
+  this->parser.add_key("override number of downsampled rings", &this->downsampled_number_of_rings);
   this->parser.add_key("override number of downsampled detectors per ring", &this->downsampled_detectors_per_ring);
 
   this->parser.add_key("override attenuation image", &this->override_density_image);
