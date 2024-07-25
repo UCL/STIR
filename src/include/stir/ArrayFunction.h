@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -22,36 +23,29 @@
    functions which work on all stir::Array objects, and which change every element of the
    array:
    <ul>
-     <li> stir::in_place_log, stir::in_place_exp (these work only well when elements are float or double)
-     <li>stir::in_place_abs (does not work on complex numbers)
-     <li>stir::in_place_apply_function
-     <li>stir::in_place_apply_array_function_on_1st_index
-     <li>stir::in_place_apply_array_functions_on_each_index
+     <li>stir::in_place_log, stir::in_place_exp (these work only well when elements are float or double)</li>
+     <li>stir::in_place_abs (does not work on complex numbers)</li>
+     <li>stir::in_place_apply_function</li>
+     <li>stir::in_place_apply_array_function_on_1st_index</li>
+     <li>stir::in_place_apply_array_functions_on_each_index</li>
    </ul>
    All these functions return a reference to the (modified) array
+   </li>
    <li>
    Analoguous functions that take out_array and in_array
    <ul>
-      <li>stir::apply_array_function_on_1st_index
-      <li>stir::apply_array_functions_on_each_index
+      <li>stir::apply_array_function_on_1st_index</li>
+      <li>stir::apply_array_functions_on_each_index</li>
    </ul>
+   </li>
+   <li>
+   Functions that apply a binary function element-wise on arrays:
+   <ul>
+   <li>std::transform</li>
    </ul>
-
-   \warning Compilers without partial specialisation of templates are
-   catered for by explicit instantiations. If you need it for any other
-   types, you'd have to add them by hand.
+   </li>
+   </ul>
  */
-
-/* History:
-
-  KT 21/05/2001
-  added in_place_apply_array_function_on_1st_index,
-  in_place_apply_array_function_on_each_index
-
-  KT 06/12/2001
-  added apply_array_function_on_1st_index,
-  apply_array_function_on_each_index
-*/
 
 #ifndef __stir_ArrayFunction_H__
 #define __stir_ArrayFunction_H__
@@ -253,14 +247,76 @@ inline void apply_array_functions_on_each_index(Array<1, elemT>& out_array,
                                                 ActualFunctionObjectPtrIter start,
                                                 ActualFunctionObjectPtrIter stop);
 
-template <typename elemT, typename FunctionObjectPtrIter>
 //! 1d specialisation for general function objects
 /*! \ingroup Array
  */
+template <typename elemT, typename FunctionObjectPtrIter>
 inline void apply_array_functions_on_each_index(Array<1, elemT>& out_array,
                                                 const Array<1, elemT>& in_array,
                                                 FunctionObjectPtrIter start,
                                                 FunctionObjectPtrIter stop);
+
+//! \name  apply binary function element-wise
+/*!  \ingroup Array
+  arrays need to have the same number of elements, but can have different shapes.
+*/
+//@{
+//! apply binary function element-wise and store in other array
+template <int num_dim, typename elemTout, typename elemT1, typename elemT2, typename BinaryFunctionT>
+inline void apply_binary_func_element_wise(Array<num_dim, elemTout>& out,
+                                           const Array<num_dim, elemT1>& in1,
+                                           const Array<num_dim, elemT2>& in2,
+                                           BinaryFunctionT f);
+
+//! conditionally apply binary function element-wise and store in other array
+/*!
+  arrays need to have the same number of elements, but can have different shapes.
+
+  Element-wise loop, only computing/storing results if <code>predicate(*in1_full_iter, *in2_full_iter)==true</code>.
+  Other elements in \c out are unassigned.
+*/
+template <int num_dim,
+          typename elemTout,
+          typename elemT1,
+          typename elemT2,
+          typename PredicateBinaryFunctionT,
+          typename BinaryFunctionT>
+inline void apply_binary_func_element_wise(Array<num_dim, elemTout>& out,
+                                           const Array<num_dim, elemT1>& in1,
+                                           const Array<num_dim, elemT2>& in2,
+                                           PredicateBinaryFunctionT predicate,
+                                           BinaryFunctionT f);
+
+//! conditionally apply binary function element-wise and store in other array
+/*!
+  arrays need to have the same number of elements, but can have different shapes.
+
+  Element-wise loop, only computing/storing results if <code>bool(*where_full_iter)==true</code>.
+  Other elements in \c out are unassigned.
+*/
+template <int num_dim, typename elemTout, typename elemT1, typename elemT2, typename elemT3, typename BinaryFunctionT>
+inline void apply_binary_func_element_wise(Array<num_dim, elemTout>& out,
+                                           const Array<num_dim, elemT1>& in1,
+                                           const Array<num_dim, elemT2>& in2,
+                                           const Array<num_dim, elemT3>& where,
+                                           BinaryFunctionT f);
+
+template <int num_dim, typename elemTinout, typename elemT2, typename BinaryFunctionT>
+inline void
+in_place_apply_binary_func_element_wise(Array<num_dim, elemTinout>& inout, const Array<num_dim, elemT2>& in2, BinaryFunctionT f);
+
+template <int num_dim, typename elemTinout, typename elemT2, typename PredicateBinaryFunctionT, typename BinaryFunctionT>
+inline void in_place_apply_binary_func_element_wise(Array<num_dim, elemTinout>& inout,
+                                                    const Array<num_dim, elemT2>& in2,
+                                                    PredicateBinaryFunctionT predicate,
+                                                    BinaryFunctionT f);
+
+template <int num_dim, typename elemTinout, typename elemT2, typename elemT3, typename BinaryFunctionT>
+inline void in_place_apply_binary_func_element_wise(Array<num_dim, elemTinout>& inout,
+                                                    const Array<num_dim, elemT2>& in2,
+                                                    const Array<num_dim, elemT3>& where,
+                                                    BinaryFunctionT f);
+//@}
 
 template <int num_dim, typename elemT>
 inline void transform_array_to_periodic_indices(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array);
