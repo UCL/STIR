@@ -1,0 +1,15 @@
+SRT2DSPECTParameters :=
+
+input file := sino1.hs
+attenuation filename := attensino1.hs
+
+xy output image size (in pixels) := -1
+
+wiener filter := 0
+median filter := 0
+gamma filter  := 0
+
+output filename prefix := srt_recon
+
+
+end:=

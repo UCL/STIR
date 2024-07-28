@@ -1,10 +1,10 @@
 name: Build and ctest and recon_test_pack CI
 
-on:
+on: 
   push:
     branches: 
       - master
-      - tof_sino_UCL
+      - tof_sino_UCL       
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
