@@ -123,6 +123,8 @@ protected:
   explicit DetectorCoordinateMap(double sigma = 0.0)
       : sigma(sigma)
   {
+    if (sigma == 0.0)
+      return;
 #  ifdef STIR_OPENMP
     generators.resize(omp_get_max_threads());
     distributions.resize(omp_get_max_threads());
