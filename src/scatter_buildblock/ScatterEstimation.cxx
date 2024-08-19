@@ -716,7 +716,7 @@ ScatterEstimation::set_up_iterative(shared_ptr<IterativeReconstruction<Discretis
         this->multiplicative_binnorm_2d_sptr.reset(new ChainedBinNormalisation(norm_coeff_2d_sptr, atten_coeff_2d_sptr));
 
         this->multiplicative_binnorm_2d_sptr->set_up(
-            this->back_projdata_sptr->get_exam_info_sptr(),
+            this->input_projdata_2d_sptr->get_exam_info_sptr(),
             this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
         iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_2d_sptr);
       }
