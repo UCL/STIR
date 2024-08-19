@@ -93,14 +93,15 @@ jobs:
           BUILD_TYPE: "Debug"
           ROOT: "OFF"
           ITK: "OFF"
-        - os: macOS-latest
-          compiler: clang
-          compiler_version: 18
-          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-          parallelproj: "OFF"
-          BUILD_TYPE: "Release"
-          ITK: "OFF"
-          ROOT: "OFF"
+        # Currently disabled due to problems with listmode recon, see https://github.com/UCL/STIR/issues/1200
+        #- os: macOS-latest
+        #  compiler: clang
+        #  compiler_version: 16
+        #  BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+        #  parallelproj: "OFF"
+        #  BUILD_TYPE: "Release"
+        #  ROOT: "OFF"
+        #  ITK: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
