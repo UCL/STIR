@@ -21,6 +21,8 @@
 
 #include "stir/ProjDataInterfile.h"
 #include "stir/multiply_crystal_factors.h"
+#include "stir/data/randoms_from_singles.h"
+#include "stir/decay_correction_factor.h"
 #include "stir/stream.h"
 #include "stir/IndexRange2D.h"
 #include "stir/error.h"
@@ -76,8 +78,43 @@ main(int argc, char** argv)
       delete[] in_filename;
     }
   }
+  float coincidence_time_window = template_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_coincidence_window_width_in_ps();
+  double corr_factor = 1;
 
-  multiply_crystal_factors(proj_data, efficiencies, 1.F);
+  if (coincidence_time_window>0)
+  {
+      /* Randoms from singles formula is
+
+     randoms-rate[t,i,j] = coinc_window * singles-rate[t,i] * singles-rate[t,j]
+
+     However, we actually have total counts in the singles for sinograms.
+     and need total counts in the randoms.
+     Assuming there is just decay going on, then we have
+
+     randoms-rate[t,i,j] = coinc_window * singles-rate[0,i] * singles-rate[0,j] exp (-2lambda t)
+
+     randoms-counts[i,j] = int_t1^t2 randoms-rate[t,i,j]
+               = coinc_window * singles-rate[0,i] * singles-rate[0,j] * int_t1^t2 exp (-2lambda t)
+               = coinc_window * singles-counts[i] * singles-counts[j] *
+                 int_t1^t2 exp (-2lambda t) / (int_t1^t2 exp (-lambda t))^2
+     where int indicates an integral.
+
+     Now we can use that decay_correction_factor(lambda,t1,t2) computes
+        duration/(int_t1^t2 exp (-lambda t))
+
+     That leads to the formula below (as it turns out that the above ratio only depends t2-t1)
+  */
+      const double isotope_halflife = template_projdata_ptr->get_exam_info().get_radionuclide().get_half_life();
+      const TimeFrameDefinitions frame_defs = proj_data.get_exam_info_sptr()->get_time_frame_definitions();
+      const double duration = frame_defs.get_duration(1);
+      const double decay_corr_factor = decay_correction_factor(isotope_halflife, 0., duration);
+      const double double_decay_corr_factor = decay_correction_factor(0.5 * isotope_halflife, 0., duration);
+      corr_factor = square(decay_corr_factor) / double_decay_corr_factor / duration;
+      info("Correction factor based on coincidence window and duration is "+ std::to_string(corr_factor), 2);
+
+  }
+
+  multiply_crystal_factors(proj_data, efficiencies, static_cast<float>(coincidence_time_window * corr_factor));
 
   return EXIT_SUCCESS;
 }
