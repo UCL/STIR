@@ -298,6 +298,10 @@ Scanner::get_axial_block_spacing() const
 float
 Scanner::get_axial_length() const
 {
+  if (get_scanner_geometry() == "Cylindrical")
+  {
+    return get_num_rings() * get_ring_spacing();
+  }
   return get_num_axial_buckets() * get_num_axial_blocks_per_bucket() * get_axial_block_spacing()
          - (get_axial_block_spacing() - (get_num_axial_crystals_per_block() - 1) * get_axial_crystal_spacing());
 }

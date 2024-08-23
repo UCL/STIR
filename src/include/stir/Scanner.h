@@ -426,6 +426,7 @@ public:
   inline float get_transaxial_block_spacing() const;
   /*! get total axial length covered by the detectors (incl. any gaps between blocks etc.)
     \todo Need to update this function when enabling different spacing between blocks and buckets etc.
+    For cylindrical scanners, calculates the length by the ring spacing.
   */
   inline float get_axial_length() const;
   //@} (end of get block geometry info)
