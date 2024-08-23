@@ -249,6 +249,14 @@ interpolate_projdata(ProjData& proj_data_out,
   return Succeeded::yes;
 }
 
+//! This function interpolates BlocksOnCylindrical proj data taking bucket intersections and gaps into account.
+/*! The above proj data interpolation function works well for cylindrical scanners where there are no large discontinuities.
+For BlocksOnCylindrical scanners, the sudden change of angle from one bucket to the next and the gaps between blocks and buckets
+lead to interpolation artifacts if not taken into account. Therefore, this function does the interpolation in physical space
+rather than directly on the proj data bin values. For each bin in proj_data_out (the full size proj data), we find the four
+closest LORs in the downsampled proj_data_in. These are then weighted using bilinear interpolation based on the crystal positions
+of the two endpoints of the LOR.
+*/
 Succeeded
 interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjData& proj_data_in, bool remove_interleaving)
 {
