@@ -17,11 +17,9 @@
   \author Kris Thielemans
 
 */
-#include "stir/common.h"
 #include "stir/Verbosity.h"
-#include <iostream>
-
-#include "TextWriter.h"
+#include "stir/TextWriter.h"
+#include <sstream>
 
 START_NAMESPACE_STIR
 
