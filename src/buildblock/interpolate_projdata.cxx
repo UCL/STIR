@@ -311,46 +311,44 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
                                                                                        index_out[2], /*view*/
                                                                                        index_out[3] /* tangential pos */);
                   const int dets_per_module_out = proj_data_out_info.get_scanner_sptr()->get_num_transaxial_crystals_per_bucket();
-                  const int det1_module = std::floor(det1_num_out / dets_per_module_out);
-                  const int det2_module = std::floor(det2_num_out / dets_per_module_out);
+                  const int det1_module = det1_num_out / dets_per_module_out;
+                  const int det2_module = det2_num_out / dets_per_module_out;
 
                   // translate the crystal position on each module from the full size scanner to the downsampled scanner
                   const auto proj_data_in_info_ptr = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&proj_data_in_info);
                   const int dets_per_module_in
                       = proj_data_in_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_bucket();
-                  double crystal1_out_module_idx = det1_num_out % dets_per_module_out;
-                  double crystal1_out_module_pos
-                      = static_cast<double>(
-                            std::floor(crystal1_out_module_idx
-                                       / proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block()))
+                  const int crystal1_out_module_idx = det1_num_out % dets_per_module_out;
+                  const double crystal1_out_module_pos
+                      = std::floor(static_cast<double>(crystal1_out_module_idx)
+                                   / proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block())
                             * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_block_spacing()
                         + static_cast<double>(
-                              static_cast<int>(crystal1_out_module_idx)
+                              crystal1_out_module_idx
                               % proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block())
                               * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_crystal_spacing();
-                  double crystal1_num_in
+                  const double crystal1_num_in
                       = det1_module * dets_per_module_in
                         + crystal1_out_module_pos / proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
-                  double crystal2_out_module_idx = det2_num_out % dets_per_module_out;
-                  double crystal2_out_module_pos
-                      = static_cast<double>(
-                            std::floor(crystal2_out_module_idx
-                                       / proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block()))
+                  const int crystal2_out_module_idx = det2_num_out % dets_per_module_out;
+                  const double crystal2_out_module_pos
+                      = std::floor(static_cast<double>(crystal2_out_module_idx)
+                                   / proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block())
                             * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_block_spacing()
                         + static_cast<double>(
-                              static_cast<int>(crystal2_out_module_idx)
+                              crystal2_out_module_idx
                               % proj_data_out_info_ptr->get_scanner_sptr()->get_num_transaxial_crystals_per_block())
                               * proj_data_out_info_ptr->get_scanner_sptr()->get_transaxial_crystal_spacing();
-                  double crystal2_num_in
+                  const double crystal2_num_in
                       = det2_module * dets_per_module_in
                         + crystal2_out_module_pos / proj_data_in_info.get_scanner_sptr()->get_transaxial_crystal_spacing();
-                  auto crystal1_num_in_floor
+                  const auto crystal1_num_in_floor
                       = std::max(static_cast<int>(std::floor(crystal1_num_in)), det1_module * dets_per_module_in);
-                  auto crystal1_num_in_ceil
+                  const auto crystal1_num_in_ceil
                       = std::min(static_cast<int>(std::ceil(crystal1_num_in)), (det1_module + 1) * dets_per_module_in - 1);
-                  auto crystal2_num_in_floor
+                  const auto crystal2_num_in_floor
                       = std::max(static_cast<int>(std::floor(crystal2_num_in)), det2_module * dets_per_module_in);
-                  auto crystal2_num_in_ceil
+                  const auto crystal2_num_in_ceil
                       = std::min(static_cast<int>(std::ceil(crystal2_num_in)), (det2_module + 1) * dets_per_module_in - 1);
 
                   // translate to indices in input proj data

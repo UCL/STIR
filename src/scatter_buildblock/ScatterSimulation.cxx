@@ -882,6 +882,10 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       new_scanner_sptr->set_num_transaxial_crystals_per_block(new_transaxial_dets_per_bucket);
       new_scanner_sptr->set_transaxial_crystal_spacing(new_det_spacing);
       new_scanner_sptr->set_transaxial_block_spacing(new_transaxial_dets_per_bucket * new_det_spacing * block_spacing_factor);
+      // avoid problems with Scanner checks by setting singles_units to 1 crystal
+      // (only used for dead-time processing in ECAY norm)
+      new_scanner_sptr->set_num_axial_crystals_per_singles_unit(1);
+      new_scanner_sptr->set_num_transaxial_crystals_per_singles_unit(1);
     }
   else
     {
