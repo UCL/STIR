@@ -36,6 +36,7 @@
 #include "stir/CPUTimer.h"
 #include <algorithm>
 #include <numeric>
+#include <exception>
 
 START_NAMESPACE_STIR
 
@@ -321,7 +322,7 @@ ProjDataTests::run_tests_on_proj_data(ProjData& proj_data)
         proj_data2.fill(proj_data);
         check(false, "test fill wtih too small proj_data should have thrown");
       }
-    catch (...)
+    catch (std::runtime_error&)
       {
         // ok
       }

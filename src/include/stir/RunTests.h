@@ -33,6 +33,7 @@
 #include <vector>
 #include <complex>
 #include <string>
+#include <exception>
 
 START_NAMESPACE_STIR
 

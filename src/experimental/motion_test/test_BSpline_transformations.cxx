@@ -142,8 +142,9 @@ TestBSplineTransformation::run_tests()
       cerr << "Tests for TransformationTests\n";
       this->run_transformation();
     }
-  catch (...)
+  catch (std::exception& e)
     {
+      std::cerr << "Error thrown: " << e.what() << "\n\n";
       everything_ok = false;
     }
 }

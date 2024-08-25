@@ -23,6 +23,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <exception>
 #include "stir/RunTests.h"
 
 START_NAMESPACE_STIR
@@ -142,7 +143,7 @@ KeyParserTests::run_tests_one_type()
         parser.parse(str);
         check(false, "parsing non-vectorised key with vector should have failed");
       }
-    catch (...)
+    catch (std::runtime_error&)
       {
         // ok
       }
@@ -161,7 +162,7 @@ KeyParserTests::run_tests_one_type()
         parser.parse(str);
         check(false, "parsing vectorised key with non-vector should have failed");
       }
-    catch (...)
+    catch (std::runtime_error&)
       {
         // ok
       }
