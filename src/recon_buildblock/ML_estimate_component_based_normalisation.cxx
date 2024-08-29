@@ -35,12 +35,58 @@
 
 START_NAMESPACE_STIR
 
+void
+ML_estimate_component_based_normalisation(const std::string& out_filename_prefix,
+                                          const ProjData& measured_data,
+                                          const ProjData& model_data,
+                                          int num_eff_iterations,
+                                          int num_iterations,
+                                          bool do_geo,
+                                          bool do_block,
+                                          bool do_symmetry_per_block,
+                                          bool do_KL,
+                                          bool do_display)
+{
+  MLEstimateComponentBasedNormalisation estimator(out_filename_prefix,
+                                                  measured_data,
+                                                  model_data,
+                                                  num_eff_iterations,
+                                                  num_iterations,
+                                                  do_geo,
+                                                  do_block,
+                                                  do_symmetry_per_block,
+                                                  do_KL,
+                                                  do_display);
+  estimator.run();
+}
+
+MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(const std::string& out_filename_prefix,
+                                                                             const ProjData& measured_data,
+                                                                             const ProjData& model_data,
+                                                                             int num_eff_iterations,
+                                                                             int num_iterations,
+                                                                             bool do_geo,
+                                                                             bool do_block,
+                                                                             bool do_symmetry_per_block,
+                                                                             bool do_KL,
+                                                                             bool do_display)
+    : measured_data(measured_data),
+      model_data(model_data),
+      out_filename_prefix(out_filename_prefix),
+      num_eff_iterations(num_eff_iterations),
+      num_iterations(num_iterations),
+      do_geo(do_geo),
+      do_block(do_block),
+      do_symmetry_per_block(do_symmetry_per_block),
+      do_KL(do_KL),
+      do_display(do_display)
+{}
+
 //! Helper function to write efficiencies to a file
 void
-write_efficiencies_to_file(const std::string& out_filename_prefix,
-                           int iter_num,
-                           int eff_iter_num,
-                           const DetectorEfficiencies& efficiencies)
+MLEstimateComponentBasedNormalisation::write_efficiencies_to_file(int iter_num,
+                                                                  int eff_iter_num,
+                                                                  const DetectorEfficiencies& efficiencies)
 {
   char* out_filename = new char[out_filename_prefix.size() + 30];
   sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
@@ -50,7 +96,7 @@ write_efficiencies_to_file(const std::string& out_filename_prefix,
 
 //! Helper function to write geo data to a file
 void
-write_geo_data_to_file(const std::string& out_filename_prefix, int iter_num, const GeoData3D& norm_geo_data)
+MLEstimateComponentBasedNormalisation::write_geo_data_to_file(int iter_num, const GeoData3D& norm_geo_data)
 {
   char* out_filename = new char[out_filename_prefix.size() + 30];
   sprintf(out_filename, "%s_%s_%d.out", out_filename_prefix.c_str(), "geo", iter_num);
@@ -60,7 +106,7 @@ write_geo_data_to_file(const std::string& out_filename_prefix, int iter_num, con
 
 //! Helper function to write block data to a file
 void
-write_block_data_to_file(const std::string& out_filename_prefix, int iter_num, const BlockData3D& norm_block_data)
+MLEstimateComponentBasedNormalisation::write_block_data_to_file(int iter_num, const BlockData3D& norm_block_data)
 {
   char* out_filename = new char[out_filename_prefix.size() + 30];
   sprintf(out_filename, "%s_%s_%d.out", out_filename_prefix.c_str(), "block", iter_num);
@@ -70,14 +116,11 @@ write_block_data_to_file(const std::string& out_filename_prefix, int iter_num, c
 
 // Function to compute factors dependent on the data
 void
-compute_initial_data_dependent_factors(const ProjData& measured_data,
-                                       const FanProjData& model_fan_data,
-                                       FanProjData& measured_fan_data,
-                                       DetectorEfficiencies& data_fan_sums,
-                                       GeoData3D& measured_geo_data,
-                                       BlockData3D& measured_block_data,
-                                       bool do_display,
-                                       float& threshold_for_KL)
+MLEstimateComponentBasedNormalisation::compute_initial_data_dependent_factors(const FanProjData& model_fan_data,
+                                                                              FanProjData& measured_fan_data,
+                                                                              DetectorEfficiencies& data_fan_sums,
+                                                                              GeoData3D& measured_geo_data,
+                                                                              BlockData3D& measured_block_data)
 {
   make_fan_data_remove_gaps(measured_fan_data, measured_data);
 
@@ -107,22 +150,18 @@ compute_initial_data_dependent_factors(const ProjData& measured_data,
 
 // Function to handle efficiency iteration
 void
-efficiency_iteration(FanProjData& fan_data,
-                     const FanProjData& model_fan_data,
-                     const GeoData3D& norm_geo_data,
-                     const BlockData3D& norm_block_data,
-                     DetectorEfficiencies& efficiencies,
-                     const DetectorEfficiencies& data_fan_sums,
-                     const std::string& out_filename_prefix,
-                     int iter_num,
-                     int eff_iter_num,
-                     bool do_KL,
-                     bool do_display,
-                     const FanProjData& measured_fan_data,
-                     float threshold_for_KL)
+MLEstimateComponentBasedNormalisation::efficiency_iteration(FanProjData& fan_data,
+                                                            const FanProjData& model_fan_data,
+                                                            const GeoData3D& norm_geo_data,
+                                                            const BlockData3D& norm_block_data,
+                                                            DetectorEfficiencies& efficiencies,
+                                                            const DetectorEfficiencies& data_fan_sums,
+                                                            int iter_num,
+                                                            int eff_iter_num,
+                                                            const FanProjData& measured_fan_data)
 {
   iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
-  write_efficiencies_to_file(out_filename_prefix, iter_num, eff_iter_num, efficiencies);
+  write_efficiencies_to_file(iter_num, eff_iter_num, efficiencies);
   if (do_KL)
     {
       apply_efficiencies(fan_data, efficiencies);
@@ -150,19 +189,14 @@ efficiency_iteration(FanProjData& fan_data,
 
 // Function to handle geo normalization
 void
-geo_normalization_iteration(FanProjData& fan_data,
-                            const FanProjData& model_fan_data,
-                            const DetectorEfficiencies& efficiencies,
-                            const BlockData3D& norm_block_data,
-                            GeoData3D& norm_geo_data,
-                            const GeoData3D& measured_geo_data,
-                            const std::string& out_filename_prefix,
-                            int iter_num,
-                            bool do_geo,
-                            bool do_KL,
-                            bool do_display,
-                            const FanProjData& measured_fan_data,
-                            float threshold_for_KL)
+MLEstimateComponentBasedNormalisation::geo_normalization_iteration(FanProjData& fan_data,
+                                                                   const FanProjData& model_fan_data,
+                                                                   const DetectorEfficiencies& efficiencies,
+                                                                   const BlockData3D& norm_block_data,
+                                                                   GeoData3D& norm_geo_data,
+                                                                   const GeoData3D& measured_geo_data,
+                                                                   int iter_num,
+                                                                   const FanProjData& measured_fan_data)
 {
   fan_data = model_fan_data;
   apply_efficiencies(fan_data, efficiencies);
@@ -173,7 +207,7 @@ geo_normalization_iteration(FanProjData& fan_data,
       iterate_geo_norm(norm_geo_data, measured_geo_data, fan_data);
     }
 
-  write_geo_data_to_file(out_filename_prefix, iter_num, norm_geo_data);
+  write_geo_data_to_file(iter_num, norm_geo_data);
   if (do_KL)
     {
       apply_geo_norm(fan_data, norm_geo_data);
@@ -189,19 +223,14 @@ geo_normalization_iteration(FanProjData& fan_data,
 
 // Function to handle block normalization
 void
-block_normalization_iteration(FanProjData& fan_data,
-                              const FanProjData& model_fan_data,
-                              const DetectorEfficiencies& efficiencies,
-                              const GeoData3D& norm_geo_data,
-                              BlockData3D& norm_block_data,
-                              const BlockData3D& measured_block_data,
-                              const std::string& out_filename_prefix,
-                              int iter_num,
-                              bool do_block,
-                              bool do_KL,
-                              bool do_display,
-                              const FanProjData& measured_fan_data,
-                              float threshold_for_KL)
+MLEstimateComponentBasedNormalisation::block_normalization_iteration(FanProjData& fan_data,
+                                                                     const FanProjData& model_fan_data,
+                                                                     const DetectorEfficiencies& efficiencies,
+                                                                     const GeoData3D& norm_geo_data,
+                                                                     BlockData3D& norm_block_data,
+                                                                     const BlockData3D& measured_block_data,
+                                                                     int iter_num,
+                                                                     const FanProjData& measured_fan_data)
 {
   fan_data = model_fan_data;
   apply_efficiencies(fan_data, efficiencies);
@@ -210,7 +239,7 @@ block_normalization_iteration(FanProjData& fan_data,
     {
       iterate_block_norm(norm_block_data, measured_block_data, fan_data);
     }
-  write_block_data_to_file(out_filename_prefix, iter_num, norm_block_data);
+  write_block_data_to_file(iter_num, norm_block_data);
   if (do_KL)
     {
       apply_block_norm(fan_data, norm_block_data);
@@ -226,18 +255,8 @@ block_normalization_iteration(FanProjData& fan_data,
 }
 
 void
-ML_estimate_component_based_normalisation(const std::string& out_filename_prefix,
-                                          const ProjData& measured_data,
-                                          const ProjData& model_data,
-                                          int num_eff_iterations,
-                                          int num_iterations,
-                                          bool do_geo,
-                                          bool do_block,
-                                          bool do_symmetry_per_block,
-                                          bool do_KL,
-                                          bool do_display)
+MLEstimateComponentBasedNormalisation::run()
 {
-
   const int num_transaxial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
   const int num_axial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks();
   const int virtual_axial_crystals
@@ -295,15 +314,9 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
   // next could be local if KL is not computed below
   FanProjData measured_fan_data;
-  float threshold_for_KL;
-  compute_initial_data_dependent_factors(measured_data,
-                                         model_fan_data,
-                                         measured_fan_data,
-                                         data_fan_sums,
-                                         measured_geo_data,
-                                         measured_block_data,
-                                         do_display,
-                                         threshold_for_KL);
+
+  compute_initial_data_dependent_factors(
+      model_fan_data, measured_fan_data, data_fan_sums, measured_geo_data, measured_block_data);
 
   // std::cerr << "model min " << model_fan_data.find_min() << " ,max " << model_fan_data.find_max() << std::endl;
   if (do_display)
@@ -334,29 +347,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                norm_block_data,
                                efficiencies,
                                data_fan_sums,
-                               out_filename_prefix,
                                iter_num,
                                eff_iter_num,
-                               do_KL,
-                               do_display,
-                               measured_fan_data,
-                               threshold_for_KL);
+                               measured_fan_data);
         }
 
       // geo norm
-      geo_normalization_iteration(fan_data,
-                                  model_fan_data,
-                                  efficiencies,
-                                  norm_block_data,
-                                  norm_geo_data,
-                                  measured_geo_data,
-                                  out_filename_prefix,
-                                  iter_num,
-                                  do_geo,
-                                  do_KL,
-                                  do_display,
-                                  measured_fan_data,
-                                  threshold_for_KL);
+      geo_normalization_iteration(
+          fan_data, model_fan_data, efficiencies, norm_block_data, norm_geo_data, measured_geo_data, iter_num, measured_fan_data);
 
       // block norm
       block_normalization_iteration(fan_data,
@@ -365,13 +363,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                     norm_geo_data,
                                     norm_block_data,
                                     measured_block_data,
-                                    out_filename_prefix,
                                     iter_num,
-                                    do_block,
-                                    do_KL,
-                                    do_display,
-                                    measured_fan_data,
-                                    threshold_for_KL);
+                                    measured_fan_data);
 
       //// print KL for fansums
       if (do_KL)
