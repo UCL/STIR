@@ -36,8 +36,8 @@ START_NAMESPACE_STIR
         \param do_save_to_file Whether to save the each iteration of the efficiencies, geo data and block data to file.
 */
 void ML_estimate_component_based_normalisation(const std::string& out_filename_prefix,
-                                               const ProjData& measured_data,
-                                               const ProjData& model_data,
+                                               const std::shared_ptr<ProjData>& measured_data,
+                                               const std::shared_ptr<ProjData>& model_data,
                                                int num_eff_iterations,
                                                int num_iterations,
                                                bool do_geo,
@@ -69,8 +69,8 @@ public:
     \param do_save_to_file Whether to save the each iteration of the efficiencies, geo data and block data to file.
   */
   MLEstimateComponentBasedNormalisation(std::string out_filename_prefix,
-                                        const ProjData& measured_data,
-                                        const ProjData& model_data,
+                                        const std::shared_ptr<ProjData>& measured_data,
+                                        const std::shared_ptr<ProjData>& model_data,
                                         int num_eff_iterations,
                                         int num_iterations,
                                         bool do_geo,
@@ -84,6 +84,10 @@ public:
   \brief Run the normalisation estimation algorithm using the parameters provided in the constructor.
   */
   void process();
+
+  std::shared_ptr<DetectorEfficiencies> get_efficiencies() const;
+  std::shared_ptr<GeoData3D> get_geo_data() const;
+  std::shared_ptr<BlockData3D> get_block_data() const;
 
 private:
   /*!
@@ -137,9 +141,9 @@ private:
   //! The prefix for the output files
   std::string out_filename_prefix;
   //! The measured projection data
-  const ProjData& measured_projdata;
+  const std::shared_ptr<ProjData>& measured_projdata;
   //! The model projection data
-  const ProjData& model_projdata;
+  const std::shared_ptr<ProjData>& model_projdata;
   //! The number of (sub-)efficiency iterations to perform per iteration of the algorithm
   int num_eff_iterations;
   //! The number of algorithm iterations to perform
@@ -158,16 +162,18 @@ private:
   bool do_save_to_file;
 
   // Calculated variables
+  std::shared_ptr<DetectorEfficiencies> efficiencies_ptr;
+  std::shared_ptr<BlockData3D> norm_block_data_ptr;
+  std::shared_ptr<GeoData3D> norm_geo_data_ptr;
   //! The threshold for the Kullback-Leibler divergence calculation
   float threshold_for_KL;
   FanProjData model_fan_data;
   FanProjData fan_data;
   DetectorEfficiencies data_fan_sums;
-  DetectorEfficiencies efficiencies;
-  BlockData3D norm_block_data;
   BlockData3D measured_block_data;
-  GeoData3D norm_geo_data;
   GeoData3D measured_geo_data;
+
+  bool data_processed = false;
 
   // do_KL specific varaibles
   FanProjData measured_fan_data;

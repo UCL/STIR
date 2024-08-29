@@ -987,6 +987,10 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring, int& max_ring_diff, in
     {
       error("Can only process data without axial compression (i.e. span=1)\n");
     }
+  if (proj_data_info_ptr->is_tof_data())
+    {
+      error("make_fan_data: Incompatible with TOF data. Abort.");
+    }
   num_rings = proj_data_info.get_scanner_ptr()->get_num_rings();
   num_detectors_per_ring = proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
   const int half_fan_size = min(proj_data_info.get_max_tangential_pos_num(), -proj_data_info.get_min_tangential_pos_num());
@@ -1141,23 +1145,19 @@ make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data)
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-
-  if (proj_data.get_proj_data_info_sptr()->is_tof_data())
-    error("make_fan_data: Incompatible with TOF data. Abort.");
-
   const ProjDataInfo& proj_data_info = *proj_data.get_proj_data_info_sptr();
   get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, proj_data_info);
 
   if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
     {
-      auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&proj_data_info);
+      const auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&proj_data_info);
 
       make_fan_data_remove_gaps_help(
           fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
     }
   else
     {
-      auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&proj_data_info);
+      const auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&proj_data_info);
 
       make_fan_data_remove_gaps_help(
           fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
