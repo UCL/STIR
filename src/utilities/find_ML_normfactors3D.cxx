@@ -114,7 +114,8 @@ main(int argc, char** argv)
                                             do_block,
                                             do_symmetry_per_block,
                                             do_KL,
-                                            do_display);
+                                            do_display,
+                                            /*do_save_to_file*/ true);
 
   timer.stop();
   info(boost::format("CPU time %1% secs") % timer.value());

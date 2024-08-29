@@ -45,7 +45,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                           bool do_block,
                                           bool do_symmetry_per_block,
                                           bool do_KL,
-                                          bool do_display)
+                                          bool do_display,
+                                          bool do_save_to_file)
 {
   MLEstimateComponentBasedNormalisation estimator(out_filename_prefix,
                                                   measured_data,
@@ -56,7 +57,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                                   do_block,
                                                   do_symmetry_per_block,
                                                   do_KL,
-                                                  do_display);
+                                                  do_display,
+                                                  do_save_to_file);
   estimator.run();
 }
 
@@ -69,7 +71,8 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(con
                                                                              bool do_block,
                                                                              bool do_symmetry_per_block,
                                                                              bool do_KL,
-                                                                             bool do_display)
+                                                                             bool do_display,
+                                                                             bool do_save_to_file)
     : measured_data(measured_data),
       model_data(model_data),
       out_filename_prefix(out_filename_prefix),
@@ -79,7 +82,8 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(con
       do_block(do_block),
       do_symmetry_per_block(do_symmetry_per_block),
       do_KL(do_KL),
-      do_display(do_display)
+      do_display(do_display),
+      do_save_to_file(do_save_to_file)
 {
   const int num_transaxial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
   const int num_axial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks();
@@ -210,7 +214,10 @@ void
 MLEstimateComponentBasedNormalisation::efficiency_iteration(const int iter_num, const int eff_iter_num)
 {
   iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
-  write_efficiencies_to_file(iter_num, eff_iter_num, efficiencies);
+  if (do_save_to_file)
+    {
+      write_efficiencies_to_file(iter_num, eff_iter_num, efficiencies);
+    }
   if (do_KL)
     {
       apply_efficiencies(fan_data, efficiencies);
@@ -248,8 +255,10 @@ MLEstimateComponentBasedNormalisation::geo_normalization_iteration(int iter_num)
     {
       iterate_geo_norm(norm_geo_data, measured_geo_data, fan_data);
     }
-
-  write_geo_data_to_file(iter_num, norm_geo_data);
+  if (do_save_to_file)
+    {
+      write_geo_data_to_file(iter_num, norm_geo_data);
+    }
   if (do_KL)
     {
       apply_geo_norm(fan_data, norm_geo_data);
@@ -274,7 +283,10 @@ MLEstimateComponentBasedNormalisation::block_normalization_iteration(const int i
     {
       iterate_block_norm(norm_block_data, measured_block_data, fan_data);
     }
-  write_block_data_to_file(iter_num, norm_block_data);
+  if (do_save_to_file)
+    {
+      write_block_data_to_file(iter_num, norm_block_data);
+    }
   if (do_KL)
     {
       apply_block_norm(fan_data, norm_block_data);
@@ -330,7 +342,6 @@ MLEstimateComponentBasedNormalisation::run()
           make_fan_sum_data(fan_sums, fan_data);
           make_geo_data(geo_data, fan_data);
           make_block_data(block_data, measured_fan_data);
-
           info(boost::format("KL on fans: %1%, %2") % KL(measured_fan_data, fan_data, 0) % KL(measured_geo_data, geo_data, 0));
         }
     }

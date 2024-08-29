@@ -35,7 +35,8 @@ void ML_estimate_component_based_normalisation(const std::string& out_filename_p
                                                bool do_block,
                                                bool do_symmetry_per_block,
                                                bool do_KL,
-                                               bool do_display);
+                                               bool do_display,
+                                               bool do_save_to_file);
 
 class MLEstimateComponentBasedNormalisation
 {
@@ -49,7 +50,8 @@ public:
                                         bool do_block,
                                         bool do_symmetry_per_block,
                                         bool do_KL,
-                                        bool do_display);
+                                        bool do_display,
+                                        bool do_save_to_file);
 
   void run();
 
@@ -78,6 +80,7 @@ private:
   bool do_symmetry_per_block;
   bool do_KL;
   bool do_display;
+  bool do_save_to_file;
 
   // Calculated values
   float threshold_for_KL;
