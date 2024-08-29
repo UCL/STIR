@@ -60,39 +60,13 @@ private:
 
   void write_block_data_to_file(int iter_num, const BlockData3D& norm_block_data);
 
-  void compute_initial_data_dependent_factors(const FanProjData& model_fan_data,
-                                              FanProjData& measured_fan_data,
-                                              DetectorEfficiencies& data_fan_sums,
-                                              GeoData3D& measured_geo_data,
-                                              BlockData3D& measured_block_data);
+  void compute_initial_data_dependent_factors();
 
-  void efficiency_iteration(FanProjData& fan_data,
-                            const FanProjData& model_fan_data,
-                            const GeoData3D& norm_geo_data,
-                            const BlockData3D& norm_block_data,
-                            DetectorEfficiencies& efficiencies,
-                            const DetectorEfficiencies& data_fan_sums,
-                            int iter_num,
-                            int eff_iter_num,
-                            const FanProjData& measured_fan_data);
+  void efficiency_iteration(int iter_num, int eff_iter_num);
 
-  void geo_normalization_iteration(FanProjData& fan_data,
-                                   const FanProjData& model_fan_data,
-                                   const DetectorEfficiencies& efficiencies,
-                                   const BlockData3D& norm_block_data,
-                                   GeoData3D& norm_geo_data,
-                                   const GeoData3D& measured_geo_data,
-                                   int iter_num,
-                                   const FanProjData& measured_fan_data);
+  void geo_normalization_iteration(int iter_num);
 
-  void block_normalization_iteration(FanProjData& fan_data,
-                                     const FanProjData& model_fan_data,
-                                     const DetectorEfficiencies& efficiencies,
-                                     const GeoData3D& norm_geo_data,
-                                     BlockData3D& norm_block_data,
-                                     const BlockData3D& measured_block_data,
-                                     int iter_num,
-                                     const FanProjData& measured_fan_data);
+  void block_normalization_iteration(int iter_num);
   // Arguments
   std::string out_filename_prefix;
   const ProjData& measured_data;
@@ -107,6 +81,22 @@ private:
 
   // Calculated values
   float threshold_for_KL;
+
+  // Calculated data
+  FanProjData model_fan_data;
+  FanProjData fan_data;
+  DetectorEfficiencies data_fan_sums;
+  DetectorEfficiencies efficiencies;
+  BlockData3D norm_block_data;
+  BlockData3D measured_block_data;
+  GeoData3D norm_geo_data;
+  GeoData3D measured_geo_data;
+
+  // do_KL specific varaibles
+  FanProjData measured_fan_data;
+  DetectorEfficiencies fan_sums;
+  GeoData3D geo_data;
+  BlockData3D block_data;
 };
 
 END_NAMESPACE_STIR
