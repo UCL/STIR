@@ -66,8 +66,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 }
 
 MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(std::string out_filename_prefix,
-                                                                             const ProjData& measured_data,
-                                                                             const ProjData& model_data,
+                                                                             const ProjData& measured_projdata,
+                                                                             const ProjData& model_projdata,
                                                                              const int num_eff_iterations,
                                                                              const int num_iterations,
                                                                              const bool do_geo,
@@ -77,8 +77,8 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(std
                                                                              const bool do_display,
                                                                              const bool do_save_to_file)
     : out_filename_prefix(std::move(out_filename_prefix)),
-      measured_data(measured_data),
-      model_data(model_data),
+      measured_projdata(measured_projdata),
+      model_projdata(model_projdata),
       num_eff_iterations(num_eff_iterations),
       num_iterations(num_iterations),
       do_geo(do_geo),
@@ -88,29 +88,29 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(std
       do_display(do_display),
       do_save_to_file(do_save_to_file)
 {
-  const int num_transaxial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
-  const int num_axial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks();
+  const int num_transaxial_blocks = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
+  const int num_axial_blocks = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks();
   const int virtual_axial_crystals
-      = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_axial_crystals_per_block();
+      = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_axial_crystals_per_block();
   const int virtual_transaxial_crystals
-      = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
-  const int num_physical_rings = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings()
+      = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
+  const int num_physical_rings = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings()
                                  - (num_axial_blocks - 1) * virtual_axial_crystals;
   const int num_physical_detectors_per_ring
-      = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring()
+      = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring()
         - num_transaxial_blocks * virtual_transaxial_crystals;
-  const int num_transaxial_buckets = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_buckets();
-  const int num_axial_buckets = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_buckets();
+  const int num_transaxial_buckets = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_buckets();
+  const int num_axial_buckets = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_buckets();
   const int num_transaxial_blocks_per_bucket
-      = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks_per_bucket();
+      = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks_per_bucket();
   const int num_axial_blocks_per_bucket
-      = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks_per_bucket();
+      = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks_per_bucket();
 
   int num_physical_transaxial_crystals_per_basic_unit
-      = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_crystals_per_block()
+      = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_crystals_per_block()
         - virtual_transaxial_crystals;
   int num_physical_axial_crystals_per_basic_unit
-      = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_crystals_per_block() - virtual_axial_crystals;
+      = measured_projdata.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_crystals_per_block() - virtual_axial_crystals;
   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
   if (do_symmetry_per_block == false)
     {
@@ -140,8 +140,8 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(std
   measured_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
   norm_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
-  make_fan_data_remove_gaps(model_fan_data, model_data);
-  make_fan_data_remove_gaps(measured_fan_data, measured_data);
+  make_fan_data_remove_gaps(model_fan_data, model_projdata);
+  make_fan_data_remove_gaps(measured_fan_data, measured_projdata);
 
   threshold_for_KL = compute_threshold_for_KL();
 
@@ -164,8 +164,11 @@ void
 MLEstimateComponentBasedNormalisation::process()
 {
   if (do_display)
-    display(model_fan_data, "model");
+    {
+      display(model_fan_data, "model");
+    }
 
+  // Initialize the efficiencies, geo data and block data to 1
   efficiencies.fill(sqrt(data_fan_sums.sum() / model_fan_data.sum()));
   norm_geo_data.fill(1);
   norm_block_data.fill(1);

@@ -137,9 +137,9 @@ private:
   //! The prefix for the output files
   std::string out_filename_prefix;
   //! The measured projection data
-  const ProjData& measured_data;
+  const ProjData& measured_projdata;
   //! The model projection data
-  const ProjData& model_data;
+  const ProjData& model_projdata;
   //! The number of (sub-)efficiency iterations to perform per iteration of the algorithm
   int num_eff_iterations;
   //! The number of algorithm iterations to perform
