@@ -22,18 +22,13 @@
  \author Robert Twyman Skelly
  */
 #include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
-
 #include "stir/ML_norm.h"
 #include "stir/Scanner.h"
-#include "stir/stream.h"
 #include "stir/display.h"
 #include "stir/info.h"
-#include "stir/warning.h"
 #include "stir/ProjData.h"
-#include <boost/format.hpp>
-#include <fstream>
+
 #include <string>
-#include <algorithm>
 #include <utility>
 
 START_NAMESPACE_STIR
@@ -65,66 +60,62 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
   estimator.process();
 }
 
-MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(std::string out_filename_prefix,
-                                                                             const std::shared_ptr<ProjData>& measured_projdata_sptr,
-                                                                             const std::shared_ptr<ProjData>& model_projdata_sptr,
-                                                                             const int num_eff_iterations,
-                                                                             const int num_iterations,
-                                                                             const bool do_geo,
-                                                                             const bool do_block,
-                                                                             const bool do_symmetry_per_block,
-                                                                             const bool do_KL,
-                                                                             const bool do_display,
-                                                                             const bool do_save_to_file)
-    : out_filename_prefix(std::move(out_filename_prefix)),
-      measured_projdata(measured_projdata_sptr),
-      model_projdata(model_projdata_sptr),
-      num_eff_iterations(num_eff_iterations),
-      num_iterations(num_iterations),
-      do_geo(do_geo),
-      do_block(do_block),
-      do_symmetry_per_block(do_symmetry_per_block),
-      do_KL(do_KL),
-      do_display(do_display),
-      do_save_to_file(do_save_to_file)
+MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(
+    std::string out_filename_prefix_v,
+    const std::shared_ptr<ProjData>& measured_projdata_sptr_v,
+    const std::shared_ptr<ProjData>& model_projdata_sptr_v,
+    const int num_eff_iterations_v,
+    const int num_iterations_v,
+    const bool do_geo_v,
+    const bool do_block_v,
+    const bool do_symmetry_per_block_v,
+    const bool do_KL_v,
+    const bool do_display_v,
+    const bool do_save_to_file_v)
+    : out_filename_prefix(std::move(out_filename_prefix_v)),
+      measured_projdata(measured_projdata_sptr_v),
+      model_projdata(model_projdata_sptr_v),
+      num_eff_iterations(num_eff_iterations_v),
+      num_iterations(num_iterations_v),
+      do_geo(do_geo_v),
+      do_block(do_block_v),
+      do_symmetry_per_block(do_symmetry_per_block_v),
+      do_KL(do_KL_v),
+      do_display(do_display_v),
+      do_save_to_file(do_save_to_file_v)
 {
-  const int num_transaxial_blocks = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
-  const int num_axial_blocks = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks();
+  const int num_transaxial_blocks
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
+  const int num_axial_blocks = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks();
   const int virtual_axial_crystals
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_axial_crystals_per_block();
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_axial_crystals_per_block();
   const int virtual_transaxial_crystals
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
-  const int num_physical_rings = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings()
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_virtual_transaxial_crystals_per_block();
+  const int num_physical_rings = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings()
                                  - (num_axial_blocks - 1) * virtual_axial_crystals;
   const int num_physical_detectors_per_ring
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring()
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_detectors_per_ring()
         - num_transaxial_blocks * virtual_transaxial_crystals;
   const int num_transaxial_buckets
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_buckets();
-  const int num_axial_buckets = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_buckets();
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_buckets();
+  const int num_axial_buckets = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_buckets();
   const int num_transaxial_blocks_per_bucket
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks_per_bucket();
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks_per_bucket();
   const int num_axial_blocks_per_bucket
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks_per_bucket();
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks_per_bucket();
 
   int num_physical_transaxial_crystals_per_basic_unit
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_crystals_per_block()
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_crystals_per_block()
         - virtual_transaxial_crystals;
   int num_physical_axial_crystals_per_basic_unit
-      = measured_projdata_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_crystals_per_block()
+      = measured_projdata_sptr_v->get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_crystals_per_block()
         - virtual_axial_crystals;
 
   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
   if (do_symmetry_per_block == false)
     {
-      if (num_transaxial_buckets > 1)
-        {
-          num_physical_transaxial_crystals_per_basic_unit *= num_transaxial_blocks_per_bucket;
-        }
-      if (num_axial_buckets > 1)
-        {
-          num_physical_axial_crystals_per_basic_unit *= num_axial_blocks_per_bucket;
-        }
+      num_physical_transaxial_crystals_per_basic_unit *= num_transaxial_blocks_per_bucket;
+      num_physical_axial_crystals_per_basic_unit *= num_axial_blocks_per_bucket;
     }
 
   // Setup the data structures given the PET scanner geometry
@@ -144,8 +135,8 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(std
   norm_block_data_ptr
       = std::make_shared<BlockData3D>(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
-  make_fan_data_remove_gaps(model_fan_data, *model_projdata_sptr);
-  make_fan_data_remove_gaps(measured_fan_data, *measured_projdata_sptr);
+  make_fan_data_remove_gaps(model_fan_data, *model_projdata_sptr_v);
+  make_fan_data_remove_gaps(measured_fan_data, *measured_projdata_sptr_v);
 
   threshold_for_KL = compute_threshold_for_KL();
 

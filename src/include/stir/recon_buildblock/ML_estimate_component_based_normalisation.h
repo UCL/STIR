@@ -12,6 +12,7 @@
  \ingroup recon_buildblock
  \brief Declaration of stir::ML_estimate_component_based_normalisation
  \author Kris Thielemans
+ \author Robert Twyman Skelly
  */
 #include "stir/common.h"
 #include <string>
@@ -59,34 +60,37 @@ public:
     \param out_filename_prefix The prefix for the output files
     \param measured_data The measured projection data
     \param model_data The model projection data
-    \param num_eff_iterations The number of (sub-)efficiency iterations to perform per iteration of the algorithm
-    \param num_iterations The number of algorithm iterations to perform
-    \param do_geo Whether to perform geo normalization calculations
-    \param do_block Whether to perform block normalization calculations
-    \param do_symmetry_per_block Whether to perform block normalization calculations with symmetry
-    \param do_KL Whether to perform Kullback-Leibler divergence calculations and display the KL value. This can be slow.
-    \param do_display Whether to display the progress of the algorithm.
-    \param do_save_to_file Whether to save the each iteration of the efficiencies, geo data and block data to file.
+    \param num_eff_iterations_v The number of (sub-)efficiency iterations to perform per iteration of the algorithm
+    \param num_iterations_v The number of algorithm iterations to perform
+    \param do_geo_v Whether to perform geo normalization calculations
+    \param do_block_v Whether to perform block normalization calculations
+    \param do_symmetry_per_block_v Whether to perform block normalization calculations with symmetry
+    \param do_KL_v Whether to perform Kullback-Leibler divergence calculations and display the KL value. This can be slow.
+    \param do_display_v Whether to display the progress of the algorithm.
+    \param do_save_to_file_v Whether to save the each iteration of the efficiencies, geo data and block data to file.
   */
   MLEstimateComponentBasedNormalisation(std::string out_filename_prefix,
                                         const std::shared_ptr<ProjData>& measured_data,
                                         const std::shared_ptr<ProjData>& model_data,
-                                        int num_eff_iterations,
-                                        int num_iterations,
-                                        bool do_geo,
-                                        bool do_block,
-                                        bool do_symmetry_per_block,
-                                        bool do_KL,
-                                        bool do_display,
-                                        bool do_save_to_file);
+                                        int num_eff_iterations_v,
+                                        int num_iterations_v,
+                                        bool do_geo_v,
+                                        bool do_block_v,
+                                        bool do_symmetry_per_block_v,
+                                        bool do_KL_v,
+                                        bool do_display_v,
+                                        bool do_save_to_file_v);
 
   /*!
   \brief Run the normalisation estimation algorithm using the parameters provided in the constructor.
   */
   void process();
 
+  //! Get the efficiencies, nullptr if not calculated
   std::shared_ptr<DetectorEfficiencies> get_efficiencies() const;
+  //! Get the geo data, nullptr if not calculated
   std::shared_ptr<GeoData3D> get_geo_data() const;
+  //! Get the block data, nullptr if not calculated
   std::shared_ptr<BlockData3D> get_block_data() const;
 
 private:
