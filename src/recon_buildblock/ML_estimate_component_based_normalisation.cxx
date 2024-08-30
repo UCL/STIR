@@ -3,7 +3,7 @@
     Copyright (C) 2019-2020, 2022, University College London
     Copyright (C) 2016-2017, PETsys Electronics
     Copyright (C) 2021, Gefei Chen
-    Copyright (C) 2024
+    Copyright (C) 2024, Robert Twyman Skelly
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
