@@ -20,6 +20,7 @@
 #ifndef __stir_recon_buildblock_BinNormalisationPETFromComponents_H__
 #define __stir_recon_buildblock_BinNormalisationPETFromComponents_H__
 
+#include "ML_estimate_component_based_normalisation.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/ML_norm.h"
 #include "stir/ProjData.h"
@@ -125,6 +126,8 @@ public:
   /*! They are currently probably set to 0, but do not rely on this. */
   void
   allocate(shared_ptr<const ProjDataInfo>, bool do_eff, bool do_geo, bool do_block = false, bool do_symmetry_per_block = false);
+
+  void allocate(shared_ptr<const ProjDataInfo> pdi_sptr, MLEstimateComponentBasedNormalisation &normalization_estimator);
 
   DetectorEfficiencies& crystal_efficiencies()
   {

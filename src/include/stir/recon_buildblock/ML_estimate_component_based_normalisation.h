@@ -86,6 +86,9 @@ public:
   */
   void process();
 
+  //! Check if the data has been processed
+  bool has_processed_data() const;
+
   //! Get the efficiencies, nullptr if not calculated
   std::shared_ptr<DetectorEfficiencies> get_efficiencies() const;
   //! Get the geo data, nullptr if not calculated
