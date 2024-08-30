@@ -27,7 +27,7 @@
 #include "stir/display.h"
 #include "stir/info.h"
 #include "stir/ProjData.h"
-
+#include "stir/stream.h"
 #include <string>
 #include <utility>
 
