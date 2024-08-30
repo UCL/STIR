@@ -123,11 +123,11 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(
   measured_geo_data = GeoData3D(num_physical_axial_crystals_per_basic_unit,
                                 num_physical_transaxial_crystals_per_basic_unit / 2,
                                 num_physical_rings,
-                                num_physical_detectors_per_ring); // inputes have to be modified
+                                num_physical_detectors_per_ring);
   norm_geo_data_ptr = std::make_shared<GeoData3D>(num_physical_axial_crystals_per_basic_unit,
                                                   num_physical_transaxial_crystals_per_basic_unit / 2,
                                                   num_physical_rings,
-                                                  num_physical_detectors_per_ring); // inputes have to be modified
+                                                  num_physical_detectors_per_ring);
 
   measured_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
   norm_block_data_ptr
@@ -151,7 +151,7 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(
   geo_data = GeoData3D(num_physical_axial_crystals_per_basic_unit,
                        num_physical_transaxial_crystals_per_basic_unit / 2,
                        num_physical_rings,
-                       num_physical_detectors_per_ring); // inputes have to be modified
+                       num_physical_detectors_per_ring);
   block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 }
 
@@ -186,17 +186,15 @@ MLEstimateComponentBasedNormalisation::process()
 
       if (do_geo)
         {
-          // geo norm iteration
           geo_normalization_iteration(iter_num); // Calculate geo norm iteration
         }
       if (do_block)
         {
-          // block norm iteration
           block_normalization_iteration(iter_num); // Calculate block norm iteration
         }
-      //// print KL for fansums
       if (do_KL)
         {
+          // print KL for fansums
           make_fan_sum_data(fan_sums, fan_data);
           make_geo_data(geo_data, fan_data);
           make_block_data(block_data, measured_fan_data);
