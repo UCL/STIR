@@ -37,8 +37,8 @@ START_NAMESPACE_STIR
         \param do_save_to_file Whether to save the each iteration of the efficiencies, geo data and block data to file.
 */
 void ML_estimate_component_based_normalisation(const std::string& out_filename_prefix,
-                                               const std::shared_ptr<ProjData>& measured_data,
-                                               const std::shared_ptr<ProjData>& model_data,
+                                               const ProjData& measured_projdata,
+                                               const ProjData& model_projdata,
                                                int num_eff_iterations,
                                                int num_iterations,
                                                bool do_geo,
@@ -70,8 +70,8 @@ public:
     \param do_save_to_file_v Whether to save the each iteration of the efficiencies, geo data and block data to file.
   */
   MLEstimateComponentBasedNormalisation(std::string out_filename_prefix,
-                                        const std::shared_ptr<ProjData>& measured_data,
-                                        const std::shared_ptr<ProjData>& model_data,
+                                        const ProjData& measured_data_v,
+                                        const ProjData& model_data_v,
                                         int num_eff_iterations_v,
                                         int num_iterations_v,
                                         bool do_geo_v,
@@ -144,10 +144,6 @@ private:
   // Constructor parameters
   //! The prefix for the output files
   std::string out_filename_prefix;
-  //! The measured projection data
-  const std::shared_ptr<ProjData>& measured_projdata;
-  //! The model projection data
-  const std::shared_ptr<ProjData>& model_projdata;
   //! The number of (sub-)efficiency iterations to perform per iteration of the algorithm
   int num_eff_iterations;
   //! The number of algorithm iterations to perform

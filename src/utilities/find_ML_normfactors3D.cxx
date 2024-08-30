@@ -106,8 +106,8 @@ main(int argc, char** argv)
   timer.start();
 
   ML_estimate_component_based_normalisation(out_filename_prefix,
-                                            measured_data,
-                                            model_data,
+                                            *measured_data,
+                                            *model_data,
                                             num_eff_iterations,
                                             num_iterations,
                                             do_geo,
