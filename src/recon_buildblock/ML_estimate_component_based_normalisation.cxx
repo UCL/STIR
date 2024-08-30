@@ -201,7 +201,7 @@ MLEstimateComponentBasedNormalisation::process()
           make_fan_sum_data(fan_sums, fan_data);
           make_geo_data(geo_data, fan_data);
           make_block_data(block_data, measured_fan_data);
-          info(boost::format("KL on fans: %1%, %2") % KL(measured_fan_data, fan_data, 0) % KL(measured_geo_data, geo_data, 0));
+          info(boost::format("KL on fans: %1%, %2%") % KL(measured_fan_data, fan_data, 0) % KL(measured_geo_data, geo_data, 0));
         }
     }
 }
