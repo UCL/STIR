@@ -182,7 +182,6 @@ class ProjDataVisualisationWidgetGallery(QDialog):
                 f"TOF bin: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)}")
             ax.yaxis.set_label_text("Views/projection angle")
             ax.xaxis.set_label_text("Tangential positions")
-            ax.xaxis.set_label_text("TOF bins")
         elif self.viewgram_radio_button.isChecked():
             image = self.get_viewgram_numpy_array()
             ax.title.set_text(
@@ -191,7 +190,6 @@ class ProjDataVisualisationWidgetGallery(QDialog):
                 f"TOF bin: {self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)}")
             ax.yaxis.set_label_text("Axial positions")
             ax.xaxis.set_label_text("Tangential positions")
-            ax.xaxis.set_label_text("TOF bins")
         else:
             msg = f"Error: No radio button is checked... How did you get here?\n"
             raise Exception(msg)
