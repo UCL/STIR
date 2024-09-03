@@ -60,8 +60,8 @@ public:
   /*!
    \brief Constructor
     \param out_filename_prefix The prefix for the output files
-    \param measured_data The measured projection data
-    \param model_data The model projection data
+    \param measured_data_v The measured projection data
+    \param model_data_v The model projection data
     \param num_eff_iterations_v The number of (sub-)efficiency iterations to perform per iteration of the algorithm
     \param num_iterations_v The number of algorithm iterations to perform
     \param do_geo_v Whether to perform geo normalization calculations
@@ -98,6 +98,7 @@ public:
   //! Get the block data, requires process() to be called first and do_block to be true
   BlockData3D get_block_data() const;
 
+  //! Construct a BinNormalisationPETFromComponents from the calculated efficiencies, geo data and block data
   BinNormalisationPETFromComponents construct_bin_normfactors_from_components() const;
 
 private:
@@ -168,13 +169,17 @@ private:
   //! Whether to save the each iteration of the efficiencies, geo data and block data to file.
   bool do_save_to_file;
 
-  // The projdata info of the measured data
+  //! The projdata info of the measured data
   std::shared_ptr<const ProjDataInfo> projdata_info;
 
   // Calculated variables
+  //! The efficiencies calculated by the algorithm
   DetectorEfficiencies norm_efficiencies;
+  //! The geo data calculated by the algorithm, if do_geo is true
   BlockData3D norm_block_data;
+  //! The block data calculated by the algorithm, if do_block is true
   GeoData3D norm_geo_data;
+
   //! The threshold for the Kullback-Leibler divergence calculation
   float threshold_for_KL;
   FanProjData model_fan_data;
