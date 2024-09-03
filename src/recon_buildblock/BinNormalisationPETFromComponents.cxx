@@ -173,20 +173,6 @@ BinNormalisationPETFromComponents::allocate(
 
   this->_already_allocated = true;
 }
-void
-BinNormalisationPETFromComponents::allocate(shared_ptr<const ProjDataInfo> pdi_sptr, MLEstimateComponentBasedNormalisation& normalization_estimator)
-{
-  if (!normalization_estimator.has_processed_data())
-    {
-      error("BinNormalisationPETFromComponents: internal error: allocate called on MLEstimateComponentBasedNormalisation "
-            "without it having processed the data");
-    }
-  this->proj_data_info_sptr = pdi_sptr;
-  this->efficiencies = *normalization_estimator.get_efficiencies();
-  this->geo_data = *normalization_estimator.get_geo_data();
-  this->block_data = *normalization_estimator.get_block_data();
-  this->_already_allocated = true;
-}
 
 void
 BinNormalisationPETFromComponents::create_proj_data()
