@@ -126,15 +126,33 @@ public:
   void
   allocate(shared_ptr<const ProjDataInfo>, bool do_eff, bool do_geo, bool do_block = false, bool do_symmetry_per_block = false);
 
-  DetectorEfficiencies& crystal_efficiencies()
+
+  void set_crystal_efficiencies(const DetectorEfficiencies& eff)
+  {
+    efficiencies = eff;
+  }
+
+  DetectorEfficiencies& get_crystal_efficiencies()
   {
     return efficiencies;
   }
-  GeoData3D& geometric_factors()
+
+  void set_geometric_factors(const GeoData3D& geo)
+  {
+    geo_data = geo;
+  }
+
+  GeoData3D& get_geometric_factors()
   {
     return geo_data;
   }
-  BlockData3D& block_factors()
+
+  void set_block_factors(const BlockData3D& block)
+  {
+    block_data = block;
+  }
+
+  BlockData3D& get_block_factors()
   {
     return block_data;
   }

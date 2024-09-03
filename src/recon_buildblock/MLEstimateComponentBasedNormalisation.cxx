@@ -82,6 +82,7 @@ MLEstimateComponentBasedNormalisation::MLEstimateComponentBasedNormalisation(
       do_display(do_display_v),
       do_save_to_file(do_save_to_file_v)
 {
+  projdata_info = measured_projdata_v.get_proj_data_info_sptr();
   const int num_transaxial_blocks
       = measured_projdata_v.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
   const int num_axial_blocks = measured_projdata_v.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_axial_blocks();
@@ -237,6 +238,27 @@ MLEstimateComponentBasedNormalisation::get_block_data() const
       return nullptr;
     }
   return norm_block_data_ptr;
+}
+
+BinNormalisationPETFromComponents
+MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components() const
+{
+  if (!data_processed)
+    {
+      error("MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components: data has not been processed yet");
+    }
+  auto bin_norm = BinNormalisationPETFromComponents();
+  bin_norm.allocate(projdata_info, true, do_geo, do_block, do_symmetry_per_block);
+  bin_norm.set_crystal_efficiencies(*efficiencies_ptr);
+  if (do_geo)
+    {
+      bin_norm.set_geometric_factors(*norm_geo_data_ptr);
+    }
+  if (do_block)
+    {
+      bin_norm.set_block_factors(*norm_block_data_ptr);
+    }
+  return bin_norm;
 }
 
 void

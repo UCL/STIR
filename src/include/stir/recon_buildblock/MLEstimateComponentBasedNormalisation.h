@@ -14,10 +14,12 @@
  \author Kris Thielemans
  \author Robert Twyman Skelly
  */
+#include "BinNormalisationPETFromComponents.h"
 #include "stir/common.h"
 #include <string>
 #include "stir/ProjData.h"
 #include "stir/ML_norm.h"
+#include "stir/ProjDataInMemory.h"
 
 START_NAMESPACE_STIR
 
@@ -96,6 +98,8 @@ public:
   //! Get the block data, nullptr if not calculated
   std::shared_ptr<BlockData3D> get_block_data() const;
 
+  BinNormalisationPETFromComponents construct_bin_normfactors_from_components() const;
+
 private:
   /*!
    \brief Performs an efficiency iteration to update the efficiancies from the data_fan_sums and model.
@@ -163,6 +167,9 @@ private:
   bool do_display;
   //! Whether to save the each iteration of the efficiencies, geo data and block data to file.
   bool do_save_to_file;
+
+  // The projdata info of the measured data
+  std::shared_ptr<const ProjDataInfo> projdata_info;
 
   // Calculated variables
   std::shared_ptr<DetectorEfficiencies> efficiencies_ptr;
