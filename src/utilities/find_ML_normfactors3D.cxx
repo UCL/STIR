@@ -17,7 +17,7 @@
  Just a wrapper around ML_estimate_component_based_normalisation
  \author Kris Thielemans
  */
-#include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
+#include "stir/recon_buildblock/MLEstimateComponentBasedNormalisation.h"
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
 #include "stir/ProjData.h"

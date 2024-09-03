@@ -20,7 +20,7 @@
 #ifndef __stir_recon_buildblock_BinNormalisationPETFromComponents_H__
 #define __stir_recon_buildblock_BinNormalisationPETFromComponents_H__
 
-#include "ML_estimate_component_based_normalisation.h"
+#include "MLEstimateComponentBasedNormalisation.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/ML_norm.h"
 #include "stir/ProjData.h"
@@ -35,7 +35,7 @@ START_NAMESPACE_STIR
   Components currently supported are crystal efficiencies, geometric factors
   (constrained by symmetry) and block data. The latter were introduced to
   cope with timing alignment issues between blocks, but are generally
-  not recommended in the current estimation process (by ML_estimate_component_based_normalisation)
+  not recommended in the current estimation process (by MLEstimateComponentBasedNormalisation)
   as the model allows for too much freedom.
 
   The detection efficiency of a crystal pair is modelled as

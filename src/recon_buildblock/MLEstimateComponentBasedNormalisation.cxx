@@ -21,7 +21,7 @@
  \author Gefei Chen
  \author Robert Twyman Skelly
  */
-#include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
+#include "stir/recon_buildblock/MLEstimateComponentBasedNormalisation.h"
 #include "stir/ML_norm.h"
 #include "stir/Scanner.h"
 #include "stir/display.h"
