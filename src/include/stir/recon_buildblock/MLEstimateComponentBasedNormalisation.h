@@ -91,12 +91,12 @@ public:
   //! Check if the data has been processed
   bool has_processed_data() const;
 
-  //! Get the efficiencies, nullptr if not calculated
-  std::shared_ptr<DetectorEfficiencies> get_efficiencies() const;
-  //! Get the geo data, nullptr if not calculated
-  std::shared_ptr<GeoData3D> get_geo_data() const;
-  //! Get the block data, nullptr if not calculated
-  std::shared_ptr<BlockData3D> get_block_data() const;
+  //! Get the efficiencies, requires process() to be called first
+  DetectorEfficiencies get_efficiencies() const;
+  //! Get the geo data, requires process() to be called first and do_geo to be true
+  GeoData3D get_geo_data() const;
+  //! Get the block data, requires process() to be called first and do_block to be true
+  BlockData3D get_block_data() const;
 
   BinNormalisationPETFromComponents construct_bin_normfactors_from_components() const;
 
@@ -172,9 +172,9 @@ private:
   std::shared_ptr<const ProjDataInfo> projdata_info;
 
   // Calculated variables
-  std::shared_ptr<DetectorEfficiencies> efficiencies_ptr;
-  std::shared_ptr<BlockData3D> norm_block_data_ptr;
-  std::shared_ptr<GeoData3D> norm_geo_data_ptr;
+  DetectorEfficiencies norm_efficiencies;
+  BlockData3D norm_block_data;
+  GeoData3D norm_geo_data;
   //! The threshold for the Kullback-Leibler divergence calculation
   float threshold_for_KL;
   FanProjData model_fan_data;
