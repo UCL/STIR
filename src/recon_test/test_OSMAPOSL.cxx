@@ -14,6 +14,7 @@
 
 #include "stir/recon_buildblock/test/PoissonLLReconstructionTests.h"
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include <exception>
 
 START_NAMESPACE_STIR
 
@@ -88,7 +89,7 @@ TestOSMAPOSL::run_tests()
           // we shouldn't get here
           everything_ok = false;
         }
-      catch (...)
+      catch (std::runtime_error&)
         {}
     }
 }

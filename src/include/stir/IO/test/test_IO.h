@@ -43,6 +43,7 @@
 #  include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
 #endif
 #include <fstream>
+#include <exception>
 
 START_NAMESPACE_STIR
 
@@ -299,6 +300,11 @@ IOTests<A>::run_tests()
       if (!everything_ok)
         return;
       std::cerr << "OK!\n";
+    }
+  catch (std::exception& e)
+    {
+      std::cerr << "\\Error thrown:\n\t" << e.what() << "\n\n";
+      everything_ok = false;
     }
   catch (...)
     {

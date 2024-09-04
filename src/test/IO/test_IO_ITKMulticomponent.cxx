@@ -69,6 +69,11 @@ IOTests_ITKMulticomponent::run_tests()
       check_if_equal<float>(voxels_coords->get_voxel_size()[2], 4.0625F);
       check_if_equal<float>(voxels_coords->get_voxel_size()[3], 4.0625F);
     }
+  catch (const std::exception& error)
+    {
+      std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
+      everything_ok = false;
+    }
   catch (...)
     {
       everything_ok = false;

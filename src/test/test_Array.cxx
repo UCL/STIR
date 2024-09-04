@@ -494,7 +494,7 @@ ArrayTests::run_tests()
           {
             t2.at(-4).at(3);
           }
-        catch (...)
+        catch (std::out_of_range&)
           {
             exception_thrown = true;
           }
