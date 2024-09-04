@@ -59,9 +59,9 @@ class MLEstimateComponentBasedNormalisation
 public:
   /*!
    \brief Constructor
-    \param out_filename_prefix The prefix for the output files
-    \param measured_data_v The measured projection data
-    \param model_data_v The model projection data
+    \param out_filename_prefix_v The prefix for the output files
+    \param measured_projdata_v The measured projection data
+    \param model_projdata_v The model projection data
     \param num_eff_iterations_v The number of (sub-)efficiency iterations to perform per iteration of the algorithm
     \param num_iterations_v The number of algorithm iterations to perform
     \param do_geo_v Whether to perform geo normalization calculations
@@ -71,9 +71,9 @@ public:
     \param do_display_v Whether to display the progress of the algorithm.
     \param do_save_to_file_v Whether to save the each iteration of the efficiencies, geo data and block data to file.
   */
-  MLEstimateComponentBasedNormalisation(std::string out_filename_prefix,
-                                        const ProjData& measured_data_v,
-                                        const ProjData& model_data_v,
+  MLEstimateComponentBasedNormalisation(std::string out_filename_prefix_v,
+                                        const ProjData& measured_projdata_v,
+                                        const ProjData& model_projdata_v,
                                         int num_eff_iterations_v,
                                         int num_iterations_v,
                                         bool do_geo_v,
