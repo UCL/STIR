@@ -165,6 +165,7 @@ public:
     DiscoveryMI3ring,
     DiscoveryMI4ring,
     DiscoveryMI5ring,
+    DiscoveryMI6ring,
     HZLR,
     RATPET,
     PANDA,
