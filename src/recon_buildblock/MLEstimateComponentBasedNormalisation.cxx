@@ -82,6 +82,11 @@ MLEstimateComponentBasedNormalisation(std::string out_filename_prefix_v,
       do_display(do_display_v),
       do_save_to_file(do_save_to_file_v)
 {
+  if (measured_projdata_v.get_proj_data_info_sptr() != model_projdata_v.get_proj_data_info_sptr())
+    {
+      error("MLEstimateComponentBasedNormalisation: measured and model data have different ProjDataInfo");
+    }
+
   projdata_info = measured_projdata_v.get_proj_data_info_sptr();
   const int num_transaxial_blocks
       = measured_projdata_v.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
