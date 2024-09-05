@@ -71,6 +71,8 @@ install_manifest.txt
 build/
 install/
 .vscode/
+build_safir_updates/
+.gitignore
 
 # MATLAB
 
