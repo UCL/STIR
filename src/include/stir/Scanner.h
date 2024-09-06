@@ -83,6 +83,11 @@ class Succeeded;
           while others (such as CTI scanners) give only singles for a
           collection of blocks. A \c singles_unit is then a set of crystals
           for which we can get singles rates.
+    \li \c If the user set number for TOF positions to 1 and a bin size equal to the
+          coincidence window then the reconstruction will essential be nonTOF but the
+            projector will restrict the size of the LOR to the size of the coincidence window.
+      \li \c The scanner will be classified as TOF enabled when the numer of TOF bins and
+TOF bin size are  >1 and >0, respectively. If the timing resolution is not set, we will attempt to handle this if the number TOF positions is 1 (the projector will then just use the bin-size to restrict the size of the LOR).
 
       A further complication is that some scanners (including many Siemens scanners)
       insert virtual crystals in the sinogram data (corresponding to gaps between
@@ -169,6 +174,8 @@ public:
     HZLR,
     RATPET,
     PANDA,
+    PSMR_3rings_scanner,
+    PSMR_3rings_scanner_TOF,
     HYPERimage,
     nanoPET,
     HRRT,

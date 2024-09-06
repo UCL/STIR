@@ -28,10 +28,15 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/ProjData.h"
+#include "stir/num_threads.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include "stir/IO/read_data.h"
+#include "stir/FilePath.h"
+#include <iostream>
+#include <fstream>
 
 START_NAMESPACE_STIR
 
@@ -45,7 +50,10 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                           bool do_block,
                                           bool do_symmetry_per_block,
                                           bool do_KL,
-                                          bool do_display)
+                                          bool do_display,
+                                          bool use_lm_cache,
+                                          bool use_model_fan_data,
+                                          std::string model_fansums_filename)
 {
 
   const int num_transaxial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
@@ -86,6 +94,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
   FanProjData model_fan_data;
   FanProjData fan_data;
+  info("Allocating memory ...", 3);
   DetectorEfficiencies data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
   DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
@@ -93,44 +102,111 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                               num_physical_transaxial_crystals_per_basic_unit / 2,
                               num_physical_rings,
                               num_physical_detectors_per_ring); // inputes have to be modified
+
   GeoData3D norm_geo_data(num_physical_axial_crystals_per_basic_unit,
                           num_physical_transaxial_crystals_per_basic_unit / 2,
                           num_physical_rings,
                           num_physical_detectors_per_ring); // inputes have to be modified
 
-  BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
-  BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+  BlockData3D measured_block_data;
+  BlockData3D norm_block_data;
 
-  make_fan_data_remove_gaps(model_fan_data, model_data);
+  if (do_block)
+    {
+      measured_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+      norm_block_data = BlockData3D(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+    }
+
+  if (!use_model_fan_data)
+    make_fan_data_remove_gaps(model_fan_data, model_data);
+  else
+    {
+      load_fan_data(model_fan_data, model_data, model_fansums_filename);
+    }
+
+  double model_fan_data_sum = 0.f;
+
+  {
+    std::vector<shared_ptr<float>> local_model_fan_data_sum;
+    const int num_threads = std::min(50, get_default_num_threads());
+
+    local_model_fan_data_sum.resize(num_threads, shared_ptr<float>());
+    for (int i = 0; i < num_threads; i++)
+      local_model_fan_data_sum[i].reset(new float(0.0));
+
+#ifdef STIR_OPENMP
+#  pragma omp parallel for schedule(dynamic) num_threads(num_threads)
+#endif
+    for (int i = 0; i < model_fan_data.size(); i++)
+      {
+#ifdef STIR_OPENMP
+        const int thread_num = omp_get_thread_num();
+#else
+        const int thread_num = 0;
+#endif
+        *local_model_fan_data_sum[thread_num] += model_fan_data[i].sum();
+      }
+
+    for (int i = 0; i < local_model_fan_data_sum.size(); ++i)
+      model_fan_data_sum += *local_model_fan_data_sum[i];
+
+    local_model_fan_data_sum.clear();
+    info("Model sum of fan data: " + std::to_string(model_fan_data_sum), 3);
+  }
   {
     // next could be local if KL is not computed below
     FanProjData measured_fan_data;
     float threshold_for_KL;
+    double data_fan_sum = 0;
     // compute factors dependent on the data
     {
-      make_fan_data_remove_gaps(measured_fan_data, measured_data);
 
-      /* TEMP FIX */
-      for (int ra = model_fan_data.get_min_ra(); ra <= model_fan_data.get_max_ra(); ++ra)
+      if (!use_lm_cache)
         {
-          for (int a = model_fan_data.get_min_a(); a <= model_fan_data.get_max_a(); ++a)
+          make_fan_data_remove_gaps(measured_fan_data, measured_data);
+
+          /* TEMP FIX */
+          for (int ra = model_fan_data.get_min_ra(); ra <= model_fan_data.get_max_ra(); ++ra)
             {
-              for (int rb = std::max(ra, model_fan_data.get_min_rb(ra)); rb <= model_fan_data.get_max_rb(ra); ++rb)
+              for (int a = model_fan_data.get_min_a(); a <= model_fan_data.get_max_a(); ++a)
                 {
-                  for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)
-                    if (model_fan_data(ra, a, rb, b) == 0)
-                      measured_fan_data(ra, a, rb, b) = 0;
+                  for (int rb = std::max(ra, model_fan_data.get_min_rb(ra)); rb <= model_fan_data.get_max_rb(ra); ++rb)
+                    {
+                      for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)
+                        if (model_fan_data(ra, a, rb, b) == 0)
+                          measured_fan_data(ra, a, rb, b) = 0;
+                    }
                 }
             }
+
+          threshold_for_KL = measured_fan_data.find_max() / 100000.F;
+          // display(measured_fan_data, "measured data");
+
+          make_fan_sum_data(data_fan_sums, measured_fan_data);
+          make_geo_data(measured_geo_data, measured_fan_data);
+          if (do_block)
+            make_block_data(measured_block_data, measured_fan_data);
+
+          data_fan_sum = data_fan_sums.sum();
         }
+      else // Use LM cache to make all data, not blocks for now.
+        {
+          // TODO: The TEMP fix is not applied. So until then, keep the model source slightly bigger than the actual measuremnts
+          // to avoid divisions by zero.
+          data_fan_sum = make_all_fan_data_from_cache(measured_fan_data, measured_data, model_fan_data);
+          float dd = data_fan_sums.find_max();
+          info("Data fan sum max: " + std::to_string(dd), 3);
+          threshold_for_KL =dd / 100000000.F;
 
-      threshold_for_KL = measured_fan_data.find_max() / 100000.F;
-      // display(measured_fan_data, "measured data");
+          info("1. Making fan sum data .. ", 3);
+          make_fan_sum_data(data_fan_sums, measured_fan_data);
+          info("fan sum data min/max " + std::to_string(data_fan_sums.find_min()) + "/" + std::to_string(data_fan_sums.find_max()), 3);
 
-      make_fan_sum_data(data_fan_sums, measured_fan_data);
-      make_geo_data(measured_geo_data, measured_fan_data);
-      make_block_data(measured_block_data, measured_fan_data);
-      if (do_display)
+          info("2. Making fan geo data .. ", 3);
+          make_geo_data(measured_geo_data, measured_fan_data);
+           info("measured_geo_data min/max " + std::to_string(measured_geo_data.find_min()) + "/" + std::to_string(measured_geo_data.find_max()), 3);;
+        }
+      if (do_display && do_block)
         display(measured_block_data, "raw block data from measurements");
 
       /* {
@@ -159,22 +235,34 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 
     for (int iter_num = 1; iter_num <= std::max(num_iterations, 1); ++iter_num)
       {
+        std::cout << "Iteration number: " << iter_num << std::endl;
         if (iter_num == 1)
           {
-            efficiencies.fill(sqrt(data_fan_sums.sum() / model_fan_data.sum()));
+            info("Calculating sums om fan_data ...", 3);
+            float value = sqrt(data_fan_sum / model_fan_data_sum);
+            info("Ratio: " + std::to_string(value), 3);
+            efficiencies.fill(value);
             norm_geo_data.fill(1);
             norm_block_data.fill(1);
           }
         // efficiencies
         {
+          info("Copying model to fan_data...", 3);
           fan_data = model_fan_data;
+          info("Applying geo norm...", 3);
           apply_geo_norm(fan_data, norm_geo_data);
-          apply_block_norm(fan_data, norm_block_data);
+          if (do_block)
+            {
+              info("Applying block norm...", 3);
+              apply_block_norm(fan_data, norm_block_data);
+            }
           if (do_display)
             display(fan_data, "model*geo*block");
           for (int eff_iter_num = 1; eff_iter_num <= num_eff_iterations; ++eff_iter_num)
             {
+              info("Efficiency iteration number: " + std::to_string(iter_num), 3);
               iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
+              info("Finished efficiency iteration", 3);
               {
                 char* out_filename = new char[out_filename_prefix.size() + 30];
                 sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
@@ -184,6 +272,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
               }
               if (do_KL)
                 {
+                  info("Calculating KL", 3);
                   apply_efficiencies(fan_data, efficiencies);
                   std::cerr << "measured*norm min " << measured_fan_data.find_min() << " ,max " << measured_fan_data.find_max()
                             << std::endl;
@@ -194,7 +283,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                   // now restore for further iterations
                   fan_data = model_fan_data;
                   apply_geo_norm(fan_data, norm_geo_data);
-                  apply_block_norm(fan_data, norm_block_data);
+                  if (do_block)
+                    apply_block_norm(fan_data, norm_block_data);
                 }
               if (do_display)
                 {
@@ -204,16 +294,18 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                   // now restore for further iterations
                   fan_data = model_fan_data;
                   apply_geo_norm(fan_data, norm_geo_data);
-                  apply_block_norm(fan_data, norm_block_data);
+                  if (do_block)
+                    apply_block_norm(fan_data, norm_block_data);
                 }
             }
         } // end efficiencies
 
-        // geo norm
-
+        info("Starting geo norm", 3);
+        info("Copying model to fan_data...", 3);
         fan_data = model_fan_data;
         apply_efficiencies(fan_data, efficiencies);
-        apply_block_norm(fan_data, norm_block_data);
+        if (do_block)
+          apply_block_norm(fan_data, norm_block_data);
 
         if (do_geo)
           iterate_geo_norm(norm_geo_data, measured_geo_data, fan_data);
@@ -248,13 +340,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             display(fan_data, "geo norm");
           }
 
-        // block norm
+        if(do_block) //norm
         {
           fan_data = model_fan_data;
           apply_efficiencies(fan_data, efficiencies);
           apply_geo_norm(fan_data, norm_geo_data);
           if (do_block)
-            iterate_block_norm(norm_block_data, measured_block_data, fan_data);
+            {
+              iterate_block_norm(norm_block_data, measured_block_data, fan_data);
 #if 0
                  { // check
                  for (int a=0; a<measured_block_data.get_length(); ++a)
@@ -264,6 +357,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                  a,b,measured_block_data[a][b]);
                  }
 #endif
+            }
           {
             char* out_filename = new char[out_filename_prefix.size() + 30];
             sprintf(out_filename, "%s_%s_%d.out", out_filename_prefix.c_str(), "block", iter_num);
@@ -271,12 +365,12 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             out << norm_block_data;
             delete[] out_filename;
           }
-          if (do_KL)
+          if (do_KL && do_block)
             {
               apply_block_norm(fan_data, norm_block_data);
               info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
             }
-          if (do_display)
+          if (do_display && do_block)
             {
               fan_data.fill(1);
               apply_block_norm(fan_data, norm_block_data);
@@ -293,11 +387,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                                num_physical_transaxial_crystals_per_basic_unit / 2,
                                num_physical_rings,
                                num_physical_detectors_per_ring); // inputes have to be modified
-            BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
             make_fan_sum_data(fan_sums, fan_data);
             make_geo_data(geo_data, fan_data);
-            make_block_data(block_data, measured_fan_data);
+            if (do_block)
+              {
+                BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
+                make_block_data(block_data, measured_fan_data);
+              }
 
             info(boost::format("KL on fans: %1%, %2") % KL(measured_fan_data, fan_data, 0) % KL(measured_geo_data, geo_data, 0));
           }
