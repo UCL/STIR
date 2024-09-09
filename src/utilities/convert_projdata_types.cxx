@@ -28,7 +28,7 @@
 #include "stir/GeometryBlocksOnCylindrical.h"
 #include "stir/DetectionPosition.h"
 #include "stir/CartesianCoordinate3D.h"
-#include "stir/listmode/DetectorCoordinateMapFromFile.h"
+#include "stir/DetectorCoordinateMap.h"
 #include <boost/make_shared.hpp>
 #include "stir/CPUTimer.h"
 #include "stir/shared_ptr.h"
