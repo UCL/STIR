@@ -78,8 +78,8 @@ int main(int argc, char **argv)
   {
     // const ProjDataInfoCylindrical * const in_projdata_info_cyl_ptr =
       // dynamic_cast<ProjDataInfoCylindrical const * >(in_projdata_ptr->get_proj_data_info_sptr());
-    auto proj_data_info_ptr->get_proj_data_info_sptr();
-    auto in_projdata_info_cyl_ptr = dynamic_cast<ProjDataInfoCylindrical const * >(proj_data_info_ptr.get())
+    auto proj_data_info_ptr = in_projdata_ptr->get_proj_data_info_sptr();
+    auto in_projdata_info_cyl_ptr = dynamic_cast<ProjDataInfoCylindrical const * >(proj_data_info_ptr.get());
     
     if (in_projdata_info_cyl_ptr== NULL)
       {
@@ -135,8 +135,8 @@ int main(int argc, char **argv)
   {
     // const ProjDataInfoBlocksOnCylindrical * const in_projdata_info_blk_ptr =
     //   dynamic_cast<ProjDataInfoBlocksOnCylindrical const * >(in_projdata_ptr->get_proj_data_info_sptr());
-    auto proj_data_info_ptr->get_proj_data_info_sptr();
-    auto in_projdata_info_blk_ptr = dynamic_cast<ProjDataInfoBlocksOnCylindrical const * >(proj_data_info_ptr.get())
+    auto proj_data_info_ptr = in_projdata_ptr->get_proj_data_info_sptr();
+    auto in_projdata_info_blk_ptr = dynamic_cast<ProjDataInfoBlocksOnCylindrical const * >(proj_data_info_ptr.get());
     if (in_projdata_info_blk_ptr== NULL)
       {
         error("error converting to BlocksOnCylindrical projection data\n");
@@ -193,8 +193,8 @@ int main(int argc, char **argv)
   {
     // const ProjDataInfoGeneric * const in_projdata_info_gen_ptr =
     //   dynamic_cast<ProjDataInfoGeneric const * >(in_projdata_ptr->get_proj_data_info_sptr());
-    auto proj_data_info_ptr->get_proj_data_info_sptr();
-    auto in_projdata_info_gen_ptr = dynamic_cast<ProjDataInfoGeneric const * >(proj_data_info_ptr.get())
+    auto proj_data_info_ptr = in_projdata_ptr->get_proj_data_info_sptr();
+    auto in_projdata_info_gen_ptr = dynamic_cast<ProjDataInfoGeneric const * >(proj_data_info_ptr.get());
     if (in_projdata_info_gen_ptr== NULL)
       {
         error("error converting to Generic projection data\n");
