@@ -76,8 +76,11 @@ int main(int argc, char **argv)
   if (in_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() ==
       "Cylindrical")
   {
-    const ProjDataInfoCylindrical * const in_projdata_info_cyl_ptr =
-      dynamic_cast<ProjDataInfoCylindrical const * >(in_projdata_ptr->get_proj_data_info_sptr());
+    // const ProjDataInfoCylindrical * const in_projdata_info_cyl_ptr =
+      // dynamic_cast<ProjDataInfoCylindrical const * >(in_projdata_ptr->get_proj_data_info_sptr());
+    auto proj_data_info_ptr->get_proj_data_info_sptr();
+    auto in_projdata_info_cyl_ptr = dynamic_cast<ProjDataInfoCylindrical const * >(proj_data_info_ptr.get())
+    
     if (in_projdata_info_cyl_ptr== NULL)
       {
         error("error converting to cylindrical projection data\n");
@@ -130,8 +133,10 @@ int main(int argc, char **argv)
   else if (in_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() ==
             "BlocksOnCylindrical")
   {
-    const ProjDataInfoBlocksOnCylindrical * const in_projdata_info_blk_ptr =
-      dynamic_cast<ProjDataInfoBlocksOnCylindrical const * >(in_projdata_ptr->get_proj_data_info_sptr());
+    // const ProjDataInfoBlocksOnCylindrical * const in_projdata_info_blk_ptr =
+    //   dynamic_cast<ProjDataInfoBlocksOnCylindrical const * >(in_projdata_ptr->get_proj_data_info_sptr());
+    auto proj_data_info_ptr->get_proj_data_info_sptr();
+    auto in_projdata_info_blk_ptr = dynamic_cast<ProjDataInfoBlocksOnCylindrical const * >(proj_data_info_ptr.get())
     if (in_projdata_info_blk_ptr== NULL)
       {
         error("error converting to BlocksOnCylindrical projection data\n");
@@ -186,8 +191,10 @@ int main(int argc, char **argv)
   else if (in_projdata_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() ==
             "Generic")
   {
-    const ProjDataInfoGeneric * const in_projdata_info_gen_ptr =
-      dynamic_cast<ProjDataInfoGeneric const * >(in_projdata_ptr->get_proj_data_info_sptr());
+    // const ProjDataInfoGeneric * const in_projdata_info_gen_ptr =
+    //   dynamic_cast<ProjDataInfoGeneric const * >(in_projdata_ptr->get_proj_data_info_sptr());
+    auto proj_data_info_ptr->get_proj_data_info_sptr();
+    auto in_projdata_info_gen_ptr = dynamic_cast<ProjDataInfoGeneric const * >(proj_data_info_ptr.get())
     if (in_projdata_info_gen_ptr== NULL)
       {
         error("error converting to Generic projection data\n");
