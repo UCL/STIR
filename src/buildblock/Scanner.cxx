@@ -1120,7 +1120,7 @@ Scanner::Scanner(Type scanner_type)
                  150,   // max_num_non_arccorrected_bins_v,
                  150,   // default_num_arccorrected_bins_v,
                  180,   // num_detectors_per_ring_v
-                 64.05, //  inner_ring_radius_v
+                 64.05, // inner_ring_radius_v
                  5,     // average_depth_of_interaction_v
                  2.2,   // ring_spacing_v
                  1.1,   // bin_size_v
@@ -1134,16 +1134,80 @@ Scanner::Scanner(Type scanner_type)
                  1,     // num_detector_layers_v
                  -1,    // energy_resolution_v
                  -1,    // reference_energy_v
-                 (short int)1,
-                 0.F,
-                 0.F,                   // non-TOF
-                 "BlocksOnCylindrical", // scanner_geometry_v
-                 2.2,                   // axial_crystal_spacing_v
-                 2.2,                   // transaxial_crystal_spacing_v
-                 18.1,                  // axial_block_spacing_v
-                 33.6,                  // transaxial_block_spacing_v
-                 ""                     // crystal_map_file_name_v
+                 (short int)1, // max_num_of_timing_poss_v,
+                 0.F,   // size_timing_pos_v,
+                 0.F,   // timing_resolution_v,
+                 "",    // scanner_geometry_v
+                 2.2,   // axial_crystal_spacing_v
+                 2.2,   // transaxial_crystal_spacing_v
+                 18.1,  // axial_block_spacing_v
+                 33.6,  // transaxial_block_spacing_v
+                 ""     // crystal_map_file_name_v
       );
+      break;
+
+    case SafirI:
+      set_params(SafirI, string_list("SafirI"),
+               24,    // num_rings_v
+               150,   // max_num_non_arccorrected_bins_v,
+               150,   // default_num_arccorrected_bins_v,
+               180,   // num_detectors_per_ring_v
+               64.05, // inner_ring_radius_v
+               5,     // average_depth_of_interaction_v
+               2.2,   // ring_spacing_v
+               1.1,   // bin_size_v
+               0,     // intrinsic_tilt_v
+               3,     // num_axial_blocks_per_bucket_v
+               1,     // num_transaxial_blocks_per_bucket_v
+               8,     // num_axial_crystals_per_block_v
+               15,    // num_transaxial_crystals_per_block_v
+               1,     // num_axial_crystals_per_singles_unit_v
+               1,     // num_transaxial_crystals_per_singles_unit_v
+               1,     // num_detector_layers_v
+               0.12,  // energy_resolution_v
+               511,   // reference_energy_v
+               (short int)1, //max_num_of_timing_poss_v,
+               0.F,   // size_timing_pos_v,
+               0.F,   // timing_resolution_v,
+               "",    // scanner_geometry_v
+               2.2,   // axial_crystal_spacing_v
+               2.2,   // transaxial_crystal_spacing_v
+               18.1,  // axial_block_spacing_v
+               33.6,  // transaxial_block_spacing_v
+               ""     // crystal_map_file_name_v
+              );
+      break;
+
+    case SafirII:
+      set_params(SafirII, string_list("SafirII"),
+               64,    // num_rings_v
+               150,   // max_num_non_arccorrected_bins_v,
+               150,   // default_num_arccorrected_bins_v,
+               180,   // num_detectors_per_ring_v
+               64.05, // inner_ring_radius_v
+               5,     // average_depth_of_interaction_v
+               2.2,   // ring_spacing_v
+               1.1,   // bin_size_v
+               0,     // intrinsic_tilt_v
+               8,     // num_axial_blocks_per_bucket_v
+               1,     // num_transaxial_blocks_per_bucket_v
+               8,     // num_axial_crystals_per_block_v
+               15,    // num_transaxial_crystals_per_block_v
+               1,     // num_axial_crystals_per_singles_unit_v
+               1,     // num_transaxial_crystals_per_singles_unit_v
+               1,     // num_detector_layers_v
+               0.12,  // energy_resolution_v
+               511,   // reference_energy_v
+               (short int)1, // max_num_of_timing_poss_v,
+               0.F,   // size_timing_pos_v,
+               0.F,   // timing_resolution_v,
+               "",    // scanner_geometry_v
+               2.2,   // axial_crystal_spacing_v
+               2.2,   // transaxial_crystal_spacing_v
+               18.1,  // axial_block_spacing_v
+               33.6,  // transaxial_block_spacing_v
+               ""     // crystal_map_file_name_v
+              );
       break;
 
     case UPENN_5rings:
