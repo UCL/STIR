@@ -350,6 +350,18 @@ ProjDataInMemory::ProjDataInMemory(const ProjDataInMemory& proj_data)
   std::copy(proj_data.begin_all(), proj_data.end_all(), this->begin_all());
 }
 
+shared_ptr<ProjDataInMemory>
+ProjDataInMemory::read_from_file(const std::string& filename, const std::ios::openmode openmode)
+{
+#if 1
+  const auto proj_data = ProjData::read_from_file(filename, openmode);
+  return std::make_shared<ProjDataInMemory>(*proj_data);
+#else
+  // Alternative implementation
+  return std::make_shared<ProjDataInMemory>(*ProjData::read_from_file(filename, openmode));
+#endif
+}
+
 float
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
