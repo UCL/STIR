@@ -36,7 +36,7 @@ public:
   void run_tests() override
   {
 
-    const auto scanner = std::make_shared<Scanner>(*Scanner::get_scanner_from_name("ECAT EXACT"));
+    const auto scanner = std::make_shared<Scanner>(*Scanner::get_scanner_from_name("Discovery 690"));
     const auto exam_info = std::make_shared<ExamInfo>(ImagingModality::PT);
     exam_info->patient_position = PatientPosition(PatientPosition::HFS);
 
