@@ -89,18 +89,15 @@ public:
     // Compute the projdata
     ProjDataInMemory normalization_projdata(*measured_projdata);
     normalization_projdata.fill(1.F);
-
     bin_normalization.apply(normalization_projdata);
-    check_if_less(
-        normalization_projdata.find_max(), 2.f * 1.1f, "The max value of the normalization projdata is greater than expected");
-    check_if_less(
-        2.f * 0.9f, normalization_projdata.find_max(), "The max value of the normalization projdata is less than expected");
-    check_if_less(
-        normalization_projdata.find_min(), 2.f * 1.1f, "The min value of the normalization projdata is greater than expected");
-    check_if_less(
-        2.f * 0.9f, normalization_projdata.find_min(), "The min value of the normalization projdata is less than expected");
 
-    // ASSERT_EQ()
+    // Check the normalization factors, with measured data as uniform 1s and model data as uniform 2s, expect this to be 2.0f
+    check_if_less(
+        normalization_projdata.find_max(), 2.2f, "The max value of the normalization projdata is greater than expected");
+    check_if_less(1.8f, normalization_projdata.find_max(), "The max value of the normalization projdata is less than expected");
+    check_if_less(
+        normalization_projdata.find_min(), 2.2f, "The min value of the normalization projdata is greater than expected");
+    check_if_less(1.8f, normalization_projdata.find_min(), "The min value of the normalization projdata is less than expected");
   }
 };
 END_NAMESPACE_STIR
