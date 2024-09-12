@@ -351,9 +351,9 @@ ProjDataInMemory::ProjDataInMemory(const ProjDataInMemory& proj_data)
 }
 
 shared_ptr<ProjDataInMemory>
-ProjDataInMemory::read_from_file(const std::string& filename, const std::ios::openmode openmode)
+ProjDataInMemory::read_from_file(const std::string& filename)
 {
-  return std::make_shared<ProjDataInMemory>(*ProjData::read_from_file(filename, openmode));
+  return std::make_shared<ProjDataInMemory>(*ProjData::read_from_file(filename));
 }
 
 float

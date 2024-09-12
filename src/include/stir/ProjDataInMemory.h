@@ -63,7 +63,7 @@ public:
   ProjDataInMemory(const ProjDataInMemory& proj_data);
 
   //! A static member to get the projection data in memory from a file
-  static shared_ptr<ProjDataInMemory> read_from_file(const std::string& filename, std::ios::openmode open_mode = std::ios::in);
+  static shared_ptr<ProjDataInMemory> read_from_file(const std::string& filename);
 
   Viewgram<float> get_viewgram(const int view_num,
                                const int segment_num,
