@@ -151,7 +151,7 @@ MLEstimateComponentBasedNormalisation(std::string out_filename_prefix_v,
       display(measured_block_data, "raw block data from measurements");
     }
 
-  // Compute the do_KL specific varaibles from the measured data
+  // Compute the do_KL specific variables from the measured data
   fan_sums = DetectorEfficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
   geo_data = GeoData3D(num_physical_axial_crystals_per_basic_unit,
                        num_physical_transaxial_crystals_per_basic_unit / 2,
@@ -280,56 +280,56 @@ MLEstimateComponentBasedNormalisation::set_output_filename_prefix(const std::str
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_num_eff_iterations(int num_eff_iterations)
+MLEstimateComponentBasedNormalisation::set_num_eff_iterations(const int num_eff_iterations)
 {
   data_processed = false;
   this->num_eff_iterations = num_eff_iterations;
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_num_iterations(int num_iterations)
+MLEstimateComponentBasedNormalisation::set_num_iterations(const int num_iterations)
 {
   data_processed = false;
   this->num_iterations = num_iterations;
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_enable_geo_norm_calculation(bool do_geo)
+MLEstimateComponentBasedNormalisation::set_enable_geo_norm_calculation(const bool do_geo)
 {
   data_processed = false;
   this->do_geo = do_geo;
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_enable_block_norm_calculation(bool do_block)
+MLEstimateComponentBasedNormalisation::set_enable_block_norm_calculation(const bool do_block)
 {
   data_processed = false;
   this->do_block = do_block;
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_enable_symmetry_per_block(bool do_symmetry_per_block)
+MLEstimateComponentBasedNormalisation::set_enable_symmetry_per_block(const bool do_symmetry_per_block)
 {
   data_processed = false;
   this->do_symmetry_per_block = do_symmetry_per_block;
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_do_kl_calculation(bool do_kl)
+MLEstimateComponentBasedNormalisation::set_do_kl_calculation(const bool do_kl)
 {
   data_processed = false;
   do_KL = do_kl;
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_write_display_data(bool do_display)
+MLEstimateComponentBasedNormalisation::set_write_display_data(const bool do_display)
 {
   data_processed = false;
   this->do_display = do_display;
 }
 
 void
-MLEstimateComponentBasedNormalisation::set_write_intermediates_to_file(bool do_save_to_file)
+MLEstimateComponentBasedNormalisation::set_write_intermediates_to_file(const bool do_save_to_file)
 {
   data_processed = false;
   this->do_save_to_file = do_save_to_file;
@@ -369,7 +369,7 @@ MLEstimateComponentBasedNormalisation::efficiency_iteration(const int iter_num, 
 }
 
 void
-MLEstimateComponentBasedNormalisation::geo_normalization_iteration(int iter_num)
+MLEstimateComponentBasedNormalisation::geo_normalization_iteration(const int iter_num)
 {
 
   fan_data = model_fan_data;                       // Reset fan_data to model_data
