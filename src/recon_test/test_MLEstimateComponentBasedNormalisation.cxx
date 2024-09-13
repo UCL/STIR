@@ -8,7 +8,8 @@ Copyright (C) 2024, Robert Twyman skelly
   \file
   \ingroup recon_test
   \brief Test program to ensure MLEstimateComponentBasedNormalisation works as expected and
-         produces the correct normalization factors from components
+         produces the correct normalization factors from components.
+         This is a very basic test that ensure the basic functionality.
   \author Robert Twyman Skelly
 */
 
@@ -33,9 +34,15 @@ public:
 
   ~MLEstimateComponentBasedNormalisationTest() override = default;
 
-  void run_tests() override
-  {
+  void run_tests() override { test_normalization_calculation_with_efficiencies(); }
 
+  /*! Runs a test to check the normalization calculation with efficiencies only.
+   * Uses two uniform projdata sets, one with 1s and the other with 2s to estimate the normalization factors.
+   * The efficiencies are then checked to ensure they are within the expected range.
+   * The normalization factors are then computed from PET components and applied to a uniform projdata set.
+   */
+  void test_normalization_calculation_with_efficiencies()
+  {
     const auto scanner = std::make_shared<Scanner>(*Scanner::get_scanner_from_name("Discovery 690"));
     const auto exam_info = std::make_shared<ExamInfo>(ImagingModality::PT);
     exam_info->patient_position = PatientPosition(PatientPosition::HFS);
