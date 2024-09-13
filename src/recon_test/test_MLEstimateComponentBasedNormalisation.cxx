@@ -92,12 +92,11 @@ public:
     bin_normalization.apply(normalization_projdata);
 
     // Check the normalization factors, with measured data as uniform 1s and model data as uniform 2s, expect this to be 2.0f
-    check_if_less(
-        normalization_projdata.find_max(), 2.2f, "The max value of the normalization projdata is greater than expected");
-    check_if_less(1.8f, normalization_projdata.find_max(), "The max value of the normalization projdata is less than expected");
-    check_if_less(
-        normalization_projdata.find_min(), 2.2f, "The min value of the normalization projdata is greater than expected");
-    check_if_less(1.8f, normalization_projdata.find_min(), "The min value of the normalization projdata is less than expected");
+    const auto prev_tolerance = get_tolerance();
+    set_tolerance(1e-3);
+    check_if_equal(normalization_projdata.find_max(), 2.f, "The max value of the normalization projdata is not 2.0");
+    check_if_equal(normalization_projdata.find_min(), 2.f, "The min value of the normalization projdata is not 0.0");
+    set_tolerance(prev_tolerance);
   }
 };
 END_NAMESPACE_STIR
