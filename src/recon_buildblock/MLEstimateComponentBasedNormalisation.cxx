@@ -209,7 +209,7 @@ MLEstimateComponentBasedNormalisation::process()
   data_processed = true;
 }
 bool
-MLEstimateComponentBasedNormalisation::has_processed_data() const
+MLEstimateComponentBasedNormalisation::data_is_processed() const
 {
   return data_processed;
 }
@@ -217,7 +217,7 @@ MLEstimateComponentBasedNormalisation::has_processed_data() const
 DetectorEfficiencies
 MLEstimateComponentBasedNormalisation::get_efficiencies() const
 {
-  if (!data_processed)
+  if (!this->data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::get_efficiencies: data has not been processed yet");
     }
@@ -227,7 +227,7 @@ MLEstimateComponentBasedNormalisation::get_efficiencies() const
 GeoData3D
 MLEstimateComponentBasedNormalisation::get_geo_data() const
 {
-  if (!data_processed)
+  if (!this->data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::get_geo_data: data has not been processed yet");
     }
@@ -241,7 +241,7 @@ MLEstimateComponentBasedNormalisation::get_geo_data() const
 BlockData3D
 MLEstimateComponentBasedNormalisation::get_block_data() const
 {
-  if (!data_processed)
+  if (!this->data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::get_block_data: data has not been processed yet");
     }
@@ -255,7 +255,7 @@ MLEstimateComponentBasedNormalisation::get_block_data() const
 BinNormalisationPETFromComponents
 MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components() const
 {
-  if (!data_processed)
+  if (!this->data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components: data has not been processed yet");
     }

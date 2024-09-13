@@ -89,7 +89,7 @@ public:
   void process();
 
   //! Check if the data has been processed
-  bool has_processed_data() const;
+  bool data_is_processed() const;
 
   //! Get the efficiencies, requires process() to be called first
   DetectorEfficiencies get_efficiencies() const;
@@ -188,6 +188,7 @@ private:
   BlockData3D measured_block_data;
   GeoData3D measured_geo_data;
 
+  //! Boolean to check if the data has been processed, see has_data_been_processed()
   bool data_processed = false;
 
   // do_KL specific varaibles
