@@ -89,7 +89,7 @@ public:
   void process();
 
   //! Check if the data has been processed
-  bool data_is_processed() const;
+  bool get_data_is_processed() const;
 
   //! Get the efficiencies, requires process() to be called first
   DetectorEfficiencies get_efficiencies() const;
@@ -99,7 +99,121 @@ public:
   BlockData3D get_block_data() const;
 
   //! Construct a BinNormalisationPETFromComponents from the calculated efficiencies, geo data and block data
-  BinNormalisationPETFromComponents construct_bin_normfactors_from_components() const;
+  BinNormalisationPETFromComponents construct_bin_norm_from_pet_components() const;
+
+  /*!
+  \brief Get the output filename prefix.
+  \return The output filename prefix.
+  */
+  std::string get_output_filename_prefix() const { return out_filename_prefix; }
+
+  /*!
+    \brief Set the output filename prefix.
+    \param out_filename_prefix The new output filename prefix.
+  */
+  void set_output_filename_prefix(const std::string& out_filename_prefix);
+
+  /*!
+    \brief Get the number of efficiency iterations.
+    There are the inner iterations of the algorithm, num_eff_iterations are performed per iteration.
+    \return The number of efficiency iterations.
+  */
+  int get_num_eff_iterations() const { return num_eff_iterations; }
+
+  /*!
+    \brief Set the number of efficiency iterations.
+    There are the inner iterations of the algorithm, num_eff_iterations are performed per iteration.
+    \param num_eff_iterations The new number of efficiency iterations.
+  */
+  void set_num_eff_iterations(int num_eff_iterations);
+
+  /*!
+    \brief Get the number of iterations.
+    These are the outer iterations of the algorithm.
+    \return The number of iterations.
+  */
+  int get_num_iterations() const { return num_iterations; }
+
+  /*!
+    \brief Set the number of iterations.
+    These are the outer iterations of the algorithm.
+    \param num_iterations The new number of iterations.
+  */
+  void set_num_iterations(int num_iterations);
+
+  /*!
+    \brief Check if geo normalization is enabled.
+    \return True if geo normalization is enabled, false otherwise.
+  */
+  bool get_enable_geo_norm_calculation() const { return do_geo; }
+
+  /*!
+    \brief Enable or disable geo normalization.
+    \param do_geo True to enable geo normalization, false to disable.
+  */
+  void set_enable_geo_norm_calculation(bool do_geo);
+
+  /*!
+    \brief Check if block normalization is enabled.
+    \return True if block normalization is enabled, false otherwise.
+  */
+  bool get_enable_block_norm_calculation() const { return do_block; }
+
+  /*!
+    \brief Enable or disable block normalization.
+    \param do_block True to enable block normalization, false to disable.
+  */
+  void set_enable_block_norm_calculation(bool do_block);
+
+  /*!
+    \brief Check if symmetry per block is enabled.
+    \return True if symmetry per block is enabled, false otherwise.
+  */
+  bool get_enable_symmetry_per_block() const { return do_symmetry_per_block; }
+
+  /*!
+    \brief Enable or disable symmetry per block.
+    \param do_symmetry_per_block True to enable symmetry per block, false to disable.
+  */
+  void set_enable_symmetry_per_block(bool do_symmetry_per_block);
+
+  /*!
+    \brief Check if KL divergence calculation is enabled.
+    This does not impact the calculation of the normalisation factors, only the display of the KL value.
+    \return True if KL divergence calculation is enabled, false otherwise.
+  */
+  bool get_do_kl_calculation() const { return do_KL; }
+
+  /*!
+    \brief Enable or disable KL divergence calculation.
+    This does not impact the calculation of the normalisation factors, it only prints the KL value to console.
+    \param do_kl True to enable KL divergence calculation, false to disable.
+  */
+  void set_do_kl_calculation(bool do_kl);
+
+  /*!
+    \brief Check if display is enabled.
+    \return True if display is enabled, false otherwise.
+  */
+  bool get_write_display_data() const { return do_display; }
+
+  /*!
+    \brief Enable or disable display.
+    \param do_display True to enable display, false to disable.
+  */
+  void set_write_display_data(bool do_display);
+
+  /*!
+    \brief Check if saving to file is enabled.
+    \return True if saving to file is enabled, false otherwise.
+  */
+  bool get_write_intermediates_to_file() const { return do_save_to_file; }
+
+  /*!
+    \brief Enable or disable saving to file.
+    \param do_save_to_file True to enable saving to file, false to disable.
+  */
+  void set_write_intermediates_to_file(bool do_save_to_file);
 
 private:
   /*!
@@ -166,7 +280,8 @@ private:
   bool do_KL;
   //! Whether to display the progress of the algorithm.
   bool do_display;
-  //! Whether to save the each iteration of the efficiencies, geo data and block data to file.
+  //! Whether to save each iteration of the efficiencies, geo data and block data to file.
+  //! This will only work if the out_filename_prefix is set.
   bool do_save_to_file;
 
   //! The projdata info of the measured data

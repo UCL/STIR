@@ -209,7 +209,7 @@ MLEstimateComponentBasedNormalisation::process()
   data_processed = true;
 }
 bool
-MLEstimateComponentBasedNormalisation::data_is_processed() const
+MLEstimateComponentBasedNormalisation::get_data_is_processed() const
 {
   return data_processed;
 }
@@ -217,7 +217,7 @@ MLEstimateComponentBasedNormalisation::data_is_processed() const
 DetectorEfficiencies
 MLEstimateComponentBasedNormalisation::get_efficiencies() const
 {
-  if (!this->data_is_processed())
+  if (!this->get_data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::get_efficiencies: data has not been processed yet");
     }
@@ -227,7 +227,7 @@ MLEstimateComponentBasedNormalisation::get_efficiencies() const
 GeoData3D
 MLEstimateComponentBasedNormalisation::get_geo_data() const
 {
-  if (!this->data_is_processed())
+  if (!this->get_data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::get_geo_data: data has not been processed yet");
     }
@@ -241,7 +241,7 @@ MLEstimateComponentBasedNormalisation::get_geo_data() const
 BlockData3D
 MLEstimateComponentBasedNormalisation::get_block_data() const
 {
-  if (!this->data_is_processed())
+  if (!this->get_data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::get_block_data: data has not been processed yet");
     }
@@ -253,9 +253,9 @@ MLEstimateComponentBasedNormalisation::get_block_data() const
 }
 
 BinNormalisationPETFromComponents
-MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components() const
+MLEstimateComponentBasedNormalisation::construct_bin_norm_from_pet_components() const
 {
-  if (!this->data_is_processed())
+  if (!this->get_data_is_processed())
     {
       error("MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components: data has not been processed yet");
     }
@@ -271,6 +271,68 @@ MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components
       bin_norm.set_block_factors(norm_block_data);
     }
   return bin_norm;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_output_filename_prefix(const std::string& out_filename_prefix)
+{
+  this->out_filename_prefix = out_filename_prefix;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_num_eff_iterations(int num_eff_iterations)
+{
+  data_processed = false;
+  this->num_eff_iterations = num_eff_iterations;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_num_iterations(int num_iterations)
+{
+  data_processed = false;
+  this->num_iterations = num_iterations;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_enable_geo_norm_calculation(bool do_geo)
+{
+  data_processed = false;
+  this->do_geo = do_geo;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_enable_block_norm_calculation(bool do_block)
+{
+  data_processed = false;
+  this->do_block = do_block;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_enable_symmetry_per_block(bool do_symmetry_per_block)
+{
+  data_processed = false;
+  this->do_symmetry_per_block = do_symmetry_per_block;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_do_kl_calculation(bool do_kl)
+{
+  data_processed = false;
+  do_KL = do_kl;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_write_display_data(bool do_display)
+{
+  data_processed = false;
+  this->do_display = do_display;
+}
+
+void
+MLEstimateComponentBasedNormalisation::set_write_intermediates_to_file(bool do_save_to_file)
+{
+  data_processed = false;
+  this->do_save_to_file = do_save_to_file;
 }
 
 void

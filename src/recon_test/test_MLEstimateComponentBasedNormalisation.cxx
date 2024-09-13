@@ -90,7 +90,7 @@ public:
     check_if_less(efficiencies.find_min(), 0.75, "The min value of the efficiencies is greater than expected");
     check_if_less(0.65, efficiencies.find_min(), "The min value of the efficiencies is less than expected");
 
-    auto bin_normalization = ml_estimator.construct_bin_normfactors_from_components();
+    auto bin_normalization = ml_estimator.construct_bin_norm_from_pet_components();
     bin_normalization.set_up(measured_projdata->get_exam_info_sptr(), measured_projdata->get_proj_data_info_sptr());
 
     // Compute the projdata
