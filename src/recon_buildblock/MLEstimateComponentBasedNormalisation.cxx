@@ -257,7 +257,7 @@ MLEstimateComponentBasedNormalisation::construct_bin_norm_from_pet_components() 
 {
   if (!this->get_data_is_processed())
     {
-      error("MLEstimateComponentBasedNormalisation::construct_bin_normfactors_from_components: data has not been processed yet");
+      error("MLEstimateComponentBasedNormalisation::construct_bin_norm_from_pet_components: data has not been processed yet");
     }
   auto bin_norm = BinNormalisationPETFromComponents();
   bin_norm.allocate(projdata_info, true, do_geo, do_block, do_symmetry_per_block);
