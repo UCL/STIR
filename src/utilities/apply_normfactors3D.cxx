@@ -73,7 +73,7 @@ main(int argc, char** argv)
         char* in_filename = new char[in_filename_prefix.size() + 30];
         sprintf(in_filename, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
         std::ifstream in(in_filename);
-        in >> norm.crystal_efficiencies();
+        in >> norm.get_crystal_efficiencies();
         if (!in)
           {
             warning("Error reading %s, using all 1s instead\n", in_filename);
@@ -89,7 +89,7 @@ main(int argc, char** argv)
           char* in_filename = new char[in_filename_prefix.size() + 30];
           sprintf(in_filename, "%s_%s_%d.out", in_filename_prefix.c_str(), "geo", iter_num);
           std::ifstream in(in_filename);
-          in >> norm.geometric_factors();
+          in >> norm.get_geometric_factors();
           if (!in)
             {
               warning("Error reading %s, using all 1s instead\n", in_filename);
@@ -106,7 +106,7 @@ main(int argc, char** argv)
           char* in_filename = new char[in_filename_prefix.size() + 30];
           sprintf(in_filename, "%s_%s_%d.out", in_filename_prefix.c_str(), "block", iter_num);
           std::ifstream in(in_filename);
-          in >> norm.block_factors();
+          in >> norm.get_block_factors();
           if (!in)
             {
               warning("Error reading %s, using all 1s instead\n", in_filename);
