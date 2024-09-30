@@ -94,7 +94,6 @@ if (@HDF5_FOUND@)
     find_package(HDF5 @HDF5_VERSION@ QUIET COMPONENTS C CXX)
   endif()
   find_package(HDF5 @HDF5_VERSION@ REQUIRED COMPONENTS CXX )
-  include_directories(${HDF5_INCLUDE_DIRS})
 
   set(STIR_BUILT_WITH_HDF5 TRUE)
 endif()
@@ -102,9 +101,6 @@ endif()
 if (@LLN_FOUND@)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support in STIR enabled.")
-  # need to add this as stir_ecat7.h etc rely on it
-  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
-  include_directories("@LLN_INCLUDE_DIRS@")
   set(STIR_BUILT_WITH_LLN_MATRIX TRUE)
 endif()
 
