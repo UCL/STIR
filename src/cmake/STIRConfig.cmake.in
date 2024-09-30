@@ -79,7 +79,6 @@ if (@ITK_FOUND@)
   if(NOT ITK_FOUND)
     SET(STIR_FOUND OFF)
   endif()
-  include(${ITK_USE_FILE})
   set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 
