@@ -30,7 +30,6 @@ option(BUILD_SHARED_LIBS
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support enabled.")
-  include_directories(${LLN_INCLUDE_DIRS})
 else()
   message(STATUS "ECAT support disabled.")
 endif()
@@ -52,7 +51,6 @@ endif()
 if ((NOT DISABLE_HDF5) AND HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
-  include_directories(${HDF5_INCLUDE_DIRS})
 else()
   message(STATUS "HDF5 support disabled.")
 endif()
@@ -120,7 +118,6 @@ endif()
 
 if (STIR_MPI)
   find_package(MPI REQUIRED)
-  include_directories(${MPI_CXX_INCLUDE_PATH})  
   # we add MPI_CXX_COMPILE_FLAGS for all files
   add_definitions(${MPI_CXX_COMPILE_FLAGS} -DMPICH_IGNORE_CXX_SEEK)
   # However, currently we decide to add  MPI_CXX_LINK_FLAGS only to those programs that need it,

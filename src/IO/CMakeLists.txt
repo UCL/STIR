@@ -77,6 +77,7 @@ endif()
 include(stir_lib_target)
 
 if (LLN_FOUND)
+  target_include_directories(IO PUBLIC ${LLN_INCLUDE_DIRS})
   target_link_libraries(IO PUBLIC ${LLN_LIBRARIES})
 endif()
 
@@ -90,6 +91,7 @@ if (CERN_ROOT_FOUND)
 endif()
 
 if (HAVE_HDF5)
+  target_include_directories(IO PUBLIC ${HDF5_INCLUDE_DIRS})
   target_link_libraries(IO PUBLIC ${HDF5_CXX_LIBRARIES})
 endif()
 
