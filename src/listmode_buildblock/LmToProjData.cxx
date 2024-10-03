@@ -443,8 +443,9 @@ LmToProjData::set_up()
     {
       // make a single frame starting from 0. End value will be ignored.
       frame_defs = lm_data_ptr->get_exam_info_sptr()->get_time_frame_definitions();
-      if (num_events_to_store!=0)
-          warning("LmToProjData: num_events_to_store has been selected. The frame duration in the Interfile header will be incorrect!");
+      if (num_events_to_store != 0)
+        warning(
+            "LmToProjData: num_events_to_store has been selected. The frame duration in the Interfile header will be incorrect!");
     }
 
   return Succeeded::yes;
