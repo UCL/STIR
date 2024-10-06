@@ -417,8 +417,9 @@ jobs:
           cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
           cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
           cmake --build build/ --config Release  --target install
-          # run demo
+          # run demos
           demo_create_image
+          demo_scanner
           # just check if its output makes sense
           list_image_info test.hv
           rm -rf build
