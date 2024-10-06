@@ -2206,6 +2206,7 @@ Scanner::get_scanner_from_name(const string& name)
       type = static_cast<Type>(int_type);
     }
   // it's not in the list
+  warning("Scanner::get_scanner_from_name: scanner %s not found", name.c_str());
   return new Scanner(Unknown_scanner);
 }
 
