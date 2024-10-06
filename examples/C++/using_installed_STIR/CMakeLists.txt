@@ -21,4 +21,8 @@ add_executable(demo_create_image demo_create_image.cxx $<TARGET_OBJECTS:stir_reg
 target_include_directories(demo_create_image PUBLIC "${STIR_INCLUDE_DIRS}")
 target_link_libraries(demo_create_image PUBLIC "${STIR_LIBRARIES}")
 
-install(TARGETS demo_create_image DESTINATION bin)
+add_executable(demo_scanner demo_scanner.cxx $<TARGET_OBJECTS:stir_registries>)
+target_include_directories(demo_scanner PUBLIC "${STIR_INCLUDE_DIRS}")
+target_link_libraries(demo_scanner PUBLIC "${STIR_LIBRARIES}")
+
+install(TARGETS demo_create_image demo_scanner DESTINATION bin)
