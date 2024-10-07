@@ -149,8 +149,8 @@ ProjDataInfoGenericNoArcCorr::initialise_uncompressed_view_tangpos_to_det1det2()
   const int num_detectors = get_scanner_ptr()->get_num_detectors_per_ring();
   assert(num_detectors % 2 == 0);
 
-  const int min_tang_pos_num = -(num_detectors / 2) + 1;
-  const int max_tang_pos_num = -(num_detectors / 2) + num_detectors;
+  const int min_tang_pos_num = -(num_detectors / 2);
+  const int max_tang_pos_num = -(num_detectors / 2) + num_detectors - 1;
 
   if (this->get_min_tangential_pos_num() < min_tang_pos_num || this->get_max_tangential_pos_num() > max_tang_pos_num)
     {
