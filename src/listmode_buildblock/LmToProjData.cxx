@@ -184,6 +184,12 @@ LmToProjData::get_output_filename_prefix() const
   return output_filename_prefix;
 }
 
+double
+LmToProjData::get_current_time() const
+{
+  return this->current_time;
+}
+
 void
 LmToProjData::set_output_projdata_sptr(shared_ptr<ProjData>& arg)
 {
