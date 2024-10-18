@@ -185,7 +185,7 @@ LmToProjData::get_output_filename_prefix() const
 }
 
 double
-LmToProjData::get_current_time() const
+LmToProjData::get_last_processed_lm_rel_time() const
 {
   return this->current_time;
 }
