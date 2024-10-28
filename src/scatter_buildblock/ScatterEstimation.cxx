@@ -112,6 +112,10 @@ ScatterEstimation::initialise_keymap()
   this->parser.add_key("mask projdata filename", &this->mask_projdata_filename);
   this->parser.add_key("tail fitting parameter filename", &this->tail_mask_par_filename);
   // END MASK
+
+  // Forward projector for mask projection
+  this->parser.add_parsing_key("forward projector type", &this->forward_projector_sptr);
+
   this->parser.add_key("background projdata filename", &this->back_projdata_filename);
   this->parser.add_parsing_key("Normalisation type", &this->norm_3d_sptr);
   this->parser.add_key("attenuation correction factors filename", &this->atten_coeff_filename);
