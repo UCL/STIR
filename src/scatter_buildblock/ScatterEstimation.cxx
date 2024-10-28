@@ -112,6 +112,10 @@ ScatterEstimation::initialise_keymap()
   this->parser.add_key("mask projdata filename", &this->mask_projdata_filename);
   this->parser.add_key("tail fitting parameter filename", &this->tail_mask_par_filename);
   // END MASK
+
+  // Forward projector for mask projection
+  this->parser.add_parsing_key("forward projector type", &this->forward_projector_sptr);
+
   this->parser.add_key("background projdata filename", &this->back_projdata_filename);
   this->parser.add_parsing_key("Normalisation type", &this->norm_3d_sptr);
   this->parser.add_key("attenuation correction factors filename", &this->atten_coeff_filename);
@@ -447,6 +451,18 @@ void
 ScatterEstimation::set_recompute_mask_projdata(bool arg)
 {
   this->recompute_mask_projdata = arg;
+}
+
+void
+ScatterEstimation::set_forward_projector_sptr(const shared_ptr<ForwardProjectorByBin> projector_sptr)
+{
+  this->forward_projector_sptr = projector_sptr;
+}
+
+shared_ptr<ForwardProjectorByBin>
+ScatterEstimation::get_forward_projector_sptr() const
+{
+  return forward_projector_sptr;
 }
 
 bool
@@ -1235,30 +1251,32 @@ ScatterEstimation::project_mask_image()
         }
     }
 
-  shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
-  shared_ptr<ProjMatrixByBin> PM(new ProjMatrixByBinUsingRayTracing());
-  forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
+  if (!this->forward_projector_sptr)
+    {
+      shared_ptr<ProjMatrixByBin> PM(new ProjMatrixByBinUsingRayTracing());
+      forward_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
+    }
   info(boost::format("ScatterEstimation: Forward projector used for the calculation of "
                      "the tail mask: %1%")
-       % forw_projector_sptr->parameter_info());
+       % forward_projector_sptr->parameter_info());
 
   shared_ptr<ProjData> mask_projdata;
   if (run_in_2d_projdata)
     {
-      forw_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr(), this->mask_image_sptr);
+      forward_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr(), this->mask_image_sptr);
 
       mask_projdata.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                this->input_projdata_2d_sptr->get_proj_data_info_sptr()));
     }
   else
     {
-      forw_projector_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr(), this->mask_image_sptr);
+      forward_projector_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr(), this->mask_image_sptr);
 
       mask_projdata.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
                                                this->input_projdata_sptr->get_proj_data_info_sptr()));
     }
 
-  forw_projector_sptr->forward_project(*mask_projdata, *this->mask_image_sptr);
+  forward_projector_sptr->forward_project(*mask_projdata, *this->mask_image_sptr);
 
   // add 1 to be able to use create_tail_mask_from_ACFs (which expects ACFs,
   // so complains if the threshold is too low)
