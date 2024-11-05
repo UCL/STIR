@@ -187,7 +187,7 @@ ScatterEstimation::make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr)
 }
 
 shared_ptr<ProjData>
-ScatterEstimation::make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename)
+ScatterEstimation::make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename, const bool do_normalisation)
 {
   shared_ptr<ProjData> out_2d_sptr;
   if (in_3d_sptr->get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry() == "Cylindrical")
@@ -198,7 +198,7 @@ ScatterEstimation::make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, 
                                          this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
-      SSRB(*out_2d_sptr, *in_3d_sptr, false);
+      SSRB(*out_2d_sptr, *in_3d_sptr, do_normalisation);
     }
   else
     {
@@ -658,7 +658,7 @@ ScatterEstimation::set_up_iterative(shared_ptr<IterativeReconstruction<Discretis
       info("ScatterEstimation: Running SSRB on attenuation correction coefficients ...");
 
       std::string out_filename = "tmp_atten_sino_2d.hs";
-      atten_projdata_2d_sptr = make_2D_projdata_sptr(tmp_atten_projdata_sptr, out_filename);
+      atten_projdata_2d_sptr = make_2D_projdata_sptr(tmp_atten_projdata_sptr, out_filename, true);
     }
   else
     {
@@ -692,7 +692,7 @@ ScatterEstimation::set_up_iterative(shared_ptr<IterativeReconstruction<Discretis
                 = create_new_proj_data(out_filename,
                                        this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                        this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-            norm_projdata_2d_sptr->fill(0.f);
+            norm_projdata_2d_sptr->fill(0.f); 
 
             // Essentially since inv_projData_sptr is 1s then this is an inversion.
             // inv_projdata_sptr = 1/norm3d
