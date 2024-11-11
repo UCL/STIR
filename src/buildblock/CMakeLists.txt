@@ -59,9 +59,9 @@ set(${dir_LIB_SOURCES}
         SeparableGaussianArrayFilter.cxx
 	MedianArrayFilter3D.cxx
 	MedianImageFilter3D.cxx
-  WienerAutImageFilter2D.cxx
-  MedianAutImageFilter2D.cxx
-  GammaAutImageFilter2D.cxx
+        WienerAutImageFilter2D.cxx
+        MedianAutImageFilter2D.cxx
+        GammaAutImageFilter2D.cxx
 	MinimalArrayFilter3D.cxx
 	MinimalImageFilter3D.cxx
 	SeparableCartesianMetzImageFilter.cxx
