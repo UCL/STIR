@@ -23,6 +23,9 @@
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/MedianImageFilter3D.h"
+#include "stir/WienerAutImageFilter2D.h"
+#include "stir/MedianAutImageFilter2D.h"
+#include "stir/GammaAutImageFilter2D.h"
 #include "stir/MinimalImageFilter3D.h"
 #include "stir/ChainedDataProcessor.h"
 #include "stir/ThresholdMinToSmallPositiveValueDataProcessor.h"
@@ -35,6 +38,9 @@
 START_NAMESPACE_STIR
 
 static MedianImageFilter3D<float>::RegisterIt dummy;
+static WienerAutImageFilter2D<float>::RegisterIt dummyWiener; 
+static MedianAutImageFilter2D<float>::RegisterIt dummyMedianAut; 
+static GammaAutImageFilter2D<float>::RegisterIt dummyGamma;
 static MinimalImageFilter3D<float>::RegisterIt dummy1;
 static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy2;
 static SeparableGaussianImageFilter<float>::RegisterIt dummySGF;
