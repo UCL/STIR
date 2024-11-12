@@ -1,6 +1,6 @@
 name: Build and ctest and recon_test_pack CI
 
-on: 
+on:
   push:
     branches: 
       - master
