@@ -104,10 +104,6 @@ protected: // make parameters protected such that doc shows always up in doxygen
       \see SSRB
   */
   int num_segments_to_combine;
-  //! potentially display data
-  /*! allowed values: \c display_level=0 (no display), 1 (only final image),
-      2 (filtered-viewgrams). Defaults to 0.
-   */
   string attenuation_filename;
   int display_level;
   int filter_wiener;
