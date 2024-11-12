@@ -105,7 +105,6 @@ protected: // make parameters protected such that doc shows always up in doxygen
   */
   int num_segments_to_combine;
   string attenuation_filename;
-  int display_level;
   int filter_wiener;
   int filter_median;
   int filter_gamma;
