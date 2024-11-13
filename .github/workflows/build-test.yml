@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - master
-      - tof_sino_UCL       
+      - tof_sino_UCL
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -86,7 +86,7 @@ jobs:
           ITK: "ON"
         - os: macOS-latest
           compiler: gcc
-          compiler_version: 11
+          # compiler_version: 11
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
