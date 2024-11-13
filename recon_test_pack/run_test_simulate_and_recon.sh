@@ -58,6 +58,7 @@ fi
 echo "Using `command -v OSMAPOSL`"
 echo "Using `command -v OSSPS`"
 echo "Using `command -v FBP2D`"
+echo "Using `command -v FBP3DRP`"
 echo "Using `command -v SRT2D`"
 echo "Using `command -v SRT2DSPECT`"
 
@@ -135,10 +136,10 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT OSMAPOSL OSSPS ; do
       fi
       if [ $is_analytic = 1 ]; then
           if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
-            echo "Skipping TOF as not yet supported for FBP, SRT, and GRD"
+            echo "Skipping TOF as not yet supported for FBP and SRT"
             break
           fi
-	  if expr "$recon" : SRT2DSPECT > /dev/null || expr "$recon" : NIF2D > /dev/null; then
+	  if expr "$recon" : SRT2DSPECT > /dev/null; then
 	    suffix=$SPECT_suffix
 	    export suffix
           else   
