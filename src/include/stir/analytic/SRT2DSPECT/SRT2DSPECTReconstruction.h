@@ -54,6 +54,32 @@ class DiscretisedDensity;
 class Succeeded;
 class ProjData;
 
+
+/*! \ingroup SRT2DSPECT
+ \brief Reconstruction class for 2D Spline Reconstruction Technique
+
+  \par Parameters
+  \verbatim
+SRT2DSPECTparameters :=
+
+input file := input.hs
+attenuation filename := attenuation.hs
+output filename prefix := output
+
+; output image parameters
+; zoom defaults to 1
+zoom := -1
+; image size defaults to whole FOV
+xy output image size (in pixels) := -1
+
+; can be used to call SSRB first
+; default means: call SSRB only if no axial compression is already present
+;num segments to combine with ssrb := -1
+
+END :=
+  \endverbatim
+*/
+
 class SRT2DSPECTReconstruction : public RegisteredParsingObject<SRT2DSPECTReconstruction,
                                                                 Reconstruction<DiscretisedDensity<3, float>>,
                                                                 AnalyticReconstruction>
