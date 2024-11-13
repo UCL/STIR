@@ -1,20 +1,4 @@
-/*
-    Copyright (C) 2024 University College London
 
-    This file is part of STIR.
-
-    SPDX-License-Identifier: Apache-2.0
-
-    See STIR/LICENSE.txt for details
-*/
-/*!
-  \file
-  \ingroup analytic
-  \brief Implementation of class stir::SRT2DSPECTReconstruction
-
-  \author Dimitra Kyriakopoulou
-  \author Kris Thielemans
-*/
 
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -42,13 +26,19 @@
 #  include <omp.h>
 #endif*/
 #include "stir/num_threads.h"
-using std::cerr;
-using std::endl;
+//using std::cerr;
+//using std::endl;
 
 #include <cmath> // For M_PI and other math functions
 #ifndef M_PI
 #  define M_PI 3.14159265358979323846
 #endif
+
+#ifdef STIR_OPENMP
+#  include "stir/num_threads.h"
+#endif
+
+#include "stir/Coordinate3D.h"
 
 START_NAMESPACE_STIR
 
@@ -60,9 +50,9 @@ SRT2DSPECTReconstruction::set_defaults()
   base_type::set_defaults();
   attenuation_filename = "";
   num_segments_to_combine = -1;
-  filter_wiener = 0;
-  filter_median = 0;
-  filter_gamma = 0;
+  //filter_wiener = 0;
+  //filter_median = 0;
+  //filter_gamma = 0;
 }
 
 void
@@ -74,9 +64,9 @@ SRT2DSPECTReconstruction::initialise_keymap()
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("attenuation filename", &attenuation_filename);
-  parser.add_key("wiener filter", &filter_wiener);
-  parser.add_key("median filter", &filter_median);
-  parser.add_key("gamma filter", &filter_gamma);
+  //parser.add_key("wiener filter", &filter_wiener);
+  //parser.add_key("median filter", &filter_median);
+  //parser.add_key("gamma filter", &filter_gamma);
 }
 
 void
@@ -123,7 +113,7 @@ SRT2DSPECTReconstruction::set_up(shared_ptr<SRT2DSPECTReconstruction::TargetT> c
   return Succeeded::yes;
 }
 
-string
+std::string
 SRT2DSPECTReconstruction::method_info() const
 {
   return "SRT2DSPECT";
@@ -141,17 +131,17 @@ SRT2DSPECTReconstruction::SRT2DSPECTReconstruction()
 }
 
 SRT2DSPECTReconstruction::SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
-                                                   const int num_segments_to_combine_v,
-                                                   const int filter_wiener_v,
-                                                   const int filter_median_v,
-                                                   const int filter_gamma_v)
+                                                   const int num_segments_to_combine_v)
+                                                   //const int filter_wiener_v,
+                                                   //const int filter_median_v,
+                                                   //const int filter_gamma_v)
 {
   set_defaults();
   proj_data_ptr = proj_data_ptr_v;
   num_segments_to_combine = num_segments_to_combine_v;
-  filter_wiener = filter_wiener_v;
-  filter_median = filter_median_v;
-  filter_gamma = filter_gamma_v;
+  //filter_wiener = filter_wiener_v;
+  //filter_median = filter_median_v;
+  //filter_gamma = filter_gamma_v;
 }
 
 Succeeded
@@ -164,7 +154,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
         const ProjDataInfoCylindrical& proj_data_info_cyl =
           dynamic_cast<const ProjDataInfoCylindrical&>
           (*proj_data_ptr->get_proj_data_info_sptr());
-
+ 
         //  full_log << "SSRB combining " << num_segments_to_combine
         //           << " segments in input file to a new segment 0\n" << std::endl;
 
@@ -199,7 +189,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   shared_ptr<const ProjDataInfo> arc_corrected_proj_data_info_sptr;
 
   // arc-correction if necessary
-  ArcCorrection arc_correction;
+/*  ArcCorrection arc_correction;
   bool do_arc_correction = false;
   if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr())))
     {
@@ -218,18 +208,27 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
       warning("SRT2DSPECT will arc-correct data first");
       arc_corrected_proj_data_info_sptr = arc_correction.get_arc_corrected_proj_data_info_sptr();
       tangential_sampling = arc_correction.get_arc_corrected_proj_data_info().get_tangential_sampling();
+    }*/
+
+ if (auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr()))
+    {
+       tangential_sampling = pdi_sptr->get_tangential_sampling();
     }
+    else
+    {
+      error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
+     } 
 
   VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
   density_ptr->fill(0);
   Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0, 0);
  // Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0, 0);
  Viewgram<float> view = proj_data_ptr->get_viewgram(0, 0);
-  if (do_arc_correction)
-    {
-      // need to do this here to get correct dimensions
-      view = arc_correction.do_arc_correction(view);
-    }
+///////  if (do_arc_correction)
+///////      {
+///////        // need to do this here to get correct dimensions
+///////        view = arc_correction.do_arc_correction(view);
+///////      }
 
   Viewgram<float> view_atten = atten_data_ptr->get_empty_viewgram(0, 0);
 
@@ -281,7 +280,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   std::vector<std::vector<float>> lg1_cache(Nt / 2, std::vector<float>(sp - 1, 0));
   std::vector<std::vector<float>> lg2_cache(Nt / 2, std::vector<float>(sp - 1, 0));
 
-  float*** rx1x2th = reinterpret_cast<float***>(malloc(sa * sizeof(float**)));
+/*  float*** rx1x2th = reinterpret_cast<float***>(malloc(sa * sizeof(float**)));
   for (int i = 0; i < sa; i++)
     {
       rx1x2th[i] = reinterpret_cast<float**>(malloc(sx * sizeof(float*)));
@@ -293,7 +292,15 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               rx1x2th[i][j][k] = 0.; // Initialize to zero
             }
         }
-    }
+    }*/
+
+IndexRange<3> range(Coordinate3D<int>(0, 0, 0), Coordinate3D<int>(sa - 1, sx - 1, sy - 1));
+
+// Initialize the Array with the given range
+Array<3, float> rx1x2th(range);
+
+// Fill the array with zeros to ensure all elements are initialized
+rx1x2th.fill(0.0F);
 
   std::vector<std::vector<std::vector<float>>> f_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
   std::vector<std::vector<std::vector<float>>> ddf_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
@@ -320,6 +327,13 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 // OMP_NUM_THREADS=<num_threads>\""<<endl; shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
 //#endif
 
+/* #ifdef STIR_OPENMP
+  #  pragma omp single
+  set_num_threads();
+  info("Using OpenMP-version of SRT2D with " + std::string(omp_get_num_threads()) +
+         " threads on " + std::string(omp_get_num_procs()) + " processors.");
+#endif*/
+
   // c --------------------------
   // c Put theta and p in arrays.
   // c --------------------------
@@ -341,10 +355,10 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   for (int it = 0; it < Nt / 2; it++)
     {
       view_atten = atten_data_ptr->get_viewgram(Nmul * it, 0);
-      if (do_arc_correction)
-        {
-          view_atten = arc_correction.do_arc_correction(view_atten);
-        }
+///////        if (do_arc_correction)
+///////          {
+///////            view_atten = arc_correction.do_arc_correction(view_atten);
+///////          }
       for (int ia = 0; ia < sa; ia++)
         {
           for (int ip = 0; ip < sp; ip++)
@@ -353,7 +367,31 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]; //*.15;
             }
 
+						/*{
+							// linear interpolation, f_cache
+							//p  = [-1, 1]; 2, h=2/(sp-1)
+							//pp = [-1.1, 1.1]; 2.2, h=2.2/(sp-1)
+							float dp = p[1]-p[0]; 
+							float pp[sp]; 
+							float gg[sp];   
 
+							for (j = 0; j < sp; j++)
+									pp[j] = -1.1 + 2.2 * j / (sp - 1); 
+
+							for(j=0; j<sp; j++){ 
+								float dk = (pp[j] - p[0])/dp; 
+								int k = floor(dk); 
+								float t = dk - k; 
+								gg[j] = 0; 
+								if(k<0||k>sp-2) continue; 
+								gg[j] = f_cache[ia][it][k]*t + f_cache[ia][it][k+1]*(1.-t); 
+							}
+							for(j=0; j<sp; j++)
+									f_cache[ia][it][j] = gg[j]; 
+						}*/
+
+//					f_cache[ia][it][0] = 0.; f_cache[ia][it][1] = 0.; f_cache[ia][it][2] = 0.; f_cache[ia][it][3] = 0.; //////
+//f_cache[ia][it][sp-4] = 0.; f_cache[ia][it][sp-3] = 0.;  f_cache[ia][it][sp-2] = 0.; f_cache[ia][it][sp-1] = 0.; //////
         }
       for (int ia = 0; ia < sa; ia++)
         {
@@ -378,7 +416,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 
 //-- Starting calculations per view
 // 2D algorithm only
-// At the moment, the parallelization produces artifacts that the non-parallelized version does not have. That's why it's commented out.  
+// At the moment, the parallelization produces artifacts that the non-parallelized version does not have. Therefore, I must be doing something wrong ... 
 /*#ifdef STIR_OPENMP
 #  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux, rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx, fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \
     shared(view, view_atten, do_arc_correction, arc_correction, p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2)
@@ -386,6 +424,8 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 #endif */
   for (ith = 0; ith < sth; ith++)
     {
+      info(boost::format("View %d of %d") % ith % sth);
+
 //-- Loading the viewgram
 /*#ifdef STIR_OPENMP 
 #  pragma omp critical
@@ -393,11 +433,12 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
       {
         view = proj_data_ptr->get_viewgram(ith, 0);
         view_atten = atten_data_ptr->get_viewgram(ith, 0);
-        if (do_arc_correction)
-          {
-            view = arc_correction.do_arc_correction(view);
-            view_atten = arc_correction.do_arc_correction(view_atten);
-          }
+///////          if (do_arc_correction)
+///////            {
+///////              view = arc_correction.do_arc_correction(view);
+///////              view_atten = arc_correction.do_arc_correction(view_atten);
+///////            }
+float max_att = 0.;  
       for (ia = 0; ia < sa; ia++)
           {
  
@@ -405,8 +446,53 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               {
                 g[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
                 f[ia][ip]
-                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]* 0.1;
+                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]* 0.1;//.15/2;//*.0267;
+max_att = fabs(f[ia][ip])>max_att ? fabs(f[ia][ip]) : max_att;             
 							}
+
+
+
+		/*					{
+								// linear interpolation, g
+								//p  = [-1, 1]; 2, h=2/(sp-1)
+								//pp = [-1.1, 1.1]; 2.2, h=2.2/(sp-1)
+								float dp = p[1]-p[0]; 
+								float pp[sp]; 
+								float gg[sp]; 
+
+								for (j = 0; j < sp; j++)
+										pp[j] = -1.1 + 2.2 * j / (sp - 1); 
+
+								for(j=0; j<sp; j++){ 
+									float dk = (pp[j] - p[0])/dp; 
+									int k = floor(dk); 
+									float t = dk - k; 
+									gg[j] = 0; 
+									if(k<0||k>sp-2) continue; 
+									gg[j] = g[ia][k]*t + g[ia][k+1]*(1.-t); 
+								}
+								for(j=0; j<sp; j++) 
+										g[ia][j] = gg[j]; 
+
+								// linear interpolation, f
+								//p  = [-1, 1]; 2, h=2/(sp-1)
+								//pp = [-1.1, 1.1]; 2.2, h=2.2/(sp-1)
+								for(j=0; j<sp; j++){ 
+									float dk = (pp[j] - p[0])/dp; 
+									int k = floor(dk); 
+									float t = dk - k; 
+									gg[j] = 0; 
+									if(k<0||k>sp-2) continue; 
+									gg[j] = f[ia][k]*t + f[ia][k+1]*(1.-t); 
+								}
+								for(j=0; j<sp; j++)
+										f[ia][j] = gg[j]; 
+
+							}*/
+//std::cout << "ia " << ia << ", max att " << max_att << std::endl; /////
+
+//g[ia][0] = 0.; g[ia][1] = 0.; g[ia][2] = 0.; g[ia][3] = 0.; g[ia][sp-4] = 0.; g[ia][sp-3] = 0.; g[ia][sp-2] = 0.; g[ia][sp-1] = 0.; ////// 
+//f[ia][0] = 0.; f[ia][1] = 0.; f[ia][2] = 0.; f[ia][3] = 0.; f[ia][sp-4] = 0.; f[ia][sp-3] = 0.; f[ia][sp-2] = 0.; f[ia][sp-1] = 0.; ////// 
           }
 
       }
@@ -443,6 +529,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               aux = sqrt(1. - x2[ix2] * x2[ix2]);
               if (fabs(x2[ix2]) >= 1. || fabs(x1[ix1]) >= aux)
                 continue;
+							//if ( x2[ix2]*x2[ix2] + x1[ix1]*x1[ix1] >= 0.8*0.8) continue; //////
 
               rho = x2[ix2] * cos(th[ith]) - x1[ix1] * sin(th[ith]);
 
@@ -457,7 +544,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
               for (ip = 0; ip < sp; ip++)
                 {
                   double val = fabs(rho - p[ip]);
-                  lg[ip] = val < 2e-6 ? 0. : std::log(val); 
+                  lg[ip] = val < 2e-6 ? 0. : std::log(val); // Using std::log to specify the namespace
                 }
 
               // calculate I
@@ -493,10 +580,11 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                     }
                 }
 
-              for (ia = 0; ia < sa; ia++)
+              for (ia = 0; ia < sa; ia++) 
                 { 
-                 // Example of how to choose particular slices to be reconstructed
-                 // if(ia!=20 && ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue; 
+              if(ia!=31) continue;   
+        //             if(ia!=20 && ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue;
+//if(ia!=20) continue;
 
                   f_node = A * f[ia][i] + B * f[ia][i + 1] + C * ddf[ia][i] + D * ddf[ia][i + 1];
 
@@ -517,6 +605,8 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   hc_fin = hilbert(rho, fc[ia], ddfc[ia], p, sp, lg);
                   hs_fin = hilbert(rho, fs[ia], ddfs[ia], p, sp, lg);
 
+                  //rx1x2th[ia][ix1][ix2]
+                  //    = fcme_fin * (1.0 / M_PI * hc_fin + 2.0 * fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - 2.0 * fc_fin);
                   rx1x2th[ia][ix1][ix2]
                       = fcme_fin * (1.0 / M_PI * hc_fin + fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - fc_fin);
 
@@ -599,7 +689,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 #endif*/
                   {
                     image[ia][image_min_x + sx - ix1 - 1][image_min_y + ix2]
-                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth)*6.23;
+                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth)*6.23;//*6.23;//0.131150981*(16*1.266);
 									
 
                   }
@@ -609,7 +699,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
     } // slice
 
 
-  // apply Wiener filter
+/*  // apply Wiener filter
   if (filter_wiener != 0)
     wiener(image, sx, sy, image.get_z_size());
   // apply median filter
@@ -617,12 +707,12 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
     median(image, sx, sy, image.get_z_size());
   // adjust gamma
   if (filter_gamma != 0)
-    gamma(image, sx, sy, image.get_z_size());
+    gamma(image, sx, sy, image.get_z_size());*/
 
   return Succeeded::yes;
 }
 
-void
+/*void
 SRT2DSPECTReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa)
 {
 
@@ -763,11 +853,11 @@ SRT2DSPECTReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int
           image[ia][min_x + i][min_y + j] = image[ia][min_x + i][min_y + j] * (max_val - min_val) + min_val;
     }
   return;
-}
+}*/
 
 float
 SRT2DSPECTReconstruction::hilbert_node(
-    float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn)
+    float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn) const
 {
   float dh;
 
@@ -801,7 +891,7 @@ SRT2DSPECTReconstruction::hilbert(float x,
                                   const std::vector<float>& ddf,
                                   const std::vector<float>& p,
                                   int sp,
-                                  std::vector<float>& lg)
+                                  std::vector<float>& lg) const
 {
   float dh, Di;
   int i;
@@ -865,7 +955,7 @@ SRT2DSPECTReconstruction::hilbert_der_double(float x,
                                              int sp,
                                              float* dhp,
                                              float* dh1p,
-                                             const std::vector<float>& lg)
+                                             const std::vector<float>& lg) const
 {
   float dh, dh1, dp;
   dh = 0;
@@ -896,7 +986,7 @@ SRT2DSPECTReconstruction::hilbert_der_double(float x,
 
 float
 SRT2DSPECTReconstruction::splint(
-    const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x)
+    const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x) const
 {
   int klo, khi;
   float h, a, b, y;
@@ -928,7 +1018,7 @@ SRT2DSPECTReconstruction::splint(
 }
 
 void
-SRT2DSPECTReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2)
+SRT2DSPECTReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) const
 {
   // function for nanural qubic spline.
   int i, k;
@@ -954,7 +1044,7 @@ SRT2DSPECTReconstruction::spline(const std::vector<float>& x, const std::vector<
 }
 
 float
-SRT2DSPECTReconstruction::integ(float dist, int max, float ff[])
+SRT2DSPECTReconstruction::integ(float dist, int max, float ff[]) const
 {
   int k, intg;
   intg = ff[0];
