@@ -49,7 +49,7 @@ private:
   typedef DiscretisedDensity<3, float> TargetT;
 
 public:
-  //! Name which will be used when parsing a ProjectorByBinPair object
+  //! Name which will be used when parsing a SRT2DReconstruction object
   static const char* const registered_name;
 
   //! Default constructor (calls set_defaults())
