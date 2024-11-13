@@ -63,7 +63,7 @@ class ProjData;
 SRT2DSPECTparameters :=
 
 input file := input.hs
-attenuation filename := attenuation.hs
+attenuation filename := attenuation_sinogram.hs
 output filename prefix := output
 
 ; output image parameters
