@@ -1,21 +1,3 @@
-/*
-    Copyright (C) 2024 University College London
-
-    This file is part of STIR.
-
-    SPDX-License-Identifier: Apache-2.0
-
-    See STIR/LICENSE.txt for details
-*/
-/*!
-  \file
-  \ingroup analytic
-  \brief Implementation of class stir::SRT2DReconstruction
-
-  \author Dimitra Kyriakopoulou
-  \author Kris Thielemans
-*/
-
 #include "stir/analytic/SRT2D/SRT2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
@@ -32,22 +14,27 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 
-using std::cerr;
-using std::endl;
+
+//using std::cerr;
+//using std::endl;
 #ifdef STIR_OPENMP
 #  include <omp.h>
 #endif
-#include "stir/num_threads.h"
+#include "stir/num_threads.h" 
 
 #include <cmath> // For M_PI and other math functions
 #ifndef M_PI
 #  define M_PI 3.14159265358979323846
 #endif
 
+#ifdef STIR_OPENMP
+#  include "stir/num_threads.h"
+#endif
+
 #include <vector>
 #include <algorithm>
 
-START_NAMESPACE_STIR
+START_NAMESPACE_STIR 
 
 const char* const SRT2DReconstruction::registered_name = "SRT2D";
 
@@ -57,10 +44,10 @@ SRT2DReconstruction::set_defaults()
   base_type::set_defaults();
   num_segments_to_combine = -1;
   //zoom = 0.5;
-  filter_wiener = 1;
-  filter_median = 0; 
-  filter_gamma = 1;
-}
+  //filter_wiener = 0;
+  //filter_median = 0; 
+  //filter_gamma = 0;
+} 
 
 void
 SRT2DReconstruction::initialise_keymap()
@@ -71,11 +58,11 @@ SRT2DReconstruction::initialise_keymap()
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   //parser.add_key("zoom", &zoom);
-  parser.add_key("wiener filter", &filter_wiener);
-  parser.add_key("median filter", &filter_median);
-  parser.add_key("gamma filter", &filter_gamma);
+//  parser.add_key("wiener filter", &filter_wiener);
+//  parser.add_key("median filter", &filter_median);
+//  parser.add_key("gamma filter", &filter_gamma);
 }
-
+ 
 void
 SRT2DReconstruction::ask_parameters()
 {
@@ -92,7 +79,7 @@ SRT2DReconstruction::post_processing()
 Succeeded
 SRT2DReconstruction::set_up(shared_ptr<SRT2DReconstruction::TargetT> const& target_data_sptr)
 {
-  cerr << "Setting up SRT2D Reconstruction" << endl;
+ // cerr << "Setting up SRT2D Reconstruction" << endl;
   if (base_type::set_up(target_data_sptr) == Succeeded::no)
     return Succeeded::no;
 
@@ -130,38 +117,39 @@ SRT2DReconstruction::SRT2DReconstruction(const std::string& parameter_filename)
   initialise(parameter_filename);
   info(boost::format("%1%") % parameter_info());
 }
-
+ 
 SRT2DReconstruction::SRT2DReconstruction()
 {
   set_defaults();
 }
 
 SRT2DReconstruction::SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
-                                         const int num_segments_to_combine_v,
+                                         const int num_segments_to_combine_v)
                                          //const float zoom_v,
-                                         const int filter_wiener_v,
-                                         const int filter_median_v,
-                                         const int filter_gamma_v)
+                                        // const int filter_wiener_v,
+                                        // const int filter_median_v,
+                                        // const int filter_gamma_v)
 {
   set_defaults();
   proj_data_ptr = proj_data_ptr_v;
   num_segments_to_combine = num_segments_to_combine_v;
   //zoom = zoom_v;
-  filter_wiener = filter_wiener_v;
-  filter_median = filter_median_v;
-  filter_gamma = filter_gamma_v;
+  //filter_wiener = filter_wiener_v;
+  //filter_median = filter_median_v;
+  //filter_gamma = filter_gamma_v;
 }
 
 Succeeded
 SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const& density_ptr)
 {
-  cerr << "Starting actual_reconstruct" << endl;
+  //cerr << "Starting actual_reconstruct" << endl;
 
   // In case of 3D data, use only direct sinograms
   // perform SSRB
   if (num_segments_to_combine > 1)
     {
-      cerr << "Performing SSRB with num_segments_to_combine = " << num_segments_to_combine << endl;
+      //cerr << "Performing SSRB with num_segments_to_combine = " << num_segments_to_combine << endl;
+      info(boost::format("Performing SSRB with num_segments_to_combine = %d") % num_segments_to_combine);
       const ProjDataInfoCylindrical& proj_data_info_cyl
           = dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_ptr->get_proj_data_info_sptr());
 
@@ -173,7 +161,8 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
     }
   else
     {
-      cerr << "Using existing proj_data_ptr" << endl;
+      //cerr << "Using existing proj_data_ptr" << endl;
+      info("Using existing proj_data_ptr");
     }
 
   // check if segment 0 has direct sinograms
@@ -194,14 +183,16 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   bool do_arc_correction = false;
   if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr())))
     {
-      cerr << "Data is already arc-corrected" << endl;
+      //cerr << "Data is already arc-corrected" << endl;
+      info("Data is already arc-corrected");
       arc_corrected_proj_data_info_sptr = proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
       tangential_sampling = dynamic_cast<const ProjDataInfoCylindricalArcCorr&>(*proj_data_ptr->get_proj_data_info_sptr())
                                 .get_tangential_sampling();
     }
   else
     {
-      cerr << "Performing arc-correction" << endl;
+      //cerr << "Performing arc-correction" << endl;
+      info("Performing arc-correction");
       if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) == Succeeded::no)
         return Succeeded::no;
       do_arc_correction = true;
@@ -214,7 +205,8 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   Viewgram<float> view = proj_data_ptr->get_viewgram(0, 0);
   if (do_arc_correction)
     {
-      cerr << "Arc-correcting viewgram" << endl;
+      //cerr << "Arc-correcting viewgram" << endl;
+      info("Arc-correcting viewgram");
       view = arc_correction.do_arc_correction(view);
     }
   Viewgram<float> view1 = proj_data_ptr->get_empty_viewgram(0, 0);
@@ -222,7 +214,7 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   Viewgram<float> view1_th = proj_data_ptr->get_empty_viewgram(0, 0); 
 
   // Retrieve runtime-dependent sizes
-  const int sp = view.get_num_tangential_poss();
+  const int sp = view.get_num_tangential_poss(); 
   const int sth = proj_data_ptr->get_num_views();
   const int sa = proj_data_ptr->get_num_axial_poss(0);
   const int sx = image.get_x_size();
@@ -269,7 +261,7 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   std::vector<float> lg(sp), termC(sth), termC_th(sth);
   const float dp6 = 6.0 / 4.0 * 2.0 / (sp - 1.0);
 
-#ifdef STIR_OPENMP
+/*#ifdef STIR_OPENMP
   if (getenv("OMP_NUM_THREADS") == NULL)
     {
       omp_set_num_threads(omp_get_num_procs());
@@ -285,6 +277,13 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
         warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using "
                 "USE_OPENMP=TRUE.");
     }
+#endif*/ 
+
+#ifdef STIR_OPENMP
+  #  pragma omp single
+  set_num_threads();
+  info("Using OpenMP-version of SRT2D with " + std::string(omp_get_num_threads()) +
+         " threads on " + std::string(omp_get_num_procs()) + " processors.");
 #endif
 
   // Put theta and p in arrays.
@@ -361,7 +360,7 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
     shared(view, view1, view_th, view1_th, do_arc_correction, arc_correction, p_ud, p, th, x1, x2, image) private(  \
       jth, ia, ip, ix2, ix1, aux, x, image_pos) 
 #  pragma omp for schedule(static) nowait
-#endif
+#endif 
 for (ith = 1; ith < sth; ith++)
 {
   if (ith < sth2)
@@ -380,7 +379,7 @@ for (ith = 1; ith < sth; ith++)
   // Loading related viewgrams
 #ifdef STIR_OPENMP
 #  pragma omp critical
-#endif
+#endif 
   {
     view = proj_data_ptr->get_viewgram(ith, 0);
     view1 = proj_data_ptr->get_viewgram(sth - ith, 0);
@@ -527,7 +526,7 @@ for (ith = 1; ith < sth; ith++)
   }
 }
 
-  // apply Wiener filter
+/*  // apply Wiener filter
   if (filter_wiener != 0)
     wiener(image, sx, sy, sa);
   // apply median filter
@@ -535,13 +534,13 @@ for (ith = 1; ith < sth; ith++)
     median(image, sx, sy, sa);
   // adjust gamma
   if (filter_gamma != 0)
-    gamma(image, sx, sy, sa);
+    gamma(image, sx, sy, sa);*/
 
   return Succeeded::yes;
 }
 
 
-void
+/*void
 SRT2DReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa)
 {
   cerr << "Starting Wiener filter" << endl;
@@ -655,7 +654,7 @@ SRT2DReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int sy, 
           image[ia][min_x + i][min_y + j] = (image[ia][min_x + i][min_y + j] - min_val) / (max_val - min_val);
 
       int count = 0;
-      float averagePixelValue = 0.;
+      float averagePixelValue = 0.; 
       for (int i = 0; i < sx; i++)
         {
           for (int j = 0; j < sy; j++)
@@ -684,7 +683,7 @@ SRT2DReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int sy, 
     }
   cerr << "Gamma correction complete" << endl;
   return;
-}
+}*/
 
 float
 SRT2DReconstruction::hilbert_der(float x,
@@ -693,14 +692,14 @@ SRT2DReconstruction::hilbert_der(float x,
                                  const std::vector<float>& p,
                                  int sp,
                                  const std::vector<float>& lg,
-                                 float termC)
+                                 float termC) const
 {
   float term, trm0, termd0;
-  float d, d_div_6, minus_half_div_d;
+ // float d, d_div_6, minus_half_div_d;
 
-  d = p[1] - p[0];
-  d_div_6 = d / 6.0;
-  minus_half_div_d = -0.5 / d;
+  const float d = p[1] - p[0];
+  const float d_div_6 = d / 6.0;
+  const float minus_half_div_d = -0.5 / d;
 
   term = 0.5 * (ddf[sp - 2] - ddf[0]) * x + termC;
 
@@ -726,7 +725,7 @@ SRT2DReconstruction::hilbert_der(float x,
 }
 
 void
-SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2)
+SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) const
 {
   int i, k;
   float qn, un;
@@ -751,7 +750,7 @@ SRT2DReconstruction::spline(const std::vector<float>& x, const std::vector<float
 }
 
 float
-SRT2DReconstruction::integ(float dist, int max, const std::vector<float>& ff)
+SRT2DReconstruction::integ(float dist, int max, const std::vector<float>& ff) const
 {
   int k, intg;
   intg = ff[0];
