@@ -30,7 +30,7 @@
 #include <vector>
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
-#include <math.h>
+#include <cmath>
 #include "stir/Bin.h"
 #include "stir/round.h"
 #include "stir/display.h"
