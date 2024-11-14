@@ -2,6 +2,23 @@
 //
 #ifndef __stir_analytic_SRT2D_SRT2DReconstruction_H__
 #define __stir_analytic_SRT2D_SRT2DReconstruction_H__
+/*
+    Copyright (C) 2024, University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup analytic
+
+  \brief declares the stir::SRT2DReconstruction class
+
+  \author Dimitra Kyriakopoulou
+  \author Kris Thielemans 
+*/
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/RegisteredParsingObject.h"
@@ -15,6 +32,29 @@ template <int num_dimensions, typename elemT>
 class DiscretisedDensity;
 class Succeeded;
 class ProjData;
+
+/*! \ingroup SRT2D
+ \brief Reconstruction class for 2D Spline Reconstruction Technique
+  \par Parameters
+  \verbatim
+SRT2Dparameters := 
+
+input file := input.hs
+output filename prefix := output
+
+; output image parameters
+; zoom defaults to 1
+zoom := -1
+; image size defaults to whole FOV
+xy output image size (in pixels) := -1
+
+; can be used to call SSRB first
+; default means: call SSRB only if no axial compression is already present
+;num segments to combine with ssrb := -1
+
+END :=
+  \endverbatim
+*/
 
 class SRT2DReconstruction
     : public RegisteredParsingObject<SRT2DReconstruction, Reconstruction<DiscretisedDensity<3, float>>, AnalyticReconstruction>
@@ -32,7 +72,7 @@ private:
   typedef DiscretisedDensity<3, float> TargetT;
 
 public:
-  //! Name which will be used when parsing a ProjectorByBinPair object
+  //! Name which will be used when parsing a SRT2DReconstruction object
   static const char* const registered_name;
 
   //! Default constructor (calls set_defaults())
@@ -45,12 +85,6 @@ public:
 
   SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
                       const int num_segments_to_combine = -1);
-                     //const float zoom = 0.5,
-                      //const int filter_wiener = 1,
-                      //const int filter_median = 0,
-                      //const int filter_gamma = 1
-
-
   virtual std::string method_info() const;
 
   virtual void ask_parameters();
@@ -67,15 +101,6 @@ protected: // make parameters protected such that doc shows always up in doxygen
       \see SSRB
   */
   int num_segments_to_combine;
-  //! potentially display data
-  /*! allowed values: \c display_level=0 (no display), 1 (only final image),
-      2 (filtered-viewgrams). Defaults to 0.
-   */
-  int display_level;
-  //float zoom;
-//  int filter_wiener; 
- // int filter_median;
- // int filter_gamma;
 
 private:
   Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const& target_image_ptr);
@@ -94,10 +119,6 @@ private:
                     const std::vector<float>& lg,
                     float termC) const; 
   float integ(float dist, int max, const std::vector<float>& ff) const;
-
-//  void wiener(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa);
-//  void median(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa);
-//  void gamma(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa);
 };
 
 END_NAMESPACE_STIR
