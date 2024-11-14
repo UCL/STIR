@@ -256,26 +256,6 @@ rx1x2th.fill(0.0F);
   std::vector<std::vector<std::vector<float>>> f1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
   std::vector<std::vector<std::vector<float>>> ddf1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
 
-/*#ifdef STIR_OPENMP
-  if (getenv("OMP_NUM_THREADS") == NULL)
-    {
-      omp_set_num_threads(omp_get_num_procs());
-      if (omp_get_num_procs() == 1)
-        warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
-      cerr << "Using OpenMP-version of SRT2DSPECT with thread-count = processor-count (=" << omp_get_num_procs() << ")." << endl;
-    }
-  else 
-    {
-      cerr << "Using OpenMP-version of SRT2DSPECT with " << getenv("OMP_NUM_THREADS") << " threads on " << omp_get_num_procs()
-           << " processors." << endl;
-      if (atoi(getenv("OMP_NUM_THREADS")) == 1)
-        warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using "
-                "USE_OPENMP=TRUE.");
-    }*/
-// cerr<<"Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export
-// OMP_NUM_THREADS=<num_threads>\""<<endl; shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
-//#endif
-
 /* #ifdef STIR_OPENMP
 set_num_threads();
 #pragma omp single
