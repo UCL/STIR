@@ -210,14 +210,20 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
       tangential_sampling = arc_correction.get_arc_corrected_proj_data_info().get_tangential_sampling();
     }*/
 
- if (auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr()))
+/* if (auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr()))
     {
       float tangential_sampling = pdi_sptr->get_tangential_sampling();
     }
     else
     {
       error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
-     } 
+     } */
+
+auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr());
+if (!pdi_sptr)
+{
+    error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
+}
 
   VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
   density_ptr->fill(0);
