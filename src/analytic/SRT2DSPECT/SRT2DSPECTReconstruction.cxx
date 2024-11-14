@@ -7,7 +7,7 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/Array.h" 
 #include <vector>
-#include "stir/Sinogram.h"
+#include "stir/Sinogram.h"      
 #include "stir/Viewgram.h"
 #include <math.h>
 #include "stir/Bin.h"
@@ -583,7 +583,7 @@ max_att = fabs(f[ia][ip])>max_att ? fabs(f[ia][ip]) : max_att;
 
               for (ia = 0; ia < sa; ia++) 
                 { 
-              if(ia!=31) continue;   
+          //    if(ia!=31) continue;   
         //             if(ia!=20 && ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue;
 //if(ia!=20) continue;
 
