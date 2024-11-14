@@ -222,41 +222,48 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   const int image_min_y = image.get_min_y();
 
   // Dynamic declarations using std::vector
-  std::vector<float> th(sth), p(sp), p_ud(sp), x1(sx), x2(sy);
+  std::vector<float> th(sth); // Theta values for each view angle.
+  std::vector<float> p(sp); // Tangential positions for projections.
+  std::vector<float> p_ud(sp); // Tangential positions for up-down flipping.
+  std::vector<float> x1(sx); // X-coordinates for the reconstructed image grid.
+  std::vector<float> x2(sy); // Y-coordinates for the reconstructed image grid.
 
-  std::vector<std::vector<float>> f(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf(sth, std::vector<float>(sp, 0.0f));
+  std::vector<std::vector<float>> f(sth, std::vector<float>(sp, 0.0f)); // Projection data matrix.
+  std::vector<std::vector<float>> ddf(sth, std::vector<float>(sp, 0.0f)); // Second derivative of projections.
+  
+  std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp, 0.0f)); // Flipped projection data.
+  std::vector<std::vector<float>> ddf_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of flipped projections.
 
-  std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf_ud(sth, std::vector<float>(sp, 0.0f));
+  std::vector<std::vector<float>> f1(sth, std::vector<float>(sp, 0.0f)); // Left-right mirrored projection data.
+  std::vector<std::vector<float>> ddf1(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of left-right mirrored projections.
 
-  std::vector<std::vector<float>> f1(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf1(sth, std::vector<float>(sp, 0.0f));
+  std::vector<std::vector<float>> f1_ud(sth, std::vector<float>(sp, 0.0f)); // Up-down flipped mirrored projection data.
+  std::vector<std::vector<float>> ddf1_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of up-down flipped mirrored projections.
 
-  std::vector<std::vector<float>> f1_ud(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf1_ud(sth, std::vector<float>(sp, 0.0f));
+  std::vector<std::vector<float>> f_th(sth, std::vector<float>(sp, 0.0f)); // Projection data along theta views.
+  std::vector<std::vector<float>> ddf_th(sth, std::vector<float>(sp, 0.0f)); // Second derivatives along theta views.
+    
+  std::vector<std::vector<float>> f_th_ud(sth, std::vector<float>(sp, 0.0f)); // Flipped data along theta views.
+  std::vector<std::vector<float>> ddf_th_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of flipped data.
 
-  std::vector<std::vector<float>> f_th(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf_th(sth, std::vector<float>(sp, 0.0f));
+  std::vector<std::vector<float>> f1_th(sth, std::vector<float>(sp, 0.0f)); // Mirrored data along theta views.
+  std::vector<std::vector<float>> ddf1_th(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of mirrored data.
 
-  std::vector<std::vector<float>> f_th_ud(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf_th_ud(sth, std::vector<float>(sp, 0.0f));
+  std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp, 0.0f)); // Flipped mirrored data along theta views.
+  std::vector<std::vector<float>> ddf1_th_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of flipped mirrored data.
 
-  std::vector<std::vector<float>> f1_th(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf1_th(sth, std::vector<float>(sp, 0.0f));
+  std::vector<float> lg(sp); // Logarithmic differences for interpolation.
+  std::vector<float> termC(sth); // Correction term for each view.
+  std::vector<float> termC_th(sth); // Correction term for theta projections.
 
-  std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp, 0.0f));
-  std::vector<std::vector<float>> ddf1_th_ud(sth, std::vector<float>(sp, 0.0f));
-
-  std::vector<float> lg(sp), termC(sth), termC_th(sth);
-  const float dp6 = 6.0 / 4.0 * 2.0 / (sp - 1.0);
-
-#ifdef STIR_OPENMP
-set_num_threads();
-#pragma omp single
-info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
-     " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
-#endif
+  const float dp6 = 6.0 / 4.0 * 2.0 / (sp - 1.0); // Integration constant for second derivatives.
+    
+  #ifdef STIR_OPENMP
+  set_num_threads();
+  #pragma omp single
+  info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
+       " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
+  #endif
 
   // Put theta and p in arrays.
   for (ith = 0; ith < sth; ith++)
