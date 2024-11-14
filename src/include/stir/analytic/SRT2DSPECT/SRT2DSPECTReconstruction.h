@@ -2,6 +2,23 @@
 //
 #ifndef __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 #define __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
+/*
+    Copyright (C) 2024, University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup analytic
+
+  \brief declares the stir::SRT2DSPECTReconstruction class
+
+  \author Dimitra Kyriakopoulou
+
+*/
 
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -27,16 +44,36 @@
 #include <string>
 #include "stir/shared_ptr.h"
 
-//#ifndef STIR_NO_NAMESPACES
-//using std::string;
-//#endif
-
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity;
 class Succeeded;
 class ProjData;
+
+/*! \ingroup SRT2DSPECT
+ \brief Reconstruction class for 2D Spline Reconstruction Technique
+  \par Parameters
+  \verbatim
+SRT2DSPECTparameters := 
+
+input file := input.hs
+attenuation filename := attenuation_sinogram.hs
+output filename prefix := output
+
+; output image parameters 
+; zoom defaults to 1
+zoom := -1
+; image size defaults to whole FOV
+xy output image size (in pixels) := -1
+
+; can be used to call SSRB first
+; default means: call SSRB only if no axial compression is already present
+;num segments to combine with ssrb := -1
+
+END :=
+  \endverbatim
+*/
 
 class SRT2DSPECTReconstruction : public RegisteredParsingObject<SRT2DSPECTReconstruction,
                                                                 Reconstruction<DiscretisedDensity<3, float>>,
@@ -68,9 +105,6 @@ public:
 
   SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
                            const int num_segments_to_combine = -1);
-                           //const int filter_wiener = 0,
-                           //const int filter_median = 0,
-                           //const int filter_gamma = 0);
 
   virtual std::string method_info() const;
 
@@ -88,15 +122,7 @@ protected: // make parameters protected such that doc shows always up in doxygen
       \see SSRB
   */
   int num_segments_to_combine;
-  //! potentially display data
-  /*! allowed values: \c display_level=0 (no display), 1 (only final image),
-      2 (filtered-viewgrams). Defaults to 0.
-   */
   std::string attenuation_filename;
-  //int display_level;
-  //int filter_wiener;
-  //int filter_median;
-  //int filter_gamma;
   float thres_restr_bound;
   std::vector<double> thres_restr_bound_vector;
   shared_ptr<ProjData> atten_data_ptr;
@@ -129,10 +155,6 @@ private:
   float splint(const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x) const;
   void spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) const;
   float integ(float dist, int max, float ff[]) const;
-
-  //void wiener(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa);
-  //void median(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa);
-  //void gamma(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa);
 };
 
 END_NAMESPACE_STIR
