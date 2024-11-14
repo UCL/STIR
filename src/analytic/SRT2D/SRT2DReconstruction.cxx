@@ -280,10 +280,11 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
 #endif*/ 
 
 #ifdef STIR_OPENMP
-  set_num_threads();
-  #  pragma omp single
-  info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
-         " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
+int num_threads = get_default_num_threads();
+set_num_threads(num_threads);
+#pragma omp single
+info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
+     " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
 #endif
 
   // Put theta and p in arrays.
