@@ -25,7 +25,7 @@
 /*#ifdef STIR_OPENMP 
 #  include <omp.h>
 #endif*/
-#include "stir/num_threads.h"
+//#include "stir/num_threads.h"
 //using std::cerr;
 //using std::endl;
 
