@@ -315,7 +315,7 @@ rx1x2th.fill(0.0F);
         warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
       cerr << "Using OpenMP-version of SRT2DSPECT with thread-count = processor-count (=" << omp_get_num_procs() << ")." << endl;
     }
-  else
+  else 
     {
       cerr << "Using OpenMP-version of SRT2DSPECT with " << getenv("OMP_NUM_THREADS") << " threads on " << omp_get_num_procs()
            << " processors." << endl;
@@ -328,10 +328,11 @@ rx1x2th.fill(0.0F);
 //#endif
 
 /* #ifdef STIR_OPENMP
-  #  pragma omp single
-  set_num_threads();
-  info("Using OpenMP-version of SRT2D with " + std::string(omp_get_num_threads()) +
-         " threads on " + std::string(omp_get_num_procs()) + " processors.");
+int num_threads = get_default_num_threads();
+set_num_threads(num_threads);
+#pragma omp single
+info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
+     " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
 #endif*/
 
   // c --------------------------
