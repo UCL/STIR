@@ -144,7 +144,7 @@ jobs:
             (windows*)
               # no idea what to do here
               ;;
-           esac
+           esac     
 
     - name: set_compiler_variables
       shell: bash
@@ -212,8 +212,18 @@ jobs:
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
-            brew update
+              brew update
               brew install boost swig python nlohmann-json
+
+              # Install specific version of gcc if compiler is set to gcc
+if test 'XX${{ matrix.compiler }}' = 'XXgcc'; then
+    brew install gcc@${{ matrix.compiler_version }}
+    export CC=gcc-${{ matrix.compiler_version }}
+    export CXX=g++-${{ matrix.compiler_version }}
+    echo "CC=${CC}" >> $GITHUB_ENV
+    echo "CXX=${CXX}" >> $GITHUB_ENV
+fi
+              
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (windows*)
