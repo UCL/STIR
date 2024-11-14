@@ -1,3 +1,21 @@
+/*
+    Copyright (C) 2024 University College London
+
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details 
+*/
+/*!
+  \file
+  \ingroup analytic
+  \brief Implementation of class stir::SRT2DReconstruction
+
+  \author Dimitra Kyriakopoulou
+  \author Kris Thielemans
+*/
+
 #include "stir/analytic/SRT2D/SRT2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
@@ -14,13 +32,9 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 
-
-//using std::cerr;
-//using std::endl;
 #ifdef STIR_OPENMP
 #  include <omp.h>
 #endif
-//#include "stir/num_threads.h" 
 
 #include <cmath> // For M_PI and other math functions
 #ifndef M_PI
@@ -43,10 +57,6 @@ SRT2DReconstruction::set_defaults()
 {
   base_type::set_defaults();
   num_segments_to_combine = -1;
-  //zoom = 0.5;
-  //filter_wiener = 0;
-  //filter_median = 0; 
-  //filter_gamma = 0;
 } 
 
 void
@@ -57,10 +67,6 @@ SRT2DReconstruction::initialise_keymap()
   parser.add_start_key("SRT2DParameters");
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
-  //parser.add_key("zoom", &zoom);
-//  parser.add_key("wiener filter", &filter_wiener);
-//  parser.add_key("median filter", &filter_median);
-//  parser.add_key("gamma filter", &filter_gamma);
 }
  
 void
@@ -79,7 +85,6 @@ SRT2DReconstruction::post_processing()
 Succeeded
 SRT2DReconstruction::set_up(shared_ptr<SRT2DReconstruction::TargetT> const& target_data_sptr)
 {
- // cerr << "Setting up SRT2D Reconstruction" << endl;
   if (base_type::set_up(target_data_sptr) == Succeeded::no)
     return Succeeded::no;
 
@@ -125,30 +130,19 @@ SRT2DReconstruction::SRT2DReconstruction()
 
 SRT2DReconstruction::SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
                                          const int num_segments_to_combine_v)
-                                         //const float zoom_v,
-                                        // const int filter_wiener_v,
-                                        // const int filter_median_v,
-                                        // const int filter_gamma_v)
 {
   set_defaults();
   proj_data_ptr = proj_data_ptr_v;
   num_segments_to_combine = num_segments_to_combine_v;
-  //zoom = zoom_v;
-  //filter_wiener = filter_wiener_v;
-  //filter_median = filter_median_v;
-  //filter_gamma = filter_gamma_v;
 }
 
 Succeeded
 SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const& density_ptr)
 {
-  //cerr << "Starting actual_reconstruct" << endl;
-
   // In case of 3D data, use only direct sinograms
   // perform SSRB
   if (num_segments_to_combine > 1)
     {
-      //cerr << "Performing SSRB with num_segments_to_combine = " << num_segments_to_combine << endl;
       info(boost::format("Performing SSRB with num_segments_to_combine = %d") % num_segments_to_combine);
       const ProjDataInfoCylindrical& proj_data_info_cyl
           = dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_ptr->get_proj_data_info_sptr());
@@ -161,7 +155,6 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
     }
   else
     {
-      //cerr << "Using existing proj_data_ptr" << endl;
       info("Using existing proj_data_ptr");
     }
 
@@ -183,7 +176,6 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   bool do_arc_correction = false;
   if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr())))
     {
-      //cerr << "Data is already arc-corrected" << endl;
       info("Data is already arc-corrected");
       arc_corrected_proj_data_info_sptr = proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
       tangential_sampling = dynamic_cast<const ProjDataInfoCylindricalArcCorr&>(*proj_data_ptr->get_proj_data_info_sptr())
@@ -191,7 +183,6 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
     }
   else
     {
-      //cerr << "Performing arc-correction" << endl;
       info("Performing arc-correction");
       if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) == Succeeded::no)
         return Succeeded::no;
@@ -205,7 +196,6 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   Viewgram<float> view = proj_data_ptr->get_viewgram(0, 0);
   if (do_arc_correction)
     {
-      //cerr << "Arc-correcting viewgram" << endl;
       info("Arc-correcting viewgram");
       view = arc_correction.do_arc_correction(view);
     }
@@ -261,38 +251,12 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   std::vector<float> lg(sp), termC(sth), termC_th(sth);
   const float dp6 = 6.0 / 4.0 * 2.0 / (sp - 1.0);
 
-/*#ifdef STIR_OPENMP
-  if (getenv("OMP_NUM_THREADS") == NULL)
-    {
-      omp_set_num_threads(omp_get_num_procs());
-      if (omp_get_num_procs() == 1)
-        warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
-      cerr << "Using OpenMP-version of SRT2D with thread-count = processor-count (=" << omp_get_num_procs() << ")." << endl;
-    }
-  else
-    {
-      cerr << "Using OpenMP-version of SRT2D with " << getenv("OMP_NUM_THREADS") << " threads on " << omp_get_num_procs()
-           << " processors." << endl;
-      if (atoi(getenv("OMP_NUM_THREADS")) == 1)
-        warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using "
-                "USE_OPENMP=TRUE.");
-    }
-#endif*/ 
-
 #ifdef STIR_OPENMP
 set_num_threads();
 #pragma omp single
 info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
      " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
 #endif
-
-/*#ifdef STIR_OPENMP
-int num_threads = get_default_num_threads();
-set_num_threads(num_threads);
-#pragma omp single
-info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
-     " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
-#endif*/
 
   // Put theta and p in arrays.
   for (ith = 0; ith < sth; ith++)
@@ -534,164 +498,9 @@ for (ith = 1; ith < sth; ith++)
   }
 }
 
-/*  // apply Wiener filter
-  if (filter_wiener != 0)
-    wiener(image, sx, sy, sa);
-  // apply median filter
-  if (filter_median != 0)
-    median(image, sx, sy, sa);
-  // adjust gamma
-  if (filter_gamma != 0)
-    gamma(image, sx, sy, sa);*/
-
   return Succeeded::yes;
 }
 
-
-/*void
-SRT2DReconstruction::wiener(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa)
-{
-  cerr << "Starting Wiener filter" << endl;
-
-  const int min_x = image.get_min_x();
-  const int min_y = image.get_min_y();
-  const int ws = 9;
-
-  for (int ia = 0; ia < sa; ia++)
-    {
-      std::vector<std::vector<float>> localMean(sx, std::vector<float>(sy, 0.0f));
-      std::vector<std::vector<float>> localVar(sx, std::vector<float>(sy, 0.0f));
-
-      float noise = 0.;
-
-      for (int i = 0 + 1; i < sx - 1; i++)
-        {
-          for (int j = 0 + 1; j < sy - 1; j++)
-            {
-              localMean[i][j] = 0;
-              localVar[i][j] = 0;
-
-              for (int k = -1; k <= 1; k++)
-                for (int l = -1; l <= 1; l++)
-                  localMean[i][j] += image[ia][min_x + i + k][min_y + j + l] * 1.;
-              localMean[i][j] /= ws;
-
-              for (int k = -1; k <= 1; k++)
-                for (int l = -1; l <= 1; l++)
-
-                  localVar[i][j] += image[ia][min_x + i + k][min_y + j + l] * image[ia][min_x + i + k][min_y + j + l];
-              localVar[i][j] = localVar[i][j] / ws - localMean[i][j] * localMean[i][j];
-
-              noise += localVar[i][j];
-            }
-        }
-      noise /= sx * sy;
-
-      for (int i = 0 + 1; i < sx - 1; i++)
-        for (int j = 0 + 1; j < sy - 1; j++)
-          image[ia][min_x + i][min_y + j] = (image[ia][min_x + i][min_y + j] - localMean[i][j]) / std::max(localVar[i][j], noise)
-                                                * std::max(localVar[i][j] - noise, 0.f)
-                                            + localMean[i][j];
-    }
-  cerr << "Wiener filter complete" << endl;
-  return;
-}
-
-void
-SRT2DReconstruction::median(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa)
-{
-  cerr << "Starting Median filter" << endl;
-
-  const int min_x = image.get_min_x();
-  const int min_y = image.get_min_y();
-  const int filter_size = 3;
-  const int offset = filter_size / 2;
-  const int len = 4;
-  std::vector<double> neighbors(filter_size * filter_size, 0);
-
-  for (int ia = 0; ia < sa; ia++)
-    {
-      for (int i = 0; i < 9; i++)
-        neighbors[i] = 0;
-
-      for (int i = 0; i < sx; i++)
-        {
-          for (int j = 0; j < sy; j++)
-            {
-              if (i == 0 || i == sx - 1 || j == 0 || j == sy - 1)
-                continue;
-              for (int k = -offset; k <= offset; k++)
-                {
-                  for (int l = -offset; l <= offset; l++)
-                    {
-                      neighbors[(k + offset) * filter_size + l + offset]
-                          = image[ia][min_x + i + (k + i < sx ? k : 0)][min_y + j + (j + l < sy ? l : 0)];
-                    }
-                }
-              std::sort(neighbors.begin(), neighbors.end());
-              image[ia][min_x + i][min_y + j] = neighbors[len];
-            }
-        }
-    }
-  cerr << "Median filter complete" << endl;
-  return;
-}
-
-void
-SRT2DReconstruction::gamma(VoxelsOnCartesianGrid<float>& image, int sx, int sy, int sa)
-{
-  cerr << "Starting Gamma correction" << endl;
-
-  const int min_x = image.get_min_x();
-  const int min_y = image.get_min_y();
-  float targetAverage = .25; // Desired average pixel value
-
-  for (int ia = 0; ia < sa; ia++)
-    {
-      float min_val = INFINITY, max_val = -INFINITY;
-      for (int i = 0; i < sx; i++)
-        {
-          for (int j = 0; j < sy; j++)
-            {
-              min_val = std::min(image[ia][min_x + i][min_y + j], min_val);
-              max_val = std::max(image[ia][min_x + i][min_y + j], max_val);
-            }
-        }
-      for (int i = 0; i < sx; i++)
-        for (int j = 0; j < sy; j++)
-          image[ia][min_x + i][min_y + j] = (image[ia][min_x + i][min_y + j] - min_val) / (max_val - min_val);
-
-      int count = 0;
-      float averagePixelValue = 0.; 
-      for (int i = 0; i < sx; i++)
-        {
-          for (int j = 0; j < sy; j++)
-            {
-              if (std::abs(image[ia][min_x + i][min_y + j]) > 0.1)
-                {
-                  count++;
-                  averagePixelValue += image[ia][min_x + i][min_y + j];
-                }
-            }
-        }
-      averagePixelValue /= count;
-
-      float gamma_val = 1.;
-      if (averagePixelValue > 0.)
-        gamma_val = std::log(targetAverage) / std::log(averagePixelValue);
-      for (int i = 0; i < sx; i++)
-        for (int j = 0; j < sy; j++)
-          image[ia][min_x + i][min_y + j] = std::abs(image[ia][min_x + i][min_y + j]) > 1e-6
-                                                ? std::pow(image[ia][min_x + i][min_y + j], gamma_val)
-                                                : image[ia][min_x + i][min_y + j];
-
-      for (int i = 0; i < sx; i++)
-        for (int j = 0; j < sy; j++)
-          image[ia][min_x + i][min_y + j] = image[ia][min_x + i][min_y + j] * (max_val - min_val) + min_val;
-    }
-  cerr << "Gamma correction complete" << endl;
-  return;
-}*/
 
 float
 SRT2DReconstruction::hilbert_der(float x,
@@ -703,7 +512,6 @@ SRT2DReconstruction::hilbert_der(float x,
                                  float termC) const
 {
   float term, trm0, termd0;
- // float d, d_div_6, minus_half_div_d;
 
   const float d = p[1] - p[0];
   const float d_div_6 = d / 6.0;
