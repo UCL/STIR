@@ -93,7 +93,7 @@ protected: // make parameters protected such that doc shows always up in doxygen
       2 (filtered-viewgrams). Defaults to 0.
    */
   std::string attenuation_filename;
-  int display_level;
+  //int display_level;
   //int filter_wiener;
   //int filter_median;
   //int filter_gamma;
