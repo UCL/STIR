@@ -212,6 +212,7 @@ jobs:
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
+            brew update
               brew install boost swig python nlohmann-json
               PYTHON_EXECUTABLE=$(which python3)
               ;;
