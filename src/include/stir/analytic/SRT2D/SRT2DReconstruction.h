@@ -109,8 +109,35 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
+  /*!
+  \brief Computes second derivatives for natural cubic spline interpolation.
+
+  This function precomputes the second derivatives of the input data points 
+  for use in cubic spline interpolation. The results are stored in the \a y2 vector.
+
+  \param x Vector of x-coordinates of the input data points.
+  \param y Vector of y-coordinates of the input data points.
+  \param n The number of data points.
+  \param y2 Vector to store the computed second derivatives for spline interpolation.
+*/
   void spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) const;
 
+  /*!
+  \brief Computes the Hilbert transform derivative for a set of projections.
+
+  This function calculates the derivative of the Hilbert transform for a set of sampled data points.
+  It uses second derivatives, logarithmic differences, and a correction term to adjust the 
+  computed derivative.
+
+  \param x The x-coordinate for which the derivative is evaluated.
+  \param f Vector of function values at sampling points.
+  \param ddf Vector of second derivatives of the function.
+  \param p Vector of sampling positions.
+  \param sp The total number of sampling points.
+  \param lg Vector of logarithmic differences used for interpolation.
+  \param termC Correction term used for adjusting the derivative.
+  \return The computed Hilbert transform derivative at \a x.
+*/
   float hilbert_der(float x,
                     const std::vector<float>& f,
                     const std::vector<float>& ddf,
@@ -118,6 +145,17 @@ private:
                     int sp,
                     const std::vector<float>& lg,
                     float termC) const; 
+
+  /*!
+  \brief Performs numerical integration over a set of sampled data.
+
+  This function uses a simple summation approach to numerically calculate integrals over tangential positions.
+
+  \param dist The interval over which the integration is performed.
+  \param max The number of data points to integrate.
+  \param ff Vector containing the function values to be integrated.
+  \return The computed integral value.
+*/
   float integ(float dist, int max, const std::vector<float>& ff) const;
 };
 
