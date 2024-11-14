@@ -63,14 +63,23 @@ else()
 endif()
 
 ## find external packages
+# Note that we generally need find_package even for those that are only
+# PRIVATE dependencies (such as ITK, parallelproj etc). This is because
+# otherwise their targets (such as parallelproj::parallelproj_c) don't exist,
+# and the user will get CMake errors.
+# See https://github.com/UCL/STIR/issues/1535
+
 # we use a trick by Matt McCormick (kitware)
 # to set ITK_DIR etc first before calling find_package
 # to make sure we pick the same version of the external library
+
 if (STIR_FIND_QUIETLY)
   SET(STIR_FIND_TYPE "QUIET")
 else()
   SET(STIR_FIND_TYPE "REQUIRED")
 endif()
+
+find_package(Boost @Boost_VERSION@ REQUIRED)
 
 if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
@@ -79,7 +88,6 @@ if (@ITK_FOUND@)
   if(NOT ITK_FOUND)
     SET(STIR_FOUND OFF)
   endif()
-  include(${ITK_USE_FILE})
   set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 
