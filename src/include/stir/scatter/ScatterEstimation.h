@@ -167,9 +167,18 @@ public:
   /*! \c arg will not be modified */
   inline void set_mask_proj_data_sptr(const shared_ptr<ProjData> arg);
 
+  void set_recompute_mask_image(bool arg);
+  void set_recompute_mask_projdata(bool arg);
+
   inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
 
   inline void set_num_iterations(int);
+
+  inline unsigned int get_half_filter_width() const;
+  inline void set_half_filter_width(unsigned int);
+
+  inline void
+  set_downsample_scanner(bool downsample_scanner, int downsampled_number_of_rings = -1, int downsampled_detectors_per_ring = -1);
 
   void set_output_scatter_estimate_prefix(const std::string&);
   void set_export_scatter_estimates_of_each_iteration(bool);
@@ -379,6 +388,9 @@ private:
   float min_scale_value;
 
   bool downsample_scanner_bool;
+  int downsampled_number_of_rings;
+  int downsampled_detectors_per_ring;
+
   //!
   unsigned int half_filter_width;
 
