@@ -212,7 +212,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 
  if (auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr()))
     {
-       tangential_sampling = pdi_sptr->get_tangential_sampling();
+      float tangential_sampling = pdi_sptr->get_tangential_sampling();
     }
     else
     {
