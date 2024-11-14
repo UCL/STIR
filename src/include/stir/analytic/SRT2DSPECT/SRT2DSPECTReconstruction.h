@@ -134,14 +134,65 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  float hilbert_node(
-      float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn) const;
+  /*!
+    \brief Computes the Hilbert transform at a given node.
+  
+    This function calculates the Hilbert transform at a specific position 
+    based on the given function values and their second derivatives.
+
+    \param x The x-coordinate for the node.
+    \param f Vector of function values at sampling points.
+    \param ddf Vector of second derivatives of the function.
+    \param p Vector of sampling positions.
+    \param sp Number of sampling positions.
+    \param fn The function value at point \a x.
+    \return The computed Hilbert transform value at the specified node.
+  */
+  float hilbert_node(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn) const;
+
+  /*!
+  \brief Computes the Hilbert transform for a set of sampled data.
+
+  This function calculates the Hilbert transform for a single set of sampled data points, 
+  which is used to adjust for phase shifts in projections during SPECT reconstruction. 
+  The transform is computed using the function values, their second derivatives, 
+  and logarithmic differences.
+
+  \param x The x-coordinate where the transform is evaluated.
+  \param f Vector containing function values at the sampling positions.
+  \param ddf Vector of second derivatives of the function values.
+  \param p Vector of sampling positions.
+  \param sp The total number of sampling points.
+  \param lg Vector of logarithmic differences used for interpolation adjustments.
+  \return The computed Hilbert transform value at the specified x-coordinate.
+*/
   float hilbert(float x,
                 const std::vector<float>& f,
                 const std::vector<float>& ddf,
                 const std::vector<float>& p,
                 int sp,
                 std::vector<float>& lg) const; 
+
+
+/*!
+  \brief Computes the Hilbert transform derivatives for two sets of sampled data.
+
+  This function calculates the Hilbert transform derivatives for two separate sets of 
+  sampled data points, which are used to adjust for phase shifts in projections 
+  during SPECT reconstruction. The derivatives are computed using the function values, 
+  their second derivatives, and logarithmic differences.
+
+  \param x The x-coordinate where the derivatives are evaluated.
+  \param f Vector containing function values for the first set.
+  \param ddf Vector of second derivatives for the first set.
+  \param f1 Vector containing function values for the second set.
+  \param ddf1 Vector of second derivatives for the second set.
+  \param p Vector of sampling positions.
+  \param sp Total number of sampling positions.
+  \param dhp Pointer to store the computed derivative for the first set.
+  \param dh1p Pointer to store the computed derivative for the second set.
+  \param lg Vector of logarithmic differences used for interpolation.
+*/
   void hilbert_der_double(float x,
                           const std::vector<float>& f,
                           const std::vector<float>& ddf,
@@ -152,8 +203,50 @@ private:
                           float* dhp,
                           float* dh1p,
                           const std::vector<float>& lg) const;
+
+
+  /*!
+  \brief Performs interpolation using precomputed cubic splines.
+
+  This function uses the precomputed second derivatives (calculated by the \a spline function)
+  to interpolate a value at a specified x-coordinate. It returns the interpolated value.
+
+  \param xa The x-coordinates of the original data points.
+  \param ya The y-coordinates of the original data points.
+  \param y2a Precomputed second derivatives from the \a spline function.
+  \param n The number of data points.
+  \param x The x-coordinate where the interpolation is evaluated.
+  \return The interpolated function value at \a x.
+  
+  \note This function relies on the results of the \a spline function to efficiently compute the interpolation.
+*/
   float splint(const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x) const;
+
+  /*!
+  \brief Computes second derivatives for natural cubic spline interpolation.
+
+  This function precomputes the second derivatives of the input data points 
+  for use in cubic spline interpolation. The results are stored in the \a y2 vector.
+
+  \param x The x-coordinates of the input data points.
+  \param y The y-coordinates of the input data points.
+  \param n The number of data points.
+  \param y2 Vector to store the computed second derivatives for spline interpolation.
+  
+  \note This function prepares the data for efficient use in the \a splint function.
+*/
   void spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) const;
+
+/*!
+  \brief Performs numerical integration over a specified range.
+
+  This function computes numerical integration using a summation approach.
+
+  \param dist The distance interval over which to perform the integration.
+  \param max The number of discrete data points used for the integration.
+  \param ff Array containing function values at each sampled point.
+  \return The computed integral over the specified range.
+*/
   float integ(float dist, int max, float ff[]) const;
 };
 
