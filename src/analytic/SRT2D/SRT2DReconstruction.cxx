@@ -20,7 +20,7 @@
 #ifdef STIR_OPENMP
 #  include <omp.h>
 #endif
-#include "stir/num_threads.h" 
+//#include "stir/num_threads.h" 
 
 #include <cmath> // For M_PI and other math functions
 #ifndef M_PI
