@@ -219,48 +219,62 @@ if (!pdi_sptr)
   const int image_min_x = image.get_min_x();
   const int image_min_y = image.get_min_y();
 
-  std::vector<float> th(sth, 0), p(sp, 0), x1(sx, 0), x2(sy, 0);
-  std::vector<std::vector<float>> g(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> ddg(sa, std::vector<float>(sp, 0));
+  // Projection angles and sampling arrays
+ std::vector<float> th(sth, 0); // Theta values for each view angle.
+ std::vector<float> p(sp, 0); // Tangential positions for projections.
+ std::vector<float> x1(sx, 0), x2(sy, 0); // Normalized coordinates for image reconstruction.
+	
+ // Projection data storage
+ std::vector<std::vector<float>> g(sa, std::vector<float>(sp, 0)); // Projection data matrix.
+ std::vector<std::vector<float>> ddg(sa, std::vector<float>(sp, 0)); // Second derivative of projections for spline interpolation.
 
-  const int Nt = 8, Nmul = sth / Nt;
-  std::vector<float> lg(sp, 0);
+ // Number of angular divisions
+ const int Nt = 8; // Number of angular subdivisions used for integration.
+ const int Nmul = sth / Nt; // Multiplier for view angle processing.
+	
+ std::vector<float> lg(sp, 0); // Logarithmic values for tangential positions.
+ float dh1[Nt], dh2[Nt]; // Derivative values at angular subdivisions.
+ float t[Nt]; // Angular subdivision points.
 
-  float dh1[Nt], dh2[Nt], t[Nt];
+ // Intermediate Hilbert transform results for each axial position
+ std::vector<std::vector<float>> hilb(sa, std::vector<float>(sp, 0)); // Hilbert transform results.
+ std::vector<std::vector<float>> fcpe(sa, std::vector<float>(sp, 0)); // Cosine of phase exponentials.
+ std::vector<std::vector<float>> fspe(sa, std::vector<float>(sp, 0)); // Sine of phase exponentials.
+ std::vector<std::vector<float>> fc(sa, std::vector<float>(sp, 0)); // Cosine-filtered projections.
+ std::vector<std::vector<float>> fs(sa, std::vector<float>(sp, 0)); // Sine-filtered projections.
+ std::vector<std::vector<float>> ddfc(sa, std::vector<float>(sp, 0)); // Second derivative for cosine-filtered projections.
+ std::vector<std::vector<float>> ddfs(sa, std::vector<float>(sp, 0)); // Second derivative for sine-filtered projections.
+	
+ // Storage for second derivatives and interpolations
+ std::vector<std::vector<float>> f(sa, std::vector<float>(sp, 0)); // Attenuation-corrected projections.
+ std::vector<std::vector<float>> ddf(sa, std::vector<float>(sp, 0)); // Second derivatives of attenuation-corrected projections.
 
-  std::vector<std::vector<float>> hilb(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> fcpe(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> fspe(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> fc(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> fs(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> ddfc(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> ddfs(sa, std::vector<float>(sp, 0));
+ // Variables for Hilbert transform and interpolation results
+ float rho, h, fcme_fin, fsme_fin, fc_fin, fs_fin, fcpe_fin, fspe_fin, hc_fin, hs_fin; // Variables for Hilbert transform calculations.
+ float I, Ft1, Ft2, rho1, rho2, tau, tau1, tau2, rx1, rx2; // Variables for intermediate calculations.
+ float gx, w, F; // Variables for integration and filtering calculations.
 
-  std::vector<std::vector<float>> f(sa, std::vector<float>(sp, 0));
-  std::vector<std::vector<float>> ddf(sa, std::vector<float>(sp, 0));
+ // Cache for logarithmic differences used in Hilbert transforms
+ std::vector<std::vector<float>> lg1_cache(Nt / 2, std::vector<float>(sp - 1, 0)); // Logarithmic differences for \a rho1.
+ std::vector<std::vector<float>> lg2_cache(Nt / 2, std::vector<float>(sp - 1, 0)); // Logarithmic differences for \a rho2.
 
-  float rho, h, fcme_fin, fsme_fin, fc_fin, fs_fin, fcpe_fin, fspe_fin, hc_fin, hs_fin, I, Ft1, Ft2, rho1, rho2, tau, tau1, tau2,
-      rx1, rx2;
-  float gx, w, F;
+ // 3D array for storing reconstructed image slices
+ IndexRange<3> range(Coordinate3D<int>(0, 0, 0), Coordinate3D<int>(sa - 1, sx - 1, sy - 1));
+ Array<3, float> rx1x2th(range);  
+ rx1x2th.fill(0.0F); // Initialize the reconstruction array to zeros.
 
-  std::vector<std::vector<float>> lg1_cache(Nt / 2, std::vector<float>(sp - 1, 0));
-  std::vector<std::vector<float>> lg2_cache(Nt / 2, std::vector<float>(sp - 1, 0));
+ // Caches for Hilbert transforms in multiple angles
+ std::vector<std::vector<std::vector<float>>> f_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for filtered projections.
+ std::vector<std::vector<std::vector<float>>> ddf_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for second derivatives.
+ std::vector<std::vector<std::vector<float>>> f1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for mirrored projections.
+ std::vector<std::vector<std::vector<float>>> ddf1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for second derivatives of mirrored projections.
 
-IndexRange<3> range(Coordinate3D<int>(0, 0, 0), Coordinate3D<int>(sa - 1, sx - 1, sy - 1));
-Array<3, float> rx1x2th(range);
-rx1x2th.fill(0.0F);
-
-  std::vector<std::vector<std::vector<float>>> f_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
-  std::vector<std::vector<std::vector<float>>> ddf_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
-  std::vector<std::vector<std::vector<float>>> f1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
-  std::vector<std::vector<std::vector<float>>> ddf1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0)));
-
-/* #ifdef STIR_OPENMP
-set_num_threads();
-#pragma omp single
-info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
+ /* #ifdef STIR_OPENMP
+ set_num_threads();
+ #pragma omp single
+ info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
      " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
-#endif*/
+ #endif*/
 
   // c --------------------------
   // c Put theta and p in arrays.
