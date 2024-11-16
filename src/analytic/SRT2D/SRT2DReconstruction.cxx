@@ -583,5 +583,5 @@ SRT2DReconstruction::integ(float dist, int max, const std::vector<float>& ff) co
   return intg * dist / max;
 }
 
-END_NAMESPACE_STIR
 
+END_NAMESPACE_STIR
