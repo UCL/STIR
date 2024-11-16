@@ -107,7 +107,6 @@ SRT2DReconstruction::set_up(shared_ptr<SRT2DReconstruction::TargetT> const& targ
             num_segments_to_combine = 3;
         }
     } 
-
   return Succeeded::yes;
 }
 
