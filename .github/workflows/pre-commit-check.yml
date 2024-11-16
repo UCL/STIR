@@ -1,25 +1,16 @@
 name: Run pre-commit check
 on:
-  - push
-  - pull_request
-
+- push
+- pull_request
 jobs:
   check:
     runs-on: ubuntu-latest
     name: pre-commit
     steps:
-      # Step 1: Checkout the code
-      - uses: actions/checkout@v4
-      
-      # Step 2: Set up Conda environment
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
+    - uses: actions/checkout@v4
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
           activate-environment: pre-commit-env
           environment-file: pre-commit-environment.yml
           auto-activate-base: false
-      
-      # Step 3: Run pre-commit hooks using the latest version
-      - name: Run pre-commit checks
-        uses: pre-commit/action@v3.0.2
-        with:
-          extra_args: '--all-files'
+    - uses: pre-commit/action@latest
