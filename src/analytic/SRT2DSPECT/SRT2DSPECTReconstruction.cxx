@@ -442,7 +442,6 @@ if (!pdi_sptr)
 
               for (ia = 0; ia < sa; ia++) 
                 {  
- if(ia!=31) continue; 
                  // Example of how to choose particular slices to be reconstructed
                  // if(ia!=20 && ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue;
 
