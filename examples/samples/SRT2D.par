@@ -5,9 +5,13 @@ xy output image size (in pixels) := -1
 z output image size (in pixels) := -1
 zoom := 1 
 
-wiener filter := 1
-median filter := 0
-gamma filter  := 1
+;post-filter type := Wiener
+;Wiener Filter Parameters :=
+;End Wiener Filter Parameters :=
+
+;post-filter type := Gamma
+;Gamma Filter Parameters :=
+;End Gamma Filter Parameters :=
 
 output filename prefix := SRT2D
 
