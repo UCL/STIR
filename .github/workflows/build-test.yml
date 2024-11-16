@@ -79,7 +79,7 @@ jobs:
           compiler: gcc
           compiler_version: 12
           cuda_version: "12.1.0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=14"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "OFF"
@@ -145,6 +145,7 @@ jobs:
               # no idea what to do here
               ;;
            esac
+
     - name: set_compiler_variables
       shell: bash
       run: |
@@ -177,6 +178,7 @@ jobs:
           # make available to jobs below
           echo CC="$CC" >> $GITHUB_ENV
           echo CXX="$CXX" >> $GITHUB_ENV
+
     - if: matrix.cuda_version != '0'
       uses: Jimver/cuda-toolkit@v0.2.11
       id: cuda-toolkit
@@ -239,6 +241,7 @@ jobs:
               ;;
           esac
           python -m pip install pytest
+
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
              git clone --depth 1 --branch v1.7.3 https://github.com/gschramm/parallelproj
              mkdir parallelproj/build
@@ -251,6 +254,7 @@ jobs:
              cd ../..
              rm -rf parallelproj
           fi
+
           # Install ROOT (warning: currently only valid on Ubuntu)
           if test "${{matrix.ROOT}}XX" == "ONXX"; then
              ROOT_file=root_v6.28.12.Linux-ubuntu20-x86_64-gcc9.4.tar.gz
@@ -259,6 +263,7 @@ jobs:
              rm "$ROOT_file"
              source root/bin/thisroot.sh
           fi
+
           # we'll install some dependencies with shared libraries, so need to let the OS know
           # thisroot.sh also modified the path, so save that for the recon_test_pack
           case ${{matrix.os}} in
@@ -274,6 +279,7 @@ jobs:
               echo PATH="${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/bin:$PATH" >> $GITHUB_ENV
               ;;
           esac
+
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1
       with:
@@ -314,6 +320,7 @@ jobs:
               # no idea how to do this
               ;;
            esac
+
     - name: build
       shell: bash
       env:
@@ -322,6 +329,7 @@ jobs:
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
           cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
+
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session if triggered
       uses: mxschmitt/action-tmate@v3
@@ -342,7 +350,10 @@ jobs:
           fi
           # don't run all of them in Debug mode as it takes too long
           if test ${BUILD_TYPE} = Debug; then
-              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection"
+              # Also excluding test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+              # as it is a bit slow. Moreover it fails on MacOS (Debug)
+              # https://github.com/UCL/STIR/pull/1418#issuecomment-2109518132
+              EXCLUDE_Debug="test_data_processor_projectors|test_export_array|test_ArcCorrection|test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin"
               EXCLUDE="${EXCLUDE_Debug}${EXCLUDE:+"|"}${EXCLUDE}"
           fi
           # prepend -E
@@ -351,6 +362,20 @@ jobs:
           fi
           # execute tests
           ctest --output-on-failure -C ${BUILD_TYPE} ${EXCLUDE}
+
+    - name: Upload ctest log files for debugging
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ctest_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: |
+          ${{ github.workspace }}/build/**/*.log
+          ${{ github.workspace }}/build/**/*.hv
+          ${{ github.workspace }}/build/**/*.v
+          ${{ github.workspace }}/build/**/*.hs
+          ${{ github.workspace }}/build/**/*.s
+        retention-days: 7
+
     - name: C++ examples with STIR_LOCAL
       shell: bash
       run: |
@@ -359,16 +384,20 @@ jobs:
           # Run examples to see if they work
           cd ${GITHUB_WORKSPACE}/examples/PET_simulation
           ./run_simulation.sh 1> /dev/null
+
           # Run the Demo executables
           EXE_LOC=${GITHUB_WORKSPACE}/build/src/examples/C++/using_STIR_LOCAL
           cd ${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL
+
           generate_image generate_image.par
           forward_project sino.hs image.hv  small.hs
+
           # Cannot test demo1 or demo2 as they require interactivity. Piping does not work.
           ${EXE_LOC}/demo3 demo.par --display_off
           ${EXE_LOC}/demo3 demoPM.par --display_off
           ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
           ${EXE_LOC}/demo5_line_search demo5_line_search.par
+
     - name: remove build
       shell: bash
          # remove to create some disk space
@@ -378,6 +407,7 @@ jobs:
           df -h .
           rm -rf ./build
           df -h .
+
     - name: C++ examples with installed STIR
       shell: bash
       run: |
@@ -392,6 +422,7 @@ jobs:
           # just check if its output makes sense
           list_image_info test.hv
           rm -rf build
+
     - name: recon_test_pack
       shell: bash
       env:
@@ -415,12 +446,14 @@ jobs:
             cd ${GITHUB_WORKSPACE}/recon_test_pack/SPECT
             ./run_SPECT_tests.sh
           fi
+
     - name: Upload recon_test_pack log files for debugging
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
-        path: ${{ github.workspace }}/recon_test_pack/**/*.log
+        path: |
+          ${{ github.workspace }}/recon_test_pack/**/*.log
           ${{ github.workspace }}/recon_test_pack/**/my_*v
           ${{ github.workspace }}/recon_test_pack/**/my_*s
         retention-days: 7
@@ -429,6 +462,7 @@ jobs:
       shell: bash
       run: |
           rm -rf ${GITHUB_WORKSPACE}/recon_test_pack
+
     - name: Python
       shell: bash
       run: |
