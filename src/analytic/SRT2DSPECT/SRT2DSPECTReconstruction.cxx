@@ -14,7 +14,7 @@
   \brief Implementation of class stir::SRT2DSPECTReconstruction
   
   The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006): 45-54.
-  STIR implementations: initial version 2015, 1st updated version 2023-2024
+  STIR implementations: initial version 2015-2026, 1st updated version 2023-2024
   
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
