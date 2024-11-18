@@ -93,7 +93,7 @@ extend_segment(const SegmentBySinogram<float>& segment,
           if (extend_without_wrapping)
             {
               out[axial_pos][min_dim[2] + view_edge] = out[axial_pos][min_dim[2] + view_extension];
-              out[axial_pos][max_dim[2] - view_extension] = out[axial_pos][max_dim[2] - view_extension];
+              out[axial_pos][max_dim[2] - view_edge] = out[axial_pos][max_dim[2] - view_extension];
             }
           else if (flip_views)
             {

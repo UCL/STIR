@@ -121,6 +121,13 @@ PLSPrior<elemT>::check(DiscretisedDensity<3, elemT> const& current_image_estimat
   // Check anatomical and current image have same characteristics
   if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
     error("The anatomical image must have the same charateristics as the PET image");
+  if (!is_null_ptr(this->kappa_ptr))
+    {
+      std::string explanation;
+      if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
+        error(std::string(registered_name)
+              + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
+    }
 }
 
 template <typename elemT>
@@ -471,9 +478,6 @@ PLSPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_image
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("PLSPrior: kappa image has not the same index range as the reconstructed image\n");
-
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -545,8 +549,6 @@ PLSPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
       *inner_product_sptr, *penalty_sptr, *pet_im_grad_z_sptr, *pet_im_grad_y_sptr, *pet_im_grad_x_sptr, current_image_estimate);
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("PLSPrior: kappa image has not the same index range as the reconstructed image\n");
   shared_ptr<DiscretisedDensity<3, elemT>> gradient_sptr(this->anatomical_sptr->get_empty_copy());
 
   const int min_z = current_image_estimate.get_min_index();

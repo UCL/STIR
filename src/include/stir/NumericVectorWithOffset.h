@@ -46,7 +46,10 @@ START_NAMESPACE_STIR
 template <class T, class elemT>
 class NumericVectorWithOffset : public VectorWithOffset<T>
 {
-private:
+#ifdef SWIG
+public: // needs to be public for SWIG to be able to parse the "using" statement below
+#endif
+
   typedef VectorWithOffset<T> base_type;
 
 public:

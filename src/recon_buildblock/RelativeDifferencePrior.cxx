@@ -109,7 +109,7 @@ RelativeDifferencePrior<elemT>::post_processing()
 
 template <typename elemT>
 Succeeded
-RelativeDifferencePrior<elemT>::set_up(shared_ptr<DiscretisedDensity<3, elemT>> const& target_sptr)
+RelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr)
 {
   base_type::set_up(target_sptr);
 
@@ -122,6 +122,13 @@ RelativeDifferencePrior<elemT>::check(DiscretisedDensity<3, elemT> const& curren
 {
   // Do base-class check
   base_type::check(current_image_estimate);
+  if (!is_null_ptr(this->kappa_ptr))
+    {
+      std::string explanation;
+      if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
+        error(std::string(registered_name)
+              + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
+    }
 }
 
 template <typename elemT>
@@ -135,6 +142,7 @@ RelativeDifferencePrior<elemT>::set_defaults()
   this->weights.recycle();
   this->gamma = 2;
   this->epsilon = 0.0;
+  this->_already_set_up = false;
 }
 
 template <>
@@ -212,6 +220,7 @@ void
 RelativeDifferencePrior<elemT>::set_weights(const Array<3, float>& w)
 {
   this->weights = w;
+  this->_already_set_up = false;
 }
 
 //! get current kappa image
@@ -232,6 +241,7 @@ void
 RelativeDifferencePrior<elemT>::set_kappa_sptr(const shared_ptr<DiscretisedDensity<3, elemT>>& k)
 {
   this->kappa_ptr = k;
+  this->_already_set_up = false;
 }
 
 // TODO move to set_up
@@ -309,9 +319,6 @@ RelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
-
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -386,8 +393,6 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -431,7 +436,7 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
         }
     }
 
-  info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min());
+  info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min(), 3);
 
   static int count = 0;
   ++count;
@@ -471,9 +476,6 @@ RelativeDifferencePrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& pr
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int z = coords[1];
   const int y = coords[2];
@@ -550,9 +552,6 @@ RelativeDifferencePrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensit
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();

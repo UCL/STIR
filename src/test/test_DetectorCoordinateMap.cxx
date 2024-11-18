@@ -67,33 +67,13 @@ float
 DetectionPosMapTests::calculate_angle_within_half_bucket(
     const shared_ptr<Scanner> scanner_ptr, const shared_ptr<ProjDataInfoBlocksOnCylindricalNoArcCorr> proj_data_info_ptr)
 {
-  Bin bin;
-  LORInAxialAndNoArcCorrSinogramCoordinates<float> lorB;
-  float csi;
-  float C_spacing = scanner_ptr->get_transaxial_crystal_spacing();
-  float csi_crystal = std::atan((C_spacing) / scanner_ptr->get_effective_ring_radius());
-  //    float bucket_spacing=scanner_ptr->get_transaxial_block_spacing()*C_spacing;
-  //    float blocks_gap=scanner_ptr->get_transaxial_block_spacing()
-  //            -scanner_ptr->get_num_transaxial_crystals_per_block()*C_spacing;
-  //    float csi_gap=std::atan((blocks_gap)/scanner_ptr->get_effective_ring_radius());
-
-  //    get angle within half bucket
-  for (int view = 0; view <= scanner_ptr->get_max_num_views(); view++)
-    {
-      int bucket_num
-          = view / (scanner_ptr->get_num_transaxial_crystals_per_block() * scanner_ptr->get_num_transaxial_blocks_per_bucket());
-      if (bucket_num > 0)
-        break;
-
-      bin.segment_num() = 0;
-      bin.axial_pos_num() = 0;
-      bin.view_num() = view;
-      bin.tangential_pos_num() = 0;
-
-      proj_data_info_ptr->get_LOR(lorB, bin);
-      csi = lorB.phi();
-    }
-  return (csi + csi_crystal) / 2;
+  auto csi = _PI / (scanner_ptr->get_num_transaxial_blocks() / scanner_ptr->get_num_transaxial_blocks_per_bucket());
+  auto tBl_gap = scanner_ptr->get_transaxial_block_spacing()
+                 - scanner_ptr->get_num_transaxial_crystals_per_block() * scanner_ptr->get_transaxial_crystal_spacing();
+  auto csi_minus_csiGaps
+      = csi
+        - (csi / scanner_ptr->get_transaxial_block_spacing() * 2) * (scanner_ptr->get_transaxial_crystal_spacing() / 2 + tBl_gap);
+  return csi_minus_csiGaps;
 }
 
 /*!

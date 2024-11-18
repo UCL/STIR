@@ -25,57 +25,9 @@
 
 #include "stir/shared_ptr.h"
 #include "stir/deprecated.h"
-#include "boost/iterator/iterator_adaptor.hpp"
-#include "boost/iterator/reverse_iterator.hpp"
+#include <iterator>
 
 START_NAMESPACE_STIR
-
-namespace detail
-{
-/*! \ingroup Array
-  \brief templated class for the iterators used by VectorWithOffset.
-
-  There should be no need to use this class yourself. Always use
-  VectorWithOffset::iterator or VectorWithOffset::const_iterator.
-*/
-template <class elemT>
-class VectorWithOffset_iter : public boost::iterator_adaptor<VectorWithOffset_iter<elemT> // Derived
-                                                             ,
-                                                             elemT* // Base
-                                                             ,
-                                                             boost::use_default // Value
-                                                             ,
-                                                             boost::random_access_traversal_tag // CategoryOrTraversal
-                                                             >
-{
-private:
-  // abbreviation of the type of this class
-  typedef VectorWithOffset_iter<elemT> self_t;
-
-public:
-  VectorWithOffset_iter()
-      : VectorWithOffset_iter::iterator_adaptor_(0)
-  {}
-
-  //! allow assignment from ordinary pointer
-  /*! really should be used within VectorWithOffset
-    It is explicit such that you can't do this by accident.
-  */
-  explicit VectorWithOffset_iter(elemT* p)
-      : VectorWithOffset_iter::iterator_adaptor_(p)
-  {}
-
-  //! some magic trickery to be able to assign iterators to const iterators, but not to incompatible types
-  /*! See the boost documentation for more info.
-   */
-  template <class OtherelemT>
-  VectorWithOffset_iter(VectorWithOffset_iter<OtherelemT> const& other,
-                        typename boost::enable_if_convertible<OtherelemT, elemT>::type* = 0)
-      : VectorWithOffset_iter::iterator_adaptor_(other.base())
-  {}
-};
-
-} // end of namespace detail
 
 /*!
   \ingroup Array
@@ -113,19 +65,16 @@ class VectorWithOffset
 {
 public:
   //! \name typedefs for iterator support
-  /*! Most of these should really not be needed because we use boost::iterator_adaptor now.
-      However, some are used directly in STIR code. (Maybe they shouldn't....)
-  */
   //@{
   typedef T value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
   typedef ptrdiff_t difference_type;
-  typedef detail::VectorWithOffset_iter<T> iterator;
-  typedef detail::VectorWithOffset_iter<T const> const_iterator;
+  typedef T* iterator;
+  typedef T const* const_iterator;
 
-  typedef boost::reverse_iterator<iterator> reverse_iterator;
-  typedef boost::reverse_iterator<const_iterator> const_reverse_iterator;
+  typedef std::reverse_iterator<iterator> reverse_iterator;
+  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   //@}
   typedef size_t size_type;
 

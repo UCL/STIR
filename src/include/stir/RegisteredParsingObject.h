@@ -77,6 +77,12 @@ template <typename Derived, typename Base, typename Parent = Base>
 class RegisteredParsingObject : public Parent
 {
 public:
+  // import constructors from Parent
+  // Note: disabled for older SWIG as that generates an error before 4.2, and a warning for 4.2
+#if !defined(SWIG) || (SWIG_VERSION >= 0x040300)
+  using Parent::Parent;
+#endif
+
   //! Construct a new object (of type Derived) by parsing the istream
   /*! When the istream * is 0, questions are asked interactively.
 
@@ -93,6 +99,7 @@ public:
   inline std::string parameter_info() override;
 
 public:
+#ifndef SWIG
   //! A helper class to allow automatic registration.
   struct RegisterIt
   {
@@ -111,18 +118,19 @@ public:
     */
     ~RegisterIt()
     {
-#if 0
+#  if 0
       // does not work yet, as registry might be destructed before this
       // RegisterIt object. A solution to this problem is coming up.
       cerr << "In RegisterIt destructor for " << Derived::registered_name<<endl;
       cerr <<"Current keys: ";
       Parent::registry().list_keys(cerr);
       Parent::registry().remove_from_registry(Derived::registered_name);
-#endif
+#  endif
     }
   };
   // RegisterIt needs to be a friend to have access to registry()
   friend struct RegisterIt;
+#endif
 };
 
 END_NAMESPACE_STIR

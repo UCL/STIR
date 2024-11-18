@@ -118,6 +118,13 @@ QuadraticPrior<elemT>::check(DiscretisedDensity<3, elemT> const& current_image_e
 {
   // Do base-class check
   base_type::check(current_image_estimate);
+  if (!is_null_ptr(this->kappa_ptr))
+    {
+      std::string explanation;
+      if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
+        error(std::string(registered_name)
+              + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
+    }
 }
 
 template <typename elemT>
@@ -241,9 +248,6 @@ QuadraticPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
-
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -316,8 +320,6 @@ QuadraticPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_grad
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -407,9 +409,6 @@ QuadraticPrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessi
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int z = coords[1];
   const int y = coords[2];
   const int x = coords[3];
@@ -478,9 +477,6 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3, elemT
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -559,9 +555,6 @@ QuadraticPrior<elemT>::add_multiplication_with_approximate_Hessian(DiscretisedDe
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();
   for (int z = min_z; z <= max_z; z++)
@@ -628,9 +621,6 @@ QuadraticPrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elem
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();

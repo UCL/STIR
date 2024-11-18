@@ -33,7 +33,7 @@
 #include "stir/error.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
-
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/DiscretisedDensity.h"
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/DistributedCachingInformation.h"
@@ -626,12 +626,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
   // TODO check compatibility between symmetries for forward and backprojector
   this->symmetries_sptr.reset(this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
 
-  if (is_null_ptr(this->normalisation_sptr))
-    {
-      error("Invalid normalisation object");
-      return Succeeded::no;
-    }
-
   // we postpone calling setup_distributable_computation until we know which projectors we will use
   this->distributable_computation_already_setup = false;
   // similar for norm
@@ -639,6 +633,18 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
 
   if (this->get_recompute_sensitivity())
     {
+      if (is_null_ptr(this->normalisation_sptr))
+        {
+          error("Invalid normalisation object");
+          return Succeeded::no;
+        }
+
+      if (!this->use_tofsens && proj_data_info_sptr->is_tof_data() && normalisation_sptr->is_TOF_only_norm())
+        {
+          info("Detected TOF normalisation data, so using time-of-flight sensitivities");
+          this->use_tofsens = true;
+        }
+
       if (this->sensitivity_uses_same_projector())
         {
           this->sens_backprojector_sptr = projector_pair_ptr->get_back_projector_sptr();
@@ -971,12 +977,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
                                               this->get_num_subsets());
 
   info("Forward projecting input image.", 2);
+  volatile bool any_negatives = false;
 #ifdef STIR_OPENMP
 #  pragma omp parallel for schedule(dynamic)
 #endif
   // note: older versions of openmp need an int as loop
   for (int i = 0; i < static_cast<int>(vg_idx_to_process.size()); ++i)
     {
+      if (any_negatives)
+        continue; // early exit as we'll throw error outside of the parallel for
       const auto viewgram_idx = vg_idx_to_process[i];
       {
 #ifdef STIR_OPENMP
@@ -1005,6 +1014,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
       {
         tmp_viewgrams = this->get_proj_data().get_empty_related_viewgrams(viewgram_idx, symmetries_sptr);
         this->get_projector_pair().get_forward_projector_sptr()->forward_project(tmp_viewgrams);
+        if (tmp_viewgrams.find_min() < 0)
+          {
+            any_negatives = true;
+            continue; // throw error outside of parallel for
+          }
       }
 
       // now divide by the data term
@@ -1017,6 +1031,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
       this->get_projector_pair().get_back_projector_sptr()->back_project(tmp_viewgrams);
 
     } // end of loop over view/segments
+
+  if (any_negatives)
+    error("PoissonLL add_multiplication_with_approximate_sub_Hessian: forward projection of input contains negatives. The "
+          "result would be incorrect, so we abort.\n"
+          "See https://github.com/UCL/STIR/issues/1461");
 
   shared_ptr<TargetT> tmp(output.get_empty_copy());
   this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
@@ -1092,11 +1111,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
 
   // Forward project input image
   info("Forward projecting input image.", 2);
+  volatile bool any_negatives = false;
 #ifdef STIR_OPENMP
 #  pragma omp parallel for schedule(dynamic)
 #endif
   for (int i = 0; i < static_cast<int>(vg_idx_to_process.size()); ++i)
     { // Loop over each of the viewgrams in input_viewgrams_vec, forward projecting input into them
+      if (any_negatives)
+        continue; // early exit as we'll throw error outside of the parallel for
+
       const auto viewgram_idx = vg_idx_to_process[i];
       {
 #ifdef STIR_OPENMP
@@ -1112,7 +1135,16 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
       }
       input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(viewgram_idx, symmetries_sptr);
       this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams_vec[i]);
+      if (input_viewgrams_vec[i].find_min() < 0)
+        {
+          any_negatives = true;
+          continue; // throw error outside of parallel for
+        }
     }
+  if (any_negatives)
+    error("PoissonLL accumulate_sub_Hessian_times_input: forward projection of input contains negatives. The "
+          "result would be incorrect, so we abort.\n"
+          "See https://github.com/UCL/STIR/issues/1461");
 
   info("Forward projecting current image estimate and back projecting to output.", 2);
   this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);

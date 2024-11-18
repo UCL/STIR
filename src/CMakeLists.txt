@@ -136,7 +136,13 @@ if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
 
-  set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # work around https://gitlab.kitware.com/cmake/cmake/-/issues/26037
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX -latomic)
+    message(STATUS "OpenMP Linker flags for Clang: ${OpenMP_EXE_LINKER_FLAGS}")
+  else()
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  endif()
 endif()
 
 #### Flags for compatibility between different systems

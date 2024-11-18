@@ -42,6 +42,7 @@ ScatterEstimation::set_mask_image_sptr(const shared_ptr<const DiscretisedDensity
 {
   this->_already_setup = false;
   this->mask_image_sptr = arg;
+  this->set_recompute_mask_image(false);
 }
 
 void
@@ -49,6 +50,7 @@ ScatterEstimation::set_mask_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
   this->_already_setup = false;
   this->mask_projdata_sptr = arg;
+  this->set_recompute_mask_projdata(false);
 }
 
 void
@@ -62,6 +64,28 @@ void
 ScatterEstimation::set_num_iterations(int arg)
 {
   this->num_scatter_iterations = arg;
+}
+
+unsigned int
+ScatterEstimation::get_half_filter_width() const
+{
+  return this->half_filter_width;
+}
+
+void
+ScatterEstimation::set_half_filter_width(unsigned int arg)
+{
+  this->half_filter_width = arg;
+}
+
+void
+ScatterEstimation::set_downsample_scanner(bool downsample_scanner,
+                                          int downsampled_number_of_rings,
+                                          int downsampled_detectors_per_ring)
+{
+  this->downsample_scanner_bool = downsample_scanner;
+  this->downsampled_number_of_rings = downsampled_number_of_rings;
+  this->downsampled_detectors_per_ring = downsampled_detectors_per_ring;
 }
 
 END_NAMESPACE_STIR

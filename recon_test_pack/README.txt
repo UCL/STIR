@@ -1,5 +1,5 @@
 
-README file for STIR recon_test_pack version 6.1 (and later versions?)
+README file for STIR recon_test_pack version 6.2 (and later versions?)
 ----------------------------------------------------------------------
 
 This test pack runs some simple tests to check if various STIR reconstruction
@@ -85,6 +85,9 @@ Similarly, a test for motion corrected reconstruction of gated data is run as
 
 sh run_test_simulate_and_recon_with_motion.sh  [ --mpicmd cmd] [optional_install_path]
 
+Finally, there are some tests on using SSRB to rebin the data to lower dimensions
+
+sh run_test_SSRB.sh  [ --mpicmd cmd] [optional_install_path]
 
 
 Testing SPECT reconstructions

@@ -350,6 +350,12 @@ ProjDataInMemory::ProjDataInMemory(const ProjDataInMemory& proj_data)
   std::copy(proj_data.begin_all(), proj_data.end_all(), this->begin_all());
 }
 
+shared_ptr<ProjDataInMemory>
+ProjDataInMemory::read_from_file(const std::string& filename)
+{
+  return std::make_shared<ProjDataInMemory>(*ProjData::read_from_file(filename));
+}
+
 float
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
@@ -393,30 +399,44 @@ ProjDataInMemory::norm_squared() const
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator+=(const ProjDataInMemory& v)
+ProjDataInMemory::operator+=(const base_type& v)
 {
-  this->buffer += v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer += vp->buffer;
+  else
+    base_type::operator+=(v);
+
   return *this;
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator-=(const ProjDataInMemory& v)
+ProjDataInMemory::operator-=(const base_type& v)
 {
-  this->buffer -= v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer -= vp->buffer;
+  else
+    base_type::operator-=(v);
   return *this;
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator*=(const ProjDataInMemory& v)
+ProjDataInMemory::operator*=(const base_type& v)
 {
-  this->buffer *= v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer *= vp->buffer;
+  else
+    base_type::operator*=(v);
   return *this;
 }
 
 ProjDataInMemory&
-ProjDataInMemory::operator/=(const ProjDataInMemory& v)
+ProjDataInMemory::operator/=(const base_type& v)
 {
-  this->buffer /= v.buffer;
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    this->buffer /= vp->buffer;
+  else
+    base_type::operator/=(v);
+
   return *this;
 }
 

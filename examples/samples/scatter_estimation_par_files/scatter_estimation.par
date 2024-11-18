@@ -75,8 +75,10 @@ export scatter estimates of each iteration := 1
 output scatter estimate name prefix := ${scatter_prefix}
 output additive estimate name prefix:= ${total_additive_prefix}
 
-maximum scatter scaling factor := 2 ;10
-minimum scatter scaling factor := 0.4 ;0.1
+; Optionally set thresholds for tail-fitting. For most scanners, the scale factors should be a
+; bit larger than 1, but this is not always the case.
+maximum scatter scaling factor := 2
+minimum scatter scaling factor := 0.1
 
 ;Upsample and fit 
 ; defaults to 3.

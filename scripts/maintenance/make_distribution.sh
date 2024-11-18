@@ -64,7 +64,7 @@ set -e
 #fi
 
 
-read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, CITATION.cff? (press Ctrl-C if not)"
+read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm, documentation/credits.htm, CITATION.cff? (press Ctrl-C if not)"
 
 mkdir -p ${DISTRIB}
 cd ${DISTRIB}
@@ -257,4 +257,4 @@ if [ $do_website_final_version = 0 ]; then
   echo "if not beta, did you run with 'do_website_final_version=1'?"
 fi
 echo "create a GitHub release. To get release notes, use"
-echo " pandoc -t markdown_github -o release_${VERSION%%.?}.md  release_${VERSION%%.?}.htm"
+echo " pandoc -t gfm -o release_${VERSION%%.?}.md  STIR/documentation/release_${VERSION%%.?}.htm"
