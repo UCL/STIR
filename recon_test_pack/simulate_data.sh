@@ -45,7 +45,7 @@ if [ "$suffix" = "_SPECT" ]; then
 	fi
 
 
-	echo "===  create line integrals for attenuation SPECT sinogram"
+	echo "===  create line integrals for SRT2DSPECT attenuation projection"
 	forward_project "my_attenuation_sino$suffix.hs" "${atten_image}" "${template_sino}" > "my_create_attenuation_sino${suffix}.log" 2>&1
 	if [ $? -ne 0 ]; then 
 		echo "ERROR running forward_project for attenuation sinogram. Check my_create_attenuation_sino${suffix}.log"; exit 1;
