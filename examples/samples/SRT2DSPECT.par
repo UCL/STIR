@@ -1,8 +1,8 @@
 SRT2DSPECTParameters :=
 
-;SRT2DSPECT receives as input the forward projection of the attenuation image (attensino1.hs) and the measured emission sinogram (sino1.hs).
-input file := sino1.hs
-attenuation filename := attensino1.hs
+;SRT2DSPECT receives as input the forward projection of the attenuation image (attensino.hs) and the measured emission sinogram (sino.hs).
+input file := sino.hs
+attenuation projection filename := attensino.hs
 
 xy output image size (in pixels) := -1
 
