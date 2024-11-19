@@ -160,8 +160,8 @@ fi
   # fix-up header by insert energy info just before the end
   # trick for awk comes from the www.theunixschool.com
   awk '/END OF INTERFILE/ { print "number of energy windows := 1\nenergy window lower level[1] := 350\nenergy window upper level[1] :=  650\nEnergy resolution := 0.22\nReference energy (in keV) := 511" }1 ' \
-      ${template_sino} > tmp_header.hs
-  mv tmp_header.hs ${template_sino}
+      "${template_sino}" > tmp_header.hs
+  mv tmp_header.hs "${template_sino}"
   if [ $force_zero_view_offset -eq 1 ]; then
     if [ "$TOF" -eq 1 ]; then
         echo "$0 would need work to be used with both TOF and zero-offset. Exiting"
