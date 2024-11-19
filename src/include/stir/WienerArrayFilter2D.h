@@ -4,7 +4,7 @@
 
   \file
   \ingroup Array
-  \brief Declaration of class stir::MedianArrayFilter2D
+  \brief Declaration of class stir::WienerArrayFilter2D
 
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
