@@ -67,28 +67,28 @@ echo "Using `command -v SRT2DSPECT`"
 LC_ALL=C
 export LC_ALL
 
-./simulate_PET_data_for_tests.sh
+./simulate_data_for_tests.sh
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
 fi
 # need to repeat with zero-offset now as FBP doesn't support it
 zero_view_suffix=_force_zero_view_offset
-./simulate_PET_data_for_tests.sh --force_zero_view_offset --suffix $zero_view_suffix
+./simulate_data_for_tests.sh --force_zero_view_offset --suffix $zero_view_suffix
 if [ $? -ne 0 ]; then
   echo "Error running simulation with zero view offset"
   exit 1
 fi
 ## TOF data
 TOF_suffix=_TOF
-./simulate_PET_data_for_tests.sh --TOF --suffix "$TOF_suffix"
+./simulate_data_for_tests.sh --TOF --suffix "$TOF_suffix"
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
 fi
 ## SPECT data
 SPECT_suffix=_SPECT 
-./simulate_PET_data_for_tests.sh --SPECT --suffix "$SPECT_suffix"
+./simulate_data_for_tests.sh --SPECT --suffix "$SPECT_suffix"
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
