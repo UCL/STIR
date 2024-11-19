@@ -61,7 +61,7 @@ void
 SRT2DSPECTReconstruction::set_defaults()
 {
   base_type::set_defaults();
-  attenuation_filename = "";
+  attenuation_projection_filename = "";
   num_segments_to_combine = -1;
 }
 
@@ -73,7 +73,7 @@ SRT2DSPECTReconstruction::initialise_keymap()
   parser.add_start_key("SRT2DSPECTParameters");
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
-  parser.add_key("attenuation filename", &attenuation_filename);
+  parser.add_key("attenuation projection filename", &attenuation_projection_filename);
 }
 
 void
@@ -81,7 +81,7 @@ SRT2DSPECTReconstruction::ask_parameters()
 {
   base_type::ask_parameters();
   num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)", -1, 101, -1);
-  attenuation_filename = ask_string("attenuation filename");
+  attenuation_projection_filename = ask_string("attenuation projection filename");
 }
 
 bool
@@ -95,7 +95,7 @@ SRT2DSPECTReconstruction::set_up(shared_ptr<SRT2DSPECTReconstruction::TargetT> c
 {
   if (base_type::set_up(target_data_sptr) == Succeeded::no)
     return Succeeded::no;
-  atten_data_ptr = ProjData::read_from_file(attenuation_filename);
+  atten_data_ptr = ProjData::read_from_file(attenuation_projection_filename);
 
   if (num_segments_to_combine >= 0 && num_segments_to_combine % 2 == 0)
     error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
