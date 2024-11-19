@@ -5,6 +5,7 @@
   \ingroup analytic
   \brief Main program for SRT2DSPECT reconstruction
   \author Dimitra Kyriakopoulou
+  \author Kris Thielemans
 */
 /* 
     Copyright (C) 2024, University College London
