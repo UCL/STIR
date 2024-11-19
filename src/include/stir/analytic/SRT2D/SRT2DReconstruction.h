@@ -16,6 +16,10 @@
 
   \brief declares the stir::SRT2DReconstruction class
 
+  The reference for the implemented PET algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006): 45-54.
+  
+  STIR implementations: Initial version June 2012, 1st updated version (4-point symmetry included) November 2012, 2nd updated version (8-point symmetry included) July 2013, 3rd updated version 2014-2016, 4th updated version 2023-2024   
+  
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans 
 */
