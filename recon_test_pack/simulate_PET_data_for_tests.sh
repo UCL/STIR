@@ -106,7 +106,7 @@ comment_out_line() {
 uniform_input_file="my_uniform_cylinder.hv"
 uniform_output_file="my_uniform_cylinder_SPECT.hv"
 
-# Comment out the specific line in the uniform image file
+# Comment out the "modality" line in the uniform image file
 comment_out_line "$uniform_input_file" "$uniform_output_file"
 
 # Paths to the input and output files for attenuation image
