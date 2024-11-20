@@ -18,6 +18,7 @@
 #include <math.h>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include "stir/error.h"
+#include "stir/stream.h"
 #include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
 
@@ -129,9 +130,12 @@ write_wm_hdr(SPECTUB::wm_da_type& wm, SPECTUB::wmh_type& wmh)
   stream1 << "number of bins per line: " << wmh.prj.Nbin << endl;
   stream1 << "bin size (cm): " << wmh.prj.szcm << endl;
   stream1 << "number of angles: " << wmh.prj.Nang << endl;
-  stream1 << "first angle (deg): " << wmh.prj.ang0 << endl;
-  stream1 << "angle increment between consecutive projections (deg): " << wmh.prj.incr << endl;
 
+  {
+    using namespace stir;
+    stream1 << "angles (deg): " << wmh.prj.angles << endl;
+  }
+  
   stream1 << "first slice to reconstruct : " << wmh.vol.first_sl << endl;
   stream1 << "last slice to reconstruct : " << wmh.vol.last_sl << endl;
   stream1 << "number of subsets in which to split the matrix: " << wmh.prj.NOS << endl;
@@ -606,7 +610,7 @@ fill_ang(angle_type* ang, SPECTUB::wmh_type& wmh, const float* Rrad)
 
       //... ratios calculation .......................................................
 
-      float deg = wmh.prj.ang0 + (float)i * wmh.prj.incr; // angle in degrees
+      const float deg = wmh.prj.angles[i];                      
       ang[i].cos = cos(deg * dg2rd);                      // cosinus of the angle
       ang[i].sin = sin(deg * dg2rd);                      // sinus of the angle
 
