@@ -16,10 +16,6 @@
 
   \brief declares the stir::SRT2DSPECTReconstruction class
 
-  The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006): 45-54.
- 
-  STIR implementations: initial version 2014-2016, 1st updated version 2023-2024
-
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
 */
@@ -57,6 +53,11 @@ class ProjData;
 
 /*! \ingroup SRT2DSPECT
  \brief Reconstruction class for 2D Spline Reconstruction Technique
+
+  The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006): 45-54.
+ 
+  STIR implementations: initial version 2014-2016, 1st updated version 2023-2024
+
   \par Parameters
 
   SRT2DSPECT takes two inputs:
