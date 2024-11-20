@@ -247,8 +247,8 @@ if (!pdi_sptr)
  std::vector<std::vector<float>> ddfs(sa, std::vector<float>(sp, 0)); // Second derivative for sine-filtered projections.
 	
  // Storage for second derivatives and interpolations
- std::vector<std::vector<float>> f(sa, std::vector<float>(sp, 0)); // Attenuation-corrected projections.
- std::vector<std::vector<float>> ddf(sa, std::vector<float>(sp, 0)); // Second derivatives of attenuation-corrected projections.
+ std::vector<std::vector<float>> f(sa, std::vector<float>(sp, 0)); // Attenuation projections.
+ std::vector<std::vector<float>> ddf(sa, std::vector<float>(sp, 0)); // Second derivatives of attenuation projections.
 
  // Variables for Hilbert transform and interpolation results
  float rho, h, fcme_fin, fsme_fin, fc_fin, fs_fin, fcpe_fin, fspe_fin, hc_fin, hs_fin; // Variables for Hilbert transform calculations.
