@@ -234,13 +234,12 @@ jobs:
               # brew install openblas
               # export OPENBLAS=$(brew --prefix openblas)
               #python -m pip install --no-cache-dir --no-binary  numpy numpy # avoid the cached .whl!
-              python -m pip install numpy
+              python -m pip install numpy pytest
               ;;
             (*)
-              python -m pip install numpy
+              python -m pip install numpy pytest
               ;;
           esac
-          python -m pip install pytest
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
              git clone --depth 1 --branch v1.7.3 https://github.com/gschramm/parallelproj
