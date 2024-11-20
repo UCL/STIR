@@ -58,11 +58,16 @@ class ProjData;
 /*! \ingroup SRT2DSPECT
  \brief Reconstruction class for 2D Spline Reconstruction Technique
   \par Parameters
+
+  SRT2DSPECT takes two inputs:
+  - The emission sinogram, which represents the measured attenuated data.
+  - The attenuation projection sinogram, which is the Radon transform (line integrals) of the attenuation map.
+
   \verbatim
 SRT2DSPECTparameters := 
 
 input file := input.hs
-attenuation filename := attenuation_sinogram.hs
+attenuation projection filename := attenuation_projection_sinogram.hs
 output filename prefix := output
 
 ; output image parameters 
@@ -126,7 +131,7 @@ protected: // make parameters protected such that doc shows always up in doxygen
       \see SSRB
   */
   int num_segments_to_combine;
-  std::string attenuation_filename;
+  std::string attenuation_projection_filename;
   float thres_restr_bound;
   std::vector<double> thres_restr_bound_vector;
   shared_ptr<ProjData> atten_data_ptr;
