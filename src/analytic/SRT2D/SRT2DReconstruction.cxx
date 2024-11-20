@@ -5,13 +5,13 @@
 
     SPDX-License-Identifier: Apache-2.0
 
-    See STIR/LICENSE.txt for details 
+    See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup analytic
   \brief Implementation of class stir::SRT2DReconstruction
-   
+
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
 */
@@ -27,7 +27,7 @@
 #include "stir/Bin.h"
 #include "stir/round.h"
 #include "stir/display.h"
-#include <algorithm> 
+#include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
@@ -48,7 +48,7 @@
 #include <vector>
 #include <algorithm>
 
-START_NAMESPACE_STIR 
+START_NAMESPACE_STIR
 
 const char* const SRT2DReconstruction::registered_name = "SRT2D";
 
@@ -57,7 +57,7 @@ SRT2DReconstruction::set_defaults()
 {
   base_type::set_defaults();
   num_segments_to_combine = -1;
-} 
+}
 
 void
 SRT2DReconstruction::initialise_keymap()
@@ -68,7 +68,7 @@ SRT2DReconstruction::initialise_keymap()
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
 }
- 
+
 void
 SRT2DReconstruction::ask_parameters()
 {
@@ -106,7 +106,7 @@ SRT2DReconstruction::set_up(shared_ptr<SRT2DReconstruction::TargetT> const& targ
           else
             num_segments_to_combine = 3;
         }
-    } 
+    }
   return Succeeded::yes;
 }
 
@@ -121,14 +121,13 @@ SRT2DReconstruction::SRT2DReconstruction(const std::string& parameter_filename)
   initialise(parameter_filename);
   info(boost::format("%1%") % parameter_info());
 }
- 
+
 SRT2DReconstruction::SRT2DReconstruction()
 {
   set_defaults();
 }
 
-SRT2DReconstruction::SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
-                                         const int num_segments_to_combine_v)
+SRT2DReconstruction::SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const int num_segments_to_combine_v)
 {
   set_defaults();
   proj_data_ptr = proj_data_ptr_v;
@@ -200,17 +199,17 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
     }
   Viewgram<float> view1 = proj_data_ptr->get_empty_viewgram(0, 0);
   Viewgram<float> view_th = proj_data_ptr->get_empty_viewgram(0, 0);
-  Viewgram<float> view1_th = proj_data_ptr->get_empty_viewgram(0, 0); 
+  Viewgram<float> view1_th = proj_data_ptr->get_empty_viewgram(0, 0);
 
   // Retrieve runtime-dependent sizes
-  const int sp = view.get_num_tangential_poss(); 
+  const int sp = view.get_num_tangential_poss();
   const int sth = proj_data_ptr->get_num_views();
   const int sa = proj_data_ptr->get_num_axial_poss(0);
   const int sx = image.get_x_size();
   const int sy = image.get_y_size();
   const int sx2 = ceil(sx / 2.0), sy2 = ceil(sy / 2.0);
   const int sth2 = ceil(sth / 2.0);
-  const float c_int = -1 / (M_PI * sth * (sp - 1))*2;// instead of *2 we will write /zoom;
+  const float c_int = -1 / (M_PI * sth * (sp - 1)) * 2; // instead of *2 we will write /zoom;
 
   int ia, image_pos;
   int ith, jth, ip, ix1, ix2, k1, k2;
@@ -221,48 +220,50 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   const int image_min_y = image.get_min_y();
 
   // Dynamic declarations using std::vector
-  std::vector<float> th(sth); // Theta values for each view angle.
-  std::vector<float> p(sp); // Tangential positions for projections.
+  std::vector<float> th(sth);  // Theta values for each view angle.
+  std::vector<float> p(sp);    // Tangential positions for projections.
   std::vector<float> p_ud(sp); // Tangential positions for up-down flipping.
-  std::vector<float> x1(sx); // X-coordinates for the reconstructed image grid.
-  std::vector<float> x2(sy); // Y-coordinates for the reconstructed image grid.
+  std::vector<float> x1(sx);   // X-coordinates for the reconstructed image grid.
+  std::vector<float> x2(sy);   // Y-coordinates for the reconstructed image grid.
 
-  std::vector<std::vector<float>> f(sth, std::vector<float>(sp, 0.0f)); // Projection data matrix.
+  std::vector<std::vector<float>> f(sth, std::vector<float>(sp, 0.0f));   // Projection data matrix.
   std::vector<std::vector<float>> ddf(sth, std::vector<float>(sp, 0.0f)); // Second derivative of projections.
-  
-  std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp, 0.0f)); // Flipped projection data.
+
+  std::vector<std::vector<float>> f_ud(sth, std::vector<float>(sp, 0.0f));   // Flipped projection data.
   std::vector<std::vector<float>> ddf_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of flipped projections.
 
   std::vector<std::vector<float>> f1(sth, std::vector<float>(sp, 0.0f)); // Left-right mirrored projection data.
-  std::vector<std::vector<float>> ddf1(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of left-right mirrored projections.
+  std::vector<std::vector<float>> ddf1(sth,
+                                       std::vector<float>(sp, 0.0f)); // Second derivatives of left-right mirrored projections.
 
   std::vector<std::vector<float>> f1_ud(sth, std::vector<float>(sp, 0.0f)); // Up-down flipped mirrored projection data.
-  std::vector<std::vector<float>> ddf1_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of up-down flipped mirrored projections.
+  std::vector<std::vector<float>> ddf1_ud(
+      sth, std::vector<float>(sp, 0.0f)); // Second derivatives of up-down flipped mirrored projections.
 
-  std::vector<std::vector<float>> f_th(sth, std::vector<float>(sp, 0.0f)); // Projection data along theta views.
+  std::vector<std::vector<float>> f_th(sth, std::vector<float>(sp, 0.0f));   // Projection data along theta views.
   std::vector<std::vector<float>> ddf_th(sth, std::vector<float>(sp, 0.0f)); // Second derivatives along theta views.
-    
-  std::vector<std::vector<float>> f_th_ud(sth, std::vector<float>(sp, 0.0f)); // Flipped data along theta views.
+
+  std::vector<std::vector<float>> f_th_ud(sth, std::vector<float>(sp, 0.0f));   // Flipped data along theta views.
   std::vector<std::vector<float>> ddf_th_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of flipped data.
 
-  std::vector<std::vector<float>> f1_th(sth, std::vector<float>(sp, 0.0f)); // Mirrored data along theta views.
+  std::vector<std::vector<float>> f1_th(sth, std::vector<float>(sp, 0.0f));   // Mirrored data along theta views.
   std::vector<std::vector<float>> ddf1_th(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of mirrored data.
 
-  std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp, 0.0f)); // Flipped mirrored data along theta views.
+  std::vector<std::vector<float>> f1_th_ud(sth, std::vector<float>(sp, 0.0f));   // Flipped mirrored data along theta views.
   std::vector<std::vector<float>> ddf1_th_ud(sth, std::vector<float>(sp, 0.0f)); // Second derivatives of flipped mirrored data.
 
-  std::vector<float> lg(sp); // Logarithmic differences for interpolation.
-  std::vector<float> termC(sth); // Correction term for each view.
+  std::vector<float> lg(sp);        // Logarithmic differences for interpolation.
+  std::vector<float> termC(sth);    // Correction term for each view.
   std::vector<float> termC_th(sth); // Correction term for theta projections.
 
   const float dp6 = 6.0 / 4.0 * 2.0 / (sp - 1.0); // Integration constant for second derivatives.
-    
-  #ifdef STIR_OPENMP
+
+#ifdef STIR_OPENMP
   set_num_threads();
-  #pragma omp single
-  info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
-       " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
-  #endif
+#  pragma omp single
+  info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) + " threads on "
+       + std::to_string(omp_get_num_procs()) + " processors.");
+#endif
 
   // Put theta and p in arrays.
   for (ith = 0; ith < sth; ith++)
@@ -270,16 +271,16 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
 
   for (ip = 0; ip < sp; ip++)
     p[ip] = -1.0 + 2.0 * ip / (sp - 1);
-  for (ip = 0; ip < sp; ip++) 
+  for (ip = 0; ip < sp; ip++)
     p_ud[sp - ip - 1] = p[ip];
 
   //-- Creation of the grid
   for (k1 = 0; k1 < sx; k1++)
-   x1[k1]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k1/(sx-1); 
+    x1[k1] = -1.0 * sx / (sp + 1) + 2.0 * sx / (sp + 1) * k1 / (sx - 1);
   //  x1[k1] = -1.0 * sx / ((sp + 1) * zoom) + k1 * 2.0 * sx / ((sp + 1) * zoom) / (sx - 1);
   for (k2 = 0; k2 < sx; k2++)
-   x2[k2]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k2/(sx-1);
-   //  x2[k2] = -1.0 * sx / ((sp + 1) * zoom) + k2 * 2.0 * sx / ((sp + 1) * zoom) / (sx - 1);
+    x2[k2] = -1.0 * sx / (sp + 1) + 2.0 * sx / (sp + 1) * k2 / (sx - 1);
+  //  x2[k2] = -1.0 * sx / ((sp + 1) * zoom) + k2 * 2.0 * sx / ((sp + 1) * zoom) / (sx - 1);
 
   // Starting calculations per view
   // 2D algorithm only
@@ -289,7 +290,7 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   // -----
   for (ia = 0; ia < sa; ia++)
     {
-      for (ip = 0; ip < sp; ip++) 
+      for (ip = 0; ip < sp; ip++)
         {
           f[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
         }
@@ -305,208 +306,225 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
         }
     }
 
- for (ix1 = 0; ix1 < sx2; ix1++)
-{
-  for (ix2 = 0; ix2 < sy2; ix2++)
-  {
-    aux = sqrt(1.0 - x2[ix2] * x2[ix2]);
-    if (fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux)
+  for (ix1 = 0; ix1 < sx2; ix1++)
     {
-      continue;
+      for (ix2 = 0; ix2 < sy2; ix2++)
+        {
+          aux = sqrt(1.0 - x2[ix2] * x2[ix2]);
+          if (fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux)
+            {
+              continue;
+            }
+          x = x2[ix2] * cos(th[0]) - x1[ix1] * sin(th[0]);
+
+          for (ip = 0; ip < sp; ip++)
+            {
+              double val = fabs(x - p[ip]);
+              lg[ip] = val < 2e-6 ? 0. : std::log(val);
+            }
+
+          for (ia = 0; ia < sa; ia++)
+            {
+              int img_x = image_min_x + sx - ix1 - 1;
+              int img_y = image_min_y + ix2;
+
+              image[ia][img_x][img_y] = -hilbert_der(x, f[ia], ddf[ia], p, sp, lg, termC[ia]) / (M_PI * sth * (sp - 1));
+            }
+        }
     }
-    x = x2[ix2] * cos(th[0]) - x1[ix1] * sin(th[0]);
 
-    for (ip = 0; ip < sp; ip++)
-    {
-      double val = fabs(x - p[ip]);
-      lg[ip] = val < 2e-6 ? 0. : std::log(val);
-    }
-
-    for (ia = 0; ia < sa; ia++)
-    {
-      int img_x = image_min_x + sx - ix1 - 1;
-      int img_y = image_min_y + ix2;
-
-      image[ia][img_x][img_y] = -hilbert_der(x, f[ia], ddf[ia], p, sp, lg, termC[ia]) / (M_PI * sth * (sp - 1));
-    }
-  } 
-}
-
-//jth, ia, ip, termC_th, ix2, ix1, aux, x, image_pos 
+// jth, ia, ip, termC_th, ix2, ix1, aux, x, image_pos
 #ifdef STIR_OPENMP
-#  pragma omp parallel firstprivate(f, ddf, f_ud, ddf_ud, f1, ddf1, f1_ud, ddf1_ud, f_th, ddf_th, f_th_ud, ddf_th_ud, f1_th, ddf1_th, f1_th_ud, ddf1_th_ud, termC, termC_th, lg) \
-    shared(view, view1, view_th, view1_th, do_arc_correction, arc_correction, p_ud, p, th, x1, x2, image) private(  \
-      jth, ia, ip, ix2, ix1, aux, x, image_pos) 
+#  pragma omp parallel firstprivate(f,                                                                                           \
+                                    ddf,                                                                                         \
+                                    f_ud,                                                                                        \
+                                    ddf_ud,                                                                                      \
+                                    f1,                                                                                          \
+                                    ddf1,                                                                                        \
+                                    f1_ud,                                                                                       \
+                                    ddf1_ud,                                                                                     \
+                                    f_th,                                                                                        \
+                                    ddf_th,                                                                                      \
+                                    f_th_ud,                                                                                     \
+                                    ddf_th_ud,                                                                                   \
+                                    f1_th,                                                                                       \
+                                    ddf1_th,                                                                                     \
+                                    f1_th_ud,                                                                                    \
+                                    ddf1_th_ud,                                                                                  \
+                                    termC,                                                                                       \
+                                    termC_th,                                                                                    \
+                                    lg)                                                                                          \
+      shared(view, view1, view_th, view1_th, do_arc_correction, arc_correction, p_ud, p, th, x1, x2, image) private(             \
+          jth, ia, ip, ix2, ix1, aux, x, image_pos)
 #  pragma omp for schedule(static) nowait
-#endif 
-for (ith = 1; ith < sth; ith++)
-{
-  if (ith < sth2)
-  {
-    jth = sth2 - ith;
-  }
-  else if (ith > sth2)
-  {
-    jth = (int)ceil(3 * sth / 2.0) - ith; // MARK integer division
-  }
-  else
-  {
-    jth = sth2;
-  }
+#endif
+  for (ith = 1; ith < sth; ith++)
+    {
+      if (ith < sth2)
+        {
+          jth = sth2 - ith;
+        }
+      else if (ith > sth2)
+        {
+          jth = (int)ceil(3 * sth / 2.0) - ith; // MARK integer division
+        }
+      else
+        {
+          jth = sth2;
+        }
 
-  // Loading related viewgrams
+        // Loading related viewgrams
 #ifdef STIR_OPENMP
 #  pragma omp critical
-#endif 
-  {
-    view = proj_data_ptr->get_viewgram(ith, 0);
-    view1 = proj_data_ptr->get_viewgram(sth - ith, 0);
-    view_th = proj_data_ptr->get_viewgram(jth, 0);
-    view1_th = proj_data_ptr->get_viewgram(sth - jth, 0);
-    if (do_arc_correction)
-    {
-      view = arc_correction.do_arc_correction(view);
-      view1 = arc_correction.do_arc_correction(view1);
-      view_th = arc_correction.do_arc_correction(view_th);
-      view1_th = arc_correction.do_arc_correction(view1_th);
-    }
-
-    for (ia = 0; ia < sa; ia++)
-    {
-      for (ip = 0; ip < sp; ip++)
+#endif
       {
-        f[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
-        f_ud[ia][sp - ip - 1] = f[ia][ip];
-        f1[ia][ip] = view1[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
-        f1_ud[ia][sp - ip - 1] = f1[ia][ip];
+        view = proj_data_ptr->get_viewgram(ith, 0);
+        view1 = proj_data_ptr->get_viewgram(sth - ith, 0);
+        view_th = proj_data_ptr->get_viewgram(jth, 0);
+        view1_th = proj_data_ptr->get_viewgram(sth - jth, 0);
+        if (do_arc_correction)
+          {
+            view = arc_correction.do_arc_correction(view);
+            view1 = arc_correction.do_arc_correction(view1);
+            view_th = arc_correction.do_arc_correction(view_th);
+            view1_th = arc_correction.do_arc_correction(view1_th);
+          }
 
-        f_th[ia][ip] = view_th[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
-        f_th_ud[ia][sp - ip - 1] = f_th[ia][ip];
-        f1_th[ia][ip] = view1_th[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
-        f1_th_ud[ia][sp - ip - 1] = f1_th[ia][ip];
-      }
-    }
-  }
+        for (ia = 0; ia < sa; ia++)
+          {
+            for (ip = 0; ip < sp; ip++)
+              {
+                f[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
+                f_ud[ia][sp - ip - 1] = f[ia][ip];
+                f1[ia][ip] = view1[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
+                f1_ud[ia][sp - ip - 1] = f1[ia][ip];
 
-  // Calculation of second derivative by use of function spline
-  for (ia = 0; ia < sa; ia++)
-  {
-    spline(p, f[ia], sp, ddf[ia]);
-    spline(p, f1[ia], sp, ddf1[ia]);
-    spline(p, f_th[ia], sp, ddf_th[ia]);
-    spline(p, f1_th[ia], sp, ddf1_th[ia]);
-    for (ip = 0; ip < sp; ip++)
-    {
-      ddf_ud[ia][sp - ip - 1] = ddf[ia][ip];
-      ddf1_ud[ia][sp - ip - 1] = ddf1[ia][ip];
-      ddf_th_ud[ia][sp - ip - 1] = ddf_th[ia][ip];
-      ddf1_th_ud[ia][sp - ip - 1] = ddf1_th[ia][ip];
-    }
-  }
-
-  for (ia = 0; ia < sa; ia++)
-  {
-    termC[ia] = (ddf[ia][0] * (3 * p[1] - p[0]) + ddf[ia][sp - 1] * (p[sp - 1] - 3.0 * p[sp - 2])) / 4.0;
-    for (ip = 0; ip < sp; ip++)
-    {
-      termC[ia] += dp6 * ddf[ia][ip];
-    }
-    termC_th[ia] = (ddf_th[ia][0] * (3 * p[1] - p[0]) + ddf_th[ia][sp - 1] * (p[sp - 1] - 3.0 * p[sp - 2])) / 4.0;
-    for (ip = 0; ip < sp; ip++)
-    {
-      termC_th[ia] += dp6 * ddf_th[ia][ip];
-    }
-  }
-
-  // Starting the calculation of ff(x1,x2).
-  for (ix1 = 0; ix1 < sx2; ix1++)
-  {
-    for (ix2 = 0; ix2 <= ix1; ix2++)
-    {
-      aux = sqrt(1.0 - x2[ix2] * x2[ix2]);
-      if (fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux)
-      {
-        continue;
+                f_th[ia][ip] = view_th[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
+                f_th_ud[ia][sp - ip - 1] = f_th[ia][ip];
+                f1_th[ia][ip] = view1_th[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
+                f1_th_ud[ia][sp - ip - 1] = f1_th[ia][ip];
+              }
+          }
       }
 
-      // Computation of h_rho
-      x = x2[ix2] * cos(th[ith]) - x1[ix1] * sin(th[ith]);
-      for (ip = 0; ip < sp; ip++)
-      {
-        double val = fabs(x - p[ip]);
-        lg[ip] = val < 2e-6 ? 0. : std::log(val); // Using std::log to specify the namespace
-      }
+      // Calculation of second derivative by use of function spline
+      for (ia = 0; ia < sa; ia++)
+        {
+          spline(p, f[ia], sp, ddf[ia]);
+          spline(p, f1[ia], sp, ddf1[ia]);
+          spline(p, f_th[ia], sp, ddf_th[ia]);
+          spline(p, f1_th[ia], sp, ddf1_th[ia]);
+          for (ip = 0; ip < sp; ip++)
+            {
+              ddf_ud[ia][sp - ip - 1] = ddf[ia][ip];
+              ddf1_ud[ia][sp - ip - 1] = ddf1[ia][ip];
+              ddf_th_ud[ia][sp - ip - 1] = ddf_th[ia][ip];
+              ddf1_th_ud[ia][sp - ip - 1] = ddf1_th[ia][ip];
+            }
+        }
 
       for (ia = 0; ia < sa; ia++)
-      {
-        image_pos = ia; // 2*ia;
-
-        image[image_pos][image_min_x + sx - ix1 - 1][image_min_y + ix2]
-            += hilbert_der(x, f[ia], ddf[ia], p, sp, lg, termC[ia]) * c_int; // bot-left
-        if (ix2 < sy2 - 1)
         {
-          image[image_pos][image_min_x + sx - ix1 - 1][image_min_y + sy - ix2 - 1]
-              += hilbert_der(x, f1[ia], ddf1[ia], p, sp, lg, termC[ia]) * c_int; // bot-right
-        }
-        if (ix1 < sx2 - 1)
-        {
-          image[image_pos][image_min_x + ix1][image_min_y + ix2]
-              -= hilbert_der(-x, f1_ud[ia], ddf1_ud[ia], p_ud, sp, lg, termC[ia]) * c_int; // top-left
-        }
-        if ((ix1 < sx2 - 1) && (ix2 < sy2 - 1))
-        {
-          image[image_pos][image_min_x + ix1][image_min_y + sy - ix2 - 1]
-              -= hilbert_der(-x, f_ud[ia], ddf_ud[ia], p_ud, sp, lg, termC[ia]) * c_int; // top-right
+          termC[ia] = (ddf[ia][0] * (3 * p[1] - p[0]) + ddf[ia][sp - 1] * (p[sp - 1] - 3.0 * p[sp - 2])) / 4.0;
+          for (ip = 0; ip < sp; ip++)
+            {
+              termC[ia] += dp6 * ddf[ia][ip];
+            }
+          termC_th[ia] = (ddf_th[ia][0] * (3 * p[1] - p[0]) + ddf_th[ia][sp - 1] * (p[sp - 1] - 3.0 * p[sp - 2])) / 4.0;
+          for (ip = 0; ip < sp; ip++)
+            {
+              termC_th[ia] += dp6 * ddf_th[ia][ip];
+            }
         }
 
-        if (ith <= sth2 && ix1 != ix2)
+      // Starting the calculation of ff(x1,x2).
+      for (ix1 = 0; ix1 < sx2; ix1++)
         {
-          image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + ix1]
-              -= hilbert_der(-x, f_th_ud[ia], ddf_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // bot-left
-          if (ix2 < sy2 - 1)
-          {
-            image[image_pos][image_min_x + ix2][image_min_y + ix1]
-                += hilbert_der(x, f1_th[ia], ddf1_th[ia], p, sp, lg, termC_th[ia]) * c_int; // bot-right
-          }
-          if (ix1 < sx2 - 1)
-          {
-            image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + sx - ix1 - 1]
-                -= hilbert_der(-x, f1_th_ud[ia], ddf1_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // top-left
-          }
-          if ((ix1 < sx2 - 1) && (ix2 < sy2 - 1))
-          {
-            image[image_pos][image_min_x + ix2][image_min_y + sx - ix1 - 1]
-                += hilbert_der(x, f_th[ia], ddf_th[ia], p, sp, lg, termC_th[ia]) * c_int; // top-right
-          }
+          for (ix2 = 0; ix2 <= ix1; ix2++)
+            {
+              aux = sqrt(1.0 - x2[ix2] * x2[ix2]);
+              if (fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux)
+                {
+                  continue;
+                }
+
+              // Computation of h_rho
+              x = x2[ix2] * cos(th[ith]) - x1[ix1] * sin(th[ith]);
+              for (ip = 0; ip < sp; ip++)
+                {
+                  double val = fabs(x - p[ip]);
+                  lg[ip] = val < 2e-6 ? 0. : std::log(val); // Using std::log to specify the namespace
+                }
+
+              for (ia = 0; ia < sa; ia++)
+                {
+                  image_pos = ia; // 2*ia;
+
+                  image[image_pos][image_min_x + sx - ix1 - 1][image_min_y + ix2]
+                      += hilbert_der(x, f[ia], ddf[ia], p, sp, lg, termC[ia]) * c_int; // bot-left
+                  if (ix2 < sy2 - 1)
+                    {
+                      image[image_pos][image_min_x + sx - ix1 - 1][image_min_y + sy - ix2 - 1]
+                          += hilbert_der(x, f1[ia], ddf1[ia], p, sp, lg, termC[ia]) * c_int; // bot-right
+                    }
+                  if (ix1 < sx2 - 1)
+                    {
+                      image[image_pos][image_min_x + ix1][image_min_y + ix2]
+                          -= hilbert_der(-x, f1_ud[ia], ddf1_ud[ia], p_ud, sp, lg, termC[ia]) * c_int; // top-left
+                    }
+                  if ((ix1 < sx2 - 1) && (ix2 < sy2 - 1))
+                    {
+                      image[image_pos][image_min_x + ix1][image_min_y + sy - ix2 - 1]
+                          -= hilbert_der(-x, f_ud[ia], ddf_ud[ia], p_ud, sp, lg, termC[ia]) * c_int; // top-right
+                    }
+
+                  if (ith <= sth2 && ix1 != ix2)
+                    {
+                      image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + ix1]
+                          -= hilbert_der(-x, f_th_ud[ia], ddf_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // bot-left
+                      if (ix2 < sy2 - 1)
+                        {
+                          image[image_pos][image_min_x + ix2][image_min_y + ix1]
+                              += hilbert_der(x, f1_th[ia], ddf1_th[ia], p, sp, lg, termC_th[ia]) * c_int; // bot-right
+                        }
+                      if (ix1 < sx2 - 1)
+                        {
+                          image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + sx - ix1 - 1]
+                              -= hilbert_der(-x, f1_th_ud[ia], ddf1_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // top-left
+                        }
+                      if ((ix1 < sx2 - 1) && (ix2 < sy2 - 1))
+                        {
+                          image[image_pos][image_min_x + ix2][image_min_y + sx - ix1 - 1]
+                              += hilbert_der(x, f_th[ia], ddf_th[ia], p, sp, lg, termC_th[ia]) * c_int; // top-right
+                        }
+                    }
+                  else if (ith > sth2 && ix1 != ix2)
+                    {
+                      image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + ix1]
+                          += hilbert_der(x, f_th[ia], ddf_th[ia], p, sp, lg, termC_th[ia]) * c_int; // bot-left
+                      if (ix2 < sy2 - 1)
+                        {
+                          image[image_pos][image_min_x + ix2][image_min_y + ix1]
+                              -= hilbert_der(-x, f1_th_ud[ia], ddf1_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // bot-right
+                        }
+                      if (ix1 < sx2 - 1)
+                        {
+                          image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + sx - ix1 - 1]
+                              += hilbert_der(x, f1_th[ia], ddf1_th[ia], p, sp, lg, termC_th[ia]) * c_int; // top-left
+                        }
+                      if ((ix1 < sx2 - 1) && (ix2 < sy2 - 1))
+                        {
+                          image[image_pos][image_min_x + ix2][image_min_y + sx - ix1 - 1]
+                              -= hilbert_der(-x, f_th_ud[ia], ddf_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // top-right
+                        }
+                    }
+                }
+            }
         }
-        else if (ith > sth2 && ix1 != ix2)
-        {
-          image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + ix1]
-              += hilbert_der(x, f_th[ia], ddf_th[ia], p, sp, lg, termC_th[ia]) * c_int; // bot-left
-          if (ix2 < sy2 - 1)
-          {
-            image[image_pos][image_min_x + ix2][image_min_y + ix1]
-                -= hilbert_der(-x, f1_th_ud[ia], ddf1_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // bot-right
-          }
-          if (ix1 < sx2 - 1)
-          {
-            image[image_pos][image_min_x + sx - ix2 - 1][image_min_y + sx - ix1 - 1]
-                += hilbert_der(x, f1_th[ia], ddf1_th[ia], p, sp, lg, termC_th[ia]) * c_int; // top-left
-          }
-          if ((ix1 < sx2 - 1) && (ix2 < sy2 - 1))
-          {
-            image[image_pos][image_min_x + ix2][image_min_y + sx - ix1 - 1]
-                -= hilbert_der(-x, f_th_ud[ia], ddf_th_ud[ia], p_ud, sp, lg, termC_th[ia]) * c_int; // top-right
-          }
-        }
-      }
     }
-  }
-}
 
   return Succeeded::yes;
 }
-
 
 float
 SRT2DReconstruction::hilbert_der(float x,

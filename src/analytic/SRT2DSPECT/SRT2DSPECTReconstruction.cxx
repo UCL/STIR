@@ -4,15 +4,15 @@
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
- 
-    See STIR/LICENSE.txt for details 
+
+    See STIR/LICENSE.txt for details
 */
 
 /*!
-  \file 
+  \file
   \ingroup analytic
   \brief Implementation of class stir::SRT2DSPECTReconstruction
-  
+
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
 */
@@ -22,9 +22,9 @@
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/Array.h" 
+#include "stir/Array.h"
 #include <vector>
-#include "stir/Sinogram.h"      
+#include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
 #include "stir/Bin.h"
 #include "stir/round.h"
@@ -38,7 +38,7 @@
 #include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
 
-/*#ifdef STIR_OPENMP 
+/*#ifdef STIR_OPENMP
 #  include <omp.h>
 #endif*/
 
@@ -150,29 +150,24 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
 {
 
   // perform SSRB
-    if (num_segments_to_combine>1)
-      {
-        const ProjDataInfoCylindrical& proj_data_info_cyl =
-          dynamic_cast<const ProjDataInfoCylindrical&>
-          (*proj_data_ptr->get_proj_data_info_sptr());
- 
-        //  full_log << "SSRB combining " << num_segments_to_combine
-        //           << " segments in input file to a new segment 0\n" << std::endl;
+  if (num_segments_to_combine > 1)
+    {
+      const ProjDataInfoCylindrical& proj_data_info_cyl
+          = dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_ptr->get_proj_data_info_sptr());
 
-        shared_ptr<ProjDataInfo>
-          ssrb_info_sptr(SSRB(proj_data_info_cyl,
-                              num_segments_to_combine,
-                              1, 0,
-                              (num_segments_to_combine-1)/2 ));
-        shared_ptr<ProjData>
-          proj_data_to_SRT_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
-        SSRB(*proj_data_to_SRT_ptr, *proj_data_ptr);
-        proj_data_ptr = proj_data_to_SRT_ptr;
-      }
-    else
-      {
-        // just use the proj_data_ptr we have already
-      }  
+      //  full_log << "SSRB combining " << num_segments_to_combine
+      //           << " segments in input file to a new segment 0\n" << std::endl;
+
+      shared_ptr<ProjDataInfo> ssrb_info_sptr(
+          SSRB(proj_data_info_cyl, num_segments_to_combine, 1, 0, (num_segments_to_combine - 1) / 2));
+      shared_ptr<ProjData> proj_data_to_SRT_ptr(new ProjDataInMemory(proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
+      SSRB(*proj_data_to_SRT_ptr, *proj_data_ptr);
+      proj_data_ptr = proj_data_to_SRT_ptr;
+    }
+  else
+    {
+      // just use the proj_data_ptr we have already
+    }
 
   // check if segment 0 has direct sinograms
   {
@@ -184,23 +179,22 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
       }
   }
 
-
-auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr());
-if (!pdi_sptr)
-{
-    error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
-}
+  auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr());
+  if (!pdi_sptr)
+    {
+      error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
+    }
 
   VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
   density_ptr->fill(0);
   Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0, 0);
- // Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0, 0);
- Viewgram<float> view = proj_data_ptr->get_viewgram(0, 0);
+  // Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0, 0);
+  Viewgram<float> view = proj_data_ptr->get_viewgram(0, 0);
 
   Viewgram<float> view_atten = atten_data_ptr->get_empty_viewgram(0, 0);
 
   // Retrieve runtime-dependent sizes
-  const int sp = view.get_num_tangential_poss(); //const int sp = proj_data_ptr->get_num_tangential_poss();
+  const int sp = view.get_num_tangential_poss(); // const int sp = proj_data_ptr->get_num_tangential_poss();
   const int sth = proj_data_ptr->get_num_views();
   const int sa = proj_data_ptr->get_num_axial_poss(0);
 
@@ -213,69 +207,77 @@ if (!pdi_sptr)
   // c The rest of the variables used by the program.
   // c ----------------------------------------------
   int i, j, k1, k2;
-  int ith,ia, ip, ix1, ix2;   //extra
+  int ith, ia, ip, ix1, ix2; // extra
   float aux, a, b, f_node;
-  float x; //extra
+  float x; // extra
 
   const int image_min_x = image.get_min_x();
   const int image_min_y = image.get_min_y();
 
   // Projection angles and sampling arrays
- std::vector<float> th(sth, 0); // Theta values for each view angle.
- std::vector<float> p(sp, 0); // Tangential positions for projections.
- std::vector<float> x1(sx, 0), x2(sy, 0); // Normalized coordinates for image reconstruction.
-	
- // Projection data storage
- std::vector<std::vector<float>> g(sa, std::vector<float>(sp, 0)); // Projection data matrix.
- std::vector<std::vector<float>> ddg(sa, std::vector<float>(sp, 0)); // Second derivative of projections for spline interpolation.
+  std::vector<float> th(sth, 0);           // Theta values for each view angle.
+  std::vector<float> p(sp, 0);             // Tangential positions for projections.
+  std::vector<float> x1(sx, 0), x2(sy, 0); // Normalized coordinates for image reconstruction.
 
- // Number of angular divisions
- const int Nt = 8; // Number of angular subdivisions used for integration.
- const int Nmul = sth / Nt; // Multiplier for view angle processing.
-	
- std::vector<float> lg(sp, 0); // Logarithmic values for tangential positions.
- float dh1[Nt], dh2[Nt]; // Derivative values at angular subdivisions.
- float t[Nt]; // Angular subdivision points.
+  // Projection data storage
+  std::vector<std::vector<float>> g(sa, std::vector<float>(sp, 0)); // Projection data matrix.
+  std::vector<std::vector<float>> ddg(sa,
+                                      std::vector<float>(sp, 0)); // Second derivative of projections for spline interpolation.
 
- // Intermediate Hilbert transform results for each axial position
- std::vector<std::vector<float>> hilb(sa, std::vector<float>(sp, 0)); // Hilbert transform results.
- std::vector<std::vector<float>> fcpe(sa, std::vector<float>(sp, 0)); // Cosine of phase exponentials.
- std::vector<std::vector<float>> fspe(sa, std::vector<float>(sp, 0)); // Sine of phase exponentials.
- std::vector<std::vector<float>> fc(sa, std::vector<float>(sp, 0)); // Cosine-filtered projections.
- std::vector<std::vector<float>> fs(sa, std::vector<float>(sp, 0)); // Sine-filtered projections.
- std::vector<std::vector<float>> ddfc(sa, std::vector<float>(sp, 0)); // Second derivative for cosine-filtered projections.
- std::vector<std::vector<float>> ddfs(sa, std::vector<float>(sp, 0)); // Second derivative for sine-filtered projections.
-	
- // Storage for second derivatives and interpolations
- std::vector<std::vector<float>> f(sa, std::vector<float>(sp, 0)); // Attenuation projections.
- std::vector<std::vector<float>> ddf(sa, std::vector<float>(sp, 0)); // Second derivatives of attenuation projections.
+  // Number of angular divisions
+  const int Nt = 8;          // Number of angular subdivisions used for integration.
+  const int Nmul = sth / Nt; // Multiplier for view angle processing.
 
- // Variables for Hilbert transform and interpolation results
- float rho, h, fcme_fin, fsme_fin, fc_fin, fs_fin, fcpe_fin, fspe_fin, hc_fin, hs_fin; // Variables for Hilbert transform calculations.
- float I, Ft1, Ft2, rho1, rho2, tau, tau1, tau2, rx1, rx2; // Variables for intermediate calculations.
- float gx, w, F; // Variables for integration and filtering calculations.
+  std::vector<float> lg(sp, 0); // Logarithmic values for tangential positions.
+  float dh1[Nt], dh2[Nt];       // Derivative values at angular subdivisions.
+  float t[Nt];                  // Angular subdivision points.
 
- // Cache for logarithmic differences used in Hilbert transforms
- std::vector<std::vector<float>> lg1_cache(Nt / 2, std::vector<float>(sp - 1, 0)); // Logarithmic differences for \a rho1.
- std::vector<std::vector<float>> lg2_cache(Nt / 2, std::vector<float>(sp - 1, 0)); // Logarithmic differences for \a rho2.
+  // Intermediate Hilbert transform results for each axial position
+  std::vector<std::vector<float>> hilb(sa, std::vector<float>(sp, 0)); // Hilbert transform results.
+  std::vector<std::vector<float>> fcpe(sa, std::vector<float>(sp, 0)); // Cosine of phase exponentials.
+  std::vector<std::vector<float>> fspe(sa, std::vector<float>(sp, 0)); // Sine of phase exponentials.
+  std::vector<std::vector<float>> fc(sa, std::vector<float>(sp, 0));   // Cosine-filtered projections.
+  std::vector<std::vector<float>> fs(sa, std::vector<float>(sp, 0));   // Sine-filtered projections.
+  std::vector<std::vector<float>> ddfc(sa, std::vector<float>(sp, 0)); // Second derivative for cosine-filtered projections.
+  std::vector<std::vector<float>> ddfs(sa, std::vector<float>(sp, 0)); // Second derivative for sine-filtered projections.
 
- // 3D array for storing reconstructed image slices
- IndexRange<3> range(Coordinate3D<int>(0, 0, 0), Coordinate3D<int>(sa - 1, sx - 1, sy - 1));
- Array<3, float> rx1x2th(range);  
- rx1x2th.fill(0.0F); // Initialize the reconstruction array to zeros.
+  // Storage for second derivatives and interpolations
+  std::vector<std::vector<float>> f(sa, std::vector<float>(sp, 0));   // Attenuation projections.
+  std::vector<std::vector<float>> ddf(sa, std::vector<float>(sp, 0)); // Second derivatives of attenuation projections.
 
- // Caches for Hilbert transforms in multiple angles
- std::vector<std::vector<std::vector<float>>> f_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for filtered projections.
- std::vector<std::vector<std::vector<float>>> ddf_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for second derivatives.
- std::vector<std::vector<std::vector<float>>> f1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for mirrored projections.
- std::vector<std::vector<std::vector<float>>> ddf1_cache(sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for second derivatives of mirrored projections.
+  // Variables for Hilbert transform and interpolation results
+  float rho, h, fcme_fin, fsme_fin, fc_fin, fs_fin, fcpe_fin, fspe_fin, hc_fin,
+      hs_fin;                                               // Variables for Hilbert transform calculations.
+  float I, Ft1, Ft2, rho1, rho2, tau, tau1, tau2, rx1, rx2; // Variables for intermediate calculations.
+  float gx, w, F;                                           // Variables for integration and filtering calculations.
 
- /* #ifdef STIR_OPENMP
- set_num_threads();
- #pragma omp single
- info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
-     " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
- #endif*/
+  // Cache for logarithmic differences used in Hilbert transforms
+  std::vector<std::vector<float>> lg1_cache(Nt / 2, std::vector<float>(sp - 1, 0)); // Logarithmic differences for \a rho1.
+  std::vector<std::vector<float>> lg2_cache(Nt / 2, std::vector<float>(sp - 1, 0)); // Logarithmic differences for \a rho2.
+
+  // 3D array for storing reconstructed image slices
+  IndexRange<3> range(Coordinate3D<int>(0, 0, 0), Coordinate3D<int>(sa - 1, sx - 1, sy - 1));
+  Array<3, float> rx1x2th(range);
+  rx1x2th.fill(0.0F); // Initialize the reconstruction array to zeros.
+
+  // Caches for Hilbert transforms in multiple angles
+  std::vector<std::vector<std::vector<float>>> f_cache(
+      sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for filtered projections.
+  std::vector<std::vector<std::vector<float>>> ddf_cache(
+      sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for second derivatives.
+  std::vector<std::vector<std::vector<float>>> f1_cache(
+      sa, std::vector<std::vector<float>>(Nt / 2, std::vector<float>(sp, 0))); // Cache for mirrored projections.
+  std::vector<std::vector<std::vector<float>>> ddf1_cache(
+      sa,
+      std::vector<std::vector<float>>(Nt / 2,
+                                      std::vector<float>(sp, 0))); // Cache for second derivatives of mirrored projections.
+
+  /* #ifdef STIR_OPENMP
+  set_num_threads();
+  #pragma omp single
+  info("Using OpenMP-version of SRT2D with " + std::to_string(omp_get_num_threads()) +
+      " threads on " + std::to_string(omp_get_num_procs()) + " processors.");
+  #endif*/
 
   // c --------------------------
   // c Put theta and p in arrays.
@@ -320,43 +322,44 @@ if (!pdi_sptr)
         }
       for (int ia = 0; ia < sa; ia++)
         {
-          for (int ip = 0; ip < sp; ip++) 
+          for (int ip = 0; ip < sp; ip++)
             {
               ddf1_cache[ia][it][sp - ip - 1] = ddf_cache[ia][it][ip];
             }
         }
     }
 
-//-- Starting calculations per view
-// 2D algorithm only
-// At the moment, the parallelization produces artifacts that the non-parallelized version does not have. That's why it's commented out.  
-/*#ifdef STIR_OPENMP
-#  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux, rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx, fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \
-    shared(view, view_atten, do_arc_correction, arc_correction, p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2)
-#  pragma omp for schedule(dynamic) nowait
-#endif */
+  //-- Starting calculations per view
+  // 2D algorithm only
+  // At the moment, the parallelization produces artifacts that the non-parallelized version does not have. That's why it's
+  // commented out.
+  /*#ifdef STIR_OPENMP
+  #  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux,
+  rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx,
+  fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \ shared(view, view_atten, do_arc_correction,
+  arc_correction, p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2) #  pragma omp for
+  schedule(dynamic) nowait #endif */
   for (ith = 0; ith < sth; ith++)
     {
       info(boost::format("View %d of %d") % ith % sth);
 
-//-- Loading the viewgram
-/*#ifdef STIR_OPENMP 
-#  pragma omp critical
-#endif*/
+      //-- Loading the viewgram
+      /*#ifdef STIR_OPENMP
+      #  pragma omp critical
+      #endif*/
       {
         view = proj_data_ptr->get_viewgram(ith, 0);
         view_atten = atten_data_ptr->get_viewgram(ith, 0);
-      for (ia = 0; ia < sa; ia++)
+        for (ia = 0; ia < sa; ia++)
           {
- 
+
             for (ip = 0; ip < sp; ip++)
               {
                 g[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
                 f[ia][ip]
-                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip]* 0.1;             
-							}
+                    = view_atten[view_atten.get_min_axial_pos_num() + ia][view_atten.get_min_tangential_pos_num() + ip] * 0.1;
+              }
           }
-
       }
       //-- Calculation of second derivative by use of function spline
       for (ia = 0; ia < sa; ia++)
@@ -441,10 +444,10 @@ if (!pdi_sptr)
                     }
                 }
 
-              for (ia = 0; ia < sa; ia++) 
-                {  
-                 // Example of how to choose particular slices to be reconstructed
-                 // if(ia!=20 && ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue;
+              for (ia = 0; ia < sa; ia++)
+                {
+                  // Example of how to choose particular slices to be reconstructed
+                  // if(ia!=20 && ia!=31 && ia!=70 && ia!=71 &&ia!=81 && ia!=100) continue;
 
                   f_node = A * f[ia][i] + B * f[ia][i + 1] + C * ddf[ia][i] + D * ddf[ia][i + 1];
 
@@ -465,9 +468,7 @@ if (!pdi_sptr)
                   hc_fin = hilbert(rho, fc[ia], ddfc[ia], p, sp, lg);
                   hs_fin = hilbert(rho, fs[ia], ddfs[ia], p, sp, lg);
 
-                  rx1x2th[ia][ix1][ix2]
-                      = fcme_fin * (1.0 / M_PI * hc_fin + fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - fc_fin);
-
+                  rx1x2th[ia][ix1][ix2] = fcme_fin * (1.0 / M_PI * hc_fin + fs_fin) + fsme_fin * (1.0 / M_PI * hs_fin - fc_fin);
 
                   // calculate I
                   for (int it = 0; it < Nt / 2; it++)
@@ -541,24 +542,21 @@ if (!pdi_sptr)
                       rx2 = (3.0 * rx1x2th[ia][ix1][ix2] - 4.0 * rx1x2th[ia][ix1][ix2 - 1] + rx1x2th[ia][ix1][ix2 - 2])
                             / (2.0 * (2.0 / (sy - 1)));
                     }
-  
-/*#ifdef STIR_OPENMP 
-#  pragma omp critical
-#endif*/
+
+                  /*#ifdef STIR_OPENMP
+                  #  pragma omp critical
+                  #endif*/
                   {
                     image[ia][image_min_x + sx - ix1 - 1][image_min_y + ix2]
-                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth)*6.23;
-									
-
+                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth) * 6.23;
                   }
-                } 
+                }
             }
-        } 
+        }
     } // slice
 
   return Succeeded::yes;
 }
-
 
 float
 SRT2DSPECTReconstruction::hilbert_node(

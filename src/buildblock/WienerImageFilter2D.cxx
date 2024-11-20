@@ -27,7 +27,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 WienerImageFilter2D<elemT>::WienerImageFilter2D()
 {
-std::cout << "Wiener filter start" << std::endl;
+  std::cout << "Wiener filter start" << std::endl;
 
   set_defaults();
 }
@@ -66,7 +66,6 @@ void
 WienerImageFilter2D<elemT>::set_defaults()
 {
   base_type::set_defaults();
-
 }
 
 template <typename elemT>

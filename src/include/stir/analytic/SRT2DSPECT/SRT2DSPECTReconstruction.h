@@ -54,8 +54,10 @@ class ProjData;
 /*! \ingroup SRT2DSPECT
  \brief Reconstruction class for 2D Spline Reconstruction Technique
 
-  The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006): 45-54.
- 
+  The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
+single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006):
+45-54.
+
   STIR implementations: initial version 2014-2016, 1st updated version 2023-2024
 
   \par Parameters
@@ -65,13 +67,13 @@ class ProjData;
   - The attenuation projection sinogram, which is the Radon transform (line integrals) of the attenuation map.
 
   \verbatim
-SRT2DSPECTparameters := 
+SRT2DSPECTparameters :=
 
 input file := input.hs
 attenuation projection filename := attenuation_projection_sinogram.hs
 output filename prefix := output
 
-; output image parameters 
+; output image parameters
 ; zoom defaults to 1
 zoom := -1
 ; image size defaults to whole FOV
@@ -113,8 +115,7 @@ public:
   */
   explicit SRT2DSPECTReconstruction(const std::string& parameter_filename);
 
-  SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
-                           const int num_segments_to_combine = -1);
+  SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const int num_segments_to_combine = -1);
 
   virtual std::string method_info() const;
 
@@ -146,8 +147,8 @@ private:
 
   /*!
     \brief Computes the Hilbert transform at a given node.
-  
-    This function calculates the Hilbert transform at a specific position 
+
+    This function calculates the Hilbert transform at a specific position
     based on the given function values and their second derivatives.
 
     \param x The x-coordinate for the node.
@@ -158,14 +159,15 @@ private:
     \param fn The function value at point \a x.
     \return The computed Hilbert transform value at the specified node.
   */
-  float hilbert_node(float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn) const;
+  float hilbert_node(
+      float x, const std::vector<float>& f, const std::vector<float>& ddf, const std::vector<float>& p, int sp, float fn) const;
 
   /*!
   \brief Computes the Hilbert transform for a set of sampled data.
 
-  This function calculates the Hilbert transform for a single set of sampled data points, 
-  which is used to adjust for phase shifts in projections during SPECT reconstruction. 
-  The transform is computed using the function values, their second derivatives, 
+  This function calculates the Hilbert transform for a single set of sampled data points,
+  which is used to adjust for phase shifts in projections during SPECT reconstruction.
+  The transform is computed using the function values, their second derivatives,
   and logarithmic differences.
 
   \param x The x-coordinate where the transform is evaluated.
@@ -181,28 +183,27 @@ private:
                 const std::vector<float>& ddf,
                 const std::vector<float>& p,
                 int sp,
-                std::vector<float>& lg) const; 
+                std::vector<float>& lg) const;
 
+  /*!
+    \brief Computes the Hilbert transform derivatives for two sets of sampled data.
 
-/*!
-  \brief Computes the Hilbert transform derivatives for two sets of sampled data.
+    This function calculates the Hilbert transform derivatives for two separate sets of
+    sampled data points, which are used to adjust for phase shifts in projections
+    during SPECT reconstruction. The derivatives are computed using the function values,
+    their second derivatives, and logarithmic differences.
 
-  This function calculates the Hilbert transform derivatives for two separate sets of 
-  sampled data points, which are used to adjust for phase shifts in projections 
-  during SPECT reconstruction. The derivatives are computed using the function values, 
-  their second derivatives, and logarithmic differences.
-
-  \param x The x-coordinate where the derivatives are evaluated.
-  \param f Vector containing function values for the first set.
-  \param ddf Vector of second derivatives for the first set.
-  \param f1 Vector containing function values for the second set.
-  \param ddf1 Vector of second derivatives for the second set.
-  \param p Vector of sampling positions.
-  \param sp Total number of sampling positions.
-  \param dhp Pointer to store the computed derivative for the first set.
-  \param dh1p Pointer to store the computed derivative for the second set.
-  \param lg Vector of logarithmic differences used for interpolation.
-*/
+    \param x The x-coordinate where the derivatives are evaluated.
+    \param f Vector containing function values for the first set.
+    \param ddf Vector of second derivatives for the first set.
+    \param f1 Vector containing function values for the second set.
+    \param ddf1 Vector of second derivatives for the second set.
+    \param p Vector of sampling positions.
+    \param sp Total number of sampling positions.
+    \param dhp Pointer to store the computed derivative for the first set.
+    \param dh1p Pointer to store the computed derivative for the second set.
+    \param lg Vector of logarithmic differences used for interpolation.
+  */
   void hilbert_der_double(float x,
                           const std::vector<float>& f,
                           const std::vector<float>& ddf,
@@ -213,7 +214,6 @@ private:
                           float* dhp,
                           float* dh1p,
                           const std::vector<float>& lg) const;
-
 
   /*!
   \brief Performs interpolation using precomputed cubic splines.
@@ -227,7 +227,7 @@ private:
   \param n The number of data points.
   \param x The x-coordinate where the interpolation is evaluated.
   \return The interpolated function value at \a x.
-  
+
   \note This function relies on the results of the \a spline function to efficiently compute the interpolation.
 */
   float splint(const std::vector<float>& xa, const std::vector<float>& ya, const std::vector<float>& y2a, int n, float x) const;
@@ -235,28 +235,28 @@ private:
   /*!
   \brief Computes second derivatives for natural cubic spline interpolation.
 
-  This function precomputes the second derivatives of the input data points 
+  This function precomputes the second derivatives of the input data points
   for use in cubic spline interpolation. The results are stored in the \a y2 vector.
 
   \param x The x-coordinates of the input data points.
   \param y The y-coordinates of the input data points.
   \param n The number of data points.
   \param y2 Vector to store the computed second derivatives for spline interpolation.
-  
+
   \note This function prepares the data for efficient use in the \a splint function.
 */
   void spline(const std::vector<float>& x, const std::vector<float>& y, int n, std::vector<float>& y2) const;
 
-/*!
-  \brief Performs numerical integration over a specified range.
+  /*!
+    \brief Performs numerical integration over a specified range.
 
-  This function computes numerical integration using a summation approach.
+    This function computes numerical integration using a summation approach.
 
-  \param dist The distance interval over which to perform the integration.
-  \param max The number of discrete data points used for the integration.
-  \param ff Array containing function values at each sampled point.
-  \return The computed integral over the specified range.
-*/
+    \param dist The distance interval over which to perform the integration.
+    \param max The number of discrete data points used for the integration.
+    \param ff Array containing function values at each sampled point.
+    \return The computed integral over the specified range.
+  */
   float integ(float dist, int max, float ff[]) const;
 };
 

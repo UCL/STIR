@@ -80,4 +80,3 @@ const char* const GammaImageFilter2D<float>::registered_name = "Gamma";
 template class GammaImageFilter2D<float>;
 
 END_NAMESPACE_STIR
-

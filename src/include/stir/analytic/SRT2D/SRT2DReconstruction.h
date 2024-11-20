@@ -15,7 +15,7 @@
   \brief declares the stir::SRT2DReconstruction class
 
   \author Dimitra Kyriakopoulou
-  \author Kris Thielemans 
+  \author Kris Thielemans
 */
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
@@ -34,13 +34,16 @@ class ProjData;
 /*! \ingroup SRT2D
  \brief Reconstruction class for 2D Spline Reconstruction Technique
 
-  The reference for the implemented PET algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006): 45-54.
-  
-  STIR implementations: Initial version June 2012, 1st updated version (4-point symmetry included) November 2012, 2nd updated version (8-point symmetry included) July 2013, 3rd updated version 2014-2016, 4th updated version 2023-2024   
+  The reference for the implemented PET algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
+single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006):
+45-54.
+
+  STIR implementations: Initial version June 2012, 1st updated version (4-point symmetry included) November 2012, 2nd updated
+version (8-point symmetry included) July 2013, 3rd updated version 2014-2016, 4th updated version 2023-2024
 
  \par Parameters
   \verbatim
-SRT2Dparameters := 
+SRT2Dparameters :=
 
 input file := input.hs
 output filename prefix := output
@@ -86,8 +89,7 @@ public:
   */
   explicit SRT2DReconstruction(const std::string& parameter_filename);
 
-  SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
-                      const int num_segments_to_combine = -1);
+  SRT2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const int num_segments_to_combine = -1);
   virtual std::string method_info() const;
 
   virtual void ask_parameters();
@@ -115,7 +117,7 @@ private:
   /*!
   \brief Computes second derivatives for natural cubic spline interpolation.
 
-  This function precomputes the second derivatives of the input data points 
+  This function precomputes the second derivatives of the input data points
   for use in cubic spline interpolation. The results are stored in the \a y2 vector.
 
   \param x Vector of x-coordinates of the input data points.
@@ -129,7 +131,7 @@ private:
   \brief Computes the Hilbert transform derivative for a set of projections.
 
   This function calculates the derivative of the Hilbert transform for a set of sampled data points.
-  It uses second derivatives, logarithmic differences, and a correction term to adjust the 
+  It uses second derivatives, logarithmic differences, and a correction term to adjust the
   computed derivative.
 
   \param x The x-coordinate for which the derivative is evaluated.
@@ -147,7 +149,7 @@ private:
                     const std::vector<float>& p,
                     int sp,
                     const std::vector<float>& lg,
-                    float termC) const; 
+                    float termC) const;
 
   /*!
   \brief Performs numerical integration over a set of sampled data.

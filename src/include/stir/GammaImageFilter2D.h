@@ -38,8 +38,8 @@ START_NAMESPACE_STIR
 */
 template <typename elemT>
 class GammaImageFilter2D : public RegisteredParsingObject<GammaImageFilter2D<elemT>,
-                                                         DataProcessor<DiscretisedDensity<3, elemT>>,
-                                                         DataProcessor<DiscretisedDensity<3, elemT>>>
+                                                          DataProcessor<DiscretisedDensity<3, elemT>>,
+                                                          DataProcessor<DiscretisedDensity<3, elemT>>>
 {
 private:
   typedef RegisteredParsingObject<GammaImageFilter2D<elemT>,
@@ -66,4 +66,3 @@ private:
 END_NAMESPACE_STIR
 
 #endif
-

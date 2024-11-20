@@ -37,7 +37,7 @@
 START_NAMESPACE_STIR
 
 static MedianImageFilter3D<float>::RegisterIt dummy;
-static WienerImageFilter2D<float>::RegisterIt dummyWiener; 
+static WienerImageFilter2D<float>::RegisterIt dummyWiener;
 static GammaImageFilter2D<float>::RegisterIt dummyGamma;
 static MinimalImageFilter3D<float>::RegisterIt dummy1;
 static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy2;

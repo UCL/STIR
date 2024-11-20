@@ -24,7 +24,6 @@
 
 START_NAMESPACE_STIR
 
- 
 /*!
   \ingroup Array
   \brief Gamma correction filter for 2D slices in a 3D volume.
@@ -38,7 +37,8 @@ START_NAMESPACE_STIR
      \f]
      where \c min_val and \c max_val are the minimum and maximum pixel values in the slice.
 
-  2. **Average Pixel Value Calculation**: The filter computes the average pixel value across all pixels in the normalized slice that have absolute values greater than 0.1. This average value is used to determine the gamma exponent.
+  2. **Average Pixel Value Calculation**: The filter computes the average pixel value across all pixels in the normalized slice
+ that have absolute values greater than 0.1. This average value is used to determine the gamma exponent.
 
   3. **Gamma Calculation**: Determines the gamma exponent using:
      \f[
@@ -57,18 +57,20 @@ START_NAMESPACE_STIR
      \f]
 
   ### Edge Handling
-  - The filter processes each 2D slice independently and does not apply padding. Therefore, the edges of the slices are fully processed without boundary effects.
+  - The filter processes each 2D slice independently and does not apply padding. Therefore, the edges of the slices are fully
+ processed without boundary effects.
 
  ### Gamma Filter Configuration
-  This filter is fully automated and does not require any parameters.  
+  This filter is fully automated and does not require any parameters.
   To enable it in the reconstruction process, include the following in the parameter file:
   \code
   post-filter type := Gamma
   Gamma Filter Parameters :=
   End Gamma Filter Parameters :=
   \endcode
-  
-  \note This filter operates on each axial slice independently, and does not take into account neighboring slices. It is effectively a 2D filter applied slice-by-slice on a 3D volume.
+
+  \note This filter operates on each axial slice independently, and does not take into account neighboring slices. It is
+ effectively a 2D filter applied slice-by-slice on a 3D volume.
 
  */
 
@@ -86,4 +88,3 @@ private:
 END_NAMESPACE_STIR
 
 #endif
-
