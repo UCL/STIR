@@ -20,6 +20,21 @@
 <h3>New functionality</h3>
 <ul>
   <li>
+    The analytic Spline Reconstruction Technique (SRT) algorithm has been added in 2 different versions: for PET
+    (inverting the 2D Radon transform) and for SPECT (inverting the 2D attenuated Radon transform). The latter
+    allows quantitatively correct analytic reconstruction of SPECT data (after scatter correction).
+
+    The reference for the implemented algorithms is:<br>
+    Fokas, A. S., A. Iserles, and V. Marinakis.
+    <cite>Reconstruction algorithm for single photon emission computed tomography and its numerical implementation.</cite>
+    Journal of the Royal Society Interface* 3.6 (2006): 45-54.
+    <br>
+    The reference for the implementation is:<br>
+    Dimitra Kyriakopoulou, UCL PhD thesis, (not yet publically accessible)
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1420>PR #1420</a>
+  </li>
+  <li>
     <code>ScatterSimulation</code> can now downsample the scanner transaxially (crystals per ring) for <code>BlocksOnCylindrical</code>,
     scanners, which speeds up <code>ScatterEstimation</code> considerably. By default, downsampling the detectors per reading
     is disabled for backwards compatibility.<br>
