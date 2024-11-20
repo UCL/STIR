@@ -84,10 +84,9 @@ typedef struct
   int Nsli;   // number of slices
   float thcm; // slice thickness in cm
 
-  int Nang;   // number of projection angles
-  float ang0; // initial projection angle. degrees from upper detection plane (parallel to table). Negative for CW rotacions (see
-              // manual)
-  float incr; // angle increment between two consecutive projection angles. Degrees. Negative for CW, Positive for CCW
+  int Nang;                  // number of projection angles
+  std::vector<float> angles; // projection angles. degrees from upper detection plane (parallel to table). Negative for CW
+                             // rotations (see manual)
 
   int NOS;    // number of subsets in which to split the matrix
   int NangOS; // Number of angles in each subset = Nang/NOS

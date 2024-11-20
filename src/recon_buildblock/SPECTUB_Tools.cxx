@@ -13,6 +13,12 @@
 // system libraries
 #include <stdlib.h>
 #include <math.h>
+#include <boost/math/special_functions/fpclassify.hpp>
+#include "stir/error.h"
+#include "stir/stream.h"
+#include <boost/format.hpp>
+#include <boost/math/constants/constants.hpp>
+
 using namespace std;
 
 //... user defined libraries .......................................
@@ -29,6 +35,216 @@ namespace SPECTUB
 #define minim(a, b) ((a) <= (b) ? (a) : (b))
 #define abs(a) ((a) >= 0 ? (a) : (-a))
 #define SIGN(a) (a < -EPSILON ? -1 : (a > EPSILON ? 1 : 0))
+
+#define DELIMITER1 '#' // delimiter character in input parameter text file
+#define DELIMITER2 '%' // delimiter character in input parameter text file
+
+//=============================================================================
+//=== write_wm_FC =============================================================
+//=============================================================================
+
+void
+write_wm_FC(SPECTUB::wm_da_type& wm)
+{
+  FILE* fid;
+
+  int ia_acum = 0;
+
+  if ((fid = fopen(wm.OSfn.c_str(), "wb")) == NULL)
+    error_wmtools_SPECT(31, wm.OSfn);
+
+  fwrite(&(wm.NbOS), sizeof(int), 1, fid); // to write number of rows of wm (NbOS)
+  fwrite(&(wm.Nvox), sizeof(int), 1, fid); // to write number of columns of wm (Nvox)
+
+  //... number of non-zero elements in the weight matrix .......
+
+  int ne = 0;
+  for (int j = 0; j < wm.NbOS; j++)
+    ne += wm.ne[j];
+
+  fwrite(&ne, sizeof(int), 1, fid); // to write number of non-zeros element in the weight matrix
+
+  //... to write the array of weights (along rows) ..............
+
+  for (int i = 0; i < wm.NbOS; i++)
+    {
+      for (int j = 0; j < wm.ne[i]; j++)
+        {
+          fwrite(&wm.val[i][j], sizeof(float), 1, fid);
+        }
+    }
+
+  //... to write the column index of each weight (volume index of the voxel the weight is associated to) ....
+
+  for (int i = 0; i < wm.NbOS; i++)
+    {
+      for (int j = 0; j < wm.ne[i]; j++)
+        {
+          fwrite(&wm.col[i][j], sizeof(int), 1, fid);
+        }
+    }
+
+  //... to write the indexs of the array of weights where a change of row happens .........
+
+  for (int i = 0; i < wm.NbOS; i++)
+    {
+      fwrite(&ia_acum, sizeof(int), 1, fid);
+      ia_acum += wm.ne[i];
+    }
+
+  //... to write the total number of saved weights ..........................
+
+  fwrite(&ia_acum, sizeof(int), 1, fid);
+
+  cout << "number of non-zero elemnts: " << ia_acum << endl;
+
+  fclose(fid);
+}
+
+//=============================================================================
+//=== write_wm_hdr ============================================================
+//=============================================================================
+
+void
+write_wm_hdr(SPECTUB::wm_da_type& wm, SPECTUB::wmh_type& wmh)
+{
+  ofstream stream1(wm.fn_hdr.c_str());
+  if (!stream1)
+    error_wmtools_SPECT(31, wm.fn_hdr);
+
+  //....... image and projections characteristics.........
+
+  stream1 << "Header for the matrix: " << wm.fn << endl;
+  stream1 << "number of columns: " << wmh.vol.Ncol << endl;
+  stream1 << "number of rows: " << wmh.vol.Nrow << endl;
+  stream1 << "number of slices: " << wmh.vol.Nsli << endl;
+  stream1 << "voxel size (cm): " << wmh.vol.szcm << endl;
+  stream1 << "slice thickness (cm): " << wmh.vol.thcm << endl;
+
+  stream1 << "number of bins per line: " << wmh.prj.Nbin << endl;
+  stream1 << "bin size (cm): " << wmh.prj.szcm << endl;
+  stream1 << "number of angles: " << wmh.prj.Nang << endl;
+
+  {
+    using namespace stir;
+    stream1 << "angles (deg): " << wmh.prj.angles << endl;
+  }
+  
+  stream1 << "first slice to reconstruct : " << wmh.vol.first_sl << endl;
+  stream1 << "last slice to reconstruct : " << wmh.vol.last_sl << endl;
+  stream1 << "number of subsets in which to split the matrix: " << wmh.prj.NOS << endl;
+  stream1 << "number of angles per subsets: " << wmh.prj.NangOS << endl;
+
+  stream1 << "minimum weight (geometrical contribution): " << wmh.min_w << endl;
+  stream1 << "psf resolution (discretization interval for Gaussian): " << wmh.psfres << endl;
+  stream1 << "maximum number of sigmas in psf calculation: " << wmh.maxsigm << endl;
+
+  //........ rotation radius................................
+
+  if (wmh.fixed_Rrad)
+    stream1 << "fixed rotation radius :" << wmh.Rrad[0] << " cm" << endl;
+  else
+    stream1 << "variable rotation radius from  :" << wmh.Rrad_fn << endl;
+
+  //......... psf and collimator parameters .................
+
+  stream1 << "psf correction: " << wmh.do_psf << endl;
+  if (wmh.do_psf)
+    {
+      if (wmh.do_psf_3d)
+        stream1 << "\tmode: 3d " << endl;
+      else
+        stream1 << "\tmode: 2d " << endl;
+      if (wmh.predef_col)
+        stream1 << "\tpredefined collimator number: " << wmh.COL.num << endl;
+      else
+        stream1 << "\tcollimator parameters from: " << wmh.col_fn << endl;
+
+      if (wmh.COL.do_fb)
+        stream1 << "collimator geometry: fanbeam " << endl;
+      else
+        stream1 << "collimator geometry: parallel" << endl;
+    }
+  else
+    {
+      if (wmh.COL.num == 0)
+        stream1 << "collimator geometry: parallel " << endl;
+      else
+        stream1 << "collimator geometry: fanbeam with focal distance : " << wmh.COL.F << endl;
+    }
+
+  stream1 << "attenuation correction: " << wmh.do_att << endl;
+  if (wmh.do_att)
+    {
+      if (wmh.do_full_att)
+        stream1 << "\tmode: full " << endl;
+      else
+        stream1 << "\tmode: simple " << endl;
+    }
+  stream1 << "\tattenuation map: " << wmh.att_fn << endl;
+
+  //......... masking ....................................
+
+  stream1 << "masking: " << wmh.do_msk << endl;
+  if (wmh.do_msk)
+    {
+      if (wmh.do_msk_cyl)
+        stream1 << "\tmask type: cyl" << endl;
+      if (wmh.do_msk_att)
+        stream1 << "\tmask type: att" << endl;
+      if (wmh.do_msk_file)
+        {
+          stream1 << "\tmask type: file" << endl;
+          stream1 << "\tmask file name: " << wmh.msk_fn << endl;
+        }
+      if (wmh.do_msk_slc)
+        {
+          stream1 << "first slice: " << wmh.vol.first_sl << endl;
+          stream1 << "last slice: " << wmh.vol.last_sl << endl;
+        }
+    }
+  stream1.close();
+}
+
+//=============================================================================
+//=== write_wm_STIR ===========================================================
+//=============================================================================
+
+void
+write_wm_STIR(wm_da_type& wm)
+{
+  int seg_num = 0; // segment number for STIR matrix (always zero)
+  FILE* fid;
+
+  if ((fid = fopen(wm.OSfn.c_str(), "wb")) == NULL)
+    error_wmtools_SPECT(31, wm.OSfn);
+
+  //...loop for matrix elements: projection index ..................
+
+  for (int j = 0; j < wm.NbOS; j++)
+    {
+
+      //... to write projection indices and number of elements .......
+
+      fwrite(&seg_num, sizeof(int), 1, fid);
+      fwrite(&wm.na[j], sizeof(int), 1, fid);
+      fwrite(&wm.ns[j], sizeof(int), 1, fid);
+      fwrite(&wm.nb[j], sizeof(int), 1, fid);
+      fwrite(&wm.ne[j], sizeof(int), 1, fid);
+
+      //... loop for matrix elements: image indexs..................
+
+      for (int i = 0; i < wm.ne[j]; i++)
+        {
+
+          fwrite(&wm.nz[wm.col[j][i]], sizeof(short int), 1, fid);
+          fwrite(&wm.ny[wm.col[j][i]], sizeof(short int), 1, fid);
+          fwrite(&wm.nx[wm.col[j][i]], sizeof(short int), 1, fid);
+          fwrite(&wm.val[j][i], sizeof(float), 1, fid);
+        }
+    }
+  fclose(fid);
+}
 
 //=============================================================================
 //=== index_calc ==============================================================
@@ -301,9 +517,9 @@ fill_ang(angle_type* ang, const SPECTUB::wmh_type& wmh, const float* Rrad)
 
       //... ratios calculation .......................................................
 
-      const float deg = wmh.prj.ang0 + (float)i * wmh.prj.incr; // angle in degrees
-      ang[i].cos = cos(deg * dg2rd);                            // cosinus of the angle
-      ang[i].sin = sin(deg * dg2rd);                            // sinus of the angle
+      const float deg = wmh.prj.angles[i];                      
+      ang[i].cos = cos(deg * dg2rd);                      // cosinus of the angle
+      ang[i].sin = sin(deg * dg2rd);                      // sinus of the angle
 
       //... first octave (0->45degrees) equivalent angle and its trigonometric ratios .......
 
