@@ -9,7 +9,7 @@
 */
 
 /*!
-  \file
+  \file 
   \ingroup analytic
   \brief Implementation of class stir::SRT2DSPECTReconstruction
   
