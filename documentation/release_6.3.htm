@@ -63,7 +63,11 @@
     </ul>
 
 <h3>Bug fixes</h3>
-
+<li>Fixed a bug in the scatter estimation code (introduced in release 5.1.0) if input data is 3D and "cylindrical" (there was no bug for "blocksoncylindrical" data). 
+The scatter estimation runs on data constructed via SSRB. However, the attenuation correction factors were incorrectly obtained with adding of oblique segments (as opposed to averaging). 
+This resulted in intermediate images that had the wrong attenuation correction which were approximately num_segments times larger. This was compensated by the tail-fitting, but resulted in unexpected scale factors (scale factors were around 1/num_segments times what was expected). 
+This means that if you used the "min/max scale factor" feature in the scatter estimate, you will have to adjust your threshold values. Expected scatter tail-fitting scale factors should now be restored to ~1-1.5 (depending on the amount of multiple and out-of-FOV scatter).
+See <a href="https://github.com/UCL/STIR/issues/1532">Issue 1532</a> for more detail. Fixed by using averaging functionality of SSRB instead of adding segments for attenuation correction factors.</li>
 
 <h3>Build system</h3>
 
