@@ -147,8 +147,7 @@ CreateTailMaskFromACFs::process_data()
               count += mask_left_size + mask_right_size;
 #endif
             }
-          std::cout << count << " bins in mask for sinogram at segment " << bin.segment_num() << ", axial_pos "
-                    << bin.axial_pos_num() << "\n";
+          info(boost::format("%1% bins in mask for sinogram at segment %2%, axial_pos %3%") % count % bin.segment_num() % bin.axial_pos_num());
           if (this->mask_proj_data->set_sinogram(mask_sinogram) != Succeeded::yes)
             return Succeeded::no;
         }
