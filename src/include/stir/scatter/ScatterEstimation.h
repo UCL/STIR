@@ -120,7 +120,8 @@ public:
 
   //! make projdata 2D shared pointer
   shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr);
-  shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename);
+  shared_ptr<ProjData>
+  make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename, const bool do_normalisation = false);
 
   //!
   //! \brief set_up

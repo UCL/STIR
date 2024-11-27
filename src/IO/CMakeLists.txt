@@ -83,9 +83,9 @@ endif()
 if (CERN_ROOT_FOUND)
   target_include_directories(IO PRIVATE ${CERN_ROOT_INCLUDE_DIRS})
   if (TARGET ROOT::Tree)
-   target_link_libraries(IO PUBLIC ROOT::Tree)
+   target_link_libraries(IO PRIVATE ROOT::Tree)
   else()
-   target_link_libraries(IO PUBLIC ${CERN_ROOT_LIBRARIES})
+   target_link_libraries(IO PRIVATE ${CERN_ROOT_LIBRARIES})
   endif()
 endif()
 
@@ -94,12 +94,12 @@ if (HAVE_HDF5)
 endif()
 
 if (HAVE_ITK)
-  target_link_libraries(IO PUBLIC ITKCommon ${ITK_LIBRARIES})
+  target_link_libraries(IO PRIVATE ITKCommon ${ITK_LIBRARIES})
 endif()
 
 if (UPENN_FOUND)
   target_include_directories(IO PUBLIC ${UPENN_INCLUDE_DIR})
-  target_link_libraries(IO PUBLIC ${UPENN_libsss_tof} ${UPENN_libfit} ${UPENN_libdist} ${UPENN_libgeom}
+  target_link_libraries(IO PRIVATE ${UPENN_libsss_tof} ${UPENN_libfit} ${UPENN_libdist} ${UPENN_libgeom}
         ${UPENN_liblor} ${UPENN_liblist} ${UPENN_libmhdr} ${JANSSON_LIBRARY} ${ZLIB_LIBRARY_RELEASE}
 ${UPENN_libimagio} ${UPENN_libimagio++})
 endif()

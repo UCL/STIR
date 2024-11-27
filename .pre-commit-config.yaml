@@ -1,6 +1,6 @@
 repos:
--   repo: https://github.com/doublify/pre-commit-clang-format
-    rev: '62302476'
-    hooks:
-    -   id: clang-format
-        files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|inl|txx)$
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v14.0.6
+  hooks:
+  - id: clang-format
+    files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|inl|txx)$
