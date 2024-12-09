@@ -583,6 +583,12 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
   const size_type oldlength = this->size();
 
   base_type::resize(min_index, max_index);
+
+  if (!get_initialise_with_zeros()) {
+    this->check_state();
+    return;
+  }
+
   if (oldlength == 0)
     {
       for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
