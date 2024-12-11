@@ -75,7 +75,7 @@ ProjDataInMemory::create_buffer(const bool initialise_with_0)
 {
   if (!initialise_with_0) {
     this->buffer.set_initialise_with_zeros(false);
-    this->buffer.grow(0, this->size_all());
+    this->buffer.grow(0, this->size_all() - 1);
     return;
   }
 #if 0  
