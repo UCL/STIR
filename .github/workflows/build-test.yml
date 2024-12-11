@@ -77,8 +77,9 @@ jobs:
           ITK: "ON"
         - os: ubuntu-24.04
           compiler: gcc
-          compiler_version: 14
-          cuda_version: "12.1.0"
+          # currently CUDA doesn't support gcc 14 yet
+          compiler_version: 13
+          cuda_version: "12.6.1"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -180,7 +181,7 @@ jobs:
           echo CXX="$CXX" >> $GITHUB_ENV
 
     - if: matrix.cuda_version != '0'
-      uses: Jimver/cuda-toolkit@v0.2.11
+      uses: Jimver/cuda-toolkit@v0.2.19
       id: cuda-toolkit
       with:
           cuda: ${{ matrix.cuda_version }}
