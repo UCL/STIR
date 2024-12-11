@@ -38,16 +38,16 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
-          compiler_version: 9
+          # compiler_version: 9
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "ON"
           ITK: "OFF"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: clang
           #compiler_version:
           cuda_version: "0"
@@ -57,7 +57,7 @@ jobs:
           ROOT: "OFF"
           # currently using ITK 5.2 which doesn't like clang 14
           ITK: "OFF"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
           compiler_version: 10
           cuda_version: "0"
@@ -66,18 +66,18 @@ jobs:
           parallelproj: "OFF"
           ROOT: "OFF"
           ITK: "ON"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
-          compiler_version: 12
+          compiler_version: 14
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
-          compiler_version: 12
+          compiler_version: 14
           cuda_version: "12.1.0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Release"
