@@ -584,10 +584,11 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
 
   base_type::resize(min_index, max_index);
 
-  if (!get_initialise_with_zeros()) {
-    this->check_state();
-    return;
-  }
+  if (!get_initialise_with_zeros())
+    {
+      this->check_state();
+      return;
+    }
 
   if (oldlength == 0)
     {
