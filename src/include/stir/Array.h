@@ -589,7 +589,7 @@ private:
   */
   inline void init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data);
 
-  bool init_with_zeros_ = 1;
+  bool init_with_zeros_ = true;
 };
 
 END_NAMESPACE_STIR
