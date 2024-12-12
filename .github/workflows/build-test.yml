@@ -321,6 +321,13 @@ jobs:
               ;;
            esac
 
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      #if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 30
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
+
     - name: build
       shell: bash
       env:
@@ -329,12 +336,6 @@ jobs:
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
           cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
-
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session if triggered
-      uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 15
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
 
     - name: ctest
       shell: bash
