@@ -3,10 +3,26 @@
 We use [pre-commit](https://pre-commit.com) to check coding conventions, including
 white-space formatting rules.
 
-Unfortunately, exact formatting used depends on the `clang-format` version. Therefore,
-you do have to install the same version as what is currently used in our GitHub Action.
+Unfortunately, exact formatting used depends on the `clang-format` (and others?) version. Therefore,
+you might need to install the same version as what is currently used in our
+[.pre-commit-config.yaml](../../.pre-commit-config.yaml) for your editor to pick up
+the same version.
 
 ## Installation of software
+
+### TL;DR
+
+```sh
+pip/conda install pre-commit
+git add blabla
+pre-commit run
+# optionally check files
+# "add" changes made by the hooks
+git add blabla
+git commit
+```
+
+### More detail
 
 We highly recommend to use `conda`:
 ```sh

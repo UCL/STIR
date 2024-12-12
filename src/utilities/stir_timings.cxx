@@ -22,6 +22,7 @@
   If you want to know what is actually timed, you will have to look at the source code.
 */
 
+#include "stir/KeyParser.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/DiscretisedDensity.h"
@@ -55,11 +56,23 @@ print_usage_and_exit()
 {
   std::cerr << "\nUsage:\nstir_timings [--name some_string] [--threads num_threads] [--runs num_runs]\\\n"
             << "\t[--skip-BB 1] [--skip-PP 1] [--skip-PMRT 1] [--skip-priors 1]\\\n"
+            << "\t[--projector_par_filename parfile]\\\n"
             << "\t[--image image_filename]\\\n"
             << "\t--template-projdata template_proj_data_filename\n\n"
             << "skip BB: basic building blocks; PP: Parallelproj; PMRT: ray-tracing matrix; priors: prior timing\n\n"
             << "Timings are reported to stdout as:\n"
             << "name\ttiming_name\tCPU_time_in_ms\twall-clock_time_in_ms\n";
+  std::cerr << "\nExample projector-pair par-file (the following corresponds to the PMRT configuration normally used)\n"
+            << "projector pair parameters:=\n"
+            << "   type := Matrix\n"
+            << "   Projector Pair Using Matrix Parameters :=\n"
+            << "     Matrix type := Ray Tracing\n"
+            << "     Ray tracing matrix parameters :=\n"
+            << "       number of rays in tangential direction to trace for each bin:= 5\n"
+            << "       disable caching := 0\n"
+            << "     End Ray tracing matrix parameters :=\n"
+            << "   End Projector Pair Using Matrix Parameters :=\n"
+            << "End:=\n";
   std::exit(EXIT_FAILURE);
 }
 
@@ -89,6 +102,7 @@ public:
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   shared_ptr<ProjectorByBinPairUsingParallelproj> parallelproj_projectors_sptr;
 #endif
+  shared_ptr<ProjectorByBinPair> parsed_projectors_sptr;
   shared_ptr<ProjData> template_proj_data_sptr;
   shared_ptr<ExamInfo> exam_info_sptr;
   shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>>> objective_function_sptr;
@@ -105,6 +119,7 @@ public:
   }
 
   void run_it(TimedFunction f, const std::string& item, const unsigned runs = 1);
+  void run_projectors(const std::string& prefix, const shared_ptr<ProjectorByBinPair> proj_sptr, const unsigned runs);
   void run_all(const unsigned runs = 1);
   void init();
 
@@ -284,6 +299,21 @@ Timings::run_it(TimedFunction f, const std::string& item, const unsigned runs)
 }
 
 void
+Timings::run_projectors(const std::string& prefix, const shared_ptr<ProjectorByBinPair> proj_sptr, const unsigned runs)
+{
+  this->projectors_sptr = proj_sptr;
+  this->run_it(&Timings::projector_setup, prefix + "_projector_setup", 1);
+  this->run_it(&Timings::forward_file, prefix + "_forward_file_first", 1);
+  this->run_it(&Timings::forward_file, prefix + "_forward_file", runs);
+  this->run_it(&Timings::forward_memory, prefix + "_forward_memory", runs);
+  this->run_it(&Timings::back_file, prefix + "_back_file_first", 1);
+  this->run_it(&Timings::back_file, prefix + "_back_file", runs);
+  this->run_it(&Timings::back_memory, prefix + "_back_memory", runs);
+  this->objective_function_sptr->set_projector_pair_sptr(this->projectors_sptr);
+  this->run_it(&Timings::obj_func_set_up, prefix + "_LogLik set_up", 1);
+  this->run_it(&Timings::obj_func_grad_no_sens, prefix + "_LogLik grad_no_sens", 1);
+}
+void
 Timings::run_all(const unsigned runs)
 {
   this->init();
@@ -319,34 +349,18 @@ Timings::run_all(const unsigned runs)
   // this->objective_function.set_num_subsets(proj_data_sptr->get_num_views()/2);
   if (!this->skip_PMRT)
     {
-      this->projectors_sptr = this->pmrt_projectors_sptr;
-      this->run_it(&Timings::projector_setup, "PMRT_projector_setup", runs * 10);
-      this->run_it(&Timings::forward_file, "PMRT_forward_file_first", 1);
-      this->run_it(&Timings::forward_file, "PMRT_forward_file", 1);
-      this->run_it(&Timings::forward_memory, "PMRT_forward_memory", 1);
-      this->run_it(&Timings::back_file, "PMRT_back_file_first", 1);
-      this->run_it(&Timings::back_file, "PMRT_back_file", 1);
-      this->run_it(&Timings::back_memory, "PMRT_back_memory", 1);
-      this->objective_function_sptr->set_projector_pair_sptr(this->projectors_sptr);
-      this->run_it(&Timings::obj_func_set_up, "PMRT_LogLik set_up", 1);
-      this->run_it(&Timings::obj_func_grad_no_sens, "PMRT_LogLik grad_no_sens", 1);
+      this->run_projectors("PMRT", this->pmrt_projectors_sptr, 1);
     }
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   if (!skip_PP)
     {
-      this->projectors_sptr = this->parallelproj_projectors_sptr;
-      this->run_it(&Timings::projector_setup, "PP_projector_setup", 1);
-      this->run_it(&Timings::forward_file, "PP_forward_file_first", 1);
-      this->run_it(&Timings::forward_file, "PP_forward_file", runs);
-      this->run_it(&Timings::forward_memory, "PP_forward_memory", runs);
-      this->run_it(&Timings::back_file, "PP_back_file_first", 1);
-      this->run_it(&Timings::back_file, "PP_back_file", runs);
-      this->run_it(&Timings::back_memory, "PP_back_memory", runs);
-      this->objective_function_sptr->set_projector_pair_sptr(this->projectors_sptr);
-      this->run_it(&Timings::obj_func_set_up, "PP_LogLik set_up", 1);
-      this->run_it(&Timings::obj_func_grad_no_sens, "PP_LogLik grad_no_sens", 1);
+      this->run_projectors("PP", this->parallelproj_projectors_sptr, runs);
     }
 #endif
+  if (parsed_projectors_sptr)
+    {
+      this->run_projectors("parsed", this->parsed_projectors_sptr, runs);
+    }
   // write_to_file("my_timings_backproj.hv", *this->image_sptr);
 
   if (!skip_priors)
@@ -445,6 +459,7 @@ main(int argc, char** argv)
 
   std::string image_filename;
   std::string template_proj_data_filename;
+  std::string projector_par_filename;
   std::string prog_name = argv[0];
   unsigned num_runs = 3;
   int num_threads = get_default_num_threads();
@@ -477,6 +492,8 @@ main(int argc, char** argv)
         skip_PP = std::atoi(argv[1]) != 0;
       else if (!strcmp(argv[0], "--skip-priors"))
         skip_priors = std::atoi(argv[1]) != 0;
+      else if (!strcmp(argv[0], "--projector_par_filename"))
+        projector_par_filename = argv[1];
       else
         print_usage_and_exit();
       argv += 2;
@@ -495,6 +512,15 @@ main(int argc, char** argv)
   timings.skip_PMRT = skip_PMRT;
   timings.skip_PP = skip_PP;
   timings.skip_priors = skip_priors;
+  if (!projector_par_filename.empty())
+    {
+      KeyParser parser;
+      parser.add_start_key("Projector pair parameters");
+      parser.add_parsing_key("type", &timings.parsed_projectors_sptr);
+      parser.add_stop_key("END");
+      if (!parser.parse(projector_par_filename.c_str()))
+        error("Error parsing " + projector_par_filename);
+    }
 
   timings.run_all(num_runs);
   return EXIT_SUCCESS;
