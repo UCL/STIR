@@ -38,16 +38,16 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
-          compiler_version: 9
+          # compiler_version: 9
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
           ROOT: "ON"
           ITK: "OFF"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: clang
           #compiler_version:
           cuda_version: "0"
@@ -57,7 +57,7 @@ jobs:
           ROOT: "OFF"
           # currently using ITK 5.2 which doesn't like clang 14
           ITK: "OFF"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
           compiler_version: 10
           cuda_version: "0"
@@ -66,19 +66,20 @@ jobs:
           parallelproj: "OFF"
           ROOT: "OFF"
           ITK: "ON"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
-          compiler_version: 12
+          compiler_version: 14
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gcc
-          compiler_version: 12
-          cuda_version: "12.1.0"
+          # currently CUDA doesn't support gcc 14 yet
+          compiler_version: 13
+          cuda_version: "12.6.1"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
@@ -180,7 +181,7 @@ jobs:
           echo CXX="$CXX" >> $GITHUB_ENV
 
     - if: matrix.cuda_version != '0'
-      uses: Jimver/cuda-toolkit@v0.2.11
+      uses: Jimver/cuda-toolkit@v0.2.19
       id: cuda-toolkit
       with:
           cuda: ${{ matrix.cuda_version }}
@@ -254,13 +255,23 @@ jobs:
              rm -rf parallelproj
           fi
 
-          # Install ROOT (warning: currently only valid on Ubuntu)
+          # Install ROOT (warning: brittle due to OS versions etc)
           if test "${{matrix.ROOT}}XX" == "ONXX"; then
-             ROOT_file=root_v6.28.12.Linux-ubuntu20-x86_64-gcc9.4.tar.gz
+             case ${{matrix.os}} in
+               (ubuntu*)
+               sudo apt install libtbb-dev libvdt-dev libgif-dev
+               ROOT_file=root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz
+               #root_v6.34.00.Linux-ubuntu24.10-x86_64-gcc14.2.tar.gz
+               ;;
+               (macOS*)
+               ROOT_file=https://root.cern/download/root_v6.34.00.macos-15.1-arm64-clang160.tar.gz
+               ;;
+             esac
              wget https://root.cern/download/"$ROOT_file"
              tar -xzvf "$ROOT_file"
              rm "$ROOT_file"
              source root/bin/thisroot.sh
+             echo ROOTSYS="$ROOTSYS" >> $GITHUB_ENV
           fi
 
           # we'll install some dependencies with shared libraries, so need to let the OS know
@@ -302,7 +313,11 @@ jobs:
           CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
           # make available to jobs below
           echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
-          EXTRA_BUILD_FLAGS="-DBUILD_SWIG_PYTHON=ON -DPYTHON_EXECUTABLE=`which python`"
+          if [ -n "$ROOTSYS" ]; then
+            # make sure we find ROOT (and vdt, which is installed in the same place)
+            EXTRA_BUILD_FLAGS=-DCMAKE_PREFIX_PATH:PATH="$ROOTSYS"
+          fi
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DBUILD_SWIG_PYTHON=ON -DPython_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL"
@@ -320,6 +335,13 @@ jobs:
               ;;
            esac
 
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      #if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 30
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
+
     - name: build
       shell: bash
       env:
@@ -328,12 +350,6 @@ jobs:
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
           cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
-
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session if triggered
-      uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 15
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
 
     - name: ctest
       shell: bash
