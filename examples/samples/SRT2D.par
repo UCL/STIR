@@ -1,0 +1,18 @@
+SRT2DParameters :=
+input file := sino_hof_no_noise.hs
+
+xy output image size (in pixels) := -1  
+z output image size (in pixels) := -1
+zoom := 1 
+
+;post-filter type := Wiener
+;Wiener Filter Parameters :=
+;End Wiener Filter Parameters :=
+
+;post-filter type := Gamma
+;Gamma Filter Parameters :=
+;End Gamma Filter Parameters :=
+
+output filename prefix := SRT2D
+
+END :=

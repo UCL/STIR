@@ -9,9 +9,9 @@
 #  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
-#      
+#       
 # Author Kris Thielemans
-# 
+# Author Dimitra Kyriakopoulou
 
 echo This script should work with STIR version 6.2. If you have
 echo a later version, you might have to update your test pack.
@@ -58,27 +58,37 @@ fi
 echo "Using `command -v OSMAPOSL`"
 echo "Using `command -v OSSPS`"
 echo "Using `command -v FBP2D`"
+echo "Using `command -v FBP3DRP`"
+echo "Using `command -v SRT2D`"
+echo "Using `command -v SRT2DSPECT`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
 LC_ALL=C
 export LC_ALL
 
-./simulate_PET_data_for_tests.sh
+./simulate_data_for_tests.sh
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
 fi
 # need to repeat with zero-offset now as FBP doesn't support it
 zero_view_suffix=_force_zero_view_offset
-./simulate_PET_data_for_tests.sh --force_zero_view_offset --suffix $zero_view_suffix
+./simulate_data_for_tests.sh --force_zero_view_offset --suffix $zero_view_suffix
 if [ $? -ne 0 ]; then
   echo "Error running simulation with zero view offset"
   exit 1
 fi
 ## TOF data
 TOF_suffix=_TOF
-./simulate_PET_data_for_tests.sh --TOF --suffix "$TOF_suffix"
+./simulate_data_for_tests.sh --TOF --suffix "$TOF_suffix"
+if [ $? -ne 0 ]; then
+  echo "Error running simulation"
+  exit 1
+fi
+## SPECT data
+SPECT_suffix=_SPECT 
+./simulate_data_for_tests.sh --SPECT --suffix "$SPECT_suffix"
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
@@ -96,7 +106,7 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # warning: currently OSMAPOSL needs to be run before OSSPS as 
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
-for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
+for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT OSMAPOSL OSSPS ; do  
   echo "========== Testing `command -v ${recon}`"
   # Check if we have CUDA code and parallelproj.
   # If so, check for test files in CUDA/*
@@ -118,22 +128,31 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
     for dataSuffix in "" "$TOF_suffix"; do
       echo "===== data suffix: \"$dataSuffix\""
       # test first if analytic reconstruction and if so, run pre-correction
-      isFBP=0
+      is_analytic=0
       if expr "$recon" : FBP > /dev/null; then
-        if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
-          echo "Skipping TOF as not yet supported for FBP"
-          break
-        fi
-        isFBP=1
-        suffix=$zero_view_suffix
-        export suffix
-        echo "Running precorrection"
-        correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
-        if [ $? -ne 0 ]; then
-            echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
-            error_log_files="${error_log_files} my_correct_projdata_simulation.log"
+        is_analytic=1
+      elif expr "$recon" : SRT > /dev/null; then
+        is_analytic=1
+      fi
+      if [ $is_analytic = 1 ]; then
+          if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
+            echo "Skipping TOF as not yet supported for FBP and SRT"
             break
-        fi
+          fi
+	  if expr "$recon" : SRT2DSPECT > /dev/null; then
+	    suffix=$SPECT_suffix
+	    export suffix
+          else   
+            suffix=$zero_view_suffix
+            export suffix
+            echo "Running precorrection"
+	    correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
+	    if [ $? -ne 0 ]; then
+              echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+	      error_log_files="${error_log_files} my_correct_projdata_simulation.log"
+	      break
+	    fi
+          fi
       else
           suffix="$dataSuffix"
           export suffix
@@ -160,7 +179,7 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
       output_filename=`awk -F':='  '/output[ _]*filename[ _]*prefix/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' "$parfile"`
       # substitute env variables (e.g. to fill in suffix)
       output_filename=`eval echo "${output_filename}"`
-      if [ ${isFBP} -eq 0 ]; then
+      if [ ${is_analytic} -eq 0 ]; then
           # iterative algorithm, so we need to append the num_subiterations
           num_subiterations=`awk -F':='  '/number[ _]*of[ _]*subiterations/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
           output_filename=${output_filename}_${num_subiterations}
@@ -202,4 +221,3 @@ else
  tail ${error_log_files}
  exit 1
 fi
-

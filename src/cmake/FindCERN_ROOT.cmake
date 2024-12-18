@@ -14,8 +14,9 @@
 ## FINDING ROOT 
 #
 # Attempts to `find_package(ROOT)`, If that fails, use root-config.
-# The primary method for ROOT being found is to use the `find_package(ROOT ${CERN_ROOT_FIND_VERSION} QUIET)` call. 
-# This process utilizes the `ROOT_DIR` variable to find the relevant CMake files. 
+# The primary method for ROOT being found is to use the `find_package(ROOT ${CERN_ROOT_FIND_VERSION} CONFIG)` call. 
+# This process utilizes the `ROOT_DIR` variable to find the relevant ROOTConfig*.cmake files (which are
+# part of the ROOT distribution).
 # There are two methods by which this variable can be set:
 # 1. Set the `ROOT_DIR` CMake argument. Point to `<ROOT_install_dir>/cmake` directory.
 # 2. Use the `ROOTSYS` CMake or environment variable. If `ROOT_DIR` is not provided, we will determine set `ROOT_DIR` to `${ROOTSYS}/cmake`. 
@@ -53,7 +54,7 @@ if (DEFINED ROOT_DIR)
   endif()
 endif()
 
-find_package(ROOT ${CERN_ROOT_FIND_VERSION} QUIET)
+find_package(ROOT ${CERN_ROOT_FIND_VERSION} CONFIG)
 if (ROOT_FOUND)
   if (CERN_ROOT_DEBUG)
     message(STATUS "Found ROOTConfig.cmake, so translating to old CERN_ROOT variable names")

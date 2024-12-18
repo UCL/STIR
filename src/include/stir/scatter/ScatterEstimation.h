@@ -39,6 +39,7 @@
 
 #include "stir/stir_math.h"
 #include "stir/FilePath.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
 
 START_NAMESPACE_STIR
 
@@ -119,7 +120,8 @@ public:
 
   //! make projdata 2D shared pointer
   shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr);
-  shared_ptr<ProjData> make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename);
+  shared_ptr<ProjData>
+  make_2D_projdata_sptr(const shared_ptr<ProjData> in_3d_sptr, string template_filename, const bool do_normalisation = false);
 
   //!
   //! \brief set_up
@@ -169,6 +171,11 @@ public:
 
   void set_recompute_mask_image(bool arg);
   void set_recompute_mask_projdata(bool arg);
+
+  //! Sets the forward projector for the scatter estimation
+  void set_forward_projector_for_mask_sptr(const shared_ptr<ForwardProjectorByBin> projector_sptr);
+  //! Get the forward projector used for the scatter estimation mask calculation
+  shared_ptr<ForwardProjectorByBin> get_forward_projector_for_mask_sptr() const;
 
   inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
 
@@ -275,6 +282,8 @@ protected:
   //! The file name for the attenuation coefficients.
   //! If they are to be recalculated they will be stored here, if set.
   std::string atten_coeff_filename;
+  //! ForwardProjector
+  shared_ptr<ForwardProjectorByBin> forward_projector_for_mask_sptr;
 
   //! \details the set of parameters to obtain a mask from the attenuation image
   /*! The attenuation image will be thresholded to find a plausible mask for where there

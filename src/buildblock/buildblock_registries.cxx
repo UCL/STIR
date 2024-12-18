@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2019, 2020, UCL
+    Copyright (C) 2019, 2020, 2024 UCL
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -17,12 +17,14 @@
   \brief File that registers all stir::RegisterObject children in buildblock
 
   \author Kris Thielemans
-
+  \author Dimitra Kyriakopoulou
 */
 
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/MedianImageFilter3D.h"
+#include "stir/WienerImageFilter2D.h"
+#include "stir/GammaImageFilter2D.h"
 #include "stir/MinimalImageFilter3D.h"
 #include "stir/ChainedDataProcessor.h"
 #include "stir/ThresholdMinToSmallPositiveValueDataProcessor.h"
@@ -35,6 +37,8 @@
 START_NAMESPACE_STIR
 
 static MedianImageFilter3D<float>::RegisterIt dummy;
+static WienerImageFilter2D<float>::RegisterIt dummyWiener;
+static GammaImageFilter2D<float>::RegisterIt dummyGamma;
 static MinimalImageFilter3D<float>::RegisterIt dummy1;
 static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy2;
 static SeparableGaussianImageFilter<float>::RegisterIt dummySGF;
