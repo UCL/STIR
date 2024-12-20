@@ -24,9 +24,6 @@
 #define __stir_ProjDataInfoBlocksOnCylindricalNoArcCorr_H__
 
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
-#include "stir/ProjDataInfoBlocksOnCylindrical.h"
-#include "stir/GeometryBlocksOnCylindrical.h"
-#include "stir/DetectionPositionPair.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/CartesianCoordinate3D.h"
 
@@ -40,39 +37,12 @@ class BlocksTests;
   \ingroup projdata
   \brief Projection data info for data from a scanner with discrete dtectors organised by blocks
 
-  This class also contains some functions specific for (static) full-ring PET
+  This class also contains 2 deprecated functions specific for (static) full-ring PET
   scanners. In this case, it is assumed that for 'raw' data (i.e. no mashing)
-  sinogram space is 'interleaved': 2 adjacent LOR_angles are
-  merged to 1 'view', while the corresponding bins are
-  interleaved:
+  sinogram space is 'interleaved'. See documentation for ProjDataInfoCylindricalNoArcCorr.
 
-  \verbatim
-     before interleaving               after interleaving
-     a00     a01     a02 ...      view 0: a00 a10 a01 a11  ...
-         a10     a11     ...
-     a20     a21     a22 ...      view 1: a20 a30 a21 a31 ...
-         a30     a31     ...
-         \endverbatim
-  This (standard) interleaving is done because for 'odd' LOR_angles there
-  is no LOR which goes through the origin.
-
-
-  \par Interchanging the 2 detectors
-
-  When the ring difference = 0 (i.e. a 2D - or direct - sinogram),
-  interchanging the 2 detectors does not change the LOR. This is why
-  (in 2D) one gets away with a full sinogram size of
-  num_views * 2 * num_views, where the size of 'detector-space' is
-  twice as large.
-  However, in 3D, interchanging the detectors, also interchanges the
-  rings. One has 2 options:
-  - have 1 sinogram with twice as many views, together with the rings
-    as 'unordered pair' (i.e. ring_difference is always >0)
-  - have 2 sinograms of the same size as in 2D, together with the rings
-    as 'ordered pair' (i.e. ring_difference can be positive and negative).
-  In STIR, we use the second convention.
-
-  */
+  \deprecated This class will be removed in v7.0.
+*/
 class ProjDataInfoBlocksOnCylindricalNoArcCorr : public ProjDataInfoGenericNoArcCorr
 {
 private:
