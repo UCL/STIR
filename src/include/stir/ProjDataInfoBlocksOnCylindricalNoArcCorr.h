@@ -33,6 +33,9 @@
 START_NAMESPACE_STIR
 
 class Succeeded;
+class ProjDataInfoTests;
+class BlocksTests;
+
 /*!
   \ingroup projdata
   \brief Projection data info for data from a scanner with discrete dtectors organised by blocks
@@ -98,6 +101,7 @@ public:
 
   std::string parameter_info() const override;
 
+private:
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1,
@@ -111,6 +115,9 @@ public:
                                                          const CartesianCoordinate3D<float>& coord_1,
                                                          const CartesianCoordinate3D<float>& coord_2) const;
   //@}
+  // give test classes access to the private members
+  friend class ProjDataInfoTests;
+  friend class BlocksTests;
 
 private:
   bool blindly_equals(const root_type* const) const override;
