@@ -1,0 +1,20 @@
+SRT2DSPECTParameters :=
+
+;SRT2DSPECT receives as input the forward projection of the attenuation image (attensino.hs) and the measured emission sinogram (sino.hs).
+input file := sino.hs
+attenuation projection filename := attensino.hs
+
+xy output image size (in pixels) := -1
+
+;post-filter type := Wiener
+;Wiener Filter Parameters :=
+;End Wiener Filter Parameters :=
+
+;post-filter type := Gamma
+;Gamma Filter Parameters :=
+;End Gamma Filter Parameters :=
+
+output filename prefix := srt_recon
+
+
+end:=

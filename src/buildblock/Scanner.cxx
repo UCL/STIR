@@ -174,7 +174,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.75F,
                  3.12932F,
-                 static_cast<float>(15. * _PI / 180),
+                 static_cast<float>(-15. * _PI / 180),
                  1,
                  4,
                  8,
@@ -201,7 +201,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.75F,
                  3.375F,
-                 static_cast<float>(15. * _PI / 180),
+                 static_cast<float>(-15. * _PI / 180),
                  1,
                  4,
                  8,
@@ -228,7 +228,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.75F,
                  3.375F,
-                 static_cast<float>(15. * _PI / 180),
+                 static_cast<float>(-15. * _PI / 180),
                  3,
                  4,
                  8,
@@ -255,7 +255,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.25F,
                  1.650F,
-                 static_cast<float>(13. * _PI / 180),
+                 static_cast<float>(-13. * _PI / 180),
                  1,
                  8,
                  8,
@@ -2206,6 +2206,7 @@ Scanner::get_scanner_from_name(const string& name)
       type = static_cast<Type>(int_type);
     }
   // it's not in the list
+  warning(std::string("Scanner::get_scanner_from_name: scanner'") + name + "' not found");
   return new Scanner(Unknown_scanner);
 }
 
