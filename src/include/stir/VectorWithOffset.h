@@ -194,7 +194,7 @@ public:
       resize() in a derived class, it is probably safest to overload
       grow() as well.
   */
-  inline virtual void grow(const int min_index, const int max_index);
+  inline virtual void grow(const int min_index, const int max_index, bool initialise_with_0 = true);
 
   //! grow the range of the vector from 0 to new_size-1, new elements are set to \c T()
   inline void grow(const unsigned int new_size);
@@ -207,7 +207,7 @@ public:
       \todo in principle reallocation could be avoided when the new range would fit in the
       old one by shifting.
     */
-  inline virtual void resize(const int min_index, const int max_index);
+  inline virtual void resize(const int min_index, const int max_index, bool initialise_with_0 = true);
 
   //! change the range of the vector from 0 to new_size-1, new elements are set to \c T()
   inline void resize(const unsigned int new_size);
