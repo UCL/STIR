@@ -19,7 +19,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DynamicDiscretisedDensity.cxx
 	test_ScatterSimulation.cxx
         test_ML_norm.cxx
-	test_proj_data_info_subsets.cxx
+	test_proj_data_info_subsets_pet.cxx
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -82,6 +82,10 @@ endforeach()
 ### i.e. those that need command line arguments
 
 if (BUILD_TESTING)
+
+# Add test for test_proj_data_info_subsets_spect with arguments
+ADD_TEST(NAME test_proj_data_info_subsets_spect
+			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_proj_data_info_subsets_spect ${CMAKE_SOURCE_DIR}/examples/samples/SPECT_Interfile_header.hs)
 
 ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in
@@ -150,5 +154,6 @@ ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
+
 
 endif(BUILD_TESTING)
