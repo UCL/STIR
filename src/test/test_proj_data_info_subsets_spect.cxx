@@ -219,6 +219,7 @@ TestProjDataInfoSubsets::run_tests(const std::shared_ptr<ProjData>& input_sino_s
 {
   try
     {
+
       // check get_original_view_nums() on the original data
       {
         auto views = input_sino_sptr->get_original_view_nums();
@@ -617,9 +618,24 @@ void
 TestProjDataInfoSubsets::run_tests()
 {
     cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
+
+    // Step 1: Construct the test image
+    cerr << "\tConstructing test image...\n";
     auto input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
     auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
-    run_tests(input_sino_sptr, test_image_sptr);
+
+    // Step 2: Generate forward projection from the test image
+    cerr << "\tGenerating forward projection of the test image...\n";
+    auto generated_sino_sptr = std::make_shared<ProjDataInMemory>(
+        input_sino_sptr->get_exam_info_sptr(),
+        input_sino_sptr->get_proj_data_info_sptr()
+    );
+
+    fill_proj_data_with_forward_projection(generated_sino_sptr, test_image_sptr);
+
+    // Step 3: Run tests using the generated forward projection
+    cerr << "\tRunning tests with the generated forward projection...\n";
+    run_tests(generated_sino_sptr, test_image_sptr);
 }
 
 
