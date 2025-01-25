@@ -259,6 +259,7 @@ TOF_Tests::test_CListEventROOT()
 
   DetectionPositionPair<> det_pos;
   event.get_detection_position(det_pos);
+
   LORAs2Points<float> lor_2pts(event.get_LOR());
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc;
   test_proj_data_info_sptr->get_LOR(lor_sc, bin);
@@ -284,7 +285,7 @@ TOF_Tests::test_CListEventROOT()
                          det_pos.pos2(),
                          "CListEventROOT: get_detection_position with swapped detectors: equal timing_pos, but different pos2");
         }
-      else if (det_pos_swapped.timing_pos() == -det_pos.timing_pos())
+      else if (det_pos_swapped.timing_pos() == event.get_scanner_ptr()->get_max_num_timing_poss() - 1 - det_pos.timing_pos())
         {
           check_if_equal(
               det_pos_swapped.pos2(),
