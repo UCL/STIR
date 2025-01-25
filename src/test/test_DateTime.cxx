@@ -74,7 +74,7 @@ DateTimeTest::run_tests()
         DICOM_datetime_to_secs_since_Unix_epoch("19710202230301+020");
         check(false, "test ill-formed TZ");
       }
-    catch (...)
+    catch (std::runtime_error&)
       {
         std::cerr << "Test was ok\n";
       }
@@ -108,7 +108,7 @@ DateTimeTest::run_tests()
         Interfile_datetime_to_secs_since_Unix_epoch(DateTimeStrings("1971:02:2", "23:03:01"));
         check(false, "test ill-formed date");
       }
-    catch (...)
+    catch (std::runtime_error&)
       {
         std::cerr << "Test was ok\n";
       }
@@ -154,7 +154,7 @@ DateTimeTest::check_round_trip(const double secs, const double tz_offset, const 
         check_if_zero(new_secs - secs, str + " : " + dt.date + ", " + dt.time);
       }
     }
-  catch (...)
+  catch (std::runtime_error&)
     {
       check(false, str);
     }

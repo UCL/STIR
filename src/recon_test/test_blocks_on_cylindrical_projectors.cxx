@@ -449,7 +449,7 @@ BlocksTests::run_voxelOnCartesianGrid_with_negative_offset()
       auto grid = std::make_shared<VoxelsOnCartesianGrid<float>>(
           *proj_data_info_blocks_sptr, 1, CartesianCoordinate3D<float>(0.F, 0.F, 0.F), CartesianCoordinate3D<int>(-1, -1, -1));
     }
-  catch (...)
+  catch (std::runtime_error&)
     {
       is_ok = false;
     }
