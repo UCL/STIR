@@ -161,6 +161,11 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
   endif()
 endif()
 
+if (HAVE_HDF5)
+  # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
+  target_include_directories(recon_buildblock PRIVATE ${HDF5_INCLUDE_DIRS})
+endif()
+
 if (STIR_WITH_CUDA)
   target_link_libraries(recon_buildblock PRIVATE CUDA::cudart)
 endif()
