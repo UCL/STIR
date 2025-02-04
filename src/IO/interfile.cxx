@@ -1334,12 +1334,11 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
   else
     {
       // !author Parisa Khateri
-      const shared_ptr<const ProjDataInfoBlocksOnCylindrical> proj_data_info_sptr
-          = dynamic_pointer_cast<const ProjDataInfoBlocksOnCylindrical>(pdfs.get_proj_data_info_sptr());
+      // generic (and hence BlocksOnCylindrical) scanner
+      const auto proj_data_info_sptr = dynamic_pointer_cast<const ProjDataInfoGeneric>(pdfs.get_proj_data_info_sptr());
 
       if (proj_data_info_sptr != NULL)
         {
-          // BlocksOncylindrical scanners
           output_header << "minimum ring difference per segment := ";
           {
             std::vector<int>::const_iterator seg = segment_sequence.begin();
@@ -1359,66 +1358,18 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
           }
 
           const Scanner& scanner = *proj_data_info_sptr->get_scanner_ptr();
-#if 0 // KT commented out. currently no get_ring_radius() anymore
-        if (fabs(proj_data_info_sptr->get_ring_radius()-
-        scanner.get_effective_ring_radius()) > .1)
-      warning("write_basic_interfile_PDFS_header: inconsistent effective ring radius:\n"
-         "\tproj_data_info has %g, scanner has %g.\n"
-         "\tThis really should not happen and signifies a bug.\n"
-         "\tYou will have a problem reading this data back in.",
-         proj_data_info_sptr->get_ring_radius(),
-         scanner.get_effective_ring_radius());
-#endif
-          if (fabs(proj_data_info_sptr->get_ring_spacing() - scanner.get_ring_spacing()) > .1)
-            warning("write_basic_interfile_PDFS_header: inconsistent ring spacing:\n"
-                    "\tproj_data_info has %g, scanner has %g.\n"
-                    "\tThis really should not happen and signifies a bug.\n"
-                    "\tYou will have a problem reading this data back in.",
-                    proj_data_info_sptr->get_ring_spacing(),
-                    scanner.get_ring_spacing());
 
           output_header << scanner.parameter_info();
 
-        }  // end of BlocksOnCylindrical scanner
-      else // generic scanner
+        } // end generic scanner
+      else if (!dynamic_pointer_cast<const ProjDataInfoSubsetByView>(pdfs.get_proj_data_info_sptr()))
         {
-          const shared_ptr<const ProjDataInfoGeneric> proj_data_info_sptr
-              = dynamic_pointer_cast<const ProjDataInfoGeneric>(pdfs.get_proj_data_info_sptr());
-
-          if (proj_data_info_sptr != NULL)
-            {
-              output_header << "minimum ring difference per segment := ";
-              {
-                std::vector<int>::const_iterator seg = segment_sequence.begin();
-                output_header << "{ " << proj_data_info_sptr->get_min_ring_difference(*seg);
-                for (seg++; seg != segment_sequence.end(); seg++)
-                  output_header << "," << proj_data_info_sptr->get_min_ring_difference(*seg);
-                output_header << "}\n";
-              }
-
-              output_header << "maximum ring difference per segment := ";
-              {
-                std::vector<int>::const_iterator seg = segment_sequence.begin();
-                output_header << "{ " << proj_data_info_sptr->get_max_ring_difference(*seg);
-                for (seg++; seg != segment_sequence.end(); seg++)
-                  output_header << "," << proj_data_info_sptr->get_max_ring_difference(*seg);
-                output_header << "}\n";
-              }
-
-              const Scanner& scanner = *proj_data_info_sptr->get_scanner_ptr();
-
-              output_header << scanner.parameter_info();
-
-            } // end generic scanner
-          else if (!dynamic_pointer_cast<const ProjDataInfoSubsetByView>(pdfs.get_proj_data_info_sptr()))
-            {
-              error("write_basic_interfile_PDFS_header: cannot write subset data yet. Sorry");
-            }
-          else
-            {
-              error("write_basic_interfile_PDFS_header: Error casting the projdata to one of its geometries: "
-                    "Cylindrical/BlocksOnCylindrical/Generic");
-            }
+          error("write_basic_interfile_PDFS_header: cannot write subset data yet. Sorry");
+        }
+      else
+        {
+          error("write_basic_interfile_PDFS_header: Error casting the projdata to one of its geometries: "
+                "Cylindrical/BlocksOnCylindrical/Generic");
         }
     }
 

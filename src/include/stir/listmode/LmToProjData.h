@@ -202,6 +202,9 @@ public:
   bool get_store_prompts() const;
   void set_store_delayeds(bool);
   bool get_store_delayeds() const;
+  //! Returns the last processed timestamp in the listmode file
+  /*! This can be used to find the duration (in seconds) of the last time frame processed. */
+  double get_last_processed_lm_rel_time() const;
   void set_num_segments_in_memory(int);
   int get_num_segments_in_memory() const;
   void set_num_events_to_store(long int);
