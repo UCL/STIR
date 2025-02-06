@@ -3,12 +3,12 @@
 //
 //
 /*!
-  \file 
-  \ingroup Coordinate 
-  \brief defines the stir::Coordinate3D<coordT> class 
+  \file
+  \ingroup Coordinate
+  \brief defines the stir::Coordinate3D<coordT> class
 
-  \author Sanida Mustafovic 
-  \author Kris Thielemans 
+  \author Sanida Mustafovic
+  \author Kris Thielemans
   \author PARAPET project
 
 
@@ -25,12 +25,11 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
-/*!  \ingroup Coordinate 
+/*!  \ingroup Coordinate
    \brief a templated class for 3-dimensional coordinates.
 
    The only new method is a constructor Coordinate3D<coordT>(c1,c2,c3)
@@ -57,4 +56,3 @@ END_NAMESPACE_STIR
 #include "stir/Coordinate3D.inl"
 
 #endif
-

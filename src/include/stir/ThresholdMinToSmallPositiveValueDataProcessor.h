@@ -11,30 +11,28 @@
 /*!
 
   \file
-  \ingroup DataProcessor  
+  \ingroup DataProcessor
   \brief Declaration of class stir::ThresholdMinToSmallPositiveValueDataProcessor
-    
+
   \author Kris Thielemans
-      
+
 */
 
 #ifndef __stir_ThresholdMinToSmallPositiveValueDataProcessor_H__
 #define __stir_ThresholdMinToSmallPositiveValueDataProcessor_H__
 
-
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
-
 
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup DataProcessor  
+  \ingroup DataProcessor
   \brief A class in the DataProcessor hierarchy for making sure all elements are strictly positive.
 
   Works by calling threshold_min_to_small_positive_value().
-  
-  As it is derived from RegisteredParsingObject, it implements all the 
+
+  As it is derived from RegisteredParsingObject, it implements all the
   necessary things to parse parameter files etc.
 
   \par Parsing parameters
@@ -51,46 +49,35 @@ START_NAMESPACE_STIR
  */
 
 template <typename DataT>
-class ThresholdMinToSmallPositiveValueDataProcessor : 
-  public 
-    RegisteredParsingObject<
-        ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
-        DataProcessor<DataT>,
-        DataProcessor<DataT>
-    >
+class ThresholdMinToSmallPositiveValueDataProcessor
+    : public RegisteredParsingObject<ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
+                                     DataProcessor<DataT>,
+                                     DataProcessor<DataT>>
 {
 private:
-  typedef 
-    RegisteredParsingObject<
-        ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
-        DataProcessor<DataT>,
-        DataProcessor<DataT>
-    >
-    base_type;
+  typedef RegisteredParsingObject<ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
+                                  DataProcessor<DataT>,
+                                  DataProcessor<DataT>>
+      base_type;
+
 public:
-  static const char * const registered_name; 
-  
+  static const char* const registered_name;
+
   //! Construct by calling set_defaults()
   ThresholdMinToSmallPositiveValueDataProcessor();
-    
-  
+
 private:
-  
   int rim_truncation_image;
-  
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  
-  Succeeded virtual_set_up(const DataT&);
 
-  void  virtual_apply(DataT& out_data, const DataT& in_data) const;
-  void  virtual_apply(DataT& data) const ;
-  
+  void set_defaults() override;
+  void initialise_keymap() override;
+
+  Succeeded virtual_set_up(const DataT&) override;
+
+  void virtual_apply(DataT& out_data, const DataT& in_data) const override;
+  void virtual_apply(DataT& data) const override;
 };
-
 
 END_NAMESPACE_STIR
 
 #endif
-
-

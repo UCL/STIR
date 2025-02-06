@@ -14,7 +14,7 @@ set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 
-create_stir_test (test_IR_filters.cxx "" "")
+create_stir_test (test_IR_filters.cxx "buildblock" "")
 create_stir_test (test_BSplines.cxx "buildblock;IO;buildblock;numerics_buildblock;display" "")
 create_stir_test (test_BSplinesRegularGrid.cxx "buildblock;IO;buildblock;numerics_buildblock;display" "")
 create_stir_test (test_BSplinesRegularGrid1D.cxx "buildblock;IO;buildblock;numerics_buildblock;display" "")

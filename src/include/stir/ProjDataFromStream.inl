@@ -25,44 +25,53 @@
 
 START_NAMESPACE_STIR
 
-
-//ProjDataFromStream::ProjDataFromStream()
+// ProjDataFromStream::ProjDataFromStream()
 //{}
 
-ProjDataFromStream::StorageOrder 
+ProjDataFromStream::StorageOrder
 ProjDataFromStream::get_storage_order() const
-{ return storage_order; }
+{
+  return storage_order;
+}
 
-int 
+int
 ProjDataFromStream::find_segment_index_in_sequence(const int segment_num) const
 {
-  std::vector<int>::const_iterator iter =
-    std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
+  std::vector<int>::const_iterator iter = std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
   // TODO do some proper error handling here
-  assert(iter !=  segment_sequence.end());
+  assert(iter != segment_sequence.end());
   return static_cast<int>(iter - segment_sequence.begin());
 }
 
-
-std::streamoff 
+std::streamoff
 ProjDataFromStream::get_offset_in_stream() const
-{ return offset; }
+{
+  return offset;
+}
 
-NumericType 
+NumericType
 ProjDataFromStream::get_data_type_in_stream() const
-{ return on_disk_data_type; }
+{
+  return on_disk_data_type;
+}
 
-ByteOrder 
+ByteOrder
 ProjDataFromStream::get_byte_order_in_stream() const
-{ return on_disk_byte_order; }
+{
+  return on_disk_byte_order;
+}
 
-std::vector<int> 
+std::vector<int>
 ProjDataFromStream::get_segment_sequence_in_stream() const
-{ return segment_sequence; }
+{
+  return segment_sequence;
+}
 
 std::vector<int>
 ProjDataFromStream::get_timing_poss_sequence_in_stream() const
-{ return timing_poss_sequence; }
+{
+  return timing_poss_sequence;
+}
 
 #if 0
 // this does not make a lot of sense. How to compare files etc. ?
@@ -78,10 +87,7 @@ ProjDataFromStream::operator ==(const ProjDataFromStream& proj)
   (on_disk_data_type == proj.get_data_type_in_stream())&&
   (get_byte_order_in_stream() == proj.get_byte_order_in_stream()) ;
 }
- 
 
 #endif
-
-
 
 END_NAMESPACE_STIR

@@ -21,12 +21,12 @@
 
   See README.txt in the directory where this file is located.
 
-  \author Kris Thielemans and Robert Twyman      
+  \author Kris Thielemans and Robert Twyman
 */
 /*
     Copyright (C) 2020 University College London
 
-    This software is distributed under the terms 
+    This software is distributed under the terms
     of the GNU General  Public Licence (GPL)
     See STIR/LICENSE.txt for details
 */
@@ -37,25 +37,26 @@
 #include "stir/is_null_ptr.h"
 #include "stir/error.h"
 
-namespace stir {
+namespace stir
+{
 
-class MyStuff: public ParsingObject
+class MyStuff : public ParsingObject
 {
 public:
   MyStuff();
   void set_defaults();
   void run();
-  typedef DiscretisedDensity<3,float> target_type;
+  typedef DiscretisedDensity<3, float> target_type;
 
 protected:
-  shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
+  shared_ptr<GeneralisedObjectiveFunction<target_type>> objective_function_sptr;
 
 private:
   std::string input_filename;
   std::string image_filename;
   int num_iterations;
   float step_size;
-  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3, float>>> output_file_format_sptr;
   void initialise_keymap();
   bool post_processing();
 };
@@ -69,12 +70,12 @@ void
 MyStuff::set_defaults()
 {
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
-  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3, float>>::default_sptr();
   num_iterations = 10;
   step_size = 0.001;
 }
 
-void 
+void
 MyStuff::initialise_keymap()
 {
   parser.add_start_key("MyStuff parameters");
@@ -86,14 +87,14 @@ MyStuff::initialise_keymap()
   parser.add_stop_key("End");
 }
 
-bool MyStuff::
-post_processing()
+bool
+MyStuff::post_processing()
 {
   if (is_null_ptr(this->objective_function_sptr))
-  {
+    {
       error("objective_function_sptr is null");
       return true;
-  }
+    }
   return false;
 }
 
@@ -101,12 +102,10 @@ void
 MyStuff::run()
 {
   /////// load initial density from file
-  shared_ptr<DiscretisedDensity<3,float> >
-    density_sptr(read_from_file<DiscretisedDensity<3,float> >(image_filename));
+  shared_ptr<DiscretisedDensity<3, float>> density_sptr(read_from_file<DiscretisedDensity<3, float>>(image_filename));
 
   //////// gradient it copied Density filled with 0's
-  shared_ptr<DiscretisedDensity<3,float> >
-          gradient_sptr(density_sptr->get_empty_copy());
+  shared_ptr<DiscretisedDensity<3, float>> gradient_sptr(density_sptr->get_empty_copy());
 
   /////// setup objective function object
   objective_function_sptr->set_up(density_sptr);
@@ -117,41 +116,43 @@ MyStuff::run()
   /////// Iteratively compute and add objective function gradients to density_sptr
   /////// Update formula: x_{k+1} = x_k + step_size * gradient
   /////// Note the lack of positivity constraint on the images.
-  for (int k = 0; k < num_iterations; k++) {
-    std::cout << "Iteration number: " << k << "\n";
-    objective_function_sptr->compute_sub_gradient(*gradient_sptr, *density_sptr, 0);
-    *density_sptr += (*gradient_sptr) * step_size;
+  for (int k = 0; k < num_iterations; k++)
+    {
+      std::cout << "Iteration number: " << k << "\n";
+      objective_function_sptr->compute_sub_gradient(*gradient_sptr, *density_sptr, 0);
+      *density_sptr += (*gradient_sptr) * step_size;
 
-    /////// save density and estimates
-    std::string density_filename = "demo4_density_" + std::to_string(k);
-    std::string gradient_filename = "demo4_gradient_" + std::to_string(k);
-    output_file_format_sptr->write_to_file(density_filename, *density_sptr);
-    output_file_format_sptr->write_to_file(gradient_filename, *gradient_sptr);
-  }
+      /////// save density and estimates
+      std::string density_filename = "demo4_density_" + std::to_string(k);
+      std::string gradient_filename = "demo4_gradient_" + std::to_string(k);
+      output_file_format_sptr->write_to_file(density_filename, *density_sptr);
+      output_file_format_sptr->write_to_file(gradient_filename, *gradient_sptr);
+    }
   /////// Compute objective function value of image + gradient
   const double my_objective_function_value2 = objective_function_sptr->compute_objective_function(*density_sptr);
 
   /////// Return the objective function values and improvement
   std::cout << "The initial Objective Function Value = " << my_objective_function_value1 << "\n";
-  std::cout << "The Objective Function Value of after " << num_iterations << " iteration(s) ="
-            << my_objective_function_value2 << "\n";
+  std::cout << "The Objective Function Value of after " << num_iterations << " iteration(s) =" << my_objective_function_value2
+            << "\n";
   std::cout << "A change of " << my_objective_function_value2 - my_objective_function_value1 << "\n";
 }
 
-}// end of namespace stir
+} // end of namespace stir
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
   using namespace stir;
 
-  if (argc!=2)
+  if (argc != 2)
     {
       std::cerr << "Normal usage: " << argv[0] << " parameter-file\n";
       std::cerr << "I will now ask you the questions interactively\n";
     }
   MyStuff my_stuff;
   my_stuff.set_defaults();
-  if (argc!=2)
+  if (argc != 2)
     my_stuff.ask_parameters();
   else
     my_stuff.parse(argv[1]);

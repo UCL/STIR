@@ -29,12 +29,14 @@ START_NAMESPACE_STIR
 
 float
 ProjDataInfoCylindricalArcCorr::get_s(const Bin& bin) const
-{return bin.tangential_pos_num()*bin_size;}
-
+{
+  return bin.tangential_pos_num() * bin_size;
+}
 
 float
 ProjDataInfoCylindricalArcCorr::get_tangential_sampling() const
-{return bin_size;}
+{
+  return bin_size;
+}
 
 END_NAMESPACE_STIR
-

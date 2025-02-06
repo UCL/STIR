@@ -30,51 +30,44 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup MultiIO
-  \brief 
+  \brief
   Implementation of OutputFileFormat paradigm for the Multi format.
  */
 template <typename DiscDensityT>
-class MultiParametricDiscretisedDensityOutputFileFormat : 
-  public RegisteredParsingObject<
-        MultiParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> >,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> > >
+class MultiParametricDiscretisedDensityOutputFileFormat
+    : public RegisteredParsingObject<MultiParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
+                                     OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>,
+                                     OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>>
 {
- private:
-  typedef 
-     RegisteredParsingObject<
-        MultiParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> >,
-        OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> > >
-    base_type;
-public :
-    //! Name which will be used when parsing an OutputFileFormat object
-  static const char * const registered_name;
+private:
+  typedef RegisteredParsingObject<MultiParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
+                                  OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>,
+                                  OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT>>>
+      base_type;
 
-  MultiParametricDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::FLOAT, 
-                   const ByteOrder& = ByteOrder::native);
+public:
+  //! Name which will be used when parsing an OutputFileFormat object
+  static const char* const registered_name;
 
+  MultiParametricDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::FLOAT,
+                                                    const ByteOrder& = ByteOrder::native);
 
-  virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
- protected:
-  virtual Succeeded  
-    actual_write_to_file(std::string& output_filename,
-		  const ParametricDiscretisedDensity<DiscDensityT>& density) const;
+  ByteOrder set_byte_order(const ByteOrder&, const bool warn = false) override;
 
+protected:
+  Succeeded actual_write_to_file(std::string& output_filename,
+                                 const ParametricDiscretisedDensity<DiscDensityT>& density) const override;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   /// Output type for the individual images
-  using DiscretisedDensityType = typename ParametricDiscretisedDensity<DiscDensityT>::SingleDiscretisedDensityType::hierarchy_base_type;
-  shared_ptr<OutputFileFormat<DiscretisedDensityType> >
-    individual_output_type_sptr;
+  using DiscretisedDensityType =
+      typename ParametricDiscretisedDensity<DiscDensityT>::SingleDiscretisedDensityType::hierarchy_base_type;
+  shared_ptr<OutputFileFormat<DiscretisedDensityType>> individual_output_type_sptr;
 };
 
-
-
 END_NAMESPACE_STIR
-
 
 #endif

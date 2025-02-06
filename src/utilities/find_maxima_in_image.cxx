@@ -41,107 +41,98 @@
 #include <iomanip>
 #include <algorithm>
 
-
 using std::endl;
 using std::cout;
 using std::cerr;
 using std::setw;
 
 USING_NAMESPACE_STIR
- 
-int main(int argc, char *argv[])
-{ 
-  
-  if (argc< 2 || argc>5)
-  {
-    cerr << "Usage:" << argv[0] << " input_image [num_maxima [ half_mask_size_xy [half_mask_size z]] ]\n"
-	 << "\tnum_maxima defaults to 1\n"
-	 << "\thalf_mask_size_xy defaults to 1\n"
-	 << "\thalf_mask_size_z defaults to half_mask_size_xy" <<endl;    
-    return (EXIT_FAILURE);
-  }
 
-  const unsigned num_maxima = argc>=3 ? atoi(argv[2]) : 1;
-  const int mask_size_xy = argc>=4 ? atoi(argv[3]) : 1;
-  const int mask_size_z = argc>=5 ? atoi(argv[4]) : mask_size_xy;
+int
+main(int argc, char* argv[])
+{
 
-  cerr << "Finding " << num_maxima << " maxima, each at least \n\t"
-       << mask_size_xy << " pixels from each other in x,y direction, and\n\t"
-       << mask_size_z << " pixels from each other in z direction.\n";
+  if (argc < 2 || argc > 5)
+    {
+      cerr << "Usage:" << argv[0] << " input_image [num_maxima [ half_mask_size_xy [half_mask_size z]] ]\n"
+           << "\tnum_maxima defaults to 1\n"
+           << "\thalf_mask_size_xy defaults to 1\n"
+           << "\thalf_mask_size_z defaults to half_mask_size_xy" << endl;
+      return (EXIT_FAILURE);
+    }
 
-  shared_ptr< DiscretisedDensity<3,float> >  
-    input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
-  DiscretisedDensity<3,float>& input_image = *input_image_sptr;
+  const unsigned num_maxima = argc >= 3 ? atoi(argv[2]) : 1;
+  const int mask_size_xy = argc >= 4 ? atoi(argv[3]) : 1;
+  const int mask_size_z = argc >= 5 ? atoi(argv[4]) : mask_size_xy;
 
-  const float mask_value = std::min(input_image.find_min()-100, -1.E20F);
+  cerr << "Finding " << num_maxima << " maxima, each at least \n\t" << mask_size_xy
+       << " pixels from each other in x,y direction, and\n\t" << mask_size_z << " pixels from each other in z direction.\n";
 
-  for (unsigned int maximum_num=0; maximum_num!=num_maxima; ++ maximum_num)
+  shared_ptr<DiscretisedDensity<3, float>> input_image_sptr(read_from_file<DiscretisedDensity<3, float>>(argv[1]));
+  DiscretisedDensity<3, float>& input_image = *input_image_sptr;
+
+  const float mask_value = std::min(input_image.find_min() - 100, -1.E20F);
+
+  for (unsigned int maximum_num = 0; maximum_num != num_maxima; ++maximum_num)
     {
       const float current_maximum = input_image.find_max();
-      int max_k=0, max_j=0,max_i=0; // initialise to avoid compiler warnings
-      bool found=false;
+      int max_k = 0, max_j = 0, max_i = 0; // initialise to avoid compiler warnings
+      bool found = false;
       {
-	const int min_k_index = input_image.get_min_index(); 
-	const int max_k_index = input_image.get_max_index();
-	for ( int k = min_k_index; k<= max_k_index && !found; ++k)
-	  {
-	    const int min_j_index = input_image[k].get_min_index(); 
-	    const int max_j_index = input_image[k].get_max_index();
-	    for ( int j = min_j_index; j<= max_j_index && !found; ++j)
-	      {
-		const int min_i_index = input_image[k][j].get_min_index(); 
-		const int max_i_index = input_image[k][j].get_max_index();
-		for ( int i = min_i_index; i<= max_i_index && !found; ++i)
-		  {
-		    if ( input_image[k][j][i] == current_maximum)
-		      {
-			max_k = k;
-			max_j = j;
-			max_i = i;
-			cout << "max: " << setw(6) << current_maximum 
-			     << " at: " 
-			     << setw(3) << max_k 
-			     << ',' << setw(3) << max_j 
-			     << ',' << setw(3)  << max_i;
-			  {
-			    BasicCoordinate<3,float> phys_coord = 
-			      input_image.
-			      get_physical_coordinates_for_indices(make_coordinate(max_k, max_j, max_i));
-			    cout << " which is "
-				 << setw(6) << phys_coord[1] 
-				 << ',' << setw(6) << phys_coord[2] 
-				 << ',' << setw(6)  <<phys_coord[3]
-				 << " in mm in physical coordinates";
-			  }
-			cout << '\n';
-			found = true;		  
-		      }
-		  }
-	      }
-	  }
-	if (!found)
-	  {
-	    warning("Something strange going on: can't find maximum %g\n", current_maximum);
-	    return EXIT_FAILURE;
-	  }
-	if (maximum_num+1!=num_maxima)
-	  {
-	    // now mask it out for next run
-	    for ( int k = std::max(max_k-mask_size_z,min_k_index); k<= std::min(max_k+mask_size_z,max_k_index); ++k)
-	    {
-	      const int min_j_index = input_image[k].get_min_index(); 
-	      const int max_j_index = input_image[k].get_max_index();
-	      for ( int j = std::max(max_j-mask_size_xy,min_j_index); j<= std::min(max_j+mask_size_xy,max_j_index); ++j)
-	      {
-		const int min_i_index = input_image[k][j].get_min_index(); 
-		const int max_i_index = input_image[k][j].get_max_index();
-		for ( int i = std::max(max_i-mask_size_xy,min_i_index); i<= std::min(max_i+mask_size_xy,max_i_index); ++i)
-		  input_image[k][j][i] = mask_value;
-	      }
-	    }
-	  }
+        const int min_k_index = input_image.get_min_index();
+        const int max_k_index = input_image.get_max_index();
+        for (int k = min_k_index; k <= max_k_index && !found; ++k)
+          {
+            const int min_j_index = input_image[k].get_min_index();
+            const int max_j_index = input_image[k].get_max_index();
+            for (int j = min_j_index; j <= max_j_index && !found; ++j)
+              {
+                const int min_i_index = input_image[k][j].get_min_index();
+                const int max_i_index = input_image[k][j].get_max_index();
+                for (int i = min_i_index; i <= max_i_index && !found; ++i)
+                  {
+                    if (input_image[k][j][i] == current_maximum)
+                      {
+                        max_k = k;
+                        max_j = j;
+                        max_i = i;
+                        cout << "max: " << setw(6) << current_maximum << " at: " << setw(3) << max_k << ',' << setw(3) << max_j
+                             << ',' << setw(3) << max_i;
+                        {
+                          BasicCoordinate<3, float> phys_coord
+                              = input_image.get_physical_coordinates_for_indices(make_coordinate(max_k, max_j, max_i));
+                          cout << " which is " << setw(6) << phys_coord[1] << ',' << setw(6) << phys_coord[2] << ',' << setw(6)
+                               << phys_coord[3] << " in mm in physical coordinates";
+                        }
+                        cout << '\n';
+                        found = true;
+                      }
+                  }
+              }
+          }
+        if (!found)
+          {
+            warning("Something strange going on: can't find maximum %g\n", current_maximum);
+            return EXIT_FAILURE;
+          }
+        if (maximum_num + 1 != num_maxima)
+          {
+            // now mask it out for next run
+            for (int k = std::max(max_k - mask_size_z, min_k_index); k <= std::min(max_k + mask_size_z, max_k_index); ++k)
+              {
+                const int min_j_index = input_image[k].get_min_index();
+                const int max_j_index = input_image[k].get_max_index();
+                for (int j = std::max(max_j - mask_size_xy, min_j_index); j <= std::min(max_j + mask_size_xy, max_j_index); ++j)
+                  {
+                    const int min_i_index = input_image[k][j].get_min_index();
+                    const int max_i_index = input_image[k][j].get_max_index();
+                    for (int i = std::max(max_i - mask_size_xy, min_i_index); i <= std::min(max_i + mask_size_xy, max_i_index);
+                         ++i)
+                      input_image[k][j][i] = mask_value;
+                  }
+              }
+          }
       }
     }
   return EXIT_SUCCESS;
 }
-  

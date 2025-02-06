@@ -126,9 +126,13 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
   )
 endif()
 
+if (STIR_WITH_CUDA)
+  list(APPEND ${dir_LIB_SOURCES}
+    CUDA/CudaRelativeDifferencePrior.cu
+  )
+endif()
 
 include(stir_lib_target)
-
 
 if (STIR_MPI)
   target_link_libraries(recon_buildblock PUBLIC ${MPI_CXX_LIBRARIES})
@@ -143,15 +147,19 @@ endif()
 target_link_libraries(recon_buildblock PUBLIC modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
-	target_link_libraries(recon_buildblock PUBLIC NiftyPET::petprj)
-	target_link_libraries(recon_buildblock PUBLIC NiftyPET::mmr_auxe)
-	target_link_libraries(recon_buildblock PUBLIC NiftyPET::mmr_lmproc)
-	target_link_libraries(recon_buildblock PUBLIC CUDA::cudart)
+	target_link_libraries(recon_buildblock PRIVATE NiftyPET::petprj)
+	target_link_libraries(recon_buildblock PRIVATE NiftyPET::mmr_auxe)
+	target_link_libraries(recon_buildblock PRIVATE NiftyPET::mmr_lmproc)
+	target_link_libraries(recon_buildblock PRIVATE CUDA::cudart)
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)
-  target_link_libraries(recon_buildblock PUBLIC parallelproj::parallelproj_c)
+  target_link_libraries(recon_buildblock PRIVATE parallelproj::parallelproj_c)
   if (parallelproj_built_with_CUDA)
-    target_link_libraries(recon_buildblock PUBLIC parallelproj::parallelproj_cuda)
+    target_link_libraries(recon_buildblock PRIVATE parallelproj::parallelproj_cuda)
   endif()
+endif()
+
+if (STIR_WITH_CUDA)
+  target_link_libraries(recon_buildblock PRIVATE CUDA::cudart)
 endif()

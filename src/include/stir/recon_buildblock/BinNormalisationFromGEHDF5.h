@@ -3,7 +3,7 @@
   Copyright (C) 2013-2014, 2020 University College London
   Copyright (C) 2017-2019 University of Leeds
 
-  Largely a copy of the ECAT7 version. 
+  Largely a copy of the ECAT7 version.
 
   SPDX-License-Identifier: Apache-2.0
 
@@ -18,7 +18,6 @@
   \author Kris Thielemans
   \author Palak Wadhwa
 */
-
 
 #ifndef __stir_recon_buildblock_BinNormalisationFromGEHDF5_H__
 #define __stir_recon_buildblock_BinNormalisationFromGEHDF5_H__
@@ -41,8 +40,10 @@ START_NAMESPACE_STIR
 
 class ProjDataInMemory;
 
-namespace GE {
-namespace RDF_HDF5 {
+namespace GE
+{
+namespace RDF_HDF5
+{
 
 /*!
   \ingroup recon_buildblock
@@ -67,20 +68,21 @@ namespace RDF_HDF5 {
 
   \todo dead-time is not yet implemented
 
- 
+
 */
-class BinNormalisationFromGEHDF5 :
-   public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation,BinNormalisationWithCalibration>
+class BinNormalisationFromGEHDF5
+    : public RegisteredParsingObject<BinNormalisationFromGEHDF5, BinNormalisation, BinNormalisationWithCalibration>
 {
 private:
   using base_type = BinNormalisationWithCalibration;
+
 public:
   //! Name which will be used when parsing a BinNormalisation object
-  static const char * const registered_name; 
-  
+  static const char* const registered_name;
+
   //! Default constructor
-  /*! 
-    \warning You should not call any member functions for any object just 
+  /*!
+    \warning You should not call any member functions for any object just
     constructed with this constructor. Initialise the object properly first
     by parsing.
   */
@@ -89,8 +91,7 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromGEHDF5(const string& filename);
 
-
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo> &exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
+  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
   float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   bool use_detector_efficiencies() const;
@@ -99,18 +100,18 @@ public:
   bool use_crystal_interference_factors() const;
 
 private:
-  Array<1,float> axial_t1_array;
-  Array<1,float> axial_t2_array;
-  Array<1,float> trans_t1_array;
+  Array<1, float> axial_t1_array;
+  Array<1, float> axial_t2_array;
+  Array<1, float> trans_t1_array;
   shared_ptr<SinglesRates> singles_rates_ptr;
-  Array<2,float> efficiency_factors;
-  shared_ptr<ProjDataInMemory>  geo_eff_factors_sptr;
+  Array<2, float> efficiency_factors;
+  shared_ptr<ProjDataInMemory> geo_eff_factors_sptr;
   shared_ptr<Scanner> scanner_ptr;
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
   shared_ptr<const ProjDataInfo> proj_data_info_ptr;
-  ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
+  ProjDataInfoCylindricalNoArcCorr const* proj_data_info_cyl_ptr;
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
   int mash;
@@ -121,23 +122,24 @@ private:
   bool _use_geometric_factors;
 
   void read_norm_data(const string& filename);
-  float get_dead_time_efficiency ( const DetectionPositionPair<>& detection_position_pair,
-				  const double start_time, const double end_time) const;
+  float get_dead_time_efficiency(const DetectionPositionPair<>& detection_position_pair,
+                                 const double start_time,
+                                 const double end_time) const;
 
-  float get_geometric_efficiency_factors  (const DetectionPositionPair<>& detection_position_pair) const;
-  float get_efficiency_factors (const DetectionPositionPair<>& detection_position_pair) const;
+  float get_geometric_efficiency_factors(const DetectionPositionPair<>& detection_position_pair) const;
+  float get_efficiency_factors(const DetectionPositionPair<>& detection_position_pair) const;
   // parsing stuff
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   string normalisation_GEHDF5_filename;
   shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;
   GEHDF5Wrapper h5data;
 };
 
-} // namespace
-}
+} // namespace RDF_HDF5
+} // namespace GE
 END_NAMESPACE_STIR
 
 #endif

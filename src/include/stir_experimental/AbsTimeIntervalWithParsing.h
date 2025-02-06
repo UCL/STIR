@@ -30,28 +30,23 @@ class Succeeded;
   start and end times from a file. This functionality could potentially be put
   in AbsTimeInterval, but that would give an overlap/conflict with keywords of
   other derived classes.
-  
+
 */
-class AbsTimeIntervalWithParsing
-: public RegisteredParsingObject<AbsTimeIntervalWithParsing,
-				 AbsTimeInterval,
-				 AbsTimeInterval>
+class AbsTimeIntervalWithParsing : public RegisteredParsingObject<AbsTimeIntervalWithParsing, AbsTimeInterval, AbsTimeInterval>
 {
 
 public:
-  //! Name which will be used when parsing a AbsTimeInterval object 
-  static const char * const registered_name; 
+  //! Name which will be used when parsing a AbsTimeInterval object
+  static const char* const registered_name;
 
-  virtual ~AbsTimeIntervalWithParsing() {}
+  ~AbsTimeIntervalWithParsing() override {}
   //! default constructor sets times to invalid values
   AbsTimeIntervalWithParsing();
-  
- private:
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-
+private:
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
 END_NAMESPACE_STIR

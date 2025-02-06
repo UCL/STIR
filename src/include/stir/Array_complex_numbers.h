@@ -4,8 +4,8 @@
 #define __Array_complex_numbers_H__
 
 /*!
-  \file 
-  \ingroup Array 
+  \file
+  \ingroup Array
   \brief defines additional numerical operations for arrays of complex numbers
 
   \author Kris Thielemans
@@ -30,57 +30,56 @@ START_NAMESPACE_STIR
 //@{
 
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, std::complex<elemT> >&
-operator *= (Array<num_dimensions, std::complex<elemT> >& lhs, const elemT& rhs)
+Array<num_dimensions, std::complex<elemT>>&
+operator*=(Array<num_dimensions, std::complex<elemT>>& lhs, const elemT& rhs)
 {
-  typename Array<num_dimensions, std::complex<elemT> >::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
+  typename Array<num_dimensions, std::complex<elemT>>::iterator iter1 = lhs.begin();
+  while (iter1 != lhs.end())
     *iter1++ *= rhs;
   return lhs;
 }
 
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, std::complex<elemT> >&
-operator /= (Array<num_dimensions, std::complex<elemT> >& lhs, const elemT& rhs)
+Array<num_dimensions, std::complex<elemT>>&
+operator/=(Array<num_dimensions, std::complex<elemT>>& lhs, const elemT& rhs)
 {
-  typename Array<num_dimensions, std::complex<elemT> >::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
+  typename Array<num_dimensions, std::complex<elemT>>::iterator iter1 = lhs.begin();
+  while (iter1 != lhs.end())
     *iter1++ /= rhs;
   return lhs;
 }
 
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, std::complex<elemT> >&
-operator += (Array<num_dimensions, std::complex<elemT> >& lhs, const elemT& rhs)
+Array<num_dimensions, std::complex<elemT>>&
+operator+=(Array<num_dimensions, std::complex<elemT>>& lhs, const elemT& rhs)
 {
-  typename Array<num_dimensions, std::complex<elemT> >::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
+  typename Array<num_dimensions, std::complex<elemT>>::iterator iter1 = lhs.begin();
+  while (iter1 != lhs.end())
     *iter1++ += rhs;
   return lhs;
 }
 
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, std::complex<elemT> >&
-operator -= (Array<num_dimensions, std::complex<elemT> >& lhs, const elemT& rhs)
+Array<num_dimensions, std::complex<elemT>>&
+operator-=(Array<num_dimensions, std::complex<elemT>>& lhs, const elemT& rhs)
 {
-  typename Array<num_dimensions, std::complex<elemT> >::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
+  typename Array<num_dimensions, std::complex<elemT>>::iterator iter1 = lhs.begin();
+  while (iter1 != lhs.end())
     *iter1++ -= rhs;
   return lhs;
 }
 
-
 // a few common cases given explictly here such that we don't get conversion warnings all the time.
-inline 
-void assign(std::complex<double>& x, const int y)
+inline void
+assign(std::complex<double>& x, const int y)
 {
-  x=static_cast<std::complex<double> >(y);
+  x = static_cast<std::complex<double>>(y);
 }
 
-inline 
-void assign(std::complex<float>& x, const int y)
+inline void
+assign(std::complex<float>& x, const int y)
 {
-  x=static_cast<float>(y);
+  x = static_cast<float>(y);
 }
 //@}
 END_NAMESPACE_STIR

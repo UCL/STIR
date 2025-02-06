@@ -25,6 +25,8 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
+BinPackParameters: false
+BinPackArguments: false
 ColumnLimit:     130
 IndentPPDirectives: AfterHash
 PointerAlignment: Left
@@ -32,5 +34,6 @@ SortIncludes:    false
 SortUsingDeclarations: false
 SpaceBeforeParens: ControlStatements
 PackConstructorInitializers: Never
+AllowShortFunctionsOnASingleLine: InlineOnly
 Standard:        Cpp11
 ...

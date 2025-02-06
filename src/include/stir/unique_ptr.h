@@ -1,8 +1,8 @@
 /*!
   \file
   \ingroup buildblock
-  
-  \brief Import of std::unique_ptr into the stir namespace, together with 
+
+  \brief Import of std::unique_ptr into the stir namespace, together with
   work-arounds for other compilers.
 
   If std::unique doesn't exist, we will define unique_ptr to auto_ptr. This is
@@ -10,7 +10,7 @@
   (normally by adding the -std=c++11 flag)
 
   \author Kris Thielemans
-*/         
+*/
 /*
     Copyright (C) 2016, University College London
     This file is part of STIR.
@@ -27,8 +27,9 @@
 #include "stir/common.h"
 #include <memory>
 // simply use std::unique_ptr
-namespace stir {
-  using std::unique_ptr;
+namespace stir
+{
+using std::unique_ptr;
 }
 
 #endif

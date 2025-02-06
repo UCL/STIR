@@ -26,34 +26,41 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, class elemT> class DiscretisedDensity;
+template <int num_dimensions, class elemT>
+class DiscretisedDensity;
 class ProjDataInfo;
 
 namespace detail
 {
-  /*!
-    \ingroup projection
-    \ingroup Parallelproj
-    \brief Helper class for Parallelproj's projectors
-  */
-  class ParallelprojHelper
-  { 
-  public:
+/*!
+  \ingroup projection
+  \ingroup Parallelproj
+  \brief Helper class for Parallelproj's projectors
+*/
+class ParallelprojHelper
+{
+public:
+  ~ParallelprojHelper();
+  ParallelprojHelper(const ProjDataInfo& p_info, const DiscretisedDensity<3, float>& density);
 
-    ~ParallelprojHelper();
-    ParallelprojHelper(const ProjDataInfo& p_info, const DiscretisedDensity<3,float> &density);
+  // parallelproj arrays
+  std::array<float, 3> voxsize;
+  std::array<int, 3> imgdim;
+  std::array<float, 3> origin;
+  std::vector<float> xstart;
+  std::vector<float> xend;
 
-    // parallelproj arrays
-    std::array<float,3> voxsize;
-    std::array<int,3> imgdim;
-    std::array<float,3> origin;
-    std::vector<float> xstart;
-    std::vector<float> xend;
-  };
+  long long num_image_voxel;
+  long long num_lors;
 
-}
+  float sigma_tof;
+  float tofcenter_offset;
+  float tofbin_width;
+  short num_tof_bins;
+};
+
+} // namespace detail
 
 END_NAMESPACE_STIR
-
 
 #endif // __stir_recon_buildblock_ParallelprojHelper_h__

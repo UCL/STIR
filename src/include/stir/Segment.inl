@@ -25,27 +25,31 @@
 START_NAMESPACE_STIR
 
 template <typename elemT>
-Segment<elemT>::
-Segment( const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,const SegmentIndices& ind)
- :
- proj_data_info_sptr(proj_data_info_sptr_v),
- _indices(ind)
-    {}
+Segment<elemT>::Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v, const SegmentIndices& ind)
+    : proj_data_info_sptr(proj_data_info_sptr_v),
+      _indices(ind)
+{}
 
 template <typename elemT>
 SegmentIndices
-Segment<elemT>:: get_segment_indices() const
-{ return _indices; }
+Segment<elemT>::get_segment_indices() const
+{
+  return _indices;
+}
 
 template <typename elemT>
 int
-Segment<elemT>:: get_segment_num() const
-{ return _indices.segment_num(); }
+Segment<elemT>::get_segment_num() const
+{
+  return _indices.segment_num();
+}
 
 template <typename elemT>
 int
-Segment<elemT>:: get_timing_pos_num() const
-{ return _indices.timing_pos_num(); }
+Segment<elemT>::get_timing_pos_num() const
+{
+  return _indices.timing_pos_num();
+}
 
 template <typename elemT>
 shared_ptr<const ProjDataInfo>

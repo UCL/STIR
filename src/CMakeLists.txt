@@ -136,7 +136,13 @@ if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
 
-  set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # work around https://gitlab.kitware.com/cmake/cmake/-/issues/26037
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX -latomic)
+    message(STATUS "OpenMP Linker flags for Clang: ${OpenMP_EXE_LINKER_FLAGS}")
+  else()
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  endif()
 endif()
 
 #### Flags for compatibility between different systems
@@ -192,6 +198,18 @@ else()
     set(STIR_USE_BOOST_SHARED_PTR ON)
 endif()
 
+# Byte order
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+    # Use CMake to find byte order of target system.
+    # We create some variables that are then used in config.h.in
+    if (CMAKE_CXX_BYTE_ORDER STREQUAL "BIG_ENDIAN")
+        set(BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a big_endian system")
+    elseif (CMAKE_CXX_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
+        set(LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a little_endian system")
+    endif()
+endif()
 
 #### Create stir/config.h
 

@@ -65,73 +65,83 @@ START_NAMESPACE_STIR
 class IOTests_ParametricDiscretisedDensity : public IOTests<ParametricVoxelsOnCartesianGrid>
 {
 public:
-    explicit IOTests_ParametricDiscretisedDensity(istream& in) : IOTests(in) {}
+  explicit IOTests_ParametricDiscretisedDensity(istream& in)
+      : IOTests(in)
+  {}
 
 protected:
-    void create_image();
-    void check_result();
+  void create_image() override;
+  void check_result() override;
 };
-void IOTests_ParametricDiscretisedDensity::create_image()
+void
+IOTests_ParametricDiscretisedDensity::create_image()
 {
-    shared_ptr<VoxelsOnCartesianGrid<float> > param_1_sptr  = create_single_image();
-    shared_ptr<VoxelsOnCartesianGrid<float> > param_2_sptr  = create_single_image();
-    shared_ptr<VoxelsOnCartesianGrid<float> > dummy_im_sptr = create_single_image();
+  shared_ptr<VoxelsOnCartesianGrid<float>> param_1_sptr = create_single_image();
+  shared_ptr<VoxelsOnCartesianGrid<float>> param_2_sptr = create_single_image();
+  shared_ptr<VoxelsOnCartesianGrid<float>> dummy_im_sptr = create_single_image();
 
-    //! Setup the scanner details first
-    const Scanner::Type test_scanner=Scanner::E966;
-    const shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
-    VectorWithOffset<int> num_axial_pos_per_segment; num_axial_pos_per_segment.resize(0,0);  num_axial_pos_per_segment[0]=48;
-    VectorWithOffset<int> min_ring_diff;  min_ring_diff.resize(0,0);  min_ring_diff[0]=0;
-    VectorWithOffset<int> max_ring_diff; max_ring_diff.resize(0,0);  max_ring_diff[0]=0;
-    const int num_views=144; const int num_tangential_poss=144;
+  //! Setup the scanner details first
+  const Scanner::Type test_scanner = Scanner::E966;
+  const shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
+  VectorWithOffset<int> num_axial_pos_per_segment;
+  num_axial_pos_per_segment.resize(0, 0);
+  num_axial_pos_per_segment[0] = 48;
+  VectorWithOffset<int> min_ring_diff;
+  min_ring_diff.resize(0, 0);
+  min_ring_diff[0] = 0;
+  VectorWithOffset<int> max_ring_diff;
+  max_ring_diff.resize(0, 0);
+  max_ring_diff[0] = 0;
+  const int num_views = 144;
+  const int num_tangential_poss = 144;
 
-    const float zoom=1.F;
+  const float zoom = 1.F;
 
-    const CartesianCoordinate3D<int> sizes (
-                dummy_im_sptr->get_z_size(),
-                dummy_im_sptr->get_y_size(),
-                dummy_im_sptr->get_x_size());
+  const CartesianCoordinate3D<int> sizes(dummy_im_sptr->get_z_size(), dummy_im_sptr->get_y_size(), dummy_im_sptr->get_x_size());
 
-    ProjDataInfoCylindricalNoArcCorr proj_data_info(scanner_sptr,num_axial_pos_per_segment,min_ring_diff,max_ring_diff,num_views,num_tangential_poss);
+  ProjDataInfoCylindricalNoArcCorr proj_data_info(
+      scanner_sptr, num_axial_pos_per_segment, min_ring_diff, max_ring_diff, num_views, num_tangential_poss);
 
-    _image_to_write_sptr.reset(new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(proj_data_info,zoom,dummy_im_sptr->get_grid_spacing(),sizes)));
+  _image_to_write_sptr.reset(new ParametricVoxelsOnCartesianGrid(
+      ParametricVoxelsOnCartesianGridBaseType(proj_data_info, zoom, dummy_im_sptr->get_grid_spacing(), sizes)));
 
-    // Fill the first param
-    param_2_sptr->fill(2.F);
-    _image_to_write_sptr->update_parametric_image(*param_1_sptr,1);
+  // Fill the first param
+  param_2_sptr->fill(2.F);
+  _image_to_write_sptr->update_parametric_image(*param_1_sptr, 1);
 
-    // Fill the second param with 1's
-    param_2_sptr->fill(1.F);
-    _image_to_write_sptr->update_parametric_image(*param_2_sptr,2);
+  // Fill the second param with 1's
+  param_2_sptr->fill(1.F);
+  _image_to_write_sptr->update_parametric_image(*param_2_sptr, 2);
 
-    // Set the time definitions
-    ExamInfo exam_info = _image_to_write_sptr->get_exam_info();
-    exam_info.set_time_frame_definitions(dummy_im_sptr->get_exam_info().get_time_frame_definitions());
-    _image_to_write_sptr->set_exam_info(exam_info);
+  // Set the time definitions
+  ExamInfo exam_info = _image_to_write_sptr->get_exam_info();
+  exam_info.set_time_frame_definitions(dummy_im_sptr->get_exam_info().get_time_frame_definitions());
+  _image_to_write_sptr->set_exam_info(exam_info);
 }
 
-void IOTests_ParametricDiscretisedDensity::check_result()
+void
+IOTests_ParametricDiscretisedDensity::check_result()
 {
-    set_tolerance(.00001);
+  set_tolerance(.00001);
 
-    if(!check_if_equal(_image_to_read_sptr->get_num_params(),_image_to_write_sptr->get_num_params(), "test number of dynamic images"))
-        return;
+  if (!check_if_equal(
+          _image_to_read_sptr->get_num_params(), _image_to_write_sptr->get_num_params(), "test number of dynamic images"))
+    return;
 
-    // Check the exam info
-    std::cerr << "\tChecking the exam info...\n";
-    check_exam_info(_image_to_write_sptr->get_exam_info(),_image_to_read_sptr->get_exam_info());
+  // Check the exam info
+  std::cerr << "\tChecking the exam info...\n";
+  check_exam_info(_image_to_write_sptr->get_exam_info(), _image_to_read_sptr->get_exam_info());
 
-    for (int i=1; i<=_image_to_read_sptr->get_num_params(); ++i) {
+  for (int i = 1; i <= _image_to_read_sptr->get_num_params(); ++i)
+    {
 
-        std::cerr << "\t\tChecking kinetic parameter " << i << "...\n";
+      std::cerr << "\t\tChecking kinetic parameter " << i << "...\n";
 
-        const VoxelsOnCartesianGrid<float> &image_to_write =
-                _image_to_write_sptr->construct_single_density(i);
+      const VoxelsOnCartesianGrid<float>& image_to_write = _image_to_write_sptr->construct_single_density(i);
 
-        const VoxelsOnCartesianGrid<float> &image_to_read =
-                _image_to_read_sptr->construct_single_density(i);
+      const VoxelsOnCartesianGrid<float>& image_to_read = _image_to_read_sptr->construct_single_density(i);
 
-        compare_images(image_to_write, image_to_read);
+      compare_images(image_to_write, image_to_read);
     }
 }
 
@@ -139,25 +149,27 @@ END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
-    if (argc != 2) {
-        cerr << "Usage : " << argv[0] << " filename\n"
-             << "See source file for the format of this file.\n\n";
-        return EXIT_FAILURE;
+  if (argc != 2)
+    {
+      cerr << "Usage : " << argv[0] << " filename\n"
+           << "See source file for the format of this file.\n\n";
+      return EXIT_FAILURE;
     }
 
-    ifstream in(argv[1]);
-    if (!in) {
-        cerr << argv[0]
-             << ": Error opening input file " << argv[1] << "\nExiting.\n";
-        return EXIT_FAILURE;
+  ifstream in(argv[1]);
+  if (!in)
+    {
+      cerr << argv[0] << ": Error opening input file " << argv[1] << "\nExiting.\n";
+      return EXIT_FAILURE;
     }
 
-    IOTests_ParametricDiscretisedDensity tests(in);
+  IOTests_ParametricDiscretisedDensity tests(in);
 
-    if (tests.is_everything_ok())
-        tests.run_tests();
+  if (tests.is_everything_ok())
+    tests.run_tests();
 
-    return tests.main_return_value();
+  return tests.main_return_value();
 }

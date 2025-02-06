@@ -10,9 +10,9 @@
 /*!
 
   \file
-  \ingroup buildblock  
+  \ingroup buildblock
   \brief Declaration of class stir::TimeFrameDefinitions
-    
+
   \author Kris Thielemans
 */
 #ifndef __stir_TimeFrameDefinitions_H__
@@ -42,7 +42,7 @@ public:
   TimeFrameDefinitions();
 
   //! Read the frame definitions from a file
-  /*! 
+  /*!
    \deprecated
    The filename can point to an ECAT6 file, and ECAT7 file (if you
    have installed the LLN library), an Interfile file, or a simple ASCII text file.
@@ -54,22 +54,22 @@ public:
   \endverbatim
   This duration is a double number.
 
-  This class in fact allows an extension of the above. Setting 
+  This class in fact allows an extension of the above. Setting
   \a num_frames_of_this_duration to 0 allows skipping
   a time period of the corresponding \a duration_in_secs.
   */
   explicit TimeFrameDefinitions(const std::string& fdef_filename);
-  
+
   //! Construct from a list of time frames
   /*! Each frame is specified as a std::pair with start and end time (in seconds).
       Start times have to be in increasing order*/
-  TimeFrameDefinitions(const std::vector<std::pair<double, double> >&);
+  TimeFrameDefinitions(const std::vector<std::pair<double, double>>&);
 
   //! Construct from a list of start times and durations
   /*! start times have to be in increasing order*/
   TimeFrameDefinitions(const std::vector<double>& start_times, const std::vector<double>& durations);
 
-  //! Construct from a single time frame of an existing object 
+  //! Construct from a single time frame of an existing object
   TimeFrameDefinitions(const TimeFrameDefinitions&, unsigned int frame_num);
 
   //! \name get info for 1 frame (frame_num is 1 based)
@@ -88,25 +88,24 @@ public:
   unsigned int get_num_frames() const;
   //! Get number of frames
   unsigned int get_num_time_frames() const;
-  
+
   //! Get the frame number associated with a frame starting and start_time and ending at end_time.
   /*! \return frame number (between 1 and get_num_time_frames()) or 0 if frame not found.
    */
-    unsigned int get_time_frame_num(const double start_time, const double end_time) const;
+  unsigned int get_time_frame_num(const double start_time, const double end_time) const;
 
-    //! Set number of time frames
-    void set_num_time_frames(int num_time_frames) { frame_times.resize(num_time_frames); }
+  //! Set number of time frames
+  void set_num_time_frames(int num_time_frames) { frame_times.resize(num_time_frames); }
 
-    //! Set time frame
-    void set_time_frame(const int frame_num, const double start, const double end);
-    
-    bool operator == (const TimeFrameDefinitions &t) const;
+  //! Set time frame
+  void set_time_frame(const int frame_num, const double start, const double end);
+
+  bool operator==(const TimeFrameDefinitions& t) const;
 
 private:
   //! Stores start and end time for each frame
-  std::vector<std::pair<double, double> > frame_times;
-  void  read_fdef_file(const std::string& filename);
-
+  std::vector<std::pair<double, double>> frame_times;
+  void read_fdef_file(const std::string& filename);
 };
 
 END_NAMESPACE_STIR

@@ -6,7 +6,7 @@
 
   \author Daniel Deidda
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2021, National Physical Laboratory
@@ -17,19 +17,18 @@
 #ifndef __stir_RADIONUCLIDEDB_H
 #define __stir_RADIONUCLIDEDB_H
 
-
 #include "stir/Radionuclide.h"
 #include "stir/ImagingModality.h"
 
 #ifdef nlohmann_json_FOUND
-#include <nlohmann/json.hpp>
+#  include <nlohmann/json.hpp>
 #endif
 
 /*!
   \ingroup ancillary
   \brief A class in that reads the radionuclide information from a Json file
 
-  Values for half life branching ratio are taken from: 
+  Values for half life branching ratio are taken from:
   http://www.lnhb.fr/donnees-nucleaires/donnees-nucleaires-tableau/
 
   The class also supports using "aliases" for radionuclide names. This is useful
@@ -48,7 +47,7 @@
 
         {
             "name":  "^18^Fluorine",
-            "decays": [                
+            "decays": [
                 {  "modality": "PET",
                    "keV": 511,
                    "branching_ratio": 0.9686,
@@ -65,7 +64,7 @@
                    "half_life": 21624.12
                 }
             ]
-            
+
         },
       # more entries like the above
    ]
@@ -92,7 +91,6 @@ START_NAMESPACE_STIR
 class RadionuclideDB
 {
 public:
-  
   //! Default constructor
   /*! Reads the database from radionuclide_info.json and lookup table from radionuclide_names.json,
       with their locations found via find_STIR_config_file().
@@ -100,7 +98,7 @@ public:
       If STIR is compiled without nlohmann_json support, this constructor does nothing.
   */
   RadionuclideDB();
-  
+
   //! set the radionuclide database from a JSON file
   /*!
     This function could be used to override the default database information.
@@ -120,14 +118,12 @@ public:
     used (currently only containing values for the above default radionuclides).
   */
   Radionuclide get_radionuclide(ImagingModality rmodality, const std::string& rname);
-  
+
 protected:
-
-
 private:
   std::string database_filename;
   std::string radionuclide_lookup_table_filename;
-  
+
 #ifdef nlohmann_json_FOUND
   nlohmann::json radionuclide_json;
 #endif
@@ -140,7 +136,7 @@ private:
     a default constructed Radionuclide() object (i.e. unknown).
   */
   Radionuclide get_radionuclide_from_json(ImagingModality rmodality, const std::string& rname) const;
-  
+
   //! Convert the radionuclide name using the lookup table
   /*!
     If \a rname is empty, return \c "default". Otherwise, attempt to find it in the lookup table and translate it.

@@ -20,27 +20,26 @@
 #ifndef __stir_modelling_OneParamModel_H__
 #define __stir_modelling_OneParamModel_H__
 
-#include "stir_experimental/modelling/ModelMatrix.h"
+#include "stir/modelling/ModelMatrix.h"
 
 START_NAMESPACE_STIR
 
 class OneParamModel
 {
-  public:
-
+public:
   //! default constructor
   inline OneParamModel();
 
   //! constructor
   inline OneParamModel(const int starting_frame, const int last_frame);
 
-  //! Create a unit model matrix for a single frame and single parameter 
+  //! Create a unit model matrix for a single frame and single parameter
   inline ModelMatrix<1> get_unit_matrix(const int starting_frame, const int last_frame);
 
   //! default destructor
   inline ~OneParamModel();
 
- private:
+private:
   ModelMatrix<1> _unit_matrix;
   int _starting_frame;
   int _last_frame;

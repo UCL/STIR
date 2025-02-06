@@ -30,16 +30,16 @@ class PoissonLLReconstructionTests : public ReconstructionTests<TargetT>
 {
 private:
   typedef ReconstructionTests<TargetT> base_type;
+
 public:
   //! Constructor that can take some input data to run the test with
-  explicit inline
-    PoissonLLReconstructionTests(const std::string& projector_pair_filename = "",
-                                 const std::string &proj_data_filename = "",
-                                 const std::string & density_filename = "")
-    : base_type(proj_data_filename, density_filename)
-    {
-      this->construct_projector_pair(projector_pair_filename);
-    }
+  explicit inline PoissonLLReconstructionTests(const std::string& projector_pair_filename = "",
+                                               const std::string& proj_data_filename = "",
+                                               const std::string& density_filename = "")
+      : base_type(proj_data_filename, density_filename)
+  {
+    this->construct_projector_pair(projector_pair_filename);
+  }
 
   //! parses projector-pair file to initialise the projector pair
   /*! defaults to using the ray-tracing matrix */
@@ -47,18 +47,17 @@ public:
 
   //! creates Poisson log likelihood
   /*! sets \c _proj_data_sptr and uses \c _input_density_sptr for set_up.
-  */
+   */
   virtual inline void construct_log_likelihood();
 
 protected:
-  shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT> > _objective_function_sptr;
+  shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>> _objective_function_sptr;
   shared_ptr<ProjectorByBinPair> _projector_pair_sptr;
 };
 
 template <class TargetT>
 void
-PoissonLLReconstructionTests<TargetT>::
-construct_projector_pair(const std::string& filename)
+PoissonLLReconstructionTests<TargetT>::construct_projector_pair(const std::string& filename)
 {
   if (filename.empty())
     {
@@ -66,7 +65,7 @@ construct_projector_pair(const std::string& filename)
       this->_projector_pair_sptr.reset(new ProjectorByBinPairUsingProjMatrixByBin(proj_matrix_sptr));
       return;
     }
-      
+
   KeyParser parser;
   parser.add_start_key("projector pair parameters");
   parser.add_parsing_key("projector pair type", &this->_projector_pair_sptr);
@@ -77,12 +76,11 @@ construct_projector_pair(const std::string& filename)
 }
 template <class TargetT>
 void
-PoissonLLReconstructionTests<TargetT>::
-construct_log_likelihood()
-{ 
+PoissonLLReconstructionTests<TargetT>::construct_log_likelihood()
+{
   this->_objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>);
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>& objective_function =
-    reinterpret_cast<  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>& >(*this->_objective_function_sptr);
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>& objective_function
+      = reinterpret_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>&>(*this->_objective_function_sptr);
   objective_function.set_proj_data_sptr(this->_proj_data_sptr);
   if (!this->_projector_pair_sptr)
     error("Internal error: need to set the projector pair first");

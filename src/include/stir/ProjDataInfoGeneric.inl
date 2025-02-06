@@ -19,7 +19,7 @@
   \ingroup projdata
 
   \brief Implementation of inline functions of class stir::ProjDataInfoGeneric
-	
+
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Palak Wadhwa
@@ -41,47 +41,45 @@
 
 START_NAMESPACE_STIR
 
-
 //! find phi from correspoding lor
 float
-ProjDataInfoGeneric::get_phi(const Bin& bin)const
+ProjDataInfoGeneric::get_phi(const Bin& bin) const
 {
-	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-	get_LOR(lor, bin);
-	return lor.phi();
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+  get_LOR(lor, bin);
+  return lor.phi();
 }
 
 /*! warning In generic geometry m is calculated directly from lor while in
-	cylindrical geometry m is calculated using m_offset and axial_sampling
+        cylindrical geometry m is calculated using m_offset and axial_sampling
 */
 float
 ProjDataInfoGeneric::get_m(const Bin& bin) const
 {
-	LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-	get_LOR(lor, bin);
-	return (static_cast<float>(lor.z1() + lor.z2()))/2.F;
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+  get_LOR(lor, bin);
+  return (static_cast<float>(lor.z1() + lor.z2())) / 2.F;
 }
 
 float
 ProjDataInfoGeneric::get_t(const Bin& bin) const
 {
-  return
-    get_m(bin)*get_costheta(bin);
+  return get_m(bin) * get_costheta(bin);
 }
 
 /*
-	theta is copolar angle of normal to projection plane with z axis, i.e. copolar angle of lor with z axis.
-	tan (theta) = dz/sqrt(dx2+dy2)
-	cylindrical geometry:
-		delta_z = delta_ring * ring spacing
-	generic geometry:
-		delta_z is calculated from lor
+        theta is copolar angle of normal to projection plane with z axis, i.e. copolar angle of lor with z axis.
+        tan (theta) = dz/sqrt(dx2+dy2)
+        cylindrical geometry:
+                delta_z = delta_ring * ring spacing
+        generic geometry:
+                delta_z is calculated from lor
 */
 float
 ProjDataInfoGeneric::get_tantheta(const Bin& bin) const
 {
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-	get_LOR(lor, bin);
+  get_LOR(lor, bin);
 
   return (lor.z2() - lor.z1()) / (2 * lor.radius());
 }
@@ -90,16 +88,18 @@ float
 ProjDataInfoGeneric::get_sampling_in_m(const Bin& bin) const
 {
   // TODOBLOCK
-  return get_scanner_ptr()->get_ring_spacing(); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
-  //return get_axial_sampling(bin.segment_num());
+  return get_scanner_ptr()
+      ->get_ring_spacing(); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
+  // return get_axial_sampling(bin.segment_num());
 }
 
 float
 ProjDataInfoGeneric::get_sampling_in_t(const Bin& bin) const
 {
   // TODOBLOCK
-  return get_scanner_ptr()->get_ring_spacing()*get_costheta(bin); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
-  //return get_axial_sampling(bin.segment_num())*get_costheta(bin);
+  return get_scanner_ptr()->get_ring_spacing()
+         * get_costheta(bin); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
+  // return get_axial_sampling(bin.segment_num())*get_costheta(bin);
 }
 
 float
@@ -109,7 +109,8 @@ ProjDataInfoGeneric::get_axial_sampling(int segment_num) const
   return get_ring_spacing(); // TODO currently restricted to span=1 get_num_axial_poss_per_ring_inc(segment_num);
 }
 
-bool ProjDataInfoGeneric::axial_sampling_is_uniform() const
+bool
+ProjDataInfoGeneric::axial_sampling_is_uniform() const
 {
   // TODOBLOCK should check sampling
   return true;
@@ -117,7 +118,8 @@ bool ProjDataInfoGeneric::axial_sampling_is_uniform() const
 
 float
 ProjDataInfoGeneric::get_ring_spacing() const
-{ return get_scanner_ptr()->get_ring_spacing();}
-
+{
+  return get_scanner_ptr()->get_ring_spacing();
+}
 
 END_NAMESPACE_STIR

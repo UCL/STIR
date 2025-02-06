@@ -57,6 +57,7 @@ install_manifest.txt
 ~$*
 *~
 *.bak
+\#*#
 
 # Ignore Visual Studio User-specific files
 *.suo
@@ -69,6 +70,7 @@ install_manifest.txt
 # Ignore Visual Studio Code User-specific files
 build/
 install/
+.vscode/
 
 # MATLAB
 

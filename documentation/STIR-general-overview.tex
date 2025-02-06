@@ -17,7 +17,7 @@
 \textbf{{\huge STIR \\
 General Overview}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 5.2}}
+\textbf{\textit{version 6.0}}
 
 
 \end{spacing}
@@ -90,7 +90,7 @@ yet. This will enable the software to be run not only on single
 processors, but also on massively parallel computers, or on clusters 
 of workstations. \\
 STIR is portable on all systems supporting the GNU C++ compiler, CLang++, Intel C++, 
-or MS Visual C++ (or hopefully any C++-11 compliant compiler). 
+or MS Visual C++ (or hopefully any C++-14 compliant compiler). 
 The library is fully documented.\\
 The object-oriented features make this library very modular and 
 flexible. This means that it is relatively easy to add new algorithms, 
@@ -273,8 +273,9 @@ of an \textit{energy function}. This algorithm works fine
 for small weights of the prior term, however becomes unstable 
 for larger values. 
 
-As prior we currently only distribute the ``quadratic penalty'', i.e. a
-Gibbs prior with a qudratic potential function, and a generalisation of the 
+As prior we currently distribute the ``quadratic penalty'', i.e. a
+Gibbs prior with a qudratic potential function, the more edge-preserving
+``log-cosh penalty'', the ``relative difference prior'' and a generalisation of the 
 Median Root prior (MRP) [Ale97]. In the MRP case, the assumption 
 is that the desired image is locally monotonic, and that the 
 most probable value of the pixel is close to the local median. 
@@ -310,7 +311,7 @@ want to help.
 With respect to dynamic and gated imaging
 techniques, we have direct estimation of Patlak
 parameters [Tso08] (using Parametric OSMAPOSL or OSSPS).
-We plan to release motion compensated image reconstruction [Thi06] as
+We include motion compensated image reconstruction as
 implemented by Tsoumpas et al [Tso11].
 
 \section{

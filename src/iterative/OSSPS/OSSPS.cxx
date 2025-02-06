@@ -15,7 +15,7 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  
+
 */
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/DiscretisedDensity.h"
@@ -25,18 +25,15 @@
 USING_NAMESPACE_STIR
 
 #ifdef STIR_MPI
-int stir::distributable_main(int argc, char **argv)
+int
+stir::distributable_main(int argc, char** argv)
 #else
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 #endif
 {
 
-  OSSPSReconstruction<DiscretisedDensity<3,float> > reconstruction_object(argc>1?argv[1]:"");
-  
+  OSSPSReconstruction<DiscretisedDensity<3, float>> reconstruction_object(argc > 1 ? argv[1] : "");
 
-  return reconstruction_object.reconstruct() == Succeeded::yes ?
-           EXIT_SUCCESS : EXIT_FAILURE;
-
-
+  return reconstruction_object.reconstruct() == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

@@ -8,13 +8,13 @@
     See STIR/LICENSE.txt for details
 */
 /*!
- 
+
  \file
  \ingroup utilities
- 
+
  \brief Find normalisation factors using an ML approach
 
- Just a wrapper around ML_estimate_component_based_normalisation 
+ Just a wrapper around ML_estimate_component_based_normalisation
  \author Kris Thielemans
  */
 #include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
@@ -25,23 +25,25 @@
 #include <iostream>
 #include <string>
 
-static void print_usage_and_exit(const std::string& program_name)
+static void
+print_usage_and_exit(const std::string& program_name)
 {
-  std::cerr<<"Usage: " << program_name << " [--display | --print-KL | --include-block-timing-model | --for-symmetry-per-block] \\\n"
-	   << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
-	   << " set num_iterations to 0 to do only efficiencies\n";
+  std::cerr << "Usage: " << program_name
+            << " [--display | --print-KL | --include-block-timing-model | --for-symmetry-per-block] \\\n"
+            << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
+            << " set num_iterations to 0 to do only efficiencies\n";
   exit(EXIT_FAILURE);
 }
 
-
 USING_NAMESPACE_STIR
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
-    const char * const program_name = argv[0];
-    // skip program name
-    --argc;
-    ++argv;
+  const char* const program_name = argv[0];
+  // skip program name
+  --argc;
+  ++argv;
 
   bool do_display = false;
   bool do_KL = false;
@@ -50,41 +52,47 @@ int main(int argc, char **argv)
   bool do_symmetry_per_block = false;
 
   // first process command line options
-  while (argc>0 && argv[0][0]=='-' && argc>=1)
+  while (argc > 0 && argv[0][0] == '-' && argc >= 1)
     {
-      if (strcmp(argv[0], "--display")==0)
-	{
-	  do_display = true;
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--print-KL")==0)
-	{
-	  do_KL  = true;
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--include-geometric-model")==0)
-	{
-	  do_geo = true;
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--include-block-timing-model")==0)
-	{
-	  do_block = true;
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--for-symmetry-per-block")==0)
-	{
-	  do_symmetry_per_block = true;
-	  --argc; ++argv;
-	}
+      if (strcmp(argv[0], "--display") == 0)
+        {
+          do_display = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--print-KL") == 0)
+        {
+          do_KL = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--include-geometric-model") == 0)
+        {
+          do_geo = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--include-block-timing-model") == 0)
+        {
+          do_block = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--for-symmetry-per-block") == 0)
+        {
+          do_symmetry_per_block = true;
+          --argc;
+          ++argv;
+        }
       else
-	print_usage_and_exit(program_name);
+        print_usage_and_exit(program_name);
     }
   // go back to previous counts such that we don't have to change code below
-  ++argc; --argv;
-  
-  //check_geo_data();
-  if (argc!=6)
+  ++argc;
+  --argv;
+
+  // check_geo_data();
+  if (argc != 6)
     {
       print_usage_and_exit(program_name);
     }
@@ -97,9 +105,16 @@ int main(int argc, char **argv)
   CPUTimer timer;
   timer.start();
 
-  ML_estimate_component_based_normalisation(out_filename_prefix, *measured_data, *model_data,
-                                            num_eff_iterations, num_iterations,
-                                            do_geo, do_block, do_symmetry_per_block, do_KL, do_display);
+  ML_estimate_component_based_normalisation(out_filename_prefix,
+                                            *measured_data,
+                                            *model_data,
+                                            num_eff_iterations,
+                                            num_iterations,
+                                            do_geo,
+                                            do_block,
+                                            do_symmetry_per_block,
+                                            do_KL,
+                                            do_display);
 
   timer.stop();
   info(boost::format("CPU time %1% secs") % timer.value());

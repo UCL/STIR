@@ -15,7 +15,7 @@
   \brief Declaration of class stir::DataSymmetriesForDensels
 
   \author Kris Thielemans
- 
+
 */
 #ifndef __stir_recon_buildblock_DataSymmetriesForDensels_H__
 #define __stir_recon_buildblock_DataSymmetriesForDensels_H__
@@ -29,41 +29,36 @@
 
 START_NAMESPACE_STIR
 
-//class Densel;
+// class Densel;
 class SymmetryOperation;
-
 
 #if 0
 class DenselIndexRange;
 #endif
 
-
-
 /*!
   \ingroup symmetries
   \brief A class for encoding/finding symmetries common to the geometry
-  of the projection data and the discretised density. 
+  of the projection data and the discretised density.
 
   This class is mainly (only?) useful for ProjMatrixByDensel classes and their
-  'users'. Together with SymmetryOperation, it provides the basic 
-  way to be able to write generic code without knowing which 
+  'users'. Together with SymmetryOperation, it provides the basic
+  way to be able to write generic code without knowing which
   particular symmetries the data have.
 
 */
-class DataSymmetriesForDensels 
+class DataSymmetriesForDensels
 {
 public:
   DataSymmetriesForDensels();
 
-  virtual ~DataSymmetriesForDensels() {};
+  virtual ~DataSymmetriesForDensels(){};
 
-  virtual 
-    DataSymmetriesForDensels 
-    * clone() const = 0;
+  virtual DataSymmetriesForDensels* clone() const = 0;
 
-  bool operator ==(const DataSymmetriesForDensels&) const;
+  bool operator==(const DataSymmetriesForDensels&) const;
 
-  bool operator !=(const DataSymmetriesForDensels&) const;
+  bool operator!=(const DataSymmetriesForDensels&) const;
 
 #if 0
   TODO!
@@ -73,12 +68,11 @@ public:
 #endif
 
   //! fills in a vector with all the Densels that are related to 'b' (including itself)
-  /*! 
+  /*!
       \warning \c b has to be a 'basic' Densel
   */
   // next return value could be a RelatedDensels ???
-  virtual  void
-    get_related_densels(std::vector<Densel>&, const Densel& b) const = 0;
+  virtual void get_related_densels(std::vector<Densel>&, const Densel& b) const = 0;
 
 #if 0
   //! fills in a vector with all the Densels (within the range) that are related to 'b'
@@ -90,36 +84,30 @@ public:
 #endif
 
   //! returns the number of Densels related to 'b'
-  virtual int
-    num_related_densels(const Densel& b) const;
+  virtual int num_related_densels(const Densel& b) const;
 
   /*! \brief given an arbitrary Densel 'b', find the basic Densel
-  
-  sets 'b' to the corresponding 'basic' Densel and returns the symmetry 
+
+  sets 'b' to the corresponding 'basic' Densel and returns the symmetry
   transformation from 'basic' to 'b'.
   */
-  virtual unique_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_densel(Densel&) const = 0;
+  virtual unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_densel(Densel&) const = 0;
 
   /*! \brief given an arbitrary Densel 'b', find the basic Densel
-  
+
   sets 'b' to the corresponding 'basic' Densel and returns true if
   'b' is changed (i.e. it was NOT a basic Densel).
   */
-  virtual bool
-    find_basic_densel(Densel& b) const;
+  virtual bool find_basic_densel(Densel& b) const;
 
- protected:
+protected:
   typedef DataSymmetriesForDensels root_type;
 
-  virtual bool blindly_equals(const root_type * const) const = 0;
-
+  virtual bool blindly_equals(const root_type* const) const = 0;
 };
 
 END_NAMESPACE_STIR
 
 //#include "stir/recon_buildblock/DataSymmetriesForDensels.inl"
 
-
 #endif
-

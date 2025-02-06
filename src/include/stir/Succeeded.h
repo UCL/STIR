@@ -27,9 +27,9 @@
 
 START_NAMESPACE_STIR
 
-/*! 
-  \brief 
-  a class containing an enumeration type that can be used by functions to signal 
+/*!
+  \brief
+  a class containing an enumeration type that can be used by functions to signal
   successful operation or not
 
   Example:
@@ -43,12 +43,19 @@ START_NAMESPACE_STIR
 class Succeeded
 {
 public:
-  enum value { yes, no };
-  Succeeded(const value& v = yes) : v(v) {}
-  bool operator==(const Succeeded &v2) const { return v == v2.v; }
-  bool operator!=(const Succeeded &v2) const { return v != v2.v; }
+  enum value
+  {
+    yes,
+    no
+  };
+  Succeeded(const value& v = yes)
+      : v(v)
+  {}
+  bool operator==(const Succeeded& v2) const { return v == v2.v; }
+  bool operator!=(const Succeeded& v2) const { return v != v2.v; }
   //! convenience function returns if it is equal to Succeeded::yes
   bool succeeded() const { return this->v == yes; }
+
 private:
   value v;
 };

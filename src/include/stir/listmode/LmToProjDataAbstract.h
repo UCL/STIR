@@ -2,13 +2,13 @@
 //
 //
 /*!
-  \file 
+  \file
   \ingroup listmode
 
   \brief Abstract base class for listmode to projection data conversion.
- 
+
   \author Richard Brown
-  
+
 */
 /*
     Copyright (C) 2020, University College of London
@@ -32,21 +32,20 @@ START_NAMESPACE_STIR
   i.e. (3d) sinograms.
 
   It provides the basic machinery to go through a list mode data file,
-  and write projection data for each time frame. 
+  and write projection data for each time frame.
 */
 
 class LmToProjDataAbstract : public ParsingObject
 {
 public:
+  /// Destructor
+  ~LmToProjDataAbstract() override {}
 
-    /// Destructor
-    virtual ~LmToProjDataAbstract() {}
+  /// Set up
+  virtual Succeeded set_up() { return Succeeded::yes; }
 
-    /// Set up
-    virtual Succeeded set_up() { return Succeeded::yes; }
-
-    //! This function does the actual work
-    virtual void process_data() = 0;
+  //! This function does the actual work
+  virtual void process_data() = 0;
 };
 
 END_NAMESPACE_STIR

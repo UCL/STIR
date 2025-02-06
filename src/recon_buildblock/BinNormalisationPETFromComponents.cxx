@@ -43,7 +43,10 @@ BinNormalisationPETFromComponents::set_defaults()
   this->block_data = BlockData3D();
 }
 
-BinNormalisationPETFromComponents::BinNormalisationPETFromComponents() { set_defaults(); }
+BinNormalisationPETFromComponents::BinNormalisationPETFromComponents()
+{
+  set_defaults();
+}
 
 bool
 BinNormalisationPETFromComponents::has_crystal_efficiencies() const
@@ -94,11 +97,11 @@ BinNormalisationPETFromComponents::set_up(const shared_ptr<const ExamInfo>& exam
       }
   }
 
-  this->_is_trivial =
-    (!has_crystal_efficiencies()
-     || (fabs(efficiencies.find_min() - 1) <= .0001 && fabs(efficiencies.find_max() - 1) <= .0001))
-    && (!has_geometric_factors() || (fabs(geo_data.find_min() - 1) <= .0001 && fabs(geo_data.find_max() - 1) <= .0001))
-    && (!has_block_factors() || (fabs(block_data.find_min() - 1) <= .0001 && fabs(block_data.find_max() - 1) <= .0001));
+  this->_is_trivial
+      = (!has_crystal_efficiencies()
+         || (fabs(efficiencies.find_min() - 1) <= .0001 && fabs(efficiencies.find_max() - 1) <= .0001))
+        && (!has_geometric_factors() || (fabs(geo_data.find_min() - 1) <= .0001 && fabs(geo_data.find_max() - 1) <= .0001))
+        && (!has_block_factors() || (fabs(block_data.find_min() - 1) <= .0001 && fabs(block_data.find_max() - 1) <= .0001));
 
   this->create_proj_data();
   return Succeeded::yes;
@@ -113,8 +116,8 @@ BinNormalisationPETFromComponents::is_trivial() const
 }
 
 void
-BinNormalisationPETFromComponents::allocate(shared_ptr<const ProjDataInfo> pdi_sptr, bool do_eff, bool do_geo, bool do_block,
-                                            bool do_symmetry_per_block)
+BinNormalisationPETFromComponents::allocate(
+    shared_ptr<const ProjDataInfo> pdi_sptr, bool do_eff, bool do_geo, bool do_block, bool do_symmetry_per_block)
 {
   this->proj_data_info_sptr = pdi_sptr;
 
@@ -150,8 +153,10 @@ BinNormalisationPETFromComponents::allocate(shared_ptr<const ProjDataInfo> pdi_s
     }
 
   if (do_geo)
-    this->geo_data = GeoData3D(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit / 2,
-                               num_physical_rings, num_physical_detectors_per_ring);
+    this->geo_data = GeoData3D(num_physical_axial_crystals_per_basic_unit,
+                               num_physical_transaxial_crystals_per_basic_unit / 2,
+                               num_physical_rings,
+                               num_physical_detectors_per_ring);
   else
     this->geo_data.recycle();
 

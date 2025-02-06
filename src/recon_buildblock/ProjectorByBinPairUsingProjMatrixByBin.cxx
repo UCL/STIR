@@ -5,9 +5,9 @@
   \ingroup projection
 
   \brief non-inline implementations for stir::ProjectorByBinPairUsingProjMatrixByBin
-  
+
   \author Kris Thielemans
-    
+
 */
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
@@ -19,7 +19,6 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
@@ -29,21 +28,16 @@
 
 START_NAMESPACE_STIR
 
+const char* const ProjectorByBinPairUsingProjMatrixByBin::registered_name = "Matrix";
 
-const char * const 
-ProjectorByBinPairUsingProjMatrixByBin::registered_name =
-  "Matrix";
-
-
-void 
+void
 ProjectorByBinPairUsingProjMatrixByBin::initialise_keymap()
 {
   base_type::initialise_keymap();
   parser.add_start_key("Projector Pair Using Matrix Parameters");
   parser.add_stop_key("End Projector Pair Using Matrix Parameters");
-  parser.add_parsing_key("Matrix type",&proj_matrix_sptr);
+  parser.add_parsing_key("Matrix type", &proj_matrix_sptr);
 }
-
 
 void
 ProjectorByBinPairUsingProjMatrixByBin::set_defaults()
@@ -58,30 +52,30 @@ ProjectorByBinPairUsingProjMatrixByBin::post_processing()
   if (base_type::post_processing())
     return true;
   if (is_null_ptr(proj_matrix_sptr))
-    { warning("No valid projection matrix is defined\n"); return true; }
+    {
+      warning("No valid projection matrix is defined\n");
+      return true;
+    }
   this->forward_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
   this->back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
   return false;
 }
 
-ProjectorByBinPairUsingProjMatrixByBin::
-ProjectorByBinPairUsingProjMatrixByBin()
+ProjectorByBinPairUsingProjMatrixByBin::ProjectorByBinPairUsingProjMatrixByBin()
 {
   set_defaults();
 }
 
-ProjectorByBinPairUsingProjMatrixByBin::
-ProjectorByBinPairUsingProjMatrixByBin(  
-    const shared_ptr<ProjMatrixByBin>& proj_matrix_sptr_) 
+ProjectorByBinPairUsingProjMatrixByBin::ProjectorByBinPairUsingProjMatrixByBin(
+    const shared_ptr<ProjMatrixByBin>& proj_matrix_sptr_)
 {
   this->set_proj_matrix_sptr(proj_matrix_sptr_);
 }
 
 Succeeded
-ProjectorByBinPairUsingProjMatrixByBin::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<const DiscretisedDensity<3,float> >& image_info_sptr)
-{    	 
+ProjectorByBinPairUsingProjMatrixByBin::set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                               const shared_ptr<const DiscretisedDensity<3, float>>& image_info_sptr)
+{
   // proj_matrix_sptr->set_up()  not needed as the projection matrix will be set_up indirectly by
   // the forward_projector->set_up (which is called in the base class)
   // proj_matrix_sptr->set_up(proj_data_info_sptr, image_info_sptr);
@@ -92,23 +86,20 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
   return Succeeded::yes;
 }
 
-ProjMatrixByBin const * 
-ProjectorByBinPairUsingProjMatrixByBin::
-get_proj_matrix_ptr() const
+ProjMatrixByBin const*
+ProjectorByBinPairUsingProjMatrixByBin::get_proj_matrix_ptr() const
 {
   return proj_matrix_sptr.get();
 }
 
 shared_ptr<ProjMatrixByBin>
-ProjectorByBinPairUsingProjMatrixByBin::
-get_proj_matrix_sptr() const
+ProjectorByBinPairUsingProjMatrixByBin::get_proj_matrix_sptr() const
 {
-	return proj_matrix_sptr;
+  return proj_matrix_sptr;
 }
 
 void
-ProjectorByBinPairUsingProjMatrixByBin::
-set_proj_matrix_sptr(const shared_ptr<ProjMatrixByBin>& sptr)
+ProjectorByBinPairUsingProjMatrixByBin::set_proj_matrix_sptr(const shared_ptr<ProjMatrixByBin>& sptr)
 {
   this->proj_matrix_sptr = sptr;
   this->forward_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(this->proj_matrix_sptr));

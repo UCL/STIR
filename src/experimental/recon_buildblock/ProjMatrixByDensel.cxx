@@ -4,11 +4,11 @@
 
   \file
   \ingroup recon_buildblock
-  
-  \brief  implementation of the stir::ProjMatrixByDensel class 
-    
+
+  \brief  implementation of the stir::ProjMatrixByDensel class
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2000- 2004, Hammersmith Imanet Ltd
@@ -16,60 +16,48 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir_experimental/recon_buildblock/ProjMatrixByDensel.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "stir/Succeeded.h"
 
-
 START_NAMESPACE_STIR
 
 ProjMatrixByDensel::ProjMatrixByDensel()
-{ 
-  cache_disabled=false;
+{
+  cache_disabled = false;
 }
- 
-Succeeded 
-ProjMatrixByDensel::
-get_cached_proj_matrix_elems_for_one_densel(
-                                         ProjMatrixElemsForOneDensel& probabilities) const
 
-                                                         
-                                                     
-{  
-  if ( cache_disabled ) 
+Succeeded
+ProjMatrixByDensel::get_cached_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel& probabilities) const
+
+{
+  if (cache_disabled)
     return Succeeded::no;
-  
+
   const Densel densel = probabilities.get_densel();
 
 #ifndef NDEBUG
   // Check that this is a 'basic' coordinate
-  Densel densel_copy = densel; 
-  assert ( !get_symmetries_ptr()->find_basic_densel(densel_copy));     
-#endif         
-  
-	 
-  const_MapProjMatrixElemsForOneDenselIterator  pos = 
-    cache_collection.find(cache_key( densel));
-  
-  if ( pos != cache_collection. end())
-  { 
-    //cout << Key << " =========>> entry found in cache " <<  endl;
-    probabilities = pos->second;	 	                    
-    return Succeeded::yes;	
-  } 
-  
-  //cout << " This entry  is not in the cache :" << Key << endl;	
+  Densel densel_copy = densel;
+  assert(!get_symmetries_ptr()->find_basic_densel(densel_copy));
+#endif
+
+  const_MapProjMatrixElemsForOneDenselIterator pos = cache_collection.find(cache_key(densel));
+
+  if (pos != cache_collection.end())
+    {
+      // cout << Key << " =========>> entry found in cache " <<  endl;
+      probabilities = pos->second;
+      return Succeeded::yes;
+    }
+
+  // cout << " This entry  is not in the cache :" << Key << endl;
   return Succeeded::no;
 }
 
+// TODO
 
-
-//TODO
-
-
-
-//////////////////////////////////////////////////////////////////////////  
+//////////////////////////////////////////////////////////////////////////
 #if 0
 // KT moved here
 //! store the projection matrix to the file by rows 
@@ -120,8 +108,6 @@ void ProjMatrixByDensel::write_to_file_by_densel(
         cout << "End of write_to_file_by_densel " << endl; 
 }
 
-
 #endif
-
 
 END_NAMESPACE_STIR

@@ -7,15 +7,15 @@
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
-	See STIR/LICENSE.txt for details
+        See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_config_gcc_H__
 #define __stir_config_gcc_H__
 
 /*!
-  \file 
-  \ingroup buildblock 
+  \file
+  \ingroup buildblock
   \brief configuration for gcc
 
   \author Kris Thielemans
@@ -33,4 +33,4 @@
 #if defined __GNUC__
 #endif
 
-#endif 
+#endif

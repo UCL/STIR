@@ -29,23 +29,25 @@ This is our recommended process. If it sounds too daunting, ask for help.
 3. Create a branch in your fork with a descriptive name and put your fixes there. If your fix is
 simple you could do it on github by editing a file, otherwise clone your project (or add a remote
 to your current git clone) and work as usual.
-4. If your change is important, add it to the release notesfor the upcoming version, [see](https://github.com/UCL/STIR/blob/master/documentation/)
+4. Configure your editor and potentially even [pre-commit](https://pre-commit.com/), see
+[documentation/devel/README.md](documentation/devel/README.md).
+5. If your change is important, add it to the release notes for the upcoming version in the [documentation folder](https://github.com/UCL/STIR/tree/master/documentation/)
 and even the [User's Guide](https://github.com/UCL/STIR/blob/master/documentation/STIR-UsersGuide.tex) or other documentation files.
-5. Use [well-formed commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+6. Use [well-formed commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
 for each change (in particular with a single "subject" line
-followed by an empty line and then more details). If the change affects comments only, it is recommended to put `[ci skip]` in your subject line. This avoids unnecessary computation, and clogging our Travis/Appveyor queues.
-6. Push the commits to your fork and submit a [pull request (PR)](https://help.github.com/articles/creating-a-pull-request)
-(enable changes by project admins.) Give your pull request a descriptive name (i.e. don't call if *Fix #issuenumber*. Be prepared to add further commits to your branch after discussion.
-In the description of the PR, add a statement about which Issue this applies to
-using [a phrase such that github auto-closes the issue when merged to master](https://help.github.com/articles/closing-issues-using-keywords/).
-7. Be prepared to add further commits to your branch after discussion.
+followed by an empty line and then more details).
 Please by mindful about the resources used by our Continuous Integration (CI) workflows:
   - Group your commits and only push once your code compiles and tests succeed on your machine (ideally you have sensible commit messages at every stage)
   - Use specific keywords in the first line of the last commit that you push to prevent CI being run:
      - `[ci skip]` skips all CI runs (e.g. when you only change documentation, or when your update isn't ready yet)
      - `[actions skip]` does not run GitHub Actions, see [here](https://github.blog/changelog/2021-02-08-github-actions-skip-pull-request-and-push-workflows-with-skip-ci/). Note: this can be in the main commit message.
      - `[skip appveyor]` does not run Appveyor, see [here](https://www.appveyor.com/docs/how-to/filtering-commits/#skip-directive-in-commit-message)
-8. After acceptance of your PR, go home with a nice warm feeling.
+7. Push the commits to your fork and submit a [pull request (PR)](https://help.github.com/articles/creating-a-pull-request)
+(enable changes by project admins.) Give your pull request a descriptive name (i.e. don't call if *Fix #issuenumber*. Be prepared to add further commits to your branch after discussion.
+In the description of the PR, add a statement about which Issue this applies to
+using [a phrase such that github auto-closes the issue when merged to master](https://help.github.com/articles/closing-issues-using-keywords/).
+8. Be prepared to add further commits to your branch after discussion.
+9. After acceptance of your PR, go home with a nice warm feeling.
 
 Suggested reading: 
 https://help.github.com/articles/fork-a-repo/, https://git-scm.com/book/en/v2/GitHub-Contributing-to-a-Project or https://guides.github.com/activities/forking/.

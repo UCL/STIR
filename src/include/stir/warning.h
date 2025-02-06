@@ -17,11 +17,9 @@
   \author Kris Thielemans
 
 */
-#include "stir/common.h"
 #include "stir/Verbosity.h"
-#include <iostream>
-
-#include "TextWriter.h"
+#include "stir/TextWriter.h"
+#include <sstream>
 
 START_NAMESPACE_STIR
 
@@ -38,9 +36,7 @@ START_NAMESPACE_STIR
 
   \deprecated (use 1 argument version instead)
 */
-void
-warning(const char *const s, ...);
-
+void warning(const char* const s, ...);
 
 //! Use this function for writing warning messages
 /*! \ingroup buildblock
@@ -49,7 +45,7 @@ warning(const char *const s, ...);
   std::ostream::operator\<\< would work.
 
   This function currently first writes a newline, then \c WARNING:, then \c string
-  and then another newline to std::cerr. 
+  and then another newline to std::cerr.
 
   \todo At a later stage, it will also write to a log-file.
 
@@ -67,13 +63,12 @@ template <class STRING>
 inline void
 warning(const STRING& string, const int verbosity_level = 1)
 {
-  if (Verbosity::get() >= verbosity_level) {
-    std::stringstream sstr;
-    sstr << "\nWARNING: "
-        << string
-        << std::endl;
-    writeText(sstr.str().c_str(), WARNING_CHANNEL);
-  }
+  if (Verbosity::get() >= verbosity_level)
+    {
+      std::stringstream sstr;
+      sstr << "\nWARNING: " << string << std::endl;
+      writeText(sstr.str().c_str(), WARNING_CHANNEL);
+    }
 }
 END_NAMESPACE_STIR
 #endif

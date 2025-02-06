@@ -31,9 +31,10 @@
 
 START_NAMESPACE_STIR
 
-namespace GE {
-namespace RDF_HDF5 {
-
+namespace GE
+{
+namespace RDF_HDF5
+{
 
 /*!
   \ingroup projdata
@@ -44,47 +45,49 @@ namespace RDF_HDF5 {
 class ProjDataGEHDF5 : public ProjData
 {
 public:
+  explicit ProjDataGEHDF5(const std::string& input_filename);
 
-    explicit ProjDataGEHDF5(const std::string& input_filename);
-
-    explicit ProjDataGEHDF5(shared_ptr<GEHDF5Wrapper> input_hdf5_sptr);
+  explicit ProjDataGEHDF5(shared_ptr<GEHDF5Wrapper> input_hdf5_sptr);
 
 private:
-    //! called to get data from m_input_hdf5_sptr
-    void initialise_from_wrapper();
+  //! called to get data from m_input_hdf5_sptr
+  void initialise_from_wrapper();
 
-    unsigned int find_segment_offset(const int segment_num) const;
-    //! Set Viewgram<float>
-    Succeeded set_viewgram(const Viewgram<float>& v);
-    //! Set Sinogram<float>
-    Succeeded set_sinogram(const Sinogram<float>& s);
-    //! Get Viewgram<float>
-    Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false,
-                                 const int timing_pos = 0) const;
-    //! Get Sinogram<float>
-    Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false,
-                                 const int timing_pos = 0) const;
-    //! Get the segment sequence
-    std::vector<int> get_segment_sequence_in_hdf5() const;
-    std::vector< unsigned int > seg_ax_offset;
-    unsigned int find_segment_index_in_sequence(const int segment_num) const;
-    //! Cache the segment sequence of the GE data.
-    //! \author Kris Thielemans
-    void initialise_segment_sequence();
+  unsigned int find_segment_offset(const int segment_num) const;
+  //! Set Viewgram<float>
+  Succeeded set_viewgram(const Viewgram<float>& v) override;
+  //! Set Sinogram<float>
+  Succeeded set_sinogram(const Sinogram<float>& s) override;
+  //! Get Viewgram<float>
+  Viewgram<float> get_viewgram(const int view_num,
+                               const int segment_num,
+                               const bool make_num_tangential_poss_odd = false,
+                               const int timing_pos = 0) const override;
+  //! Get Sinogram<float>
+  Sinogram<float> get_sinogram(const int ax_pos_num,
+                               const int sergment_num,
+                               const bool make_num_tangential_poss_odd = false,
+                               const int timing_pos = 0) const override;
+  //! Get the segment sequence
+  std::vector<int> get_segment_sequence_in_hdf5() const;
+  std::vector<unsigned int> seg_ax_offset;
+  unsigned int find_segment_index_in_sequence(const int segment_num) const;
+  //! Cache the segment sequence of the GE data.
+  //! \author Kris Thielemans
+  void initialise_segment_sequence();
 
-    void initialise_ax_pos_offset();
+  void initialise_ax_pos_offset();
 
-    void initialise_viewgram_buffer();
-    //! Handler of the HDF5 input data and header
-    shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;
+  void initialise_viewgram_buffer();
+  //! Handler of the HDF5 input data and header
+  shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;
 
-    std::vector< int > segment_sequence;
-    std::vector<Array<3,unsigned char> > tof_data;
+  std::vector<int> segment_sequence;
+  std::vector<Array<3, unsigned char>> tof_data;
 };
 
-} // namespace
-}
+} // namespace RDF_HDF5
+} // namespace GE
 END_NAMESPACE_STIR
-
 
 #endif

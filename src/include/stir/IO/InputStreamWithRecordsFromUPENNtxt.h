@@ -32,73 +32,69 @@ START_NAMESPACE_STIR
 
   */
 
-class InputStreamWithRecordsFromUPENNtxt : public
-        RegisteredParsingObject< InputStreamWithRecordsFromUPENNtxt ,
-        InputStreamWithRecordsFromUPENN,
-        InputStreamWithRecordsFromUPENN >
+class InputStreamWithRecordsFromUPENNtxt : public RegisteredParsingObject<InputStreamWithRecordsFromUPENNtxt,
+                                                                          InputStreamWithRecordsFromUPENN,
+                                                                          InputStreamWithRecordsFromUPENN>
 {
 private:
-    typedef RegisteredParsingObject< InputStreamWithRecordsFromUPENNtxt,
-    InputStreamWithRecordsFromUPENN,
-    InputStreamWithRecordsFromUPENN > base_type;
+  typedef RegisteredParsingObject<InputStreamWithRecordsFromUPENNtxt,
+                                  InputStreamWithRecordsFromUPENN,
+                                  InputStreamWithRecordsFromUPENN>
+      base_type;
 
 public:
+  static const char* const registered_name;
 
-    static const char * const registered_name;
+  InputStreamWithRecordsFromUPENNtxt();
 
-    InputStreamWithRecordsFromUPENNtxt();
+  virtual ~InputStreamWithRecordsFromUPENNtxt() {}
 
-    virtual ~InputStreamWithRecordsFromUPENNtxt() {}
+  virtual inline Succeeded create_output_file(const std::string ofilename);
+  //! Must be called before calling for the first event.
+  virtual Succeeded set_up();
+  //! gives method information
+  virtual std::string method_info() const;
 
-    virtual inline
-    Succeeded create_output_file(const std::string ofilename);
-    //! Must be called before calling for the first event.
-    virtual Succeeded set_up();
-    //! gives method information
-    virtual std::string method_info() const;
+  virtual Succeeded get_next_record(CListRecordPENN& record);
 
-    virtual Succeeded get_next_record(CListRecordPENN& record);
+  //! go back to starting position
+  virtual Succeeded reset();
 
-    //! go back to starting position
-    virtual
-    Succeeded reset();
+  //! save current "get" position in an internal array
+  /*! \return an "index" into the array that allows you to go back.
+    \see set_get_position
+*/
+  virtual SavedPosition save_get_position();
 
-    //! save current "get" position in an internal array
-    /*! \return an "index" into the array that allows you to go back.
-      \see set_get_position
-  */
-    virtual
-    SavedPosition save_get_position();
+  //! set current "get" position to previously saved value
+  virtual Succeeded set_get_position(const SavedPosition&);
 
-    //! set current "get" position to previously saved value
-    virtual
-    Succeeded set_get_position(const SavedPosition&);
+  inline std::istream& get_stream() { return *this->stream_ptr; }
 
-    inline
-    std::istream& get_stream(){return *this->stream_ptr;}
+  virtual void set_current_record();
 
-    virtual void set_current_record();
-
-    virtual void set_new_record(const bool& d,
-                                const short int& _dt,
-                                const unsigned short int& _xa, const unsigned short int& _xb,
-                                const unsigned short int& _za, const unsigned short int& _zb,
-                                const unsigned short int& _ea, const unsigned short int& _eb);
+  virtual void set_new_record(const bool& d,
+                              const short int& _dt,
+                              const unsigned short int& _xa,
+                              const unsigned short int& _xb,
+                              const unsigned short int& _za,
+                              const unsigned short int& _zb,
+                              const unsigned short int& _ea,
+                              const unsigned short int& _eb);
 
 protected:
-
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
 private:
-    shared_ptr<std::istream> stream_ptr = nullptr;
+  shared_ptr<std::istream> stream_ptr = nullptr;
 
-    std::streampos starting_stream_position;
+  std::streampos starting_stream_position;
 
-    std::vector<std::streampos> saved_get_positions;
+  std::vector<std::streampos> saved_get_positions;
 
-    shared_ptr<std::string> line;
+  shared_ptr<std::string> line;
 };
 
 END_NAMESPACE_STIR

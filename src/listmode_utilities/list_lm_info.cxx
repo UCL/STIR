@@ -29,22 +29,24 @@
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/warning.h"
-#include <iostream> 
+#include <iostream>
 #include <string>
 
 USING_NAMESPACE_STIR
 
-void print_usage_and_exit(const std::string& program_name)
+void
+print_usage_and_exit(const std::string& program_name)
 {
-  std::cerr<<"Usage: " << program_name << " [--all | --geom | --exam] listmode_file\n"
-	   <<"\nAdd one or more options to print the exam/geometric information.\n"
-	   <<"\nIf no option is specified, exam info is printed.\n";
+  std::cerr << "Usage: " << program_name << " [--all | --geom | --exam] listmode_file\n"
+            << "\nAdd one or more options to print the exam/geometric information.\n"
+            << "\nIf no option is specified, exam info is printed.\n";
   exit(EXIT_FAILURE);
 }
 
-int main(int argc, char *argv[])
-{ 
-  const char * const program_name = argv[0];
+int
+main(int argc, char* argv[])
+{
+  const char* const program_name = argv[0];
   // skip program name
   --argc;
   ++argv;
@@ -55,34 +57,37 @@ int main(int argc, char *argv[])
   bool no_options = true; // need this for default behaviour
 
   // first process command line options
-  while (argc>0 && argv[0][0]=='-' && argc>=2)
+  while (argc > 0 && argv[0][0] == '-' && argc >= 2)
     {
-      no_options=false;
-      if (strcmp(argv[0], "--all")==0)
-	{
-	  print_geom = print_exam = true; 
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--geom")==0)
-	{
-	  print_geom = true; 
-	  --argc; ++argv;
-	}
-      else if (strcmp(argv[0], "--exam")==0)
-	{
-	  print_exam = true; 
-	  --argc; ++argv;
-	}
+      no_options = false;
+      if (strcmp(argv[0], "--all") == 0)
+        {
+          print_geom = print_exam = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--geom") == 0)
+        {
+          print_geom = true;
+          --argc;
+          ++argv;
+        }
+      else if (strcmp(argv[0], "--exam") == 0)
+        {
+          print_exam = true;
+          --argc;
+          ++argv;
+        }
       else
-	print_usage_and_exit(program_name);
+        print_usage_and_exit(program_name);
     }
   if (no_options)
     print_exam = true;
 
-  if(argc!=1) 
-  {
-    print_usage_and_exit(program_name);
-  }
+  if (argc != 1)
+    {
+      print_usage_and_exit(program_name);
+    }
 
   // set filename to last remaining argument
   const std::string filename(argv[0]);

@@ -1,17 +1,17 @@
 /*
     Copyright (C) 2019, University College London
-    This file is part of STIR. 
- 
-    SPDX-License-Identifier: Apache-2.0 
- 
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
     See STIR/LICENSE.txt for details
 */
 /*!
   \file
-  \ingroup densitydata 
-  
+  \ingroup densitydata
+
   \brief  Definition of the stir::ParseAndCreateFrom class
-    
+
   \author Kris Thielemans
 */
 
@@ -33,7 +33,7 @@ class KeyParser;
   for different types, as for instance, many different reconstructors produce
   a DiscretisedDensity object but from different input data, or vice versa.
 
-  We do this using specialisations of this class. That way, 
+  We do this using specialisations of this class. That way,
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData etc can be templated
   without having to know what the actual \c OutputT is.
 
@@ -51,32 +51,30 @@ class KeyParser;
 template <class OutputT, class InputT, class ParserT = KeyParser>
 class ParseAndCreateFrom
 {
- public:
- //! set default values for any parameters
- void set_defaults() {}
- //! add any relevant parameters to a parser
- void add_to_keymap(ParserT&) {}
+public:
+  //! set default values for any parameters
+  void set_defaults() {}
+  //! add any relevant parameters to a parser
+  void add_to_keymap(ParserT&) {}
   //! should call error() if something is wrong
- void check_values() const {};
+  void check_values() const {};
 
- //! create a new object
- /*! 
-   This can take any parsed parameters into account.
+  //! create a new object
+  /*!
+    This can take any parsed parameters into account.
 
-   The default just calls \c new.
+    The default just calls \c new.
 
-   \todo Currently we're assuming this returns a bare pointer (to a new object).
-   This is due to limitations in the reconstruction classes. It will need to change
-   to a \c std::unique pointer.
- */
- OutputT* create(const InputT&) const
- { return new OutputT(); }
+    \todo Currently we're assuming this returns a bare pointer (to a new object).
+    This is due to limitations in the reconstruction classes. It will need to change
+    to a \c std::unique pointer.
+  */
+  OutputT* create(const InputT&) const { return new OutputT(); }
 };
-
 
 //! parse keywords for creating a VoxelsOnCartesianGrid from ProjData etc
 /*!
-  \ingroup densitydata 
+  \ingroup densitydata
 
   This specialisation adds keywords like size etc to the parser, and calls
   the VoxelsOnCartesianGrid constructor with ExamInfo and ProjDataInfo arguments
@@ -89,14 +87,11 @@ class ParseAndCreateFrom
   another keyword to differentiate between types).
 */
 template <class elemT, class ExamDataT>
-  class ParseAndCreateFrom<DiscretisedDensity<3, elemT>, ExamDataT>
-  : public ParseDiscretisedDensityParameters
+class ParseAndCreateFrom<DiscretisedDensity<3, elemT>, ExamDataT> : public ParseDiscretisedDensityParameters
 {
- public:
+public:
   typedef DiscretisedDensity<3, elemT> output_type;
-  inline
-  output_type*
-    create(const ExamDataT&) const;
+  inline output_type* create(const ExamDataT&) const;
 };
 
 END_NAMESPACE_STIR

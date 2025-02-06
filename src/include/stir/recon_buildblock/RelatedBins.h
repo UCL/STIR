@@ -30,19 +30,18 @@ START_NAMESPACE_STIR
 class ProjData;
 class Bin;
 class DataSymmetriesForBins;
-/*! 
+/*!
   \ingroup recon_buildblock
-  \brief This class contains all information about a set of bins related 
+  \brief This class contains all information about a set of bins related
   by symmetry.
 */
 
-class RelatedBins 
+class RelatedBins
 {
 public:
- //! typedefs for iterator support
+  //! typedefs for iterator support
 
-
-  typedef std::random_access_iterator_tag iterator_category;  
+  typedef std::random_access_iterator_tag iterator_category;
   typedef Bin value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
@@ -52,8 +51,8 @@ public:
   //! typedefs to make it partly comply with STL requirements
   typedef std::vector<Bin>::iterator iterator;
   typedef std::vector<Bin>::const_iterator const_iterator;
-   //!Default constructor: creates no bins, no symmetries  
-  inline  RelatedBins();
+  //! Default constructor: creates no bins, no symmetries
+  inline RelatedBins();
 
   //! get the number of related bins
   inline int get_num_related_bins() const;
@@ -61,36 +60,31 @@ public:
   //! get 'basic' bin coordinates
   inline Bin get_basic_bin() const;
 
-  // get the pointer to a ProjDataInfo class 
+  // get the pointer to a ProjDataInfo class
   // inline const ProjDataInfo * get_proj_data_info_sptr() const;
 
   //! return the symmetries used
-  inline const DataSymmetriesForBins* get_symmetries_ptr() const ;
- 
+  inline const DataSymmetriesForBins* get_symmetries_ptr() const;
+
   //! get an empty copy
   RelatedBins get_empty_copy() const;
 
- // basic iterator support
+  // basic iterator support
 
   //! use to initialise an iterator to the first element of the vector
-   inline iterator begin();
-   //! iterator 'past' the last element of the vector
-   inline iterator end();
-    //! use to initialise an iterator to the first element of the (const) vector
-   inline const_iterator begin() const;
-   //! iterator 'past' the last element of the (const) vector
-   inline const_iterator end() const;
-
-
+  inline iterator begin();
+  //! iterator 'past' the last element of the vector
+  inline iterator end();
+  //! use to initialise an iterator to the first element of the (const) vector
+  inline const_iterator begin() const;
+  //! iterator 'past' the last element of the (const) vector
+  inline const_iterator end() const;
 
 private:
-   std::vector<Bin> related_bins;
-   shared_ptr<DataSymmetriesForBins> symmetries;
-     //! a private constructor which sets the members
-  inline RelatedBins(const std::vector<Bin>& related_bins,
-                     const shared_ptr<DataSymmetriesForBins>& symmetries_used);
- 
-
+  std::vector<Bin> related_bins;
+  shared_ptr<DataSymmetriesForBins> symmetries;
+  //! a private constructor which sets the members
+  inline RelatedBins(const std::vector<Bin>& related_bins, const shared_ptr<DataSymmetriesForBins>& symmetries_used);
 };
 
 END_NAMESPACE_STIR
@@ -98,5 +92,3 @@ END_NAMESPACE_STIR
 #include "stir/recon_buildblock/RelatedBins.inl"
 
 #endif //__RelatedBins_H__
-
-

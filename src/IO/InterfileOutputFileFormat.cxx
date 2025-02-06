@@ -23,38 +23,31 @@
 
 START_NAMESPACE_STIR
 
+const char* const InterfileOutputFileFormat::registered_name = "Interfile";
 
-const char * const 
-InterfileOutputFileFormat::registered_name = "Interfile";
-
-InterfileOutputFileFormat::
-InterfileOutputFileFormat(const NumericType& type, 
-                   const ByteOrder& byte_order) 
+InterfileOutputFileFormat::InterfileOutputFileFormat(const NumericType& type, const ByteOrder& byte_order)
 {
   base_type::set_defaults();
   set_type_of_numbers(type);
   set_byte_order(byte_order);
 }
 
-void 
-InterfileOutputFileFormat::
-set_defaults()
+void
+InterfileOutputFileFormat::set_defaults()
 {
   base_type::set_defaults();
 }
 
-void 
-InterfileOutputFileFormat::
-initialise_keymap()
+void
+InterfileOutputFileFormat::initialise_keymap()
 {
   parser.add_start_key("Interfile Output File Format Parameters");
   parser.add_stop_key("End Interfile Output File Format Parameters");
   base_type::initialise_keymap();
 }
 
-bool 
-InterfileOutputFileFormat::
-post_processing()
+bool
+InterfileOutputFileFormat::post_processing()
 {
   if (base_type::post_processing())
     return true;
@@ -62,32 +55,23 @@ post_processing()
 }
 
 // note 'warn' commented below to avoid compiler warning message about unused variables
-ByteOrder 
-InterfileOutputFileFormat::
-set_byte_order(const ByteOrder& new_byte_order, const bool /* warn */) 
+ByteOrder
+InterfileOutputFileFormat::set_byte_order(const ByteOrder& new_byte_order, const bool /* warn */)
 {
   this->file_byte_order = new_byte_order;
   return this->file_byte_order;
 }
 
-
-
-Succeeded  
-InterfileOutputFileFormat::
-actual_write_to_file(std::string& filename, 
-                  const DiscretisedDensity<3,float>& density) const
+Succeeded
+InterfileOutputFileFormat::actual_write_to_file(std::string& filename, const DiscretisedDensity<3, float>& density) const
 {
   // TODO modify write_basic_interfile to return filename
-  
-  Succeeded success =
-    write_basic_interfile(filename, density, 
-			  this->type_of_numbers, this->scale_to_write_data,
-			  this->file_byte_order);
+
+  Succeeded success
+      = write_basic_interfile(filename, density, this->type_of_numbers, this->scale_to_write_data, this->file_byte_order);
   if (success == Succeeded::yes)
     replace_extension(filename, ".hv");
   return success;
 };
 
 END_NAMESPACE_STIR
-
-

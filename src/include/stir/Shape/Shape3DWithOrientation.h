@@ -39,7 +39,7 @@ class Succeeded;
   in the calculation as <code>matrix_multiply(direction_vectors, coord-origin)</code>,
   or best practice is to call <code>transform_to_shape_coords(coords)</code>.
 
-  \todo A previous release had Euler angle code. However, it is currently disabled as 
+  \todo A previous release had Euler angle code. However, it is currently disabled as
   there were bugs in it.
 
   \par Parameters
@@ -55,19 +55,17 @@ class Succeeded;
 
 */
 
-class Shape3DWithOrientation: public Shape3D
+class Shape3DWithOrientation : public Shape3D
 {
   typedef Shape3D base_type;
 
 public:
-
   bool operator==(const Shape3DWithOrientation& s) const;
-  virtual void scale(const CartesianCoordinate3D<float>& scale3D);
+  void scale(const CartesianCoordinate3D<float>& scale3D) override;
 
   //! get direction vectors currently in use
   /*! Index offsets will always be 1 */
-  const Array<2,float>& get_direction_vectors() const
-    { return _directions; }
+  const Array<2, float>& get_direction_vectors() const { return _directions; }
   //! set direction vectors
   /*!
     Any index offset will be accepted.
@@ -75,7 +73,7 @@ public:
     Note that scaling the direction vectors is equivalent to a call to
     scale_around_origin()
   */
-  Succeeded set_direction_vectors(const Array<2,float>&);
+  Succeeded set_direction_vectors(const Array<2, float>&);
 
 #if 0
   // TODO non-sensical after non-uniform scale
@@ -85,20 +83,18 @@ public:
 #endif
 
 protected:
-
   //! default constructor (NO initialisation of values)
   Shape3DWithOrientation();
-  
+
 #if 0
   /
   Shape3DWithOrientation(const CartesianCoordinate3D<float>& origin,
 			 const float alpha,
 			 const float beta,
 			 const float gamma);
-#endif  
-  Shape3DWithOrientation(const CartesianCoordinate3D<float>& origin,
-			 const Array<2,float>& directions = diagonal_matrix(3,1.F));
-  
+#endif
+  Shape3DWithOrientation(const CartesianCoordinate3D<float>& origin, const Array<2, float>& directions = diagonal_matrix(3, 1.F));
+
 #if 0
   void
     set_directions_from_Euler_angles(
@@ -112,15 +108,14 @@ protected:
   float get_volume_of_unit_cell() const;
 
   //! Transform a 'real-world' coordinate to the coordinate system used by the shape
-  CartesianCoordinate3D<float>
-    transform_to_shape_coords(const CartesianCoordinate3D<float>&) const;
+  CartesianCoordinate3D<float> transform_to_shape_coords(const CartesianCoordinate3D<float>&) const;
 
   //! sets defaults for parsing
   /*! sets direction vectors to the normal unit vectors. */
-  virtual void set_defaults();  
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-  virtual void set_key_values();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
+  void set_key_values() override;
 
 private:
 #if 0
@@ -130,10 +125,8 @@ private:
   float gamma_in_degrees;
 #endif
 
-  Array<2,float> _directions;
-
+  Array<2, float> _directions;
 };
-
 
 END_NAMESPACE_STIR
 

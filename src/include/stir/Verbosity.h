@@ -33,11 +33,11 @@ START_NAMESPACE_STIR
 */
 class Verbosity
 {
- public:
+public:
   static int get();
   static void set(int level);
 
- private:
+private:
   Verbosity(); // Private so that it can not be called
 
   int _verbosity_level;

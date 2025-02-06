@@ -40,15 +40,15 @@ namespace RDF_HDF5
 class GEHDF5ListmodeInputFileFormat : public InputFileFormat<ListModeData>
 {
 public:
-  virtual const std::string get_name() const override { return "GEHDF5"; }
+  const std::string get_name() const override { return "GEHDF5"; }
 
 protected:
-  virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const override;
-  virtual bool can_read(const FileSignature& signature, const std::string& filename) const override;
+  bool actual_can_read(const FileSignature& signature, std::istream& input) const override;
+  bool can_read(const FileSignature& signature, const std::string& filename) const override;
 
 public:
-  virtual unique_ptr<data_type> read_from_file(std::istream& input) const override;
-  virtual unique_ptr<data_type> read_from_file(const std::string& filename) const override;
+  unique_ptr<data_type> read_from_file(std::istream& input) const override;
+  unique_ptr<data_type> read_from_file(const std::string& filename) const override;
 };
 
 } // namespace RDF_HDF5

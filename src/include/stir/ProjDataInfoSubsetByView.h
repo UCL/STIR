@@ -54,7 +54,7 @@ public:
   bool contains_full_data() const;
 
   //! Get the view numbers of the original ProjDataInfo
-  std::vector<int> get_original_view_nums() const;
+  std::vector<int> get_original_view_nums() const override;
 
   //! Get the Bin of the original ProjDataInfo corresponding to a Bin for this subset
   Bin get_original_bin(const Bin& bin) const;

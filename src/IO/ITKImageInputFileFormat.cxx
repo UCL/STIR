@@ -48,74 +48,64 @@ START_NAMESPACE_STIR
 
 */
 
-typedef itk::Image<float, 3>                                 ITKImageSingle;
-typedef itk::VectorImage<float, 3>                           ITKImageMulti;
-typedef DiscretisedDensity<3, float>                         STIRImageSingle;
-typedef VoxelsOnCartesianGrid<float>                         STIRImageSingleConcrete;
-typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
-typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
-typedef itk::MetaDataObject< std::string >                   MetaDataStringType;
+typedef itk::Image<float, 3> ITKImageSingle;
+typedef itk::VectorImage<float, 3> ITKImageMulti;
+typedef DiscretisedDensity<3, float> STIRImageSingle;
+typedef VoxelsOnCartesianGrid<float> STIRImageSingleConcrete;
+typedef DiscretisedDensity<3, CartesianCoordinate3D<float>> STIRImageMulti;
+typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float>> STIRImageMultiConcrete;
+typedef itk::MetaDataObject<std::string> MetaDataStringType;
 
 // internal function to do the conversion. Note that it can throw an exception.
-template<typename STIRImageType>
-static
-STIRImageType *
-read_file_itk(const std::string &filename);
+template <typename STIRImageType>
+static STIRImageType* read_file_itk(const std::string& filename);
 
 template <typename STIRImageType>
-bool 
-ITKImageInputFileFormat<STIRImageType>::actual_can_read(const FileSignature& signature,
-                                         std::istream& input) const
+bool
+ITKImageInputFileFormat<STIRImageType>::actual_can_read(const FileSignature& signature, std::istream& input) const
 {
   return false;
 }
 
 template <typename STIRImageType>
 bool
-ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& signature,
-                                  std::istream& input) const
+ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& signature, std::istream& input) const
 {
   return this->actual_can_read(signature, input);
 }
 
 template <typename STIRImageType>
-bool 
-ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& /*signature*/,
-                                  const std::string& filename) const
+bool
+ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& /*signature*/, const std::string& filename) const
 {
   typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(filename);
-  try 
-    { 
-      reader->Update(); 
+  try
+    {
+      reader->Update();
       return true;
-    } 
-  catch( itk::ExceptionObject & /*err*/ ) 
-    { 
-  
+    }
+  catch (itk::ExceptionObject& /*err*/)
+    {
+
       return false;
-    } 
+    }
 }
 
 template <typename STIRImageType>
 unique_ptr<STIRImageType>
 ITKImageInputFileFormat<STIRImageType>::read_from_file(std::istream& input) const
 {
-  error("read_from_file for ITK with istream not implemented %s:%d. Sorry",
-        __FILE__, __LINE__);
-  return
-    unique_ptr<STIRImageType>();
+  error("read_from_file for ITK with istream not implemented %s:%d. Sorry", __FILE__, __LINE__);
+  return unique_ptr<STIRImageType>();
 }
 
-template<typename STIRImageType>
+template <typename STIRImageType>
 unique_ptr<STIRImageType>
-ITKImageInputFileFormat<STIRImageType>::
-read_from_file(const std::string& filename) const
+ITKImageInputFileFormat<STIRImageType>::read_from_file(const std::string& filename) const
 {
-  return
-    unique_ptr<STIRImageType>
-    (read_file_itk< STIRImageType >(filename));
+  return unique_ptr<STIRImageType>(read_file_itk<STIRImageType>(filename));
 }
 
 /* Convert ITK (LPS) coordinates into STIR physical coordinates and
@@ -125,56 +115,48 @@ read_from_file(const std::string& filename) const
    interpreted as being displacement vectors and hence the change of
    origin is ignored.
  */
-template<typename ITKPointType, typename STIRImageType>
-static inline
-CartesianCoordinate3D<float>
-ITK_coordinates_to_STIR_physical_coordinates
-(const ITKPointType &itk_coord,
- const STIRImageType &stir_image, bool is_relative_coordinate=false)
+template <typename ITKPointType, typename STIRImageType>
+static inline CartesianCoordinate3D<float>
+ITK_coordinates_to_STIR_physical_coordinates(const ITKPointType& itk_coord,
+                                             const STIRImageType& stir_image,
+                                             bool is_relative_coordinate = false)
 {
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
-  CartesianCoordinate3D<float> stir_coord
-    = stir_image.get_physical_coordinates_for_LPS_coordinates
-      (CartesianCoordinate3D<float>(static_cast<float>(itk_coord[2]),
-                                    static_cast<float>(itk_coord[1]),
-                                    static_cast<float>(itk_coord[0])));
+  CartesianCoordinate3D<float> stir_coord = stir_image.get_physical_coordinates_for_LPS_coordinates(CartesianCoordinate3D<float>(
+      static_cast<float>(itk_coord[2]), static_cast<float>(itk_coord[1]), static_cast<float>(itk_coord[0])));
 
   // The following is not required for displacement vectors, such as a displacement field, as
   // the coordinates are relative.
   if (!is_relative_coordinate)
-  {
-    CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
+    {
+      CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
 
-    // assuming we previously oriented the ITK image, min_indices is the
-    // index where ITK origin points to in physical space
-    const CartesianCoordinate3D<float> stir_origin_wrt_itk_origin
-      = stir_image.get_physical_coordinates_for_indices(stir_origin_index)
-      - stir_image.get_physical_coordinates_for_indices(stir_image.get_min_indices());
+      // assuming we previously oriented the ITK image, min_indices is the
+      // index where ITK origin points to in physical space
+      const CartesianCoordinate3D<float> stir_origin_wrt_itk_origin
+          = stir_image.get_physical_coordinates_for_indices(stir_origin_index)
+            - stir_image.get_physical_coordinates_for_indices(stir_image.get_min_indices());
 
-    stir_coord += stir_origin_wrt_itk_origin;
-  }
+      stir_coord += stir_origin_wrt_itk_origin;
+    }
 
   return stir_coord;
 }
 
 /* Convert an ITK Pixel (i.e., float) to a STIR Pixel. */
-template<typename STIRPixelType, typename ITKPixelType, typename STIRImageType>
-static inline
-STIRPixelType
-ITK_pixel_to_STIR_pixel(ITKPixelType itk_pixel,
-                        const STIRImageType &stir_image,
-                        bool)
+template <typename STIRPixelType, typename ITKPixelType, typename STIRImageType>
+static inline STIRPixelType
+ITK_pixel_to_STIR_pixel(ITKPixelType itk_pixel, const STIRImageType& stir_image, bool)
 {
   return static_cast<STIRPixelType>(itk_pixel);
 }
 
 /* Specialisation if the pixel is a vector and we want a multi-image */
-template<>
-inline
-typename STIRImageMultiConcrete::full_value_type
+template <>
+inline typename STIRImageMultiConcrete::full_value_type
 ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
-                        const STIRImageMultiConcrete &stir_image,
+                        const STIRImageMultiConcrete& stir_image,
                         bool is_displacement_field)
 {
   // ITK VariableLengthVector to ITK FixedArray
@@ -183,46 +165,37 @@ ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
   // TODO: currently this is only for deformation/displacement images
   //       However, dynamic images may be other lengths.
   typename ITKImageMulti::PointType itk_coord;
-  for (unsigned int i=0; i<3; ++i)
+  for (unsigned int i = 0; i < 3; ++i)
     itk_coord[i] = itk_pixel[i];
-  return ITK_coordinates_to_STIR_physical_coordinates
-    (itk_coord, stir_image, is_displacement_field);
+  return ITK_coordinates_to_STIR_physical_coordinates(itk_coord, stir_image, is_displacement_field);
 }
 
 /* Calculate the STIR index range from an ITK image. */
-template<typename ITKImagePtrType>
-static inline
-IndexRange<3>
+template <typename ITKImagePtrType>
+static inline IndexRange<3>
 calc_stir_index_range(const ITKImagePtrType itk_image)
 {
   // find index range in usual STIR convention
   const int z_size = itk_image->GetLargestPossibleRegion().GetSize()[2];
   const int y_size = itk_image->GetLargestPossibleRegion().GetSize()[1];
   const int x_size = itk_image->GetLargestPossibleRegion().GetSize()[0];
-  const BasicCoordinate<3, int> min_indices
-    = BasicCoordinate<3,int>(make_coordinate(0, -y_size/2, -x_size/2));
-  const BasicCoordinate<3, int> max_indices
-    = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+  const BasicCoordinate<3, int> min_indices = BasicCoordinate<3, int>(make_coordinate(0, -y_size / 2, -x_size / 2));
+  const BasicCoordinate<3, int> max_indices = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
   return IndexRange<3>(min_indices, max_indices);
 }
 
 /* Calculate the STIR origin for a given voxel_size and index_range from an ITK
    image.
  */
-template<typename ITKImagePtrType>
-static inline
-const CartesianCoordinate3D<float>
-calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
-                 IndexRange<3> index_range,
-                 const ITKImagePtrType itk_image)
+template <typename ITKImagePtrType>
+static inline const CartesianCoordinate3D<float>
+calc_stir_origin(CartesianCoordinate3D<float> voxel_size, IndexRange<3> index_range, const ITKImagePtrType itk_image)
 {
   const CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
   // dummy image that has minumum to be able to find ITK -> STIR origin vector
-  const VoxelsOnCartesianGrid<float> dummy_image
-    (index_range, stir_origin_index, voxel_size);
+  const VoxelsOnCartesianGrid<float> dummy_image(index_range, stir_origin_index, voxel_size);
 
-  return ITK_coordinates_to_STIR_physical_coordinates
-    (itk_image->GetOrigin(), dummy_image);
+  return ITK_coordinates_to_STIR_physical_coordinates(itk_image->GetOrigin(), dummy_image);
 }
 
 /* Constructs an exam info object from an ITK meta data dictionary.
@@ -237,11 +210,10 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
    \todo This will only work for DICOM meta-data. Other fileformats store meta-data
    with different names.
  */
-static
-shared_ptr<ExamInfo>
+static shared_ptr<ExamInfo>
 construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
 {
-  shared_ptr<ExamInfo> exam_info_sptr (new ExamInfo());
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo());
 
 #if 0
   //example data to read
@@ -285,9 +257,10 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
     itk::ExposeMetaData<std::string>(dictionary, "0018|1242", actual_frame_duration);
     if (!series_datetime.empty() && !acq_datetime.empty() && !actual_frame_duration.empty())
       {
-        std::vector<double > start_times(1), durations(1);
-        start_times[0] = DICOM_datetime_to_secs_since_Unix_epoch(series_datetime, false) - DICOM_datetime_to_secs_since_Unix_epoch(acq_datetime, false);
-        durations[0] = std::stod(actual_frame_duration)/1000.;
+        std::vector<double> start_times(1), durations(1);
+        start_times[0] = DICOM_datetime_to_secs_since_Unix_epoch(series_datetime, false)
+                         - DICOM_datetime_to_secs_since_Unix_epoch(acq_datetime, false);
+        durations[0] = std::stod(actual_frame_duration) / 1000.;
         exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(start_times, durations));
       }
     if (!series_datetime.empty())
@@ -309,22 +282,22 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
   itk::ExposeMetaData<std::string>(dictionary, "0018|5100", patient_position_str);
   // Now patient_positon_str is empty or the value, but is it a valid value?
   // If so, update patient_position
-  for (unsigned int position_idx = 0;
-       (position_idx < PatientPosition::unknown_position)
-         && (patient_position.get_position() == PatientPosition::unknown_position);
-       ++position_idx) {
-    PatientPosition possible_position
-      (static_cast<PatientPosition::PositionValue>(position_idx));
-    if (patient_position_str.find(possible_position.get_position_as_string())
-        != std::string::npos) {
-      patient_position = possible_position;
+  for (unsigned int position_idx = 0; (position_idx < PatientPosition::unknown_position)
+                                      && (patient_position.get_position() == PatientPosition::unknown_position);
+       ++position_idx)
+    {
+      PatientPosition possible_position(static_cast<PatientPosition::PositionValue>(position_idx));
+      if (patient_position_str.find(possible_position.get_position_as_string()) != std::string::npos)
+        {
+          patient_position = possible_position;
+        }
     }
-  }
   // warn if we got nothing
-  if (patient_position.get_position() == PatientPosition::unknown_position) {
-    warning("Unable to determine patient position. "
-            "Internally this will generally be handled by assuming HFS");
-  }
+  if (patient_position.get_position() == PatientPosition::unknown_position)
+    {
+      warning("Unable to determine patient position. "
+              "Internally this will generally be handled by assuming HFS");
+    }
   exam_info_sptr->patient_position = patient_position;
 
   return exam_info_sptr;
@@ -334,26 +307,21 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
    This method expects that itk_image is already oriented to be consistent with
    STIR x, y, z axes.
  */
-template<typename ITKImagePtrType, typename STIRImageType>
-static inline
-STIRImageType*
-construct_empty_stir_image(const ITKImagePtrType itk_image,
-                           shared_ptr<ExamInfo> exam_info_sptr)
+template <typename ITKImagePtrType, typename STIRImageType>
+static inline STIRImageType*
+construct_empty_stir_image(const ITKImagePtrType itk_image, shared_ptr<ExamInfo> exam_info_sptr)
 {
   // find voxel size
-  const CartesianCoordinate3D<float> voxel_size
-    (static_cast<float>(itk_image->GetSpacing()[2]),
-     static_cast<float>(itk_image->GetSpacing()[1]),
-     static_cast<float>(itk_image->GetSpacing()[0]));
+  const CartesianCoordinate3D<float> voxel_size(static_cast<float>(itk_image->GetSpacing()[2]),
+                                                static_cast<float>(itk_image->GetSpacing()[1]),
+                                                static_cast<float>(itk_image->GetSpacing()[0]));
 
   // find info STIR image geometrical metadata
   const IndexRange<3> index_range = calc_stir_index_range(itk_image);
-  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin
-    (voxel_size, index_range, itk_image);
+  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin(voxel_size, index_range, itk_image);
 
   // create STIR image
-  STIRImageType* image_ptr = new STIRImageType
-    (exam_info_sptr, index_range, stir_origin, voxel_size);
+  STIRImageType* image_ptr = new STIRImageType(exam_info_sptr, index_range, stir_origin, voxel_size);
   return image_ptr;
 }
 
@@ -361,225 +329,207 @@ construct_empty_stir_image(const ITKImagePtrType itk_image,
    This method expects that itk_image is already oriented to be consistent with
    STIR x, y, z axes.
 */
-template<typename ITKImageType, typename STIRImageType>
-static inline
-void copy_ITK_data_to_STIR_image(const typename ITKImageType::Pointer itk_image,
-                                 STIRImageType& stir_image,
-                                 bool is_displacement_field)
+template <typename ITKImageType, typename STIRImageType>
+static inline void
+copy_ITK_data_to_STIR_image(const typename ITKImageType::Pointer itk_image, STIRImageType& stir_image, bool is_displacement_field)
 {
   typename STIRImageType::full_iterator stir_iter = stir_image.begin_all();
   typedef itk::ImageRegionConstIterator<ITKImageType> IteratorType;
-  IteratorType it (itk_image, itk_image->GetLargestPossibleRegion());
+  IteratorType it(itk_image, itk_image->GetLargestPossibleRegion());
   for (it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter)
-  {
-    *stir_iter = ITK_pixel_to_STIR_pixel
-      <typename STIRImageType::full_value_type, typename ITKImageType::PixelType, STIRImageType>
-      (it.Get(), stir_image, is_displacement_field);
-  }
+    {
+      *stir_iter
+          = ITK_pixel_to_STIR_pixel<typename STIRImageType::full_value_type, typename ITKImageType::PixelType, STIRImageType>(
+              it.Get(), stir_image, is_displacement_field);
+    }
 }
 
-template<typename ITKImageType>
+template <typename ITKImageType>
 typename ITKImageType::Pointer
-orient_ITK_image(const typename ITKImageType::Pointer itk_image_orig,
-                 const shared_ptr<ExamInfo> exam_info_sptr)
+orient_ITK_image(const typename ITKImageType::Pointer itk_image_orig, const shared_ptr<ExamInfo> exam_info_sptr)
 {
-  typedef itk::OrientImageFilter<ITKImageType,ITKImageType> OrienterType;
+  typedef itk::OrientImageFilter<ITKImageType, ITKImageType> OrienterType;
   typename OrienterType::Pointer orienter = OrienterType::New();
   orienter->UseImageDirectionOn();
   orienter->SetInput(itk_image_orig);
 
   // We need the origin to be in the minimum x, y, z corner. This
   // depends on the patient position
-  switch (exam_info_sptr->patient_position.get_position()) {
-  case PatientPosition::unknown_position:
-    // If unknown, assume HFS
-  case PatientPosition::HFS:
-    // HFS means currently in LPI
-    // So origin is in RAS direction
-    orienter
-      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
-    break;
+  switch (exam_info_sptr->patient_position.get_position())
+    {
+    case PatientPosition::unknown_position:
+      // If unknown, assume HFS
+    case PatientPosition::HFS:
+      // HFS means currently in LPI
+      // So origin is in RAS direction
+      orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
+      break;
 
-  case PatientPosition::HFP:
-    // HFP means currently in RAI
-    // So origin is in LPS direction
-    orienter
-      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS);
-    break;
+    case PatientPosition::HFP:
+      // HFP means currently in RAI
+      // So origin is in LPS direction
+      orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS);
+      break;
 
-  case PatientPosition::FFS:
-    // FFS means currently in RPS
-    // So origin is in LAI direction
-    orienter
-      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI);
-    break;
+    case PatientPosition::FFS:
+      // FFS means currently in RPS
+      // So origin is in LAI direction
+      orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI);
+      break;
 
-  case PatientPosition::FFP:
-    // FFP means currently in LAS
-    // So origin is in RPI direction
-    orienter
-      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI);
-    break;
+    case PatientPosition::FFP:
+      // FFP means currently in LAS
+      // So origin is in RPI direction
+      orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI);
+      break;
 
-  default:
-    throw std::runtime_error("Unsupported patient position, not sure how to read.");
-  }
+    default:
+      throw std::runtime_error("Unsupported patient position, not sure how to read.");
+    }
 
   orienter->Update();
   return orienter->GetOutput();
 }
 
 /* Convert an ITK image into an internal STIR one. */
-template<typename ITKImageType, typename STIRImageType>
-static inline
-STIRImageType*
-convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image,
-                    bool is_displacement_field=false)
+template <typename ITKImageType, typename STIRImageType>
+static inline STIRImageType*
+convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image, bool is_displacement_field = false)
 {
   // Construct extra metadata
-  const shared_ptr<ExamInfo> exam_info_sptr
-    = construct_exam_info_from_metadata_dictionary(itk_image->GetMetaDataDictionary());
+  const shared_ptr<ExamInfo> exam_info_sptr = construct_exam_info_from_metadata_dictionary(itk_image->GetMetaDataDictionary());
   // Reorient the ITK image to align with STIR axes
-  typename ITKImageType::Pointer reor_itk_image
-    = orient_ITK_image<ITKImageType>(itk_image, exam_info_sptr);
+  typename ITKImageType::Pointer reor_itk_image = orient_ITK_image<ITKImageType>(itk_image, exam_info_sptr);
   // Make the STIR Image
-  STIRImageType* stir_image_ptr = construct_empty_stir_image
-    <typename ITKImageType::Pointer, STIRImageType>(reor_itk_image, exam_info_sptr);
+  STIRImageType* stir_image_ptr
+      = construct_empty_stir_image<typename ITKImageType::Pointer, STIRImageType>(reor_itk_image, exam_info_sptr);
   // Copy the ITK image data into the STIR Image
-  copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>
-    (reor_itk_image, *stir_image_ptr, is_displacement_field);
+  copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>(reor_itk_image, *stir_image_ptr, is_displacement_field);
   return stir_image_ptr;
 }
 
-//To read any file format via ITK
-template<>
-inline
-STIRImageSingle*
-read_file_itk(const std::string &filename)
+// To read any file format via ITK
+template <>
+inline STIRImageSingle*
+read_file_itk(const std::string& filename)
 {
-  typedef itk::GDCMImageIO       ImageIOType;
+  typedef itk::GDCMImageIO ImageIOType;
   ImageIOType::Pointer dicomIO = ImageIOType::New();
-    {
-      if (!dicomIO->CanReadFile(filename.c_str()))
-        {
-          info("Reading " + filename + " via ITK non-DICOM IO",2);
-          // Not a DICOM file, so we just read a single image
-          typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
-          ReaderType::Pointer reader = ReaderType::New();
+  {
+    if (!dicomIO->CanReadFile(filename.c_str()))
+      {
+        info("Reading " + filename + " via ITK non-DICOM IO", 2);
+        // Not a DICOM file, so we just read a single image
+        typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
+        ReaderType::Pointer reader = ReaderType::New();
 
-          reader->SetFileName(filename);
-          reader->Update();
-          ITKImageSingle::Pointer itk_image = reader->GetOutput();
+        reader->SetFileName(filename);
+        reader->Update();
+        ITKImageSingle::Pointer itk_image = reader->GetOutput();
 
-          return convert_ITK_to_STIR
-            <ITKImageSingle, STIRImageSingleConcrete>
-            (itk_image);
-        }
-      else
-        {
-          // It's a DICOM file (I hope).
-          info("Reading " + filename + " via ITK DICOM IO",2);
+        return convert_ITK_to_STIR<ITKImageSingle, STIRImageSingleConcrete>(itk_image);
+      }
+    else
+      {
+        // It's a DICOM file (I hope).
+        info("Reading " + filename + " via ITK DICOM IO", 2);
 
-          // For this, we need to read all slices in a series.
-          // We use code from ITK's Examples/IO/DicomSeriesReadImageWrite2.cxx
-          // to do this.
-          // However, we change it to read the series which contains the filename that was passed.
-          
-          // find all series in the directory
-          // This is by default based on unique
-          // \item[0020 0011] Series Number
-          // \item[0018 0024] Sequence Name
-          // \item[0018 0050] Slice Thickness
-          // \item[0028 0010] Rows
-          // \item[0028 0011] Columns
-          typedef itk::GDCMSeriesFileNames NamesGeneratorType;
-          typename NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
-          nameGenerator->SetUseSeriesDetails( true );
-          // Reads complete series.
-          nameGenerator->AddSeriesRestriction("0008|0022" ); // AcquisitionDate
-          //nameGenerator->AddSeriesRestriction("0008|0032" ); // AcquisitionTime
-          //nameGenerator->AddSeriesRestriction("0018|1060" ); // TriggerTime
-          //nameGenerator->AddSeriesRestriction("0018|1063" ); // FrameTime
+        // For this, we need to read all slices in a series.
+        // We use code from ITK's Examples/IO/DicomSeriesReadImageWrite2.cxx
+        // to do this.
+        // However, we change it to read the series which contains the filename that was passed.
 
-          const std::string dir_name = get_directory_name(filename);
-          nameGenerator->SetDirectory( dir_name.c_str() );
-          typedef std::vector< std::string >    SeriesIdContainer;
-          const SeriesIdContainer & seriesUIDs = nameGenerator->GetSeriesUIDs();
+        // find all series in the directory
+        // This is by default based on unique
+        // \item[0020 0011] Series Number
+        // \item[0018 0024] Sequence Name
+        // \item[0018 0050] Slice Thickness
+        // \item[0028 0010] Rows
+        // \item[0028 0011] Columns
+        typedef itk::GDCMSeriesFileNames NamesGeneratorType;
+        typename NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
+        nameGenerator->SetUseSeriesDetails(true);
+        // Reads complete series.
+        nameGenerator->AddSeriesRestriction("0008|0022"); // AcquisitionDate
+        // nameGenerator->AddSeriesRestriction("0008|0032" ); // AcquisitionTime
+        // nameGenerator->AddSeriesRestriction("0018|1060" ); // TriggerTime
+        // nameGenerator->AddSeriesRestriction("0018|1063" ); // FrameTime
 
-          // We've found all "series" (i.e. different data-sets according to above restrictions). Now see which one we should read.
-          // We do this by checking which one contains the original filename.
-          typedef std::vector< std::string >   FileNamesContainer;
-          FileNamesContainer fileNames;
-          // Loop through all "series"
-          for (SeriesIdContainer::const_iterator iter=seriesUIDs.begin(); iter!= seriesUIDs.end(); ++iter)
-            {
-              fileNames = nameGenerator->GetFileNames( iter->c_str() );
-              // check if filename is present
-              if (std::find(fileNames.begin(), fileNames.end(), filename) != fileNames.end())
-                break; // yes, get out of series-loop
-            }
-          
-          // ok. we know which filenames are in the same "series", so let's read them
-          typedef itk::ImageSeriesReader< ITKImageSingle > ReaderType;
-          ReaderType::Pointer reader = ReaderType::New();
+        const std::string dir_name = get_directory_name(filename);
+        nameGenerator->SetDirectory(dir_name.c_str());
+        typedef std::vector<std::string> SeriesIdContainer;
+        const SeriesIdContainer& seriesUIDs = nameGenerator->GetSeriesUIDs();
 
-          reader->SetImageIO( dicomIO );
-          reader->SetFileNames( fileNames );
-          reader->Update();
-          ITKImageSingle::Pointer itk_image = reader->GetOutput();
+        // We've found all "series" (i.e. different data-sets according to above restrictions). Now see which one we should read.
+        // We do this by checking which one contains the original filename.
+        typedef std::vector<std::string> FileNamesContainer;
+        FileNamesContainer fileNames;
+        // Loop through all "series"
+        for (SeriesIdContainer::const_iterator iter = seriesUIDs.begin(); iter != seriesUIDs.end(); ++iter)
+          {
+            fileNames = nameGenerator->GetFileNames(iter->c_str());
+            // check if filename is present
+            if (std::find(fileNames.begin(), fileNames.end(), filename) != fileNames.end())
+              break; // yes, get out of series-loop
+          }
 
-          // Update custom patient position tag in metadata
-          itk_image->SetMetaDataDictionary(dicomIO->GetMetaDataDictionary());
+        // ok. we know which filenames are in the same "series", so let's read them
+        typedef itk::ImageSeriesReader<ITKImageSingle> ReaderType;
+        ReaderType::Pointer reader = ReaderType::New();
 
-          // Finally, convert to STIR!
-          return convert_ITK_to_STIR
-            <ITKImageSingle, STIRImageSingleConcrete>
-            (itk_image);
-     
-        }
-    }
+        reader->SetImageIO(dicomIO);
+        reader->SetFileNames(fileNames);
+        reader->Update();
+        ITKImageSingle::Pointer itk_image = reader->GetOutput();
+
+        // Update custom patient position tag in metadata
+        itk_image->SetMetaDataDictionary(dicomIO->GetMetaDataDictionary());
+
+        // Finally, convert to STIR!
+        return convert_ITK_to_STIR<ITKImageSingle, STIRImageSingleConcrete>(itk_image);
+      }
+  }
 }
 
-//To read any file format via ITK
-template<>
-inline
-STIRImageMulti*
-read_file_itk(const std::string &filename)
+// To read any file format via ITK
+template <>
+inline STIRImageMulti*
+read_file_itk(const std::string& filename)
 {
-    {
-      // Not a DICOM file, so we just read a single image
-      typedef itk::ImageFileReader<ITKImageMulti> ReaderType;
-      ReaderType::Pointer reader = ReaderType::New();
-      reader->SetFileName(filename);
-      reader->Update();
+  {
+    // Not a DICOM file, so we just read a single image
+    typedef itk::ImageFileReader<ITKImageMulti> ReaderType;
+    ReaderType::Pointer reader = ReaderType::New();
+    reader->SetFileName(filename);
+    reader->Update();
 
-      // Only support Nifti for now
-      if (strcmp(reader->GetImageIO()->GetNameOfClass(), "NiftiImageIO") != 0) {
-          error("read_file_itk: Only Nifti images are currently support for multicomponent images %s:%d.",
-                __FILE__, __LINE__);
-          return NULL; }
+    // Only support Nifti for now
+    if (strcmp(reader->GetImageIO()->GetNameOfClass(), "NiftiImageIO") != 0)
+      {
+        error("read_file_itk: Only Nifti images are currently support for multicomponent images %s:%d.", __FILE__, __LINE__);
+        return NULL;
+      }
 
-      if (reader->GetImageIO()->GetPixelType() != 
-#if ITK_VERSION_MAJOR<5 || (ITK_VERSION_MAJOR==5 && ITK_VERSION_MINOR==0)
-          itk::ImageIOBase::VECTOR
+    if (reader->GetImageIO()->GetPixelType() !=
+#if ITK_VERSION_MAJOR < 5 || (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR == 0)
+        itk::ImageIOBase::VECTOR
 #else
-          itk::IOPixelEnum::VECTOR
+        itk::IOPixelEnum::VECTOR
 #endif
-         ) {
-          error("read_file_itk: Image type should be vector %s:%d.",
-                __FILE__, __LINE__);
-          return NULL; }
+    )
+      {
+        error("read_file_itk: Image type should be vector %s:%d.", __FILE__, __LINE__);
+        return NULL;
+      }
 
-      warning("Only displacement fields are currently supported in STIR (not deformations). "
-              "There is no way of verifying this from the nifti_image metadata, so you need to "
-              "make sure that the image you are supplying is a displacement field image.");
+    warning("Only displacement fields are currently supported in STIR (not deformations). "
+            "There is no way of verifying this from the nifti_image metadata, so you need to "
+            "make sure that the image you are supplying is a displacement field image.");
 
-      ITKImageMulti::Pointer itk_image = reader->GetOutput();
+    ITKImageMulti::Pointer itk_image = reader->GetOutput();
 
-      return convert_ITK_to_STIR<ITKImageMulti, STIRImageMultiConcrete>
-        (itk_image, true);
-
-    }
+    return convert_ITK_to_STIR<ITKImageMulti, STIRImageMultiConcrete>(itk_image, true);
+  }
 }
 
 // explicit instantiations

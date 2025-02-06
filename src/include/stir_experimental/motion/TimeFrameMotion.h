@@ -23,7 +23,7 @@
 #include "stir/ParsingObject.h"
 
 START_NAMESPACE_STIR
-/***********************************************************/     
+/***********************************************************/
 /*! \ingroup motion
   \brief A class for encoding average motion in the frames.
 
@@ -36,9 +36,9 @@ START_NAMESPACE_STIR
 
   ; see stir::TimeFrameDefinitions
   time frame_definition filename := frame_definition_filename
-  
+
   ; next parameter is optional (and not normally necessary)
-  ; it can be used if the frame definitions are relative to another scan as what 
+  ; it can be used if the frame definitions are relative to another scan as what
   ; is used to for the rigid object motion (i.e. currently the list mode data used
   ;  for the Polaris synchronisation)
   ; scan_start_time_secs_since_1970_UTC
@@ -57,7 +57,7 @@ START_NAMESPACE_STIR
 
   END :=
 \endverbatim
-*/  
+*/
 class TimeFrameMotion : public ParsingObject
 {
 public:
@@ -74,39 +74,31 @@ public:
 
   int get_frame_num_to_process() const;
   //! get transformation from (or to) reference for current frame
-  /*! This is computed using 
+  /*! This is computed using
     RigidObject3DTransformation::compute_average_motion_in_scanner_coords
     for the current frame.
   */
-  const RigidObject3DTransformation& 
-    get_current_rigid_object_transformation() const;
+  const RigidObject3DTransformation& get_current_rigid_object_transformation() const;
 
   //! Get the transformation to the reference as returned by the RigidObject3DMotion object
-  const RigidObject3DTransformation& 
-    get_rigid_object_transformation_to_reference() const
-    { return _transformation_to_reference_position; }
+  const RigidObject3DTransformation& get_rigid_object_transformation_to_reference() const
+  {
+    return _transformation_to_reference_position;
+  }
 
-  const TimeFrameDefinitions&
-    get_time_frame_defs() const;
+  const TimeFrameDefinitions& get_time_frame_defs() const;
 
-  double get_frame_start_time(unsigned frame_num) const
-  { return _frame_defs.get_start_time(frame_num) + _scan_start_time; }
+  double get_frame_start_time(unsigned frame_num) const { return _frame_defs.get_start_time(frame_num) + _scan_start_time; }
 
-  double get_frame_end_time(unsigned frame_num) const
-  { return _frame_defs.get_end_time(frame_num) + _scan_start_time; }
-  
-  const RigidObject3DMotion& get_motion() const
-  { return *_ro3d_sptr; }
+  double get_frame_end_time(unsigned frame_num) const { return _frame_defs.get_end_time(frame_num) + _scan_start_time; }
+
+  const RigidObject3DMotion& get_motion() const { return *_ro3d_sptr; }
 
 protected:
-
-
-  
   //! parsing functions
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
 private:
   std::string _frame_definition_filename;
@@ -116,13 +108,13 @@ private:
   shared_ptr<RigidObject3DMotion> _ro3d_sptr;
   shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;
   RigidObject3DTransformation _current_rigid_object_transformation;
-  
+
   RigidObject3DTransformation _transformation_to_reference_position;
 
   int _scan_start_time_secs_since_1970_UTC;
   double _scan_start_time;
 
-  int _frame_num_to_process;     
+  int _frame_num_to_process;
 };
 
 END_NAMESPACE_STIR
