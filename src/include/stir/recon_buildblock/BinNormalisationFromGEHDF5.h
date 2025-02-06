@@ -31,7 +31,6 @@
 #include "stir/data/SinglesRates.h"
 #include "stir/Scanner.h"
 #include "stir/Array.h"
-#include "stir/IO/GEHDF5Wrapper.h"
 #include <string>
 
 using std::string;
@@ -44,6 +43,8 @@ namespace GE
 {
 namespace RDF_HDF5
 {
+
+class GEHDF5Wrapper;
 
 /*!
   \ingroup recon_buildblock
@@ -135,7 +136,6 @@ private:
 
   string normalisation_GEHDF5_filename;
   shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;
-  GEHDF5Wrapper h5data;
 };
 
 } // namespace RDF_HDF5

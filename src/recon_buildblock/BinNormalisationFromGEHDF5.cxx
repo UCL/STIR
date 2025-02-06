@@ -26,6 +26,7 @@
 */
 
 #include "stir/recon_buildblock/BinNormalisationFromGEHDF5.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/shared_ptr.h"

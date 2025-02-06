@@ -21,6 +21,7 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <functional>
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
