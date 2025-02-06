@@ -143,6 +143,21 @@ LogcoshPrior<elemT>::LogcoshPrior(const bool only_2D_v, float penalisation_facto
 }
 
 template <typename elemT>
+void
+LogcoshPrior<elemT>::check(DiscretisedDensity<3, elemT> const& current_image_estimate) const
+{
+  // Do base-class check
+  base_type::check(current_image_estimate);
+  if (!is_null_ptr(this->kappa_ptr))
+    {
+      std::string explanation;
+      if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
+        error(std::string(registered_name)
+              + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
+    }
+}
+
+template <typename elemT>
 bool
 LogcoshPrior<elemT>::is_convex() const
 {
@@ -251,9 +266,6 @@ LogcoshPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_i
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
-
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -289,12 +301,12 @@ LogcoshPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_i
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
                       // 1/scalar^2 * log(cosh(x * scalar))
-                      elemT voxel_diff = current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx];
-                      elemT current
+                      double voxel_diff = current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx];
+                      double current
                           = weights[dz][dy][dx] * 1 / (this->scalar * this->scalar) * logcosh(this->scalar * voxel_diff);
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
-                      result += static_cast<double>(current);
+                      result += current;
                     }
             }
         }
@@ -323,8 +335,6 @@ LogcoshPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradie
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -349,21 +359,21 @@ LogcoshPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradie
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
 
-              elemT gradient = 0;
+              double gradient = 0;
               for (int dz = min_dz; dz <= max_dz; ++dz)
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
                       // 1/scalar * tanh(x * scalar)
-                      elemT voxel_diff = current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx];
-                      elemT current = weights[dz][dy][dx] * (1 / this->scalar) * tanh(this->scalar * voxel_diff);
+                      double voxel_diff = current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx];
+                      double current = weights[dz][dy][dx] * (1 / this->scalar) * tanh(this->scalar * voxel_diff);
 
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
 
                       gradient += current;
                     }
-              prior_gradient[z][y][x] = gradient * this->penalisation_factor;
+              prior_gradient[z][y][x] = static_cast<elemT>(gradient * this->penalisation_factor);
             }
         }
     }
@@ -408,9 +418,6 @@ LogcoshPrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int z = coords[1];
   const int y = coords[2];
@@ -479,9 +486,6 @@ LogcoshPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3, elemT>&
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
   for (int z = min_z; z <= max_z; z++)
@@ -549,9 +553,6 @@ LogcoshPrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("LogcoshPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();

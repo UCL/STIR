@@ -92,9 +92,11 @@ set(swig_stir_dependencies
   stir_coordinates.i
   stir_dataprocessors.i
   stir_exam.i
+  stir_LOR.i
   stir_normalisation.i
   stir_objectivefunctions.i
   stir_priors.i
+  stir_projdata_coords.i
   stir_projdata.i
   stir_listmode.i
   stir_projectors.i
@@ -209,7 +211,7 @@ if (BUILD_SWIG_MATLAB)
 	
   SWIG_LINK_LIBRARIES(stirMATLAB PUBLIC ${STIR_LIBRARIES}  ${Matlab_LIBRARIES})
 
-  include_directories(${Matlab_INCLUDE_DIRS})
+  target_include_directories(${SWIG_MODULE_stirMATLAB_REAL_NAME} PUBLIC ${Matlab_INCLUDE_DIRS})
   # disabled, as currently set via add_definitions in main CMakeLists.txt
   #SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
   #      PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")

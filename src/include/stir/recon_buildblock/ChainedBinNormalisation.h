@@ -4,7 +4,7 @@
   \file
   \ingroup normalisation
 
-  \brief Declaration of class ChainedBinNormalisation
+  \brief Declaration of class stir::ChainedBinNormalisation
 
   \author Kris Thielemans
 */
@@ -90,11 +90,14 @@ public:
   /*! Calls set_up for the BinNormalisation members. */
   Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
 
+  // import all apply/undo methods from base-class (we'll override some below)
+  using base_type::apply;
+  using base_type::undo;
+
   //! Normalise some data
   /*!
     This calls apply() of the 2 BinNormalisation members
   */
-
   void apply(RelatedViewgrams<float>& viewgrams) const override;
 #if 0
   virtual void apply(ProjData&) const override;
@@ -133,6 +136,12 @@ public:
   //! Returns the is_trivial() status of the second normalisation object.
   //! \warning Currently, if the object has not been set the function throws an error.
   virtual bool is_second_trivial() const;
+
+  //! returns if the object can only handle TOF data
+  /*!
+    Checks if either of the normalisation objects can only handle TOF.
+  */
+  virtual bool is_TOF_only_norm() const override;
 
   virtual shared_ptr<BinNormalisation> get_first_norm() const;
 

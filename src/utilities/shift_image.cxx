@@ -74,12 +74,12 @@ main(int argc, char** argv)
   BasicCoordinate<3, int> out_max = max;
   if (extend_borders == 1)
     {
-      out_min[1] -= abs(voxel_shift_z);
-      out_min[2] -= abs(voxel_shift_y);
-      out_min[3] -= abs(voxel_shift_x);
-      out_max[1] += abs(voxel_shift_z);
-      out_max[2] += abs(voxel_shift_y);
-      out_max[3] += abs(voxel_shift_x);
+      out_min[1] -= std::abs(voxel_shift_z);
+      out_min[2] -= std::abs(voxel_shift_y);
+      out_min[3] -= std::abs(voxel_shift_x);
+      out_max[1] += std::abs(voxel_shift_z);
+      out_max[2] += std::abs(voxel_shift_y);
+      out_max[3] += std::abs(voxel_shift_x);
     }
   const IndexRange<3> out_range(out_min, out_max);
   VoxelsOnCartesianGrid<float> out_density(out_range, origin, grid_spacing);

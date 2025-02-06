@@ -4,10 +4,10 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
-    Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_VectorWithOffset_H__
@@ -23,58 +23,11 @@
 
 */
 
-#include "stir/common.h"
-#include "boost/iterator/iterator_adaptor.hpp"
-#include "boost/iterator/reverse_iterator.hpp"
+#include "stir/shared_ptr.h"
+#include "stir/deprecated.h"
+#include <iterator>
 
 START_NAMESPACE_STIR
-
-namespace detail
-{
-/*! \ingroup Array
-  \brief templated class for the iterators used by VectorWithOffset.
-
-  There should be no need to use this class yourself. Always use
-  VectorWithOffset::iterator or VectorWithOffset::const_iterator.
-*/
-template <class elemT>
-class VectorWithOffset_iter : public boost::iterator_adaptor<VectorWithOffset_iter<elemT> // Derived
-                                                             ,
-                                                             elemT* // Base
-                                                             ,
-                                                             boost::use_default // Value
-                                                             ,
-                                                             boost::random_access_traversal_tag // CategoryOrTraversal
-                                                             >
-{
-private:
-  // abbreviation of the type of this class
-  typedef VectorWithOffset_iter<elemT> self_t;
-
-public:
-  VectorWithOffset_iter()
-      : VectorWithOffset_iter::iterator_adaptor_(0)
-  {}
-
-  //! allow assignment from ordinary pointer
-  /*! really should be used within VectorWithOffset
-    It is explicit such that you can't do this by accident.
-  */
-  explicit VectorWithOffset_iter(elemT* p)
-      : VectorWithOffset_iter::iterator_adaptor_(p)
-  {}
-
-  //! some magic trickery to be able to assign iterators to const iterators, but not to incompatible types
-  /*! See the boost documentation for more info.
-   */
-  template <class OtherelemT>
-  VectorWithOffset_iter(VectorWithOffset_iter<OtherelemT> const& other,
-                        typename boost::enable_if_convertible<OtherelemT, elemT>::type* = 0)
-      : VectorWithOffset_iter::iterator_adaptor_(other.base())
-  {}
-};
-
-} // end of namespace detail
 
 /*!
   \ingroup Array
@@ -112,19 +65,16 @@ class VectorWithOffset
 {
 public:
   //! \name typedefs for iterator support
-  /*! Most of these should really not be needed because we use boost::iterator_adaptor now.
-      However, some are used directly in STIR code. (Maybe they shouldn't....)
-  */
   //@{
   typedef T value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
   typedef ptrdiff_t difference_type;
-  typedef detail::VectorWithOffset_iter<T> iterator;
-  typedef detail::VectorWithOffset_iter<T const> const_iterator;
+  typedef T* iterator;
+  typedef T const* const_iterator;
 
-  typedef boost::reverse_iterator<iterator> reverse_iterator;
-  typedef boost::reverse_iterator<const_iterator> const_reverse_iterator;
+  typedef std::reverse_iterator<iterator> reverse_iterator;
+  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   //@}
   typedef size_t size_type;
 
@@ -138,17 +88,72 @@ public:
   //! Construct a VectorWithOffset with offset \c min_index (initialised with \c  T())
   inline VectorWithOffset(const int min_index, const int max_index);
 
-  //! Construct a VectorWithOffset of given length using existing data (no initialisation)
-  inline explicit VectorWithOffset(const int hsz, T* const data_ptr, T* const end_of_data_ptr);
+#if STIR_VERSION < 070000
+  //! Construct a VectorWithOffset of given length pointing to existing data
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
 
-  //! Construct a VectorWithOffset with offset \c min_index using existing data (no initialisation)
-  inline VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr);
+    \deprecated
+  */
+  STIR_DEPRECATED VectorWithOffset(const int hsz, T* const data_ptr, T* const end_of_data_ptr);
+
+  //! Construct a VectorWithOffset with offset \c min_index pointing to existing data
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
+
+    \deprecated
+  */
+  STIR_DEPRECATED inline VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr);
+#endif
+
+  //! Construct a VectorWithOffset of given length from a bare pointer (copying data)
+  VectorWithOffset(const int hsz, const T* const data_ptr);
+
+  //! Construct a VectorWithOffset with offset \c min_index from a bare pointer (copying data)
+  inline VectorWithOffset(const int min_index, const int max_index, const T* const data_ptr);
+
+  //! Construct a VectorWithOffset sharing existing data
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
+  */
+  inline VectorWithOffset(const int min_index, const int max_index, shared_ptr<T[]> data_sptr);
+
+  //! Construct a VectorWithOffset sharing existing data
+  /*!
+    \warning This refers to the original memory range, so any modifications to this object will modify
+    the original data as well.
+  */
+  inline VectorWithOffset(const int sz, shared_ptr<T[]> data_sptr)
+      : VectorWithOffset(0, sz - 1, data_sptr)
+  {}
 
   //! copy constructor
   inline VectorWithOffset(const VectorWithOffset& il);
 
   //! Destructor
   inline virtual ~VectorWithOffset();
+
+  //! Swap content/members of 2 objects
+  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
+  friend inline void swap(VectorWithOffset& first, VectorWithOffset& second) // nothrow
+  {
+    using std::swap;
+    //  swap the members of two objects
+    swap(first.num, second.num);
+    swap(first.length, second.length);
+    swap(first.start, second.start);
+    swap(first.begin_allocated_memory, second.begin_allocated_memory);
+    swap(first.end_allocated_memory, second.end_allocated_memory);
+    swap(first.pointer_access, second.pointer_access);
+    swap(first.allocated_memory_sptr, second.allocated_memory_sptr);
+  }
+
+  //! move constructor
+  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
+  VectorWithOffset(VectorWithOffset&& other) noexcept;
 
   //! Free all memory and make object as if default-constructed
   /*! This is not the same as resize(0), as the latter does not
@@ -157,6 +162,7 @@ public:
   inline void recycle();
 
   //! assignment operator with another vector
+  /*! implementation avoids reallocating if sufficient memory already exists. */
   inline VectorWithOffset& operator=(const VectorWithOffset& il);
 
   //! \name index range operations
@@ -196,7 +202,7 @@ public:
   //! change the range of the vector, new elements are set to \c T()
   /*! New memory is allocated if the range grows outside the range specified by
       get_capacity_min_index() till get_capacity_max_index(). Data is then copied
-      and old memory deallocated (unless owns_memory_for_data() is false).
+      and old memory deallocated (unless it is shared).
 
       \todo in principle reallocation could be avoided when the new range would fit in the
       old one by shifting.
@@ -361,10 +367,15 @@ public:
 
 protected:
   //! pointer to (*this)[0] (taking get_min_index() into account that is).
-  T* num;
+  T* num; // TODO make private
 
   //! Called internally to see if all variables are consistent
   inline void check_state() const;
+  //! change vector with new index range and point to \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline void init(const int min_index, const int max_index, T* const data_ptr, bool copy_data);
 
 private:
   //! length of vector
@@ -375,6 +386,9 @@ private:
   T* begin_allocated_memory;
   T* end_allocated_memory;
 
+  //! shared_ptr to memory
+  shared_ptr<T[]> allocated_memory_sptr;
+
   //! Default member settings for all constructors
   inline void init();
 
@@ -384,7 +398,6 @@ private:
   //! boolean to test if get_data_ptr is called
   // This variable is declared mutable such that get_const_data_ptr() can change it.
   mutable bool pointer_access;
-  bool _owns_memory_for_data;
 };
 
 END_NAMESPACE_STIR

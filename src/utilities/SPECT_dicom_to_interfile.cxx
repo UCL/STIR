@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2018, 2023, University College London
+  Copyright (C) 2018, 2023-2024, University College London
   Copyright (C) 2019-2023, National Physical Laboratory
   This file is part of STIR.
 
@@ -60,8 +60,7 @@ public:
   SPECTDICOMData(const std::string& DICOM_filename) { dicom_filename = DICOM_filename; };
   stir::Succeeded get_interfile_header(std::string& output_header, const std::string& data_filename, const int dataset_num) const;
   stir::Succeeded get_proj_data(const std::string& output_file) const;
-  stir::Succeeded open_dicom_file(bool is_planar);
-  bool is_planar;
+  stir::Succeeded open_dicom_file();
   int num_energy_windows = 1;
   int num_frames = 0;
   int num_of_projections = 0;
@@ -129,6 +128,18 @@ GetDICOMTagInfo(const gdcm::File& file, const gdcm::Tag tag, std::string& dst, c
             {
               const gdcm::DataElement& de = file.GetDataSet().GetDataElement(t);
               const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+              if (!sqi)
+                {
+                  // try next sequence
+                  continue;
+                }
+              const auto sqi_length = sqi->GetNumberOfItems();
+              if (static_cast<unsigned>(sequence_idx) > sqi_length)
+                {
+                  // stir::warning("sequence_id larger than length");
+                  // try next sequence
+                  continue;
+                }
               const gdcm::Item& item = sqi->GetItem(sequence_idx);
 
               element = item.GetDataElement(tag);
@@ -263,7 +274,7 @@ GetRadionuclideInfo(const gdcm::File& file, const RadionuclideInfo request, std:
 }
 
 stir::Succeeded
-SPECTDICOMData::open_dicom_file(bool is_planar)
+SPECTDICOMData::open_dicom_file()
 {
 
   stir::info(boost::format("SPECTDICOMData: opening file %1%") % dicom_filename);
@@ -317,73 +328,29 @@ SPECTDICOMData::open_dicom_file(bool is_planar)
   }
 
   this->num_of_projections = 1;
-  if (!is_planar)
+  this->calibration_factor = -1;
+  if (GetRadionuclideInfo(file, RadionuclideInfo::CodeMeaning, isotope_name) == stir::Succeeded::yes)
     {
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0053), no_of_proj_as_str) == stir::Succeeded::yes)
-        {
-          num_of_projections = std::stoi(no_of_proj_as_str);
-          std::cout << "Number of projections: " << num_of_projections << std::endl;
-        }
+      std::cout << "Isotope name: " << isotope_name << std::endl;
+    }
 
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1140), direction_of_rotation) == stir::Succeeded::yes)
-        {
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1242), actual_frame_duration_as_string) == stir::Succeeded::yes)
+    {
+      actual_frame_duration = std::stoi(actual_frame_duration_as_string);
+    }
 
-          if (direction_of_rotation == "CC")
-            direction_of_rotation = "CCW";
-
-          std::cout << "Direction of rotation: " << direction_of_rotation << std::endl;
-        }
-
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0200), start_angle_as_string) == stir::Succeeded::yes)
-        {
-          start_angle = std::stof(start_angle_as_string);
-          std::cout << "Starting angle: " << std::fixed << std::setprecision(6) << start_angle << std::endl;
-        }
-
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x1322), calib_factor_as_string) == stir::Succeeded::yes)
-        {
-          calibration_factor = std::stof(calib_factor_as_string);
-          std::cout << "calibration factor: " << std::fixed << std::setprecision(6) << calibration_factor << std::endl;
-        }
-      else
-        calibration_factor = -1;
-
-      if (GetRadionuclideInfo(file, RadionuclideInfo::CodeMeaning, isotope_name) == stir::Succeeded::yes)
-        {
-          std::cout << "Isotope name: " << isotope_name << std::endl;
-        }
-
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1144), angular_step_as_string) == stir::Succeeded::yes)
-        {
-          angular_step = std::stof(angular_step_as_string);
-          std::cout << "Angular step: " << std::fixed << std::setprecision(6) << angular_step << std::endl;
-        }
-
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1143), extent_of_rotation_as_string) == stir::Succeeded::yes)
-        {
-          extent_of_rotation = std::stoi(extent_of_rotation_as_string);
-          std::cout << "Rotation extent: " << extent_of_rotation << std::endl;
-        }
-
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1142), radius_as_string) == stir::Succeeded::yes)
-        {
-          rotation_radius = (radius_as_string);
-          char slash = '\\';
-          char comma = ',';
-          std::cout << "Radius: " << radius_as_string << " " << slash << std::endl;
-          std::replace(rotation_radius.begin(), rotation_radius.end(), slash, comma);
-        }
-
-      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1242), actual_frame_duration_as_string) == stir::Succeeded::yes)
-        {
-          actual_frame_duration = std::stoi(actual_frame_duration_as_string);
-        }
-
-      {
-        std::string str;
-        if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0011), str) == stir::Succeeded::yes)
-          num_energy_windows = std::stoi(str);
-      }
+  {
+    this->num_energy_windows = 0;
+    std::string str;
+    if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0011), str) == stir::Succeeded::yes)
+      this->num_energy_windows = std::stoi(str);
+  }
+  if (this->num_energy_windows == 0)
+    {
+      std::cout << "No energy window information found\n";
+    }
+  else
+    {
       energy_window_name.resize(num_energy_windows);
       lower_en_window_thres.resize(num_energy_windows);
       upper_en_window_thres.resize(num_energy_windows);
@@ -410,6 +377,58 @@ SPECTDICOMData::open_dicom_file(bool is_planar)
                         << std::endl;
             }
         }
+    }
+
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0053), no_of_proj_as_str) == stir::Succeeded::yes)
+    {
+      num_of_projections = std::stoi(no_of_proj_as_str);
+      std::cout << "Number of projections: " << num_of_projections << std::endl;
+    }
+
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1140), direction_of_rotation) == stir::Succeeded::yes)
+    {
+      if (direction_of_rotation == "CC")
+        direction_of_rotation = "CCW";
+
+      std::cout << "Direction of rotation: " << direction_of_rotation << std::endl;
+    }
+
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0200), start_angle_as_string) == stir::Succeeded::yes)
+    {
+      start_angle = std::stof(start_angle_as_string);
+      std::cout << "Starting angle: " << std::fixed << std::setprecision(6) << start_angle << std::endl;
+    }
+
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x1322), calib_factor_as_string) == stir::Succeeded::yes)
+    {
+      calibration_factor = std::stof(calib_factor_as_string);
+      std::cout << "calibration factor: " << std::fixed << std::setprecision(6) << calibration_factor << std::endl;
+    }
+
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1144), angular_step_as_string) == stir::Succeeded::yes)
+    {
+      angular_step = std::stof(angular_step_as_string);
+      std::cout << "Angular step: " << std::fixed << std::setprecision(6) << angular_step << std::endl;
+    }
+
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1143), extent_of_rotation_as_string) == stir::Succeeded::yes)
+    {
+      extent_of_rotation = std::stoi(extent_of_rotation_as_string);
+      std::cout << "Rotation extent: " << extent_of_rotation << std::endl;
+    }
+  else
+    {
+      extent_of_rotation = 360;
+      stir::warning("Rotation was not present in DICOM file. Setting it to 360");
+    }
+
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1142), radius_as_string) == stir::Succeeded::yes)
+    {
+      rotation_radius = (radius_as_string);
+      char slash = '\\';
+      char comma = ',';
+      std::cout << "Radius: " << radius_as_string << " " << slash << std::endl;
+      std::replace(rotation_radius.begin(), rotation_radius.end(), slash, comma);
     }
 
   num_dimensions = 2;
@@ -473,6 +492,7 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
   ss << std::endl;
 
   ss << "!GENERAL IMAGE DATA :=" << std::endl;
+  // We will write planar data as SPECT (i.e. "tomographic") anyway
   ss << "!type of data := Tomographic" << std::endl;
   ss << "imagedata byte order := LITTLEENDIAN" << std::endl;
   ss << "!number format := float" << std::endl;
@@ -502,28 +522,23 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
   ss << std::endl;
 
   ss << "!SPECT STUDY (acquired data) :=" << std::endl;
-  ss << "!direction of rotation := " << this->direction_of_rotation << std::endl;
+  if (!this->direction_of_rotation.empty())
+    ss << "!direction of rotation := " << this->direction_of_rotation << std::endl;
   ss << "start angle := " << this->start_angle << std::endl;
 
-  if (is_planar)
-    {
-      ss << "orbit := circular" << std::endl;
-      ss << "radius := " << 0 << std::endl;
-    }
-  else
-    {
-      if (this->rotation_radius.find(",") != std::string::npos)
-        {
-          ss << "orbit := non-circular" << std::endl;
-          ss << "radii := {" << this->rotation_radius << "}" << std::endl;
-          std::cout << "orbit := non-circular" << std::endl;
-        }
-      else
-        {
-          ss << "orbit := circular" << std::endl;
-          ss << "radius := " << this->rotation_radius << "" << std::endl;
-        }
-    }
+  {
+    if (this->rotation_radius.find(",") != std::string::npos)
+      {
+        ss << "orbit := non-circular" << std::endl;
+        ss << "radii := {" << this->rotation_radius << "}" << std::endl;
+        std::cout << "orbit := non-circular" << std::endl;
+      }
+    else
+      {
+        ss << "orbit := circular" << std::endl;
+        ss << "radius := " << this->rotation_radius << "" << std::endl;
+      }
+  }
   ss << std::endl;
 
   ss << "!END OF INTERFILE :=";
@@ -558,7 +573,11 @@ SPECTDICOMData::get_proj_data(const std::string& output_file) const
 
   const gdcm::DataElement& de = file.GetDataSet().GetDataElement(gdcm::Tag(0x7fe0, 0x0010));
   const gdcm::ByteValue* bv = de.GetByteValue();
-
+  if (!bv)
+    {
+      stir::warning("GDCM GetByteValue failed on x7fe0, 0x0010");
+      return stir::Succeeded::no;
+    }
   /*
   std::string tmpFile = "tmp.s";
   std::ofstream outfile(tmpFile.c_str(), std::ios::out | std::ios::binary);
@@ -614,20 +633,19 @@ int
 main(int argc, char* argv[])
 {
 
-  if (argc != 4)
+  if (argc != 3 && argc != 4)
     {
-      std::cerr << "Usage: " << argv[0] << " <output_interfile_prefix> sinogram(dcm)> is_planar?\n";
+      std::cerr << "Usage: " << argv[0] << " <output_interfile_prefix> sinogram(dcm)> [is_planar?]\n"
+                << "Note: the is_planar value is ignored. All data will be written as SPECT.\n";
       exit(EXIT_FAILURE);
     }
 
   SPECTDICOMData spect(argv[2]);
   const std::string output_prefix(argv[1]);
 
-  spect.is_planar = atoi(argv[3]);
-
   try
     {
-      if (spect.open_dicom_file(spect.is_planar) == stir::Succeeded::no)
+      if (spect.open_dicom_file() == stir::Succeeded::no)
         {
           std::cerr << "Failed to read!" << std::endl;
           return EXIT_FAILURE;

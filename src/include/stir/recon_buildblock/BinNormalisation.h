@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2021, University College London
+    Copyright (C) 2014, 2021, 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -64,6 +64,14 @@ public:
       return false. It is up to the derived class to change this.
   */
   virtual inline bool is_trivial() const { return false; }
+
+  //! returns if the object can only handle TOF data
+  /*!
+    In PET, many types of normalisation classes can handle both time-of-flight (TOF)
+    and non-TOF data. However, some classes cannot (e.g. BinNormalisationFromProjData
+    if the "projection data" is TOF. The Poisson objective functions can adapt accordingly.
+  */
+  virtual inline bool is_TOF_only_norm() const { return false; }
 
   //! initialises the object and checks if it can handle such projection data
   /*! Default version sets _already_set_up and stores the shared pointers. */

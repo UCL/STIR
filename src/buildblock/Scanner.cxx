@@ -42,6 +42,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <boost/format.hpp>
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -173,7 +174,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.75F,
                  3.12932F,
-                 static_cast<float>(15. * _PI / 180),
+                 static_cast<float>(-15. * _PI / 180),
                  1,
                  4,
                  8,
@@ -200,7 +201,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.75F,
                  3.375F,
-                 static_cast<float>(15. * _PI / 180),
+                 static_cast<float>(-15. * _PI / 180),
                  1,
                  4,
                  8,
@@ -227,7 +228,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.75F,
                  3.375F,
-                 static_cast<float>(15. * _PI / 180),
+                 static_cast<float>(-15. * _PI / 180),
                  3,
                  4,
                  8,
@@ -254,7 +255,7 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  6.25F,
                  1.650F,
-                 static_cast<float>(13. * _PI / 180),
+                 static_cast<float>(-13. * _PI / 180),
                  1,
                  8,
                  8,
@@ -863,9 +864,10 @@ Scanner::Scanner(Type scanner_type)
                  1,
                  0.0944F, // energy resolution from Hsu et al. 2017
                  511.F,
-                 (short int)(0),
-                 (float)(0), // TODO
-                 (float)(0));
+                 (short int)(2 * 188 + 1), // from RDF file
+                 (float)(13),              // from RDF file
+                 (float)(375.4)            // Hsu et al.
+      );
       break;
 
     case DiscoveryMI4ring: // This is the 4-ring DMI
@@ -894,9 +896,10 @@ Scanner::Scanner(Type scanner_type)
                  1,
                  0.0944F, // energy resolution from Hsu et al. 2017
                  511.F,
-                 (short int)(0),
-                 (float)(0), // TODO
-                 (float)(0));
+                 (short int)(2 * 188 + 1), // from RDF file
+                 (float)(13),              // from RDF file
+                 (float)(375.4)            // Hsu et al.
+      );
       break;
 
     case DiscoveryMI5ring: // This is the 5-ring DMI
@@ -925,9 +928,42 @@ Scanner::Scanner(Type scanner_type)
                  1,
                  0.0944F, // energy resolution from Hsu et al. 2017
                  511.F,
-                 (short int)(0),
-                 (float)(0), // TODO
-                 (float)(0));
+                 (short int)(2 * 188 + 1), // from RDF file
+                 (float)(13),              // from RDF file
+                 (float)(375.4)            // Hsu et al.
+      );
+      break;
+
+    case DiscoveryMI6ring: // This is the 6-ring DMI
+      // as above, but one extra block
+      // Hsu et al. 2017 JNM
+      // crystal size 3.95 x 5.3 x 25
+      set_params(DiscoveryMI6ring,
+                 string_list("GE Discovery MI 6 rings",
+                             "Discovery MI6",
+                             "Discovery MI"), // needs to include last value as used by GE in RDF files
+                 54,
+                 415,
+                 401, // TODO should compute num_arccorrected_bins from effective_FOV/default_bin_size
+                 2 * 272,
+                 380.5F - 9.4F, // TODO inner_ring_radius and DOI, currently set such that effective ring-radius is correct
+                 9.4F,          // TODO DOI
+                 5.52296F,      // ring-spacing
+                 2.206F,        // TODO currently using the central bin size default bin size. GE might be using something else
+                 static_cast<float>(-4.399 * _PI / 180), // TODO check sign
+                 6,
+                 4,
+                 9,
+                 4,
+                 1,
+                 1,
+                 1,
+                 0.0944F, // energy resolution from Hsu et al. 2017
+                 511.F,
+                 (short int)(2 * 188 + 1), // from RDF file
+                 (float)(13),              // from RDF file
+                 (float)(375.4)            // Hsu et al.
+      );
       break;
     case HZLR:
 
@@ -1084,7 +1120,7 @@ Scanner::Scanner(Type scanner_type)
                  150,   // max_num_non_arccorrected_bins_v,
                  150,   // default_num_arccorrected_bins_v,
                  180,   // num_detectors_per_ring_v
-                 64.05, //  inner_ring_radius_v
+                 64.05, // inner_ring_radius_v
                  5,     // average_depth_of_interaction_v
                  2.2,   // ring_spacing_v
                  1.1,   // bin_size_v
@@ -1098,15 +1134,15 @@ Scanner::Scanner(Type scanner_type)
                  1,     // num_detector_layers_v
                  -1,    // energy_resolution_v
                  -1,    // reference_energy_v
-                 (short int)1,
-                 0.F,
-                 0.F,  // non-TOF
-                 "",   // scanner_geometry_v
-                 2.2,  // axial_crystal_spacing_v
-                 2.2,  // transaxial_crystal_spacing_v
-                 18.1, // axial_block_spacing_v
-                 33.6, // transaxial_block_spacing_v
-                 ""    // crystal_map_file_name_v
+                 (short int)1, // max_num_of_timing_poss_v,
+                 0.F,   // size_timing_pos_v,
+                 0.F,   // timing_resolution_v,
+                 "",    // scanner_geometry_v
+                 2.2,   // axial_crystal_spacing_v
+                 2.2,   // transaxial_crystal_spacing_v
+                 18.1,  // axial_block_spacing_v
+                 33.6,  // transaxial_block_spacing_v
+                 ""     // crystal_map_file_name_v
       );
       break;
 
@@ -1809,6 +1845,23 @@ Scanner::check_consistency() const
 
   if (get_scanner_geometry() == "BlocksOnCylindrical")
     { //! Check consistency of axial and transaxial spacing for block geometry
+      if (get_num_axial_buckets() != 1)
+        {
+          warning(boost::format("BlocksOnCylindrical num_axial_buckets (%d) is greater than 1. This is not supported yet. "
+                                "Consider multiplying the number of axial_blocks_per_bucket by %d.")
+                  % get_num_axial_buckets() % get_num_axial_buckets());
+          return Succeeded::no;
+        }
+      { // Assert that each block contains an equal number of axial crystals
+        if (get_num_rings() % get_num_axial_crystals_per_bucket() != 0)
+          {
+            warning(boost::format("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the "
+                                  "get_num_axial_crystals_per_bucket "
+                                  "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)")
+                    % get_num_rings() % get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_block()
+                    % get_num_axial_blocks_per_bucket());
+          }
+      }
       if (get_axial_crystal_spacing() * get_num_axial_crystals_per_block() > get_axial_block_spacing())
         {
           warning(
@@ -1844,21 +1897,21 @@ Scanner::check_consistency() const
                   get_inner_ring_radius());
           return Succeeded::no;
         }
-      else if (get_scanner_geometry() == "Generic")
-        { //! Check if the crystal map is correct and given
-          if (get_crystal_map_file_name() == "")
+    }
+  else if (get_scanner_geometry() == "Generic")
+    { //! Check if the crystal map is correct and given
+      if (get_crystal_map_file_name().empty())
+        {
+          warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
+          return Succeeded::no;
+        }
+      else
+        {
+          std::ifstream crystal_map(get_crystal_map_file_name());
+          if (!crystal_map)
             {
-              warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
+              warning("No correct crystal map provided. Please check the file name.");
               return Succeeded::no;
-            }
-          else
-            {
-              std::ifstream crystal_map(get_crystal_map_file_name());
-              if (!crystal_map)
-                {
-                  warning("No correct crystal map provided. Please check the file name.");
-                  return Succeeded::no;
-                }
             }
         }
     }
@@ -2211,6 +2264,7 @@ Scanner::get_scanner_from_name(const string& name)
       type = static_cast<Type>(int_type);
     }
   // it's not in the list
+  warning(std::string("Scanner::get_scanner_from_name: scanner'") + name + "' not found");
   return new Scanner(Unknown_scanner);
 }
 

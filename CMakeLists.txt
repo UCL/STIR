@@ -33,7 +33,7 @@ include(src/cmake/SetC++Version.cmake)
 
 # minimum C++ version required (you can still ask for a more recent one
 # by setting CMAKE_CXX_STANDARD)
-UseCXX(14)
+UseCXX(17)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -54,9 +54,9 @@ endif()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
-set(VERSION_MINOR   0)
+set(VERSION_MINOR   2)
 set(VERSION_PATCH   0)
-set(VERSION   060000) # only used in STIRConfig.h.in and swig/CMakeLists.txt
+set(VERSION   060200) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -118,12 +118,12 @@ if(NOT DISABLE_LLN_MATRIX)
 endif()
 
 if(NOT DISABLE_CERN_ROOT)
-  find_package(CERN_ROOT)
+  find_package(CERN_ROOT 6.28.00) # required for C++17
   if (CERN_ROOT_FOUND)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.23.99)
-        message(STATUS "ROOT Version is >= 6.24. Setting the minimum CXX version to 14.")
-        UseCXX(14)
+    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
+        message(STATUS "ROOT Version is >= 6.30. Setting the minimum CXX version to 20.")
+        UseCXX(20)
     endif()
   endif()
 endif()
@@ -184,6 +184,38 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
   message(STATUS "NiftyPET projector support enabled.")
 else()
   message(STATUS "NiftyPET projector support disabled.")
+endif()
+
+if(NOT DISABLE_STIR_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if (CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+    find_package(CUDAToolkit QUIET)
+    if (NOT CUDAToolkit_FOUND)
+      message(WARNING "CUDAToolkit not detected. Setting DISABLE_STIR_CUDA to ON.")
+      set(DISABLE_STIR_CUDA ON)
+      set(STIR_WITH_CUDA OFF)
+    else()
+      if("${CMAKE_VERSION}" VERSION_LESS "3.23")
+        message(FATAL_ERROR "CMake 3.23 or newer is required to use CMAKE_CUDA_ARCHITECTURES set to 'all'. Upgrade your CMake or set DISABLE_STIR_CUDA to ON.")
+      else()
+        set(CMAKE_CUDA_ARCHITECTURES "all")
+      endif()
+      message(STATUS "STIR CUDA support enabled. Using CUDA version ${CUDAToolkit_VERSION}.")
+      set(STIR_WITH_CUDA ON)
+    endif()
+    # check if run-time is available for ctests
+    find_program(NVIDIA_SMI nvidia-smi)
+    if (NOT NVIDIA_SMI)
+      message(WARNING "nvidia-smi not found. Disabling the ctests using CUDA")
+      set(SKIP_CUDA_TESTS ON)
+    endif()
+  else()
+    message(WARNING "No CUDA compiler found. Setting DISABLE_STIR_CUDA to ON.")
+    set(DISABLE_STIR_CUDA ON)
+    set(STIR_WITH_CUDA OFF)
+  endif()
 endif()
 
 # Parallelproj

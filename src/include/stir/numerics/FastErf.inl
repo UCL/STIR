@@ -18,7 +18,7 @@
 
 START_NAMESPACE_STIR
 
-inline void
+void
 FastErf::set_up()
 {
   this->_sampling_period = (2 * this->_maximum_sample_value) / this->get_num_samples();
@@ -36,7 +36,7 @@ FastErf::set_up()
   //  this->_is_setup = true;
 }
 
-inline double
+double
 FastErf::get_erf_BSplines_interpolation(double xp) const
 {
 #if 0
@@ -47,7 +47,7 @@ FastErf::get_erf_BSplines_interpolation(double xp) const
   return this->_spline.BSplines((xp + this->_maximum_sample_value) / this->_sampling_period);
 }
 
-inline double
+double
 FastErf::get_erf_linear_interpolation(double xp) const
 {
 #if 0
@@ -65,7 +65,7 @@ FastErf::get_erf_linear_interpolation(double xp) const
   return erf_values_vec[lower] + (xp_in_index - lower) * (erf_values_vec[lower + 1] - erf_values_vec[lower]);
 }
 
-inline double
+double
 FastErf::get_erf_nearest_neighbour_interpolation(double xp) const
 {
 #if 0
@@ -77,19 +77,19 @@ FastErf::get_erf_nearest_neighbour_interpolation(double xp) const
   return erf_values_vec[static_cast<int>(std::round((xp + this->_maximum_sample_value) / this->_sampling_period))];
 }
 
-inline void
+void
 FastErf::set_num_samples(const int num_samples)
 {
   this->_num_samples = num_samples;
 }
 
-inline int
+int
 FastErf::get_num_samples() const
 {
   return this->_num_samples;
 }
 
-int
+double
 FastErf::get_maximum_sample_value() const
 {
   return this->_maximum_sample_value;

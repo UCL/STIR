@@ -118,6 +118,13 @@ QuadraticPrior<elemT>::check(DiscretisedDensity<3, elemT> const& current_image_e
 {
   // Do base-class check
   base_type::check(current_image_estimate);
+  if (!is_null_ptr(this->kappa_ptr))
+    {
+      std::string explanation;
+      if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
+        error(std::string(registered_name)
+              + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
+    }
 }
 
 template <typename elemT>
@@ -241,9 +248,6 @@ QuadraticPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
-
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -278,14 +282,14 @@ QuadraticPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
-                      elemT current = weights[dz][dy][dx]
-                                      * square(current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx])
-                                      / 4;
+                      double current = weights[dz][dy][dx]
+                                       * square(current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx])
+                                       / 4;
 
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
 
-                      result += static_cast<double>(current);
+                      result += current;
                     }
             }
         }
@@ -316,8 +320,6 @@ QuadraticPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_grad
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -348,65 +350,20 @@ QuadraticPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_grad
                  (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
                  (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
               */
-#if 1
-              elemT gradient = 0;
+              double gradient = 0.;
               for (int dz = min_dz; dz <= max_dz; ++dz)
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
                     {
-                      elemT current = weights[dz][dy][dx]
-                                      * (current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx]);
+                      double current = weights[dz][dy][dx]
+                                       * (current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx]);
 
                       if (do_kappa)
                         current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
 
                       gradient += current;
                     }
-#else
-              // attempt to speed up by precomputing the sum of weights.
-              // The current code gives identical results but is actually slower
-              // than the above, at least when kappas are present.
-
-              // precompute sum of weights
-              // TODO without kappas, this is just weights.sum() most of the time,
-              // but not near edges
-              float sum_of_weights = 0;
-              {
-                if (do_kappa)
-                  {
-                    for (int dz = min_dz; dz <= max_dz; ++dz)
-                      for (int dy = min_dy; dy <= max_dy; ++dy)
-                        for (int dx = min_dx; dx <= max_dx; ++dx)
-                          sum_of_weights += weights[dz][dy][dx] * (*kappa_ptr)[z + dz][y + dy][x + dx];
-                  }
-                else
-                  {
-                    for (int dz = min_dz; dz <= max_dz; ++dz)
-                      for (int dy = min_dy; dy <= max_dy; ++dy)
-                        for (int dx = min_dx; dx <= max_dx; ++dx)
-                          sum_of_weights += weights[dz][dy][dx];
-                  }
-              }
-              // now compute contribution of central term
-              elemT gradient = sum_of_weights * current_image_estimate[z][y][x];
-
-              // subtract the rest
-              for (int dz = min_dz; dz <= max_dz; ++dz)
-                for (int dy = min_dy; dy <= max_dy; ++dy)
-                  for (int dx = min_dx; dx <= max_dx; ++dx)
-                    {
-                      elemT current = weights[dz][dy][dx] * current_image_estimate[z + dz][y + dy][x + dx];
-
-                      if (do_kappa)
-                        current *= (*kappa_ptr)[z + dz][y + dy][x + dx];
-
-                      gradient -= current;
-                    }
-              // multiply with central kappa
-              if (do_kappa)
-                gradient *= (*kappa_ptr)[z][y][x];
-#endif
-              prior_gradient[z][y][x] = gradient * this->penalisation_factor;
+              prior_gradient[z][y][x] = static_cast<elemT>(gradient * this->penalisation_factor);
             }
         }
     }
@@ -451,9 +408,6 @@ QuadraticPrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessi
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int z = coords[1];
   const int y = coords[2];
@@ -523,9 +477,6 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3, elemT
     }
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
-
-  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
@@ -604,9 +555,6 @@ QuadraticPrior<elemT>::add_multiplication_with_approximate_Hessian(DiscretisedDe
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();
   for (int z = min_z; z <= max_z; z++)
@@ -674,9 +622,6 @@ QuadraticPrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elem
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
-    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
-
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();
   for (int z = min_z; z <= max_z; z++)
@@ -700,7 +645,7 @@ QuadraticPrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elem
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
 
-              /// At this point, we have j = [z][y][x]
+              // At this point, we have j = [z][y][x]
               // The next for loops will have k = [z+dz][y+dy][x+dx]
               // The following computes
               //(H_{wf} y)_j =

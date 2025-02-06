@@ -133,8 +133,19 @@ TOF_transpose(std::vector<float>& mem_for_PP_back,
 void
 BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density) const
 {
+  std::vector<float> image_vec;
+  float* image_ptr;
+  if (_density_sptr->is_contiguous())
+    {
+      image_ptr = _density_sptr->get_full_data_ptr();
+    }
+  else
+    {
+      image_vec.resize(density.size_all());
+      std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), image_vec.begin());
+      image_ptr = image_vec.data();
+    }
 
-  std::vector<float> image_vec(density.size_all());
   // create an alias for the projection data
   const ProjDataInMemory& p(*_proj_data_to_backproject_sptr);
 
@@ -149,7 +160,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   long long offset = 0;
 
   // send image to all visible CUDA devices
-  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), _helper->num_image_voxel);
+  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_ptr, _helper->num_image_voxel);
 
   // do (chuck-wise) back projection on the CUDA devices
   for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
@@ -211,7 +222,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   sum_float_arrays_on_first_device(image_on_cuda_devices, _helper->num_image_voxel);
 
   // copy summed image back to host
-  get_float_array_from_device(image_on_cuda_devices, _helper->num_image_voxel, 0, image_vec.data());
+  get_float_array_from_device(image_on_cuda_devices, _helper->num_image_voxel, 0, image_ptr);
 
   // free image array from CUDA devices
   free_float_array_on_all_devices(image_on_cuda_devices);
@@ -226,7 +237,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
 
       joseph3d_back_tof_sino(_helper->xend.data(),
                              _helper->xstart.data(),
-                             image_vec.data(),
+                             image_ptr,
                              _helper->origin.data(),
                              _helper->voxsize.data(),
                              mem_for_PP_back.data(),
@@ -245,7 +256,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
     {
       joseph3d_back(_helper->xstart.data(),
                     _helper->xend.data(),
-                    image_vec.data(),
+                    image_ptr,
                     _helper->origin.data(),
                     _helper->voxsize.data(),
                     p.get_const_data_ptr(),
@@ -260,7 +271,14 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   // --------------------------------------------------------------- //
   //   Parallelproj -> STIR image conversion
   // --------------------------------------------------------------- //
-  std::copy(image_vec.begin(), image_vec.end(), density.begin_all());
+  if (_density_sptr->is_contiguous())
+    {
+      _density_sptr->release_full_data_ptr();
+    }
+  else
+    {
+      std::copy(image_vec.begin(), image_vec.end(), density.begin_all());
+    }
 
   // After the back projection, we enforce a truncation outside of the FOV.
   // This is because the parallelproj projector seems to have some trouble at the edges and this

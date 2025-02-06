@@ -8,6 +8,7 @@
 */
 /*
     Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -27,9 +28,9 @@ namespace detail
 
 /***************** version for istream *******************************/
 
-template <class elemT>
+template <int num_dimensions, class elemT>
 Succeeded
-read_data_1d(std::istream& s, Array<1, elemT>& data, const ByteOrder byte_order)
+read_data_1d(std::istream& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order)
 {
   if (!s || (dynamic_cast<std::ifstream*>(&s) != 0 && !dynamic_cast<std::ifstream*>(&s)->is_open())
       || (dynamic_cast<std::fstream*>(&s) != 0 && !dynamic_cast<std::fstream*>(&s)->is_open()))
@@ -41,9 +42,9 @@ read_data_1d(std::istream& s, Array<1, elemT>& data, const ByteOrder byte_order)
   // note: find num_to_read (using size()) outside of s.read() function call
   // otherwise Array::check_state() in size() might abort if
   // get_data_ptr() is called before size() (which is compiler dependent)
-  const std::streamsize num_to_read = static_cast<std::streamsize>(data.size()) * sizeof(elemT);
-  s.read(reinterpret_cast<char*>(data.get_data_ptr()), num_to_read);
-  data.release_data_ptr();
+  const std::streamsize num_to_read = static_cast<std::streamsize>(data.size_all()) * sizeof(elemT);
+  s.read(reinterpret_cast<char*>(data.get_full_data_ptr()), num_to_read);
+  data.release_full_data_ptr();
 
   if (!s)
     {
@@ -53,8 +54,8 @@ read_data_1d(std::istream& s, Array<1, elemT>& data, const ByteOrder byte_order)
 
   if (!byte_order.is_native_order())
     {
-      for (int i = data.get_min_index(); i <= data.get_max_index(); ++i)
-        ByteOrder::swap_order(data[i]);
+      for (auto iter = data.begin_all(); iter != data.end_all(); ++iter)
+        ByteOrder::swap_order(*iter);
     }
 
   return Succeeded::yes;
@@ -63,9 +64,9 @@ read_data_1d(std::istream& s, Array<1, elemT>& data, const ByteOrder byte_order)
 /***************** version for FILE *******************************/
 // largely a copy of above, but with calls to stdio function
 
-template <class elemT>
+template <int num_dimensions, class elemT>
 Succeeded
-read_data_1d(FILE*& fptr_ref, Array<1, elemT>& data, const ByteOrder byte_order)
+read_data_1d(FILE*& fptr_ref, Array<num_dimensions, elemT>& data, const ByteOrder byte_order)
 {
   FILE* fptr = fptr_ref;
   if (fptr == NULL || ferror(fptr))
@@ -77,9 +78,9 @@ read_data_1d(FILE*& fptr_ref, Array<1, elemT>& data, const ByteOrder byte_order)
   // note: find num_to_read (using size()) outside of s.read() function call
   // otherwise Array::check_state() in size() might abort if
   // get_data_ptr() is called before size() (which is compiler dependent)
-  const std::size_t num_to_read = static_cast<std::size_t>(data.size());
-  const std::size_t num_read = fread(reinterpret_cast<char*>(data.get_data_ptr()), sizeof(elemT), num_to_read, fptr);
-  data.release_data_ptr();
+  const std::size_t num_to_read = static_cast<std::size_t>(data.size_all());
+  const std::size_t num_read = fread(reinterpret_cast<char*>(data.get_full_data_ptr()), sizeof(elemT), num_to_read, fptr);
+  data.release_full_data_ptr();
 
   if (ferror(fptr) || num_to_read != num_read)
     {
@@ -89,8 +90,8 @@ read_data_1d(FILE*& fptr_ref, Array<1, elemT>& data, const ByteOrder byte_order)
 
   if (!byte_order.is_native_order())
     {
-      for (int i = data.get_min_index(); i <= data.get_max_index(); ++i)
-        ByteOrder::swap_order(data[i]);
+      for (auto iter = data.begin_all(); iter != data.end_all(); ++iter)
+        ByteOrder::swap_order(*iter);
     }
 
   return Succeeded::yes;

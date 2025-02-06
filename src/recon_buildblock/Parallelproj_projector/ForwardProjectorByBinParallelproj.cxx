@@ -154,8 +154,18 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
     truncate_rim(*_density_sptr, static_cast<int>(std::max((image_radius - radius) / _helper->voxsize[2], 0.F)));
   }
 
-  std::vector<float> image_vec(density.size_all());
-  std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), image_vec.begin());
+  std::vector<float> image_vec;
+  float* image_ptr;
+  if (_density_sptr->is_contiguous())
+    {
+      image_ptr = _density_sptr->get_full_data_ptr();
+    }
+  else
+    {
+      image_vec.resize(density.size_all());
+      std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), image_vec.begin());
+      image_ptr = image_vec.data();
+    }
 
 #if 0
     // needed to set output to zero as parallelproj accumulates but is no longer the case
@@ -174,7 +184,7 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
   long long offset = 0;
 
   // send image to all visible CUDA devices
-  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_vec.data(), _helper->num_image_voxel);
+  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_ptr, _helper->num_image_voxel);
 
   // do (chuck-wise) projection on the CUDA devices
   for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
@@ -246,7 +256,7 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
       std::vector<float> mem_for_PP(_helper->num_lors * _helper->num_tof_bins);
       joseph3d_fwd_tof_sino(_helper->xend.data(),
                             _helper->xstart.data(),
-                            image_vec.data(),
+                            image_ptr,
                             _helper->origin.data(),
                             _helper->voxsize.data(),
                             mem_for_PP.data(),
@@ -268,7 +278,7 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
     {
       joseph3d_fwd(_helper->xstart.data(),
                    _helper->xend.data(),
-                   image_vec.data(),
+                   image_ptr,
                    _helper->origin.data(),
                    _helper->voxsize.data(),
                    _projected_data_sptr->get_data_ptr(),
@@ -278,6 +288,10 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
 #endif
   info("done", 2);
 
+  if (_density_sptr->is_contiguous())
+    {
+      _density_sptr->release_full_data_ptr();
+    }
   _projected_data_sptr->release_data_ptr();
 }
 

@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2020, 2024 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -16,6 +17,7 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Robert Twyman Skelly
   \author Sanida Mustafovic
 
 */
@@ -148,6 +150,55 @@ GeneralisedObjectiveFunction<TargetT>::compute_sub_gradient(TargetT& gradient,
       while (prior_gradient_iter != end_prior_gradient_iter)
         {
           *gradient_iter -= (*prior_gradient_iter) / this->get_num_subsets();
+          ++gradient_iter;
+          ++prior_gradient_iter;
+        }
+    }
+}
+
+template <typename TargetT>
+void
+GeneralisedObjectiveFunction<TargetT>::compute_gradient_without_penalty(TargetT& gradient, const TargetT& current_estimate)
+{
+  // do first subset
+  compute_sub_gradient_without_penalty(gradient, current_estimate, 0);
+  if (this->get_num_subsets() == 1)
+    return;
+
+  shared_ptr<TargetT> subset_gradient_sptr(gradient.get_empty_copy());
+  for (int subset_num = 1; subset_num < this->get_num_subsets(); ++subset_num)
+    {
+      this->compute_sub_gradient_without_penalty(*subset_gradient_sptr, current_estimate, subset_num);
+
+      auto subset_gradient_iter = subset_gradient_sptr->begin_all_const();
+      const auto end_subset_gradient_iter = subset_gradient_sptr->end_all_const();
+      auto gradient_iter = gradient.begin_all();
+      while (subset_gradient_iter != end_subset_gradient_iter)
+        {
+          *gradient_iter += (*subset_gradient_iter);
+          ++gradient_iter;
+          ++subset_gradient_iter;
+        }
+    }
+}
+
+template <typename TargetT>
+void
+GeneralisedObjectiveFunction<TargetT>::compute_gradient(TargetT& gradient, const TargetT& current_estimate)
+{
+  this->compute_gradient_without_penalty(gradient, current_estimate);
+  if (!this->prior_is_zero())
+    {
+      shared_ptr<TargetT> prior_gradient_sptr(gradient.get_empty_copy());
+      this->prior_sptr->compute_gradient(*prior_gradient_sptr, current_estimate);
+
+      // gradient -= *prior_gradient_sptr;
+      auto prior_gradient_iter = prior_gradient_sptr->begin_all_const();
+      const auto end_prior_gradient_iter = prior_gradient_sptr->end_all_const();
+      auto gradient_iter = gradient.begin_all();
+      while (prior_gradient_iter != end_prior_gradient_iter)
+        {
+          *gradient_iter -= (*prior_gradient_iter);
           ++gradient_iter;
           ++prior_gradient_iter;
         }

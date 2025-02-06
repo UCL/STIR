@@ -55,14 +55,14 @@ ExamInfo::parameter_info() const
 bool
 ExamInfo::operator==(const ExamInfo& p1) const
 {
-  return abs(this->up_energy_thres - p1.up_energy_thres) <= 1 &&   // keV
-         abs(this->low_energy_thres - p1.low_energy_thres) <= 1 && // keV
+  return std::abs(this->up_energy_thres - p1.up_energy_thres) <= 1 &&   // keV
+         std::abs(this->low_energy_thres - p1.low_energy_thres) <= 1 && // keV
          this->radionuclide == p1.radionuclide && this->time_frame_definitions == p1.time_frame_definitions &&
          //              this->branching_ratio==p1.branching_ratio &&
          ((this->calibration_factor <= 0 && p1.calibration_factor <= 0)
-          || abs(this->calibration_factor / p1.calibration_factor - 1.) <= 1E-3)
+          || std::abs(this->calibration_factor / p1.calibration_factor - 1.) <= 1E-3)
          && this->imaging_modality == p1.imaging_modality && this->patient_position == p1.patient_position
-         && abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970) <= .5; // sec
+         && std::abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970) <= .5; // sec
 }
 
 END_NAMESPACE_STIR

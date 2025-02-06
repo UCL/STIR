@@ -89,7 +89,10 @@ public:
   */
   Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
 
+  // import all apply/undo methods from base-class (we'll override some below)
   using base_type::apply;
+  using base_type::undo;
+
   //! Normalise some data
   /*!
     This means \c multiply with the data in the projdata object

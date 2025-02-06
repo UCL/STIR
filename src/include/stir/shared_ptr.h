@@ -35,7 +35,9 @@ using boost::static_pointer_cast;
 #  define MAKE_SHARED boost::make_shared
 } // namespace stir
 #else
+
 #  include <memory>
+
 namespace stir
 {
 using std::shared_ptr;

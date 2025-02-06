@@ -37,7 +37,7 @@ examples_dir=`stir_config --examples-dir`
 scatter_pardir="$examples_dir/samples/scatter_estimation_par_files"
 echo "Using scatter parameter files from $scatter_pardir"
 
-./simulate_PET_data_for_tests.sh
+./simulate_data_for_tests.sh
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1

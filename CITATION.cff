@@ -32,31 +32,31 @@ authors:
     - family-names: Jehl
       given-names:  Markus
       affiliation:  Positrigo
+    - family-names: Borgeaud
+      given-names:  Tim
+      affiliation:  Hammersmith Imanet Ltd
     - family-names: Strugari
       given-names:  Matthew
       affiliation:  Dalhousie University (Canada)
     - family-names: Khateri
       given-names:  Parisa
       affiliation:  ETH Zuerich
-    - family-names: Beisel
-      given-names:  Tobias
     - family-names: Wadhwa
       given-names:  Palak
       affiliation:  University of Leeds (UK)
-    - family-names: Borgeaud
-      given-names:  Tim
-      affiliation:  Hammersmith Imanet Ltd
+    - family-names: Beisel
+      given-names:  Tobias
     - family-names: Emond
       given-names:  Elise
       affiliation:  University College London
-    - family-names: Jacobson
-      given-names:  Matthew
     - family-names: Gillman
       given-names:  Ashley
       orcid:        'https://orcid.org/0000-0001-9130-1092'
       affiliation:  >-
         Commonwealth Scientific and Industrial Research
         Organisation, and University of Queensland
+    - family-names: Jacobson
+      given-names:  Matthew
     - family-names: Zverovich
       given-names:  Alexey
       affiliation:  Brunel University (UK)
@@ -81,14 +81,14 @@ authors:
     - family-names: Brusaferri
       given-names:  Ludovica
       affiliation:  University College London
-    - family-names: Pasca
-      given-names:  Edoardo
-      affiliation:  UK Research & Innovation
-      orcid:        'https://orcid.org/0000-0001-6957-2160'
     - family-names: Thomas
       given-names:  Benjamin
       orcid:        'https://orcid.org/0000-0002-9784-1177'
       affiliation:  University College London
+    - family-names: Pasca
+      given-names:  Edoardo
+      affiliation:  UK Research & Innovation
+      orcid:        'https://orcid.org/0000-0001-6957-2160'
     - family-names: Aguiar
       given-names:  Pablo
     - family-names: Niknejad
@@ -96,8 +96,6 @@ authors:
     - family-names: Sadki
       given-names:  Mustapha
       affiliation:  Brunel University (UK)
-    - family-names: Schmidtlein
-      given-names:  C Ross
     - family-names: Kerrouche
       given-names:  Nacer
       affiliation:  Hammersmith Imanet Ltd
@@ -110,13 +108,22 @@ authors:
     - family-names: Ehrhardt
       given-names:  Matthias J.
       orcid:        'https://orcid.org/0000-0001-8523-353X'
-    - family-names: Valente
-      given-names:  Patrick
-      affiliation:  Brunel University (UK)
+    - family-names: Singh
+      given-names:  Imraj
+      orcid:        'https://orcid.org/0000-0003-2186-0977'
+      affiliation:  University College London (UK)
+    - family-names: Schmidtlein
+      given-names:  C Ross
     - family-names: Ovtchinnikov
       given-names:  Evgueni
       orcid:        'https://orcid.org/0000-0002-9359-6514'
       affiliation:  UK Research & Innovation
+    - family-names: Valente
+      given-names:  Patrick
+      affiliation:  Brunel University (UK)
+    - family-names: Jurjew
+      given-names:  Nicole
+      affiliation:  University College London
     - family-names: Schramm
       given-names:  Georg
       affiliation:  Katholieke Universiteit Leuven (Belgium)
@@ -127,9 +134,6 @@ authors:
     - family-names: Belluzzo
       given-names:  Damiano
       affiliation:  Hospedale San Raffaele Milano (Italy)
-    - family-names: Jurjew
-      given-names:  Nicole
-      affiliation:  University College London
     - family-names: Ching
       given-names:  Daniel
     - family-names: Hague
@@ -179,9 +183,13 @@ identifiers:
     - type: doi
       value: 10.1088/0031-9155/57/4/867
     - type: doi
+      value: 10.3389/fnume.2023.1134774
+    - type: doi
       value: 10.1186/s40658-019-0248-9
     - type: doi
       value: 10.3390/jimaging8060172
+    - type: doi
+      value: 10.1088/1361-6560/aaf9b9
     - type: doi
       value: 10.1109/NSSMIC.2018.8824341
     - type: doi

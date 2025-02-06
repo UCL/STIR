@@ -334,7 +334,7 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       if (fabs(proj_data_info_ptr->get_phi(Bin(0, 0, 0, 0))) > 1.E-4F
           && (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi))
         {
-          warning("Disabling symmetries as image is rotated due to phi offset of the scanner.");
+          info("Disabling symmetries for the projector as image is rotated due to phi offset of the scanner.");
           this->do_symmetry_90degrees_min_phi = false;
           this->do_symmetry_180degrees_min_phi = false;
         }
@@ -344,20 +344,20 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
         {
           if (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi)
             {
-              warning("Disabling rotational symmetries with TOF data as this is untested.");
+              info("Disabling rotational symmetries for the projector with TOF data as this is untested.");
               this->do_symmetry_90degrees_min_phi = false;
               this->do_symmetry_180degrees_min_phi = false;
             }
 
           if (this->do_symmetry_swap_segment)
             {
-              warning("Disabling segment swapping with TOF data as this is untested.");
+              info("Disabling segment swapping for the projector with TOF data as this is untested.");
               this->do_symmetry_swap_segment = false;
             }
 
           if (this->do_symmetry_swap_s)
             {
-              warning("Disabling swap s with TOF data as this is untested.");
+              info("Disabling swap s symmetry for the projector with TOF data as this is untested.");
               this->do_symmetry_swap_s = false;
             }
         }
@@ -368,7 +368,7 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
           if (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi || this->do_symmetry_swap_segment
               || this->do_symmetry_swap_s)
             {
-              warning("Disabling symmetries in transaxial plane as image is shifted");
+              info("Disabling symmetries for the projector in transaxial plane as image is shifted");
               this->do_symmetry_90degrees_min_phi = this->do_symmetry_180degrees_min_phi = this->do_symmetry_swap_segment
                   = this->do_symmetry_swap_s = false;
             }
@@ -405,7 +405,8 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       if (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi || this->do_symmetry_swap_segment
           || this->do_symmetry_swap_s)
         {
-          warning("Disabling all symmetries except for symmtery_z since they are not implemented in block geometry yet.");
+          info("Disabling all symmetries for the projector except for symmetry_z since they are not implemented in block "
+               "geometry yet.");
           this->do_symmetry_90degrees_min_phi = this->do_symmetry_180degrees_min_phi = this->do_symmetry_swap_segment
               = this->do_symmetry_swap_s = this->do_symmetry_shift_z = false;
         }
@@ -447,7 +448,7 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       if (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi || this->do_symmetry_swap_segment
           || this->do_symmetry_swap_s || this->do_symmetry_shift_z)
         {
-          warning("Disabling all symmetries since they are not implemented in generic geometry.");
+          info("Disabling all symmetries for the projector since they are not implemented in generic geometry.");
           this->do_symmetry_90degrees_min_phi = this->do_symmetry_180degrees_min_phi = this->do_symmetry_swap_segment
               = this->do_symmetry_swap_s = this->do_symmetry_shift_z = false;
         }

@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-01-11, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2023 - 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -23,13 +24,33 @@
 // include for min,max definitions
 #include <algorithm>
 #include "stir/assign.h"
+#include "stir/HigherPrecision.h"
 #include "stir/error.h"
+//#include "stir/info.h"
+//#include <string>
 
 START_NAMESPACE_STIR
 
 /**********************************************
  inlines for Array<num_dimensions, elemT>
  **********************************************/
+template <int num_dimensions, typename elemT>
+bool
+Array<num_dimensions, elemT>::is_contiguous() const
+{
+  auto mem = &(*this->begin_all());
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); ++i)
+    {
+      if (!(*this)[i].is_contiguous())
+        return false;
+      if (i == this->get_max_index())
+        return true;
+      mem += (*this)[i].size_all();
+      if (mem != &(*(*this)[i + 1].begin_all()))
+        return false;
+    }
+  return true;
+}
 
 template <int num_dimensions, typename elemT>
 void
@@ -44,6 +65,21 @@ Array<num_dimensions, elemT>::resize(const IndexRange<num_dimensions>& range)
 
 template <int num_dimensions, typename elemT>
 void
+Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data)
+{
+  base_type::resize(range.get_min_index(), range.get_max_index());
+  auto iter = this->begin();
+  auto range_iter = range.begin();
+  auto ptr = data_ptr;
+  for (; iter != this->end(); ++iter, ++range_iter)
+    {
+      (*iter).init(*range_iter, ptr, copy_data);
+      ptr += range_iter->size_all();
+    }
+}
+
+template <int num_dimensions, typename elemT>
+void
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   resize(range);
@@ -51,29 +87,75 @@ Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array()
-    : base_type()
+    : base_type(),
+      _allocated_full_data_ptr(nullptr)
 {}
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
-    : base_type()
+    : base_type(),
+      _allocated_full_data_ptr(new elemT[range.size_all()])
 {
-  grow(range);
+  // info("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size "
+  // + std::to_string(range.size_all())); set elements to zero
+  std::for_each(this->_allocated_full_data_ptr.get(), this->_allocated_full_data_ptr.get() + range.size_all(), [](elemT& e) {
+    assign(e, 0);
+  });
+  this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
 
 template <int num_dimensions, typename elemT>
-#ifdef SWIG
-// swig-specific work-around (see Array.h)
+Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr)
+{
+  this->_allocated_full_data_ptr = data_sptr;
+  this->init(range, this->_allocated_full_data_ptr.get(), false);
+}
+
+template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const self& t)
-#else
+    : base_type(t),
+      _allocated_full_data_ptr(nullptr)
+{
+  // info("constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
+}
+
+#ifndef SWIG
+// swig cannot parse this ATM, but we don't need it anyway in the wrappers
+template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const base_type& t)
+    : base_type(t),
+      _allocated_full_data_ptr(nullptr)
+{
+  // info("constructor basetype " + std::to_string(num_dimensions) + " of size " + std::to_string(this->size_all()));
+}
 #endif
-: base_type(t)
-{}
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::~Array()
-{}
+{
+  if (this->_allocated_full_data_ptr)
+    {
+      // info("Array destructor full_data_ptr " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) +
+      // " of size " + std::to_string(this->size_all())); delete [] this->_allocated_full_data_ptr;
+    }
+}
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>::Array(Array<num_dimensions, elemT>&& other) noexcept
+    : Array()
+{
+  swap(*this, other);
+  // info("move constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
+}
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>&
+Array<num_dimensions, elemT>::operator=(Array<num_dimensions, elemT> other)
+{
+  swap(*this, other);
+  // info("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
+  return *this;
+}
 
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator
@@ -151,15 +233,96 @@ Array<num_dimensions, elemT>::get_index_range() const
     }
   return IndexRange<num_dimensions>(range);
 }
+
 template <int num_dimensions, typename elemT>
 size_t
 Array<num_dimensions, elemT>::size_all() const
 {
   this->check_state();
   size_t acc = 0;
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].size_all();
   return acc;
+}
+
+/*!
+  If is_contiguous() is \c false, calls error(). Otherwise, return a
+  \c elemT* to the first element of the array.
+
+  Use only in emergency cases...
+
+  To prevent invalidating the safety checks (and making
+  reimplementation more difficult), NO manipulation with
+  the array is allowed between the pairs
+      get_full_data_ptr() and release_full_data_ptr()
+  and
+      get_const_full_data_ptr() and release_const_full_data_ptr().
+  (This is checked with assert() in DEBUG mode.)
+*/
+template <int num_dimensions, typename elemT>
+elemT*
+Array<num_dimensions, elemT>::get_full_data_ptr()
+{
+  this->_full_pointer_access = true;
+  if (!this->is_contiguous())
+    error("Array::get_full_data_ptr() called for non-contiguous array.");
+  return &(*this->begin_all());
+};
+
+/*!
+  If is_contiguous() is \c false, calls error(). Otherwise, return a
+  \c const \c elemT* to the first element of the array.
+
+  Use get_const_full_data_ptr() when you are not going to modify
+  the data.
+
+  \see get_full_data_ptr()
+*/
+template <int num_dimensions, typename elemT>
+const elemT*
+Array<num_dimensions, elemT>::get_const_full_data_ptr() const
+{
+  this->_full_pointer_access = true;
+  if (!this->is_contiguous())
+    error("Array::get_const_full_data_ptr() called for non-contiguous array.");
+  return &(*this->begin_all_const());
+};
+
+/*!
+  This has to be used when access to the elemT* returned by get_full_data_ptr() is
+  finished. It updates
+  the Array with any changes you made, and allows access to
+  the other member functions again.
+
+  \see get_full_data_ptr()
+*/
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::release_full_data_ptr()
+{
+  assert(this->_full_pointer_access);
+
+  this->_full_pointer_access = false;
+}
+
+/*!
+  This has to be used when access to the const elemT* returned by get_const_full_data_ptr() is
+  finished. It allows access to the other member functions again.
+
+  \see get_const_full_data_ptr()
+*/
+
+template <int num_dimensions, typename elemT>
+void
+Array<num_dimensions, elemT>::release_const_full_data_ptr() const
+{
+  assert(this->_full_pointer_access);
+  this->_full_pointer_access = false;
 }
 
 template <int num_dimensions, typename elemT>
@@ -167,11 +330,16 @@ elemT
 Array<num_dimensions, elemT>::sum() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum();
-  return acc;
+  return static_cast<elemT>(acc);
 }
 
 template <int num_dimensions, typename elemT>
@@ -179,11 +347,16 @@ elemT
 Array<num_dimensions, elemT>::sum_positive() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum_positive();
-  return acc;
+  return static_cast<elemT>(acc);
 }
 
 template <int num_dimensions, typename elemT>
@@ -194,6 +367,11 @@ Array<num_dimensions, elemT>::find_max() const
   if (this->size() > 0)
     {
       elemT maxval = this->num[this->get_min_index()].find_max();
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(max : maxval)
+#  endif
+#endif
       for (int i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
         {
           maxval = std::max(this->num[i].find_max(), maxval);
@@ -215,6 +393,11 @@ Array<num_dimensions, elemT>::find_min() const
   if (this->size() > 0)
     {
       elemT minval = this->num[this->get_min_index()].find_min();
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(min : minval)
+#  endif
+#endif
       for (int i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
         {
           minval = std::min(this->num[i].find_min(), minval);
@@ -384,6 +567,12 @@ Array<num_dimensions, elemT>::sapyb(const T& a, const Array& y, const T& b)
 /**********************************************
  inlines for Array<1, elemT>
  **********************************************/
+template <class elemT>
+void
+Array<1, elemT>::init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data)
+{
+  base_type::init(range.get_min_index(), range.get_max_index(), data_ptr, copy_data);
+}
 
 template <class elemT>
 void
@@ -450,13 +639,44 @@ Array<1, elemT>::Array(const int min_index, const int max_index)
 }
 
 template <class elemT>
+Array<1, elemT>::Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr)
+    : base_type(range.get_min_index(), range.get_max_index(), data_sptr)
+{}
+
+template <class elemT>
+Array<1, elemT>::Array(const IndexRange<1>& range, const elemT* const data_ptr)
+    : base_type(range.get_min_index(), range.get_max_index(), data_ptr)
+{}
+
+template <class elemT>
 Array<1, elemT>::Array(const base_type& il)
     : base_type(il)
 {}
 
 template <typename elemT>
+Array<1, elemT>::Array(const Array<1, elemT>& other)
+    : base_type(other)
+{}
+
+template <typename elemT>
 Array<1, elemT>::~Array()
 {}
+
+template <typename elemT>
+Array<1, elemT>::Array(Array<1, elemT>&& other) noexcept
+    : Array()
+{
+  swap(*this, other);
+}
+
+template <typename elemT>
+Array<1, elemT>&
+Array<1, elemT>::operator=(const Array<1, elemT>& other)
+{
+  // use the base_type assignment, as this tries to avoid reallocating memory
+  base_type::operator=(other);
+  return *this;
+}
 
 template <typename elemT>
 typename Array<1, elemT>::full_iterator
@@ -519,11 +739,16 @@ elemT
 Array<1, elemT>::sum() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
-  for (int i = this->get_min_index(); i <= this->get_max_index(); acc += this->num[i++])
-    {}
-  return acc;
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
+  for (int i = this->get_min_index(); i <= this->get_max_index(); ++i)
+    acc += this->num[i];
+  return static_cast<elemT>(acc);
 };
 
 template <class elemT>
@@ -531,14 +756,19 @@ elemT
 Array<1, elemT>::sum_positive() const
 {
   this->check_state();
-  elemT acc;
+  typename HigherPrecision<elemT>::type acc;
   assign(acc, 0);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201107
+#    pragma omp parallel for reduction(+ : acc)
+#  endif
+#endif
   for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
     {
       if (this->num[i] > 0)
         acc += this->num[i];
     }
-  return acc;
+  return static_cast<elemT>(acc);
 };
 
 template <class elemT>

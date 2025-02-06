@@ -75,6 +75,8 @@ set(${dir_EXE_SOURCES}
         find_sum_projection_of_viewgram_and_sinogram.cxx
         separate_true_from_random_scatter_for_necr.cxx
         stir_timings.cxx
+	convert_projdata_types.cxx
+ 	trim_projdata.cxx
 )
 
 if (HAVE_ITK)
@@ -91,5 +93,5 @@ endif()
 if (nlohmann_json_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values.cxx)
 endif()
-
+              
 include(stir_exe_targets)

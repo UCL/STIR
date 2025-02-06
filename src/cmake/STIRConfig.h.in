@@ -52,6 +52,10 @@ namespace stir {
 
 #include "boost/config.hpp"
 
+// 2 variables set via CMake
+#cmakedefine BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE
+#cmakedefine LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE
+
 #cmakedefine HAVE_ECAT
 #ifdef HAVE_ECAT
 #define HAVE_LLN_MATRIX
@@ -68,6 +72,8 @@ namespace stir {
 #cmakedefine HAVE_JSON
 
 #cmakedefine STIR_WITH_NiftyPET_PROJECTOR
+
+#cmakedefine STIR_WITH_CUDA
 
 #cmakedefine STIR_WITH_Parallelproj_PROJECTOR
 #cmakedefine parallelproj_built_with_CUDA

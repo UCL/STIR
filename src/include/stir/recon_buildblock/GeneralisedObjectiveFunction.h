@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2020, 2024 University College London
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
@@ -17,6 +17,7 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Robert Twyman Skelly
   \author Sanida Mustafovic
 
 */
@@ -98,8 +99,8 @@ public:
   //! Has to be called before using this object
   virtual Succeeded set_up(shared_ptr<TargetT> const& target_sptr);
 
-  //! This should compute the sub-gradient of the objective function at the \a current_estimate
-  /*! The subgradient is the gradient of the objective function restricted to the
+  //! Compute the subset-gradient of the objective function at \a current_estimate
+  /*! The subset-gradient is the gradient of the objective function restricted to the
       subset specified. What this means depends on how this function is implemented later
       on in the hierarchy.
 
@@ -112,11 +113,29 @@ public:
   */
   virtual void compute_sub_gradient(TargetT& gradient, const TargetT& current_estimate, const int subset_num);
 
-  //! This should compute the sub-gradient of the unregularised objective function at the \a current_estimate
+  //! This should compute the subset-gradient of the unregularised objective function at \a current_estimate
   /*!
     \warning The derived class should overwrite any data in \a gradient.
   */
   virtual void compute_sub_gradient_without_penalty(TargetT& gradient, const TargetT& current_estimate, const int subset_num) = 0;
+
+  //! Compute the gradient of the objective function at the \a current_estimate
+  /*! Computed as the <i>difference</i> of
+      <code>compute_gradient_without_penalty</code>
+      and
+      <code>get_prior_ptr()-&gt;compute_gradient()</code>.
+
+    \warning Any data in \a gradient will be overwritten.
+  */
+  virtual void compute_gradient(TargetT& gradient, const TargetT& current_estimate);
+
+  //! Compute the gradient of the unregularised objective function at the \a current_estimate
+  /*!
+    Computed by summing subset-gradients.
+
+    \warning Any data in \a gradient will be overwritten.
+  */
+  virtual void compute_gradient_without_penalty(TargetT& gradient, const TargetT& current_estimate);
 
   //! Compute the value of the unregularised sub-objective function at the \a current_estimate
   /*! Implemented in terms of actual_compute_objective_function_without_penalty. */
@@ -156,6 +175,9 @@ public:
       <code>compute_penalty</code>.
   */
   double compute_objective_function(const TargetT& current_estimate);
+
+  //! Alias for compute_objective_function(const TargetT&)
+  double compute_value(const TargetT& current_estimate) { return compute_objective_function(current_estimate); }
 
   //! Fill any elements that we cannot estimate with a fixed value
   /*! In many cases, it is easier to use a larger target than what we can

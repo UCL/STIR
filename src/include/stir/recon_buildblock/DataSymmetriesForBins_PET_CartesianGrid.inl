@@ -216,6 +216,7 @@ DataSymmetriesForBins_PET_CartesianGrid::find_sym_op_bin0(int segment_num, int v
       // No symmetry is implemented for generic scanner
       return new TrivialSymmetryOperation();
     }
+  return new TrivialSymmetryOperation();
 }
 
 // from symmetries
@@ -390,6 +391,8 @@ DataSymmetriesForBins_PET_CartesianGrid::find_sym_op_general_bin(int s, int segm
       // No symmetry is implemented for generic scanner
       return new TrivialSymmetryOperation();
     }
+
+  return new TrivialSymmetryOperation();
 }
 
 bool

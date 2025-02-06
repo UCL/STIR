@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2015, Univ. of Leeds
-    Copyright (C) 2016, 2022 UCL
+    Copyright (C) 2016, 2022, 2024 UCL
     Copyright (C) 2021, University of Pennsylvania
     SPDX-License-Identifier: Apache-2.0
 
@@ -72,18 +72,29 @@ public:
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
   static const char* const registered_name;
 
-  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>();
+  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin();
+
+  //! Computes the value of the objective function at the \a current_estimate.
+  /*!
+   \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
+   because the value will not be correct. Try <code>use_subset_sensitivities = true</code>.
+   */
+  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override;
 
   //! Computes the gradient of the objective function at the \a current_estimate overwriting \a gradient.
   /*!
    \warning If <code>add_sensitivity = false</code> and <code>use_subset_sensitivities = false</code> will return an error
    because the gradient will not be correct. Try <code>use_subset_sensitivities = true</code>.
    */
-
   void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
                                                       const TargetT& current_estimate,
                                                       const int subset_num,
                                                       const bool add_sensitivity) override;
+
+  Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                                      const TargetT& current_image_estimate,
+                                                                      const TargetT& input,
+                                                                      const int subset_num) const override;
 
   TargetT* construct_target_ptr() const override;
 
@@ -103,13 +114,6 @@ public:
 #endif
 
 protected:
-  /*! \todo this function is not implemented yet and currently calls error() */
-  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override
-  { // TODO
-    error("compute_objective_function_without_penalty Not implemented yet");
-    return 0;
-  }
-
   Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr) override;
 
   void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
@@ -148,20 +152,44 @@ protected:
   bool skip_balanced_subsets;
 
 private:
-  //! Cache of the listmode file
+  //! Cache of the current "batch" in the listmode file
   /*! \todo Move this higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
-  std::vector<BinAndCorr> record_cache;
+  mutable std::vector<BinAndCorr> record_cache;
 
-  //! This function caches the listmode file, or reads it. It is run during set_up()
+  //! This function loads the next "batch" of data from the listmode file.
+  /*!
+    This function will either use read_listmode_batch or load_listmode_cache_file.
+
+    \param[in] ibatch the batch number to be read.
+    \return \c true if there are no more events to read after this call, \c false otherwise
+    \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
+   */
+  bool load_listmode_batch(unsigned int ibatch) const;
+
+  //! This function reads the next "batch" of data from the listmode file.
+  /*!
+    This function keeps on reading from the current position in the list-mode data and stores
+    prompts events and additive terms in \c record_cache. It also updates \c end_time_per_batch
+    such that we know when each batch starts/ends.
+
+    \param[in] ibatch the batch number to be read.
+    \return \c true if there are no more events to read after this call, \c false otherwise
+    \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
+    \warning This function has to be called in sequence.
+   */
+  bool read_listmode_batch(unsigned int ibatch) const;
+  //! This function caches the list-mode batches to file. It is run during set_up()
   /*! \todo Move this function higher-up in the hierarchy as it doesn't depend on ProjMatrixByBin
    */
   Succeeded cache_listmode_file();
 
-  Succeeded load_listmode_cache_file(unsigned int file_id);
+  //! Reads the "batch" of data from the cache
+  bool load_listmode_cache_file(unsigned int file_id) const;
   Succeeded write_listmode_cache_file(unsigned int file_id) const;
 
   unsigned int num_cache_files;
+  mutable std::vector<double> end_time_per_batch;
 };
 
 END_NAMESPACE_STIR

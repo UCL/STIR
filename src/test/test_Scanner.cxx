@@ -20,6 +20,7 @@
 
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
+#include "stir/DetectionPosition.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #include "stir/warning.h"
@@ -150,6 +151,18 @@ ScannerTests::test_scanner(const Scanner& scanner)
           scanner.get_default_bin_size(), ecat_scanner_info->binsize * 10, "bin size (spacing of transaxial elements)");
     }
 #endif
+  // check that the difference between the first and last axial position matches the scanner length
+  if (scanner.get_scanner_geometry() == "BlocksOnCylindrical")
+    {
+      auto actual_length
+          = scanner
+                .get_coordinate_for_index(
+                    DetectionPosition<unsigned int>(0 /* tangential */, scanner.get_num_rings() - 1, 0 /* radial */))
+                .z()
+            - scanner.get_coordinate_for_index(DetectionPosition<unsigned int>(0 /* tangential */, 0 /* axial */, 0 /* radial */))
+                  .z();
+      check_if_equal(actual_length, scanner.get_axial_length(), "axial length of scanner does not match dectector coordinates");
+    }
 }
 
 END_NAMESPACE_STIR

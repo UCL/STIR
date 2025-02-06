@@ -30,7 +30,6 @@ option(BUILD_SHARED_LIBS
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support enabled.")
-  include_directories(${LLN_INCLUDE_DIRS})
 else()
   message(STATUS "ECAT support disabled.")
 endif()
@@ -52,7 +51,6 @@ endif()
 if ((NOT DISABLE_HDF5) AND HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
-  include_directories(${HDF5_INCLUDE_DIRS})
 else()
   message(STATUS "HDF5 support disabled.")
 endif()
@@ -120,7 +118,6 @@ endif()
 
 if (STIR_MPI)
   find_package(MPI REQUIRED)
-  include_directories(${MPI_CXX_INCLUDE_PATH})  
   # we add MPI_CXX_COMPILE_FLAGS for all files
   add_definitions(${MPI_CXX_COMPILE_FLAGS} -DMPICH_IGNORE_CXX_SEEK)
   # However, currently we decide to add  MPI_CXX_LINK_FLAGS only to those programs that need it,
@@ -136,7 +133,13 @@ if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
 
-  set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # work around https://gitlab.kitware.com/cmake/cmake/-/issues/26037
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX -latomic)
+    message(STATUS "OpenMP Linker flags for Clang: ${OpenMP_EXE_LINKER_FLAGS}")
+  else()
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  endif()
 endif()
 
 #### Flags for compatibility between different systems
@@ -192,6 +195,18 @@ else()
     set(STIR_USE_BOOST_SHARED_PTR ON)
 endif()
 
+# Byte order
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+    # Use CMake to find byte order of target system.
+    # We create some variables that are then used in config.h.in
+    if (CMAKE_CXX_BYTE_ORDER STREQUAL "BIG_ENDIAN")
+        set(BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a big_endian system")
+    elseif (CMAKE_CXX_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
+        set(LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a little_endian system")
+    endif()
+endif()
 
 #### Create stir/config.h
 

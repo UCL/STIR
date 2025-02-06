@@ -200,14 +200,14 @@ interpolate_line(const Array<3, elemT>& input_array,
 
     line_110 = extract_line(input_array, location_110, dimension);
     line_111 = extract_line(input_array, location_111, dimension);
-    line = line_000 * (1 - abs(z0)) * (1 - abs(y0)) * (1 - abs(x0));
-    line += line_001 * (1 - abs(z0)) * (1 - abs(y0)) * abs(x0);
-    line += line_010 * (1 - abs(z0)) * abs(y0) * (1 - abs(x0));
-    line += line_100 * abs(z0) * (1 - abs(y0)) * (1 - abs(x0));
-    line += line_011 * (1 - abs(z0)) * abs(y0) * abs(x0);
-    line += line_101 * abs(z0) * (1 - abs(y0)) * abs(x0);
-    line += line_110 * abs(z0) * abs(y0) * (1 - abs(x0));
-    line += line_111 * abs(z0) * abs(y0) * abs(x0);
+    line = line_000 * (1 - std::abs(z0)) * (1 - std::abs(y0)) * (1 - std::abs(x0));
+    line += line_001 * (1 - std::abs(z0)) * (1 - std::abs(y0)) * std::abs(x0);
+    line += line_010 * (1 - std::abs(z0)) * std::abs(y0) * (1 - std::abs(x0));
+    line += line_100 * std::abs(z0) * (1 - std::abs(y0)) * (1 - std::abs(x0));
+    line += line_011 * (1 - std::abs(z0)) * std::abs(y0) * std::abs(x0);
+    line += line_101 * std::abs(z0) * (1 - std::abs(y0)) * std::abs(x0);
+    line += line_110 * std::abs(z0) * std::abs(y0) * (1 - std::abs(x0));
+    line += line_111 * std::abs(z0) * std::abs(y0) * std::abs(x0);
   }
   return line;
 }

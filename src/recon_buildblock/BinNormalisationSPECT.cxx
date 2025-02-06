@@ -318,7 +318,7 @@ BinNormalisationSPECT::read_uniformity_table(Array<3, float>& uniformity) const
   for (int n = 1; n <= num_detector_heads; n++)
     {
 
-      const std::string n_string = boost::lexical_cast<std::string>(n);
+      const std::string n_string = std::to_string(n);
       const std::string filename(this->folder_prefix + n_string + "/" + uniformity_filename);
 
       std::ifstream input(filename.c_str());

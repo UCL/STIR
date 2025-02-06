@@ -39,11 +39,14 @@ limitations under the License.
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
 GeometryBlocksOnCylindrical::GeometryBlocksOnCylindrical(const Scanner& scanner)
 {
+  if (scanner.check_consistency() == Succeeded::no)
+    error("Error in GeometryBlocksOnCylindrical: scanner configuration not accepted. Please check warnings.");
   build_crystal_maps(scanner);
 }
 
@@ -61,11 +64,10 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
   // local variables to describe scanner
   int num_axial_crystals_per_block = scanner.get_num_axial_crystals_per_block();
   int num_transaxial_crystals_per_block = scanner.get_num_transaxial_crystals_per_block();
-  int num_axial_blocks = scanner.get_num_axial_blocks();
   int num_transaxial_blocks_per_bucket = scanner.get_num_transaxial_blocks_per_bucket();
   int num_axial_blocks_per_bucket = scanner.get_num_axial_blocks_per_bucket();
-  int num_transaxial_buckets = scanner.get_num_transaxial_blocks() / num_transaxial_blocks_per_bucket;
-  int num_axial_buckets = scanner.get_num_axial_blocks() / num_axial_blocks_per_bucket;
+  int num_transaxial_buckets = scanner.get_num_transaxial_buckets();
+  int num_axial_buckets = scanner.get_num_axial_buckets();
   int num_detectors_per_ring = scanner.get_num_detectors_per_ring();
   float axial_block_spacing = scanner.get_axial_block_spacing();
   float transaxial_block_spacing = scanner.get_transaxial_block_spacing();
@@ -81,26 +83,21 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
   //    estimate the angle covered by half bucket, csi
   float csi = _PI / num_transaxial_buckets;
   float trans_blocks_gap = transaxial_block_spacing - num_transaxial_crystals_per_block * transaxial_crystal_spacing;
-  float ax_blocks_gap = axial_block_spacing - num_axial_crystals_per_block * axial_crystal_spacing;
+  float ax_blocks_gap = axial_block_spacing - (num_axial_crystals_per_block - 1) * axial_crystal_spacing;
   float csi_minus_csiGaps = csi - (csi / transaxial_block_spacing * 2) * (transaxial_crystal_spacing / 2 + trans_blocks_gap);
   //    distance between the center of the scannner and the first crystal in the bucket, r=Reffective/cos(csi)
   float r = scanner.get_effective_ring_radius() / cos(csi_minus_csiGaps);
 
-  float start_z = -(axial_block_spacing * (num_axial_blocks_per_bucket)*num_axial_buckets - axial_crystal_spacing
-                    - ax_blocks_gap * (num_axial_blocks_per_bucket * num_axial_buckets - 1))
-                  / 2;
+  float start_z = -(axial_block_spacing * num_axial_blocks_per_bucket * num_axial_buckets - ax_blocks_gap) / 2;
   float start_y = -1 * scanner.get_effective_ring_radius();
-  float start_x
-      = -1 * r
-        * sin(csi_minus_csiGaps); //(
-                                  //								((num_transaxial_blocks_per_bucket-1)/2.)*transaxial_block_spacing
-  //							+ ((num_transaxial_crystals_per_block-1)/2.)*transaxial_crystal_spacing
-  //											); //the first crystal in the bucket
+  float start_x = -1 // the first crystal in the bucket
+                  * (((num_transaxial_blocks_per_bucket - 1) / 2.) * transaxial_block_spacing
+                     + ((num_transaxial_crystals_per_block - 1) / 2.) * transaxial_crystal_spacing);
 
   stir::CartesianCoordinate3D<float> start_point(start_z, start_y, start_x);
 
   for (int ax_bucket_num = 0; ax_bucket_num < num_axial_buckets; ++ax_bucket_num)
-    for (int ax_block_num = 0; ax_block_num < num_axial_blocks; ++ax_block_num)
+    for (int ax_block_num = 0; ax_block_num < num_axial_blocks_per_bucket; ++ax_block_num)
       for (int ax_crys_num = 0; ax_crys_num < num_axial_crystals_per_block; ++ax_crys_num)
         for (int trans_bucket_num = 0; trans_bucket_num < num_transaxial_buckets; ++trans_bucket_num)
           for (int trans_block_num = 0; trans_block_num < num_transaxial_blocks_per_bucket; ++trans_block_num)
@@ -122,7 +119,8 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
 
                 // calculate cartesian coordinate for a given detector
                 stir::CartesianCoordinate3D<float> transformation_matrix(
-                    ax_block_num * axial_block_spacing + ax_crys_num * axial_crystal_spacing,
+                    (ax_block_num + ax_bucket_num * num_axial_blocks_per_bucket) * axial_block_spacing
+                        + ax_crys_num * axial_crystal_spacing,
                     0.,
                     trans_block_num * transaxial_block_spacing + trans_crys_num * transaxial_crystal_spacing);
                 float alpha = scanner.get_intrinsic_azimuthal_tilt() + trans_bucket_num * (2 * _PI) / num_transaxial_buckets
