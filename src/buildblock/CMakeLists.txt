@@ -135,9 +135,9 @@ if (LLN_FOUND)
   target_link_libraries(buildblock PUBLIC ${LLN_LIBRARIES})
 endif()
 
-if (RDF_FOUND)
-  # TODO cannot do this as it creates circular dependencies
-  # target_link_libraries(buildblock PUBLIC local_IO_GE)
+if (HAVE_HDF5)
+  # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
+  target_include_directories(buildblock PRIVATE ${HDF5_INCLUDE_DIRS})
 endif()
 
 # TODO currently needed as filters need fourier
