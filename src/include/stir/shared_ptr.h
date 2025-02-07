@@ -20,7 +20,7 @@
 #define __stir_SHARED_PTR__
 
 #include "stir/common.h"
-#  include <memory>
+#include <memory>
 
 namespace stir
 {
@@ -28,7 +28,7 @@ using std::shared_ptr;
 using std::dynamic_pointer_cast;
 using std::static_pointer_cast;
 //! work-around for using std::make_shared on old compilers (deprecated)
-#  define MAKE_SHARED std::make_shared
+#define MAKE_SHARED std::make_shared
 } // namespace stir
 
 #endif
