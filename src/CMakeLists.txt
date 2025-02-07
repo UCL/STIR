@@ -14,7 +14,7 @@
 option(STIR_MPI 
        "Compile with MPI" OFF)
 option(STIR_OPENMP 
-       "Compile with OpenMP" OFF)
+       "Compile with OpenMP" ON)
 
 option(BUILD_TESTING 
        "Build test programs" ON)
