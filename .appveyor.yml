@@ -36,7 +36,7 @@ build_script:
   - echo Using Miniconda %MINICONDA%
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
   # install parallelproj and Python stuff
-  - conda install -c conda-forge  -yq libparallelproj swig numpy pytest
+  - conda install -c conda-forge  -yq libparallelproj swig numpy pytest matplotlib
   - CALL conda.bat activate base
   - python --version
   - mkdir build
