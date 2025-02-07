@@ -15,12 +15,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # See STIR/LICENSE.txt for details
 
+from __future__ import annotations # for supporting newer typing info in old Python versions (from 3.7)
+
 import argparse
 import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 import stir
 import stirextra
 
