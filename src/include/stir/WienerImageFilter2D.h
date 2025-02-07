@@ -20,7 +20,7 @@
 */
 
 #ifndef __stir_WienerImageFilter2D_H__
-#  define __stir_WienerImageFilter2_H__
+#  define __stir_WienerImageFilter2D_H__
 
 #  include "stir/DataProcessor.h"
 #  include "stir/WienerArrayFilter2D.h"
