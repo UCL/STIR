@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	}
 
 	//output file
-	shared_ptr<ProjDataInfo> cylinder_pdi_ptr(cylinder_projdata_ptr->get_proj_data_info_ptr()->clone());
+	shared_ptr<ProjDataInfo> cylinder_pdi_ptr(cylinder_projdata_ptr->get_proj_data_info_sptr()->clone());
 
 	ProjDataInterfile output_projdata(cylinder_projdata_ptr->get_exam_info_sptr(), cylinder_pdi_ptr, output_file_name);
 	write_basic_interfile_PDFS_header(output_file_name, output_projdata);
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 				for (int tang = cylinder_projdata_ptr->get_min_tangential_pos_num(); tang <=cylinder_projdata_ptr->get_max_tangential_pos_num(); ++tang)
 				{
 					Bin bin(seg, view, ax, tang);
-					cylinder_projdata_ptr->get_proj_data_info_ptr()->get_LOR(lor, bin);
+					cylinder_projdata_ptr->get_proj_data_info_sptr()->get_LOR(lor, bin);
 					LORAs2Points<float> lor_as2points(lor);
 					LORAs2Points<float> intersection_coords;
 					if (find_LOR_intersections_with_cylinder(intersection_coords, lor_as2points, R) ==Succeeded::yes)
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 			for (int tang = cylinder_projdata_ptr->get_min_tangential_pos_num(); tang <=cylinder_projdata_ptr->get_max_tangential_pos_num(); ++tang)
 			{
 				Bin bin(seg, view, ax, tang);
-				cylinder_projdata_ptr->get_proj_data_info_ptr()->get_LOR(lor, bin);
+				cylinder_projdata_ptr->get_proj_data_info_sptr()->get_LOR(lor, bin);
 				float N_lor = cylinder_viewgram[ax][tang]; //counts seen by this lor
 				if (N_lor > 1)
 				{
@@ -210,7 +210,7 @@ int main(int argc, char **argv)
 				for (int tang = cylinder_projdata_ptr->get_min_tangential_pos_num(); tang <=cylinder_projdata_ptr->get_max_tangential_pos_num(); ++tang)
 				{
 					Bin bin(seg, view, ax, tang);
-					cylinder_projdata_ptr->get_proj_data_info_ptr()->get_LOR(lor, bin);
+					cylinder_projdata_ptr->get_proj_data_info_sptr()->get_LOR(lor, bin);
 					LORAs2Points<float> lor_as2points(lor);
 					LORAs2Points<float> intersection_coords;
 					if (find_LOR_intersections_with_cylinder(intersection_coords, lor_as2points, R) ==Succeeded::yes)
@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 						for (int ax = cylinder_projdata_ptr->get_min_axial_pos_num(true_seg); ax <= cylinder_projdata_ptr->get_max_axial_pos_num(true_seg); ++ax)
 						{
 							Bin bin(true_seg, true_view, ax, tang);
-							cylinder_projdata_ptr->get_proj_data_info_ptr()->get_LOR(lor, bin);
+							cylinder_projdata_ptr->get_proj_data_info_sptr()->get_LOR(lor, bin);
 							LORAs2Points<float> lor_as2points(lor);
 							LORAs2Points<float> intersection_coords;
 
@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 				for (int tang = cylinder_projdata_ptr->get_min_tangential_pos_num(); tang <= cylinder_projdata_ptr->get_max_tangential_pos_num(); ++tang)
 				{
 					Bin bin(seg, view, ax, tang);
-					cylinder_projdata_ptr->get_proj_data_info_ptr()->get_LOR(lor, bin);
+					cylinder_projdata_ptr->get_proj_data_info_sptr()->get_LOR(lor, bin);
 
 					std::tuple<int, int> crystal_axial = get_crystalAxPos_from_LOR(seg, ax);
 					std::tuple<int, int> crystal_tang = get_crystalTangPos_from_LOR(view, tang);
