@@ -70,6 +70,7 @@ set(${dir_EXE_SOURCES}
 	find_ML_normfactors.cxx
 	find_ML_singles_from_delayed.cxx
         find_normfactors_from_cylinder_data.cxx
+		find_normfactors_from_cylinder_data_SafirII.cxx
         find_recovery_coefficients_in_image_quality_phantom_nema_nu4.cxx
         write_sinogram_to_txt.cxx
         find_sum_projection_of_viewgram_and_sinogram.cxx
