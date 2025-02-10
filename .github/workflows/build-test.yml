@@ -235,10 +235,10 @@ jobs:
               # brew install openblas
               # export OPENBLAS=$(brew --prefix openblas)
               #python -m pip install --no-cache-dir --no-binary  numpy numpy # avoid the cached .whl!
-              python -m pip install numpy pytest
+              python -m pip install numpy pytest matplotlib
               ;;
             (*)
-              python -m pip install numpy pytest
+              python -m pip install numpy pytest matplotlib
               ;;
           esac
 

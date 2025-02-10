@@ -16,6 +16,9 @@
   \author Kris Thielemans
 */
 
+#ifndef __stir_num_threads_h__
+#define __stir_num_threads_h__
+
 #include "stir/common.h"
 
 START_NAMESPACE_STIR
@@ -65,3 +68,5 @@ int get_default_num_threads();
 void set_default_num_threads();
 
 END_NAMESPACE_STIR
+
+#endif
