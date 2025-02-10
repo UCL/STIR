@@ -14,7 +14,7 @@
 option(STIR_MPI 
        "Compile with MPI" OFF)
 option(STIR_OPENMP 
-       "Compile with OpenMP" OFF)
+       "Compile with OpenMP" ON)
 
 option(BUILD_TESTING 
        "Build test programs" ON)
@@ -187,13 +187,6 @@ check_cxx_source_compiles("
     "
        HAVE_STD_SHARED_PTR
         )
-
-if(HAVE_STD_SHARED_PTR)
-    option(STIR_USE_BOOST_SHARED_PTR "Use boost::shared_ptr as opposed to std::shared_ptr (not recommended)" OFF)
-    mark_as_advanced(STIR_USE_BOOST_SHARED_PTR)
-else()
-    set(STIR_USE_BOOST_SHARED_PTR ON)
-endif()
 
 # Byte order
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
