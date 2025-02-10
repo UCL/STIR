@@ -72,7 +72,6 @@ build/
 install/
 .vscode/
 build_safir_updates/
-build_tests/
 
 # MATLAB
 
