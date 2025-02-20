@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2024 University College London
     Copyright (C) 2020, 2022, Univeristy of Pennsylvania
+    Copyright (C) 2025, Commonweath Scientific and Industrial Research Organisation
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -16,6 +17,7 @@
 
   \author Nikos Efthimiou
   \author Kris Thielemans
+  \author Ashley Gillman
 */
 #include "stir/shared_ptr.h"
 #include "stir/recon_buildblock/distributable.h"
@@ -139,8 +141,7 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
                   local_double_out_ptrs[thread_num]);
       }
   }
-#ifdef STIR_OPENMP
-  // flatten data constructed by threads
+  // flatten data constructed by threads (or collapse unitary dim if no threading)
   {
     if (double_out_ptr != NULL)
       {
@@ -157,7 +158,6 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
             *output_image_ptr += *(local_output_image_sptrs[i]);
       }
   }
-#endif
   CPU_timer.stop();
   wall_clock_timer.stop();
   info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s") % CPU_timer.value()
