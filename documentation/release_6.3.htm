@@ -76,6 +76,10 @@
             See <a href="https://github.com/UCL/STIR/issues/1532">Issue #1532</a> for more detail. Fixed by using averaging functionality of SSRB instead of adding segments for attenuation correction factors.
             <a href=https://github.com/UCL/STIR/pull/1531>PR #1531</a>
         </li>
+        <li>
+            Fixed a bug in the distributed LM computation code (introduced in 6.1) that neglected to accumulate outputs when not build with OpenMP.
+            See <a href="https://github.com/UCL/STIR/pull/1566"">PR #1566</a>".
+        </li>
     </ul>
 
 <h3>Build system</h3>
