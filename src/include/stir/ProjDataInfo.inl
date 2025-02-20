@@ -44,6 +44,19 @@ ProjDataInfo::create_non_tof_clone() const
   return sptr;
 }
 
+shared_ptr<ProjDataInfo>
+ProjDataInfo::create_single_tof_clone() const
+{
+  shared_ptr<ProjDataInfo> sptr(this->clone());
+  int a  = sptr->get_num_tof_poss();
+  if (a > 0)
+    sptr->set_tof_mash_factor(a);
+  // - TODO: remove this later
+  // int b  = sptr->get_num_tof_poss();
+  // std::cout <<"Old number of TOF poss " << a << " new number of TOF poss " << b << std::endl;
+  return sptr;
+}
+
 int
 ProjDataInfo::get_num_segments() const
 {
@@ -183,10 +196,10 @@ ProjDataInfo::is_tof_data() const
   // First case: if tof_mash_factor == 0, scanner is not tof ready and no tof data
   if (tof_mash_factor == 0)
     {
-      if (num_tof_bins != 1)
-        {
-          error("Non-TOF data with inconsistent Time-of-Flight bin number - Aborted operation.");
-        }
+      // if (num_tof_bins != 1)
+      //   {
+      //     warning("Non-TOF data with inconsistent Time-of-Flight bin number - Note. As we are updating the scanner template style please make sure to have one TOF position (whole coincidence window for nonTOF scanners).");
+      //   }
       return false;
     }
   // Second case: when tof_mash_factor is strictly positive, it means we have TOF data

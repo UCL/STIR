@@ -1201,7 +1201,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
 
   // it's PET data if we get here
   // N.E. Added timing locations
-  const bool is_TOF = pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1;
+  const bool is_TOF = pdfs.get_proj_data_info_sptr()->is_tof_data();
   output_header << "number of dimensions := " + std::to_string(is_TOF ? 5 : 4) + "\n";
 
   // TODO support more ?
@@ -1225,12 +1225,16 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
      */
       {
         case ProjDataFromStream::Segment_View_AxialPos_TangPos: {
+          if (is_TOF) // TOF data with 1 timing position
+            order_of_timing_poss = 5;
           order_of_segment = 4;
           order_of_view = 3;
           order_of_z = 2;
           break;
         }
         case ProjDataFromStream::Segment_AxialPos_View_TangPos: {
+          if (is_TOF) // TOF data with 1 timing position
+            order_of_timing_poss = 5;
           order_of_segment = 4;
           order_of_view = 2;
           order_of_z = 3;
@@ -1252,8 +1256,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
     if (order_of_timing_poss > 0)
       {
         output_header << "matrix axis label [" << order_of_timing_poss << "] := timing positions\n";
-        output_header << "!matrix size [" << order_of_timing_poss << "] := " << pdfs.get_timing_poss_sequence_in_stream().size()
-                      << "\n";
+        output_header << "!matrix size [" << order_of_timing_poss << "] := " << pdfs.get_num_tof_poss() << "\n";
       }
 
     output_header << "matrix axis label [" << order_of_segment << "] := segment\n";

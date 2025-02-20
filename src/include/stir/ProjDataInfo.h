@@ -150,7 +150,9 @@ public:
 
   //! Similar to create_shared_clone() but returns a non-tof version of ProjDataInfo setting tof mashing factor = 0
   inline shared_ptr<ProjDataInfo> create_non_tof_clone() const;
-
+  //! Similar to create_non_tof_clone() but returns a single TOF version of the ProjDataInfo setting the TOF mashing factor sush that,
+  //! a single TOF bin remains. This is usefull to apply the coincidence window boundaries without affecting the probabilities.
+    inline shared_ptr<ProjDataInfo> create_single_tof_clone() const;
   //! Destructor
   virtual ~ProjDataInfo() {}
 

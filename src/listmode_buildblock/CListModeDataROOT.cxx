@@ -187,10 +187,10 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
       this_scanner_sptr->get_num_virtual_transaxial_crystals_per_block());
 
   // Compare with InputStreamFromROOTFile scanner generated geometry and throw error if wrong.
-  if (check_scanner_match_geometry(error_str, this_scanner_sptr) == Succeeded::no)
-    {
-      error(error_str.c_str());
-    }
+  // if (check_scanner_match_geometry(error_str, this_scanner_sptr) == Succeeded::no)
+  //   {
+  //     error(error_str.c_str());
+  //   }
 
   proj_data_info_sptr = std::const_pointer_cast<const ProjDataInfo>(
       ProjDataInfo::construct_proj_data_info(this_scanner_sptr,

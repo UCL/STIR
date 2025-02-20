@@ -160,7 +160,7 @@ private:
   int num_detectors_per_ring;
 };
 
-class FanProjData : private Array<4, float>
+class FanProjData : public Array<4, float>
 {
 public:
   FanProjData();
@@ -205,7 +205,14 @@ private:
 
 typedef FanProjData BlockData3D;
 
+double make_all_fan_data_from_cache(
+                                  FanProjData& fan_data,
+                                  const ProjData& proj_data,
+            const FanProjData& model);
+
 void make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data);
+
+void load_fan_data(FanProjData& fan_data, const ProjData& proj_data, const std::string fan_filename = "");
 
 void set_fan_data_add_gaps(ProjData& proj_data, const FanProjData& fan_data, const float gap_value = 0.F);
 

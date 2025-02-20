@@ -72,7 +72,7 @@ FilePath::is_directory() const
   struct stat info;
 
   if (stat(my_string.c_str(), &info) != 0)
-    error(boost::format("FilePath: Cannot access %1%.") % my_string);
+    warning(boost::format("FilePath: Cannot access %1%.") % my_string);
   else if (info.st_mode & S_IFDIR)
     return true;
 #endif
@@ -92,7 +92,7 @@ FilePath::is_regular_file() const
   struct stat info;
 
   if (stat(my_string.c_str(), &info) != 0)
-    error(boost::format("FilePath: Cannot access %1%.") % my_string);
+    warning(boost::format("FilePath: Cannot access %1%.") % my_string);
   else if (info.st_mode & S_IFREG)
     return true;
 #endif

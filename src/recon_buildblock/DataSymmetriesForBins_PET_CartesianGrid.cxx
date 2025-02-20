@@ -340,7 +340,7 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
         }
 
       // RT Disabling some symmetries due to tof data
-      if (proj_data_info_ptr->is_tof_data())
+      if (proj_data_info_ptr->is_tof_data() && proj_data_info_ptr->get_num_tof_poss() > 1)
         {
           if (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi)
             {
