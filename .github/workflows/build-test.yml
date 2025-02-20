@@ -96,7 +96,7 @@ jobs:
           ITK: "OFF"
         - os: macOS-latest
           compiler: clang
-          compiler_version: 16
+          compiler_version: 19
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Release"
