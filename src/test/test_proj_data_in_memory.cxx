@@ -148,7 +148,7 @@ ProjDataInMemoryTests::run_tests_no_tof()
         proj_data2.fill(proj_data);
         check(false, "test fill with too small proj_data should have thrown");
       }
-    catch (...)
+    catch (std::runtime_error&)
       {
         // ok
       }
@@ -261,7 +261,7 @@ ProjDataInMemoryTests::run_tests_tof()
         proj_data2.fill(proj_data);
         check(false, "test fill with too small proj_data should have thrown");
       }
-    catch (...)
+    catch (std::runtime_error&)
       {
         // ok
       }

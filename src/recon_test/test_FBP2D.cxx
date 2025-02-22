@@ -14,6 +14,7 @@
 
 #include "stir/recon_buildblock/test/ReconstructionTests.h"
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+#include <exception>
 
 START_NAMESPACE_STIR
 
@@ -96,7 +97,7 @@ TestFBP2D::run_tests()
         // we shouldn't get here
         everything_ok = false;
       }
-    catch (...)
+    catch (std::runtime_error&)
       {}
   }
 }
