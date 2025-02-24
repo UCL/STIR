@@ -1,7 +1,7 @@
 /*
-    Copyright (C) 2024 University College London
-    Copyright (C) 2020, 2022, Univeristy of Pennsylvania
-    Copyright (C) 2025, Commonweath Scientific and Industrial Research Organisation
+    Copyright (C) 2024, 2025 University College London
+    Copyright (C) 2020, 2022, University of Pennsylvania
+    Copyright (C) 2025, Commonwealth Scientific and Industrial Research Organisation
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -73,31 +73,29 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
   {
 #ifdef STIR_OPENMP
 #  pragma omp single
+#endif
+    // allocate "local" vectors
     {
-      info("Listmode gradient calculation: starting loop with " + std::to_string(omp_get_num_threads()) + " threads", 2);
-      local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3, float>>());
-      local_double_out_ptrs.resize(omp_get_max_threads(), 0);
+#ifdef STIR_OPENMP
+      const auto num_threads = omp_get_num_threads();
+#else
+      const int num_threads = 1;
+#endif
+      info("Listmode gradient calculation: starting loop with " + std::to_string(num_threads) + " threads", 2);
+      local_output_image_sptrs.resize(get_max_num_threads(), shared_ptr<DiscretisedDensity<3, float>>());
+      local_double_out_ptrs.resize(get_max_num_threads(), 0);
       if (double_out_ptr)
         {
-          local_double_outs.resize(omp_get_max_threads(), 0.);
-          for (int t = 0; t < omp_get_max_threads(); ++t)
+          local_double_outs.resize(get_max_num_threads(), 0.);
+          for (int t = 0; t < get_max_num_threads(); ++t)
             local_double_out_ptrs[t] = &local_double_outs[t];
         }
-      local_counts.resize(omp_get_max_threads(), 0);
-      local_count2s.resize(omp_get_max_threads(), 0);
-      local_row.resize(omp_get_max_threads(), ProjMatrixElemsForOneBin());
+      local_counts.resize(get_max_num_threads(), 0);
+      local_count2s.resize(get_max_num_threads(), 0);
+      local_row.resize(get_max_num_threads(), ProjMatrixElemsForOneBin());
     }
-
+#ifdef STIR_OPENMP
 #  pragma omp for schedule(dynamic)
-#else
-    {
-      info("Listmode gradient calculation: starting loop with 1 thread", 2);
-      local_output_image_sptrs.resize(1, shared_ptr<DiscretisedDensity<3, float>>());
-      local_double_out_ptrs.resize(1, double_out_ptr);
-      local_counts.resize(1, 0);
-      local_count2s.resize(1, 0);
-      local_row.resize(1, ProjMatrixElemsForOneBin());
-    }
 #endif
     // note: VC uses OpenMP 2.0, so need signed integer for loop
     for (long int ievent = 0; ievent < static_cast<long>(record_ptr.size()); ++ievent)
