@@ -87,11 +87,11 @@ class ProjDataVisualisationWidgetGallery(QDialog):
 
 
         # #############################################
-        # ### ProjData Dimentional Control GroupBox ###
+        # ### ProjData Dimensional Control GroupBox ###
         # #############################################
         self.UI_groupbox_projdata_dimensions = UIGroupboxProjDataDimensions(self.stir_interface)
-        methods = [self.refresh_UI_configuration]
-        self.UI_groupbox_projdata_dimensions.set_UI_connect_methods(methods=methods)
+        self.UI_groupbox_projdata_dimensions.set_UI_connect_methods(methods=[self.update_display_image])
+        self.UI_groupbox_projdata_dimensions.set_UI_configure_connect_methods(methods=[self.refresh_UI_configuration])
 
 
         # #####################################
@@ -195,9 +195,10 @@ class ProjDataVisualisationWidgetGallery(QDialog):
             raise Exception(msg)
 
         # display the image
-        ax.imshow(image,
-                  # cmap='gray'
-                  )
+        map = ax.imshow(image,
+                        # cmap='gray'
+                        vmin=self.vminmax[0], vmax=self.get_vmax())
+        self.display_image_matplotlib_figure.colorbar(map, ax=ax)
         self.display_image_matplotlib_canvas.draw()
 
     def get_bin(self) -> stir.Bin:
@@ -208,6 +209,9 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         timing_pos = self.UI_groupbox_projdata_dimensions.value(ProjDataDims.TIMING_POS)
         return stir.Bin(segment_num, view_num, axial_pos, tangential_pos, timing_pos)
 
+    def get_vmax(self) -> float:
+        return self.UI_groupbox_projdata_dimensions.value(ProjDataDims.VMAX)
+        
     def get_sinogram_numpy_array(self):
         """
         This function returns the sinogram numpy array based on the current UI configuration parameters for segment 
@@ -251,11 +255,13 @@ class ProjDataVisualisationWidgetGallery(QDialog):
             return
         
         self.load_projdata_status.setText("STATUS: ProjData loaded successfully from file.")
+        self.vminmax = self.stir_interface.vminmax
         self.refresh_UI_configuration()
             
 
     def set_projdata(self, projdata):
         self.stir_interface.set_projdata(projdata)
+        self.vminmax = self.stir_interface.vminmax
         self.refresh_UI_configuration()
         self.projdata_filename_box.setText("ProjData set externally.")
 
