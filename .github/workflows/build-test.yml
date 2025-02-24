@@ -48,6 +48,15 @@ jobs:
           ROOT: "ON"
           ITK: "OFF"
         - os: ubuntu-24.04
+          compiler: gcc
+          # compiler_version: 9
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "OFF"
+        - os: ubuntu-24.04
           compiler: clang
           #compiler_version:
           cuda_version: "0"
