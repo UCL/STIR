@@ -94,15 +94,15 @@ jobs:
           BUILD_TYPE: "Debug"
           ROOT: "OFF"
           ITK: "OFF"
-        # Currently disabled due to problems with listmode recon, see https://github.com/UCL/STIR/issues/1200
-        #- os: macOS-latest
-        #  compiler: clang
-        #  compiler_version: 16
-        #  BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-        #  parallelproj: "OFF"
-        #  BUILD_TYPE: "Release"
-        #  ROOT: "OFF"
-        #  ITK: "OFF"
+        - os: macOS-latest
+          compiler: clang
+          compiler_version: 16
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Release"
+          ROOT: "OFF"
+          ITK: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
@@ -168,11 +168,12 @@ jobs:
               if test XX${HOMEBREW_PREFIX} = XX; then
                 HOMEBREW_PREFIX=/usr/local
               fi
-              LDFLAGS="-L$HOMEBREW_PREFIX/opt/llvm/lib/c++ -Wl,-rpath,$HOMEBREW_PREFIX/opt/llvm/lib/c++"
+              LLVMDIR=$HOMEBREW_PREFIX/opt/llvm@${{ matrix.compiler_version }}
+              LDFLAGS="-L${LLVMDIR}/lib/c++ -Wl,-rpath,${LLVMDIR}/lib/c++"
               # make available to jobs below
               echo LDFLAGS="$LDFLAGS" >> $GITHUB_ENV
-              CC="$HOMEBREW_PREFIX/opt/llvm/bin/clang"
-              CXX="$HOMEBREW_PREFIX/opt/llvm/bin/clang++"
+              CC="${LLVMDIR}/bin/clang"
+              CXX="${LLVMDIR}/bin/clang++"
             fi
           fi
           export CC CXX
@@ -359,7 +360,7 @@ jobs:
           set -vx
           cd ${GITHUB_WORKSPACE}/build
           # find test exclusions. Complicated due to need of single -E argument and | pattern
-          if test ${{matrix.cuda_version}} != "0"; then
+          if test "${{matrix.cuda_version}}" != "0"; then
               # No CUDA drivers on GitHub Actions
               EXCLUDE="parallelproj|test_blocks_on_cylindrical_projectors"
           fi
