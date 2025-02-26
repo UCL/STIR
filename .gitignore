@@ -87,6 +87,10 @@ install/
 .project
 .settings
 
+# Nix
+result
+outputs
+
 # other stuff
 .cache
 *.idea
