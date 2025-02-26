@@ -51,9 +51,9 @@ class DoubleSlider(QSlider):
         self._max = value
         self.setInterval()
 
-    def setRange(self, min, max):
-        self._min = min
-        self._max = max
+    def setRange(self, vmin, vmax):
+        self._min = vmin
+        self._max = vmax
         self.setInterval()
 
     def setInterval(self, value = None):
