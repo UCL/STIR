@@ -11,7 +11,6 @@
 from BackendTools.STIRInterface import ProjDataDims, ProjDataVisualisationBackend
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QGridLayout, QLabel, QSpinBox, QDoubleSpinBox, QSlider
-import numpy as np # for inf
 import sys
 import stir
 
@@ -343,9 +342,9 @@ class UISliderSpinboxItem:
             # But better safe...
             self.__slider.setValue(value)
 
-    def setRange(self, min: int|float, max: int|float) -> None:
-        self.setMinimum(min)
-        self.setMaximum(max)
+    def setRange(self, vmin: int|float, vmax: int|float) -> None:
+        self.setMinimum(vmin)
+        self.setMaximum(vmax)
 
     def setMinimum(self, value: int|float) -> None:
         self.__slider.setMinimum(value)

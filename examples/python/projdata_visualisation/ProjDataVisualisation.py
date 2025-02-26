@@ -195,10 +195,10 @@ class ProjDataVisualisationWidgetGallery(QDialog):
             raise Exception(msg)
 
         # display the image
-        map = ax.imshow(image,
+        imap = ax.imshow(image,
                         # cmap='gray'
                         vmin=self.vminmax[0], vmax=self.get_vmax())
-        self.display_image_matplotlib_figure.colorbar(map, ax=ax)
+        self.display_image_matplotlib_figure.colorbar(imap, ax=ax)
         self.display_image_matplotlib_canvas.draw()
 
     def get_bin(self) -> stir.Bin:
