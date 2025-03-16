@@ -59,7 +59,7 @@ wm_calculation(const int kOS,
                const discrf_type* const gaussdens,
                const int* const NITEMS,
                wm_da_type& wm,
-               wmh_type& wmh,
+               const wmh_type& wmh,
                const float* Rrad)
 {
 
@@ -360,7 +360,7 @@ wm_size_estimation(int kOS,
                    const int maxszb,
                    const discrf_type* const gaussdens,
                    int* NITEMS,
-                   wmh_type& wmh,
+                   const wmh_type& wmh,
                    const float* Rrad)
 {
   int jp;
@@ -605,7 +605,7 @@ calc_vxprj(angle_type* ang)
 //==========================================================================
 
 void
-voxel_projection(voxel_type* vox, float* eff, float lngcmd2, wmh_type& wmh)
+voxel_projection(voxel_type* vox, float* eff, float lngcmd2, const wmh_type& wmh)
 {
 
   if (wmh.COL.do_fb)
@@ -641,7 +641,8 @@ voxel_projection(voxel_type* vox, float* eff, float lngcmd2, wmh_type& wmh)
 //==========================================================================
 
 void
-fill_psf_no(psf2da_type* psf, psf1d_type* psf1d_h, const voxel_type& vox, angle_type const* const ang, float szdx, wmh_type& wmh)
+fill_psf_no(
+    psf2da_type* psf, psf1d_type* psf1d_h, const voxel_type& vox, angle_type const* const ang, float szdx, const wmh_type& wmh)
 {
   psf1d_h->sgmcm = vox.szcm;
 
@@ -674,8 +675,12 @@ fill_psf_no(psf2da_type* psf, psf1d_type* psf1d_h, const voxel_type& vox, angle_
 //==========================================================================
 
 void
-fill_psf_2d(
-    psf2da_type* psf, psf1d_type* psf1d_h, const voxel_type& vox, discrf_type const* const gaussdens, float szdx, wmh_type& wmh)
+fill_psf_2d(psf2da_type* psf,
+            psf1d_type* psf1d_h,
+            const voxel_type& vox,
+            discrf_type const* const gaussdens,
+            float szdx,
+            const wmh_type& wmh)
 {
 
   psf1d_h->sgmcm = calc_sigma_h(vox, wmh.COL);
@@ -711,7 +716,7 @@ fill_psf_3d(psf2da_type* psf,
             float szdx,
             float thdx,
             float thcmd2,
-            SPECTUB::wmh_type& wmh)
+            const SPECTUB::wmh_type& wmh)
 {
 
   //... horizontal component ...........................
@@ -735,7 +740,7 @@ fill_psf_3d(psf2da_type* psf,
 
   //... vertical component ..............................
 
-  psf1d_v->sgmcm = calc_sigma_v(vox, wmh.COL, wmh);
+  psf1d_v->sgmcm = calc_sigma_v(vox, wmh.COL);
   psf1d_v->lngcmd2 = psf1d_v->sgmcm * wmh.maxsigm;
   psf1d_v->lngcm = psf1d_v->lngcmd2 * (float)2.;
   psf1d_v->di = min((int)floor(thdx / psf1d_v->sgmcm), gaussdens->lng - 1);
@@ -796,7 +801,7 @@ fill_psf_3d(psf2da_type* psf,
 //==========================================================================
 
 void
-calc_psf_bin(float center_psf, float binszcm, discrf_type const* const vxprj, psf1d_type* psf, SPECTUB::wmh_type& wmh)
+calc_psf_bin(float center_psf, float binszcm, discrf_type const* const vxprj, psf1d_type* psf, const SPECTUB::wmh_type& wmh)
 {
   float weight, preval;
 
@@ -1053,7 +1058,7 @@ comp_dist(float dx, float dy, float dz, float dlast)
 //=============================================================================
 
 float
-calc_att(const attpth_type* const attpth, const float* const attmap, int nsli, wmh_type& wmh)
+calc_att(const attpth_type* const attpth, const float* const attmap, int nsli, const wmh_type& wmh)
 {
 
   float att_coef = (float)0.;
