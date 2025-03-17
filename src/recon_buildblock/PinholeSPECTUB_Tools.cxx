@@ -370,8 +370,8 @@ read_prj_params_mph(wmh_mph_type& wmh)
           //... angles and ratios ................................................
 
           d.theta = (ang0 + (float)j * incr) * dg2rd; // projection angle in radians
-          d.costh = std::cos(d.theta);                    // cosinus of the angle
-          d.sinth = std::sin(d.theta);                    // sinus of the angle
+          d.costh = std::cos(d.theta);                // cosinus of the angle
+          d.sinth = std::sin(d.theta);                // sinus of the angle
 
           //... cartesian coordinates of the center of the detector element .............
 

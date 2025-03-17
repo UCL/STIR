@@ -13,27 +13,19 @@
 */
 
 // system libraries
-#include <iostream>
 #include <string>
 #include <algorithm>
-
-using std::min;
-using std::max;
-using std::string;
+#include <cmath>
 
 // user defined libraries
 #include "stir/recon_buildblock/PinholeSPECTUB_Tools.h"
 #include "stir/recon_buildblock/PinholeSPECTUB_Weight3d.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
-#include <boost/math/constants/constants.hpp>
 
 namespace SPECTUB_mph
 {
 
 #define in_limits(a, l1, l2) ((a) < (l1) ? (l1) : ((a) > (l2) ? (l2) : (a)))
-
-#define NUMARG 23
 
 #define EPSILON 1e-12
 
@@ -44,6 +36,11 @@ namespace SPECTUB_mph
 
 #define DELIMITER1 '#' // delimiter character in input parameter text file
 #define DELIMITER2 '%' // delimiter character in input parameter text file
+
+using std::min;
+using std::max;
+using std::string;
+using std::exp;
 
 //... geometric component ............................................
 
@@ -349,8 +346,8 @@ void
 fill_psfi(psf2d_type* kern, const wmh_mph_type& wmh)
 {
   // float K0 = (float)0.39894228040143 / wmh.prj.sgm_i ; //Normalization factor: 1/sqrt(2*M_PI)/sigma
-  float K0 = (1.0f / boost::math::constants::root_two_pi<float>()) / wmh.prj.sgm_i; // Normalization factor: 1/sqrt(2*M_PI)/sigma
-  float f1 = -(float)0.5 / (wmh.prj.sgm_i * wmh.prj.sgm_i);
+  const float K0 = static_cast<float>(1.0 / std::sqrt(2 * _PI) / wmh.prj.sgm_i); // Normalization factor: 1/sqrt(2*M_PI)/sigma
+  const float f1 = -(float)0.5 / (wmh.prj.sgm_i * wmh.prj.sgm_i);
 
   float* g1d;
   float* g2d;
@@ -445,7 +442,7 @@ check_xang_par(const voxel_type* v, const hole_type* h)
   if (uy1 <= EPSILON)
     error_weight3d(88, "");
 
-  float a = atan2f(ux1, uy1);
+  float a = std::atan2(ux1, uy1);
 
   if (a > h->ax_M || a < h->ax_m)
     ans = false;
@@ -466,7 +463,7 @@ check_zang_par(const voxel_type* v, const hole_type* h)
   float uz1 = h->z1 - v->z;
   float uy1 = h->y1 - v->y1;
 
-  float a = atan2f(uz1, uy1);
+  float a = std::atan2(uz1, uy1);
 
   if (a > h->az_M || a < h->az_m)
     ans = false;
@@ -555,11 +552,11 @@ fill_psf_geo(psf2d_type* psf, const lor_type* l, const discrf2d_type* f, int fac
 
   //... first and last bin indices (they can be out of bound) ........
 
-  psf->ib0 = (int)floorf(xm / wmh.prj.szcm);
-  psf->jb0 = (int)floorf(zm / wmh.prj.thcm);
+  psf->ib0 = (int)std::floor(xm / wmh.prj.szcm);
+  psf->jb0 = (int)std::floor(zm / wmh.prj.thcm);
 
-  int ib1 = (int)floorf(xM / wmh.prj.szcm) + 1;
-  int jb1 = (int)floorf(zM / wmh.prj.thcm) + 1;
+  int ib1 = (int)std::floor(xM / wmh.prj.szcm) + 1;
+  int jb1 = (int)std::floor(zM / wmh.prj.thcm) + 1;
 
   //... number of elements of the PSF ..............................................................
 
@@ -649,17 +646,17 @@ fill_psf_depth(psf2d_type* psf,
 
   //... first and last bin indices (they can be out of bound) ........
 
-  int ib0_d = (int)floorf((xc_d - l->hsxcm_d_d2) / wmh.prj.szcm);
-  int jb0_d = (int)floorf((zc_d - l->hszcm_d_d2) / wmh.prj.thcm);
+  int ib0_d = (int)std::floor((xc_d - l->hsxcm_d_d2) / wmh.prj.szcm);
+  int jb0_d = (int)std::floor((zc_d - l->hszcm_d_d2) / wmh.prj.thcm);
 
-  int ib1_d = (int)floorf((xc_d + l->hsxcm_d_d2) / wmh.prj.szcm) + 1;
-  int jb1_d = (int)floorf((zc_d + l->hszcm_d_d2) / wmh.prj.thcm) + 1;
+  int ib1_d = (int)std::floor((xc_d + l->hsxcm_d_d2) / wmh.prj.szcm) + 1;
+  int jb1_d = (int)std::floor((zc_d + l->hszcm_d_d2) / wmh.prj.thcm) + 1;
 
-  int ib0_dc = (int)floorf((xc_dc - l->hsxcm_dc_d2) / wmh.prj.szcm);
-  int jb0_dc = (int)floorf((zc_dc - l->hszcm_dc_d2) / wmh.prj.thcm);
+  int ib0_dc = (int)std::floor((xc_dc - l->hsxcm_dc_d2) / wmh.prj.szcm);
+  int jb0_dc = (int)std::floor((zc_dc - l->hszcm_dc_d2) / wmh.prj.thcm);
 
-  int ib1_dc = (int)floorf((xc_dc + l->hsxcm_dc_d2) / wmh.prj.szcm) + 1;
-  int jb1_dc = (int)floorf((zc_dc + l->hszcm_dc_d2) / wmh.prj.thcm) + 1;
+  int ib1_dc = (int)std::floor((xc_dc + l->hsxcm_dc_d2) / wmh.prj.szcm) + 1;
+  int jb1_dc = (int)std::floor((zc_dc + l->hszcm_dc_d2) / wmh.prj.thcm) + 1;
 
   //... number of elements of the PSF ..............................................................
 
@@ -1046,7 +1043,7 @@ bresenh_f(int i1,
 
           er += Dj2;
           i1 += di;
-          ie = (int)floorf(inc_ie * (float)k);
+          ie = (int)std::floor(inc_ie * (float)k);
 
           // if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
 
@@ -1077,7 +1074,7 @@ bresenh_f(int i1,
           er += Di2;
           j1 += dj;
 
-          ie = (int)floorf(inc_ie * (float)k);
+          ie = (int)std::floor(inc_ie * (float)k);
 
           // if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
           // cout << pcf.cr_att.val[ ie ] << endl;

@@ -732,8 +732,8 @@ ProjMatrixByBinPinholeSPECTUB::set_up(
 
   wmh.max_amp = (wmh.prj.rad - wmh.ro) / (wmh.collim.rad - wmh.ro);
 
-  psf_bin.max_dimx = (int)floorf(wmh.max_hsxcm * wmh.max_amp / wmh.prj.szcm) + 2;
-  psf_bin.max_dimz = (int)floorf(wmh.max_hszcm * wmh.max_amp / wmh.prj.thcm) + 2;
+  psf_bin.max_dimx = (int)std::floor(wmh.max_hsxcm * wmh.max_amp / wmh.prj.szcm) + 2;
+  psf_bin.max_dimz = (int)std::floor(wmh.max_hszcm * wmh.max_amp / wmh.prj.thcm) + 2;
 
   //... distributions at mid resolution ...........................................
 
@@ -745,15 +745,15 @@ ProjMatrixByBinPinholeSPECTUB::set_up(
 
       if (wmh.do_depth)
         {
-          psf_subs.max_dimx += (1 + (int)ceilf(wmh.prj.crth * wmh.tmax_aix / wmh.prj.szcm)) * wmh.subsamp;
-          psf_subs.max_dimz += (1 + (int)ceilf(wmh.prj.crth * wmh.tmax_aiz / wmh.prj.thcm)) * wmh.subsamp;
+          psf_subs.max_dimx += (1 + (int)std::ceil(wmh.prj.crth * wmh.tmax_aix / wmh.prj.szcm)) * wmh.subsamp;
+          psf_subs.max_dimz += (1 + (int)std::ceil(wmh.prj.crth * wmh.tmax_aiz / wmh.prj.thcm)) * wmh.subsamp;
         }
 
       if (wmh.do_psfi)
         {
 
-          int dimx = (int)ceil((float)0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.szcm);
-          int dimz = (int)ceil((float)0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.thcm);
+          int dimx = (int)std::ceil(0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.szcm);
+          int dimz = (int)std::ceil(0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.thcm);
 
           kern.dimx = kern.max_dimx = 2 * wmh.subsamp * dimx + 1;
           kern.dimz = kern.max_dimz = 2 * wmh.subsamp * dimz + 1;

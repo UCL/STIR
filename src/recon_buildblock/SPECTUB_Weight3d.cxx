@@ -37,7 +37,7 @@ namespace SPECTUB
 
 #define REF_DIST 5. // reference distance for fanbeam PSF
 
-//using namespace std;
+// using namespace std;
 using std::min;
 using std::string;
 using std::cos;
