@@ -43,7 +43,6 @@ using std::string;
 using std::cos;
 using std::atan;
 using std::floor;
-using std::exit;
 
 //==========================================================================
 //=== wm_calculation =======================================================
@@ -1090,58 +1089,41 @@ calc_att(const attpth_type* const attpth, const float* const attmap, int nsli, c
 void
 error_weight3d(int nerr, const string& text)
 {
-#if 0
-	switch(nerr){
-		case 13: printf( "\n\nError weight3d: wm.NbOS and/or wm.Nvox are negative"); break;
-		case 21: printf( "\n\nError weight3d: undefined collimator. Collimator %s not found\n",text.c_str() ); break;
-		case 30: printf( "\n\nError weight3d: can not open \n%s for reading\n", text.c_str() ); break;
-		case 31: printf( "\n\nError weight3d: can not open \n%s for writing\n", text.c_str() ); break;
-		case 40: printf( "\n\nError weight3d: wrong codification in comp_dist function");break;
-		case 45: printf( "\n\nError weight3d: Realloc needed for WM\n"); break;
-		case 47: printf( "\n\nError weight3d: psf length greater than maxszb in calc_psf_bin\n"); break;
-		case 49: printf( "\n\nError weight3d: attpth larger than allocated\n"); break;
-		case 50: printf( "\n\nError weight3d: No header stored in %s \n",text.c_str() ); break;
-		default: printf( "\n\nError weight3d: unknown error number on error_weight3d()"); 
-	}
-	
-	exit(0);
-#else
-  using stir::error;
+  constexpr int size = 2000;
+  char buffer[size + 1];
   switch (nerr)
     {
     case 13:
-      error("\n\nError weight3d: wm.NbOS and/or wm.Nvox are negative");
+      snprintf(buffer, size, "weight3d: wm.NbOS and/or wm.Nvox are negative");
       break;
     case 21:
-      printf("\n\nError weight3d: undefined collimator. Collimator %s not found\n", text.c_str());
+      snprintf(buffer, size, "weight3d: undefined collimator. Collimator %s not found\n", text.c_str());
       break;
     case 30:
-      printf("\n\nError weight3d: can not open \n%s for reading\n", text.c_str());
+      snprintf(buffer, size, "weight3d: can not open \n%s for reading\n", text.c_str());
       break;
     case 31:
-      printf("\n\nError weight3d: can not open \n%s for writing\n", text.c_str());
+      snprintf(buffer, size, "weight3d: can not open \n%s for writing\n", text.c_str());
       break;
     case 40:
-      error("\n\nError weight3d: wrong codification in comp_dist function");
+      snprintf(buffer, size, "weight3d: wrong codification in comp_dist function");
       break;
     case 45:
-      error("\n\nError weight3d: Realloc needed for WM\n");
+      snprintf(buffer, size, "weight3d: Realloc needed for WM\n");
       break;
     case 47:
-      error("\n\nError weight3d: psf length greater than maxszb in calc_psf_bin\n");
+      snprintf(buffer, size, "weight3d: psf length greater than maxszb in calc_psf_bin\n");
       break;
     case 49:
-      error("\n\nError weight3d: attpth larger than allocated\n");
+      snprintf(buffer, size, "weight3d: attpth larger than allocated\n");
       break;
     case 50:
-      printf("\n\nError weight3d: No header stored in %s \n", text.c_str());
+      snprintf(buffer, size, "weight3d: No header stored in %s \n", text.c_str());
       break;
     default:
-      error("\n\nError weight3d: unknown error number on error_weight3d()");
+      snprintf(buffer, size, "weight3d: unknown error number on error_weight3d()");
     }
-
-  exit(0);
-#endif
+  stir::error(buffer);
 }
 
 } // namespace SPECTUB

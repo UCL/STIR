@@ -34,7 +34,6 @@ using std::ifstream;
 using std::endl;
 using std::vector;
 using std::floor;
-using std::exit;
 
 namespace SPECTUB_mph
 {
@@ -833,63 +832,64 @@ wm_SPECT_read_value_1d(ifstream* stream1, char DELIMITER)
 void
 error_wmtools_SPECT_mph(int nerr, int ip, string txt)
 {
-  using stir::error;
+  constexpr int size = 2000;
+  char buffer[size + 1];
   switch (nerr)
     {
 
     case 55:
-      printf("\n\nError %d weight3d: Dowmsampling. Incongruency factor-dim: %d \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Dowmsampling. Incongruency factor-dim: %d", ip);
       break;
     case 56:
-      printf("\n\nError %d weight3d: Downsampling. Resulting dim bigger than max %d \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Downsampling. Resulting dim bigger than max %d", ip);
       break;
     case 77:
-      printf("\n\nError %d weight3d: Convolution. psf_out is not big enough %d. Verify geometry. \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Convolution. psf_out is not big enough %d. Verify geometry.", ip);
       break;
     case 78:
-      printf("\n\nError %d weight3d: Geometric PSF. psf_out is not big enough %d. Verify geometry. \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Geometric PSF. psf_out is not big enough %d. Verify geometry.", ip);
       break;
 
       //... error: value of argv[]..........................
 
     case 122:
-      printf("\n\nError wm_SPECT: File with variable parameters: %s not found.\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: File with variable parameters: %s not found.\n", txt.c_str());
       break;
     case 124:
-      printf("\n\nError wm_SPECT: Cannot open attenuation map: %s for reading..\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Cannot open attenuation map: %s for reading..\n", txt.c_str());
       break;
     case 126:
-      printf("\n\nError wm_SPECT: Cannot open file mask: %s for reading\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Cannot open file mask: %s for reading\n", txt.c_str());
       break;
     case 150:
-      printf("\n\nError wm_SPECT: List of hole parameters has different length (%d) than number of holes.\n", ip);
+      snprintf(buffer, size, "wm_SPECT: List of hole parameters has different length (%d) than number of holes.\n", ip);
       break;
     case 190:
-      printf("\n\nError wm_SPECT: Wrong value in detector parameter: %s \n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Wrong value in detector parameter: %s \n", txt.c_str());
       break;
     case 200:
-      printf("\n\nError wm_SPECT: Cannot allocate %d element of the variable: %s\n", ip, txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Cannot allocate %d element of the variable: %s\n", ip, txt.c_str());
       break;
     case 222:
-      printf("\n\nError wm_SPECT: Wrong number of rings: %d\n", ip);
+      snprintf(buffer, size, "wm_SPECT: Wrong number of rings: %d\n", ip);
       break;
     case 333:
-      printf("\n\nError wm_SPECT: Missing parameter in hole %d definition: %s\n", ip, txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Missing parameter in hole %d definition: %s\n", ip, txt.c_str());
       break;
     case 334:
-      printf("\n\nError wm_SPECT: %s unknown collimator model. Options: cyl/pol.\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: %s unknown collimator model. Options: cyl/pol.\n", txt.c_str());
       break;
     case 444:
-      printf("\n\nError wm_SPECT: Hole %d: Wrong hole shape. Hole shape should be either rect or round.\n", ip);
+      snprintf(buffer, size, "wm_SPECT: Hole %d: Wrong hole shape. Hole shape should be either rect or round.\n", ip);
       break;
     case 888:
-      error("\n\nError wm_SPECT: Missing parameter in collimator file.\n");
+      snprintf(buffer, size, "wm_SPECT: Missing parameter in collimator file.\n");
       break;
     default:
-      printf("\n\nError wmtools_SPECT: %d unknown error number on error_wmtools_SPECT().", nerr);
+      snprintf(buffer, size, "wmtools_SPECT: %d unknown error number on error_wmtools_SPECT().", nerr);
     }
 
-  exit(0);
+  stir::error(buffer);
 }
 
 } // namespace SPECTUB_mph

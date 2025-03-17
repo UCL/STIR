@@ -34,9 +34,6 @@ namespace SPECTUB_mph
 #define abs(a) ((a) >= 0 ? (a) : (-a))
 #define SIGN(a) (a < -EPSILON ? -1 : (a > EPSILON ? 1 : 0))
 
-#define DELIMITER1 '#' // delimiter character in input parameter text file
-#define DELIMITER2 '%' // delimiter character in input parameter text file
-
 using std::min;
 using std::max;
 using std::string;
@@ -1294,9 +1291,8 @@ error_weight3d(int nerr, string text)
       error("\n\nError weight3d: Voxel located behind or within the hole.\nRevise volume settings or use cyl mask.\n");
       break;
     default:
-      printf("\n\nError %d weight3d: %d unknown error number on error_weight3d().", nerr, nerr);
+      error("\n\nError weight3d: unknown error number on error_weight3d():" + std::to_string(nerr));
     }
-  exit(0);
 #endif
 }
 
