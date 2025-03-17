@@ -21,17 +21,14 @@
 #include "stir/spatial_transformation/InvertAxis.h"
 
 // system libraries
-#include <stdio.h>
-#include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 namespace SPECTUB
 {
 
 #define EPSILON 1e-12
-#define EOS '\0'
 
 #define maxim(a, b) ((a) >= (b) ? (a) : (b))
 #define minim(a, b) ((a) <= (b) ? (a) : (b))
@@ -40,7 +37,14 @@ namespace SPECTUB
 
 #define REF_DIST 5. // reference distance for fanbeam PSF
 
-using namespace std;
+//using namespace std;
+using std::min;
+using std::string;
+using std::cos;
+using std::atan;
+using std::floor;
+using std::exit;
+
 //==========================================================================
 //=== wm_calculation =======================================================
 //==========================================================================

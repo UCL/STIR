@@ -1,20 +1,10 @@
 /*
     Copyright (C) 2022, Matthew Strugari
     Copyright (C) 2014, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
-    Copyright (C) 2014, 2021, University College London
+    Copyright (C) 2014, 2021, 2025, University College London
     This file is part of STIR.
 
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-                http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -31,16 +21,13 @@
 
 // system libraries
 #include <fstream>
-#include <algorithm>
-#include <stdio.h>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <math.h>
-#include <ctype.h>
-#include <time.h>
+#include <cstdlib>
+
+using std::endl;
+using std::nothrow;
 
 // user defined libraries
 //#include "stir/ProjDataInterfile.h"
@@ -81,7 +68,6 @@
 // void wm_inputs_mph( char ** argv, int argc );
 // void read_inputs_mph( vector<string> param );
 
-using namespace std;
 using namespace SPECTUB_mph;
 using std::string;
 
@@ -1097,19 +1083,19 @@ void read_inputs_mph(vector<string> param)
     
     //.....image parameters......................
     
-    wmh.vol.Dimx = atoi( param[ 2 ].c_str() );  // Image: number of columns
-    wmh.vol.Dimy = atoi( param[ 3 ].c_str() );  // Image: number of rows
-    wmh.vol.Dimz = atoi( param[ 4 ].c_str() );  // Image: and projections: number of slices
-    wmh.vol.szcm = atof( param[ 5 ].c_str() );  // Image: voxel size (cm)
-    wmh.vol.thcm = atof( param[ 6 ].c_str() );  // Image: slice thickness (cm)
+    wmh.vol.Dimx = std::stoi( param[ 2 ] );  // Image: number of columns
+    wmh.vol.Dimy = std::stoi( param[ 3 ] );  // Image: number of rows
+    wmh.vol.Dimz = std::stoi( param[ 4 ] );  // Image: and projections: number of slices
+    wmh.vol.szcm = std::stof( param[ 5 ] );  // Image: voxel size (cm)
+    wmh.vol.thcm = std::stof( param[ 6 ] );  // Image: slice thickness (cm)
     
-    wmh.vol.first_sl = atoi( param[ 7 ].c_str() ) - 1;   // Image: first slice to take into account (no weight bellow)
-    wmh.vol.last_sl  = atoi( param[ 8 ].c_str() );       // Image: last slice to take into account (no weights above)
+    wmh.vol.first_sl = std::stoi( param[ 7 ] ) - 1;   // Image: first slice to take into account (no weight bellow)
+    wmh.vol.last_sl  = std::stoi( param[ 8 ] );       // Image: last slice to take into account (no weights above)
     
     if ( wmh.vol.first_sl < 0 || wmh.vol.first_sl > wmh.vol.Dimz ) error_wm_SPECT_mph( 107, param[ 7 ] );
     if ( wmh.vol.last_sl <= wmh.vol.first_sl || wmh.vol.last_sl > wmh.vol.Dimz ) error_wm_SPECT_mph( 108, param[ 8 ] );
     
-    wmh.ro = atof( param[ 9 ].c_str() );         // Image: object radius (cm)
+    wmh.ro = std::stof( param[ 9 ] );         // Image: object radius (cm)
     
     //..... geometrical and other derived parameters of the volume structure...............
     
@@ -1134,10 +1120,10 @@ void read_inputs_mph(vector<string> param)
     
     //... resolution parameters ..............................................
     
-    wmh.mn_w    = atof( param[ 12 ].c_str() );
-    wmh.Nsigm   = atof( param[ 13 ].c_str() );
-    wmh.highres = atof( param[ 14 ].c_str() );
-    wmh.subsamp = atoi( param[ 15 ].c_str() );
+    wmh.mn_w    = std::stof( param[ 12 ] );
+    wmh.Nsigm   = std::stof( param[ 13 ] );
+    wmh.highres = std::stof( param[ 14 ] );
+    wmh.subsamp = std::stoi( param[ 15 ] );
     
     wmh.do_subsamp = false;
     

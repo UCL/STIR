@@ -4,8 +4,7 @@
     Copyright (C) 2014, 2021, University College London
     This file is part of STIR.
 
-    This software is distributed WITHOUT ANY WARRANTY;
-    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 
@@ -15,11 +14,10 @@
 
 // system libraries
 #include <fstream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <sstream>
-#include <math.h>
-#include <ctype.h>
+#include <cmath>
 #include <algorithm>
 #include <vector>
 
@@ -28,8 +26,15 @@
 #include "stir/info.h"
 #include "stir/error.h"
 
-using namespace std;
+using std::min;
+using std::max;
 using std::string;
+using std::nothrow;
+using std::ifstream;
+using std::endl;
+using std::vector;
+using std::floor;
+using std::exit;
 
 namespace SPECTUB_mph
 {
@@ -271,31 +276,31 @@ read_prj_params_mph(wmh_mph_type& wmh)
     error_wmtools_SPECT_mph(122, 0, wmh.detector_fn);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  int Nring = atoi(token.c_str());
+  int Nring = std::stoi(token);
 
   if (Nring <= 0)
     error_wmtools_SPECT_mph(222, Nring, "Nring");
   /*
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  float FOVcmx = atof ( token.c_str() );
+  float FOVcmx = std::stof(token);
 
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  float FOVcmz = atof ( token.c_str() );
+  float FOVcmz = std::stof(token);
 
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  wmh.prj.Nbin = atoi ( token.c_str() );
+  wmh.prj.Nbin = std::stoi(token);
 
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  wmh.prj.Nsli = atoi ( token.c_str() );
+  wmh.prj.Nsli = std::stoi(token);
   */
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.prj.sgm_i = atof(token.c_str());
+  wmh.prj.sgm_i = std::stof(token);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.prj.crth = atof(token.c_str());
+  wmh.prj.crth = std::stof(token);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.prj.crattcoef = atof(token.c_str());
+  wmh.prj.crattcoef = std::stof(token);
 
   //... check for parameters ...........................................
 
@@ -344,18 +349,18 @@ read_prj_params_mph(wmh_mph_type& wmh)
     {
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      int Nang = atoi(token.c_str());
+      int Nang = std::stoi(token);
       if (Nang <= 0)
         error_wmtools_SPECT_mph(190, Nang, "Nang < 1");
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      float ang0 = atof(token.c_str());
+      float ang0 = std::stof(token);
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      float incr = atof(token.c_str());
+      float incr = std::stof(token);
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      d.z0 = atof(token.c_str());
+      d.z0 = std::stof(token);
 
       d.nh = 0;
 
@@ -365,8 +370,8 @@ read_prj_params_mph(wmh_mph_type& wmh)
           //... angles and ratios ................................................
 
           d.theta = (ang0 + (float)j * incr) * dg2rd; // projection angle in radians
-          d.costh = cosf(d.theta);                    // cosinus of the angle
-          d.sinth = sinf(d.theta);                    // sinus of the angle
+          d.costh = std::cos(d.theta);                    // cosinus of the angle
+          d.sinth = std::sin(d.theta);                    // sinus of the angle
 
           //... cartesian coordinates of the center of the detector element .............
 
@@ -439,14 +444,14 @@ read_coll_params_mph(wmh_mph_type& wmh)
   wmh.collim.model = wm_SPECT_read_value_1d(&stream1, DELIMITER);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.collim.rad = atof(token.c_str());
+  wmh.collim.rad = std::stof(token);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.collim.L = atof(token.c_str());
+  wmh.collim.L = std::stof(token);
   wmh.collim.Ld2 = wmh.collim.L / (float)2.;
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.collim.Nht = atoi(token.c_str());
+  wmh.collim.Nht = std::stoi(token);
 
   //    wmh.collim.holes = new hole_type [ wmh.collim.Nht ];
 
@@ -521,7 +526,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos || pos3 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "idet");
       token = line.substr(pos2, pos3 - pos2);
-      int idet = atoi(token.c_str()) - 1;
+      int idet = std::stoi(token) - 1;
       wmh.detel[idet].who.push_back(*nh);
       wmh.detel[idet].nh++;
       pos1 = pos3;
@@ -538,7 +543,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
           if (pos2 == string::npos || pos3 == string::npos)
             error_wmtools_SPECT_mph(333, *nh, "angle(deg)");
           token = line.substr(pos2, pos3 - pos2);
-          h.acy = atof(token.c_str()) * dg2rd;
+          h.acy = std::stof(token) * dg2rd;
           pos1 = pos3;
         }
       else
@@ -551,7 +556,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
           if (pos2 == string::npos || pos3 == string::npos)
             error_wmtools_SPECT_mph(333, *nh, "x(cm)");
           token = line.substr(pos2, pos3 - pos2);
-          h.x1 = atof(token.c_str());
+          h.x1 = std::stof(token);
           pos1 = pos3;
         }
 
@@ -562,7 +567,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos || pos3 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "y(cm)");
       token = line.substr(pos2, pos3 - pos2);
-      float yd = atof(token.c_str());
+      float yd = std::stof(token);
       pos1 = pos3;
 
       //... z position ...................
@@ -572,7 +577,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos || pos3 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "z(cm)");
       token = line.substr(pos2, pos3 - pos2);
-      h.z1 = atof(token.c_str());
+      h.z1 = std::stof(token);
       pos1 = pos3;
 
       //... shape .............................
@@ -605,7 +610,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "dxcm");
       token = line.substr(pos2, pos3 - pos2);
-      h.dxcm = atof(token.c_str());
+      h.dxcm = std::stof(token);
       if (h.dxcm > max_hsxcm)
         max_hsxcm = h.dxcm;
       pos1 = pos3;
@@ -617,7 +622,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "dzcm");
       token = line.substr(pos2, pos3 - pos2);
-      h.dzcm = atof(token.c_str());
+      h.dzcm = std::stof(token);
       if (h.dzcm > max_hszcm)
         max_hszcm = h.dzcm;
       pos1 = pos3;
@@ -629,7 +634,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "ahx");
       token = line.substr(pos2, pos3 - pos2);
-      h.ahx = atof(token.c_str()) * dg2rd;
+      h.ahx = std::stof(token) * dg2rd;
       pos1 = pos3;
 
       //... hole axial angle z .......................
@@ -639,7 +644,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "ahz");
       token = line.substr(pos2, pos3 - pos2);
-      h.ahz = atof(token.c_str()) * dg2rd;
+      h.ahz = std::stof(token) * dg2rd;
       pos1 = pos3;
 
       //... x acceptance angle ........................
@@ -649,7 +654,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "aa_x");
       token = line.substr(pos2, pos3 - pos2);
-      h.aa_x = atof(token.c_str()) * dg2rd;
+      h.aa_x = std::stof(token) * dg2rd;
       pos1 = pos3;
 
       //... z acceptance angle ........................
@@ -659,15 +664,15 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "aa_z");
       token = line.substr(pos2, pos3 - pos2);
-      h.aa_z = atof(token.c_str()) * dg2rd;
+      h.aa_z = std::stof(token) * dg2rd;
 
       //... derived variables ........................................
 
       if (do_cyl)
         {
           h.acyR = h.acy - wmh.detel[idet].theta;
-          h.x1 = (wmh.collim.rad + yd) * sinf(h.acyR);
-          h.y1 = (wmh.collim.rad + yd) * cosf(h.acyR);
+          h.x1 = (wmh.collim.rad + yd) * std::sin(h.acyR);
+          h.y1 = (wmh.collim.rad + yd) * std::cos(h.acyR);
         }
       else
         {
@@ -712,8 +717,8 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
   wmh.max_hsxcm = max_hsxcm;
   wmh.max_hszcm = max_hszcm;
 
-  wmh.tmax_aix = tanf(max_aix);
-  wmh.tmax_aiz = tanf(max_aiz);
+  wmh.tmax_aix = std::tan(max_aix);
+  wmh.tmax_aiz = std::tan(max_aiz);
 
   wmh.prj.max_dcr = (float)1.2 * wmh.prj.crth / cosf(max(max_aix, max_aiz));
 }

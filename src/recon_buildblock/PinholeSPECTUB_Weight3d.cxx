@@ -4,8 +4,7 @@
     Copyright (C) 2014, 2021, University College London
     This file is part of STIR.
 
-    This software is distributed WITHOUT ANY WARRANTY;
-    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 
@@ -14,11 +13,13 @@
 */
 
 // system libraries
-#include <stdio.h>
 #include <iostream>
-#include <stdlib.h>
 #include <string>
-#include <math.h>
+#include <algorithm>
+
+using std::min;
+using std::max;
+using std::string;
 
 // user defined libraries
 #include "stir/recon_buildblock/PinholeSPECTUB_Tools.h"
@@ -36,23 +37,14 @@ namespace SPECTUB_mph
 #define NUMARG 23
 
 #define EPSILON 1e-12
-#define EOS '\0'
 
 #define maxim(a, b) ((a) >= (b) ? (a) : (b))
 #define minim(a, b) ((a) <= (b) ? (a) : (b))
 #define abs(a) ((a) >= 0 ? (a) : (-a))
 #define SIGN(a) (a < -EPSILON ? -1 : (a > EPSILON ? 1 : 0))
 
-//#ifndef M_PI
-//#define M_PI 3.141592653589793
-//#endif
-
-//#define dg2rd 0.01745329251994
-
 #define DELIMITER1 '#' // delimiter character in input parameter text file
 #define DELIMITER2 '%' // delimiter character in input parameter text file
-
-using namespace std;
 
 //==========================================================================
 //=== wm_calculation =======================================================
