@@ -13,9 +13,6 @@
 #ifndef _WM_SPECTUB_H
 #define _WM_SPECTUB_H
 
-#include <iostream>
-#include <vector>
-
 #include <string>
 
 namespace SPECTUB
@@ -317,74 +314,28 @@ typedef struct
 
 //... functions from wmtools_SPECT.cpp .........................................
 
-void write_wm_FC(wm_da_type& wm); // to write double array weight matrix
-
-void write_wm_hdr(wm_da_type& wm, wmh_type& wmh); // to write header of a matrix
-
-void write_wm_STIR(SPECTUB::wm_da_type& wm); // to write matrix in STIR format
-
-void index_calc(int* indexs, wmh_type& wmh); // to calculate projection index order in subsets
-
-void read_Rrad(float* Rrad, wmh_type& wmh); // to read variable rotation radius from a text file (1 radius per line)
+void index_calc(int* indexs, const wmh_type& wmh); // to calculate projection index order in subsets
 
 //
 // void col_params ( collim_type *COL );              // to fill collimator structure
-//
-// void read_col_params ( collim_type *COL);          // to read collimator parameters from a file
 
-void fill_ang(angle_type* ang, wmh_type& wmh, const float* Rrad); // to fill angle structure
+void fill_ang(angle_type* ang, const wmh_type& wmh, const float* Rrad); // to fill angle structure
 
 void generate_msk(bool* msk_3d,
                   bool* msk_2d,
-                  float* att,
-                  volume_type* vol,
-                  wmh_type& wmh); // to create a boolean mask for wm (no weights outside the msk)
+                  const float* att,
+                  const volume_type* vol,
+                  const wmh_type& wmh); // to create a boolean mask for wm (no weights outside the msk)
 
-void read_msk_file(bool* msk, wmh_type& wmh); // to read mask from a file
-
-void read_att_map(float* attmap, wmh_type& wmh); // to read attenuation map from a file
-
-int max_psf_szb(angle_type* ang, wmh_type& wmh);
+int max_psf_szb(const angle_type* ang, const wmh_type& wmh);
 
 float calc_sigma_h(voxel_type vox, collim_type COL);
 
-float calc_sigma_v(voxel_type vox, collim_type COL, wmh_type& wmh);
-
-char* itoa(int n, char* s); // to conver integer to ascii
+float calc_sigma_v(voxel_type vox, collim_type COL);
 
 void free_wm(wm_type* f); // to free weight_mat
 
 void free_wm_da(wm_da_type* f); // to free weight_mat_da
-
-void error_wmtools_SPECT(int nerr, std::string txt); // error messages in wm_SPECT
-
-//... functions from wm_SPECT.2.0............................
-
-// int wm_SPECT( std::string inputFile);
-
-// void error_wm_SPECT( int nerr, std::string txt);      //list of error messages
-
-////void wm_inputs( std::string fileName, proj_type * prj, volume_type *vol, voxel_type *vox, bin_type *bin );
-// void wm_inputs(char **argv,
-//			   int argc,
-//			   proj_type *prj,
-//			   volume_type *vol,
-//			   voxel_type *vox,
-//	       bin_type *bin);
-//
-//
-////void read_inputs( std::string param, proj_type * prj, volume_type *vol, voxel_type *vox, bin_type *bin );
-// void read_inputs(vector<std::string> param,
-//				 proj_type *prj,
-//				 volume_type *vol,
-//				 voxel_type *vox,
-////		 bin_type *bin);
-//
-// extern wmh_type wmh;           // weight matrix header. Global variable
-//
-// extern wm_da_type wm;          // double array weight matrix structure. Global variable
-//
-// extern float * Rrad;           // variable projection radius (in acquisition order)
 
 } // namespace SPECTUB
 

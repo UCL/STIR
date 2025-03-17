@@ -41,7 +41,7 @@ void wm_calculation(const int kOS,
                     const SPECTUB::discrf_type* const gaussdens,
                     const int* const NITEMS,
                     SPECTUB::wm_da_type& wm,
-                    SPECTUB::wmh_type& wmh,
+                    const SPECTUB::wmh_type& wmh,
                     const float* Rrad);
 
 void wm_size_estimation(int kOS,
@@ -55,7 +55,7 @@ void wm_size_estimation(int kOS,
                         const int maxszb,
                         const SPECTUB::discrf_type* const gaussdens,
                         int* NITEMS,
-                        SPECTUB::wmh_type& wmh,
+                        const SPECTUB::wmh_type& wmh,
                         const float* Rrad);
 
 //... geometric component ............................................
@@ -64,21 +64,21 @@ void calc_gauss(SPECTUB::discrf_type* gaussdens);
 
 void calc_vxprj(SPECTUB::angle_type* ang);
 
-void voxel_projection(SPECTUB::voxel_type* vox, float* eff, float lngcmd2, SPECTUB::wmh_type& wmh);
+void voxel_projection(SPECTUB::voxel_type* vox, float* eff, float lngcmd2, const SPECTUB::wmh_type& wmh);
 
 void fill_psf_no(SPECTUB::psf2da_type* psf,
                  SPECTUB::psf1d_type* psf1d_h,
                  const SPECTUB::voxel_type& vox,
                  const angle_type* const ang,
                  float szdx,
-                 SPECTUB::wmh_type& wmh);
+                 const SPECTUB::wmh_type& wmh);
 
 void fill_psf_2d(SPECTUB::psf2da_type* psf,
                  SPECTUB::psf1d_type* psf1d_h,
                  const SPECTUB::voxel_type& vox,
                  SPECTUB::discrf_type const* const gaussdens,
                  float szdx,
-                 SPECTUB::wmh_type& wmh);
+                 const SPECTUB::wmh_type& wmh);
 
 void fill_psf_3d(SPECTUB::psf2da_type* psf,
                  SPECTUB::psf1d_type* psf1d_h,
@@ -88,10 +88,13 @@ void fill_psf_3d(SPECTUB::psf2da_type* psf,
                  float szdx,
                  float thdx,
                  float thcmd2,
-                 wmh_type& wmh);
+                 const wmh_type& wmh);
 
-void calc_psf_bin(
-    float center_psf, float binszcm, SPECTUB::discrf_type const* const vxprj, SPECTUB::psf1d_type* psf, SPECTUB::wmh_type& wmh);
+void calc_psf_bin(float center_psf,
+                  float binszcm,
+                  SPECTUB::discrf_type const* const vxprj,
+                  SPECTUB::psf1d_type* psf,
+                  const SPECTUB::wmh_type& wmh);
 
 //... attenuation...................................................
 
@@ -103,7 +106,7 @@ void calc_psf_bin(
 void
 calc_att_path(const bin_type& bin, const SPECTUB::voxel_type& vox, const SPECTUB::volume_type& vol, SPECTUB::attpth_type* attpth);
 
-float calc_att(const SPECTUB::attpth_type* const attpth, const float* const attmap, int islc, SPECTUB::wmh_type& wmh);
+float calc_att(const SPECTUB::attpth_type* const attpth, const float* const attmap, int islc, const SPECTUB::wmh_type& wmh);
 
 int comp_dist(float dx, float dy, float dz, float dlast);
 

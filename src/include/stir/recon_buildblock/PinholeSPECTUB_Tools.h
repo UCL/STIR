@@ -4,8 +4,7 @@
     Copyright (C) 2014, 2021, University College London
     This file is part of STIR.
 
-    This software is distributed WITHOUT ANY WARRANTY;
-    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 
@@ -16,7 +15,7 @@
 #ifndef _WM_SPECT_mph_H
 #define _WM_SPECT_mph_H
 
-#include <iostream>
+#include <string>
 #include <vector>
 
 namespace SPECTUB_mph
@@ -382,15 +381,7 @@ typedef struct
 
 //... functions from wmtools_SPECT.cpp .........................................
 
-void wm_alloc(int* Nitems, wm_da_type& wm, wmh_mph_type& wmh); // allocate wm
-
-// void free_wm () ;                                      // delete wm
-
-// void write_wm_FC_mph ();                               // write double array weight matrix
-
-// void write_wm_hdr_mph ();                              // write header of a matrix
-
-// void write_wm_STIR_mph ();                             // write matrix in STIR format
+void wm_alloc(const int* Nitems, wm_da_type& wm, const wmh_mph_type& wmh); // allocate wm
 
 void read_prj_params_mph(wmh_mph_type& wmh); // read ring parameters from a file
 
@@ -398,23 +389,13 @@ void read_coll_params_mph(wmh_mph_type& wmh); // read collimator parameters from
 
 // void which_hole();
 
-void fill_pcf(wmh_mph_type& wmh, pcf_type& pcf); // fill precalculated functions
-
-// void free_pcf ();                                      // fill precalculated functions
+void fill_pcf(const wmh_mph_type& wmh, pcf_type& pcf); // fill precalculated functions
 
 void calc_cumsum(discrf2d_type* f);
 
-void generate_msk_mph(bool* msk_3d, float* att, wmh_mph_type& wmh); // create a boolean mask for wm (no weights outside the msk)
-
-// void read_msk_file_mph ( bool * msk );                 // read mask from a file
-
-std::string wm_SPECT_read_value_1d(std::ifstream* stream1, char DELIMITER);
-
-void wm_SPECT_read_hvalues_mph(std::ifstream* stream1, char DELIMITER, int* nh, bool do_cyl, wmh_mph_type& wmh);
-
-// void read_att_map_mph ( float *attmap );               // read attenuation map from a file
-
-// char *itoa ( int n, char *s);                      // to convert integer to ascii
+void generate_msk_mph(bool* msk_3d,
+                      const float* att,
+                      const wmh_mph_type& wmh); // create a boolean mask for wm (no weights outside the msk)
 
 void error_wmtools_SPECT_mph(int nerr, int ip, std::string txt); // error messages in wm_SPECT
 

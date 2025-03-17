@@ -4,8 +4,7 @@
     Copyright (C) 2014, 2021, University College London
     This file is part of STIR.
 
-    This software is distributed WITHOUT ANY WARRANTY;
-    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 
@@ -14,59 +13,53 @@
 */
 
 // system libraries
-#include <stdio.h>
-#include <iostream>
 #include <fstream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <sstream>
-#include <math.h>
-#include <ctype.h>
+#include <cmath>
 #include <algorithm>
 #include <vector>
-#include <time.h>
-#include "stir/info.h"
-#include "stir/error.h"
-#include <boost/format.hpp>
-#include <boost/math/constants/constants.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
 
 // user defined libraries
 #include "stir/recon_buildblock/PinholeSPECTUB_Tools.h"
-#include "stir/recon_buildblock/PinholeSPECTUB_Weight3d.h"
+#include "stir/info.h"
+#include "stir/error.h"
 
-using namespace std;
+using std::min;
+using std::max;
 using std::string;
+using std::nothrow;
+using std::ifstream;
+using std::endl;
+using std::vector;
+using std::floor;
 
 namespace SPECTUB_mph
 {
 
-#define NUMARG 23
-
 #define EPSILON 1e-12
-#define EOS '\0'
 
 #define maxim(a, b) ((a) >= (b) ? (a) : (b))
 #define minim(a, b) ((a) <= (b) ? (a) : (b))
 #define abs(a) ((a) >= 0 ? (a) : (-a))
 #define SIGN(a) (a < -EPSILON ? -1 : (a > EPSILON ? 1 : 0))
 
-//#ifndef M_PI
-//#define M_PI 3.141592653589793
-//#endif
-
-//#define dg2rd 0.01745329251994
-float dg2rd = boost::math::constants::pi<float>() / (float)180.;
+constexpr float dg2rd = static_cast<float>(_PI / 180.);
 
 #define DELIMITER1 '#' // delimiter character in input parameter text file
 #define DELIMITER2 '%' // delimiter character in input parameter text file
+
+static std::string wm_SPECT_read_value_1d(std::ifstream* stream1, char DELIMITER);
+
+static void wm_SPECT_read_hvalues_mph(std::ifstream* stream1, char DELIMITER, int* nh, bool do_cyl, wmh_mph_type& wmh);
 
 //=============================================================================
 //=== wm_alloc =============================================================
 //=============================================================================
 
 void
-wm_alloc(int* Nitems, wm_da_type& wm, wmh_mph_type& wmh)
+wm_alloc(const int* Nitems, wm_da_type& wm, const wmh_mph_type& wmh)
 {
 
   //... double array wm.val and wm.col .....................................................
@@ -107,177 +100,11 @@ wm_alloc(int* Nitems, wm_da_type& wm, wmh_mph_type& wmh)
 }
 
 //=============================================================================
-//=== write_wm_FC =============================================================
-//=============================================================================
-//*** weight matrix no longer written to file
-//=============================================================================
-#if 0
-void write_wm_FC_mph()
-{
-	FILE *fid;
-	
-	int ia_acum = 0;
-	
-	if ( (fid = fopen( wm.fn.c_str(), "wb" ) ) == NULL ) error_wmtools_SPECT_mph( 31, 0, wm.fn );
-	
-	fwrite ( &(wm.Nbt), sizeof(int), 1, fid);  // to write number of rows of wm (NbOS)
-	fwrite ( &(wm.Nvox), sizeof(int), 1, fid);  // to write number of columns of wm (Nvox)
-	
-	//... number of non-zero elements in the weight matrix .......
-	
-	int ne = 0;
-	for ( int j=0 ; j < wm.Nbt ; j++ ){
-		ne += wm.ne[j];
-    }
-	fwrite ( &ne, sizeof(int), 1, fid);         // to write number of non-zeros element in the weight matrix
-	
-	//... to write the array of weights (along rows) ..............
-	
-	for ( int i = 0 ; i < wm.Nbt ; i++ ){
-		for (int j = 0 ; j < wm.ne[i] ; j++ ){
-			fwrite ( &wm.val[ i ][ j ], sizeof(float), 1, fid);
-		}
-	}
-	
-	//... to write the column index of each weight (volume index of the voxel the weight is associated to) ....
-	
-    for ( int i = 0 ; i < wm.Nbt ; i++ ){
-		for ( int j = 0 ; j < wm.ne[ i ] ; j++ ){
-			fwrite ( &wm.col[ i ][ j ] ,sizeof(int) ,1 , fid);
-		}
-	}
-	//... to write the indexs of the array of weights where a change of row happens .........
-	
-	for ( int i = 0 ; i < wm.Nbt ; i++ ){
-		fwrite ( &ia_acum, sizeof(int), 1, fid);
-		ia_acum += wm.ne[i];
-	}
-
-	//... to write the total number of saved weights ..........................
-	
-	fwrite ( &ia_acum, sizeof(int), 1, fid);
-	
-	cout << "number of non-zero elements: " << ia_acum << endl;
-
-	fclose (fid);
-}
-
-//=============================================================================
-//=== write_wm_hdr ============================================================
-//=============================================================================
-
-void write_wm_hdr_mph()
-{
-	ofstream stream1( wm.fn_hdr.c_str() );
-	if( !stream1 ) error_wmtools_SPECT_mph( 31, 0, wm.fn_hdr );
-	
-	//....... image and projections characteristics.........
-
-	stream1 << "Header for the matrix: " << wm.fn << endl;
-	stream1 << "number of columns: " << wmh.vol.Dimx << endl;
-	stream1 << "number of rows: " << wmh.vol.Dimy << endl;
-	stream1 << "number of slices: " << wmh.vol.Dimz << endl;
-	stream1 << "voxel size (cm): " << wmh.vol.szcm << endl;
-	stream1 << "slice thickness (cm): " << wmh.vol.thcm << endl;
-    
-    stream1 << "radius of the object (cm): " << wmh.ro << endl;
-    
-    stream1 << "first slice to reconstruct : " << wmh.vol.first_sl + 1 << endl;
-    stream1 << "last slice to reconstruct : " << wmh.vol.last_sl << endl;
- 
-    stream1 << "minimum weight (geometrical contribution): " << wmh.mn_w << endl;
-	stream1 << "high resolution (discretization interval for cumsum): " << wmh.highres << endl;
-	stream1 << "psfi subsampling factor: " << wmh.subsamp << endl;
-    
-    stream1 << "number of bin per row : " << wmh.prj.Nbin << endl;
-    stream1 << "number of rows/slices : " << wmh.prj.Nsli << endl;
-    stream1 << "number of detels : " << wmh.prj.Ndt << endl;
-    
-    stream1 << "detector parameters from: " << wmh.detector_fn << endl;
-    stream1 << "collimator parameters from: " << wmh.collim_fn << endl;
-    
-	//......... psf parameters .................
-	
-	stream1 << "psf correction: " << wmh.do_psfi << endl;
-    if ( wmh.do_psfi ){
-	    stream1 << "\tnumber of sigmas in psf calculation: " << wmh.Nsigm << endl;
-    }
-
-    //......... correction for depth .................
-    
-	stream1 << "depth correction: " << wmh.do_depth << endl;
-
-    //......... attenuation parameters .................
-
-	stream1 << "attenuation correction: " << wmh.do_att << endl;
-	if ( wmh.do_att ){
-		if ( wmh.do_full_att ) stream1 << "\tmode: full " << endl;
-		else stream1 << "\tmode: simple " << endl;
-        stream1 << "\tattenuation map: " << wmh.att_fn << endl;
-	}
-    
-	//......... masking ....................................
-	
-    if ( wmh.do_msk_att )  stream1 << "mask type: att" << endl;
-    else{
-        if ( wmh.do_msk_file ){
-            stream1 << "mask type: file" << endl;
-            stream1	<< "\tmask file name: " << wmh.msk_fn << endl;
-        }
-        else stream1 << "mask type: no" << endl;
-    }
-    
-    //... matrix format .....................................
-    
-    if ( wm.do_save_STIR ) stream1 << "format: STIR" << endl;
-    else stream1<< "format: FC " << endl;
-    
-	stream1.close();
-}
-
-//=============================================================================
-//=== write_wm_STIR ===========================================================
-//=============================================================================
-
-void write_wm_STIR_mph()
-{
-	int seg_num = 0;             // segment number for STIR matrix (always zero)
-	FILE *fid;
-	
-	if ( ( fid = fopen( wm.fn.c_str() , "wb" )) == NULL ) error_wmtools_SPECT_mph( 31, 0, wm.fn );
-	
-	//...loop for matrix elements: projection index ..................
-	
-	for( int j = 0 ; j < wm.Nbt ; j++ ){
-		
-		//... to write projection indices and number of elements .......
-		
-		fwrite( &seg_num, sizeof(int), 1, fid);
-		fwrite( &wm.na [ j ], sizeof(int), 1, fid);
-		fwrite( &wm.ns [ j ], sizeof(int), 1, fid);
-		fwrite( &wm.nb [ j ], sizeof(int), 1, fid);
-		fwrite( &wm.ne [ j ], sizeof(int), 1, fid);
-		
-		//... loop for matrix elements: image indexs..................
-		
-		for ( int i = 0 ; i < wm.ne[ j ] ; i++ ){
-			
-			fwrite( &wm.nz[ wm.col[ j ][ i ] ], sizeof(short int), 1, fid);
-			fwrite( &wm.ny[ wm.col[ j ][ i ] ], sizeof(short int), 1, fid);
-			fwrite( &wm.nx[ wm.col[ j ][ i ] ], sizeof(short int), 1, fid);
-			fwrite( &wm.val[ j ][ i ], sizeof(float),1,fid);
-		}   
-	}	
-	fclose( fid );
-}
-#endif
-
-//=============================================================================
 //=== precalculated functions ===============================================
 //==============================================================================
 
 void
-fill_pcf(wmh_mph_type& wmh, pcf_type& pcf)
+fill_pcf(const wmh_mph_type& wmh, pcf_type& pcf)
 {
 
   //... distribution function for a round shape hole .................
@@ -433,166 +260,6 @@ calc_cumsum(discrf2d_type* f)
   f->i_max = f->j_max = f->dim - 1;
 }
 
-//==============================================================================
-//=== read proj params mph ===============================================
-//==============================================================================
-/*
-void read_prj_params_mph()
-{
-        string token;
-    detel_type d;
-
-    char DELIMITER = ':';
-
-    ifstream stream1;
-    stream1.open( wmh.detector_fn.c_str() );
-    if( !stream1 ) error_wmtools_SPECT_mph( 122, 0, wmh.detector_fn );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    int Nring = atoi ( token.c_str() );
-
-    if ( Nring <= 0 ) error_wmtools_SPECT_mph(222, Nring, "Nring");
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    wmh.prj.rad = atof ( token.c_str() );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    float FOVcmx = atof ( token.c_str() );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    float FOVcmz = atof ( token.c_str() );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    wmh.prj.Nbin = atoi ( token.c_str() );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    wmh.prj.Nsli = atoi ( token.c_str() );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    wmh.prj.sgm_i = atof ( token.c_str() );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    wmh.prj.crth = atof ( token.c_str() );
-
-    token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-    wmh.prj.crattcoef = atof ( token.c_str() );
-
-    //... check for parameters ...........................................
-
-    if ( wmh.prj.Nbin <= 0 ) error_wmtools_SPECT_mph( 190, wmh.prj.Nbin ,"Nbin < 1" );
-    if ( wmh.prj.Nsli <= 0 ) error_wmtools_SPECT_mph( 190, wmh.prj.Nsli ,"Nsli < 1" );
-
-    if ( FOVcmx <= 0.) error_wmtools_SPECT_mph( 190, FOVcmx ,"FOVcmx non positive" );
-    if ( FOVcmz <= 0.) error_wmtools_SPECT_mph( 190, FOVcmz ,"FOVcmz non positive" );
-
-    if ( wmh.prj.rad  <= 0.) error_wmtools_SPECT_mph( 190, wmh.prj.rad  ,"Drad non positive" );
-    if ( wmh.prj.sgm_i < 0.) error_wmtools_SPECT_mph( 190, wmh.prj.sgm_i ,"PSF int: sigma non positive" );
-
-    //... derived variables .......................
-
-    wmh.prj.Nbd    = wmh.prj.Nsli * wmh.prj.Nbin;
-
-    wmh.prj.FOVxcmd2 = FOVcmx / (float) 2.;
-    wmh.prj.FOVzcmd2 = FOVcmz / (float) 2.;
-
-    wmh.prj.szcm =  FOVcmx /  (float) wmh.prj.Nbin ;
-    wmh.prj.thcm =  FOVcmz /  (float) wmh.prj.Nsli ;
-
-    wmh.prj.radc   = wmh.prj.rad + wmh.prj.crth ;
-    wmh.prj.szcmd2 = wmh.prj.szcm / (float) 2.;
-    wmh.prj.thcmd2 = wmh.prj.thcm / (float) 2. ;
-    wmh.prj.crth_2 = wmh.prj.crth * wmh.prj.crth ;
-
-    if ( !wmh.do_depth ) wmh.prj.rad += wmh.prj.crth / (float)2.; // setting detection plane at half of the crystal thickness
-
-    //... print out values (to comment or remove)..............................
-
-    cout << "\n\tNumber of rings: " << Nring << endl;
-    cout << "\tRadius (cm): " << wmh.prj.rad << endl;
-    cout << "\tFOVcmx (cm): " << FOVcmx << endl;
-    cout << "\tFOVcmz (cm): " << FOVcmz << endl;
-    cout << "\tNumber of bins: " << wmh.prj.Nbin << endl;
-    cout << "\tNumber of slices: " << wmh.prj.Nsli << endl;
-    cout << "\tBin size (cm): " << wmh.prj.szcm << endl;
-    cout << "\tSlice thickness (cm): " << wmh.prj.thcm << endl;
-    cout << "\tIntrinsic PSF sigma (cm): " << wmh.prj.sgm_i << endl;
-    cout << "\tCrystal thickness (cm): " << wmh.prj.crth << endl;
-
-    //... for each ring ..............................
-
-    wmh.prj.Ndt    = 0 ;
-
-    for ( int i = 0 ; i < Nring ; i++ ){
-
-        token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-        int Nang = atoi ( token.c_str() );
-        if ( Nang <= 0 ) error_wmtools_SPECT_mph( 190, Nang ,"Nang < 1" );
-
-        token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-        float ang0 = atof ( token.c_str() );
-
-        token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-        float incr = atof ( token.c_str() );
-
-        token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-        d.z0 = atof ( token.c_str() );
-
-        d.nh = 0;
-
-        for ( int j= 0 ; j < Nang ; j++ ){
-
-            //... angles and ratios ................................................
-
-            d.theta = ( ang0 + (float)j * incr ) * dg2rd;   // projection angle in radians
-            d.costh = cosf( d.theta );	                    // cosinus of the angle
-            d.sinth = sinf( d.theta );	                    // sinus of the angle
-
-            //... cartesian coordinates of the center of the detector element .............
-
-            d.x0 = wmh.prj.rad * d.costh;
-            d.y0 = wmh.prj.rad * d.sinth;
-
-            //... coordinates of the first bin of each projection and increments for consecutive bins ....
-
-            if(wmh.do_att){
-
-                d.incx  = wmh.prj.szcm * d.costh;
-                d.incy  = wmh.prj.szcm * d.sinth;
-                d.incz  = wmh.prj.thcm;
-
-                d.xbin0 = -wmh.prj.rad * d.sinth - ( wmh.prj.FOVxcmd2 + wmh.prj.szcm * (float)0.5 ) * d.costh ;
-                d.ybin0 =  wmh.prj.rad * d.costh - ( wmh.prj.FOVxcmd2 + wmh.prj.szcm * (float)0.5 ) * d.sinth ;
-                d.zbin0 =  d.z0 - wmh.prj.FOVzcmd2 + wmh.prj.thcmd2 ;
-            }
-            wmh.detel.push_back( d );
-        }
-
-        //... update of wmh cumulative values .....................................
-
-        wmh.prj.Ndt += Nang ;
-
-        //... print out values (to comment or remove)..............................
-
-        cout << "\n\tDetector ring: " << i << endl;
-        cout << "\tNumber of angles: " << Nang << endl;
-        cout << "\tang0: " << ang0 << endl;
-        cout << "\tincr: " << incr << endl;
-        cout << "\tz0: " << d.z0 << endl;
-        cout << "\tNumber of holes per detel: " << d.nh << endl;
-    }
-
-    //... fill detel .....................................................
-
-    stream1.close();
-
-    wmh.prj.Nbt  = wmh.prj.Nbd * wmh.prj.Ndt ;
-
-    cout << "\n\tTotal number of detels: " << wmh.prj.Ndt << endl;
-    cout << "\tTotal number of bins: " << wmh.prj.Nbt << endl;
-
-    return;
-}*/
-
 void
 read_prj_params_mph(wmh_mph_type& wmh)
 {
@@ -608,31 +275,31 @@ read_prj_params_mph(wmh_mph_type& wmh)
     error_wmtools_SPECT_mph(122, 0, wmh.detector_fn);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  int Nring = atoi(token.c_str());
+  int Nring = std::stoi(token);
 
   if (Nring <= 0)
     error_wmtools_SPECT_mph(222, Nring, "Nring");
   /*
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  float FOVcmx = atof ( token.c_str() );
+  float FOVcmx = std::stof(token);
 
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  float FOVcmz = atof ( token.c_str() );
+  float FOVcmz = std::stof(token);
 
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  wmh.prj.Nbin = atoi ( token.c_str() );
+  wmh.prj.Nbin = std::stoi(token);
 
   token = wm_SPECT_read_value_1d ( &stream1, DELIMITER );
-  wmh.prj.Nsli = atoi ( token.c_str() );
+  wmh.prj.Nsli = std::stoi(token);
   */
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.prj.sgm_i = atof(token.c_str());
+  wmh.prj.sgm_i = std::stof(token);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.prj.crth = atof(token.c_str());
+  wmh.prj.crth = std::stof(token);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.prj.crattcoef = atof(token.c_str());
+  wmh.prj.crattcoef = std::stof(token);
 
   //... check for parameters ...........................................
 
@@ -681,18 +348,18 @@ read_prj_params_mph(wmh_mph_type& wmh)
     {
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      int Nang = atoi(token.c_str());
+      int Nang = std::stoi(token);
       if (Nang <= 0)
         error_wmtools_SPECT_mph(190, Nang, "Nang < 1");
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      float ang0 = atof(token.c_str());
+      float ang0 = std::stof(token);
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      float incr = atof(token.c_str());
+      float incr = std::stof(token);
 
       token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-      d.z0 = atof(token.c_str());
+      d.z0 = std::stof(token);
 
       d.nh = 0;
 
@@ -702,8 +369,8 @@ read_prj_params_mph(wmh_mph_type& wmh)
           //... angles and ratios ................................................
 
           d.theta = (ang0 + (float)j * incr) * dg2rd; // projection angle in radians
-          d.costh = cosf(d.theta);                    // cosinus of the angle
-          d.sinth = sinf(d.theta);                    // sinus of the angle
+          d.costh = std::cos(d.theta);                // cosinus of the angle
+          d.sinth = std::sin(d.theta);                // sinus of the angle
 
           //... cartesian coordinates of the center of the detector element .............
 
@@ -776,14 +443,14 @@ read_coll_params_mph(wmh_mph_type& wmh)
   wmh.collim.model = wm_SPECT_read_value_1d(&stream1, DELIMITER);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.collim.rad = atof(token.c_str());
+  wmh.collim.rad = std::stof(token);
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.collim.L = atof(token.c_str());
+  wmh.collim.L = std::stof(token);
   wmh.collim.Ld2 = wmh.collim.L / (float)2.;
 
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
-  wmh.collim.Nht = atoi(token.c_str());
+  wmh.collim.Nht = std::stoi(token);
 
   //    wmh.collim.holes = new hole_type [ wmh.collim.Nht ];
 
@@ -858,7 +525,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos || pos3 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "idet");
       token = line.substr(pos2, pos3 - pos2);
-      int idet = atoi(token.c_str()) - 1;
+      int idet = std::stoi(token) - 1;
       wmh.detel[idet].who.push_back(*nh);
       wmh.detel[idet].nh++;
       pos1 = pos3;
@@ -875,7 +542,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
           if (pos2 == string::npos || pos3 == string::npos)
             error_wmtools_SPECT_mph(333, *nh, "angle(deg)");
           token = line.substr(pos2, pos3 - pos2);
-          h.acy = atof(token.c_str()) * dg2rd;
+          h.acy = std::stof(token) * dg2rd;
           pos1 = pos3;
         }
       else
@@ -888,7 +555,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
           if (pos2 == string::npos || pos3 == string::npos)
             error_wmtools_SPECT_mph(333, *nh, "x(cm)");
           token = line.substr(pos2, pos3 - pos2);
-          h.x1 = atof(token.c_str());
+          h.x1 = std::stof(token);
           pos1 = pos3;
         }
 
@@ -899,7 +566,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos || pos3 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "y(cm)");
       token = line.substr(pos2, pos3 - pos2);
-      float yd = atof(token.c_str());
+      float yd = std::stof(token);
       pos1 = pos3;
 
       //... z position ...................
@@ -909,7 +576,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos || pos3 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "z(cm)");
       token = line.substr(pos2, pos3 - pos2);
-      h.z1 = atof(token.c_str());
+      h.z1 = std::stof(token);
       pos1 = pos3;
 
       //... shape .............................
@@ -942,7 +609,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "dxcm");
       token = line.substr(pos2, pos3 - pos2);
-      h.dxcm = atof(token.c_str());
+      h.dxcm = std::stof(token);
       if (h.dxcm > max_hsxcm)
         max_hsxcm = h.dxcm;
       pos1 = pos3;
@@ -954,7 +621,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "dzcm");
       token = line.substr(pos2, pos3 - pos2);
-      h.dzcm = atof(token.c_str());
+      h.dzcm = std::stof(token);
       if (h.dzcm > max_hszcm)
         max_hszcm = h.dzcm;
       pos1 = pos3;
@@ -966,7 +633,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "ahx");
       token = line.substr(pos2, pos3 - pos2);
-      h.ahx = atof(token.c_str()) * dg2rd;
+      h.ahx = std::stof(token) * dg2rd;
       pos1 = pos3;
 
       //... hole axial angle z .......................
@@ -976,7 +643,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "ahz");
       token = line.substr(pos2, pos3 - pos2);
-      h.ahz = atof(token.c_str()) * dg2rd;
+      h.ahz = std::stof(token) * dg2rd;
       pos1 = pos3;
 
       //... x acceptance angle ........................
@@ -986,7 +653,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "aa_x");
       token = line.substr(pos2, pos3 - pos2);
-      h.aa_x = atof(token.c_str()) * dg2rd;
+      h.aa_x = std::stof(token) * dg2rd;
       pos1 = pos3;
 
       //... z acceptance angle ........................
@@ -996,15 +663,15 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       if (pos2 == string::npos)
         error_wmtools_SPECT_mph(333, *nh, "aa_z");
       token = line.substr(pos2, pos3 - pos2);
-      h.aa_z = atof(token.c_str()) * dg2rd;
+      h.aa_z = std::stof(token) * dg2rd;
 
       //... derived variables ........................................
 
       if (do_cyl)
         {
           h.acyR = h.acy - wmh.detel[idet].theta;
-          h.x1 = (wmh.collim.rad + yd) * sinf(h.acyR);
-          h.y1 = (wmh.collim.rad + yd) * cosf(h.acyR);
+          h.x1 = (wmh.collim.rad + yd) * std::sin(h.acyR);
+          h.y1 = (wmh.collim.rad + yd) * std::cos(h.acyR);
         }
       else
         {
@@ -1049,8 +716,8 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
   wmh.max_hsxcm = max_hsxcm;
   wmh.max_hszcm = max_hszcm;
 
-  wmh.tmax_aix = tanf(max_aix);
-  wmh.tmax_aiz = tanf(max_aiz);
+  wmh.tmax_aix = std::tan(max_aix);
+  wmh.tmax_aiz = std::tan(max_aiz);
 
   wmh.prj.max_dcr = (float)1.2 * wmh.prj.crth / cosf(max(max_aix, max_aiz));
 }
@@ -1060,7 +727,7 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
 //=============================================================================
 
 void
-generate_msk_mph(bool* msk_3d, float* attmap, wmh_mph_type& wmh)
+generate_msk_mph(bool* msk_3d, const float* attmap, const wmh_mph_type& wmh)
 {
 
   //    bool do_save_resulting_msk = true;
@@ -1120,52 +787,6 @@ generate_msk_mph(bool* msk_3d, float* attmap, wmh_mph_type& wmh)
     }
 }
 
-//=============================================================================
-//=== read_mask file ==========================================================
-//=============================================================================
-#if 0
-void read_msk_file_mph( bool *msk )
-{
-	FILE *fid;
-	int *aux;
-	
-	aux = new int [ wmh.vol.Nvox ];
-	
-	if ( (fid = fopen( wmh.msk_fn.c_str() , "rb")) == NULL) error_wmtools_SPECT_mph( 126, 26, wmh.msk_fn);
-	fread( aux, sizeof(int), wmh.vol.Nvox, fid);
-	fclose(fid);
-	
-	for (int i = 0 ; i < wmh.vol.Nvox ; i ++ )	msk[ i ] = ( aux[ i ] != 0 );
-	
-	delete [] aux;
-}
-#endif
-
-//=============================================================================
-//=== read_att_map ============================================================
-//=============================================================================
-#if 0
-void read_att_map_mph( float *attmap )
-{
-	FILE *fid;
-	if ( ( fid = fopen( wmh.att_fn.c_str() , "rb") ) == NULL ) error_wmtools_SPECT_mph ( 124, 24, wmh.att_fn );
-	fread( attmap, sizeof(float), wmh.vol.Nvox, fid);
-	
-	bool exist_nan = false;
-	
-	for (int i = 0 ; i < wmh.vol.Nvox ; i++ ){
-		if ((boost::math::isnan)(attmap [ i ])){
-			attmap [ i ] = 0;
-			exist_nan = true;
-		}
-	}
-	
-	if ( exist_nan ) cout << "WARNING: att map contains NaN values. Converted to zero" << endl;
-	
-	fclose( fid );
-}
-#endif
-
 //=====================================================================
 //======== wm_SPECT_read_value_1d =====================================
 //=====================================================================
@@ -1193,7 +814,10 @@ wm_SPECT_read_value_1d(ifstream* stream1, char DELIMITER)
     }
 
   if (k == 0)
-    error_wmtools_SPECT_mph(888, 0, "");
+    {
+      // error_wmtools_SPECT_mph(888, 0, "");
+      stir::error("Error wm_SPECT: missing parameter in collimator file");
+    }
 
   pos2 = line.find_first_not_of(" \t\f\v\n\r", pos1 + 1);
   pos3 = line.find_first_of(" \t\f\v\n\r", pos2);
@@ -1202,262 +826,70 @@ wm_SPECT_read_value_1d(ifstream* stream1, char DELIMITER)
 }
 
 //=============================================================================
-//=== itoa ====================================================================
-//=============================================================================
-#if 0
-char *itoa(int n,char *s)
-{
-	int i,sign;
-	char c;
-	
-	if((sign=n)<0) {
-		n=-n;
-	}
-	
-	i=0;
-	do{
-		s[i++]=n%10+'0';
-	}
-	while((n/=10)>0);
-	
-	if(sign<0) {
-		s[i++]='-';      
-	}
-	
-	s[i]=EOS;
-	
-	for(int low=0,hi=i-1;low<hi;low++,hi--){
-		c=s[low];
-		s[low]=s[hi];
-		s[hi]=c;      
-	}
-	
-	return(s);
-}
-#endif
-
-//=============================================================================
-//=== free_wm =================================================================
-//=============================================================================
-//*** this block moved to delete_PinholeSPECTUB_arrays()
-//=============================================================================
-#if 0 
-void free_wm( )
-{
-    //... freeing wm.val and wm.col ...................................
-    
-    for( int i = 0 ; i < wmh.prj.Nbt ; i++ ){
-        
-        delete [] wm.val[ i ];
-        delete [] wm.col[ i ];
-    }
-    
-    //... freeing matrix memory....................................
-    
-    delete [] wm.val;
-    delete [] wm.col;
-    delete [] wm.ne;
-    
-    if ( wm.do_save_STIR ){
-        delete [] wm.ns;
-        delete [] wm.nb;
-        delete [] wm.na;
-        delete [] wm.nx;
-        delete [] wm.ny;
-        delete [] wm.nz;
-    }
-}
-#endif
-
-//=============================================================================
-//=== free_pcf ==============================================================
-//=============================================================================
-#if 0
-void free_pcf( )
-{
-    if ( wmh.do_round_cumsum ){
-        for ( int i = 0 ; i < pcf.round.dim ; i ++ ) delete [] pcf.round.val[ i ];
-        delete [] pcf.round.val;
-    }
-    
-    if ( wmh.do_square_cumsum ){
-        for ( int i = 0 ; i < pcf.square.dim ; i ++ ) delete [] pcf.square.val[ i ];
-        delete [] pcf.square.val;
-    }
-    
-    if ( wmh.do_depth ) delete pcf.cr_att.val ;
-}
-#endif
-
-//=============================================================================
 //== error_wmtools_SPECT_mph ======================================================
 //=============================================================================
 
 void
 error_wmtools_SPECT_mph(int nerr, int ip, string txt)
 {
-#if 0
-	switch(nerr){
-
-		case 13: printf("\n\nError wmtools_SPECT: not enough parameters in collimator file: %s \n",txt.c_str());break;
-		case 30: printf("\n\nError wmtools_SPECT: can not open %s for reading\n",txt.c_str()); break;
-		case 31: printf("\n\nError wmtools_SPECT: can not open %s for writing\n",txt.c_str()); break;
-        case 55: printf( "\n\nError %d weight3d: dowmsampling. Incongruency factor-dim: %d \n", nerr, ip ); break;
-        case 56: printf( "\n\nError %d weight3d: downsampling. Resulting dim bigger than max %d \n", nerr, ip ); break;
-        case 77: printf( "\n\nError %d weight3d: convolution. psf_out is not big enough %d \n", nerr, ip ); break;
-			
-		//... error: value of argv[]..........................
-		
-		case 122: printf("\n\nError wm_SPECT: file with variable collimator parameters: %s not found\n",txt.c_str() ); break;
-		case 124: printf("\n\nError wm_SPECT: can not open attenuation map-> argv[%d]: %s for reading\n", ip, txt.c_str() ); break; //should be case 119: argv[19]
-		case 126: printf("\n\nError wm_SPECT: can not open file mask-> argv[%d]: %s for reading\n",ip, txt.c_str() ); break; //should be case 121: argv[21]
-        case 150: printf("\n\nError wm_SPECT: list of hole parameters has different length (%d) than number of holes\n", ip); break;
-        case 190: printf("\n\nError wm_SPECT: wrong value in detector parameter: %s \n", txt.c_str()); break;
-        case 200: printf("\n\nError wm_SPECT: cannot allocate %d element of the variable: %s\n",ip, txt.c_str() ); break;
-        case 222: printf("\n\nError wm_SPECT: wrong number of ring rings: %d\n", ip ); break;
-        case 333: printf("\n\nError wm_SPECT: missing parameter in hole %d definition: %s\n", ip, txt.c_str() ); break;
-        case 334: printf("\n\nError wm_SPECT: %s unknown collimator model. Options: cyl/pol\n", txt.c_str() ); break;
-        case 444: printf("\n\nError wm_SPECT: hole %d: wrong hole shape. Hole shape should be either rect or round\n",ip); break;
-        case 888: printf("\n\nError wm_SPECT: missing parameter in collimator file\n"); break;
-		default: printf("\n\nError wmtools_SPECT: %d unknown error number on error_wmtools_SPECT()",nerr);
-	}
-	
-	exit(0);
-#else
-  using stir::error;
+  constexpr int size = 2000;
+  char buffer[size + 1];
   switch (nerr)
     {
 
     case 55:
-      printf("\n\nError %d weight3d: Dowmsampling. Incongruency factor-dim: %d \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Dowmsampling. Incongruency factor-dim: %d", ip);
       break;
     case 56:
-      printf("\n\nError %d weight3d: Downsampling. Resulting dim bigger than max %d \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Downsampling. Resulting dim bigger than max %d", ip);
       break;
     case 77:
-      printf("\n\nError %d weight3d: Convolution. psf_out is not big enough %d. Verify geometry. \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Convolution. psf_out is not big enough %d. Verify geometry.", ip);
       break;
     case 78:
-      printf("\n\nError %d weight3d: Geometric PSF. psf_out is not big enough %d. Verify geometry. \n", nerr, ip);
+      snprintf(buffer, size, "weight3d: Geometric PSF. psf_out is not big enough %d. Verify geometry.", ip);
       break;
 
       //... error: value of argv[]..........................
 
     case 122:
-      printf("\n\nError wm_SPECT: File with variable parameters: %s not found.\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: File with variable parameters: %s not found.\n", txt.c_str());
       break;
     case 124:
-      printf("\n\nError wm_SPECT: Cannot open attenuation map: %s for reading..\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Cannot open attenuation map: %s for reading..\n", txt.c_str());
       break;
     case 126:
-      printf("\n\nError wm_SPECT: Cannot open file mask: %s for reading\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Cannot open file mask: %s for reading\n", txt.c_str());
       break;
     case 150:
-      printf("\n\nError wm_SPECT: List of hole parameters has different length (%d) than number of holes.\n", ip);
+      snprintf(buffer, size, "wm_SPECT: List of hole parameters has different length (%d) than number of holes.\n", ip);
       break;
     case 190:
-      printf("\n\nError wm_SPECT: Wrong value in detector parameter: %s \n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Wrong value in detector parameter: %s \n", txt.c_str());
       break;
     case 200:
-      printf("\n\nError wm_SPECT: Cannot allocate %d element of the variable: %s\n", ip, txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Cannot allocate %d element of the variable: %s\n", ip, txt.c_str());
       break;
     case 222:
-      printf("\n\nError wm_SPECT: Wrong number of rings: %d\n", ip);
+      snprintf(buffer, size, "wm_SPECT: Wrong number of rings: %d\n", ip);
       break;
     case 333:
-      printf("\n\nError wm_SPECT: Missing parameter in hole %d definition: %s\n", ip, txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: Missing parameter in hole %d definition: %s\n", ip, txt.c_str());
       break;
     case 334:
-      printf("\n\nError wm_SPECT: %s unknown collimator model. Options: cyl/pol.\n", txt.c_str());
+      snprintf(buffer, size, "wm_SPECT: %s unknown collimator model. Options: cyl/pol.\n", txt.c_str());
       break;
     case 444:
-      printf("\n\nError wm_SPECT: Hole %d: Wrong hole shape. Hole shape should be either rect or round.\n", ip);
+      snprintf(buffer, size, "wm_SPECT: Hole %d: Wrong hole shape. Hole shape should be either rect or round.\n", ip);
       break;
     case 888:
-      error("\n\nError wm_SPECT: Missing parameter in collimator file.\n");
+      snprintf(buffer, size, "wm_SPECT: Missing parameter in collimator file.\n");
       break;
     default:
-      printf("\n\nError wmtools_SPECT: %d unknown error number on error_wmtools_SPECT().", nerr);
+      snprintf(buffer, size, "wmtools_SPECT: %d unknown error number on error_wmtools_SPECT().", nerr);
     }
 
-  exit(0);
-#endif
+  stir::error(buffer);
 }
-
-//==========================================================================
-//=== error_wm ====================================================
-//==========================================================================
-//=== Originally implemented in wm_SPECT_mph.cpp
-//=== Deprecated after main integration into ProjMatricByBinPinholeSPECTUB.cxx
-//=== STIR error handling is with error() and warning()
-//==========================================================================
-#if 0
-void error_wm_SPECT_mph( int nerr, string txt)
-{
-    string opcions[]={
-        "\nargv[1]  Matrix file: Weight matrix filename (without extension index)",
-        
-        "\nargv[2]  Image box: Number of columns (int)",
-        "\nargv[3]  Image box: Number of rows (int)",
-        "\nargv[4]  Image box: Number of slices (the same than projection slices) (int)",
-        "\nargv[5]  Image box: Voxel side length(cm). Only square voxels are considered (float cm)",
-        "\nargv[6]  Image box: Slice thickness (the same than projection slice thickness) (float cm)",
-        
-        "\nargv[7]  Image: First slice to reconstruct (1 to Nslices)",
-        "\nargv[8]  Image: Last slice to reconstruct (1 to Nslices)",
-        "\nargv[9]  Image: Object radius (cm)",
-        
-        "\nargv[10] Projection: file containig ring information",
-        "\nargv[11] Projections: File with the collimator parameters",
-        
-        "\nargv[12] Matrix: Minimum weight to take into account (over 1. Typically 0.01)",
-        "\nargv[13] Matrix: Maximum number of sigmas to consider in PSF calculation (float)",
-        
-        "\nargv[14] Matrix: Spatial high resolution in which to sample PSF distributions (typically 0.001)",
-        "\nargv[15] Matrix: Subsampling factor (usually 1-8)",
-        
-        "\nargv[16] Matrix: Correction for intrinsic PSF (no/yes)",
-        "\nargv[17] Matrix: Correction for impact depth (no/yes)",
-        "\nargv[18] Matrix: Correction for attenuation (no/simple/full)",
-        "\nargv[19] Matrix: attenuation map (filename/no) (in case of explicit mask)",
-        
-        "\nargv[20] Matrix: volume masking (att/file/no). Inscrit cylinder by default. att: mask with att=0",
-        "\nargv[21] Matrix: explicit mask (filename/no) (in case of explicit mask)",
-        
-        "\nargv[22]  Matrix file: Format. Options: STIR, FC (FruitCake)"
-    };
-    
-    switch(nerr){
-        case 100: cout << endl << "Missing variables" << endl;
-            for ( int i = 0 ; i < NUMARG-1 ; i++ ){
-                printf( "%s\n", opcions[ i ].c_str() );
-            }
-            break;
-            
-        //... error: value of argv[] ........................................
-            
-        case 101: printf("\n\nError %d wm_SPECT_mph: parametre file: %s not found\n", nerr, txt.c_str() );break;
-        case 102: printf("\n\nError %d wm_SPECT_mph: More parametres tan expected in file: %s\n", nerr, txt.c_str() );break;
-        case 103: printf("\n\nError %d wm_SPECT_mph: Less parametres tan expected in file: %s\n", nerr, txt.c_str() );break;
-        case 107: printf("\n\nError %d wm_SPECT_mph: first slice to reconstruct out of range (1->Nslic): %s \n", nerr, txt.c_str() );break;
-        case 108: printf("\n\nError %d wm_SPECT_mph: last slice to reconstruct out of range (first slice->Nslic): %s \n", nerr, txt.c_str() );break;
-        case 111: printf("\n\nError %d wm_SPECT_mph: number of subsets should be congruent with number of projection angles\n", nerr ); break;
-        case 116: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[16]. Options: no/yes. Read value: %s \n", nerr, txt.c_str() );break;
-        case 117: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[17]. Options: no/yes. Read value: %s \n", nerr, txt.c_str() );break;
-        case 118: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[18]. Options: no/simple/full. Read value: %s \n", nerr, txt.c_str() );break;
-        case 120: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[20]. Options: no/att/file. Read value: %s \n", nerr, txt.c_str() );break;
-        case 122: printf("\n\nError %d wm_SPECT_mph: invalid option for argv[22]. Options: STIR/FC. Read value: %s \n", nerr, txt.c_str() );break;
-            
-        //... other errors...........................................................
-            
-        case 150: printf("\n\nError %d wm_SPECT: second delimiter missing in file of parameters. Param: %s", nerr, txt.c_str() ); break;
-        case 200: printf("\n\nError %d wm_SPECT: cannot allocate the variable: %s\n", nerr, txt.c_str() );break;
-            
-        default: printf("\n\nError %d wm_SPECT: unknown error number", nerr);
-    }
-    
-    exit(0);
-}
-#endif
 
 } // namespace SPECTUB_mph
