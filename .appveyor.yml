@@ -27,6 +27,9 @@ build:
 environment:
   CMAKE_INSTALL_PREFIX: C:\projects\stir\install\
 
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 build_script:
   # find boost on Appveyor. Version depends on VM
   - for /D %%d in (C:\Libraries\boost_*) do set BOOST_ROOT=%%d
@@ -36,8 +39,8 @@ build_script:
   - echo Using Miniconda %MINICONDA%
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
   # install parallelproj and Python stuff
-  - conda install -c conda-forge  -yq libparallelproj swig numpy pytest matplotlib
-  - CALL conda.bat activate base
+  - conda create --name stirbuild -c conda-forge  -yq libparallelproj swig numpy pytest matplotlib
+  - CALL conda.bat activate stirbuild
   - python --version
   - mkdir build
   - mkdir install
