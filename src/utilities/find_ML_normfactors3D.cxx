@@ -17,7 +17,7 @@
  Just a wrapper around ML_estimate_component_based_normalisation
  \author Kris Thielemans
  */
-#include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
+#include "stir/recon_buildblock/MLEstimateComponentBasedNormalisation.h"
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
 #include "stir/ProjData.h"
@@ -114,7 +114,8 @@ main(int argc, char** argv)
                                             do_block,
                                             do_symmetry_per_block,
                                             do_KL,
-                                            do_display);
+                                            do_display,
+                                            /*do_save_to_file*/ true);
 
   timer.stop();
   info(boost::format("CPU time %1% secs") % timer.value());
