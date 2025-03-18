@@ -61,3 +61,6 @@ test_script:
   - "set PYTHONPATH=C:\\projects\\stir\\install\\python"
   - python -m pytest .
   - conda deactivate
+
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
