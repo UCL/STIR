@@ -52,7 +52,7 @@ build_script:
 
 test_script:
   - cd C:\projects\stir\build
-  - CALL conda.bat activate base
+  - CALL conda.bat activate stirbuild
   - python --version
   - ctest --output-on-failure  -C %CONFIGURATION%
   - cd ..\recon_test_pack
