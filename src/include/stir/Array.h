@@ -451,13 +451,13 @@ public:
   inline virtual void grow(const IndexRange<1>& range);
 
   // Array::grow initialises new elements to 0
-  inline void grow(const int min_index, const int max_index) override;
+  inline virtual void grow(const int min_index, const int max_index, bool initialise_with_0 = true);
 
   //! Array::resize initialises new elements to 0
   inline virtual void resize(const IndexRange<1>& range);
 
   // Array::resize initialises new elements to 0
-  inline void resize(const int min_index, const int max_index) override;
+  inline virtual void resize(const int min_index, const int max_index, bool initialise_with_0 = true);
 
   //! \name access to the data via a pointer
   //@{
@@ -569,6 +569,15 @@ public:
   inline const elemT& at(const BasicCoordinate<1, int>& c) const;
   //@}
 
+  void set_initialise_with_zeros(bool iwz)
+  {
+    init_with_zeros_ = iwz;
+  }
+  bool get_initialise_with_zeros() const
+  {
+    return init_with_zeros_;
+  }
+
 private:
   // Make sure we can call init() recursively.
   template <int num_dimensions2, class elemT2>
@@ -579,6 +588,8 @@ private:
     \arg data_ptr should start to a contiguous block of correct size
   */
   inline void init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data);
+
+  bool init_with_zeros_ = true;
 };
 
 END_NAMESPACE_STIR
