@@ -175,6 +175,8 @@ public:
     Allegro,
     GeminiTF,
     SAFIRDualRingPrototype,
+    SafirI,
+    SafirII,
     UPENN_5rings,
     UPENN_5rings_no_gaps,
     UPENN_6rings,
