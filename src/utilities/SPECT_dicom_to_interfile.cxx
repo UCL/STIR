@@ -143,7 +143,7 @@ GetDICOMTagInfo(const gdcm::File& file, const gdcm::Tag tag, std::string& dst, c
           try
             {
               const gdcm::DataElement& de = file.GetDataSet().GetDataElement(t);
-              const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+              const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
               if (!sqi)
                 {
                   // try next sequence
@@ -156,6 +156,7 @@ GetDICOMTagInfo(const gdcm::File& file, const gdcm::Tag tag, std::string& dst, c
                   // try next sequence
                   continue;
                 }
+
               const gdcm::Item& item = sqi->GetItem(sequence_idx);
 
               element = item.GetDataElement(tag);
@@ -200,12 +201,12 @@ GetEnergyWindowInfo(const gdcm::File& file, const EnergyWindowInfo request, std:
 
       // Get Energy Window Info Sequence
       const gdcm::DataElement& de = file.GetDataSet().GetDataElement(energy_window_info_seq);
-      const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
       const gdcm::Item& item = sqi->GetItem(sequence_idx);
 
       // Get Energy Window Range Sequence
       const gdcm::DataElement& element = item.GetDataElement(energy_window_range_seq);
-      const gdcm::SequenceOfItems* sqi2 = element.GetValueAsSQ();
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi2 = element.GetValueAsSQ();
       if (sqi2->GetNumberOfItems() > 1)
         stir::warning("Energy window sequence contains more than 1 window. Ignoring all later ones");
       const gdcm::Item& item2 = sqi2->GetItem(1);
@@ -254,7 +255,7 @@ GetRadionuclideInfo(const gdcm::File& file, const RadionuclideInfo request, std:
 
       // Get Radiopharmaceutical Info Sequence
       const gdcm::DataElement& de = file.GetDataSet().GetDataElement(radiopharm_info_seq_tag);
-      const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
       const gdcm::Item& item = sqi->GetItem(sequence_idx);
 
       // Get Radiopnuclide Code Sequence
@@ -262,7 +263,7 @@ GetRadionuclideInfo(const gdcm::File& file, const RadionuclideInfo request, std:
       const gdcm::DataElement& element = item.GetDataElement(radionuclide_code_seq_tag);
       if (element.GetVL() > 0)
         {
-          const gdcm::SequenceOfItems* sqi2 = element.GetValueAsSQ();
+          const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi2 = element.GetValueAsSQ();
           const gdcm::Item& item2 = sqi2->GetItem(sequence_idx);
           // std::cout<< "num items"<< sqi2->GetNumberOfItems();
           // std::cout << item2 << std::endl;
@@ -302,7 +303,7 @@ GetDetectorInfo( const gdcm::File& file, const DetectorInfo request, std::string
   try
     {
       const gdcm::DataElement& de = file.GetDataSet().GetDataElement(gdcm::Tag(0x0054, 0x0022));
-      const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
       const int num_detector_information_squence_items = sqi->GetNumberOfItems();
 
       for (int _sequence_id = 1; _sequence_id <= num_detector_information_squence_items; _sequence_id++)
