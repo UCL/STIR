@@ -76,6 +76,10 @@
             See <a href="https://github.com/UCL/STIR/issues/1532">Issue #1532</a> for more detail. Fixed by using averaging functionality of SSRB instead of adding segments for attenuation correction factors.
             <a href=https://github.com/UCL/STIR/pull/1531>PR #1531</a>
         </li>
+        <li>
+            Fixed a bug in the distributed LM computation code (introduced in 6.1) that neglected to accumulate outputs when not build with OpenMP.
+            See <a href="https://github.com/UCL/STIR/pull/1566"">PR #1566</a>".
+        </li>
     </ul>
 
 <h3>Build system</h3>
@@ -83,6 +87,7 @@
   <li>Enable more diagnostics in CMake when finding CERN's ROOT (we used to silence them)<br>
     <a href=https://github.com/UCL/STIR/pull/1552>PR #1552</a>
   </li>
+  <li>Use OpenMP by default</li>
 </ul>
 
 <h3>Known problems</h3>
@@ -98,7 +103,14 @@
 </li>
 
 <h3>Changed functionality</h3>
-
+<ul>
+  <li>
+    Made 2 (deprecated) members of <code>ProjDataInfoBlocksOnCylindricalNoArcCorr</code> <code>private</code>
+    and do some clean-up of which files to include.
+    <br>
+    <a href="https://github.com/UCL/STIR/pull/1556">PR #1556</a>
+  </li>
+</ul>
 
 <h3>Bug fixes</h3>
 <ul>
@@ -117,6 +129,15 @@
 
 
 <h4>recon_test_pack</h4>
+
+<h3>Changes to examples</h3>
+<uk>
+  <li>
+    Python example <code>plot_sinogram_profiles.py</code> has been renamed to <code>plot_projdata_profiles.py</code>
+    and generalised to work with TOF dimensions etc. A small <code>pytest</code> has been added as well.
+    <a href=https://github.com/UCL/STIR/pull/1370>PR #1370</a>
+  </li>
+</ul>
 
 </body>
 

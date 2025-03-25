@@ -71,15 +71,15 @@ zMax=`find_param $params_file zMin|tail -n 1`
 DimSize1=`find_param $params_file num_X_bins`
 DimSize2=`find_param $params_file num_Y_bins`
 DimSize3=$(( `find_param $params_file slice_number|tail -n 1` + 1 ))
-ElementSpacing1=`python -c "print ($xMax - $xMin)*10/$DimSize1"`
-ElementSpacing2=`python -c "print ($yMax - $yMin)*10/$DimSize2"`
-ElementSpacing3=`python -c "print ($zMax - $zMin)*10/($DimSize3 - 1)"`
-Offset1=`python -c "print $xMin*10 + $ElementSpacing1/2"`
-Offset2=`python -c "print $yMin*10 + $ElementSpacing2/2"`
-Offset3=`python -c "print $zMin*10"`
+ElementSpacing1=`python -c "print(($xMax - $xMin)*10/$DimSize1)"`
+ElementSpacing2=`python -c "print(($yMax - $yMin)*10/$DimSize2)"`
+ElementSpacing3=`python -c "print(($zMax - $zMin)*10/($DimSize3 - 1))"`
+Offset1=`python -c "print($xMin*10 + $ElementSpacing1/2)"`
+Offset2=`python -c "print($yMin*10 + $ElementSpacing2/2)"`
+Offset3=`python -c "print($zMin*10)"`
 
 number_format="float"; bytes_per_pixel=4;
-byte_order=`python -c 'import sys; print sys.byteorder'`endian
+byte_order=`python -c 'import sys; print(sys.byteorder)'`endian
 HeaderSize=0
 
 cat > $output_file_hv <<EOF

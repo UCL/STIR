@@ -27,6 +27,9 @@ build:
 environment:
   CMAKE_INSTALL_PREFIX: C:\projects\stir\install\
 
+init:
+  # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 build_script:
   # find boost on Appveyor. Version depends on VM
   - for /D %%d in (C:\Libraries\boost_*) do set BOOST_ROOT=%%d
@@ -36,20 +39,24 @@ build_script:
   - echo Using Miniconda %MINICONDA%
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
   # install parallelproj and Python stuff
-  - conda install -c conda-forge  -yq libparallelproj swig numpy pytest
-  - CALL conda.bat activate base
+  # don't do numpy here due to https://github.com/conda-forge/numpy-feedstock/issues/350
+  - conda create --name stirbuild -c conda-forge  -yq libparallelproj swig pytest
+  - CALL conda.bat activate stirbuild
   - python --version
+  - pip install numpy matplotlib
+  # basic test if numpy works
+  - python -c "import numpy"
   - mkdir build
   - mkdir install
   - cd build
-  - cmake.exe .. -A x64 -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DPython_EXECUTABLE="%MINICONDA%\\python.exe"
+  - cmake.exe .. -A x64 -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DCMAKE_PREFIX_PATH:PATH="%CONDA_PREFIX%"
   - cmake.exe --build . --config %CONFIGURATION%
   - cmake.exe --build . --target install --config %CONFIGURATION%
   - conda deactivate
 
 test_script:
   - cd C:\projects\stir\build
-  - CALL conda.bat activate base
+  - CALL conda.bat activate stirbuild
   - python --version
   - ctest --output-on-failure  -C %CONFIGURATION%
   - cd ..\recon_test_pack
@@ -58,3 +65,7 @@ test_script:
   - "set PYTHONPATH=C:\\projects\\stir\\install\\python"
   - python -m pytest .
   - conda deactivate
+
+on_finish:
+  # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  
