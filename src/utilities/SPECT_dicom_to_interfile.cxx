@@ -73,17 +73,16 @@ class SPECTDICOMData
 public:
   SPECTDICOMData(const std::string& DICOM_filename) { dicom_filename = DICOM_filename; };
   stir::Succeeded get_interfile_header(std::string& output_header, const std::string& data_filename, const int dataset_num) const;
-  stir::Succeeded get_proj_data(const std::string& output_file, const std::string& input_file = "" ) const;
+  stir::Succeeded get_proj_data(const std::string& output_file ) const;
   stir::Succeeded open_dicom_file(bool is_planar);
-  void set_dicom_filename(const std::string& DICOM_filename) { dicom_filename = DICOM_filename; };
-  bool is_planar;
+  std::vector<float> store_pixel_buffer_as_float_vector(const gdcm::ByteValue*& bv) const;
+  bool is_planar = false;
   int num_energy_windows = 1;
   int num_frames = 0;
   int num_of_projections = 0;
   std::vector<std::string> energy_window_name;
 
 private:
-  // shared_ptr<stir::ProjDataInfo> proj_data_info_sptr;
   std::string dicom_filename;
 
   float start_angle = 0.0f;
@@ -91,14 +90,13 @@ private:
   int actual_frame_duration = 0; // frame duration in msec
   int num_of_rotations = 0;
   std::string direction_of_rotation, isotope_name;
-  float extent_of_rotation;
+  float extent_of_rotation = 0.0f;
   float calibration_factor = -1;
   std::string rotation_radius;
 
   std::vector<float> lower_en_window_thres;
   std::vector<float> upper_en_window_thres;
 
-  int num_dimensions;
   std::vector<std::string> matrix_labels;
   std::vector<int> matrix_size;
   std::vector<double> pixel_sizes;
@@ -553,8 +551,6 @@ SPECTDICOMData::open_dicom_file(bool is_planar)
         }
     }
 
-  num_dimensions = 2;
-
   matrix_labels.push_back("axial coordinate");
   matrix_labels.push_back("bin coordinate");
 
@@ -669,26 +665,36 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
   return stir::Succeeded::yes;
 }
 
+std::vector<float>
+SPECTDICOMData::store_pixel_buffer_as_float_vector(const gdcm::ByteValue*& bv) const
+{
+  std::vector<float> pixel_data_as_float;
+  uint64_t n_elements = (uint64_t)bv->GetLength() / sizeof(uint16_t);
+  uint16_t* ptr = (uint16_t*)bv->GetPointer();
+
+  uint64_t ct = 0;
+  while (ct < n_elements)
+    {
+      uint16_t val = *ptr;
+      pixel_data_as_float.push_back((float)val);
+      ptr++;
+      ct++;
+    }
+
+  return pixel_data_as_float;
+}
+
 stir::Succeeded
-SPECTDICOMData::get_proj_data(const std::string& output_file, const std::string& input_file ) const
+SPECTDICOMData::get_proj_data(const std::string& output_file) const
 {
 
   std::unique_ptr<gdcm::ImageReader> DICOM_reader(new gdcm::ImageReader);
-  if (input_file.empty())
-    {
-      DICOM_reader->SetFileName(dicom_filename.c_str());
-    }
-  else
-    {
-      DICOM_reader->SetFileName(input_file.c_str());
-    }
-  
+  DICOM_reader->SetFileName(dicom_filename.c_str());
   try
     {
       if (!DICOM_reader->Read())
         {
-          stir::error(boost::format("SPECTDICOMData: cannot read file %1%") % dicom_filename);
-          // return stir::Succeeded::no;
+          stir::error(boost::format("in SPECTDICOMData::get_proj_data() - cannot read file %1%") % dicom_filename);
         }
     }
   catch (const std::string& e)
@@ -700,51 +706,57 @@ SPECTDICOMData::get_proj_data(const std::string& output_file, const std::string&
   const gdcm::File& file = DICOM_reader->GetFile();
   const gdcm::DataElement& de = file.GetDataSet().GetDataElement(gdcm::Tag(0x7fe0, 0x0010));
   const gdcm::ByteValue* bv = de.GetByteValue(); // Only works when data are not compressed.
-  
-  // Check if the pixel data pointer is NULL, if so the data may be compressed.
+
+  // Check if the pixel data pointer is NULL, if so the data were likely compressed.
+  std::vector<float> pixel_data_as_float;
   if (!bv)
     {
-      stir::warning(boost::format("SPECTDICOMData: decompressing pixel data from: %1%") % dicom_filename);
+      stir::warning(boost::format("in SPECTDICOMData::get_proj_data() - attempting to decompress pixel data from: %1%")
+                    % dicom_filename);
       gdcm::ImageChangeTransferSyntax change;
       change.SetTransferSyntax(gdcm::TransferSyntax::ImplicitVRLittleEndian);
       change.SetInput(DICOM_reader->GetImage());
 
       // Assert that the change in transfer syntax was successful. Return otherwise.
-      if (!change.Change())
+      try
         {
-          stir::error(boost::format("SPECTDICOMData: decompression failed.") % dicom_filename);
+          if (!change.Change())
+            {
+              stir::error(boost::format("in SPECTDICOMData::get_proj_data() - decompression failed."));
+            }
+        }
+      catch (const std::string& e)
+        {
+          std::cerr << e << std::endl;
           return stir::Succeeded::no;
         }
 
-      // Write a new file using the uncompressed transfer syntax.
-      const std::string uncompressed_dicom_filename = dicom_filename + std::string(".uncmp");
-      gdcm::ImageWriter writer;
-      writer.SetImage(change.GetOutput());
-      writer.SetFile(DICOM_reader->GetFile());
-      writer.SetFileName(uncompressed_dicom_filename.c_str());
-      if (!writer.Write())
+      const gdcm::DataElement& de_uncmp = change.GetOutput().GetDataElement();
+      const gdcm::ByteValue* bv_uncmp = de_uncmp.GetByteValue();
+      // Assert that pixel buffer is now accessible. Return otherwise.
+      try
         {
+          if (!bv_uncmp)
+            {
+              stir::error(boost::format("in SPECTDICOMData::get_proj_data() - pixel data are not accessible."));
+            }
+          else
+            {
+              std::cout << "In SPECTDICOMData::get_proj_data() - decompression of pixel data successful." << std::endl;
+              pixel_data_as_float = store_pixel_buffer_as_float_vector(bv_uncmp);
+            }
+        }
+      catch (const std::string& e)
+        {
+          std::cerr << e << std::endl;
           return stir::Succeeded::no;
         }
-
-       return get_proj_data(output_file, uncompressed_dicom_filename);
-
     }
-
-  uint64_t len0 = (uint64_t)bv->GetLength() / 2;
-  std::cout << "Number of data points = " << len0 << std::endl;
-
-  std::vector<float> pixel_data_as_float;
-
-  uint16_t* ptr = (uint16_t*)bv->GetPointer();
-
-  uint64_t ct = 0;
-  while (ct < len0)
+  else
     {
-      uint16_t val = *ptr;
-      pixel_data_as_float.push_back((float)val);
-      ptr++;
-      ct++;
+      // No uncompression required.
+      std::cout << "In SPECTDICOMData::get_proj_data() - pixel data are accessible." << std::endl;
+      pixel_data_as_float = store_pixel_buffer_as_float_vector(bv);
     }
 
   std::ofstream final_out(output_file.c_str(), std::ios::out | std::ofstream::binary);
