@@ -290,6 +290,8 @@ endforeach()
 set(STIR_REGISTRIES ${INSTALLED_STIR_REGISTRIES})
 
 # New create STIRConfig.cmake
+# First strip patch info from HDF5_VERSION, as on some systems it might be set as x.y.z-something, which causes problems for find_package.
+string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" HDF5_VERSION_FOR_CONFIG "${HDF5_VERSION}")
 CONFIGURE_PACKAGE_CONFIG_FILE(
   src/cmake/STIRConfig.cmake.in
   "${CMAKE_BINARY_DIR}/STIRConfig.cmake"
