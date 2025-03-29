@@ -13,6 +13,7 @@ from BackendTools.STIRInterface import ProjDataDims, ProjDataVisualisationBacken
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QGridLayout, QLabel, QSpinBox, QDoubleSpinBox, QSlider
 import sys
+import math
 import stir
 
 # from https://stackoverflow.com/a/61439160 author: Siyh
@@ -397,7 +398,7 @@ class UISliderSpinboxItem:
 
     def create_label_str(self, limits: tuple) -> str:
         """Returns the label string."""
-        return f"{self.__label_str} {limits}"
+        return f"{self.__label_str} {limits[0]:.6g} -- {limits[1]:.6g}"
 
     # ----------- Connect methods -----------
     # Calling slider.setValue() (or changing the slider) will call slider_connect, which calls
