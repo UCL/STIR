@@ -1,20 +1,10 @@
 /*
     Copyright (C) 2022, Matthew Strugari
     Copyright (C) 2014, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
-    Copyright (C) 2014, 2021, University College London
+    Copyright (C) 2014, 2021, 2025, University College London
     This file is part of STIR.
 
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-                http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -31,16 +21,13 @@
 
 // system libraries
 #include <fstream>
-#include <algorithm>
-#include <stdio.h>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <math.h>
-#include <ctype.h>
-#include <time.h>
+#include <cstdlib>
+
+using std::endl;
+using std::nothrow;
 
 // user defined libraries
 //#include "stir/ProjDataInterfile.h"
@@ -81,7 +68,6 @@
 // void wm_inputs_mph( char ** argv, int argc );
 // void read_inputs_mph( vector<string> param );
 
-using namespace std;
 using namespace SPECTUB_mph;
 using std::string;
 
@@ -746,8 +732,8 @@ ProjMatrixByBinPinholeSPECTUB::set_up(
 
   wmh.max_amp = (wmh.prj.rad - wmh.ro) / (wmh.collim.rad - wmh.ro);
 
-  psf_bin.max_dimx = (int)floorf(wmh.max_hsxcm * wmh.max_amp / wmh.prj.szcm) + 2;
-  psf_bin.max_dimz = (int)floorf(wmh.max_hszcm * wmh.max_amp / wmh.prj.thcm) + 2;
+  psf_bin.max_dimx = (int)std::floor(wmh.max_hsxcm * wmh.max_amp / wmh.prj.szcm) + 2;
+  psf_bin.max_dimz = (int)std::floor(wmh.max_hszcm * wmh.max_amp / wmh.prj.thcm) + 2;
 
   //... distributions at mid resolution ...........................................
 
@@ -759,15 +745,15 @@ ProjMatrixByBinPinholeSPECTUB::set_up(
 
       if (wmh.do_depth)
         {
-          psf_subs.max_dimx += (1 + (int)ceilf(wmh.prj.crth * wmh.tmax_aix / wmh.prj.szcm)) * wmh.subsamp;
-          psf_subs.max_dimz += (1 + (int)ceilf(wmh.prj.crth * wmh.tmax_aiz / wmh.prj.thcm)) * wmh.subsamp;
+          psf_subs.max_dimx += (1 + (int)std::ceil(wmh.prj.crth * wmh.tmax_aix / wmh.prj.szcm)) * wmh.subsamp;
+          psf_subs.max_dimz += (1 + (int)std::ceil(wmh.prj.crth * wmh.tmax_aiz / wmh.prj.thcm)) * wmh.subsamp;
         }
 
       if (wmh.do_psfi)
         {
 
-          int dimx = (int)ceil((float)0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.szcm);
-          int dimz = (int)ceil((float)0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.thcm);
+          int dimx = (int)std::ceil(0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.szcm);
+          int dimz = (int)std::ceil(0.5 * wmh.prj.sgm_i * wmh.Nsigm / wmh.prj.thcm);
 
           kern.dimx = kern.max_dimx = 2 * wmh.subsamp * dimx + 1;
           kern.dimz = kern.max_dimz = 2 * wmh.subsamp * dimz + 1;
@@ -1020,227 +1006,5 @@ ProjMatrixByBinPinholeSPECTUB::calculate_proj_matrix_elems_for_one_bin(ProjMatri
 
   lor.erase();
 }
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%% associated functions: reading, setting up variables and error messages %%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-//==========================================================================
-//=== wm_inputs ============================================================
-//==========================================================================
-//*** inputs now read from STIR parameter file
-//==========================================================================
-#if 0
-void wm_inputs_mph( char **argv, int argc )
-{
-    vector<string> param;
-    string line;
-    size_t pos1, pos2, pos3, pos4;
-    
-    param.push_back ("0");
-    
-    if ( argc == 2 ){		  // argv[1] is a file containing the parametres
-        
-        //... to open text file to get parametres ......................
-        
-        ifstream stream1( argv[ 1 ] );
-        if( !stream1 ) error_wm_SPECT_mph( 101, argv[ 1 ]);
-        
-        //... to get values ............................................
-        
-        int i=0;
-        
-        while ( !stream1.eof() ){
-            getline ( stream1, line );
-            
-            pos1 = line.find( DELIMITER1 );
-            if ( pos1 == string::npos ) continue;
-            i++;
-            if (i >= NUMARG ) error_wm_SPECT_mph( 102, argv[ 1 ] );
-            
-            pos2 = line.find_first_not_of(" \t\f\v\n\r", pos1 + 1 );
-            pos3 = line.find( DELIMITER2 );
-            if ( pos3 == string::npos ) {
-                char aux[ 3 ];
-                error_wm_SPECT_mph( 150, itoa ( i, aux ) );
-            }
-            pos4 = line.find_first_of( " \t\f\v\n\r", pos2 );
-            pos3 = minim( pos3, pos4 );
-            
-            param.push_back( line.substr( pos2 , pos3 - pos2 ) );
-        }
-        stream1.close();
-        if ( i != NUMARG -1 ) error_wm_SPECT_mph( 103, argv[ 1 ] );
-    }
-    
-    else{
-        cout << "number of arg: " << argc << std::endl;
-        for ( int i = 0 ; i < argc ; i++ ) cout << i << ": " << argv[ i ] << std::endl;
-        
-        if ( argc != NUMARG ) error_wm_SPECT_mph( 100, "" );
-        for ( int i = 1 ; i < argc ; i++ ) param.push_back( argv[ i ] );
-    }
-    
-    read_inputs_mph( param );
-}
-
-//==========================================================================
-//=== read_inputs ==========================================================
-//==========================================================================
-
-void read_inputs_mph(vector<string> param)
-{
-    
-    //.... matrix file .................
-    
-    wm.fn =param[ 1 ];
-    
-    //.....image parameters......................
-    
-    wmh.vol.Dimx = atoi( param[ 2 ].c_str() );  // Image: number of columns
-    wmh.vol.Dimy = atoi( param[ 3 ].c_str() );  // Image: number of rows
-    wmh.vol.Dimz = atoi( param[ 4 ].c_str() );  // Image: and projections: number of slices
-    wmh.vol.szcm = atof( param[ 5 ].c_str() );  // Image: voxel size (cm)
-    wmh.vol.thcm = atof( param[ 6 ].c_str() );  // Image: slice thickness (cm)
-    
-    wmh.vol.first_sl = atoi( param[ 7 ].c_str() ) - 1;   // Image: first slice to take into account (no weight bellow)
-    wmh.vol.last_sl  = atoi( param[ 8 ].c_str() );       // Image: last slice to take into account (no weights above)
-    
-    if ( wmh.vol.first_sl < 0 || wmh.vol.first_sl > wmh.vol.Dimz ) error_wm_SPECT_mph( 107, param[ 7 ] );
-    if ( wmh.vol.last_sl <= wmh.vol.first_sl || wmh.vol.last_sl > wmh.vol.Dimz ) error_wm_SPECT_mph( 108, param[ 8 ] );
-    
-    wmh.ro = atof( param[ 9 ].c_str() );         // Image: object radius (cm)
-    
-    //..... geometrical and other derived parameters of the volume structure...............
-    
-    wmh.vol.Npix    = wmh.vol.Dimx * wmh.vol.Dimy;
-    wmh.vol.Nvox    = wmh.vol.Npix * wmh.vol.Dimz;
-    
-    wmh.vol.FOVxcmd2  = (float) wmh.vol.Dimx * wmh.vol.szcm / (float) 2.;   // half of the size of the image volume, dimension x (cm);
-    wmh.vol.FOVcmyd2  = (float) wmh.vol.Dimy * wmh.vol.szcm / (float) 2.;   // half of the size of the image volume, dimension y (cm);
-    wmh.vol.FOVzcmd2  = (float) wmh.vol.Dimz * wmh.vol.thcm / (float) 2.;
-    
-    wmh.vol.x0      = - wmh.vol.FOVxcmd2 + (float)0.5 * wmh.vol.szcm ;  // x coordinate of first voxel
-    wmh.vol.y0      = - wmh.vol.FOVcmyd2 + (float)0.5 * wmh.vol.szcm ;  // y coordinate of first voxel
-    wmh.vol.z0      = - wmh.vol.FOVzcmd2 + (float)0.5 * wmh.vol.thcm ;  // z coordinate of first voxel
-    
-    //...ring parameters ................................................
-    
-    wmh.detector_fn = param[ 10 ].c_str();
-    
-    //....collimator parameters ........................................
-    
-    wmh.collim_fn   = param[ 11 ].c_str();
-    
-    //... resolution parameters ..............................................
-    
-    wmh.mn_w    = atof( param[ 12 ].c_str() );
-    wmh.Nsigm   = atof( param[ 13 ].c_str() );
-    wmh.highres = atof( param[ 14 ].c_str() );
-    wmh.subsamp = atoi( param[ 15 ].c_str() );
-    
-    wmh.do_subsamp = false;
-    
-    //...correction for intrinsic PSF....................................
-    
-    if ( param[ 16 ] == "no" ) wmh.do_psfi = false;
-    else{
-        if ( param[ 16 ] == "yes" ) wmh.do_psfi = true;
-        else error_wm_SPECT_mph( 116, param[ 16 ] );
-        wmh.do_subsamp = true;
-    }
-    
-    //... impact depth .........................
-    
-    if ( param[ 17 ] == "no" ) {
-        wmh.do_depth = false;
-    }
-    else{
-        if ( param[ 17 ] == "yes" ) wmh.do_depth = true;
-        else error_wm_SPECT_mph( 117, param[ 17 ] );
-        wmh.do_subsamp = true;
-    }
-    
-    //... attenuation parameters .........................
-    
-    if ( param[ 18 ] == "no" ) {
-        wmh.do_att = wmh.do_full_att = false;
-    }
-    else{
-        wmh.do_att = true;
-        
-        if ( param[ 18 ] == "simple" ) wmh.do_full_att = false;
-        else {
-            if ( param[ 18 ] == "full" ) wmh.do_full_att = true;
-            else error_wm_SPECT_mph( 118, param[ 18 ] );
-        }
-        
-        wmh.att_fn = param[ 19 ];
-        
-        cout << "Attenuation filename = " << wmh.att_fn << std::endl;
-    }
-    
-    //... masking parameters.............................
-    
-    if( param[ 20 ] == "no" ) wmh.do_msk_att = wmh.do_msk_file = false;
-    
-    else{
-        
-        if( param[ 20 ] == "att" ) wmh.do_msk_att = true;
-        
-        else{
-            if( param[ 20 ] == "file" ){
-                wmh.do_msk_file = true;
-                
-                wmh.msk_fn = param[ 21 ];
-                
-                cout << "MASK filename = " << wmh.msk_fn << std::endl;
-            }
-            else error_wm_SPECT_mph( 120, param[ 20 ]);
-        }
-    }
-        
-    // ..... matrix format ..............................
-    
-    if ( param[ 22 ] == "STIR" ) wm.do_save_STIR = true;
-    else {
-        if ( param[ 22 ] == "FC" ) wm.do_save_STIR = false;
-        else error_wm_SPECT_mph( 122, param[ 22 ] );
-    }
-    
-    //... initialization of do_variables to false..............
-    
-    wmh.do_round_cumsum       = wmh.do_square_cumsum       = false ;
-    
-    //... files with complentary information .................
-    
-    read_prj_params_mph();
-    read_coll_params_mph();
-    
-    //... precalculated functions ................
-    
-    fill_pcf();
-    
-    //... other variables .........................
-    
-    wm.Nbt     = wmh.prj.Nbt;                                                // number of rows of the weight matrix
-    wm.Nvox    = wmh.vol.Nvox;                                               // number of columns of the weight matrix
-    wmh.mndvh2 = ( wmh.collim.rad - wmh.ro ) * ( wmh.collim.rad - wmh.ro );  // reference distance ^2 for efficiency
-    
-    //... control of read parameters ..............
-    
-    cout << "\n\nMatrix name:" << wm.fn << std::endl;
-    cout << "\nImage. Nrow: " << wmh.vol.Dimy << "\t\tNcol: " << wmh.vol.Dimx << "\t\tvoxel_size: " << wmh.vol.szcm<< std::endl;
-    cout << "\nNumber of slices: " << wmh.vol.Dimz << "\t\tslice_thickness: " << wmh.vol.thcm << std::endl;
-    cout << "\nFOVxcmd2: " << wmh.vol.FOVxcmd2 << "\t\tFOVcmyd2: " << wmh.vol.FOVcmyd2 << "\t\tradius object: " << wmh.ro <<std::endl;
-    
-    if ( wmh.do_att ){
-        cout << "\nCorrection for atenuation: " << wmh.att_fn << "\t\tdo_mask: " << wmh.do_msk_att << std::endl;
-        cout << "\nAttenuation map: " << wmh.att_fn << std::endl;
-    }
-    
-    cout << "\nMinimum weight: " << wmh.mn_w << std::endl;
-}
-#endif
 
 END_NAMESPACE_STIR

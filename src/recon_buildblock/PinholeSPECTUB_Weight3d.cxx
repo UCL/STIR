@@ -1,11 +1,10 @@
 /*
     Copyright (C) 2022, Matthew Strugari
     Copyright (C) 2014, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
-    Copyright (C) 2014, 2021, University College London
+    Copyright (C) 2014, 2021, 2025, University College London
     This file is part of STIR.
 
-    This software is distributed WITHOUT ANY WARRANTY;
-    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 
@@ -14,45 +13,77 @@
 */
 
 // system libraries
-#include <stdio.h>
-#include <iostream>
-#include <stdlib.h>
 #include <string>
-#include <math.h>
+#include <algorithm>
+#include <cmath>
 
 // user defined libraries
 #include "stir/recon_buildblock/PinholeSPECTUB_Tools.h"
 #include "stir/recon_buildblock/PinholeSPECTUB_Weight3d.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
-#include <boost/math/constants/constants.hpp>
-//#include "stir/spatial_transformation/InvertAxis.h"
 
 namespace SPECTUB_mph
 {
 
 #define in_limits(a, l1, l2) ((a) < (l1) ? (l1) : ((a) > (l2) ? (l2) : (a)))
 
-#define NUMARG 23
-
 #define EPSILON 1e-12
-#define EOS '\0'
 
 #define maxim(a, b) ((a) >= (b) ? (a) : (b))
 #define minim(a, b) ((a) <= (b) ? (a) : (b))
 #define abs(a) ((a) >= 0 ? (a) : (-a))
 #define SIGN(a) (a < -EPSILON ? -1 : (a > EPSILON ? 1 : 0))
 
-//#ifndef M_PI
-//#define M_PI 3.141592653589793
-//#endif
+using std::min;
+using std::max;
+using std::string;
+using std::exp;
 
-//#define dg2rd 0.01745329251994
+//... geometric component ............................................
 
-#define DELIMITER1 '#' // delimiter character in input parameter text file
-#define DELIMITER2 '%' // delimiter character in input parameter text file
+static bool check_xang_par(const voxel_type* vox, const hole_type* h);
 
-using namespace std;
+static bool check_zang_par(const voxel_type* vox, const hole_type* h);
+
+// bool check_xang_obl( lor_type * l, voxel_type * vox, hole_type * h);
+
+// bool check_zang_obl( lor_type * l, voxel_type * vox, hole_type * h);
+
+static void voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const wmh_mph_type& wmh);
+
+static void downsample_psf(const psf2d_type* psf_in, psf2d_type* psf_out, int factor, bool do_calc);
+
+static void psf_convol(psf2d_type* psf1, psf2d_type* psf_aux, const psf2d_type* psf2, bool do_calc);
+
+static float bresenh_f(int i1,
+                       int j1,
+                       int i2,
+                       int j2,
+                       float const* const* f,
+                       int imax,
+                       int jmax,
+                       float dcr,
+                       const wmh_mph_type& wmh,
+                       const pcf_type& pcf);
+
+static void
+fill_psf_geo(psf2d_type* psf2d, const lor_type* l, const discrf2d_type* f, int factor, bool do_calc, const wmh_mph_type& wmh);
+
+static void fill_psf_depth(psf2d_type* psf2d,
+                           const lor_type* l,
+                           const discrf2d_type* f,
+                           int factor,
+                           bool do_calc,
+                           const wmh_mph_type& wmh,
+                           const pcf_type& pcf);
+
+//... attenuation...................................................
+
+static float calc_att_mph(const bin_type& bin, const voxel_type& vox, const float* attmap, const wmh_mph_type& wmh);
+
+static int comp_dist(float dx, float dy, float dz, float dlast);
+
+static void error_weight3d(int nerr, std::string txt); // error messages in weight3d_SPECT
 
 //==========================================================================
 //=== wm_calculation =======================================================
@@ -64,18 +95,17 @@ wm_calculation_mph(bool do_calc,
                    psf2d_type* psf_bin,
                    psf2d_type* psf_subs,
                    psf2d_type* psf_aux,
-                   psf2d_type* kern,
-                   float* attmap,
-                   bool* msk_3d,
+                   const psf2d_type* kern,
+                   const float* attmap,
+                   const bool* msk_3d,
                    int* Nitems,
-                   wmh_mph_type& wmh,
+                   const wmh_mph_type& wmh,
                    wm_da_type& wm,
-                   pcf_type& pcf)
+                   const pcf_type& pcf)
 {
-  voxel_type vox;   // structure with voxel information
-  bin_type bin;     // structure with bin information
-  lor_type l;       // structure with lor information
-  discrf2d_type* f; // structure with cumsum function
+  voxel_type vox; // structure with voxel information
+  bin_type bin;   // structure with bin information
+  lor_type l;     // structure with lor information
 
   float weight;
   float coeff_att = (float)1.;
@@ -85,7 +115,7 @@ wm_calculation_mph(bool do_calc,
 
   //... collimator parameters ........................................
 
-  mphcoll_type* c = &wmh.collim;
+  mphcoll_type const* c = &wmh.collim;
 
   //... STIR origin offset .......................................
   Dimxd2 = wmh.vol.Dimx / 2;
@@ -158,7 +188,7 @@ wm_calculation_mph(bool do_calc,
               for (int k = 0; k < wmh.prj.NdOS; k++)
                 {
 
-                  detel_type* d = &wmh.detel[kOS];
+                  detel_type const* d = &wmh.detel[kOS];
 
                   //... cordinates of the voxel in the rotated reference system. .................
 
@@ -170,7 +200,7 @@ wm_calculation_mph(bool do_calc,
                   for (int ih = 0; ih < d->nh; ih++)
                     {
 
-                      hole_type* h = &c->holes[d->who[ih]];
+                      hole_type const* h = &c->holes[d->who[ih]];
 
                       if (!check_xang_par(&vox, h))
                         continue;
@@ -182,6 +212,7 @@ wm_calculation_mph(bool do_calc,
                       voxel_projection_mph(&l, &vox, h, wmh);
 
                       //... hole shape .......................................
+                      const discrf2d_type* f; // structure with cumsum function
 
                       if (h->do_round)
                         f = &pcf.round;
@@ -309,11 +340,11 @@ wm_calculation_mph(bool do_calc,
 //==========================================================================
 
 void
-fill_psfi(psf2d_type* kern, wmh_mph_type& wmh)
+fill_psfi(psf2d_type* kern, const wmh_mph_type& wmh)
 {
   // float K0 = (float)0.39894228040143 / wmh.prj.sgm_i ; //Normalization factor: 1/sqrt(2*M_PI)/sigma
-  float K0 = (1.0f / boost::math::constants::root_two_pi<float>()) / wmh.prj.sgm_i; // Normalization factor: 1/sqrt(2*M_PI)/sigma
-  float f1 = -(float)0.5 / (wmh.prj.sgm_i * wmh.prj.sgm_i);
+  const float K0 = static_cast<float>(1.0 / std::sqrt(2 * _PI) / wmh.prj.sgm_i); // Normalization factor: 1/sqrt(2*M_PI)/sigma
+  const float f1 = -(float)0.5 / (wmh.prj.sgm_i * wmh.prj.sgm_i);
 
   float* g1d;
   float* g2d;
@@ -395,7 +426,7 @@ fill_psfi(psf2d_type* kern, wmh_mph_type& wmh)
 //==========================================================================
 
 bool
-check_xang_par(voxel_type* v, hole_type* h)
+check_xang_par(const voxel_type* v, const hole_type* h)
 {
 
   bool ans = true;
@@ -408,7 +439,7 @@ check_xang_par(voxel_type* v, hole_type* h)
   if (uy1 <= EPSILON)
     error_weight3d(88, "");
 
-  float a = atan2f(ux1, uy1);
+  float a = std::atan2(ux1, uy1);
 
   if (a > h->ax_M || a < h->ax_m)
     ans = false;
@@ -421,7 +452,7 @@ check_xang_par(voxel_type* v, hole_type* h)
 //==========================================================================
 
 bool
-check_zang_par(voxel_type* v, hole_type* h)
+check_zang_par(const voxel_type* v, const hole_type* h)
 {
 
   bool ans = true;
@@ -429,7 +460,7 @@ check_zang_par(voxel_type* v, hole_type* h)
   float uz1 = h->z1 - v->z;
   float uy1 = h->y1 - v->y1;
 
-  float a = atan2f(uz1, uy1);
+  float a = std::atan2(uz1, uy1);
 
   if (a > h->az_M || a < h->az_m)
     ans = false;
@@ -441,7 +472,7 @@ check_zang_par(voxel_type* v, hole_type* h)
 //==========================================================================
 
 void
-voxel_projection_mph(lor_type* l, voxel_type* v, hole_type* h, wmh_mph_type& wmh)
+voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const wmh_mph_type& wmh)
 {
 
   //...vector voxel-hole, angles and distances...............................
@@ -503,7 +534,7 @@ voxel_projection_mph(lor_type* l, voxel_type* v, hole_type* h, wmh_mph_type& wmh
 //==========================================================================
 
 void
-fill_psf_geo(psf2d_type* psf, lor_type* l, discrf2d_type* f, int factor, bool do_calc, wmh_mph_type& wmh)
+fill_psf_geo(psf2d_type* psf, const lor_type* l, const discrf2d_type* f, int factor, bool do_calc, const wmh_mph_type& wmh)
 {
   psf->xc = l->x1d_l + wmh.prj.FOVxcmd2; // x distance of center of PSF to the begin of the FOVcm
   psf->zc = l->z1d_l + wmh.prj.FOVzcmd2; // z distance of center of PSF to the begin of the FOVcm
@@ -518,11 +549,11 @@ fill_psf_geo(psf2d_type* psf, lor_type* l, discrf2d_type* f, int factor, bool do
 
   //... first and last bin indices (they can be out of bound) ........
 
-  psf->ib0 = (int)floorf(xm / wmh.prj.szcm);
-  psf->jb0 = (int)floorf(zm / wmh.prj.thcm);
+  psf->ib0 = (int)std::floor(xm / wmh.prj.szcm);
+  psf->jb0 = (int)std::floor(zm / wmh.prj.thcm);
 
-  int ib1 = (int)floorf(xM / wmh.prj.szcm) + 1;
-  int jb1 = (int)floorf(zM / wmh.prj.thcm) + 1;
+  int ib1 = (int)std::floor(xM / wmh.prj.szcm) + 1;
+  int jb1 = (int)std::floor(zM / wmh.prj.thcm) + 1;
 
   //... number of elements of the PSF ..............................................................
 
@@ -581,7 +612,13 @@ fill_psf_geo(psf2d_type* psf, lor_type* l, discrf2d_type* f, int factor, bool do
 //=============================================================================
 
 void
-fill_psf_depth(psf2d_type* psf, lor_type* l, discrf2d_type* f, int factor, bool do_calc, wmh_mph_type& wmh, pcf_type& pcf)
+fill_psf_depth(psf2d_type* psf,
+               const lor_type* l,
+               const discrf2d_type* f,
+               int factor,
+               bool do_calc,
+               const wmh_mph_type& wmh,
+               const pcf_type& pcf)
 {
 
   float xc_d = l->x1d_l + wmh.prj.FOVxcmd2; // x distance of center of PSF from the begin of the FOVcm
@@ -606,17 +643,17 @@ fill_psf_depth(psf2d_type* psf, lor_type* l, discrf2d_type* f, int factor, bool 
 
   //... first and last bin indices (they can be out of bound) ........
 
-  int ib0_d = (int)floorf((xc_d - l->hsxcm_d_d2) / wmh.prj.szcm);
-  int jb0_d = (int)floorf((zc_d - l->hszcm_d_d2) / wmh.prj.thcm);
+  int ib0_d = (int)std::floor((xc_d - l->hsxcm_d_d2) / wmh.prj.szcm);
+  int jb0_d = (int)std::floor((zc_d - l->hszcm_d_d2) / wmh.prj.thcm);
 
-  int ib1_d = (int)floorf((xc_d + l->hsxcm_d_d2) / wmh.prj.szcm) + 1;
-  int jb1_d = (int)floorf((zc_d + l->hszcm_d_d2) / wmh.prj.thcm) + 1;
+  int ib1_d = (int)std::floor((xc_d + l->hsxcm_d_d2) / wmh.prj.szcm) + 1;
+  int jb1_d = (int)std::floor((zc_d + l->hszcm_d_d2) / wmh.prj.thcm) + 1;
 
-  int ib0_dc = (int)floorf((xc_dc - l->hsxcm_dc_d2) / wmh.prj.szcm);
-  int jb0_dc = (int)floorf((zc_dc - l->hszcm_dc_d2) / wmh.prj.thcm);
+  int ib0_dc = (int)std::floor((xc_dc - l->hsxcm_dc_d2) / wmh.prj.szcm);
+  int jb0_dc = (int)std::floor((zc_dc - l->hszcm_dc_d2) / wmh.prj.thcm);
 
-  int ib1_dc = (int)floorf((xc_dc + l->hsxcm_dc_d2) / wmh.prj.szcm) + 1;
-  int jb1_dc = (int)floorf((zc_dc + l->hszcm_dc_d2) / wmh.prj.thcm) + 1;
+  int ib1_dc = (int)std::floor((xc_dc + l->hsxcm_dc_d2) / wmh.prj.szcm) + 1;
+  int jb1_dc = (int)std::floor((zc_dc + l->hszcm_dc_d2) / wmh.prj.thcm) + 1;
 
   //... number of elements of the PSF ..............................................................
 
@@ -789,7 +826,7 @@ fill_psf_depth(psf2d_type* psf, lor_type* l, discrf2d_type* f, int factor, bool 
 //==========================================================================
 
 void
-downsample_psf(psf2d_type* psf_in, psf2d_type* psf_out, int factor, bool do_calc)
+downsample_psf(const psf2d_type* psf_in, psf2d_type* psf_out, int factor, bool do_calc)
 {
 
   //... temporal check to remove .........................
@@ -866,7 +903,7 @@ downsample_psf(psf2d_type* psf_in, psf2d_type* psf_out, int factor, bool do_calc
 //==========================================================================
 
 void
-psf_convol(psf2d_type* psf, psf2d_type* psf_aux, psf2d_type* kern, bool do_calc)
+psf_convol(psf2d_type* psf, psf2d_type* psf_aux, const psf2d_type* kern, bool do_calc)
 {
   int dimx = psf->dimx + kern->dimx - 1;
 
@@ -935,7 +972,16 @@ psf_convol(psf2d_type* psf, psf2d_type* psf_aux, psf2d_type* kern, bool do_calc)
 //==========================================================================
 
 float
-bresenh_f(int i1, int j1, int i2, int j2, float** f, int imax, int jmax, float dcr, wmh_mph_type& wmh, pcf_type& pcf)
+bresenh_f(int i1,
+          int j1,
+          int i2,
+          int j2,
+          const float* const* f,
+          int imax,
+          int jmax,
+          float dcr,
+          const wmh_mph_type& wmh,
+          const pcf_type& pcf)
 {
 
   int er; // the error term
@@ -994,7 +1040,7 @@ bresenh_f(int i1, int j1, int i2, int j2, float** f, int imax, int jmax, float d
 
           er += Dj2;
           i1 += di;
-          ie = (int)floorf(inc_ie * (float)k);
+          ie = (int)std::floor(inc_ie * (float)k);
 
           // if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
 
@@ -1025,7 +1071,7 @@ bresenh_f(int i1, int j1, int i2, int j2, float** f, int imax, int jmax, float d
           er += Di2;
           j1 += dj;
 
-          ie = (int)floorf(inc_ie * (float)k);
+          ie = (int)std::floor(inc_ie * (float)k);
 
           // if ( ie > pcf.cr_att.i_max ) cout << " out of bounds a bresenh_f " << endl;
           // cout << pcf.cr_att.val[ ie ] << endl;
@@ -1044,7 +1090,7 @@ bresenh_f(int i1, int j1, int i2, int j2, float** f, int imax, int jmax, float d
 //=============================================================================
 
 float
-calc_att_mph(bin_type bin, voxel_type vox, float* attmap, wmh_mph_type& wmh)
+calc_att_mph(const bin_type& bin, const voxel_type& vox, const float* attmap, const wmh_mph_type& wmh)
 {
   float dx, dy, dz;
   float dlast_x, dlast_y, dlast_z, dlast;
@@ -1245,9 +1291,8 @@ error_weight3d(int nerr, string text)
       error("\n\nError weight3d: Voxel located behind or within the hole.\nRevise volume settings or use cyl mask.\n");
       break;
     default:
-      printf("\n\nError %d weight3d: %d unknown error number on error_weight3d().", nerr, nerr);
+      error("\n\nError weight3d: unknown error number on error_weight3d():" + std::to_string(nerr));
     }
-  exit(0);
 #endif
 }
 
