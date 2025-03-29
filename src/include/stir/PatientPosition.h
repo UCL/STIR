@@ -92,10 +92,7 @@ public:
            && this->get_position_as_string() == p1.get_position_as_string() && this->get_rotation() == p1.get_rotation();
   }
 
-  bool operator!=(const PatientPosition& p1) const
-  {
-    return !this->operator==(p1);
-  }
+  bool operator!=(const PatientPosition& p1) const { return !this->operator==(p1); }
 
   void set_rotation(const RotationValue rotation_v)
   {
