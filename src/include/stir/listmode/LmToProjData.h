@@ -59,6 +59,11 @@ class ListTime;
 
   ; parameters that determine the sizes etc of the output
 
+    ; Optional projection data to use as "template", i.e. the output
+    ; will have the same size.
+    ; If none is specified, we will use the proj_data_info from the input list-mode.
+    ; Warning: for some scanners with TOF capabilities, this will result in very
+    ; large projection data (possibly larger than the default from the vendor).
     template_projdata := some_projdata_file
     ; the next can be used to use a smaller number of segments than given
     ; in the template
@@ -136,7 +141,7 @@ class ListTime;
     store prompts := 0
     store delayeds := 1
        \endcode
-       Note that now the delayted events will be <strong>added</strong>,
+       Note that now the delayed events will be <strong>added</strong>,
        not subtracted.
   </li>
   </ul>
@@ -176,8 +181,23 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
   //@{
+  //! Optional \c proj data_info to use as "template"
+  /*! Use this to specify the output output proj_data_info, i.e. the output
+    will have the same size.
+
+    If not set, or when setting it explicitly to 0, the \c proj_data_info from the input
+    list-mode will be used.
+
+    Warning: for some scanners with TOF capabilities, this will result in large
+    projection data (possibly larger than the default from the vendor).
+  */
   void set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo>);
-  shared_ptr<ProjDataInfo> get_template_proj_data_info_sptr();
+  //! Get the current template
+  /*!
+    \see set_template_proj_data_info_sptr()
+    \warning the return value can be the null pointer.
+  */
+  shared_ptr<const ProjDataInfo> get_template_proj_data_info_sptr() const;
 
   //! \brief set input data
   /*! will throw of the input data is not of type \c ListModeData */
@@ -214,13 +234,12 @@ public:
   //@}
 
   //! Perform various checks
-  /*! Note: this is currently called by post_processing(). This will change in version 5.0 */
-  Succeeded set_up() override;
+  /*! Will likely call error() if there is a problem. */
+  virtual Succeeded set_up() override;
 
   //! This function does the actual work
-  //! N.E: In order to keep the ToF functions separate from the non-TOF
-  //! STIR this function just call the appropriate actual_process_data_with(out)_tof().
-  void process_data() override;
+  /*! You need to call set_up() first.*/
+  virtual void process_data() override;
 
 #if 0
   //! A test function for time-of-flight data. At this moment we lack a lot of infrastructure in

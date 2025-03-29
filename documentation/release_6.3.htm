@@ -53,11 +53,15 @@
     <a href=https://github.com/UCL/STIR/pull/1530>PR #1530</a>
   </li>
   <li>
-    Duration in sinogram interfile/exam_info obtained from <tt>lm_to_projdata</tt> has the correct value if we unlist all the events. This is not true for ROOT files<br>
+    Duration in sinogram interfile/exam_info obtained from <code>LmToProjData</code>/<tt>lm_to_projdata</tt> has the correct value if we unlist all the events. This is not true for ROOT files<br>
     <a href=https://github.com/UCL/STIR/pull/1519>PR #1519</a>
   </li>
+  <li>
+    <code>LmToProjData</code>/<tt>lm_to_projdata</tt> now no longer requires a template projection data. If none is specified, it will use the proj_data_info from the input list-mode.<br>
+    <b>Warning</b> for some scanners with TOF capabilities, this will result in very large projection data (possibly larger than the default from the vendor).<br>
+    <a href=https://github.com/UCL/STIR/pull/1315>PR #1315</a>
+  </li>
 </ul>
-
 
 <h3>Changed functionality</h3>
     <ul>
@@ -109,6 +113,11 @@
     and do some clean-up of which files to include.
     <br>
     <a href="https://github.com/UCL/STIR/pull/1556">PR #1556</a>
+  </li>
+  <li>
+    <code>LmToProjData::get_template_proj_data_info_sptr()</code> is now a <code>const</code> member returning
+    a <code>shared_ptr&lt;const ProjDataInfo&gt;</code>.<br>
+    <a href=https://github.com/UCL/STIR/pull/1315>PR #1315</a>
   </li>
 </ul>
 
