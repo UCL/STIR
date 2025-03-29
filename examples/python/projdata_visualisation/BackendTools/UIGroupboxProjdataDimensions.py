@@ -1,6 +1,7 @@
-# Copyright 2022, 2024 University College London
+# Copyright 2022, 2024, 2025 University College London
 
 # Author Robert Twyman
+# Author Kris Thielemans
 
 # This file is part of STIR.
 #
@@ -70,7 +71,8 @@ class DoubleSlider(QSlider):
         self.interval = (self._max - self._min) / number_of_steps
 
 class UIGroupboxProjDataDimensions:
-    """Used to control the sinogram dimension slider, scroll box and values."""
+    """Used to control the sinogram dimension and vmax sliders, sping box and values."""
+    # Sorry for the name which is no longer appropriate now that we have vmax in here
 
     def __init__(self, stir_interface: ProjDataVisualisationBackend) -> QGroupBox:
 
@@ -277,7 +279,7 @@ class UIGroupboxProjDataDimensions:
         """Returns the limits of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].get_limits()
 
-    def value(self, dimension: ProjDataDims) -> int|float:
+    def value(self, dimension: ProjDataDims) -> int | float:
         """Returns the value of the slider and spinbox for the given dimension."""
         return self.UI_slider_spinboxes[dimension].value()
 
@@ -301,6 +303,7 @@ class UISliderSpinboxItem:
         :param upper_limit: The maximum value for the spinbox/slider.
         :param value: The initial value for the spinbox/slider.
         :param connect_method: Called method when the spinbox or slider value is changed.
+        :param int_values: Bool o distinguish between int and float values
         """
 
         self.__int_values = int_values

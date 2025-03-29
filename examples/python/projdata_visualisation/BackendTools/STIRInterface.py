@@ -1,4 +1,4 @@
-# Copyright 2022, 2024 University College London
+# Copyright 2022, 2024, 2025 University College London
 
 # Author Robert Twyman
 
@@ -17,7 +17,8 @@ import stirextra
 
 
 class ProjDataDims(Enum):
-    """Enum for the dimensions of a sinogram."""
+    """Enum for the dimensions of a sinogram and vmax."""
+    # Sorry for the name which is no longer appropriate now that we have vmax in here
     SEGMENT_NUM = auto()
     AXIAL_POS = auto()
     VIEW_NUMBER = auto()

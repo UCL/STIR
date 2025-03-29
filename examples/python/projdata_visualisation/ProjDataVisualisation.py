@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2022, 2024 University College London
+# Copyright 2022, 2024, 2025 University College London
 
 # Author Robert Twyman
+# Author Kris Thielemans
 
 # This file is part of STIR.
 #
