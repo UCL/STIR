@@ -145,8 +145,8 @@ LmToProjData::set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo> t_
     template_proj_data_info_ptr.reset();
 }
 
-shared_ptr<ProjDataInfo>
-LmToProjData::get_template_proj_data_info_sptr()
+shared_ptr<const ProjDataInfo>
+LmToProjData::get_template_proj_data_info_sptr() const
 {
   return template_proj_data_info_ptr;
 }

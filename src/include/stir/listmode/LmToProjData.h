@@ -194,10 +194,10 @@ public:
   void set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo>);
   //! Get the current template
   /*!
-    \see set_template_proj_data_info_sptr
+    \see set_template_proj_data_info_sptr()
     \warning the return value can be the null pointer.
   */
-  shared_ptr<ProjDataInfo> get_template_proj_data_info_sptr();
+  shared_ptr<const ProjDataInfo> get_template_proj_data_info_sptr() const;
 
   //! \brief set input data
   /*! will throw of the input data is not of type \c ListModeData */
