@@ -1,4 +1,4 @@
-# Copyright 2022, 2024 University College London
+# Copyright 2022, 2024, 2025 University College London
 
 # Author Robert Twyman
 
@@ -17,12 +17,14 @@ import stirextra
 
 
 class ProjDataDims(Enum):
-    """Enum for the dimensions of a sinogram."""
+    """Enum for the dimensions of a sinogram and vmax."""
+    # Sorry for the name which is no longer appropriate now that we have vmax in here
     SEGMENT_NUM = auto()
     AXIAL_POS = auto()
     VIEW_NUMBER = auto()
     TANGENTIAL_POS = auto()
     TIMING_POS = auto()
+    VMAX = auto()
 
 class ProjDataVisualisationBackend:
     """Class used as STIR interface to the projection data for ProjDataVisualisation."""
@@ -48,20 +50,17 @@ class ProjDataVisualisationBackend:
         print("ProjDataVisualisationBackend.load_data: Loading data from file: " + self.projdata_filename)
         try:
             new_projdata = stir.ProjData.read_from_file(self.projdata_filename)
-            new_segment_data = new_projdata.get_segment_by_view(stir.SegmentIndices(0, 0))
         except RuntimeError:
             print("ProjDataVisualisationBackend.load_data: Error loading data from file: " + self.projdata_filename)
             return False
         
-        self.projdata = new_projdata
-        self.segment_data = new_segment_data
-        print("ProjDataVisualisationBackend.load_data: Data loaded.")
-        self.print_projdata_configuration()
+        self.set_projdata(new_projdata)
         return True
         
     def set_projdata(self, projdata: stir.ProjData) -> None:
         """Sets the projection data stream."""
         self.projdata = projdata
+        self.vminmax = (0, self.projdata.find_max())
         self.projdata_filename = "ProjData filename set externally, no filename"
         self.segment_data = self.projdata.get_segment_by_view(stir.SegmentIndices(0, 0))
         self.print_projdata_configuration()
@@ -77,6 +76,7 @@ class ProjDataVisualisationBackend:
             f"Number of axial positions:           {self.projdata.get_num_axial_poss(0):>10}\n"
             f"Number of tof positions:             {self.projdata.get_num_tof_poss():>10}\n"
             f"Number of non-tof sinograms:         {self.projdata.get_num_non_tof_sinograms():>10}\n\n"
+            f"Maximum:                            {self.vminmax[1]}\n\n"
         )
 
     def print_segment_data_configuration(self) -> None:
@@ -121,6 +121,8 @@ class ProjDataVisualisationBackend:
         elif dimension == ProjDataDims.TIMING_POS:
             return self.projdata.get_min_tof_pos_num(), \
                    self.projdata.get_max_tof_pos_num()
+        elif dimension == ProjDataDims.VMAX:
+            return self.vminmax
         else:
             raise ValueError("Unknown sinogram dimension: " + str(dimension))
 
