@@ -66,6 +66,11 @@
 <h3>Changed functionality</h3>
     <ul>
       <li>
+        In previous versions, when reading data/images where the radionuclide was not set, a default was used (F18 for PET, Tcm99 for SPECT).
+        This led to surprising (and sometimes wrong) behaviour. The radionuclide is now kept as "unknown".<br>
+        <a href=https://github.com/UCL/STIR/pull/1574>PR #1574</a>
+      </li>
+      <li>
         Default ECAT scanner configurations updated to use a negative intrinsic tilt.
       </li>
     </ul>
