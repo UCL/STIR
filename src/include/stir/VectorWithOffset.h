@@ -207,7 +207,9 @@ public:
       \todo in principle reallocation could be avoided when the new range would fit in the
       old one by shifting.
     */
-  inline virtual void resize(const int min_index, const int max_index, bool initialise_with_0 = true);
+  // inline virtual void resize(const int min_index, const int max_index, bool initialise_with_0 = true);
+  inline virtual void resize(const int min_index, const int max_index, bool initialise_with_0);
+  inline virtual void resize(const int min_index, const int max_index);
 
   //! change the range of the vector from 0 to new_size-1, new elements are set to \c T()
   inline void resize(const unsigned int new_size);

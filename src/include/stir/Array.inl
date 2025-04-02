@@ -608,6 +608,13 @@ Array<1, elemT>::resize(const int min_index, const int max_index, bool initialis
 
 template <class elemT>
 void
+Array<1, elemT>::resize(const int min_index, const int max_index)
+{
+  resize(min_index, max_index, true);
+}
+
+template <class elemT>
+void
 Array<1, elemT>::resize(const IndexRange<1>& range)
 {
   resize(range.get_min_index(), range.get_max_index());

@@ -467,6 +467,13 @@ VectorWithOffset<T>::resize(const int min_index, const int max_index, bool initi
 
 template <class T>
 void
+VectorWithOffset<T>::resize(const int min_index, const int max_index)
+{
+  resize(min_index, max_index, true);
+}
+
+template <class T>
+void
 VectorWithOffset<T>::resize(const unsigned new_size)
 {
   if (new_size == 0)
