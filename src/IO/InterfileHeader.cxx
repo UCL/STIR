@@ -612,19 +612,19 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   reference_energy = -1.f;
   add_key("Reference energy (in keV)", &reference_energy);
 
-  max_num_timing_poss = -1;
+  max_num_timing_poss = 1;
   add_key("Maximum number of (unmashed) TOF time bins", &max_num_timing_poss);
 #if STIR_VERSION < 070000
   add_alias_key("Maximum number of (unmashed) TOF time bins", "Number of TOF time bins");
 #endif
   timing_poss_sequence.clear();
   add_key("TOF bin order", &timing_poss_sequence);
-  size_of_timing_pos = -1.f;
+  size_of_timing_pos = 0.0f;
   add_key("Size of unmashed TOF time bins (ps)", &size_of_timing_pos);
 #if STIR_VERSION < 070000
   add_alias_key("Size of unmashed TOF time bins (ps)", "Size of timing bin (ps)");
 #endif
-  timing_resolution = -1.f;
+  timing_resolution = 0.0f;
   add_key("TOF timing resolution (ps)", &timing_resolution);
 #if STIR_VERSION < 070000
   add_alias_key("TOF timing resolution (ps)", "timing resolution (ps)");
