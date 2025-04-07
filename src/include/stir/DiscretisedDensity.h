@@ -35,6 +35,7 @@
 #include "stir/Array.h"
 #include "stir/ExamData.h"
 #include "stir/shared_ptr.h"
+#include <torch/torch.h>
 #include <string>
 
 START_NAMESPACE_STIR

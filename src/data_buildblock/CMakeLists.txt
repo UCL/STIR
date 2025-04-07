@@ -35,14 +35,6 @@ endif()
 
 include(stir_lib_target)
 
-# # if (STIR_WITH_TORCH)
-#     target_include_directories(data_buildblock  PUBLIC ${TORCH_INCLUDE_DIRS})
-#     include_directories(${TORCH_INCLUDE_DIRS})
-#      target_link_libraries(data_buildblock PUBLIC ${TORCH_LIBRARY})
-# # endif()
-
-target_link_libraries(${dir} PUBLIC ${TORCH_LIBRARY})
-target_link_libraries(${dir} PUBLIC buildblock)
 
 if (HAVE_HDF5)
   # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
