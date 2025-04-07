@@ -103,7 +103,7 @@ option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 option(DISABLE_Parallelproj_PROJECTOR "disable use of Parallelproj projector" OFF)
 OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" OFF)
 option(DISABLE_UPENN "disable use of UPENN filetypes" OFF)
-
+option(DISABLE_TORCH "disable use of TORCH" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -215,6 +215,31 @@ if(NOT DISABLE_STIR_CUDA)
     message(WARNING "No CUDA compiler found. Setting DISABLE_STIR_CUDA to ON.")
     set(DISABLE_STIR_CUDA ON)
     set(STIR_WITH_CUDA OFF)
+  endif()
+endif()
+
+
+
+# Enable CUDA if available
+# if (TORCH_CUDA_ARCH_LIST)
+#   message(STATUS "CUDA support enabled with architectures: ${TORCH_CUDA_ARCH_LIST}")
+# else()
+#   message(STATUS "CUDA support not enabled.")
+# endif()
+
+if(NOT DISABLE_TORCH)
+    set(Torch_DIR "" CACHE PATH "Path to the Torch CMake configuration directory")
+    # Try to find Torch
+    find_package(Torch QUIET)
+
+    # Check if Torch was found
+    if (NOT Torch_FOUND)
+        message(WARNING "Torch not found. Setting STIR_WITH_TORCH to OFF.")
+        set(STIR_WITH_TORCH OFF)
+    else()
+        message(STATUS "Torch found. Setting STIR_WITH_TORCH to ON.")
+        set(STIR_WITH_TORCH ON)
+        message(STATUS "Torch include paths: ${TORCH_INCLUDE_DIRS}")
   endif()
 endif()
 

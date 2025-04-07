@@ -113,6 +113,10 @@ endif()
 
 include(stir_lib_target)
 
+if (STIR_WITH_TORCH)
+    target_include_directories(buildblock  PUBLIC ${TORCH_INCLUDE_DIRS})
+     target_link_libraries(buildblock PUBLIC ${TORCH_LIBRARY})
+endif()
 
 if (HAVE_JSON)
   # Add the header-only nlohman_json header-only library
