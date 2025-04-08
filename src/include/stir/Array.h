@@ -203,9 +203,6 @@ public:
   //! return the total number of elements in this array
   inline size_t size_all() const;
 
-  using base_type::grow;
-  using base_type::resize;
-
   //! change the array to a new range of indices, new elements are set to 0
   /*! Current behaviour is that when resizing to a smaller array, the same memory
     will be used. However, when growing any of the dimensions, a new Array
@@ -331,6 +328,9 @@ private:
   // Make sure that we can access init() recursively
   template <int num_dimensions2, class elemT2>
   friend class Array;
+
+  using base_type::grow;
+  using base_type::resize;
 };
 
 /**************************************************
