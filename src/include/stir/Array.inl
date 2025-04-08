@@ -623,7 +623,7 @@ template <class elemT>
 void
 Array<1, elemT>::grow(const int min_index, const int max_index)
 {
-  resize(min_index, max_index, true);
+  resize(min_index, max_index);
 }
 
 template <class elemT>
