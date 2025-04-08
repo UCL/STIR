@@ -74,7 +74,7 @@ if (NOT MINI_STIR)
 	BinNormalisationFromAttenuationImage.cxx
 	BinNormalisationSPECT.cxx
         BinNormalisationPETFromComponents.cxx
-        ML_estimate_component_based_normalisation.cxx
+        MLEstimateComponentBasedNormalisation.cxx
 	GeneralisedPrior.cxx
 	ProjDataRebinning.cxx
 	FourierRebinning.cxx
