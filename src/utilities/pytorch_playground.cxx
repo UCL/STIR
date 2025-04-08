@@ -4,7 +4,7 @@
 /*!
 \file
 \ingroup utilities
-\brief this executable is is meant to do something specific, other than facilitate the developlement of the Pytorch interface.
+\brief this executable is not meant to do something specific, other than facilitate the developlement of the Pytorch interface.
 Heavily inspired by compare_images.cxxs
 
 \author Nikos Efthimiou
@@ -33,43 +33,59 @@ template <int num_dimensions, typename elemT>
 class TensorWrapper {
 public:
 
-         // Constructor: Initialize with a PyTorch tensor
+  // Constructor: Initialize with a PyTorch tensor
   TensorWrapper(const torch::Tensor& tensor, torch::Device device = torch::kCPU)
       : tensor(tensor.to(device)), device(device) {}
 
-         // // Constructor: Initialize from an IndexRange
-         // TensorWrapper(const stir::IndexRange<num_dimensions>& range, torch::Device device = torch::kCPU) {
-         //   // Convert IndexRange to a shape vector
-         //   std::vector<int64_t> shape = convertIndexRangeToShape(range);
-         //   // Determine the Torch data type based on elemT
-         //   torch::Dtype dtype = getTorchDtype();
-         //   // Create the tensor
-         //   tensor = torch::empty(shape, torch::TensorOptions().dtype(dtype));
-         // }
+  // Constructor: Initialize from an IndexRange
+  TensorWrapper(const stir::IndexRange<num_dimensions>& range, torch::Device device = torch::kCPU)
+      : device(device)  {
+    // Convert IndexRange to a shape vector
+    std::vector<int64_t> shape = convertIndexRangeToShape(range);
+    // Determine the Torch data type based on elemT
+    torch::Dtype dtype = getTorchDtype();
 
-         // // Constructor: Create an empty tensor with the specified shape
-         // TensorWrapper(const std::vector<int64_t>& shape, torch::Device device = torch::kCPU) {
-         //   // Ensure the number of dimensions matches the shape size
-         //   static_assert(num_dimensions > 0, "Number of dimensions must be greater than 0");
-         //   if (shape.size() != num_dimensions) {
-         //       throw std::invalid_argument("Shape size does not match the number of dimensions");
-         //     }
-         //   // Determine the Torch data type based on elemT
-         //   torch::Dtype dtype = getTorchDtype();
-         //   // Create the tensor
-         //   tensor = torch::empty(shape, torch::TensorOptions().dtype(dtype));
-         // }
+    // Extract offsets from the IndexRange and store them in the private vector
+    offsets = extract_offsets_recursive(range);
+    for(auto o : offsets){
+        std::cout << "Offset " << o << std::endl;
+      }
 
-         // Constructor: Initialize with a DiscretisedDensity
+    // Create the tensor
+    tensor = torch::zeros(shape, torch::TensorOptions().dtype(dtype));
+    tensor.to(device);
+  }
+
+  // Constructor: Create an empty tensor with the specified shape
+  TensorWrapper(const std::vector<int64_t>& shape, torch::Device device = torch::kCPU)
+      : device(device)  {
+    // Ensure the number of dimensions matches the shape size
+    static_assert(num_dimensions > 0, "Number of dimensions must be greater than 0");
+    if (shape.size() != num_dimensions) {
+        throw std::invalid_argument("Shape size does not match the number of dimensions");
+      }
+    // Determine the Torch data type based on elemT
+    torch::Dtype dtype = getTorchDtype();
+    // Create the tensor
+    tensor = torch::zeros(shape, torch::TensorOptions().dtype(dtype));
+    tensor.to(device);
+  }
+
+    // Constructor: Initialize with a DiscretisedDensity
     TensorWrapper(const stir::DiscretisedDensity<num_dimensions, elemT>& discretised_density,
                 torch::Device device = torch::kCPU) : device(device){
     // Get the shape from the DiscretisedDensity
     std::vector<int64_t> shape = getShapeFromDiscretisedDensity(discretised_density);
+    // Extract offsets from the IndexRange and store them in the private vector
+    offsets = extract_offsets_recursive(discretised_density.get_index_range());
+    for(auto o : offsets){
+        std::cout << "Offset " << o << std::endl;
+      }
     // Create a PyTorch tensor with the same shape
-    tensor = torch::empty(shape, torch::TensorOptions().dtype(getTorchDtype()));
-    tensor.to(device);
+    tensor = torch::zeros(shape, torch::TensorOptions().dtype(getTorchDtype()));
     // Fill the tensor with data from the DiscretisedDensity
     fillTensorFromDiscretisedDensity(discretised_density);
+    tensor.to(device);
   }
 
     // Method to move the tensor to the GPU
@@ -98,14 +114,47 @@ public:
     std::cout << "Tensor is on device: " << tensor.device() << std::endl;
   }
 
+  size_t size_all() const{
+    return tensor.numel();
+  }
+
   elemT find_max() const{
     return tensor.max().template item<elemT>();
   }
 
+  elemT sum() const{
+    return tensor.sum().template item<elemT>();
+  }
+
+  elemT sum_positive() const{
+    // This looks smart, if it works
+    return tensor.clamp_min(0).sum().template item<elemT>();
+  }
+
+  elemT find_min() const{
+    return tensor.min().template item<elemT>();
+  }
+
+  void fill(const elemT& n){
+    tensor.fill_(n);
+  }
+  //! Sets elements below value to the value
+  void apply_lower_threshold(const elemT& l){
+    tensor.clamp_min(l);
+  }
+
+  //! Sets elements above value to the value
+  void apply_upper_threshold(const elemT& u){
+    tensor.clamp_max(u);
+  }
+
+
   // Method to create an empty copy of the TensorWrapper
   std::unique_ptr<TensorWrapper<num_dimensions, elemT>> get_empty_copy() const {
     // Create an empty tensor with the same shape and data type as the current tensor
-    torch::Tensor empty_tensor = torch::empty_like(tensor);a
+    torch::Tensor empty_tensor = torch::empty_like(tensor);
+    // Probably dangerous, the User should move the data to the GPU when should
+    empty_tensor.to(device);
     // Return a new TensorWrapper with the empty tensor
     return std::make_unique<TensorWrapper<num_dimensions, elemT>>(empty_tensor);
   }
@@ -128,6 +177,8 @@ public:
   std::unique_ptr<TensorWrapper<num_dimensions, elemT>> clone() const {
     // Create a deep copy of the underlying tensor
     torch::Tensor cloned_tensor = tensor.clone();
+     // Probably dangerous, the User should move the data to the GPU when should
+    tensor.to(device);
     // Return a new TensorWrapper with the cloned tensor
     return std::make_unique<TensorWrapper<num_dimensions, elemT>>(cloned_tensor);
   }
@@ -164,11 +215,11 @@ public:
     std::cout << "]" << std::endl;
   }
 
-  inline stir::IndexRange<num_dimensions> get_index_range() const {
+  stir::IndexRange<num_dimensions> get_index_range() const {
     return stir::IndexRange<num_dimensions>();
   }
 
-  inline virtual void resize(const stir::IndexRange<num_dimensions>& range)
+  void resize(const stir::IndexRange<num_dimensions>& range)
   {
     // Convert IndexRange to a shape vector
     std::vector<int64_t> new_shape = convertIndexRangeToShape(range);
@@ -200,6 +251,7 @@ protected:
   // Well, the actual container.
   torch::Tensor tensor;
   torch::Device device; // The device (CPU or GPU) where the tensor is stored
+  std::vector<int> offsets;          // Offsets for each dimension
 
          // Helper function to map IndexRange to a shape vector
          // template <int num_dimensions>
@@ -255,6 +307,20 @@ protected:
             fillRecursive<current_dim - 1>(array[i], accessor[i-min_index], range[i]);
           }
       }
+  }
+
+  template <int current_dim>
+  std::vector<int> extract_offsets_recursive(const stir::IndexRange<current_dim>& range) {
+    std::vector<int> result;
+    result.push_back(range.get_min_index()); // Get the minimum index for the current dimension
+
+    if constexpr (current_dim > 1) {
+        // Recurse into the next dimension
+        auto sub_offsets = extract_offsets_recursive(range[range.get_min_index()]);
+        result.insert(result.end(), sub_offsets.begin(), sub_offsets.end());
+      }
+
+    return result;
   }
 
 private:
@@ -325,18 +391,6 @@ main(int argc, char* argv[])
       std::cout << "  Clock Rate: " << device_prop.clockRate / 1000 << " MHz" << std::endl;
     }
 
-  // Create a tensor on the default device (CPU)
-  auto tensor_cpu = torch::rand({3, 3});
-  std::cout << "Tensor on device: " << tensor_cpu.device() << std::endl;
-
-  // Create a tensor on the GPU (if available)
-  if (torch::cuda::is_available()) {
-      auto tensor_gpu = torch::rand({3, 3}, torch::device(torch::kCUDA));
-      std::cout << "Tensor on device: " << tensor_gpu.device() << std::endl;
-    } else {
-      std::cout << "CUDA is not available. Using CPU." << std::endl;
-    }
-
   // first process command line options
   while (argc > 0 && argv[0][0] == '-')
     {
@@ -388,7 +442,7 @@ main(int argc, char* argv[])
   // Move the tensor to the GPU (if available)
   try {
       tw.to_gpu();
-      std::cout << "Moved tensor to GPU." << std::endl;
+      std::cout << "Moved tw to GPU." << std::endl;
     } catch (const std::runtime_error& e) {
       std::cerr << e.what() << std::endl;
     }
@@ -418,6 +472,41 @@ main(int argc, char* argv[])
     std::cout << "Tensored: Time to compute max value: " << duration << " ms" << std::endl;
     std::cout << "\n" << std::endl;
   }
+
+  {
+    auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "stir::Array SUM value: " << (*first_operand).sum() << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "stir::Array: Time to compute SUM value: " << duration << " ms" << std::endl;
+    std::cout << "\n" << std::endl;
+  }
+  {
+    auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "Tensored: SUM value: " << tw.sum() << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "Tensored: Time to compute SUM value: " << duration << " ms" << std::endl;
+    std::cout << "\n" << std::endl;
+  }
+
+  {
+    auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "stir::Array SUM_pos value: " << (*first_operand).sum_positive() << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "stir::Array: Time to compute SUM_pos value: " << duration << " ms" << std::endl;
+    std::cout << "\n" << std::endl;
+  }
+  {
+    auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "Tensored: SUM_pos value: " << tw.sum_positive() << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "Tensored: Time to compute SUM_pos value: " << duration << " ms" << std::endl;
+    std::cout << "\n" << std::endl;
+  }
+
   std::cout << "____________XAPYB__________" << std::endl;
   {
     auto cloned_empty_first_operand = first_operand->get_empty_copy();
@@ -436,7 +525,7 @@ main(int argc, char* argv[])
     cloned_empty_tw->print_device();
     try {
         cloned_empty_tw->to_gpu();
-        std::cout << "Moved tensor to GPU." << std::endl;
+        std::cout << "Moved cloned_empty_tw to GPU." << std::endl;
       } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
       }
@@ -447,7 +536,7 @@ main(int argc, char* argv[])
     cloned_tw->print_device();
     try {
         cloned_tw->to_gpu();
-        std::cout << "Moved tensor to GPU." << std::endl;
+        std::cout << "Moved cloned_tw to GPU." << std::endl;
       } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
       }
