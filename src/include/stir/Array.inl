@@ -576,13 +576,20 @@ Array<1, elemT>::init(const IndexRange<1>& range, elemT* const data_ptr, bool co
 
 template <class elemT>
 void
-Array<1, elemT>::resize(const int min_index, const int max_index)
+Array<1, elemT>::resize(const int min_index, const int max_index, bool initialise_with_0)
 {
   this->check_state();
   const int oldstart = this->get_min_index();
   const size_type oldlength = this->size();
 
   base_type::resize(min_index, max_index);
+
+  if (!initialise_with_0)
+    {
+      this->check_state();
+      return;
+    }
+
   if (oldlength == 0)
     {
       for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
@@ -596,6 +603,13 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
         assign(this->num[i], 0);
     }
   this->check_state();
+}
+
+template <class elemT>
+void
+Array<1, elemT>::resize(const int min_index, const int max_index)
+{
+  resize(min_index, max_index, true);
 }
 
 template <class elemT>
