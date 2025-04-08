@@ -262,7 +262,7 @@ main(int argc, char* argv[])
       float random_and_scatter = random_and_scatter_inside_14mm + random_and_scatter_outside_14mm;
 
       float total_event_number = 0;
-      for (int idx = 0; idx < squeezed_sino_all.size(); ++idx)
+      for (int idx = 0; static_cast<unsigned>(idx) < squeezed_sino_all.size(); ++idx)
         {
           total_event_number += squeezed_sino_all[idx];
         }

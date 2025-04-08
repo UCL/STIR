@@ -687,7 +687,7 @@ DataSymmetriesForBins_PET_CartesianGrid::num_related_view_segment_numbers(const 
 int
 DataSymmetriesForBins_PET_CartesianGrid::num_related_bins(const Bin& b) const
 {
-  int num;
+  int num = 0;
   // cylindrical implementaion
   if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
     {

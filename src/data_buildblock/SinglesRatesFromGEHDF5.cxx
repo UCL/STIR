@@ -62,7 +62,7 @@ SinglesRatesFromGEHDF5::read_from_file(const std::string& rdf_filename)
   // GE uses unsigned int, while SinglesRateForTimeSlices uses int, so we need a copy
   Array<2, unsigned int> GE_singles(IndexRange2D(0, _num_time_slices - 1, 0, total_singles_units - 1));
 
-  while (slice < _num_time_slices)
+  while (slice < static_cast<unsigned>(_num_time_slices))
     {
       m_input_sptr->read_singles(GE_singles[slice], slice + 1);
       ++slice;
@@ -73,7 +73,7 @@ SinglesRatesFromGEHDF5::read_from_file(const std::string& rdf_filename)
   std::copy(GE_singles.begin_all(), GE_singles.end_all(), _singles.begin_all());
 
   // PW Modify this bit of code too.
-  if (slice != _num_time_slices)
+  if (slice != static_cast<unsigned>(_num_time_slices))
     {
       error("\nSinglesRatesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n", slice, _num_time_slices);
       // TODO resize singles to return array with new sizes
@@ -83,7 +83,7 @@ SinglesRatesFromGEHDF5::read_from_file(const std::string& rdf_filename)
     {
       // GE RDF9 listmode stores singles every second
       _singles_time_interval = 1.0;
-      for (unsigned int slice = 0; slice < _num_time_slices; ++slice)
+      for (unsigned int slice = 0; slice < static_cast<unsigned>(_num_time_slices); ++slice)
         _times[slice] = slice + _singles_time_interval; // note that this has to store the "end-time" of the slice
 
       assert(_times.size() != 0);

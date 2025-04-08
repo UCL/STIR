@@ -49,6 +49,9 @@ START_NAMESPACE_STIR
 double
 TimeFrameDefinitions::get_start_time(unsigned int frame_num) const
 {
+  if (frame_num < 1)
+    throw std::runtime_error("TimeFrameDefinitions::get_start_time called for frame " + std::to_string(frame_num)
+                             + ", but it should be at least 1.");
   if (frame_num > frame_times.size())
     throw std::runtime_error("TimeFrameDefinitions: asked for frame " + std::to_string(frame_num) + ", but only "
                              + std::to_string(frame_times.size()) + " frames present.");
@@ -58,6 +61,9 @@ TimeFrameDefinitions::get_start_time(unsigned int frame_num) const
 double
 TimeFrameDefinitions::get_end_time(unsigned int frame_num) const
 {
+  if (frame_num < 1)
+    throw std::runtime_error("TimeFrameDefinitions::get_end_time called for frame " + std::to_string(frame_num)
+                             + ", but it should be at least 1.");
   if (frame_num > frame_times.size())
     throw std::runtime_error("TimeFrameDefinitions: asked for frame " + std::to_string(frame_num) + ", but only "
                              + std::to_string(frame_times.size()) + " frames present.");
@@ -253,8 +259,11 @@ TimeFrameDefinitions::TimeFrameDefinitions(const TimeFrameDefinitions& org_frame
 }
 
 void
-TimeFrameDefinitions::set_time_frame(const int frame_num, const double start, const double end)
+TimeFrameDefinitions::set_time_frame(const unsigned int frame_num, const double start, const double end)
 {
+  if (frame_num < 1)
+    throw std::runtime_error("TimeFrameDefinitions::set_time_frame called for frame " + std::to_string(frame_num)
+                             + ", but it should be at least 1.");
   if (frame_num > frame_times.size())
     throw std::runtime_error("TimeFrameDefinitions::set_time_frame called for frame " + std::to_string(frame_num) + ", but only "
                              + std::to_string(frame_times.size()) + " frames present.");
@@ -265,7 +274,7 @@ TimeFrameDefinitions::set_time_frame(const int frame_num, const double start, co
 bool
 TimeFrameDefinitions::operator==(const TimeFrameDefinitions& t) const
 {
-  for (int frame = 0; frame < frame_times.size(); frame++)
+  for (int frame = 0; static_cast<unsigned>(frame) < frame_times.size(); frame++)
     {
 
       const bool is_identical = (std::abs(frame_times.at(frame).first - t.frame_times.at(frame).first) <= 10e-5)

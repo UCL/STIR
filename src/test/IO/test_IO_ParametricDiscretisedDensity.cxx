@@ -132,7 +132,7 @@ IOTests_ParametricDiscretisedDensity::check_result()
   std::cerr << "\tChecking the exam info...\n";
   check_exam_info(_image_to_write_sptr->get_exam_info(), _image_to_read_sptr->get_exam_info());
 
-  for (int i = 1; i <= _image_to_read_sptr->get_num_params(); ++i)
+  for (int i = 1; static_cast<unsigned>(i) <= _image_to_read_sptr->get_num_params(); ++i)
     {
 
       std::cerr << "\t\tChecking kinetic parameter " << i << "...\n";
