@@ -498,6 +498,13 @@ VectorWithOffset<T>::grow(const int min_index, const int max_index, bool initial
 
 template <class T>
 void
+VectorWithOffset<T>::grow(const int min_index, const int max_index)
+{
+  this->grow(min_index, max_index, true);
+}
+
+template <class T>
+void
 VectorWithOffset<T>::grow(const unsigned new_size)
 {
   this->grow(0, static_cast<int>(new_size - 1));

@@ -194,7 +194,9 @@ public:
       resize() in a derived class, it is probably safest to overload
       grow() as well.
   */
-  inline virtual void grow(const int min_index, const int max_index, bool initialise_with_0 = true);
+  //inline virtual void grow(const int min_index, const int max_index, bool initialise_with_0 = true);
+  inline virtual void grow(const int min_index, const int max_index, bool initialise_with_0);
+  inline virtual void grow(const int min_index, const int max_index);
 
   //! grow the range of the vector from 0 to new_size-1, new elements are set to \c T()
   inline void grow(const unsigned int new_size);

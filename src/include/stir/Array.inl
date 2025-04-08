@@ -629,6 +629,13 @@ Array<1, elemT>::grow(const int min_index, const int max_index, bool initialise_
 
 template <class elemT>
 void
+Array<1, elemT>::grow(const int min_index, const int max_index)
+{
+  resize(min_index, max_index, true);
+}
+
+template <class elemT>
+void
 Array<1, elemT>::grow(const IndexRange<1>& range)
 {
   grow(range.get_min_index(), range.get_max_index());
