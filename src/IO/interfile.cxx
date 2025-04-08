@@ -30,8 +30,6 @@
 #include "stir/IO/interfile.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/IO/InterfileHeader.h"
-#include "stir/IO/InterfileHeaderSiemens.h"
-#include "stir/IO/InterfilePDFSHeaderSPECT.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -48,7 +46,11 @@
 #include "stir/error.h"
 #include "stir/warning.h"
 #include "stir/DynamicDiscretisedDensity.h"
-#include "stir/modelling/ParametricDiscretisedDensity.h"
+#ifndef MINI_STIR
+#  include "stir/IO/InterfileHeaderSiemens.h"
+#  include "stir/IO/InterfilePDFSHeaderSPECT.h"
+#  include "stir/modelling/ParametricDiscretisedDensity.h"
+#endif
 #include "stir/date_time_functions.h"
 #include <boost/format.hpp>
 #include <fstream>
@@ -211,6 +213,8 @@ read_interfile_dynamic_image(istream& input, const string& directory_for_data)
   return dynamic_dens_ptr;
 }
 
+#ifndef MINI_STIR
+
 ParametricVoxelsOnCartesianGrid*
 read_interfile_parametric_image(istream& input, const string& directory_for_data)
 {
@@ -277,6 +281,8 @@ read_interfile_parametric_image(istream& input, const string& directory_for_data
   return parametric_dens_ptr;
 }
 
+#endif
+
 VoxelsOnCartesianGrid<float>*
 read_interfile_image(const string& filename)
 {
@@ -307,6 +313,8 @@ read_interfile_dynamic_image(const string& filename)
   return read_interfile_dynamic_image(image_stream, directory_name);
 }
 
+#ifndef MINI_STIR
+
 ParametricVoxelsOnCartesianGrid*
 read_interfile_parametric_image(const string& filename)
 {
@@ -321,6 +329,8 @@ read_interfile_parametric_image(const string& filename)
 
   return read_interfile_parametric_image(image_stream, directory_name);
 }
+
+#endif
 
 #if 0
 const VectorWithOffset<std::streamoff> 
@@ -818,6 +828,8 @@ write_basic_interfile(const string& filename,
       filename, dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image), output_type, scale, byte_order);
 }
 
+#ifndef MINI_STIR
+
 Succeeded
 write_basic_interfile(const string& filename,
                       const ParametricVoxelsOnCartesianGrid& image,
@@ -858,12 +870,14 @@ write_basic_interfile(const string& filename,
                                                                scaling_factors,
                                                                file_offsets,
                                                                data_type_descriptions);
-#if 0
+#  if 0
     delete[] header_name;
     delete[] data_name;
-#endif
+#  endif
   return success;
 }
+
+#endif
 
 Succeeded
 write_basic_interfile(const string& filename,
@@ -906,6 +920,8 @@ write_basic_interfile(const string& filename,
 #endif
   return success;
 }
+
+#ifndef MINI_STIR
 
 static ProjDataFromStream*
 read_interfile_PDFS_SPECT(istream& input, const string& directory_for_data, const ios::openmode open_mode)
@@ -991,9 +1007,12 @@ read_interfile_PDFS_Siemens(istream& input, const string& directory_for_data, co
   return pdfs_ptr;
 }
 
+#endif
+
 ProjDataFromStream*
 read_interfile_PDFS(istream& input, const string& directory_for_data, const ios::openmode open_mode)
 {
+#ifndef MINI_STIR
 
   {
     MinimalInterfileHeader hdr;
@@ -1015,6 +1034,7 @@ read_interfile_PDFS(istream& input, const string& directory_for_data, const ios:
         return read_interfile_PDFS_Siemens(input, directory_for_data, open_mode);
       }
   }
+#endif
 
   // if we get here, it's PET
 

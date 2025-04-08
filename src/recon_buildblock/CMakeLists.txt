@@ -15,10 +15,28 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
  ForwardProjectorByBin.cxx
+	BackProjectorByBin.cxx
+	ProjectorByBinPair.cxx
+        find_basic_vs_nums_in_subset.cxx
+	DataSymmetriesForBins.cxx
+	SymmetryOperation.cxx
+	TrivialDataSymmetriesForBins.cxx
+)
+
+if (STIR_WITH_Parallelproj_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    Parallelproj_projector/ForwardProjectorByBinParallelproj.cxx
+    Parallelproj_projector/BackProjectorByBinParallelproj.cxx
+    Parallelproj_projector/ProjectorByBinPairUsingParallelproj.cxx
+    Parallelproj_projector/ParallelprojHelper.cxx
+  )
+endif()
+
+if (NOT MINI_STIR)
+  list(APPEND ${dir_LIB_SOURCES}
+	PresmoothingForwardProjectorByBin.cxx
 	ForwardProjectorByBinUsingRayTracing.cxx
 	ForwardProjectorByBinUsingRayTracing_Siddon.cxx
-	PresmoothingForwardProjectorByBin.cxx
-	BackProjectorByBin.cxx
 	BackProjectorByBinUsingInterpolation.cxx
 	BackProjectorByBinUsingInterpolation_linear.cxx
 	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx
@@ -27,13 +45,9 @@ set(${dir_LIB_SOURCES}
 	AnalyticReconstruction.cxx
 	IterativeReconstruction.cxx
 	distributable.cxx
-	DataSymmetriesForBins.cxx
 	DataSymmetriesForDensels.cxx
-	TrivialDataSymmetriesForBins.cxx
 	DataSymmetriesForBins_PET_CartesianGrid.cxx
-	SymmetryOperation.cxx
 	SymmetryOperations_PET_CartesianGrid.cxx
-        find_basic_vs_nums_in_subset.cxx
 	ProjMatrixElemsForOneBin.cxx
 	ProjMatrixElemsForOneDensel.cxx
 	ProjMatrixByBin.cxx
@@ -50,7 +64,6 @@ set(${dir_LIB_SOURCES}
 	BackProjectorByBinUsingProjMatrixByBin.cxx
 	BackProjectorByBinUsingSquareProjMatrixByBin.cxx
 	RayTraceVoxelsOnCartesianGrid.cxx
-	ProjectorByBinPair.cxx
 	ProjectorByBinPairUsingProjMatrixByBin.cxx
 	ProjectorByBinPairUsingSeparateProjectors.cxx
 	BinNormalisation.cxx
@@ -78,9 +91,9 @@ set(${dir_LIB_SOURCES}
         PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx
         PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
 	SqrtHessianRowSum.cxx
-)
+    )
 
-if (HAVE_ECAT)
+  if (HAVE_ECAT)
  list(APPEND ${dir_LIB_SOURCES}
 	BinNormalisationFromECAT7.cxx
  )
@@ -117,20 +130,13 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
   )
 endif()
 
-if (STIR_WITH_Parallelproj_PROJECTOR)
-  list(APPEND ${dir_LIB_SOURCES}
-    Parallelproj_projector/ForwardProjectorByBinParallelproj.cxx
-    Parallelproj_projector/BackProjectorByBinParallelproj.cxx
-    Parallelproj_projector/ProjectorByBinPairUsingParallelproj.cxx
-    Parallelproj_projector/ParallelprojHelper.cxx
-  )
-endif()
-
 if (STIR_WITH_CUDA)
   list(APPEND ${dir_LIB_SOURCES}
     CUDA/CudaRelativeDifferencePrior.cu
   )
 endif()
+
+endif() # MINI_STIR
 
 include(stir_lib_target)
 
@@ -143,15 +149,20 @@ if (STIR_OPENMP)
   target_link_libraries(recon_buildblock PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 endif()
 
-# TODO what to do with IO?
-# modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
-target_link_libraries(recon_buildblock PUBLIC modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
+if (NOT MINI_STIR)
+  # TODO what to do with IO?
+  # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
+  target_link_libraries(recon_buildblock PUBLIC modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
 	target_link_libraries(recon_buildblock PRIVATE NiftyPET::petprj)
 	target_link_libraries(recon_buildblock PRIVATE NiftyPET::mmr_auxe)
 	target_link_libraries(recon_buildblock PRIVATE NiftyPET::mmr_lmproc)
 	target_link_libraries(recon_buildblock PRIVATE CUDA::cudart)
+endif()
+
+else()
+  target_link_libraries(recon_buildblock PUBLIC numerics_buildblock data_buildblock buildblock)
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)

@@ -29,17 +29,21 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"
-#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#ifndef MINI_STIR
+#  include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#endif
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
 #  include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #endif
-#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
-#include "stir/recon_buildblock/RelativeDifferencePrior.h"
-#ifdef STIR_WITH_CUDA
-#  include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
-#endif
+#ifndef MINI_STIR
+#  include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#  include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+#  include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#  ifdef STIR_WITH_CUDA
+#    include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#  endif
 //#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#endif
 #include "stir/recon_buildblock/distributable_main.h"
 #include "stir/warning.h"
 #include "stir/error.h"
@@ -98,16 +102,20 @@ public:
   std::vector<float> v1;
   std::vector<float> v2;
   shared_ptr<ProjectorByBinPair> projectors_sptr;
+#ifndef MINI_STIR
   shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> pmrt_projectors_sptr;
+#endif
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   shared_ptr<ProjectorByBinPairUsingParallelproj> parallelproj_projectors_sptr;
 #endif
   shared_ptr<ProjectorByBinPair> parsed_projectors_sptr;
   shared_ptr<ProjData> template_proj_data_sptr;
   shared_ptr<ExamInfo> exam_info_sptr;
+#ifndef MINI_STIR
   shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>>> objective_function_sptr;
 
   shared_ptr<GeneralisedPrior<DiscretisedDensity<3, float>>> prior_sptr;
+#endif
   // basic methods
   Timings(const std::string& image_filename, const std::string& template_proj_data_filename)
   {
@@ -258,6 +266,7 @@ public:
     this->projectors_sptr->get_back_projector_sptr()->back_project(*this->image_sptr, *this->mem_proj_data_sptr);
   }
 
+#ifndef MINI_STIR
   void obj_func_set_up()
   {
     this->objective_function_sptr->set_up(this->image_sptr);
@@ -284,6 +293,7 @@ public:
     v += 2; // to avoid compiler warning about unused variable
     delete im;
   }
+#endif
 };
 
 void
@@ -309,9 +319,11 @@ Timings::run_projectors(const std::string& prefix, const shared_ptr<ProjectorByB
   this->run_it(&Timings::back_file, prefix + "_back_file_first", 1);
   this->run_it(&Timings::back_file, prefix + "_back_file", runs);
   this->run_it(&Timings::back_memory, prefix + "_back_memory", runs);
+#ifndef MINI_STIR
   this->objective_function_sptr->set_projector_pair_sptr(this->projectors_sptr);
   this->run_it(&Timings::obj_func_set_up, prefix + "_LogLik set_up", 1);
   this->run_it(&Timings::obj_func_grad_no_sens, prefix + "_LogLik grad_no_sens", 1);
+#endif
 }
 void
 Timings::run_all(const unsigned runs)
@@ -344,6 +356,7 @@ Timings::run_all(const unsigned runs)
       this->run_it(&Timings::copy_add_proj_data_mem, "copy_add_proj_data_mem", runs * 2);
       this->run_it(&Timings::copy_mult_proj_data_mem, "copy_mult_proj_data_mem", runs * 2);
     }
+#ifndef MINI_STIR
   this->objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>>);
   this->objective_function_sptr->set_proj_data_sptr(this->mem_proj_data_sptr);
   // this->objective_function.set_num_subsets(proj_data_sptr->get_num_views()/2);
@@ -351,6 +364,7 @@ Timings::run_all(const unsigned runs)
     {
       this->run_projectors("PMRT", this->pmrt_projectors_sptr, 1);
     }
+#endif
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
   if (!skip_PP)
     {
@@ -361,8 +375,9 @@ Timings::run_all(const unsigned runs)
     {
       this->run_projectors("parsed", this->parsed_projectors_sptr, runs);
     }
-  // write_to_file("my_timings_backproj.hv", *this->image_sptr);
+    // write_to_file("my_timings_backproj.hv", *this->image_sptr);
 
+#ifndef MINI_STIR
   if (!skip_priors)
     {
       {
@@ -372,7 +387,7 @@ Timings::run_all(const unsigned runs)
         this->run_it(&Timings::prior_grad, "RDP_grad", runs * 10);
         this->prior_sptr = nullptr;
       }
-#ifdef STIR_WITH_CUDA
+#  ifdef STIR_WITH_CUDA
       {
         this->prior_sptr = std::make_shared<CudaRelativeDifferencePrior<float>>(false, 1.F, 2.F, 0.1F);
         this->prior_sptr->set_up(this->image_sptr);
@@ -380,8 +395,9 @@ Timings::run_all(const unsigned runs)
         this->run_it(&Timings::prior_grad, "Cuda_RDP_grad", runs * 30);
         this->prior_sptr = nullptr;
       }
-#endif
+#  endif
     }
+#endif
 }
 
 void
@@ -434,10 +450,11 @@ Timings::init()
 
   // projector set-up
   {
+#ifndef MINI_STIR
     auto PM_sptr = std::make_shared<ProjMatrixByBinUsingRayTracing>();
     PM_sptr->set_num_tangential_LORs(5);
     this->pmrt_projectors_sptr = std::make_shared<ProjectorByBinPairUsingProjMatrixByBin>(PM_sptr);
-
+#endif
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
     this->parallelproj_projectors_sptr = std::make_shared<ProjectorByBinPairUsingParallelproj>();
 #endif

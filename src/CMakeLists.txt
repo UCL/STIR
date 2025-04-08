@@ -11,6 +11,10 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
+option(MINI_STIR
+       "Create a mini version of STIR with only basic functionality (for testing only)" OFF)
+mark_as_advanced(MINI_STIR)
+     
 option(STIR_MPI 
        "Compile with MPI" OFF)
 option(STIR_OPENMP 
