@@ -582,9 +582,8 @@ Array<1, elemT>::resize(const int min_index, const int max_index, bool initialis
   const int oldstart = this->get_min_index();
   const size_type oldlength = this->size();
 
-  base_type::resize(min_index, max_index, initialise_with_0);
+  base_type::resize(min_index, max_index);
 
-  // if (!get_initialise_with_zeros())
   if (!initialise_with_0)
     {
       this->check_state();

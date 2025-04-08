@@ -416,7 +416,7 @@ VectorWithOffset<T>::reserve(const unsigned int new_size)
 // the new members will be initialised with the default constructor for T
 template <class T>
 void
-VectorWithOffset<T>::resize(const int min_index, const int max_index, bool initialise_with_0)
+VectorWithOffset<T>::resize(const int min_index, const int max_index)
 {
   this->check_state();
   if (min_index > max_index)
@@ -467,13 +467,6 @@ VectorWithOffset<T>::resize(const int min_index, const int max_index, bool initi
 
 template <class T>
 void
-VectorWithOffset<T>::resize(const int min_index, const int max_index)
-{
-  resize(min_index, max_index, true);
-}
-
-template <class T>
-void
 VectorWithOffset<T>::resize(const unsigned new_size)
 {
   if (new_size == 0)
@@ -486,21 +479,11 @@ VectorWithOffset<T>::resize(const unsigned new_size)
     this->resize(0, static_cast<int>(new_size - 1));
 }
 
-// the new members will be initialised with the default constructor for T
-template <class T>
-void
-VectorWithOffset<T>::grow(const int min_index, const int max_index, bool initialise_with_0)
-{
-  // allow grow arbitrary when it's zero length
-  assert(length == 0 || (min_index <= this->get_min_index() && max_index >= this->get_max_index()));
-  this->resize(min_index, max_index, initialise_with_0);
-}
-
 template <class T>
 void
 VectorWithOffset<T>::grow(const int min_index, const int max_index)
 {
-  this->grow(min_index, max_index, true);
+  this->resize(min_index, max_index);
 }
 
 template <class T>
