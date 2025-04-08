@@ -73,8 +73,7 @@ ProjDataInMemory::ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_s
 void
 ProjDataInMemory::create_buffer(const bool initialise_with_0)
 {
-  // this->buffer.set_initialise_with_zeros(initialise_with_0);
-  this->buffer.grow(0, this->size_all() - 1, initialise_with_0);
+  this->buffer.resize(0, this->size_all() - 1, initialise_with_0);
 }
 
 ///////////////// /set functions
