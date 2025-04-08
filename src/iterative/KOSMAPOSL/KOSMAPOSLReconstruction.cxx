@@ -418,7 +418,9 @@ void
 KOSMAPOSLReconstruction<TargetT>::set_anatomical_prior_sptr(shared_ptr<TargetT> arg, int index)
 {
   this->_already_set_up = false;
-  if (index < this->anatomical_prior_sptrs.size())
+  if (index < 0)
+    error("KOSMAPOSLReconstruction::set_anatomical_prior_sptr called with negative index");
+  if (static_cast<unsigned>(index) < this->anatomical_prior_sptrs.size())
     this->anatomical_prior_sptrs.at(index) = arg;
   else
     this->anatomical_prior_sptrs.push_back(arg);
@@ -438,6 +440,8 @@ void
 KOSMAPOSLReconstruction<TargetT>::set_anatomical_image_filename(const std::string& arg, const int index)
 {
   this->_already_set_up = false;
+  if (index < 0)
+    error("KOSMAPOSLReconstruction::set_anatomical_image_filename called with negative index");
   if (static_cast<unsigned>(index) < this->anatomical_image_filenames.size())
     this->anatomical_image_filenames.at(index) = arg;
   else

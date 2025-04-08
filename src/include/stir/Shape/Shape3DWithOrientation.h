@@ -60,7 +60,7 @@ class Shape3DWithOrientation : public Shape3D
   typedef Shape3D base_type;
 
 public:
-  bool operator==(const Shape3DWithOrientation& s) const;
+  bool operator==(const Shape3D& s) const override;
   void scale(const CartesianCoordinate3D<float>& scale3D) override;
 
   //! get direction vectors currently in use

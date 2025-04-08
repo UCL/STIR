@@ -85,9 +85,6 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
   float trans_blocks_gap = transaxial_block_spacing - num_transaxial_crystals_per_block * transaxial_crystal_spacing;
   float ax_blocks_gap = axial_block_spacing - (num_axial_crystals_per_block - 1) * axial_crystal_spacing;
   float csi_minus_csiGaps = csi - (csi / transaxial_block_spacing * 2) * (transaxial_crystal_spacing / 2 + trans_blocks_gap);
-  //    distance between the center of the scannner and the first crystal in the bucket, r=Reffective/cos(csi)
-  float r = scanner.get_effective_ring_radius() / cos(csi_minus_csiGaps);
-
   float start_z = -(axial_block_spacing * num_axial_blocks_per_bucket * num_axial_buckets - ax_blocks_gap) / 2;
   float start_y = -1 * scanner.get_effective_ring_radius();
   float start_x = -1 // the first crystal in the bucket

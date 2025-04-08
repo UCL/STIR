@@ -328,6 +328,9 @@ private:
   // Make sure that we can access init() recursively
   template <int num_dimensions2, class elemT2>
   friend class Array;
+
+  using base_type::grow;
+  using base_type::resize;
 };
 
 /**************************************************

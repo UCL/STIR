@@ -141,7 +141,7 @@ main(int argc, char* argv[])
       min_range[2] = -static_cast<int>(floor(image->m_dim[0] / 2.F));
       max_range[2] = min_range[2] + image->m_dim[0] - 1;
       min_range[3] = -static_cast<int>(floor(image->m_dim[2] / 2.F));
-      max_range[3] = max_range[3] + image->m_dim[2] - 1;
+      max_range[3] = min_range[3] + image->m_dim[2] - 1;
 
       IndexRange<3> data_range(min_range, max_range);
       Array<3, float> v_array(data_range);

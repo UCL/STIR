@@ -69,7 +69,7 @@ main(int argc, char** argv)
   Array<3, float> singles_arr(IndexRange3D(
       time_def.get_num_time_frames(), scanner.get_num_axial_singles_units(), scanner.get_num_transaxial_singles_units()));
 
-  for (int time_frame_num = 1; time_frame_num <= time_def.get_num_time_frames(); ++time_frame_num)
+  for (int time_frame_num = 1; static_cast<unsigned>(time_frame_num) <= time_def.get_num_time_frames(); ++time_frame_num)
     {
       for (int ax = 0; ax < scanner.get_num_axial_singles_units(); ++ax)
         {

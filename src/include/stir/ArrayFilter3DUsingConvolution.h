@@ -40,9 +40,12 @@ public:
 
   bool is_trivial() const override;
 
+#if 0
+  // commented out as it does not make sense to have a 1D IndexRange for a 2D filter
   virtual Succeeded get_influencing_indices(IndexRange<1>& influencing_indices, const IndexRange<1>& output_indices) const;
 
   virtual Succeeded get_influenced_indices(IndexRange<1>& influenced_indices, const IndexRange<1>& input_indices) const;
+#endif
 
 private:
   Array<3, float> filter_coefficients;

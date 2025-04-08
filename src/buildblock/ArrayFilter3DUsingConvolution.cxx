@@ -59,6 +59,8 @@ ArrayFilter3DUsingConvolution<elemT>::is_trivial() const
              && filter_coefficients[0][0][0] == 1);
 }
 
+#if 0
+// commented out as it does not make sense to have a 1D IndexRange for a 2D filter
 template <typename elemT>
 Succeeded
 ArrayFilter3DUsingConvolution<elemT>::get_influencing_indices(IndexRange<1>& influencing_index_range,
@@ -82,6 +84,7 @@ ArrayFilter3DUsingConvolution<elemT>::get_influenced_indices(IndexRange<1>& infl
                                                output_index_range.get_max_index() + filter_coefficients.get_max_index());
   return Succeeded::yes;
 }
+#endif
 
 #if 1
 template <typename elemT>
