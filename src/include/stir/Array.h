@@ -451,8 +451,6 @@ public:
   inline virtual void grow(const IndexRange<1>& range);
 
   // Array::grow initialises new elements to 0
-  // inline virtual void grow(const int min_index, const int max_index, bool initialise_with_0 = true);
-  //inline void grow(const int min_index, const int max_index, bool initialise_with_0 = true) override;
   inline void grow(const int min_index, const int max_index, bool initialise_with_0);
   inline void grow(const int min_index, const int max_index);
 
@@ -460,8 +458,6 @@ public:
   inline virtual void resize(const IndexRange<1>& range);
 
   // Array::resize initialises new elements to 0
-  // inline virtual void resize(const int min_index, const int max_index, bool initialise_with_0 = true);
-  // inline void resize(const int min_index, const int max_index, bool initialise_with_0 = true) override;
   inline void resize(const int min_index, const int max_index, bool initialise_with_0) override;
   inline void resize(const int min_index, const int max_index) override;
 
