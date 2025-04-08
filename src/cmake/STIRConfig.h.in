@@ -104,4 +104,6 @@ namespace stir {
   \brief Defined if TOF capabilities are enabled.
 */
 
+#cmakedefine MINI_STIR
+
 #endif //  __stir_config__H__
