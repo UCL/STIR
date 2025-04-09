@@ -33,6 +33,10 @@
 
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Array.h"
+#ifdef STIR_WITH_TORCH
+#include "stir/TensorWrapper.h"
+#endif
+
 #include "stir/ExamData.h"
 #include "stir/shared_ptr.h"
 #include <torch/torch.h>
@@ -92,8 +96,13 @@ START_NAMESPACE_STIR
 
 */
 
+#ifdef STIR_WITH_TORCH
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity : public ExamData, public TensorWrapper<num_dimensions, elemT>
+#else
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity : public ExamData, public Array<num_dimensions, elemT>
+#endif
 {
 #ifdef SWIG
   // work-around swig problem. It gets confused when using a private (or protected)
@@ -102,7 +111,12 @@ class DiscretisedDensity : public ExamData, public Array<num_dimensions, elemT>
 #else
 private:
 #endif
+  #ifdef STIR_WITH_TORCH
+  typedef TensorWrapper<num_dimensions, elemT> base_type;
+  #else
   typedef Array<num_dimensions, elemT> base_type;
+  #endif
+
   typedef DiscretisedDensity<num_dimensions, elemT> self_type;
 
 public:
