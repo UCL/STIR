@@ -11,6 +11,7 @@ set(${dir_LIB_SOURCES}
   RadionuclideDB.cxx
   Radionuclide.cxx
   find_STIR_config.cxx
+    TensorWrapper.cxx
   ProjData.cxx
   ProjDataInfo.cxx
   ProjDataInfoCylindrical.cxx

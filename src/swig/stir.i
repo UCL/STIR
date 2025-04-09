@@ -1037,6 +1037,7 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 
 %include "stir_array.i"
 %include "stir_exam.i"
+%include "stir_tensorwrapper.i"
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
 %include "stir_projdata_coords.i"

@@ -1,0 +1,181 @@
+#include "stir/TensorWrapper.h"
+
+START_NAMESPACE_STIR
+
+// Implementation of TensorWrapper methods
+template <int num_dimensions, typename elemT>
+TensorWrapper<num_dimensions, elemT>::TensorWrapper(const torch::Tensor& tensor, const std::string& device)
+    : tensor(tensor.to(device)), device(device) {}
+
+template <int num_dimensions, typename elemT>
+TensorWrapper<num_dimensions, elemT>::TensorWrapper(const stir::IndexRange<num_dimensions>& range, const std::string& device)
+    : device(device) {
+    std::vector<int64_t> shape = convertIndexRangeToShape(range);
+    torch::Dtype dtype = getTorchDtype();
+    offsets = extract_offsets_recursive(range);
+    tensor = torch::zeros(shape, torch::TensorOptions().dtype(dtype));
+    tensor.to(device == "cuda" ? torch::kCUDA : torch::kCPU);
+}
+
+template <int num_dimensions, typename elemT>
+TensorWrapper<num_dimensions, elemT>::TensorWrapper(const std::vector<int64_t>& shape,  const std::string& device)
+    : device(device) {
+    if (shape.size() != num_dimensions) {
+        throw std::invalid_argument("Shape size does not match the number of dimensions");
+    }
+    torch::Dtype dtype = getTorchDtype();
+    tensor = torch::zeros(shape, torch::TensorOptions().dtype(dtype));
+    tensor.to(device == "cuda" ? torch::kCUDA : torch::kCPU);
+}
+
+template <int num_dimensions, typename elemT>
+TensorWrapper<num_dimensions, elemT>::TensorWrapper(const stir::DiscretisedDensity<num_dimensions, elemT>& discretised_density,  const std::string& device)
+    : device(device) {
+    std::vector<int64_t> shape = getShapeFromDiscretisedDensity(discretised_density);
+    offsets = extract_offsets_recursive(discretised_density.get_index_range());
+    tensor = torch::zeros(shape, torch::TensorOptions().dtype(getTorchDtype()));
+    fillTensorFromDiscretisedDensity(discretised_density);
+    tensor.to(device == "cuda" ? torch::kCUDA : torch::kCPU);
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::to_gpu() {
+    if (torch::cuda::is_available()) {
+        device = "cuda";
+        tensor = tensor.to(torch::kCUDA);
+    } else {
+        throw std::runtime_error("CUDA is not available. Cannot move tensor to GPU.");
+    }
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::to_cpu() {
+  device = "cpu";
+    tensor = tensor.to(torch::kCPU);
+}
+
+template <int num_dimensions, typename elemT>
+bool TensorWrapper<num_dimensions, elemT>::is_on_gpu() const {
+    return tensor.device().is_cuda();
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::print_device() const {
+    std::cout << "Tensor is on device: " << tensor.device() << std::endl;
+}
+
+template <int num_dimensions, typename elemT>
+size_t TensorWrapper<num_dimensions, elemT>::size_all() const {
+    return tensor.numel();
+}
+
+template <int num_dimensions, typename elemT>
+elemT TensorWrapper<num_dimensions, elemT>::find_max() const {
+    return tensor.max().template item<elemT>();
+}
+
+template <int num_dimensions, typename elemT>
+elemT TensorWrapper<num_dimensions, elemT>::sum() const {
+    return tensor.sum().template item<elemT>();
+}
+
+template <int num_dimensions, typename elemT>
+elemT TensorWrapper<num_dimensions, elemT>::sum_positive() const {
+    return tensor.clamp_min(0).sum().template item<elemT>();
+}
+
+template <int num_dimensions, typename elemT>
+elemT TensorWrapper<num_dimensions, elemT>::find_min() const {
+    return tensor.min().template item<elemT>();
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::fill(const elemT& n) {
+    tensor.fill_(n);
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::apply_lower_threshold(const elemT& l) {
+    tensor.clamp_min(l);
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::apply_upper_threshold(const elemT& u) {
+    tensor.clamp_max(u);
+}
+
+template <int num_dimensions, typename elemT>
+std::unique_ptr<TensorWrapper<num_dimensions, elemT>> TensorWrapper<num_dimensions, elemT>::get_empty_copy() const {
+    torch::Tensor empty_tensor = torch::empty_like(tensor);
+    empty_tensor.to(device);
+    return std::make_unique<TensorWrapper<num_dimensions, elemT>>(empty_tensor);
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::xapyb(const TensorWrapper<num_dimensions, elemT>& x, const elemT a, const TensorWrapper<num_dimensions, elemT>& y, const elemT b) {
+    if (!x.tensor.sizes().equals(y.tensor.sizes())) {
+        throw std::invalid_argument("Tensors x and y must have the same shape");
+    }
+    tensor = a * x.tensor + b * y.tensor;
+}
+
+template <int num_dimensions, typename elemT>
+std::unique_ptr<TensorWrapper<num_dimensions, elemT>> TensorWrapper<num_dimensions, elemT>::clone() const {
+    torch::Tensor cloned_tensor = tensor.clone();
+    tensor.to(device);
+    return std::make_unique<TensorWrapper<num_dimensions, elemT>>(cloned_tensor);
+}
+
+template <int num_dimensions, typename elemT>
+torch::Tensor& TensorWrapper<num_dimensions, elemT>::getTensor() {
+    return tensor;
+}
+
+template <int num_dimensions, typename elemT>
+const torch::Tensor& TensorWrapper<num_dimensions, elemT>::getTensor() const {
+    return tensor;
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::printSizes() const {
+    std::cout << "Tensor sizes: [";
+    for (size_t i = 0; i < num_dimensions; ++i) {
+        std::cout << tensor.size(i) << " ";
+    }
+    std::cout << "]" << std::endl;
+}
+
+template <int num_dimensions, typename elemT>
+stir::IndexRange<num_dimensions> TensorWrapper<num_dimensions, elemT>::get_index_range() const {
+    return stir::IndexRange<num_dimensions>();
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::resize(const stir::IndexRange<num_dimensions>& range) {
+    std::vector<int64_t> new_shape = convertIndexRangeToShape(range);
+    torch::Dtype dtype = getTorchDtype();
+    tensor = torch::empty(new_shape, torch::TensorOptions().dtype(dtype));
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::grow(const stir::IndexRange<num_dimensions>& range) {
+    resize(range);
+}
+
+template <int num_dimensions, typename elemT>
+bool TensorWrapper<num_dimensions, elemT>::is_contiguous() const {
+    return tensor.is_contiguous();
+}
+
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::print() const {
+    std::cout << "TensorWrapper Tensor:" << std::endl;
+    std::cout << tensor << std::endl;
+}
+
+// // Explicit template instantiation for TensorWrapper<3, float>
+// Explicit template instantiations
+template class TensorWrapper<2, float>;
+template class TensorWrapper<3, float>;
+template class TensorWrapper<4, float>;
+END_NAMESPACE_STIR
