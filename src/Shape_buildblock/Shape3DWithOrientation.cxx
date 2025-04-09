@@ -92,12 +92,15 @@ Shape3DWithOrientation::set_direction_vectors(const Array<2, float>& directions)
 }
 
 bool
-Shape3DWithOrientation::operator==(const Shape3DWithOrientation& s) const
+Shape3DWithOrientation::operator==(const Shape3D& base_s) const
 {
+  auto sptr = dynamic_cast<const Shape3DWithOrientation*>(&base_s);
+  if (!sptr)
+    return false; // not of same type
+  auto& s = *sptr;
   const float tolerance = .001F;
-  return norm(this->get_origin() - s.get_origin()) < tolerance && norm(this->_directions[1] - s._directions[1]) < tolerance
-         && norm(this->_directions[2] - s._directions[2]) < tolerance && norm(this->_directions[3] - s._directions[3]) < tolerance
-         && base_type::operator==(s);
+  return norm(this->_directions[1] - s._directions[1]) < tolerance && norm(this->_directions[2] - s._directions[2]) < tolerance
+         && norm(this->_directions[3] - s._directions[3]) < tolerance && base_type::operator==(s);
 }
 
 float

@@ -73,14 +73,7 @@ ProjDataInMemory::ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_s
 void
 ProjDataInMemory::create_buffer(const bool initialise_with_0)
 {
-#if 0  
-  float *b = new float[this->size_all()];
-  if (initialise_with_0)
-    memset(b, 0, this->size_all()*sizeof(float));
-  return b;
-#else
-  this->buffer = Array<1, float>(static_cast<int>(this->size_all()));
-#endif
+  this->buffer.resize(0, this->size_all() - 1, initialise_with_0);
 }
 
 ///////////////// /set functions

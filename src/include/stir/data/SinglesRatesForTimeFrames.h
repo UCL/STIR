@@ -40,6 +40,8 @@ public:
   // SinglesRatesForTimeFrames(const TimeFrameDefinitions& time_frame_definitions,
   //			      const shared_ptr<Scanner>& scanner_sptr);
 
+  using SinglesRates::get_singles;
+
   //! get the singles for a particular singles unit and frame number.
   /*!
      The singles returned is the rate for a whole singles unit.

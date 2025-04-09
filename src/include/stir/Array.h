@@ -329,6 +329,9 @@ private:
   // Make sure that we can access init() recursively
   template <int num_dimensions2, class elemT2>
   friend class Array;
+
+  using base_type::grow;
+  using base_type::resize;
 };
 
 /**************************************************
@@ -457,7 +460,8 @@ public:
   //! Array::resize initialises new elements to 0
   inline virtual void resize(const IndexRange<1>& range);
 
-  // Array::resize initialises new elements to 0
+  inline void resize(const int min_index, const int max_index, bool initialise_with_0);
+  //! resize, initialising new elements to 0
   inline void resize(const int min_index, const int max_index) override;
 
   //! \name access to the data via a pointer
@@ -569,7 +573,6 @@ public:
 
   inline const elemT& at(const BasicCoordinate<1, int>& c) const;
   //@}
-
 private:
   // Make sure we can call init() recursively.
   template <int num_dimensions2, class elemT2>

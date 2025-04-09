@@ -97,6 +97,10 @@
     <a href=https://github.com/UCL/STIR/pull/1552>PR #1552</a>
   </li>
   <li>Use OpenMP by default</li>
+  <li>Introduce advanced variable <tt>MINI_STIR</tt> defaulting to <tt>OFF</tt> for developers.
+    This will build a heavily reduced version of STIR which can speed up development time.<br>
+    <a href=https://github.com/UCL/STIR/pull/1584>PR #1584</a>
+  </li>
 </ul>
 
 <h3>Known problems</h3>
@@ -106,10 +110,14 @@
 <H2>What is new for developers (aside from what should be obvious from the above):</H2>
 
 <h3>New functionality</h3>
-
+<ul>
 <li>
   <code>ProjDataInMemory</code> <code>read_from_file</code> method now returns a <code>ProjDataInMemory</code> object.
 </li>
+<li>
+  <code>Array::resize</code> and <code>Array::grow</code> argument <code>initialise_with_0</code> usage fixed</code>.
+</li>
+</ul>
 
 <h3>Changed functionality</h3>
 <ul>

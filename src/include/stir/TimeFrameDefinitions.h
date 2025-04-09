@@ -98,7 +98,7 @@ public:
   void set_num_time_frames(int num_time_frames) { frame_times.resize(num_time_frames); }
 
   //! Set time frame
-  void set_time_frame(const int frame_num, const double start, const double end);
+  void set_time_frame(const unsigned int frame_num, const double start, const double end);
 
   bool operator==(const TimeFrameDefinitions& t) const;
 

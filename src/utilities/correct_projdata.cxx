@@ -297,8 +297,6 @@ CorrectProjDataApplication::run() const
 		  else
 #endif
             {
-              const double start_frame = frame_defs.get_start_time(frame_num);
-              const double end_frame = frame_defs.get_end_time(frame_num);
               if (apply_or_undo_correction)
                 {
                   normalisation_ptr->apply(viewgrams);

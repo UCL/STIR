@@ -13,6 +13,13 @@ set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
+set(buildblock_simple_tests
+        test_Array.cxx
+        test_VectorWithOffset.cxx
+        )
+      
+if (NOT MINI_STIR)
+
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs.cxx
         test_warp_image.cxx
@@ -41,13 +48,11 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_interpolate.cxx
 )
 
-set(buildblock_simple_tests
-        test_Array.cxx
+list (APPEND buildblock_simple_tests
         test_ArrayFilter.cxx
         test_SeparableMetzArrayFilter.cxx
         test_SeparableGaussianArrayFilter.cxx
         test_NestedIterator.cxx
-        test_VectorWithOffset.cxx
         test_convert_array.cxx
 	test_IndexRange.cxx
 	test_coordinates.cxx
@@ -71,7 +76,17 @@ set(buildblock_simple_tests
         test_interpolate_projdata.cxx
 )
 
+endif() # MINI_STIR
+
 include(stir_test_exe_targets)
+
+if (MINI_STIR)
+
+foreach(source ${buildblock_simple_tests})
+  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;IO;recon_buildblock;" "")
+endforeach()
+
+else()
 
 foreach(source ${buildblock_simple_tests})
   create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO;recon_buildblock;Shape_buildblock;scatter_buildblock" "")
@@ -152,3 +167,5 @@ ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
 endif(BUILD_TESTING)
+
+endif() # MINI_STIR

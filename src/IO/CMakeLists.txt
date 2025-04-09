@@ -22,8 +22,13 @@ set(${dir_LIB_SOURCES}
   interfile.cxx
   InterfileHeader.cxx
   InterfilePDFSHeaderSPECT.cxx
-  InterfileHeaderSiemens.cxx
   InputFileFormatRegistry.cxx
+) 
+
+if (NOT MINI_STIR)
+
+  list(APPEND ${dir_LIB_SOURCES}
+  InterfileHeaderSiemens.cxx
   InterfileDynamicDiscretisedDensityOutputFileFormat.cxx
   InterfileParametricDiscretisedDensityOutputFileFormat.cxx
   MultiDynamicDiscretisedDensityOutputFileFormat.cxx
@@ -31,7 +36,7 @@ set(${dir_LIB_SOURCES}
 
   GIPL_ImageFormat.cxx
   stir_ecat_common.cxx
-) 
+  )
 
 # we can use IO from the itk library
 if (HAVE_ITK)
@@ -73,6 +78,8 @@ if (HAVE_HDF5)
     GEHDF5ListmodeInputFileFormat.cxx
  )
 endif()
+
+endif() # MINI_STIR
 
 include(stir_lib_target)
 
@@ -122,6 +129,8 @@ if (HAVE_JSON)
   target_include_directories(IO PRIVATE "${TMP}")
 endif()
 
-# currently needed for ParametricDensity (TODO get rid of this somehow?)
-target_link_libraries(IO PUBLIC modelling_buildblock )
-target_link_libraries(IO PUBLIC listmode_buildblock)
+if (NOT MINI_STIR)
+  # currently needed for ParametricDensity (TODO get rid of this somehow?)
+  target_link_libraries(IO PUBLIC modelling_buildblock )
+  target_link_libraries(IO PUBLIC listmode_buildblock)
+endif()
