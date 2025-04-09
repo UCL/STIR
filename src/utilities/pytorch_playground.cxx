@@ -108,7 +108,7 @@ main(int argc, char* argv[])
 
   shared_ptr<DiscretisedDensity<3, float>> first_operand(read_from_file<DiscretisedDensity<3, float>>(argv[0]));
 
-  if (is_null_ptr(first_operand))
+  if (stir::is_null_ptr(first_operand))
     {
       cerr << "Could not read first file\n";
       exit(EXIT_FAILURE);
@@ -121,124 +121,125 @@ main(int argc, char* argv[])
   std::cout << "G:" << d[0][0].get_min_index() << " " << d[0][0].get_max_index() << " " << d[0][0].get_length() << std::endl;
 
   std::vector<int64_t> shape({d.get_length(), d[0].get_length(), d[0][0].get_length()});
-  // Allocate Tensor
-  // TensorWrapper<3, float> tw(shape);
-  TensorWrapper tw((*first_operand));
+  // // Allocate Tensor
+  // // TensorWrapper<3, float> tw(shape);
+  // TensorWrapper tw(first_operand);
 
-  // Print the tensor's device
-  tw.print_device();
-  // Move the tensor to the GPU (if available)
-  try {
-      tw.to_gpu();
-      std::cout << "Moved tw to GPU." << std::endl;
-    } catch (const std::runtime_error& e) {
-      std::cerr << e.what() << std::endl;
-    }
-  // Print the tensor's device again
-  tw.print_device();
+  // // Print the tensor's device
+  // tw.print_device();
+  // // Move the tensor to the GPU (if available)
+  // try {
+  //     tw.to_gpu();
+  //     std::cout << "Moved tw to GPU." << std::endl;
+  //   } catch (const std::runtime_error& e) {
+  //     std::cerr << e.what() << std::endl;
+  //   }
+  // // Print the tensor's device again
+  // tw.print_device();
 
-  std::cout <<  " H " << std::endl;
-  tw.printSizes();
-  std::cout <<  " H2 " << std::endl;
+  // std::cout <<  " H " << std::endl;
+  // tw.printSizes();
+  // std::cout <<  " H2 " << std::endl;
 
-  const float a = 1000;
-  const float b = 5000;
-  // Start timing
-  {
-    auto start = std::chrono::high_resolution_clock::now();
-    std::cout << "stir::Array MAX value: " << (*first_operand).find_max() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "stir::Array: Time to compute max value: " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
-  {
-    auto start = std::chrono::high_resolution_clock::now();
-    std::cout << "Tensored: MAX value: " << tw.find_max() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "Tensored: Time to compute max value: " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
+  // const float a = 1000;
+  // const float b = 5000;
+  // // Start timing
+  // {
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   std::cout << "stir::Array MAX value: " << (*first_operand).find_max() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "stir::Array: Time to compute max value: " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
+  // {
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   std::cout << "Tensored: MAX value: " << tw.find_max() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "Tensored: Time to compute max value: " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
 
-  {
-    auto start = std::chrono::high_resolution_clock::now();
-    std::cout << "stir::Array SUM value: " << (*first_operand).sum() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "stir::Array: Time to compute SUM value: " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
-  {
-    auto start = std::chrono::high_resolution_clock::now();
-    std::cout << "Tensored: SUM value: " << tw.sum() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "Tensored: Time to compute SUM value: " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
+  // {
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   std::cout << "stir::Array SUM value: " << (*first_operand).sum() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "stir::Array: Time to compute SUM value: " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
+  // {
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   std::cout << "Tensored: SUM value: " << tw.sum() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "Tensored: Time to compute SUM value: " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
 
-  {
-    auto start = std::chrono::high_resolution_clock::now();
-    std::cout << "stir::Array SUM_pos value: " << (*first_operand).sum_positive() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "stir::Array: Time to compute SUM_pos value: " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
-  {
-    auto start = std::chrono::high_resolution_clock::now();
-    std::cout << "Tensored: SUM_pos value: " << tw.sum_positive() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "Tensored: Time to compute SUM_pos value: " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
+  // {
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   std::cout << "stir::Array SUM_pos value: " << (*first_operand).sum_positive() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "stir::Array: Time to compute SUM_pos value: " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
+  // {
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   std::cout << "Tensored: SUM_pos value: " << tw.sum_positive() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "Tensored: Time to compute SUM_pos value: " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
 
-  std::cout << "____________XAPYB__________" << std::endl;
-  {
-    auto cloned_empty_first_operand = first_operand->get_empty_copy();
-    auto cloned_first_operand = first_operand->clone();
-    auto start = std::chrono::high_resolution_clock::now();
-    cloned_empty_first_operand->xapyb((*first_operand), a, *cloned_first_operand, b);
-    std::cout << "stir::Array: MAX value after xapyb: " << cloned_empty_first_operand->find_max() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "stir::Array: Time to compute max value after xapyb: : " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
+  // std::cout << "____________XAPYB__________" << std::endl;
+  // {
+  //   auto cloned_empty_first_operand = first_operand->get_empty_copy();
+  //   auto cloned_first_operand = first_operand->clone();
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   cloned_empty_first_operand->xapyb((*first_operand), a, *cloned_first_operand, b);
+  //   std::cout << "stir::Array: MAX value after xapyb: " << cloned_empty_first_operand->find_max() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "stir::Array: Time to compute max value after xapyb: : " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
 
-  {
-    auto cloned_empty_tw = tw.get_empty_copy();
-    cloned_empty_tw->print_device();
-    try {
-        cloned_empty_tw->to_gpu();
-        std::cout << "Moved cloned_empty_tw to GPU." << std::endl;
-      } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
-      }
-    // Print the tensor's device again
-    cloned_empty_tw->print_device();
+  // {
+  //   auto cloned_empty_tw = tw;//.get_empty_copy();
+  //   cloned_empty_tw.fill(0);
+  //   cloned_empty_tw.print_device();
+  //   try {
+  //       cloned_empty_tw.to_gpu();
+  //       std::cout << "Moved cloned_empty_tw to GPU." << std::endl;
+  //     } catch (const std::runtime_error& e) {
+  //       std::cerr << e.what() << std::endl;
+  //     }
+  //   // Print the tensor's device again
+  //   cloned_empty_tw.print_device();
 
-    auto cloned_tw = tw.clone();
-    cloned_tw->print_device();
-    try {
-        cloned_tw->to_gpu();
-        std::cout << "Moved cloned_tw to GPU." << std::endl;
-      } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
-      }
-    // Print the tensor's device again
-    cloned_tw->print_device();
+  //   auto cloned_tw = tw;//.clone();
+  //   cloned_tw.print_device();
+  //   try {
+  //       cloned_tw.to_gpu();
+  //       std::cout << "Moved cloned_tw to GPU." << std::endl;
+  //     } catch (const std::runtime_error& e) {
+  //       std::cerr << e.what() << std::endl;
+  //     }
+  //   // Print the tensor's device again
+  //   cloned_tw.print_device();
 
-    auto start = std::chrono::high_resolution_clock::now();
-    cloned_empty_tw->xapyb(tw, a, *cloned_tw, b);
-    std::cout << "Tensored: MAX value after xapyb: " << cloned_empty_tw->find_max() << std::endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "Tensored: Time to compute max value: " << duration << " ms" << std::endl;
-    std::cout << "\n" << std::endl;
-  }
+  //   auto start = std::chrono::high_resolution_clock::now();
+  //   cloned_empty_tw.xapyb(tw, a, cloned_tw, b);
+  //   std::cout << "Tensored: MAX value after xapyb: " << cloned_empty_tw.find_max() << std::endl;
+  //   auto end = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  //   std::cout << "Tensored: Time to compute max value: " << duration << " ms" << std::endl;
+  //   std::cout << "\n" << std::endl;
+  // }
 
          // {
          //   auto start = std::chrono::high_resolution_clock::now();
