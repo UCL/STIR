@@ -20,8 +20,12 @@ TensorWrapper<num_dimensions, elemT>::TensorWrapper(
 {
     std::vector<int64_t> shape = convertIndexRangeToShape(range);
     torch::Dtype dtype = getTorchDtype();
-    offsets = extract_offsets_recursive(range);
     tensor = torch::zeros(shape, torch::TensorOptions().dtype(dtype));
+    // Extract offsets
+    offsets = extract_offsets_recursive(range);
+    ends.resize(offsets.size());
+    for(int i=0; i<offsets.size(); ++i)
+      ends[i] = offsets[i] + get_length(i);
     tensor.to(device == "cuda" ? torch::kCUDA : torch::kCPU);
 }
 
@@ -32,8 +36,6 @@ TensorWrapper<num_dimensions, elemT>::TensorWrapper(
     const std::string& device)
     : device(device)
 {
-  // std::vector<int64_t> shape = convertIndexRangeToShape(range);
-  offsets = extract_offsets_recursive(range);
   // tensor = torch::from_blob(data_sptr.get(), torch::TensorOptions().dtype(dtype));
   elemT* data_ptr = data_sptr.get();
   init(range, data_ptr);
@@ -172,6 +174,12 @@ void TensorWrapper<num_dimensions, elemT>::resize(const stir::IndexRange<num_dim
     std::vector<int64_t> new_shape = convertIndexRangeToShape(range);
     torch::Dtype dtype = getTorchDtype();
     tensor = torch::empty(new_shape, torch::TensorOptions().dtype(dtype));
+
+    // Extract offsets
+    offsets = extract_offsets_recursive(range);
+    ends.resize(offsets.size());
+    for(int i=0; i<offsets.size(); ++i)
+      ends[i] = offsets[i] + get_length(i);
 }
 
 template <int num_dimensions, typename elemT>
@@ -185,7 +193,31 @@ void TensorWrapper<num_dimensions, elemT>::print() const {
     std::cout << tensor << std::endl;
 }
 
+template <int num_dimensions, typename elemT>
+void TensorWrapper<num_dimensions, elemT>::
+    mask_cyl(const float radius, const bool in)
+{
+  float _radius = 0.0;
+  if (radius == -1.f){
+      _radius = static_cast<float>(get_max_index(2) - get_min_index(1)) / 2.f;
+    }
+  else
+    _radius = radius;
+  auto y_coords = torch::arange(0, tensor.size(1), tensor.options().dtype(torch::kFloat).device(tensor.device()));
+  auto x_coords = torch::arange(0, tensor.size(2), tensor.options().dtype(torch::kFloat).device(tensor.device()));
 
+  const float center_y = (tensor.size(1) - 1) / 2.0f;
+  const float center_x = (tensor.size(2) - 1) / 2.0f;
+
+  auto yy = y_coords.view({-1, 1}).expand({tensor.size(1), tensor.size(2)});
+  auto xx = x_coords.view({1, -1}).expand({tensor.size(1), tensor.size(2)});
+
+         // Compute the squared Euclidean distance in the x-y plane
+  auto dist_squared = (yy - center_y).pow(2) + (xx - center_x).pow(2);
+  auto mask_2d = dist_squared <= (_radius * _radius);
+  auto mask_3d = mask_2d.unsqueeze(0).expand({tensor.size(0), tensor.size(1), tensor.size(2)});
+  tensor.mul_(mask_3d);
+}
 
 // Explicit template instantiations
 template class TensorWrapper<2, float>;

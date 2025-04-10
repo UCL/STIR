@@ -39,8 +39,13 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity()
 template <int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const IndexRange<num_dimensions>& range_v,
                                                               const CartesianCoordinate3D<float>& origin_v)
+#ifdef STIR_WITH_TORCH
+    :TensorWrapper<num_dimensions, elemT>(range_v),
+#else
     : Array<num_dimensions, elemT>(range_v),
+#endif
       origin(origin_v)
+
 {}
 
 template <int num_dimensions, typename elemT>
@@ -48,7 +53,11 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const shared_ptr<c
                                                               const IndexRange<num_dimensions>& range_v,
                                                               const CartesianCoordinate3D<float>& origin_v)
     : ExamData(exam_info_sptr),
-      Array<num_dimensions, elemT>(range_v),
+#ifdef STIR_WITH_TORCH
+    TensorWrapper<num_dimensions, elemT>(range_v),
+#else
+    Array<num_dimensions, elemT>(range_v),
+#endif
       origin(origin_v)
 {}
 

@@ -19,6 +19,9 @@
 */
 
 #include "stir/ByteOrder.h"
+#ifdef STIR_WITH_TORCH
+#include "stir/TensorWrapper.h"
+#endif
 
 START_NAMESPACE_STIR
 
@@ -28,6 +31,12 @@ template <class T>
 class NumericInfo;
 template <int num_dimensions, class elemT>
 class Array;
+#ifndef STIR_WITH_TORCH
+// Array<num_dimensions, elemT>& data,
+#else
+template <int num_dimensions, class elemT>
+class TensorWrapper;
+#endif
 
 /*! \ingroup Array_IO
   \brief Read the data of an Array from file.
@@ -42,7 +51,11 @@ class Array;
   However, the data might have been partially read from \a s.
 */
 template <int num_dimensions, class IStreamT, class elemT>
+#ifndef STIR_WITH_TORCH
 inline Succeeded read_data(IStreamT& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
+#else
+inline Succeeded read_data(IStreamT& s, TensorWrapper<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
+#endif
 
 /*! \ingroup Array_IO
   \brief Read the data of an Array from file as a different type.
@@ -58,7 +71,11 @@ inline Succeeded read_data(IStreamT& s, Array<num_dimensions, elemT>& data, cons
 */
 template <int num_dimensions, class IStreamT, class elemT, class InputType, class ScaleT>
 inline Succeeded read_data(IStreamT& s,
+#ifndef STIR_WITH_TORCH
                            Array<num_dimensions, elemT>& data,
+#else
+                          TensorWrapper<num_dimensions, elemT>& data,
+#endif
                            NumericInfo<InputType> input_type,
                            ScaleT& scale_factor,
                            const ByteOrder byte_order = ByteOrder::native);
@@ -75,7 +92,11 @@ inline Succeeded read_data(IStreamT& s,
 */
 template <int num_dimensions, class IStreamT, class elemT, class ScaleT>
 inline Succeeded read_data(IStreamT& s,
+#ifndef STIR_WITH_TORCH
                            Array<num_dimensions, elemT>& data,
+#else
+                           TensorWrapper<num_dimensions, elemT>& data,
+#endif
                            NumericType type,
                            ScaleT& scale,
                            const ByteOrder byte_order = ByteOrder::native);

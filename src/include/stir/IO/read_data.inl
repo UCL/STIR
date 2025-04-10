@@ -15,6 +15,9 @@
   \author Kris Thielemans
 
 */
+#ifdef STIR_WITH_TORCH
+#include "stir/TensorWrapper.h"
+#endif
 #include "stir/Array.h"
 #include "stir/convert_array.h"
 #include "stir/NumericType.h"
@@ -33,7 +36,13 @@ namespace detail
 /* Generic implementation of read_data(). See test_if_1d.h for info why we do this.*/
 template <int num_dimensions, class IStreamT, class elemT>
 inline Succeeded
-read_data_help(is_not_1d, IStreamT& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order)
+read_data_help(is_not_1d, IStreamT& s,
+#ifndef STIR_WITH_TORCH
+               Array<num_dimensions, elemT>& data,
+#else
+               TensorWrapper<num_dimensions, elemT>& data,
+#endif
+               const ByteOrder byte_order)
 {
   if (data.is_contiguous())
     return read_data_1d(s, data, byte_order);
@@ -51,7 +60,9 @@ read_data_help(is_not_1d, IStreamT& s, Array<num_dimensions, elemT>& data, const
 // specialisation for 1D case
 template <class IStreamT, class elemT>
 inline Succeeded
-read_data_help(is_1d, IStreamT& s, Array<1, elemT>& data, const ByteOrder byte_order)
+read_data_help(is_1d, IStreamT& s,
+               Array<1, elemT>& data,
+               const ByteOrder byte_order)
 {
   return read_data_1d(s, data, byte_order);
 }
@@ -60,7 +71,11 @@ read_data_help(is_1d, IStreamT& s, Array<1, elemT>& data, const ByteOrder byte_o
 
 template <int num_dimensions, class IStreamT, class elemT>
 inline Succeeded
+#ifndef STIR_WITH_TORCH
 read_data(IStreamT& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order)
+#else
+read_data(IStreamT& s, TensorWrapper<num_dimensions, elemT>& data, const ByteOrder byte_order)
+#endif
 {
   return detail::read_data_help(detail::test_if_1d<num_dimensions>(), s, data, byte_order);
 }
@@ -68,7 +83,11 @@ read_data(IStreamT& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_
 template <int num_dimensions, class IStreamT, class elemT, class InputType, class ScaleT>
 inline Succeeded
 read_data(IStreamT& s,
+#ifndef STIR_WITH_TORCH
           Array<num_dimensions, elemT>& data,
+#else
+          TensorWrapper<num_dimensions, elemT>& data,
+#endif
           NumericInfo<InputType> input_type,
           ScaleT& scale_factor,
           const ByteOrder byte_order)
@@ -93,7 +112,13 @@ read_data(IStreamT& s,
 
 template <int num_dimensions, class IStreamT, class elemT, class ScaleT>
 inline Succeeded
-read_data(IStreamT& s, Array<num_dimensions, elemT>& data, NumericType type, ScaleT& scale, const ByteOrder byte_order)
+read_data(IStreamT& s,
+#ifndef STIR_WITH_TORCH
+          Array<num_dimensions, elemT>& data,
+#else
+          TensorWrapper<num_dimensions, elemT>& data,
+#endif
+          NumericType type, ScaleT& scale, const ByteOrder byte_order)
 {
   switch (type.id)
     {

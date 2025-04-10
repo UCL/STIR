@@ -134,12 +134,20 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid()
 {}
 
 template <class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const Array<3, elemT>& v,
+#ifdef STIR_WITH_TORCH
+  VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const TensorWrapper<3, elemT>& v,
+#else
+  VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const Array<3, elemT>& v,
+#endif
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<3, float>& grid_spacing)
     : DiscretisedDensityOnCartesianGrid<3, elemT>(v.get_index_range(), origin, grid_spacing)
 {
+#ifdef STIR_WITH_TORCH
+  TensorWrapper<3, elemT>::operator=(v);
+#else
   Array<3, elemT>::operator=(v);
+#endif
 }
 
 template <class elemT>
@@ -151,12 +159,20 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const IndexRange<3>& range,
 
 template <class elemT>
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
+#ifdef STIR_WITH_TORCH
+                                                    const TensorWrapper<3, elemT>& v,
+#else
                                                     const Array<3, elemT>& v,
+#endif
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<3, float>& grid_spacing)
     : DiscretisedDensityOnCartesianGrid<3, elemT>(exam_info_sptr, v.get_index_range(), origin, grid_spacing)
 {
+#ifdef STIR_WITH_TORCH
+  TensorWrapper<3, elemT>::operator=(v);
+#else
   Array<3, elemT>::operator=(v);
+#endif
 }
 
 template <class elemT>
@@ -306,6 +322,7 @@ VoxelsOnCartesianGrid<elemT>::set_voxel_size(const BasicCoordinate<3, float>& c)
   this->set_grid_spacing(c);
 }
 
+#ifndef STIR_WITH_TORCH
 template <class elemT>
 PixelsOnCartesianGrid<elemT>
 VoxelsOnCartesianGrid<elemT>::get_plane(const int z) const
@@ -330,7 +347,7 @@ VoxelsOnCartesianGrid<elemT>::set_plane(const PixelsOnCartesianGrid<elemT>& plan
 
   this->operator[](z) = plane;
 }
-
+#endif
 template <class elemT>
 void
 VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
@@ -344,8 +361,9 @@ VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
   */
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
-
+#ifndef STIR_WITH_TORCH
   this->get_regular_range(min_indices, max_indices);
+#endif
   assert(min_z <= min_indices.z());
   assert(max_z >= max_indices.z());
   min_indices.z() = min_z;
@@ -366,7 +384,9 @@ VoxelsOnCartesianGrid<elemT>::get_min_indices() const
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
+#ifndef STIR_WITH_TORCH
   this->get_regular_range(min_indices, max_indices);
+#endif
   return min_indices;
 }
 
@@ -376,7 +396,9 @@ VoxelsOnCartesianGrid<elemT>::get_max_indices() const
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
+#ifndef STIR_WITH_TORCH
   this->get_regular_range(min_indices, max_indices);
+#endif
   return max_indices;
 }
 #if 0

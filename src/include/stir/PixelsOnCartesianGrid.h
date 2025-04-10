@@ -45,7 +45,11 @@ public:
   inline PixelsOnCartesianGrid();
 
   //! Construct PixelsOnCartesianGrid with the given array, origin and grid spacing
+#ifdef STIR_WITH_TORCH
+  inline PixelsOnCartesianGrid(const TensorWrapper<2, elemT>& v,
+#else
   inline PixelsOnCartesianGrid(const Array<2, elemT>& v,
+#endif
                                const CartesianCoordinate3D<float>& origin,
                                const BasicCoordinate<2, float>& grid_spacing);
 

@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <torch/torch.h>
 #include <iterator>
-
 #include "stir/IndexRange.h"
 #include "stir/shared_ptr.h"
 
@@ -18,38 +17,114 @@ START_NAMESPACE_STIR
 private:
   typedef TensorWrapper<num_dimensions, elemT> self;
 public:
-
+  //! \name typedefs for iterator support
+  //@{
   typedef elemT value_type;
-  typedef elemT& reference;
-  typedef const elemT& const_reference;
+  typedef value_type& reference;
+  typedef const value_type& const_reference;
   typedef ptrdiff_t difference_type;
+  typedef elemT* iterator;
+  typedef elemT const* const_iterator;
+
+  typedef std::reverse_iterator<iterator> reverse_iterator;
+  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+  // Define full_iterator as a type alias for iterator
+  using full_iterator = iterator;
+  using const_full_iterator = const_iterator;
+
+  //@}
   typedef size_t size_type;
 
-  typedef elemT full_value_type;
-  typedef full_value_type* full_pointer;
-  typedef const full_value_type* const_full_pointer;
-  typedef full_value_type& full_reference;
-  typedef const full_value_type& const_full_reference;
-
-  // TensorAccessorIterator(torch::TensorAccessor<value_type, elemT> accessor, int index)
-  //     : accessor_(accessor), index_(index) {}
-
-         // Define full_iterator as a typedef for the tensor accessor
-  typedef torch::TensorAccessor<elemT, num_dimensions> full_iterator;
-  typedef torch::TensorAccessor<const elemT, num_dimensions> const_full_iterator;
-
-  // // Example function to get the accessor
-  // full_iterator get_accessor() {
-  //   return tensor.accessor<elemT, num_dimensions>();
-  // }
-
-  //! Get const accessor
-  const_full_iterator get_const_accessor() const {
-    if (!tensor.is_contiguous()) {
-        throw std::runtime_error("Tensor must be contiguous to use accessor.");
+  //!\name basic iterator support
+  //@{
+  //! use to initialise an iterator to the first element of the vector
+  inline iterator begin(){
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
       }
-    return tensor.accessor<const elemT, num_dimensions>();
+    return tensor.data_ptr<elemT>(); // Return a pointer to the start of the tensor's data
   }
+  //! use to initialise an iterator to the first element of the (const) vector
+  inline const_iterator begin() const{
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<const elemT>();
+  }
+
+  inline iterator end(){
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<elemT>() + tensor.numel(); // Return a pointer to the end of the tensor's data
+  }
+  //! iterator 'past' the last element of the (const) vector
+  inline const_iterator end() const{
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<const elemT>() + tensor.numel();
+  }
+
+  inline reverse_iterator rbegin(){
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
+      }
+    return std::make_reverse_iterator(begin());
+  }
+  inline reverse_iterator rend(){
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
+      }
+    return std::make_reverse_iterator(end());
+  }
+  inline const_reverse_iterator rbegin() const{
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
+      }
+    return std::make_reverse_iterator(end());
+  }
+  inline const_reverse_iterator rend() const{
+    if (is_on_gpu()) {
+        throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
+      }
+    return std::make_reverse_iterator(begin());
+  }
+  //@}
+
+  // Begin iterator for all elements
+  full_iterator begin_all() {
+    if (is_on_gpu()) {
+        throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<elemT>();
+  }
+
+         // End iterator for all elements
+  full_iterator end_all() {
+    if (is_on_gpu()) {
+        throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<elemT>() + tensor.numel();
+  }
+
+         // Const begin iterator for all elements
+  const_full_iterator begin_all() const {
+    if (is_on_gpu()) {
+        throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<const elemT>();
+  }
+
+         // Const end iterator for all elements
+  const_full_iterator end_all() const {
+    if (is_on_gpu()) {
+        throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<const elemT>() + tensor.numel();
+  }
+
 
   TensorWrapper();
   TensorWrapper(const shared_ptr<torch::Tensor> tensor, const std::string& device = "cpu");
@@ -79,6 +154,37 @@ public:
     swap(*this, other);
   }
 
+  inline bool operator==(const self& iv) const{
+    if(offsets!=iv.offsets)
+      return false;
+    return torch::equal(tensor, iv.tensor);
+  }
+
+  inline bool operator!=(const self& iv) const{
+    return !(*this == iv);
+  }
+
+  //! multiplying elements of the current vector with elements of \c v
+  inline TensorWrapper& operator*=(const elemT& v)
+  {
+    tensor.mul_(v);
+    return *this;
+  }
+
+
+
+  //! multiplying elements of the current vector with elements of \c v
+  inline TensorWrapper& operator/=(const TensorWrapper& v)
+  {
+    if (!tensor.sizes().equals(v.tensor.sizes())) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise division.");  // TODO
+      }
+
+    tensor.div_(v.tensor);
+    return *this;
+  }
+
+
   //! assignment operator
   /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
   TensorWrapper& operator=(TensorWrapper other)
@@ -87,6 +193,8 @@ public:
     // info("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
     return *this;
   }
+
+  inline bool is_regular() const {return true;}
 
 private:
   inline void init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data = true)
@@ -106,8 +214,11 @@ private:
             torch::TensorOptions().dtype(getTorchDtype())).reshape(shape); // Set dtype and shape
       }
 
-           // Extract offsets
+    // Extract offsets
     offsets = extract_offsets_recursive(range);
+    ends.resize(offsets.size());
+    for(int i=0; i<offsets.size(); ++i)
+      ends[i] = offsets[i] + get_length(i);
   }
 
 public:
@@ -116,7 +227,10 @@ public:
   bool is_on_gpu() const;
   void print_device() const;
 
-  inline int get_length() const {return static_cast<int>(size_all());}
+  inline int get_length(int dim = 0) const
+  {
+    return static_cast<int>(tensor.size(dim));
+  }
 
   inline size_t size_all() const{return tensor.numel();}
 
@@ -129,6 +243,8 @@ public:
   elemT find_min() const;
 
   void fill(const elemT& n);
+
+  void mask_cyl(const float radius, const bool in = false);
 
   void apply_lower_threshold(const elemT& l);
 
@@ -186,12 +302,25 @@ public:
   inline bool is_contiguous() const{
     return tensor.is_contiguous();
   }
+
+  //! member function for access to the data via a elemT*
+  inline elemT* get_full_data_ptr(){
+    if (!this->is_contiguous())
+      error("Array::get_full_data_ptr() called for non-contiguous array.");
+    return &(*this->begin_all());
+  }
+
   void print() const;
+
+  inline int get_min_index(int dim = 0) const{return offsets[dim];}
+
+  inline int get_max_index(int dim = 0) const{return ends[dim];}
 
 protected:
   torch::Tensor tensor;
   std::string device; // Change from torch::Device to std::string
   std::vector<int> offsets;
+  std::vector<int> ends;
 
   inline std::vector<int64_t> convertIndexRangeToShape(const stir::IndexRange<num_dimensions>& range) const
   {

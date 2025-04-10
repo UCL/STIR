@@ -32,14 +32,14 @@
 */
 
 #include "stir/CartesianCoordinate3D.h"
-#include "stir/Array.h"
 #ifdef STIR_WITH_TORCH
 #include "stir/TensorWrapper.h"
+#include <torch/torch.h>
+#else
+#include "stir/Array.h"
 #endif
-
 #include "stir/ExamData.h"
 #include "stir/shared_ptr.h"
-#include <torch/torch.h>
 #include <string>
 
 START_NAMESPACE_STIR
