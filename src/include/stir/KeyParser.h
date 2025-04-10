@@ -185,6 +185,8 @@ public:
   void add_key(const std::string& keyword, float* variable_ptr);
   //! add a vectorised keyword. When parsing, parse its value as a float and put it in \c (*variable_ptr)[current_index]
   void add_vectorised_key(const std::string& keyword, std::vector<float>* variable_ptr);
+
+  void add_vectorised_key(const std::string& keyword, std::vector<std::vector<float>>* variable_ptr);
   //! add a keyword. When parsing, parse its value as a double and put it in *variable_ptr
   void add_key(const std::string& keyword, double* variable_ptr);
   //! add a vectorised keyword. When parsing, parse its value as a double and put it in \c (*variable_ptr)[current_index]

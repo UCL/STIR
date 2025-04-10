@@ -220,7 +220,13 @@ void TensorWrapper<num_dimensions, elemT>::
 }
 
 // Explicit template instantiations
+
+template class TensorWrapper<2, int32_t>;
+template class TensorWrapper<3, int32_t>;
 template class TensorWrapper<2, float>;
 template class TensorWrapper<3, float>;
+template class TensorWrapper<2, double>;
+template class TensorWrapper<3, double>;
+
 // template class TensorWrapper<4, float>;
 END_NAMESPACE_STIR

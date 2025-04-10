@@ -24,7 +24,9 @@
 #include "stir/IO/write_data_1d.h"
 #include "stir/warning.h"
 #include <typeinfo>
-
+#ifdef STIR_WITH_TORCH
+#include "stir/TensorWrapper.h"
+#endif
 START_NAMESPACE_STIR
 
 namespace detail
@@ -150,5 +152,97 @@ write_data(OStreamT& s,
       return Succeeded::no;
     }
 }
+
+#ifdef STIR_WITH_TORCH
+
+template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
+Succeeded
+write_data(OStreamT& s,
+           const TensorWrapper<num_dimensions, elemT>& data,
+           NumericInfo<OutputType> output_type,
+           ScaleT& scale_factor,
+           const ByteOrder byte_order,
+           const bool can_corrupt_data)
+{
+
+  // find_scale_factor(scale_factor, data, NumericInfo<OutputType>());
+
+  if (!data.is_contiguous()) {
+      throw std::runtime_error("Tensor must be contiguous to read data.");
+    }
+
+  // if (!byte_order.is_native_order())
+  //   {
+  //     Array<num_dimensions, elemT>& data_ref = const_cast<Array<num_dimensions, elemT>&>(data);
+  //     for (auto iter = data_ref.begin_all(); iter != data_ref.end_all(); ++iter)
+  //       ByteOrder::swap_order(*iter);
+  //   }
+
+
+  const std::streamsize num_to_write = static_cast<std::streamsize>(data.size_all()) * sizeof(elemT);
+  bool writing_ok = true;
+  try
+    {
+      s.write(reinterpret_cast<const char*>(data.get_const_full_data_ptr()), num_to_write);
+    }
+  catch (...)
+    {
+      writing_ok = false;
+    }
+
+  // data.release_const_full_data_ptr();
+
+  // if (!can_corrupt_data && !byte_order.is_native_order())
+  //   {
+  //     Array<num_dimensions, elemT>& data_ref = const_cast<Array<num_dimensions, elemT>&>(data);
+  //     for (auto iter = data_ref.begin_all(); iter != data_ref.end_all(); ++iter)
+  //       ByteOrder::swap_order(*iter);
+  //   }
+
+  if (!writing_ok || !s)
+    {
+      warning("write_data: error after writing to stream.\n");
+      return Succeeded::no;
+    }
+
+  return Succeeded::yes;
+}
+
+
+template <int num_dimensions, class OStreamT, class elemT, class ScaleT>
+Succeeded
+write_data(OStreamT& s,
+           const TensorWrapper<num_dimensions, elemT>& data,
+           NumericType type,
+           ScaleT& scale,
+           const ByteOrder byte_order,
+           const bool can_corrupt_data)
+{
+  if (NumericInfo<elemT>().type_id() == type)
+    {
+      // you might want to use the scale even in this case,
+      // but at the moment we don't
+      scale = ScaleT(1);
+      return write_data(s, data, NumericInfo<elemT>(), scale, byte_order, can_corrupt_data);
+    }
+  switch (type.id)
+    {
+      // define macro what to do with a specific NumericType
+#define CASE(NUMERICTYPE)                                                                                                        \
+    case NUMERICTYPE:                                                                                                              \
+          return write_data(s, data, NumericInfo<typename TypeForNumericType<NUMERICTYPE>::type>(), scale, byte_order, can_corrupt_data)
+
+                 // now list cases that we want
+      CASE(NumericType::INT);
+      CASE(NumericType::FLOAT);
+      CASE(NumericType::DOUBLE);
+#undef CASE
+    default:
+      warning("write_data : type not yet supported\n, at line %d in file %s", __LINE__, __FILE__);
+      return Succeeded::no;
+    }
+}
+
+#endif
 
 END_NAMESPACE_STIR

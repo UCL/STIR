@@ -19,9 +19,6 @@
 */
 
 #include "stir/ByteOrder.h"
-#ifdef STIR_WITH_TORCH
-#include "stir/TensorWrapper.h"
-#endif
 
 START_NAMESPACE_STIR
 
@@ -31,9 +28,7 @@ template <class T>
 class NumericInfo;
 template <int num_dimensions, class elemT>
 class Array;
-#ifndef STIR_WITH_TORCH
-// Array<num_dimensions, elemT>& data,
-#else
+#ifdef STIR_WITH_TORCH
 template <int num_dimensions, class elemT>
 class TensorWrapper;
 #endif
@@ -51,10 +46,26 @@ class TensorWrapper;
   However, the data might have been partially read from \a s.
 */
 template <int num_dimensions, class IStreamT, class elemT>
-#ifndef STIR_WITH_TORCH
 inline Succeeded read_data(IStreamT& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
-#else
-inline Succeeded read_data(IStreamT& s, TensorWrapper<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
+
+#ifdef STIR_WITH_TORCH
+template <int num_dimensions, class IStreamT, typename elemT>
+inline Succeeded read_data(IStreamT& s,
+                           TensorWrapper<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
+
+template <int num_dimensions, class IStreamT, class elemT, class InputType, class ScaleT>
+inline Succeeded read_data(IStreamT& s,
+                           TensorWrapper<num_dimensions, elemT>& data,
+                           NumericInfo<InputType> input_type,
+                           ScaleT& scale_factor,
+                           const ByteOrder byte_order = ByteOrder::native);
+
+template <int num_dimensions, class IStreamT, class elemT, class ScaleT>
+inline Succeeded read_data(IStreamT& s,
+                           TensorWrapper<num_dimensions, elemT>& data,
+                           NumericType type,
+                           ScaleT& scale,
+                           const ByteOrder byte_order = ByteOrder::native);
 #endif
 
 /*! \ingroup Array_IO
@@ -71,11 +82,7 @@ inline Succeeded read_data(IStreamT& s, TensorWrapper<num_dimensions, elemT>& da
 */
 template <int num_dimensions, class IStreamT, class elemT, class InputType, class ScaleT>
 inline Succeeded read_data(IStreamT& s,
-#ifndef STIR_WITH_TORCH
                            Array<num_dimensions, elemT>& data,
-#else
-                          TensorWrapper<num_dimensions, elemT>& data,
-#endif
                            NumericInfo<InputType> input_type,
                            ScaleT& scale_factor,
                            const ByteOrder byte_order = ByteOrder::native);
@@ -92,11 +99,7 @@ inline Succeeded read_data(IStreamT& s,
 */
 template <int num_dimensions, class IStreamT, class elemT, class ScaleT>
 inline Succeeded read_data(IStreamT& s,
-#ifndef STIR_WITH_TORCH
                            Array<num_dimensions, elemT>& data,
-#else
-                           TensorWrapper<num_dimensions, elemT>& data,
-#endif
                            NumericType type,
                            ScaleT& scale,
                            const ByteOrder byte_order = ByteOrder::native);

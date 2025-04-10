@@ -26,9 +26,11 @@
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/TimedObject.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/write_to_file.h"
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 #ifndef MINI_STIR
 #  include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #endif

@@ -145,9 +145,15 @@ read_interfile_image(istream& input, const string& directory_for_data)
       return 0;
     }
 
+#ifdef STIR_WITH_TORCH
+  auto max_it = std::max_element(hdr.image_scaling_factors[0].begin(), hdr.image_scaling_factors[0].end());
+  if(*max_it > 1.f)
+    image_ptr->slice_wise_mult(hdr.image_scaling_factors[0]);
+#else
   for (int i = 0; i < hdr.matrix_size[2][0]; i++)
     if (hdr.image_scaling_factors[0][i] != 1)
       (*image_ptr)[i] *= static_cast<float>(hdr.image_scaling_factors[0][i]);
+#endif
 
   // Check number of time frames
   if (image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames() > 1)
@@ -198,11 +204,13 @@ read_interfile_dynamic_image(istream& input, const string& directory_for_data)
           warning("read_interfile_dynamic_image: error reading data or scale factor returned by read_data not equal to 1");
           return 0;
         }
-
+#ifdef STIR_WITH_TORCH
+  //TODO NE: Tomorrow
+#else
       for (int i = 0; i < hdr.matrix_size[2][0]; i++)
         if (fabs(hdr.image_scaling_factors[frame_num - 1][i] - double(1)) > double(1e-10))
           (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[frame_num - 1][i]);
-
+#endif
       // Set the time frame of the individual frame
       _exam_info.time_frame_definitions = TimeFrameDefinitions(hdr.get_exam_info().time_frame_definitions, frame_num);
       image_sptr->set_exam_info(_exam_info);
@@ -734,7 +742,11 @@ write_basic_interfile_image_header(const string& header_file_name,
 template <class elemT>
 Succeeded
 write_basic_interfile(const string& filename,
+#ifdef STIR_WITH_TORCH
+                      const TensorWrapper<3, elemT>& image,
+#else
                       const Array<3, elemT>& image,
+#endif
                       const NumericType output_type,
                       const float scale,
                       const ByteOrder byte_order)
@@ -748,7 +760,11 @@ template <class NUMBER>
 Succeeded
 write_basic_interfile(const string& filename,
                       const ExamInfo& exam_info,
+#ifdef STIR_WITH_TORCH
+                      const TensorWrapper<3, NUMBER>& image,
+#else
                       const Array<3, NUMBER>& image,
+#endif
                       const CartesianCoordinate3D<float>& voxel_size,
                       const CartesianCoordinate3D<float>& origin,
                       const NumericType output_type,
@@ -788,7 +804,11 @@ write_basic_interfile(const string& filename,
 template <class NUMBER>
 Succeeded
 write_basic_interfile(const string& filename,
+#ifdef STIR_WITH_TORCH
+                      const TensorWrapper<3, NUMBER>& image,
+#else
                       const Array<3, NUMBER>& image,
+#endif
                       const CartesianCoordinate3D<float>& voxel_size,
                       const CartesianCoordinate3D<float>& origin,
                       const NumericType output_type,
@@ -1450,7 +1470,22 @@ write_basic_interfile_PDFS_header(const string& data_filename, const ProjDataFro
 /**********************************************************************
    template instantiations
    **********************************************************************/
+#ifdef STIR_WITH_TORCH
+template Succeeded write_basic_interfile<>(const string& filename,
+                                           const TensorWrapper<3, float>&,
+                                           const CartesianCoordinate3D<float>& voxel_size,
+                                           const CartesianCoordinate3D<float>& origin,
+                                           const NumericType output_type,
+                                           const float scale,
+                                           const ByteOrder byte_order);
 
+
+template Succeeded write_basic_interfile<>(const string& filename,
+                                           const TensorWrapper<3, float>& image,
+                                           const NumericType output_type,
+                                           const float scale,
+                                           const ByteOrder byte_order);
+#else
 template Succeeded write_basic_interfile<>(const string& filename,
                                            const Array<3, signed short>&,
                                            const CartesianCoordinate3D<float>& voxel_size,
@@ -1491,5 +1526,5 @@ template Succeeded write_basic_interfile<>(const string& filename,
                                            const NumericType output_type,
                                            const float scale,
                                            const ByteOrder byte_order);
-
+#endif
 END_NAMESPACE_STIR

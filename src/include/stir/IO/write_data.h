@@ -26,7 +26,10 @@ template <class T>
 class NumericInfo;
 template <int num_dimensions, class elemT>
 class Array;
-
+#ifdef STIR_WITH_TORCH
+template <int num_dimensions, class elemT>
+class TensorWrapper;
+#endif
 /*! \ingroup Array_IO
   \brief Write the data of an Array to file.
 
@@ -126,6 +129,30 @@ inline Succeeded write_data(OStreamT& s,
                             const ByteOrder byte_order = ByteOrder::native,
                             const bool can_corrupt_data = false);
 
+#ifdef STIR_WITH_TORCH
+
+template <int num_dimensions, class OStreamT, class elemT>
+inline Succeeded write_data(OStreamT& s,
+                            const TensorWrapper<num_dimensions, elemT>& data,
+                            const ByteOrder byte_order = ByteOrder::native,
+                            const bool can_corrupt_data = false);
+
+template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
+inline Succeeded write_data(OStreamT& s,
+                            const TensorWrapper<num_dimensions, elemT>& data,
+                            NumericInfo<OutputType> output_type,
+                            ScaleT& scale_factor,
+                            const ByteOrder byte_order = ByteOrder::native,
+                            const bool can_corrupt_data = false);
+
+template <int num_dimensions, class OStreamT, class elemT, class ScaleT>
+inline Succeeded write_data(OStreamT& s,
+                            const TensorWrapper<num_dimensions, elemT>& data,
+                            NumericType type,
+                            ScaleT& scale,
+                            const ByteOrder byte_order = ByteOrder::native,
+                            const bool can_corrupt_data = false);
+#endif
 END_NAMESPACE_STIR
 
 #include "stir/IO/write_data.inl"

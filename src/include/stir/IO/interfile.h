@@ -40,6 +40,10 @@ template <int num_dimensions>
 class IndexRange;
 template <int num_dimensions, typename elemT>
 class Array;
+#ifdef STIR_WITH_TORCH
+template <int num_dimensions, typename elemT>
+class TensorWrapper;
+#endif
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity;
 template <typename elemT>
@@ -166,7 +170,12 @@ const VectorWithOffset<unsigned long> compute_file_offsets(int number_of_time_fr
 
 template <class elemT>
 Succeeded write_basic_interfile(const std::string& filename,
+#ifdef STIR_WITH_TORCH
+                                const TensorWrapper<3, elemT>& image,
+#else
                                 const Array<3, elemT>& image,
+#endif
+                                // const Array<3, elemT>& image,
                                 const CartesianCoordinate3D<float>& voxel_size,
                                 const CartesianCoordinate3D<float>& origin,
                                 const NumericType output_type = NumericType::FLOAT,
@@ -183,7 +192,12 @@ Succeeded write_basic_interfile(const std::string& filename,
 template <class elemT>
 Succeeded write_basic_interfile(const std::string& filename,
                                 const ExamInfo& exam_info,
+#ifdef STIR_WITH_TORCH
+                                const TensorWrapper<3, elemT>& image,
+#else
                                 const Array<3, elemT>& image,
+#endif
+                                // const Array<3, elemT>& image,
                                 const CartesianCoordinate3D<float>& voxel_size,
                                 const CartesianCoordinate3D<float>& origin,
                                 const NumericType output_type = NumericType::FLOAT,
@@ -203,7 +217,12 @@ Succeeded write_basic_interfile(const std::string& filename,
 
 template <class elemT>
 Succeeded write_basic_interfile(const std::string& filename,
+#ifdef STIR_WITH_TORCH
+                                const TensorWrapper<3, elemT>& image,
+#else
                                 const Array<3, elemT>& image,
+#endif
+                                // const Array<3, elemT>& image,
                                 const NumericType output_type = NumericType::FLOAT,
                                 const float scale = 0,
                                 const ByteOrder byte_order = ByteOrder::native);

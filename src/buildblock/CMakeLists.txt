@@ -48,7 +48,7 @@ set(${dir_LIB_SOURCES}
   Viewgram.cxx
   Sinogram.cxx
   RelatedViewgrams.cxx
-  zoom.cxx
+  # zoom.cxx
   DataSymmetriesForViewSegmentNumbers.cxx
   recon_array_functions.cxx
   utilities.cxx
@@ -86,8 +86,10 @@ if (NOT MINI_STIR)
     ArrayFilter1DUsingConvolution.cxx
     ArrayFilter2DUsingConvolution.cxx
     ArrayFilter3DUsingConvolution.cxx
+if not (STIR_WITH_TORCH) #Use Torch
     MaximalArrayFilter3D.cxx
     MaximalImageFilter3D.cxx
+endif()
     FilePath.cxx
     SeparableConvolutionImageFilter.cxx
     NonseparableConvolutionUsingRealDFTImageFilter.cxx
@@ -95,7 +97,7 @@ if (NOT MINI_STIR)
     SSRB.cxx
     inverse_SSRB.cxx
     centre_of_gravity.cxx
-    DynamicProjData.cxx
+    # DynamicProjData.cxx
     MultipleProjData.cxx
     MultipleDataSetHeader.cxx
     GatedProjData.cxx

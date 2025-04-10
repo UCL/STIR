@@ -50,7 +50,7 @@ public:
     if (is_on_gpu()) {
         throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
       }
-    return tensor.data_ptr<const elemT>();
+    return tensor.data_ptr<elemT>();
   }
 
   inline iterator end(){
@@ -64,7 +64,7 @@ public:
     if (is_on_gpu()) {
         throw std::runtime_error("Iterator is not supported for tensors on the GPU.");
       }
-    return tensor.data_ptr<const elemT>() + tensor.numel();
+    return tensor.data_ptr<elemT>() + tensor.numel();
   }
 
   inline reverse_iterator rbegin(){
@@ -101,29 +101,43 @@ public:
     return tensor.data_ptr<elemT>();
   }
 
-         // End iterator for all elements
-  full_iterator end_all() {
+  const_full_iterator begin_all_const() const {
+    if (is_on_gpu()) {
+        throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
+      }
+    return tensor.data_ptr<elemT>();
+  }
+
+  const_full_iterator begin_all() const{
+    return begin_all_const();
+  }
+
+  full_iterator end_all(){
     if (is_on_gpu()) {
         throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
       }
     return tensor.data_ptr<elemT>() + tensor.numel();
   }
 
-         // Const begin iterator for all elements
-  const_full_iterator begin_all() const {
+  const_full_iterator end_all_const() const{
     if (is_on_gpu()) {
         throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
       }
-    return tensor.data_ptr<const elemT>();
+    return tensor.data_ptr<elemT>() + tensor.numel();
   }
 
-         // Const end iterator for all elements
   const_full_iterator end_all() const {
-    if (is_on_gpu()) {
-        throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
-      }
-    return tensor.data_ptr<const elemT>() + tensor.numel();
+    return end_all_const();
   }
+
+
+  //        // Const end iterator for all elements
+  // const_full_iterator end_all() const {
+  //   if (is_on_gpu()) {
+  //       throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
+  //     }
+  //   return tensor.data_ptr<const elemT>() + tensor.numel();
+  // }
 
 
   TensorWrapper();
@@ -164,6 +178,11 @@ public:
     return !(*this == iv);
   }
 
+  inline TensorWrapper& operator+=(const elemT& v) {
+    tensor.add_(v); // In-place addition of scalar
+    return *this;
+  }
+
   //! multiplying elements of the current vector with elements of \c v
   inline TensorWrapper& operator*=(const elemT& v)
   {
@@ -171,7 +190,43 @@ public:
     return *this;
   }
 
+  inline TensorWrapper& operator+=(const TensorWrapper& v)
+  {
+    if (!tensor.sizes().equals(v.tensor.sizes())) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise addition.");
+      }
+    tensor.add_(v.tensor); // In-place addition of another tensor
+    return *this;
+  }
 
+  inline TensorWrapper& operator*=(const TensorWrapper& v)
+  {
+    if (!tensor.sizes().equals(v.tensor.sizes())) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise addition.");
+      }
+    tensor.mul_(v.tensor); // In-place addition of another tensor
+    return *this;
+  }
+
+
+  //! Efficent slice-wise tensor multiplication the the values in a vector that holds a scalar for each slice
+  // inline TensorWrapper& operator*=(const std::vector<elemT>& scalars)
+  inline void slice_wise_mult(const std::vector<float>& scalars)
+  {
+    //  The tensor must be 3D
+    if (tensor.dim() != 3) {
+        throw std::invalid_argument("Input tensor must be 3D.");
+      }
+
+    if (tensor.size(0) != static_cast<int64_t>(scalars.size())) {
+        throw std::invalid_argument("Number of scalars must match the number of slices in the tensor.");
+      }
+
+    // Convert the scalars vector to a 1D tensor
+    torch::Tensor scalar_tensor = torch::tensor(scalars, tensor.options());
+    scalar_tensor = scalar_tensor.view({-1, 1, 1}); // Shape: [num_slices, 1, 1]
+    tensor *= scalar_tensor;
+  }
 
   //! multiplying elements of the current vector with elements of \c v
   inline TensorWrapper& operator/=(const TensorWrapper& v)
@@ -310,6 +365,13 @@ public:
     return &(*this->begin_all());
   }
 
+  inline const elemT* get_const_full_data_ptr() const{
+    if (!this->is_contiguous())
+      error("Array::get_full_data_ptr() called for non-contiguous array.");
+    return &(*this->begin_all_const());
+  }
+
+
   void print() const;
 
   inline int get_min_index(int dim = 0) const{return offsets[dim];}
@@ -385,9 +447,10 @@ private:
         return torch::kFloat;
       } else if constexpr (std::is_same<elemT, double>::value) {
         return torch::kDouble;
-      } else if constexpr (std::is_same<elemT, int>::value) {
+      } else if constexpr (std::is_same<elemT, int32_t>::value) {
         return torch::kInt;
-      } else {
+      }
+      else {
         throw std::invalid_argument("Unsupported data type");
       }
   }
