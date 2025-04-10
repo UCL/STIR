@@ -211,7 +211,7 @@ public:
 
   //! Efficent slice-wise tensor multiplication the the values in a vector that holds a scalar for each slice
   // inline TensorWrapper& operator*=(const std::vector<elemT>& scalars)
-  inline void slice_wise_mult(const std::vector<float>& scalars)
+  inline void slice_wise_mult(const std::vector<double>& scalars)
   {
     //  The tensor must be 3D
     if (tensor.dim() != 3) {

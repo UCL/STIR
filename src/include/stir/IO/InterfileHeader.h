@@ -171,7 +171,7 @@ public:
   std::vector<std::string> matrix_labels;
   std::vector<std::vector<int>> matrix_size;
   std::vector<float> pixel_sizes;
-  std::vector<std::vector<float>> image_scaling_factors;
+  std::vector<std::vector<double>> image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
 
   // Acquisition parameters
