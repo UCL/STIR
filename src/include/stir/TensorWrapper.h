@@ -130,16 +130,6 @@ public:
     return end_all_const();
   }
 
-
-  //        // Const end iterator for all elements
-  // const_full_iterator end_all() const {
-  //   if (is_on_gpu()) {
-  //       throw std::runtime_error("full_iterator is not supported for tensors on the GPU.");
-  //     }
-  //   return tensor.data_ptr<const elemT>() + tensor.numel();
-  // }
-
-
   TensorWrapper();
   TensorWrapper(const shared_ptr<torch::Tensor> tensor, const std::string& device = "cpu");
   explicit TensorWrapper(const IndexRange<num_dimensions> &range, const std::string& device = "cpu");
@@ -208,6 +198,68 @@ public:
     return *this;
   }
 
+  template <typename... Indices>
+  elemT& at(Indices... indices) {
+    static_assert(sizeof...(indices) == num_dimensions, "Number of indices must match the number of dimensions.");
+    if (is_on_gpu()) {
+        throw std::runtime_error("at() is not supported for tensors on the GPU.");
+      }
+    return *(tensor.data_ptr<elemT>() + compute_linear_index(indices...));
+  }
+
+  template <typename... Indices>
+  const elemT& at(Indices... indices) const {
+    static_assert(sizeof...(indices) == num_dimensions, "Number of indices must match the number of dimensions.");
+    if (is_on_gpu()) {
+        throw std::runtime_error("at() is not supported for tensors on the GPU.");
+      }
+    return *(tensor.data_ptr<elemT>() + compute_linear_index(indices...));
+  }
+
+private:
+  std::vector<int64_t> strides;
+
+  void compute_strides() {
+    strides.resize(num_dimensions);
+    strides[num_dimensions - 1] = 1; // Last dimension has a stride of 1
+    for (int i = num_dimensions - 2; i >= 0; --i) {
+        strides[i] = tensor.size(i + 1) * strides[i + 1];
+      }
+  }
+
+  // template <typename... Indices>
+  // size_t compute_linear_index(Indices... indices) const {
+  //   std::array<int, num_dimensions> dims = {indices...};
+  //   size_t linear_index = 0;
+  //   size_t stride = 1;
+  //   for (int i = num_dimensions - 1; i >= 0; --i) {
+  //       linear_index += dims[i] * stride;
+  //       stride *= tensor.size(i);
+  //     }
+  //   return linear_index;
+  // }
+
+  //! Maybe I should be checking if strides has been initialized.
+  //! But this will be called often, so skip.
+  template <typename... Indices>
+  size_t compute_linear_index(Indices... indices) const {
+    if (is_on_gpu()) {
+        // Use PyTorch's tensor indexing for GPU tensors
+        torch::Tensor indices_tensor = torch::tensor({indices...}, torch::kInt64).to(tensor.device());
+        torch::Tensor linear_index_tensor = indices_tensor * torch::tensor(strides, torch::kInt64).to(tensor.device());
+        return linear_index_tensor.sum().item<int64_t>();
+      } else {
+        // Use cached strides for CPU tensors
+        std::array<int, num_dimensions> dims = {indices...};
+        size_t linear_index = 0;
+        for (int i = 0; i < num_dimensions; ++i) {
+            linear_index += dims[i] * strides[i];
+          }
+        return linear_index;
+      }
+  }
+
+public:
 
   //! Efficent slice-wise tensor multiplication the the values in a vector that holds a scalar for each slice
   // inline TensorWrapper& operator*=(const std::vector<elemT>& scalars)
@@ -274,6 +326,7 @@ private:
     ends.resize(offsets.size());
     for(int i=0; i<offsets.size(); ++i)
       ends[i] = offsets[i] + get_length(i);
+    compute_strides();
   }
 
 public:
@@ -286,6 +339,8 @@ public:
   {
     return static_cast<int>(tensor.size(dim));
   }
+
+  inline size_t size() const{return size_all();}
 
   inline size_t size_all() const{return tensor.numel();}
 
@@ -336,7 +391,7 @@ public:
     _xapyb(x.tensor, a.tensor, y.tensor, b.tensor);
   }
 
-  //        //! set values of the array to self*a+y*b where a and b are scalar or arrays
+  //! set values of the array to self*a+y*b where a and b are scalar or arrays
   template <class T>
   inline void sapyb(const T& a, const TensorWrapper& y, const T& b)
   {

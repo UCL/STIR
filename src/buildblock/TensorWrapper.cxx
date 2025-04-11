@@ -24,6 +24,7 @@ TensorWrapper<num_dimensions, elemT>::TensorWrapper(
     // Extract offsets
     offsets = extract_offsets_recursive(range);
     ends.resize(offsets.size());
+    compute_strides();
     for(int i=0; i<offsets.size(); ++i)
       ends[i] = offsets[i] + get_length(i);
     tensor.to(device == "cuda" ? torch::kCUDA : torch::kCPU);
@@ -52,6 +53,7 @@ TensorWrapper<num_dimensions, elemT>::TensorWrapper(
     }
     torch::Dtype dtype = getTorchDtype();
     tensor = torch::zeros((*shape), torch::TensorOptions().dtype(dtype));
+    compute_strides();
     tensor.to(device == "cuda" ? torch::kCUDA : torch::kCPU);
 }
 
@@ -221,6 +223,7 @@ void TensorWrapper<num_dimensions, elemT>::
 
 // Explicit template instantiations
 
+template class TensorWrapper<1, int32_t>;
 template class TensorWrapper<2, int32_t>;
 template class TensorWrapper<3, int32_t>;
 template class TensorWrapper<2, float>;
