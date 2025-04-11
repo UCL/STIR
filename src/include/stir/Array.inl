@@ -269,8 +269,8 @@ elemT*
 Array<num_dimensions, elemT>::get_full_data_ptr()
 {
   this->_full_pointer_access = true;
-//  if (!this->is_contiguous())
-//    error("Array::get_full_data_ptr() called for non-contiguous array.");
+  //  if (!this->is_contiguous())
+  //    error("Array::get_full_data_ptr() called for non-contiguous array.");
   return &(*this->begin_all());
 };
 
@@ -288,8 +288,8 @@ const elemT*
 Array<num_dimensions, elemT>::get_const_full_data_ptr() const
 {
   this->_full_pointer_access = true;
-//  if (!this->is_contiguous())
-//    error("Array::get_const_full_data_ptr() called for non-contiguous array.");
+  //  if (!this->is_contiguous())
+  //    error("Array::get_const_full_data_ptr() called for non-contiguous array.");
   return &(*this->begin_all_const());
 };
 
