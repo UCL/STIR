@@ -17,7 +17,13 @@ set(buildblock_simple_tests
         test_Array.cxx
         test_VectorWithOffset.cxx
         )
-      
+
+if (STIR_WITH_TORCH)
+    list(APPEND buildblock_simple_tests
+            test_Tensor.cxx
+        )
+endif()
+
 if (NOT MINI_STIR)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}

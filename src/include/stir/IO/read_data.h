@@ -28,6 +28,10 @@ template <class T>
 class NumericInfo;
 template <int num_dimensions, class elemT>
 class Array;
+#ifdef STIR_WITH_TORCH
+template <int num_dimensions, class elemT>
+class TensorWrapper;
+#endif
 
 /*! \ingroup Array_IO
   \brief Read the data of an Array from file.
@@ -43,6 +47,26 @@ class Array;
 */
 template <int num_dimensions, class IStreamT, class elemT>
 inline Succeeded read_data(IStreamT& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
+
+#ifdef STIR_WITH_TORCH
+template <int num_dimensions, class IStreamT, typename elemT>
+inline Succeeded read_data(IStreamT& s,
+                           TensorWrapper<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
+
+template <int num_dimensions, class IStreamT, class elemT, class InputType, class ScaleT>
+inline Succeeded read_data(IStreamT& s,
+                           TensorWrapper<num_dimensions, elemT>& data,
+                           NumericInfo<InputType> input_type,
+                           ScaleT& scale_factor,
+                           const ByteOrder byte_order = ByteOrder::native);
+
+template <int num_dimensions, class IStreamT, class elemT, class ScaleT>
+inline Succeeded read_data(IStreamT& s,
+                           TensorWrapper<num_dimensions, elemT>& data,
+                           NumericType type,
+                           ScaleT& scale,
+                           const ByteOrder byte_order = ByteOrder::native);
+#endif
 
 /*! \ingroup Array_IO
   \brief Read the data of an Array from file as a different type.

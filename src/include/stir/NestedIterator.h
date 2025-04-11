@@ -26,7 +26,7 @@
 
 #include "stir/NestedIteratorHelpers.h"
 #include "boost/iterator/iterator_traits.hpp"
-
+#include "boost/iterator/iterator_adaptor.hpp"
 START_NAMESPACE_STIR
 
 /*!

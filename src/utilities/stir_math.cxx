@@ -107,6 +107,8 @@
   \author Kris Thielemans
 */
 
+//NE; will be removed later
+#include <torch/torch.h>
 #include "stir/ArrayFunction.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/SegmentByView.h"
@@ -156,6 +158,22 @@ process_data(const string& output_file_name,
              const OutputFileFormat<DataT>& output_format)
 {
   unique_ptr<DataT> image_ptr = read_from_file<DataT>(*argv);
+//NE; will be removed later
+  //Create a 3D tensor of size (3, 4, 5) filled with random values
+  auto tensor = torch::rand({3, 4, 5});
+
+         // Print the tensor
+  std::cout << "3D Tensor:" << std::endl;
+  std::cout << tensor << std::endl;
+
+         // Access a specific element (e.g., at position [1, 2, 3])
+  std::cout << "Element at [1, 2, 3]: " << tensor[1][2][3].item<float>() << std::endl;
+
+         // Perform operations on the tensor (e.g., multiply by 2)
+  auto modified_tensor = tensor * 2;
+  std::cout << "Modified Tensor (multiplied by 2):" << std::endl;
+  std::cout << modified_tensor << std::endl;
+
   if (!no_math_on_data && !except_first)
     in_place_apply_function(*image_ptr, pow_times_add_object);
 

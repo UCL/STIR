@@ -20,7 +20,6 @@
 
 */
 
-#include "stir/DiscretisedDensity.h"
 #include "stir/NestedIterator.h"
 // for ParametricVoxelsOnCartesianGrid typedef
 #include "stir/VoxelsOnCartesianGrid.h"

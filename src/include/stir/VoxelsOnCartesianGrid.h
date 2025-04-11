@@ -25,6 +25,7 @@
 
 
 */
+#include "stir/Array.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/CartesianCoordinate3D.h"
 
@@ -55,7 +56,11 @@ static VoxelsOnCartesianGrid ask_parameters();
   VoxelsOnCartesianGrid();
 
   //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
+#ifdef STIR_WITH_TORCH
+  VoxelsOnCartesianGrid(const TensorWrapper<3, elemT>& v,
+#else
   VoxelsOnCartesianGrid(const Array<3, elemT>& v,
+#endif
                         const CartesianCoordinate3D<float>& origin,
                         const BasicCoordinate<3, float>& grid_spacing);
 
@@ -67,7 +72,11 @@ static VoxelsOnCartesianGrid ask_parameters();
 
   //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
   VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                        const Array<3, elemT>& v,
+#ifdef STIR_WITH_TORCH
+  const TensorWrapper<3, elemT>& v,
+#else
+   const Array<3, elemT>& v,
+#endif
                         const CartesianCoordinate3D<float>& origin,
                         const BasicCoordinate<3, float>& grid_spacing);
 
@@ -149,13 +158,13 @@ static VoxelsOnCartesianGrid ask_parameters();
   VoxelsOnCartesianGrid<elemT>*
 #endif
   clone() const override;
-
+#ifndef STIR_WITH_TORCH
   //! Extract a single plane
   PixelsOnCartesianGrid<elemT> get_plane(const int z) const;
 
   //! Set a single plane
   void set_plane(const PixelsOnCartesianGrid<elemT>& plane, const int z);
-
+#endif
   //! is the same as get_grid_spacing(), but now returns CartesianCoordinate3D for convenience
   inline CartesianCoordinate3D<float> get_voxel_size() const;
 
