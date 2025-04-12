@@ -93,6 +93,7 @@ public:
   typedef typename base_type::iterator iterator;
   typedef typename base_type::const_iterator const_iterator;
   //@}
+
 #ifdef ARRAY_FULL
   /*! @name typedefs for full_iterator support
   Full iterators provide a 1-dimensional view on a multi-dimensional

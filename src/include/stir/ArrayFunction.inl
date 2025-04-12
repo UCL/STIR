@@ -25,6 +25,10 @@
 #include "stir/array_index_functions.h"
 #include "stir/modulo.h"
 
+#ifdef STIR_WITH_TORCH
+#include "stir/TensorWrapper.h"
+#endif
+
 #include <cmath>
 #include <complex>
 #ifdef BOOST_NO_STDC_NAMESPACE
@@ -347,5 +351,77 @@ transform_array_from_periodic_indices(Array<num_dimensions, elemT>& out_array, c
       out_array[index] = in_array[modulo(index, in_sizes)];
   } while (next(index, out_array));
 }
+
+#ifdef STIR_WITH_TORCH
+
+template <class elemT>
+inline TensorWrapper<1, elemT>&
+in_place_log(TensorWrapper<1, elemT>& v)
+{
+  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+    v.at(i) = std::log(v.at(i));
+  return v;
+}
+
+template <int num_dimensions, class elemT>
+inline TensorWrapper<num_dimensions, elemT>&
+in_place_log(TensorWrapper<num_dimensions, elemT>& v)
+{
+  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+    in_place_log(v.at(i));
+  return v;
+}
+
+template <class elemT>
+inline TensorWrapper<1, elemT>&
+in_place_exp(TensorWrapper<1, elemT>& v)
+{
+  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+    v.at(i) = std::exp(v.at(i));
+  return v;
+}
+
+template <int num_dimensions, class elemT>
+inline TensorWrapper<num_dimensions, elemT>&
+in_place_exp(TensorWrapper<num_dimensions, elemT>& v)
+{
+  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+    in_place_exp(v.at(i));
+  return v;
+}
+
+template <class elemT>
+inline TensorWrapper<1, elemT>&
+in_place_abs(TensorWrapper<1, elemT>& v)
+{
+  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+    if (v.at(i) < 0)
+      v.at(i) = -v.at(i);
+  return v;
+}
+
+template <int num_dimensions, class elemT>
+inline TensorWrapper<num_dimensions, elemT>&
+in_place_abs(TensorWrapper<num_dimensions, elemT>& v)
+{
+  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+    in_place_abs(v.at(i));
+  return v;
+}
+
+// template <class T, class FUNCTION>
+// inline T&
+// in_place_apply_function(T& v, FUNCTION f)
+// {
+//   typename T::full_iterator iter = v.begin_all();
+//   const typename T::full_iterator end_iter = v.end_all();
+//   while (iter != end_iter)
+//     {
+//       *iter = f(*iter);
+//       ++iter;
+//     }
+//   return v;
+// }
+#endif
 
 END_NAMESPACE_STIR

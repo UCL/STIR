@@ -80,6 +80,8 @@ namespace stir {
 
 #cmakedefine STIR_OPENMP
 
+#cmakedefine STIR_WITH_TORCH
+
 #cmakedefine STIR_MPI
 
 #cmakedefine nlohmann_json_FOUND "@nlohmann_json_FOUND@"

@@ -92,6 +92,7 @@ set(swig_stir_dependencies
   stir_coordinates.i
   stir_dataprocessors.i
   stir_exam.i
+  stir_tensorwrapper.i
   stir_LOR.i
   stir_normalisation.i
   stir_objectivefunctions.i
@@ -119,6 +120,13 @@ if(BUILD_SWIG_PYTHON)
       ".... Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
   set(STIR_Python_dependency Python::Module Python::NumPy)
 
+  # Ensure PyTorch Python bindings are linked
+  find_library(TORCH_PYTHON_LIBRARY torch_python PATHS ${TORCH_INSTALL_PREFIX}/lib)
+  if (NOT TORCH_PYTHON_LIBRARY)
+    message(FATAL_ERROR "torch_python library not found. Ensure PyTorch is installed with Python bindings.")
+  endif()
+  message(STATUS "Found torch_python library: ${TORCH_PYTHON_LIBRARY}")
+
   # TODO probably better to call the module stirpy or something
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
@@ -129,7 +137,7 @@ if(BUILD_SWIG_PYTHON)
    set_property(TARGET ${SWIG_MODULE_stir_REAL_NAME} PROPERTY SWIG_GENERATED_COMPILE_OPTIONS /bigobj)
   endif()
   SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
-  SWIG_LINK_LIBRARIES(stir PUBLIC ${STIR_LIBRARIES} ${STIR_Python_dependency})
+  SWIG_LINK_LIBRARIES(stir PUBLIC ${STIR_LIBRARIES} ${STIR_Python_dependency}  ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY})
   target_link_libraries(${SWIG_MODULE_stir_REAL_NAME} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
   CONFIGURE_FILE(./pyfragments.swg ./ COPYONLY)
 

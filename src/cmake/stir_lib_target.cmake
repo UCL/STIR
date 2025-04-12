@@ -21,6 +21,7 @@ target_include_directories(${dir} PUBLIC
 # make sure that if you use STIR, the compiler will be set to what was set via UseCXX
 target_compile_features(${dir} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_include_directories(${dir} PUBLIC ${Boost_INCLUDE_DIR})
+target_include_directories(${dir} PUBLIC ${TORCH_INCLUDE_DIRS})
 
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 

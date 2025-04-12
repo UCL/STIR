@@ -126,6 +126,9 @@ truncate_rim(DiscretisedDensity<3, float>& input_image, const int rim_truncation
   DiscretisedDensityOnCartesianGrid<3, float>& input_image_cartesian
       = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>&>(input_image);
 
+#ifdef STIR_WITH_TORCH
+  input_image.mask_cyl(-1);
+#else
   if (!input_image_cartesian.is_regular())
     error("truncate_rim called for non-regular grid. Not implemented");
 
@@ -136,12 +139,11 @@ truncate_rim(DiscretisedDensity<3, float>& input_image, const int rim_truncation
   const int ze = input_image_cartesian.get_max_index();
   const int ye = input_image_cartesian[zs].get_max_index();
   const int xe = input_image_cartesian[zs][ys].get_max_index();
-
-  // TODO check what happens with even-sized images (i.e. where is the centre?)
-
-  // const int zm=(zs+ze)/2;
+      // const int zm=(zs+ze)/2;
   const int ym = (ys + ye) / 2;
   const int xm = (xs + xe) / 2;
+
+         // TODO check what happens with even-sized images (i.e. where is the centre?)
 
   const float truncated_radius = static_cast<float>((xe - xs) / 2 - rim_truncation_image);
 
@@ -165,6 +167,7 @@ truncate_rim(DiscretisedDensity<3, float>& input_image, const int rim_truncation
                 input_image[z][y][x] = 0;
             }
     }
+#endif
 }
 
 // AZ&KT 04/10/99: added rim_truncation_sino
@@ -311,6 +314,9 @@ divide_array(SegmentByView<float>& numerator, const SegmentByView<float>& denomi
 void
 divide_array(DiscretisedDensity<3, float>& numerator, const DiscretisedDensity<3, float>& denominator)
 {
+#ifdef STIR_WITH_TORCH
+  numerator /= denominator;
+#else
   assert(numerator.get_index_range() == denominator.get_index_range());
   float small_value = numerator.find_max() * SMALL_NUM;
   small_value = (small_value > 0.0F) ? small_value : 0.0F;
@@ -328,6 +334,7 @@ divide_array(DiscretisedDensity<3, float>& numerator, const DiscretisedDensity<3
           else
             numerator[z][y][x] /= denominator[z][y][x];
         }
+#endif
 }
 
 //  MJ 03/01/2000 for loglikelihood computation
@@ -380,6 +387,10 @@ void
 multiply_and_add(DiscretisedDensity<3, float>& image_res, const DiscretisedDensity<3, float>& image_scaled, float scalar)
 {
 
+#ifdef STIR_WITH_TORCH
+  float one = 1.f;
+  image_res.sapyb(one, image_scaled, scalar);
+#else
   assert(image_res.get_index_range() == image_scaled.get_index_range());
   // TODO rewrite in terms of 'full' iterator
 
@@ -389,6 +400,7 @@ multiply_and_add(DiscretisedDensity<3, float>& image_res, const DiscretisedDensi
         {
           image_res[z][y][x] += image_scaled[z][y][x] * scalar;
         }
+#endif
 }
 
 // to be used with in_place_function
@@ -402,24 +414,24 @@ neg_trunc(float x)
 void
 truncate_end_planes(DiscretisedDensity<3, float>& input_image, int input_num_planes)
 {
+//NE:WaitTomorrow
+//   // TODO this function does not make a lot of sense in general
+// #ifndef NDEBUG
+//   // this will throw an exception when the cast is invalid
+//   dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>&>(input_image);
+// #endif
 
-  // TODO this function does not make a lot of sense in general
-#ifndef NDEBUG
-  // this will throw an exception when the cast is invalid
-  dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>&>(input_image);
-#endif
+//   const int zs = input_image.get_min_index();
+//   const int ze = input_image.get_max_index();
 
-  const int zs = input_image.get_min_index();
-  const int ze = input_image.get_max_index();
+//   int upper_limit = (input_image.get_length() % 2 == 1) ? input_image.get_length() / 2 + 1 : input_image.get_length() / 2;
 
-  int upper_limit = (input_image.get_length() % 2 == 1) ? input_image.get_length() / 2 + 1 : input_image.get_length() / 2;
+//   int num_planes = input_num_planes <= upper_limit ? input_num_planes : upper_limit;
 
-  int num_planes = input_num_planes <= upper_limit ? input_num_planes : upper_limit;
-
-  for (int j = 0; j < num_planes; j++)
-    {
-      input_image[zs + j].fill(0.0);
-      input_image[ze - j].fill(0.0);
-    }
+//   for (int j = 0; j < num_planes; j++)
+//     {
+//       input_image[zs + j].fill(0.0);
+//       input_image[ze - j].fill(0.0);
+//     }
 }
 END_NAMESPACE_STIR

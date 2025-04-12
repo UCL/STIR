@@ -26,7 +26,11 @@ PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid()
 {}
 
 template <class elemT>
-PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid(const Array<2, elemT>& v,
+#ifdef STIR_WITH_TORCH
+  PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid(const TensorWrapper<2, elemT>& v,
+#else
+  PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid(const Array<2, elemT>& v,
+#endif
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<2, float>& grid_spacing)
     : DiscretisedDensityOnCartesianGrid<2, elemT>(v.get_index_range(), origin, grid_spacing)
