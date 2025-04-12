@@ -380,4 +380,23 @@ make_array(const Array<num_dimensions, T>& a0,
   return a;
 }
 
+#ifdef STIR_WITH_TORCH
+// template <int num_dimensions, class T>
+// Array<num_dimensions + 1, T>
+// make_array(const Array<num_dimensions, T>& a0)
+// {
+//   const Array<1, T> a = NumericVectorWithOffset<T, T>(make_vector(a0));
+//   return a;
+// }
+
+// template <int num_dimensions, class T>
+// Array<num_dimensions + 1, T>
+// make_array(const Array<num_dimensions, T>& a0, const Array<num_dimensions, T>& a1)
+// {
+//   const Array<num_dimensions + 1, T> a = NumericVectorWithOffset<Array<num_dimensions, T>, T>(make_vector(a0, a1));
+//   return a;
+// }
+
+#endif
+
 END_NAMESPACE_STIR

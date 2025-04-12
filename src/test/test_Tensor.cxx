@@ -281,15 +281,111 @@ public:
 void
 TensorTests::run_tests()
 {
-  cerr << "Testing Array classes\n";
+  cerr << "Testing Tensor classes\n";
   {
     cerr << "Testing 1D stuff" << endl;
     {
       TensorWrapper<1, int> testint(IndexRange<1>(5));
-      testint.at(0) = 2;
+      testint.at(1) = 2;
       check_if_equal(testint.size(), size_t(5), "test size()");
       check_if_equal(testint.size_all(), size_t(5), "test size_all()");
+      TensorWrapper<1, float> test(IndexRange<1>(10));
+      check_if_zero(test, "Array1D not initialised to 0");
+      test.at(1) = 10.5f;
+      test.set_offset(-1);
+      check_if_equal(test.size(), size_t(10), "test size() with non-zero offset");
+      check_if_equal(test.size_all(), size_t(10), "test size_all() with non-zero offset");
+      check_if_equal(test.at(0), 10.5F, "test indexing of Array1D");
+      test += 1;
+      check_if_equal(test.at(0), 11.5F, "test operator+=(float)");
+      check_if_equal(test.sum(), 20.5F, "test operator+=(float) and sum()");
+      check_if_zero(test - test, "test operator-(Tensor1D)");
+      BasicCoordinate<1, int> c;
+      c[1] = 0;
+      check_if_equal(test.at(c), 11.5F, "test at(BasicCoordinate)");
+      test.at(c) = 12.5;
+      check_if_equal(test.at(c), 12.5F, "test at(BasicCoordinate)");
+      {
+        //! NE: Here, test_Array calls for partial specialisations, or support for
+        //! factories. I will skip that in favour of IndexRange<>
+        // TensorWrapper<1, float> ref(-1, 2);
+        const IndexRange<1> range(-1,1);
+        TensorWrapper<1, float> ref(range);
+        ref.at(-1) = 1.F;
+        ref.at(0) = 3.F;
+        ref.at(1) = 3.14F;
+        TensorWrapper<1, float> test = ref;
+
+        test += 1.f;
+        for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i){
+          check_if_equal(test.at(i), ref.at(i) + 1, "test operator+=(float)");
+          }
+        test = ref;
+        test -= 4;
+        for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i)
+          check_if_equal(test.at(i), ref.at(i) - 4, "test operator-=(float)");
+        test = ref;
+        test *= 3;
+        for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i)
+          check_if_equal(test.at(i), ref.at(i) * 3, "test operator*=(float)");
+        test = ref;
+        test /= 3;
+        for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i)
+          check_if_equal(test.at(i), ref.at(i) / 3, "test operator/=(float)");
+      }
+        TensorWrapper<1, float> test2;
+        test2 = test * 2;
+        check_if_equal(2 * test.at(0), test2.at(0), "test operator*(float)");
+      {
+
+      }
+#if 1
+      {
+        // tests on log/exp
+        const IndexRange<1> range(-3,9);
+        TensorWrapper<1, float> test(range);
+        test.fill(1.F);
+        in_place_log(test);
+        {
+          TensorWrapper<1, float> testeq(range);
+          check_if_equal(test, testeq, "test in_place_log of TensorWrapper<1,float>");
+        }
+        {
+          for (int i = test.get_min_index(); i <= test.get_max_index(); i++)
+            test.at(i) = 3.5F * i + 100;
+        }
+        TensorWrapper<1, float> test_copy = test;
+        in_place_log(test);
+        in_place_exp(test);
+        check_if_equal(test, test_copy, "test log/exp of Array1D");
+      }
+#endif
     }
+
+    {
+      cerr << "Testing 2D stuff" << endl;
+      {
+        const IndexRange<2> range(Coordinate2D<int>(0, 0), Coordinate2D<int>(9, 9));
+        TensorWrapper<2, float> test2(range);
+        check_if_equal(test2.size(), size_t(10), "test size()");
+        check_if_equal(test2.size_all(), size_t(100), "test size_all()");
+        check_if_zero(test2, "test TensorWrapper<2, float> not initialised to 0");
+        test2.at(3,4) = 23.3f;
+      }
+      {
+        IndexRange<2> range(Coordinate2D<int>(0, 0), Coordinate2D<int>(3, 3));
+        TensorWrapper<2, float> testfp(range);
+        TensorWrapper<2, float> t2fp(range);
+        testfp.at(3,2) = 3.3F;
+        t2fp.at(3,2) = 2.2F;
+        TensorWrapper<2, float> t2 = t2fp + testfp;
+        check_if_equal(t2.at(3,2), 5.5F, "test operator +(Array2D)");
+        t2fp += testfp;
+        check_if_equal(t2fp.at(3,2), 5.5F, "test operator +=(Array2D)");
+        check_if_equal(t2, t2fp, "test comparing Array2D+= and +");
+      }
+    }
+
   }
 }
 

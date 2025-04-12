@@ -33,6 +33,9 @@
 #include <vector>
 #include <complex>
 #include <string>
+#ifdef STIR_WITH_TORCH
+#include "stir/TensorWrapper.h"
+#endif
 
 START_NAMESPACE_STIR
 
@@ -157,6 +160,47 @@ public:
       }
     return true;
   }
+#ifdef STIR_WITH_TORCH
+  template <class T>
+  bool check_if_equal(const TensorWrapper<1, T>& t1, const TensorWrapper<1, T>& t2, const std::string& str = "")
+  {
+    if (t1.get_min_index() != t2.get_min_index() || t1.get_max_index() != t2.get_max_index())
+      {
+        std::cerr << "Error: unequal ranges. " << str << std::endl;
+        return everything_ok = false;
+      }
+
+    for (int i = t1.get_min_index(); i <= t1.get_max_index(); i++)
+      {
+        if (!check_if_equal(t1.at(i), t2.at(i), str))
+          {
+            std::cerr << "(at TensorWrapper<" << typeid(T).name() << "> first mismatch at index " << i << ")\n";
+            return everything_ok = false;
+          }
+      }
+    return true;
+  }
+  template <class T>
+  bool check_if_equal(const TensorWrapper<2, T>& t1, const TensorWrapper<2, T>& t2, const std::string& str = "")
+  {
+    if (t1.get_min_index() != t2.get_min_index() || t1.get_max_index() != t2.get_max_index())
+      {
+        std::cerr << "Error: unequal ranges. " << str << std::endl;
+        return everything_ok = false;
+      }
+
+    auto j = t2.begin_all_const();
+    for (auto i = t1.begin_all_const(); i <= t1.end_all_const(); ++i, ++j)
+      {
+        if (!check_if_equal(*i, *j, str))
+          {
+            std::cerr << "(at TensorWrapper<" << typeid(T).name() << "> first mismatch at index " << i << ")\n";
+            return everything_ok = false;
+          }
+      }
+    return true;
+  }
+#endif
   // VC 6.0 needs definition of template members in the class def unfortunately.
   //! check equality by comparing size and calling check_if_equal on all elements
   template <class T>
@@ -244,6 +288,24 @@ public:
     return true;
   }
 
+#ifdef STIR_WITH_TORCH
+
+  template <int num_dimensions, typename T>
+  bool check_if_zero(const TensorWrapper<num_dimensions, T>& t, const std::string& str = "")
+  {
+    size_t index = 0;
+    for (auto it = t.begin_all_const(); it!= t.end_all_const(); ++it, ++index)
+      {
+        if (!check_if_zero(*it, str))
+          {
+            std::cerr << "(at TensorWrapper<" << typeid(T).name() << "> first mismatch at index " << index << ")\n";
+            return false;
+          }
+      }
+    return true;
+  }
+
+#endif
   //! compare norm with tolerance
   template <int num_dimensions, class coordT>
   bool check_if_zero(const BasicCoordinate<num_dimensions, coordT>& a, const std::string& str = "")

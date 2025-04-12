@@ -8,6 +8,7 @@
 #include <iterator>
 #include "stir/IndexRange.h"
 #include "stir/shared_ptr.h"
+#include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
@@ -91,7 +92,6 @@ public:
       }
     return std::make_reverse_iterator(begin());
   }
-  //@}
 
   // Begin iterator for all elements
   full_iterator begin_all() {
@@ -129,74 +129,45 @@ public:
   const_full_iterator end_all() const {
     return end_all_const();
   }
+ //@}
 
   TensorWrapper();
-  TensorWrapper(const shared_ptr<torch::Tensor> tensor, const std::string& device = "cpu");
+  TensorWrapper(const torch::Tensor& tensor, const std::vector<int>& offsets, const std::string& device = "cpu");
   explicit TensorWrapper(const IndexRange<num_dimensions> &range, const std::string& device = "cpu");
   TensorWrapper(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr, const std::string& device = "cpu");
-
   TensorWrapper(const shared_ptr<std::vector<int64_t>> shape, const std::string& device = "cpu");
   // TensorWrapper(const shared_ptr<stir::DiscretisedDensity<num_dimensions, elemT> > discretised_density, const std::string& device = "cpu");
 
-         //! Copy constructor
-  inline TensorWrapper(const self& t)
-      : tensor(t.tensor), device(t.device), offsets(t.offsets){}
-
-  friend inline void swap(TensorWrapper& first, TensorWrapper& second) // nothrow
-  {
-    using std::swap;
-    // Swap the member variables
-    swap(first.tensor, second.tensor);
-    swap(first.device, second.device);
-    swap(first.offsets, second.offsets);
+  ~TensorWrapper() {
+    tensor.reset();
   }
+
+         //! Copy constructor
+  inline TensorWrapper(const TensorWrapper& other)
+      : tensor(other.tensor.clone()),
+        device(other.device),
+        offsets(other.offsets),
+        ends(other.ends), strides(other.strides){}
+
+  // friend inline void swap(TensorWrapper& first, TensorWrapper& second) noexcept// nothrow
+  // {
+  //   using std::swap;
+  //   // Swap the member variables
+  //   swap(first.tensor, second.tensor);
+  //   swap(first.device, second.device);
+  //   swap(first.offsets, second.offsets);
+  //   swap(first.ends, second.ends);
+  //   swap(first.strides, second.strides);
+  // }
 
   //! move constructor
   /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
-  inline TensorWrapper(TensorWrapper&& other) noexcept
-  {
-    swap(*this, other);
-  }
+  // inline TensorWrapper(TensorWrapper&& other) noexcept
+  // {
+  //   swap(*this, other);
+  // }
 
-  inline bool operator==(const self& iv) const{
-    if(offsets!=iv.offsets)
-      return false;
-    return torch::equal(tensor, iv.tensor);
-  }
 
-  inline bool operator!=(const self& iv) const{
-    return !(*this == iv);
-  }
-
-  inline TensorWrapper& operator+=(const elemT& v) {
-    tensor.add_(v); // In-place addition of scalar
-    return *this;
-  }
-
-  //! multiplying elements of the current vector with elements of \c v
-  inline TensorWrapper& operator*=(const elemT& v)
-  {
-    tensor.mul_(v);
-    return *this;
-  }
-
-  inline TensorWrapper& operator+=(const TensorWrapper& v)
-  {
-    if (!tensor.sizes().equals(v.tensor.sizes())) {
-        throw std::invalid_argument("Tensors must have the same shape for element-wise addition.");
-      }
-    tensor.add_(v.tensor); // In-place addition of another tensor
-    return *this;
-  }
-
-  inline TensorWrapper& operator*=(const TensorWrapper& v)
-  {
-    if (!tensor.sizes().equals(v.tensor.sizes())) {
-        throw std::invalid_argument("Tensors must have the same shape for element-wise addition.");
-      }
-    tensor.mul_(v.tensor); // In-place addition of another tensor
-    return *this;
-  }
 
   template <typename... Indices>
   elemT& at(Indices... indices) {
@@ -216,15 +187,45 @@ public:
     return *(tensor.data_ptr<elemT>() + compute_linear_index(indices...));
   }
 
+  //! TODO: I would love to remove the loop
+  elemT& at(const BasicCoordinate<num_dimensions, int>& coord) {
+    if (is_on_gpu()) {
+        throw std::runtime_error("at() with BasicCoordinate is not supported for tensors on the GPU.");
+      }
+
+    // std::array<int, num_dimensions> indices;
+    // std::iota(indices.begin(), indices.end(), 1);
+    std::array<int, num_dimensions> indices;
+    for (int i = 0; i < num_dimensions; ++i) {
+        indices[i] = coord[i + 1]; // BasicCoordinate uses 1-based indexing
+      }
+    return *(tensor.data_ptr<elemT>() + compute_linear_index(indices));
+  }
+
+  //! TODO: I would love to remove the loop
+  const elemT& at(const BasicCoordinate<num_dimensions, int>& coord) const {
+    if (is_on_gpu()) {
+        throw std::runtime_error("at() with BasicCoordinate is not supported for tensors on the GPU.");
+      }
+
+    std::array<int, num_dimensions> indices;
+    // std::iota(indices.begin(), indices.end(), 1);
+    // std::array<int, num_dimensions> indices;
+    for (int i = 0; i < num_dimensions; ++i) {
+        indices[i] = coord[i + 1]; // BasicCoordinate uses 1-based indexing
+      }
+    return *(tensor.data_ptr<elemT>() + compute_linear_index(indices));
+  }
+
 private:
-  std::vector<int64_t> strides;
 
   void compute_strides() {
     strides.resize(num_dimensions);
     strides[num_dimensions - 1] = 1; // Last dimension has a stride of 1
-    for (int i = num_dimensions - 2; i >= 0; --i) {
-        strides[i] = tensor.size(i + 1) * strides[i + 1];
-      }
+    if(num_dimensions > 1)
+      for (int i = num_dimensions - 2; i >= 0; --i) {
+          strides[i] = tensor.size(i + 1) * strides[i + 1];
+        }
   }
 
   // template <typename... Indices>
@@ -248,18 +249,168 @@ private:
         torch::Tensor indices_tensor = torch::tensor({indices...}, torch::kInt64).to(tensor.device());
         torch::Tensor linear_index_tensor = indices_tensor * torch::tensor(strides, torch::kInt64).to(tensor.device());
         return linear_index_tensor.sum().item<int64_t>();
+
+        // torch::Tensor offset_tensor = torch::tensor(offsets, torch::kInt64).to(tensor.device());
+        // torch::Tensor indices_tensor = torch::tensor({indices...}, torch::kInt64).to(tensor.device());
+        // torch::Tensor linear_index_tensor = (indices_tensor - offset_tensor) * torch::tensor(strides, torch::kInt64).to(tensor.device());
+        // return linear_index_tensor.sum().item<int64_t>();
+
       } else {
-        // Use cached strides for CPU tensors
+        // NE: No offset version, safe.
+        // // Use cached strides for CPU tensors
+        // std::array<int, num_dimensions> dims = {indices...};
+        // size_t linear_index = 0;
+        // for (int i = 0; i < num_dimensions; ++i) {
+        //     linear_index += dims[i] * strides[i];
+        //   }
+        // return linear_index;
+        //NE: with offsets.
         std::array<int, num_dimensions> dims = {indices...};
+
         size_t linear_index = 0;
         for (int i = 0; i < num_dimensions; ++i) {
-            linear_index += dims[i] * strides[i];
+            int adjusted_index = dims[i] - offsets[i]; // Subtract the offset
+            if (adjusted_index < 0 || adjusted_index >= tensor.size(i)) {
+                throw std::out_of_range("Index out of bounds after applying offset.");
+              }
+            linear_index += adjusted_index * strides[i];
           }
         return linear_index;
       }
   }
 
 public:
+
+  inline bool operator==(const self& iv) const{
+    if(offsets!=iv.offsets)
+      return false;
+    return torch::equal(tensor, iv.tensor);
+  }
+
+  inline bool operator!=(const self& iv) const{
+    return !(*this == iv);
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper& operator+=(const Scalar v){
+    tensor.add_(static_cast<elemT>(v));
+    return *this;
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper& operator*=(const Scalar v){
+    tensor.mul_(static_cast<elemT>(v));
+    return *this;
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper& operator-=(const Scalar v){
+    tensor.sub_(static_cast<elemT>(v));
+    return *this;
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper& operator/=(const Scalar v){
+    if (v == 0) {
+        throw std::invalid_argument("Division by zero is not allowed.");
+      }
+    tensor.div_(static_cast<elemT>(v));
+    return *this;
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper operator+(const Scalar v){
+    return TensorWrapper(tensor + static_cast<elemT>(v), offsets, device);
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper operator*(const Scalar v){
+    return TensorWrapper(tensor * static_cast<elemT>(v), offsets, device);
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper operator-(const Scalar v){
+    return TensorWrapper(tensor - static_cast<elemT>(v), offsets, device);
+  }
+
+  template <typename Scalar, typename = typename std::enable_if<std::is_arithmetic<Scalar>::value>::type>
+  inline TensorWrapper operator/(const Scalar v){
+    if (v == 0) {
+        throw std::invalid_argument("Division by zero is not allowed.");
+      }
+    return TensorWrapper(tensor / static_cast<elemT>(v), offsets, device);
+  }
+
+  inline TensorWrapper<num_dimensions, elemT>& operator+=(const TensorWrapper<num_dimensions, elemT>& v)
+  {
+    if (!tensor.sizes().equals(v.tensor.sizes())) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise addition.");
+      }
+    if (is_on_gpu() != v.is_on_gpu()) {
+        throw std::invalid_argument("Both tensors must be on the same device for element-wise division.");
+      }
+    tensor.add_(v.tensor); // In-place addition of another tensor
+    return *this;
+  }
+
+  inline TensorWrapper<num_dimensions, elemT>& operator*=(const TensorWrapper<num_dimensions, elemT>& v)
+  {
+    if (!tensor.sizes().equals(v.tensor.sizes())) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise addition.");
+      }
+    if (is_on_gpu() != v.is_on_gpu()) {
+        throw std::invalid_argument("Both tensors must be on the same device for element-wise division.");
+      }
+    tensor.mul_(v.tensor); // In-place addition of another tensor
+    return *this;
+  }
+
+  // In-place element-wise subtraction with another TensorWrapper
+  inline TensorWrapper<num_dimensions, elemT>& operator-=(const TensorWrapper<num_dimensions, elemT>& other)
+  {
+    if (tensor.sizes() != other.tensor.sizes()) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise subtraction.");
+      }
+    if (is_on_gpu() != other.is_on_gpu()) {
+        throw std::invalid_argument("Both tensors must be on the same device for element-wise subtraction.");
+      }
+    tensor.sub_(other.tensor); // In-place subtraction
+    return *this;
+  }
+
+  inline TensorWrapper<num_dimensions, elemT>& operator/=(const TensorWrapper<num_dimensions, elemT>& v)
+  {
+    if (!tensor.sizes().equals(v.tensor.sizes())) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise division.");  // TODO
+      }
+    if (is_on_gpu() != v.is_on_gpu()) {
+        throw std::invalid_argument("Both tensors must be on the same device for element-wise division.");
+      }
+    tensor.div_(v.tensor);
+    return *this;
+  }
+
+  // Element-wise subtraction between two TensorWrapper objects
+  inline TensorWrapper<num_dimensions, elemT> operator+(const TensorWrapper<num_dimensions, elemT>& v) const {
+    if (tensor.sizes() != v.tensor.sizes()) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise subtraction.");
+      }
+    if (is_on_gpu() != v.is_on_gpu()) {
+        throw std::invalid_argument("Both tensors must be on the same device for element-wise subtraction.");
+      }
+    return TensorWrapper<num_dimensions, elemT>(tensor + v.tensor, offsets, device);
+  }
+
+  // Element-wise subtraction between two TensorWrapper objects
+  inline TensorWrapper<num_dimensions, elemT> operator-(const TensorWrapper<num_dimensions, elemT>& v) const {
+    if (tensor.sizes() != v.tensor.sizes()) {
+        throw std::invalid_argument("Tensors must have the same shape for element-wise subtraction.");
+      }
+    if (is_on_gpu() != v.is_on_gpu()) {
+        throw std::invalid_argument("Both tensors must be on the same device for element-wise subtraction.");
+      }
+    return TensorWrapper<num_dimensions, elemT>(tensor - v.tensor, offsets, device);
+  }
 
   //! Efficent slice-wise tensor multiplication the the values in a vector that holds a scalar for each slice
   // inline TensorWrapper& operator*=(const std::vector<elemT>& scalars)
@@ -280,24 +431,22 @@ public:
     tensor *= scalar_tensor;
   }
 
-  //! multiplying elements of the current vector with elements of \c v
-  inline TensorWrapper& operator/=(const TensorWrapper& v)
+
+  //! assignment operator - Deep copy
+  TensorWrapper& operator=(const TensorWrapper& other)
   {
-    if (!tensor.sizes().equals(v.tensor.sizes())) {
-        throw std::invalid_argument("Tensors must have the same shape for element-wise division.");  // TODO
+    if (this == &other) {
+        return *this;
       }
+    // swap(*this, other);
+    // Perform a deep copy of the tensor
+    tensor = other.tensor.clone(); // Create a new tensor with the same data
+    // Copy other members
+    device = other.device;
+    offsets = other.offsets;
+    ends = other.ends;
+    strides = other.strides;
 
-    tensor.div_(v.tensor);
-    return *this;
-  }
-
-
-  //! assignment operator
-  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
-  TensorWrapper& operator=(TensorWrapper other)
-  {
-    swap(*this, other);
-    // info("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
     return *this;
   }
 
@@ -323,9 +472,10 @@ private:
 
     // Extract offsets
     offsets = extract_offsets_recursive(range);
+    std::cerr << "OFFSETS SIZE" << offsets.size() << std::endl;
     ends.resize(offsets.size());
     for(int i=0; i<offsets.size(); ++i)
-      ends[i] = offsets[i] + get_length(i);
+      ends[i] = offsets[i] + get_length(i) - 1;
     compute_strides();
   }
 
@@ -340,7 +490,10 @@ public:
     return static_cast<int>(tensor.size(dim));
   }
 
-  inline size_t size() const{return size_all();}
+  inline size_t size(int dim = 0) const
+  {
+    return static_cast<int>(tensor.size(dim));
+  }
 
   inline size_t size_all() const{return tensor.numel();}
 
@@ -433,11 +586,27 @@ public:
 
   inline int get_max_index(int dim = 0) const{return ends[dim];}
 
+  inline void set_offset(const int min_index, int dim = 0){
+    if (dim > tensor.dim()){
+        throw std::invalid_argument("dim must be less than the number of dimensions.");
+      }
+    offsets[dim] = min_index;
+    ends[dim] -= min_index;
+  }
+
+  inline void set_offset(const std::vector<int>& new_offsets) {
+    if (new_offsets.size() != tensor.dim()) {
+        throw std::invalid_argument("Number of offsets must match the number of dimensions.");
+      }
+    offsets = new_offsets;
+  }
+
 protected:
   torch::Tensor tensor;
   std::string device; // Change from torch::Device to std::string
   std::vector<int> offsets;
   std::vector<int> ends;
+  std::vector<int64_t> strides;
 
   inline std::vector<int64_t> convertIndexRangeToShape(const stir::IndexRange<num_dimensions>& range) const
   {

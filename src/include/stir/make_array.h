@@ -178,6 +178,18 @@ inline Array<num_dimensions + 1, T> make_array(const Array<num_dimensions - 1, T
                                                const Array<num_dimensions - 1, T>& a8,
                                                const Array<num_dimensions - 1, T>& a9);
 
+#ifdef STIR_WITH_TORCH
+
+// #include "stir/TensorWrapper.h"
+
+// template <class T>
+// inline TensorWrapper<1, T> make_1d_tensor(const T& a0);
+
+// template <class T>
+// inline TensorWrapper<1, T> make_1d_tensor(const T& a0, const T& a1);
+
+#endif
+
 END_NAMESPACE_STIR
 
 #include "stir/make_array.inl"

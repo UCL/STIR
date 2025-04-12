@@ -9,8 +9,17 @@ TensorWrapper<num_dimensions, elemT>::TensorWrapper()
 
 // Implementation of TensorWrapper methods
 template <int num_dimensions, typename elemT>
-TensorWrapper<num_dimensions, elemT>::TensorWrapper(const shared_ptr<at::Tensor> tensor, const std::string& device)
-    : tensor((*tensor).to(device)), device(device) {}
+TensorWrapper<num_dimensions, elemT>::TensorWrapper(
+    const at::Tensor& tensor,
+    const std::vector<int>& offsets,
+    const std::string& device)
+    : tensor(tensor.to(device)), device(device), offsets(offsets)
+{
+  ends.resize(offsets.size());
+  for(int i=0; i<offsets.size(); ++i)
+    ends[i] = offsets[i] + get_length(i) - 1;
+  compute_strides();
+}
 
 
 template <int num_dimensions, typename elemT>
@@ -24,9 +33,9 @@ TensorWrapper<num_dimensions, elemT>::TensorWrapper(
     // Extract offsets
     offsets = extract_offsets_recursive(range);
     ends.resize(offsets.size());
-    compute_strides();
     for(int i=0; i<offsets.size(); ++i)
-      ends[i] = offsets[i] + get_length(i);
+      ends[i] = offsets[i] + get_length(i) - 1;
+    compute_strides();
     tensor.to(device == "cuda" ? torch::kCUDA : torch::kCPU);
 }
 
@@ -172,7 +181,8 @@ stir::IndexRange<num_dimensions> TensorWrapper<num_dimensions, elemT>::get_index
 }
 
 template <int num_dimensions, typename elemT>
-void TensorWrapper<num_dimensions, elemT>::resize(const stir::IndexRange<num_dimensions>& range) {
+void TensorWrapper<num_dimensions, elemT>::resize(const stir::IndexRange<num_dimensions>& range)
+{
     std::vector<int64_t> new_shape = convertIndexRangeToShape(range);
     torch::Dtype dtype = getTorchDtype();
     tensor = torch::empty(new_shape, torch::TensorOptions().dtype(dtype));
@@ -226,8 +236,10 @@ void TensorWrapper<num_dimensions, elemT>::
 template class TensorWrapper<1, int32_t>;
 template class TensorWrapper<2, int32_t>;
 template class TensorWrapper<3, int32_t>;
+template class TensorWrapper<1, float>;
 template class TensorWrapper<2, float>;
 template class TensorWrapper<3, float>;
+template class TensorWrapper<1, double>;
 template class TensorWrapper<2, double>;
 template class TensorWrapper<3, double>;
 
