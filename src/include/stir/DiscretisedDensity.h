@@ -98,7 +98,7 @@ class DiscretisedDensity : public ExamData, public ArrayType<num_dimensions, ele
 #else
 private:
 #endif
-  typedef Array<num_dimensions, elemT> base_type;
+  typedef ArrayType<num_dimensions, elemT> base_type;
   typedef DiscretisedDensity<num_dimensions, elemT> self_type;
 
 public:
