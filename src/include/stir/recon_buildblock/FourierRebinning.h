@@ -166,10 +166,10 @@ private:
 
 
   */
-  void rebinning(Array<3, std::complex<float>>& FT_rebinned_data,
-                 Array<3, float>& Weights_for_FT_rebinned_data,
+  void rebinning(ArrayType<3, std::complex<float>>& FT_rebinned_data,
+                 ArrayType<3, float>& Weights_for_FT_rebinned_data,
                  PETCount_rebinned& num_rebinned,
-                 const Array<2, std::complex<float>>& FT_current_sinogram,
+                 const ArrayType<2, std::complex<float>>& FT_current_sinogram,
                  const float z,
                  const float average_ring_difference_in_segment,
                  const int num_views_pow2,
@@ -192,8 +192,8 @@ private:
     Pm(w,k) = Pm(w,k) + Pij(w,k) (i=ring0 and j=ring1), and m is the nearest integer to (i+j) -k(i-j)/(Rw)).
   */
 
-  void do_rebinning(Array<3, std::complex<float>>& FT_rebinned_data,
-                    Array<3, float>& Weights_for_FT_rebinned_data,
+  void do_rebinning(ArrayType<3, std::complex<float>>& FT_rebinned_data,
+                    ArrayType<3, float>& Weights_for_FT_rebinned_data,
                     PETCount_rebinned& count_rebinned,
                     const SegmentBySinogram<float>& segment,
                     const int num_tang_poss_pow2,

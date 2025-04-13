@@ -26,9 +26,6 @@
   \author Ashley Gillman
   \author (help from Alexey Zverovich)
   \author PARAPET project
-
-
-
 */
 
 #include "stir/CartesianCoordinate3D.h"
@@ -92,7 +89,7 @@ START_NAMESPACE_STIR
 */
 
 template <int num_dimensions, typename elemT>
-class DiscretisedDensity : public ExamData, public Array<num_dimensions, elemT>
+class DiscretisedDensity : public ExamData, public ArrayType<num_dimensions, elemT>
 {
 #ifdef SWIG
   // work-around swig problem. It gets confused when using a private (or protected)

@@ -36,7 +36,7 @@ template <int num_dimensions, class OStreamT, class elemT, class OutputType, cla
 inline Succeeded
 write_data_with_fixed_scale_factor_help(is_not_1d,
                                         OStreamT& s,
-                                        const Array<num_dimensions, elemT>& data,
+                                        const ArrayType<num_dimensions, elemT>& data,
                                         NumericInfo<OutputType> output_type,
                                         const ScaleT scale_factor,
                                         const ByteOrder byte_order,
@@ -55,7 +55,7 @@ template <class OStreamT, class elemT, class OutputType, class ScaleT>
 inline Succeeded
 write_data_with_fixed_scale_factor_help(is_1d,
                                         OStreamT& s,
-                                        const Array<1, elemT>& data,
+                                        const ArrayType<1, elemT>& data,
                                         NumericInfo<OutputType>,
                                         const ScaleT scale_factor,
                                         const ByteOrder byte_order,
@@ -80,7 +80,7 @@ write_data_with_fixed_scale_factor_help(is_1d,
 template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
 Succeeded
 write_data_with_fixed_scale_factor(OStreamT& s,
-                                   const Array<num_dimensions, elemT>& data,
+                                   const ArrayType<num_dimensions, elemT>& data,
                                    NumericInfo<OutputType> output_type,
                                    const ScaleT scale_factor,
                                    const ByteOrder byte_order,
@@ -93,7 +93,7 @@ write_data_with_fixed_scale_factor(OStreamT& s,
 template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
 Succeeded
 write_data(OStreamT& s,
-           const Array<num_dimensions, elemT>& data,
+           const ArrayType<num_dimensions, elemT>& data,
            NumericInfo<OutputType> output_type,
            ScaleT& scale_factor,
            const ByteOrder byte_order,
@@ -105,7 +105,7 @@ write_data(OStreamT& s,
 
 template <int num_dimensions, class OStreamT, class elemT>
 inline Succeeded
-write_data(OStreamT& s, const Array<num_dimensions, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data)
+write_data(OStreamT& s, const ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data)
 {
   return write_data_with_fixed_scale_factor(s, data, NumericInfo<elemT>(), 1.F, byte_order, can_corrupt_data);
 }
@@ -113,7 +113,7 @@ write_data(OStreamT& s, const Array<num_dimensions, elemT>& data, const ByteOrde
 template <int num_dimensions, class OStreamT, class elemT, class ScaleT>
 Succeeded
 write_data(OStreamT& s,
-           const Array<num_dimensions, elemT>& data,
+           const ArrayType<num_dimensions, elemT>& data,
            NumericType type,
            ScaleT& scale,
            const ByteOrder byte_order,

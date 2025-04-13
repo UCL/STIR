@@ -30,7 +30,7 @@ namespace detail
 
 template <int num_dimensions, class elemT>
 Succeeded
-read_data_1d(std::istream& s, Array<num_dimensions, elemT>& data, const ByteOrder byte_order)
+read_data_1d(std::istream& s, ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order)
 {
   if (!s || (dynamic_cast<std::ifstream*>(&s) != 0 && !dynamic_cast<std::ifstream*>(&s)->is_open())
       || (dynamic_cast<std::fstream*>(&s) != 0 && !dynamic_cast<std::fstream*>(&s)->is_open()))
@@ -66,7 +66,7 @@ read_data_1d(std::istream& s, Array<num_dimensions, elemT>& data, const ByteOrde
 
 template <int num_dimensions, class elemT>
 Succeeded
-read_data_1d(FILE*& fptr_ref, Array<num_dimensions, elemT>& data, const ByteOrder byte_order)
+read_data_1d(FILE*& fptr_ref, ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order)
 {
   FILE* fptr = fptr_ref;
   if (fptr == NULL || ferror(fptr))

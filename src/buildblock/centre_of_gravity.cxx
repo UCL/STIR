@@ -42,14 +42,14 @@ find_unweighted_centre_of_gravity_1d(const VectorWithOffset<T>& row)
 
 template <class T>
 T
-find_unweighted_centre_of_gravity(const Array<1, T>& row)
+find_unweighted_centre_of_gravity(const ArrayType<1, T>& row)
 {
   return find_unweighted_centre_of_gravity_1d(row);
 }
 
 template <int num_dimensions, class T>
 BasicCoordinate<num_dimensions, T>
-find_unweighted_centre_of_gravity(const Array<num_dimensions, T>& array)
+find_unweighted_centre_of_gravity(const ArrayType<num_dimensions, T>& array)
 {
   if (array.size() == 0)
     return BasicCoordinate<num_dimensions, T>(0);
@@ -70,7 +70,7 @@ find_unweighted_centre_of_gravity(const Array<num_dimensions, T>& array)
     }
 
   // first term
-  Array<1, T> first_dim_sums(array.get_min_index(), array.get_max_index());
+  ArrayType<1, T> first_dim_sums(array.get_min_index(), array.get_max_index());
   for (int i = array.get_min_index(); i <= array.get_max_index(); ++i)
     {
       first_dim_sums[i] = array[i].sum();
@@ -83,7 +83,7 @@ find_unweighted_centre_of_gravity(const Array<num_dimensions, T>& array)
 
 template <int num_dimensions, class T>
 BasicCoordinate<num_dimensions, T>
-find_centre_of_gravity(const Array<num_dimensions, T>& array)
+find_centre_of_gravity(const ArrayType<num_dimensions, T>& array)
 {
   const T sum = array.sum();
 
@@ -136,7 +136,7 @@ template void find_centre_of_gravity_in_mm_per_plane(VectorWithOffset<CartesianC
 /*
 template
 BasicCoordinate<3,float>
-find_centre_of_gravity(const Array<3,float>&);
+find_centre_of_gravity(const ArrayType<3,float>&);
 */
 // this instantiates 3D versions
 template CartesianCoordinate3D<float> find_centre_of_gravity_in_mm(const VoxelsOnCartesianGrid<float>& image);

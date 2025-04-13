@@ -19,4 +19,8 @@ namespace stir
 {
 template <int num_dimensions, typename elemT>
 class Array;
-}
+
+//! type alias for future-proofing for "large" rectangular arrays
+template <int num_dimensions, typename elemT>
+using ArrayType = Array<num_dimensions, elemT>;
+} // namespace stir

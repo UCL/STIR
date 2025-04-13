@@ -45,6 +45,6 @@ class ProjData;
   the existing data with the efficiencies, but overwrites it.
 
 */
-void multiply_crystal_factors(ProjData& proj_data, const Array<2, float>& efficiencies, const float global_factor);
+void multiply_crystal_factors(ProjData& proj_data, const ArrayType<2, float>& efficiencies, const float global_factor);
 
 END_NAMESPACE_STIR

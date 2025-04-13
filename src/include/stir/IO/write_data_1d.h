@@ -45,8 +45,10 @@ write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const B
 
  */
 template <int num_dimensions, class elemT>
-inline Succeeded
-write_data_1d(FILE*& fptr_ref, const Array<num_dimensions, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data);
+inline Succeeded write_data_1d(FILE*& fptr_ref,
+                               const ArrayType<num_dimensions, elemT>& data,
+                               const ByteOrder byte_order,
+                               const bool can_corrupt_data);
 } // namespace detail
 
 END_NAMESPACE_STIR
