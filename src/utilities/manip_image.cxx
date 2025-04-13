@@ -311,8 +311,10 @@ trim_edges(VoxelsOnCartesianGrid<float>& input_image)
 
   truncate_rim(input_image, rim_trunc);
 
+#if STIR_VERSION < 070000
   if (ask("Zero end planes?", false))
     truncate_end_planes(input_image);
+#endif
 }
 
 void

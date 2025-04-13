@@ -25,7 +25,7 @@
 
 */
 
-#include "stir/common.h"
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 
@@ -95,8 +95,10 @@ void truncate_rim(SegmentByView<float>& seg, const int rim_truncation_sino);
 //! sets the first and last rim_truncation_sino bins at the 'edges' to zero
 void truncate_rim(Viewgram<float>& viewgram, const int rim_truncation_sino);
 
+#if STIR_VERSION < 070000
 //! sets the end planes of the image to zero
-void truncate_end_planes(DiscretisedDensity<3, float>& input_image, int input_num_planes = 1);
+STIR_DEPRECATED void truncate_end_planes(DiscretisedDensity<3, float>& input_image, int input_num_planes = 1);
+#endif
 
 //! simple division of two sinograms, x/0 = 0
 void divide_array(SegmentByView<float>& numerator, const SegmentByView<float>& denominator);

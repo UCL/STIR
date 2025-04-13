@@ -399,15 +399,16 @@ neg_trunc(float x)
   return (x < 0.0F) ? 0.0F : x;
 }
 
+#if STIR_VERSION < 070000
 void
 truncate_end_planes(DiscretisedDensity<3, float>& input_image, int input_num_planes)
 {
 
   // TODO this function does not make a lot of sense in general
-#ifndef NDEBUG
+#  ifndef NDEBUG
   // this will throw an exception when the cast is invalid
   dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>&>(input_image);
-#endif
+#  endif
 
   const int zs = input_image.get_min_index();
   const int ze = input_image.get_max_index();
@@ -422,4 +423,5 @@ truncate_end_planes(DiscretisedDensity<3, float>& input_image, int input_num_pla
       input_image[ze - j].fill(0.0);
     }
 }
+#endif
 END_NAMESPACE_STIR
