@@ -17,15 +17,13 @@
 
     See STIR/LICENSE.txt for details
 */
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 #include <stdio.h>
 #include <iostream>
 
 START_NAMESPACE_STIR
 class Succeeded;
 class ByteOrder;
-template <int num_dimensions, class elemT>
-class Array;
 
 namespace detail
 {

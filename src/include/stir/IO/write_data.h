@@ -18,14 +18,14 @@
 */
 
 #include "stir/ByteOrder.h"
+#include "stir/ArrayFwd.h"
+
 START_NAMESPACE_STIR
 
 class Succeeded;
 class NumericType;
 template <class T>
 class NumericInfo;
-template <int num_dimensions, class elemT>
-class Array;
 
 /*! \ingroup Array_IO
   \brief Write the data of an Array to file.

@@ -17,13 +17,11 @@
   See STIR/LICENSE.txt for details
 */
 
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 
 class ProjData;
-template <int num_dimensions, typename elemT>
-class Array;
 
 /*!
   \ingroup projdata

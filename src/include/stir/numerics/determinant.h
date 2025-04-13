@@ -19,12 +19,9 @@
   \author Kris Thielemans
 
 */
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
-
-template <int num_dimensions, class elemT>
-class Array;
 
 /*! \ingroup numerics
   \brief Compute the determinant of a matrix

@@ -25,8 +25,6 @@
 
 START_NAMESPACE_STIR
 class Succeeded;
-template <int num_dimensions, typename elemT>
-class Array;
 
 /*!
   \ingroup Array

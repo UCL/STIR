@@ -28,6 +28,7 @@
 
 #include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/RegisteredParsingObject.h"
+#include "stir/ArrayFwd.h"
 #include <complex>
 
 START_NAMESPACE_STIR
@@ -36,8 +37,6 @@ class SegmentByView;
 template <typename elemT>
 class SegmentBySinogram;
 // template <typename elemT> class Sinogram;
-template <int num_dimensions, typename elemT>
-class Array;
 class Succeeded;
 
 /*

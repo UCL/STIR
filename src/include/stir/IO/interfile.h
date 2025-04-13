@@ -31,6 +31,7 @@
 // has to include Succeeded.h (even if it doesn't use the return value).
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
+#include "stir/ArrayFwd.h"
 #include <iostream>
 #include <string>
 
@@ -38,8 +39,6 @@ START_NAMESPACE_STIR
 
 template <int num_dimensions>
 class IndexRange;
-template <int num_dimensions, typename elemT>
-class Array;
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity;
 template <typename elemT>

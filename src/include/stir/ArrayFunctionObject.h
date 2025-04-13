@@ -23,11 +23,10 @@
 #define __stir_ArrayFunctionObject_H__
 
 #include "stir/Succeeded.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT>
-class Array;
 template <int num_dimensions>
 class IndexRange;
 /*!

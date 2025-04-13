@@ -25,14 +25,12 @@
 
 */
 
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 
 template <class T>
 class NumericInfo;
-template <int num_dimensions, class elemT>
-class Array;
 
 /*!
   \ingroup Array

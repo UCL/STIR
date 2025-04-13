@@ -17,16 +17,14 @@
   \author Kris Thielemans
 */
 
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 // predeclerations to avoid having to include the files and create unnecessary
 // dependencies
 template <int num_dimensions, class T>
 class BasicCoordinate;
-template <int num_dimensions, class T>
-class Array;
-template <class elemT>
+template <typename elemT>
 class VectorWithOffset;
 template <class coordT>
 class CartesianCoordinate3D;

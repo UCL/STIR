@@ -28,7 +28,8 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "stir/shared_ptr.h"
+#include "stir/ArrayFwd.h"
+
 START_NAMESPACE_STIR
 
 template <typename elemT>
@@ -37,8 +38,6 @@ template <typename elemT>
 class RelatedViewgrams;
 template <typename elemT>
 class VoxelsOnCartesianGrid;
-template <int num_dimensions, typename elemT>
-class Array;
 class ProjDataInfo;
 class ProjDataInfoCylindrical;
 

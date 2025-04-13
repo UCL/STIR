@@ -21,7 +21,7 @@
 
 */
 
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 #include <complex>
 #include <cmath>
 #ifdef BOOST_NO_STDC_NAMESPACE
@@ -32,9 +32,6 @@ using ::fabs;
 #endif
 
 START_NAMESPACE_STIR
-
-template <int num_dimensions, class elemT>
-class Array;
 
 /*!
  \ingroup numerics
