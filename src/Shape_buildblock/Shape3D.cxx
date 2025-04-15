@@ -22,6 +22,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/info.h"
+#include "stir/format.h"
 
 using std::cerr;
 using std::endl;
@@ -161,7 +162,7 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float>& image, const CartesianCo
               image[z][y][x] = get_voxel_weight(current_index * voxel_size + origin, voxel_size, num_samples);
             }
         }
-  info(boost::format("Number of voxels recomputed with finer sampling : %1%") % num_recomputed);
+  info(format("Number of voxels recomputed with finer sampling : {}", num_recomputed));
 }
 
 #if 0

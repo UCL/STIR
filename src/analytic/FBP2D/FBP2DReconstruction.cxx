@@ -36,7 +36,7 @@
 #include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -116,20 +116,20 @@ FBP2DReconstruction::set_up(shared_ptr<FBP2DReconstruction::TargetT> const& targ
     return Succeeded::no;
 
   if (fc_ramp <= 0 || fc_ramp > .5000000001)
-    error(boost::format("Cut-off frequency has to be between 0 and .5 but is %g") % fc_ramp);
+    error(format("Cut-off frequency has to be between 0 and .5 but is {}", fc_ramp));
 
   if (alpha_ramp <= 0 || alpha_ramp > 1.000000001)
-    error(boost::format("Alpha parameter for ramp has to be between 0 and 1 but is %g") % alpha_ramp);
+    error(format("Alpha parameter for ramp has to be between 0 and 1 but is {}", alpha_ramp));
 
   if (pad_in_s < 0 || pad_in_s > 2)
-    error(boost::format("padding factor has to be between 0 and 2 but is %d") % pad_in_s);
+    error(format("padding factor has to be between 0 and 2 but is {}", pad_in_s));
 
   if (pad_in_s < 1)
     warning("Transaxial extension for FFT:=0 should ONLY be used when the non-zero data\n"
             "occupy only half of the FOV. Otherwise aliasing will occur!");
 
   if (num_segments_to_combine >= 0 && num_segments_to_combine % 2 == 0)
-    error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
+    error(format("num_segments_to_combine has to be odd (or -1), but is {}", num_segments_to_combine));
 
   if (num_segments_to_combine == -1)
     {
@@ -163,7 +163,7 @@ FBP2DReconstruction::method_info() const
 FBP2DReconstruction::FBP2DReconstruction(const std::string& parameter_filename)
 {
   initialise(parameter_filename);
-  info(boost::format("%1%") % parameter_info());
+  info(format("{}", parameter_info()));
 }
 
 FBP2DReconstruction::FBP2DReconstruction()
@@ -304,7 +304,7 @@ FBP2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
 #endif
           }
 
-        info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
+        info(format("Processing view {} of segment {}", vs.view_num(), vs.segment_num()), 2);
         back_projector_sptr->back_project(viewgrams);
       }
   }
