@@ -64,6 +64,12 @@
 </ul>
 
 <h3>Changed functionality</h3>
+    <li>
+      Rework <code>MLEstimateComponentBasedNormalisation</code> into a class.
+      This allows for more flexibility in the use of the class without calling CLI executables. <br>
+      <a href=https://github.com/UCL/STIR/pull/1499>PR # 1499</a>
+    </li>
+
     <ul>
       <li>
         In previous versions, when reading data/images where the radionuclide was not set, a default was used (F18 for PET, Tcm99 for SPECT).
@@ -74,7 +80,6 @@
         Default ECAT scanner configurations updated to use a negative intrinsic tilt.
       </li>
     </ul>
-
 <h3>Bug fixes</h3>
     <ul>
         <li>
@@ -163,6 +168,12 @@
 
 <h4>C++ tests</h4>
 
+    <li>
+      Added <code>MLEstimateComponentBasedNormalisationTest</code> that tests the basic functionality of the
+      <code>MLEstimateComponentBasedNormalisation</code> class and creation of normalisation factors from
+      the calculated PET components. <br>
+      <a href=https://github.com/UCL/STIR/pull/1499>PR # 1499</a>
+    </li>
 
 <h4>recon_test_pack</h4>
 
