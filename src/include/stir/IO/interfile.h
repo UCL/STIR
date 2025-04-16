@@ -31,6 +31,7 @@
 // has to include Succeeded.h (even if it doesn't use the return value).
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
+#include "stir/ArrayFwd.h"
 #include <iostream>
 #include <string>
 
@@ -38,8 +39,6 @@ START_NAMESPACE_STIR
 
 template <int num_dimensions>
 class IndexRange;
-template <int num_dimensions, typename elemT>
-class Array;
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity;
 template <typename elemT>
@@ -157,7 +156,7 @@ const VectorWithOffset<unsigned long> compute_file_offsets(int number_of_time_fr
                                                            const Coordinate3D<int>& dim,
                                                            unsigned long initial_offset = 0);
 
-//! This outputs an Interfile header and data for a Array<3,elemT> object.
+//! This outputs an Interfile header and data for a ArrayType<3,elemT> object.
 /*!
   \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
@@ -166,14 +165,14 @@ const VectorWithOffset<unsigned long> compute_file_offsets(int number_of_time_fr
 
 template <class elemT>
 Succeeded write_basic_interfile(const std::string& filename,
-                                const Array<3, elemT>& image,
+                                const ArrayType<3, elemT>& image,
                                 const CartesianCoordinate3D<float>& voxel_size,
                                 const CartesianCoordinate3D<float>& origin,
                                 const NumericType output_type = NumericType::FLOAT,
                                 const float scale = 0,
                                 const ByteOrder byte_order = ByteOrder::native);
 
-//! This outputs an Interfile header and data for a Array<3,elemT> object.
+//! This outputs an Interfile header and data for a ArrayType<3,elemT> object.
 /*!
   \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
@@ -183,14 +182,14 @@ Succeeded write_basic_interfile(const std::string& filename,
 template <class elemT>
 Succeeded write_basic_interfile(const std::string& filename,
                                 const ExamInfo& exam_info,
-                                const Array<3, elemT>& image,
+                                const ArrayType<3, elemT>& image,
                                 const CartesianCoordinate3D<float>& voxel_size,
                                 const CartesianCoordinate3D<float>& origin,
                                 const NumericType output_type = NumericType::FLOAT,
                                 const float scale = 0,
                                 const ByteOrder byte_order = ByteOrder::native);
 
-//! This outputs an Interfile header and data for a Array<3,elemT> object, assuming unit voxel sizes
+//! This outputs an Interfile header and data for a ArrayType<3,elemT> object, assuming unit voxel sizes
 /*!
   \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
@@ -203,7 +202,7 @@ Succeeded write_basic_interfile(const std::string& filename,
 
 template <class elemT>
 Succeeded write_basic_interfile(const std::string& filename,
-                                const Array<3, elemT>& image,
+                                const ArrayType<3, elemT>& image,
                                 const NumericType output_type = NumericType::FLOAT,
                                 const float scale = 0,
                                 const ByteOrder byte_order = ByteOrder::native);

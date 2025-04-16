@@ -39,7 +39,7 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity()
 template <int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const IndexRange<num_dimensions>& range_v,
                                                               const CartesianCoordinate3D<float>& origin_v)
-    : Array<num_dimensions, elemT>(range_v),
+    : base_type(range_v),
       origin(origin_v)
 {}
 
@@ -48,7 +48,7 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const shared_ptr<c
                                                               const IndexRange<num_dimensions>& range_v,
                                                               const CartesianCoordinate3D<float>& origin_v)
     : ExamData(exam_info_sptr),
-      Array<num_dimensions, elemT>(range_v),
+      base_type(range_v),
       origin(origin_v)
 {}
 

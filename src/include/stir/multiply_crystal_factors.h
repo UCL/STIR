@@ -17,13 +17,11 @@
   See STIR/LICENSE.txt for details
 */
 
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 
 class ProjData;
-template <int num_dimensions, typename elemT>
-class Array;
 
 /*!
   \ingroup projdata
@@ -47,6 +45,6 @@ class Array;
   the existing data with the efficiencies, but overwrites it.
 
 */
-void multiply_crystal_factors(ProjData& proj_data, const Array<2, float>& efficiencies, const float global_factor);
+void multiply_crystal_factors(ProjData& proj_data, const ArrayType<2, float>& efficiencies, const float global_factor);
 
 END_NAMESPACE_STIR

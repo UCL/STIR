@@ -132,6 +132,13 @@
     a <code>shared_ptr&lt;const ProjDataInfo&gt;</code>.<br>
     <a href=https://github.com/UCL/STIR/pull/1315>PR #1315</a>
   </li>
+  <li>
+    As <code>stir::Array</code> template arguments might change in the future,
+    it is now recommended to include <tt>stir/ArrayFwd.h</tt> when using forward
+    declaration and use the <code>ArrayType</code> template-alias in places where
+    a rectangular array that might live on a GPU is intended.<br>
+    <a href=https://github.com/UCL/STIR/pull/1589>PR #1589</a>
+  </li>
 </ul>
 
 <h3>Bug fixes</h3>
@@ -141,6 +148,13 @@
   </li>
 </ul>
 
+<h3>Deprecations</h3>
+<ul>
+  <li>
+    <code>truncate_end_planes</code> will be removed in v7.0
+  </li>
+</ul>
+  
 <h3>Other code changes</h3>
 
 

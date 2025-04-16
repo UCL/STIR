@@ -21,21 +21,21 @@
 /*!
   \file
   \ingroup Array
-  \brief defines the Array class for multi-dimensional (numeric) arrays
+  \brief defines the stir::Array class for multi-dimensional (numeric) arrays
 
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
   \author Gemma Fardell
 
-  Not all compilers support the full iterators, so you could disabled them by editing
-  the file and removing the define ARRAY_FULL. Lots of other things in the library
-  won't work then.
 */
 #include "stir/NumericVectorWithOffset.h"
 #include "stir/ByteOrder.h"
 #include "stir/IndexRange.h"
 #include "stir/deprecated.h"
 #include "stir/shared_ptr.h"
+// include forward declaration to ensure consistency, as well as use of
+// default parameters (if any)
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 class NumericType;

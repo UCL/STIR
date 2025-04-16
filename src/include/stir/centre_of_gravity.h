@@ -17,16 +17,14 @@
   \author Kris Thielemans
 */
 
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 // predeclerations to avoid having to include the files and create unnecessary
 // dependencies
 template <int num_dimensions, class T>
 class BasicCoordinate;
-template <int num_dimensions, class T>
-class Array;
-template <class elemT>
+template <typename elemT>
 class VectorWithOffset;
 template <class coordT>
 class CartesianCoordinate3D;
@@ -51,7 +49,7 @@ T find_unweighted_centre_of_gravity_1d(const VectorWithOffset<T>& row);
    \f]
 */
 template <int num_dimensions, class T>
-BasicCoordinate<num_dimensions, T> find_unweighted_centre_of_gravity(const Array<num_dimensions, T>&);
+BasicCoordinate<num_dimensions, T> find_unweighted_centre_of_gravity(const ArrayType<num_dimensions, T>&);
 
 //! Compute centre of gravity of a 1D Array but without dividing by its sum
 /*! \ingroup Array
@@ -59,7 +57,7 @@ BasicCoordinate<num_dimensions, T> find_unweighted_centre_of_gravity(const Array
   BasicCoordinate\<1,T\>.
 */
 template <class T>
-T find_unweighted_centre_of_gravity(const Array<1, T>&);
+T find_unweighted_centre_of_gravity(const ArrayType<1, T>&);
 
 //! Compute centre of gravity of an Array
 /*! \ingroup Array
@@ -70,7 +68,7 @@ T find_unweighted_centre_of_gravity(const Array<1, T>&);
     \todo better error handling
 */
 template <int num_dimensions, class T>
-BasicCoordinate<num_dimensions, T> find_centre_of_gravity(const Array<num_dimensions, T>&);
+BasicCoordinate<num_dimensions, T> find_centre_of_gravity(const ArrayType<num_dimensions, T>&);
 
 //! Computes centre of gravity for each plane
 /*! \ingroup Array

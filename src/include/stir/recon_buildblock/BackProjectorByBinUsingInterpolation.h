@@ -26,6 +26,7 @@
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
 
@@ -35,8 +36,6 @@ template <typename elemT>
 class RelatedViewgrams;
 template <typename elemT>
 class VoxelsOnCartesianGrid;
-template <int num_dimensions, typename elemT>
-class Array;
 class ProjDataInfo;
 class ProjDataInfoCylindricalArcCorr;
 class DataSymmetriesForBins_PET_CartesianGrid;

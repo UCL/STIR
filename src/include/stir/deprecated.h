@@ -12,6 +12,8 @@
   \ingroup buildblock
   \brief This file declares a deprecation macro.
 */
+#include "stir/common.h"
+
 START_NAMESPACE_STIR
 
 //! Deprecation macro

@@ -18,14 +18,14 @@
 */
 
 #include "stir/ByteOrder.h"
+#include "stir/ArrayFwd.h"
+
 START_NAMESPACE_STIR
 
 class Succeeded;
 class NumericType;
 template <class T>
 class NumericInfo;
-template <int num_dimensions, class elemT>
-class Array;
 
 /*! \ingroup Array_IO
   \brief Write the data of an Array to file.
@@ -50,7 +50,7 @@ class Array;
 */
 template <int num_dimensions, class OStreamT, class elemT>
 inline Succeeded write_data(OStreamT& s,
-                            const Array<num_dimensions, elemT>& data,
+                            const ArrayType<num_dimensions, elemT>& data,
                             const ByteOrder byte_order = ByteOrder::native,
                             const bool can_corrupt_data = false);
 /*! \ingroup Array_IO
@@ -58,9 +58,9 @@ inline Succeeded write_data(OStreamT& s,
 
   This function essentially first calls convert_data() to construct
   an array with elements of type \a OutputType, and then calls
-  write_data(OstreamT&, const Array<num_dimensions,elemT>&,
+  write_data(OstreamT&, const ArrayType<num_dimensions,elemT>&,
            const ByteOrder, const bool).
-  \see write_data(OstreamT&, const Array<num_dimensions,elemT>&,
+  \see write_data(OstreamT&, const ArrayType<num_dimensions,elemT>&,
            const ByteOrder, const bool)
 
   \see find_scale_factor() for the meaning of \a scale_factor.
@@ -71,7 +71,7 @@ inline Succeeded write_data(OStreamT& s,
 */
 template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
 inline Succeeded write_data(OStreamT& s,
-                            const Array<num_dimensions, elemT>& data,
+                            const ArrayType<num_dimensions, elemT>& data,
                             NumericInfo<OutputType> output_type,
                             ScaleT& scale_factor,
                             const ByteOrder byte_order = ByteOrder::native,
@@ -84,7 +84,7 @@ inline Succeeded write_data(OStreamT& s,
   range for \a OutputType, the writing will fail. However, data might have been
   partially written to file anyway.
 
-  \see write_data(OStreamT&, const Array<num_dimensions,elemT>&,
+  \see write_data(OStreamT&, const ArrayType<num_dimensions,elemT>&,
            NumericInfo<OutputType>,
            ScaleT&,
            const ByteOrder,
@@ -96,7 +96,7 @@ inline Succeeded write_data(OStreamT& s,
 */
 template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
 inline Succeeded write_data_with_fixed_scale_factor(OStreamT& s,
-                                                    const Array<num_dimensions, elemT>& data,
+                                                    const ArrayType<num_dimensions, elemT>& data,
                                                     NumericInfo<OutputType> output_type,
                                                     const ScaleT scale_factor,
                                                     const ByteOrder byte_order = ByteOrder::native,
@@ -105,7 +105,7 @@ inline Succeeded write_data_with_fixed_scale_factor(OStreamT& s,
 /*! \ingroup Array_IO
   \brief Write the data of an Array to file as a different type.
 
-  \see write_data(OStreamT&, const Array<num_dimensions,elemT>&,
+  \see write_data(OStreamT&, const ArrayType<num_dimensions,elemT>&,
            NumericInfo<OutputType>,
            ScaleT&,
            const ByteOrder,
@@ -120,7 +120,7 @@ inline Succeeded write_data_with_fixed_scale_factor(OStreamT& s,
 
 template <int num_dimensions, class OStreamT, class elemT, class ScaleT>
 inline Succeeded write_data(OStreamT& s,
-                            const Array<num_dimensions, elemT>& data,
+                            const ArrayType<num_dimensions, elemT>& data,
                             NumericType type,
                             ScaleT& scale,
                             const ByteOrder byte_order = ByteOrder::native,
