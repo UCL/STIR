@@ -112,7 +112,7 @@ parse_DICOM_TZ(const std::string& tz, const bool silent)
       {
         tz_offset = time_zone_offset_in_secs();
         if (!silent)
-          warning(format("No Time_Zone info in DICOM DT. Using local time-zone without DST ({+.0f} secs)", tz_offset));
+          warning(format("No Time_Zone info in DICOM DT. Using local time-zone without DST ({:+.0f} secs)", tz_offset));
       }
     }
   else
@@ -192,7 +192,7 @@ DICOM_datetime_to_secs_since_Unix_epoch(const std::string& str_org, bool silent)
           }
       }
   }
-  info(format("DICOM DT '{}' = {.2f}s since unix epoch (1970)", str, time_diff), 3);
+  info(format("DICOM DT '{}' = {:.2f}s since unix epoch (1970)", str, time_diff), 3);
   return time_diff;
 }
 
@@ -210,7 +210,7 @@ secs_since_Unix_epoch_to_DICOM_datetime(double secs, int time_zone_offset_in_sec
 
   time_t time = round(floor(secs) + unix_epoch_time_t() + time_zone_offset_in_secs);
   struct tm* time_info = gmtime(&time);
-  return (format("{04d}{02d}{02d}{02d}{02d}{02d}.{02d}{+03d}{02d}",
+  return (format("{:04d}{:02d}{:02d}{:02d}{:02d}{:02d}.{:02d}{:+03d}{:02d}",
                  (time_info->tm_year + 1900),
                  (time_info->tm_mon + 1),
                  time_info->tm_mday,
