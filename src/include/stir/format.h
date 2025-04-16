@@ -21,25 +21,29 @@
 
 #include <string>
 #include <utility> // for std::forward
-// #include "stir/common.h"
+#include "stir/common.h"
 
 #if defined(__cpp_lib_format) && (__cpp_lib_format >= 201907L)
 #  include <format>
-using std::format; // namespace internal_format = std; //
+namespace internal_format = std; // using std::format;
 #else
 #  include "fmt/format.h"
-using fmt::format; // namespace internal_format = fmt; //
+namespace internal_format = fmt; // using fmt::format;
 #endif
 
-// START_NAMESPACE_STIR
+START_NAMESPACE_STIR
 
-// template <typename... Args>
-// std::string
-// format(const char* fmt, Args&&... args)
-// {
-//   return internal_format::format(fmt, std::forward<Args>(args)...);
-// }
-
-// END_NAMESPACE_STIR
-
+template <typename... Args>
+std::string
+format(const char* fmt, Args&&... args)
+{
+#if defined(__cpp_lib_format) && (__cpp_lib_format >= 201907L)
+  return internal_format::vformat(fmt, std::make_format_args(args...));
+#else
+  return internal_format::format(fmt, std::forward<Args>(args)...);
 #endif
+}
+
+END_NAMESPACE_STIR
+
+#endif // __stir_FORMAT__
