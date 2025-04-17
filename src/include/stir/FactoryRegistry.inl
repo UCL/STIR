@@ -19,6 +19,7 @@
 */
 
 #include <utility>
+#include <sstream>
 #include "stir/warning.h"
 #include "stir/error.h"
 
