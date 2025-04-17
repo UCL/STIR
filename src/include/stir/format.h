@@ -23,7 +23,7 @@
 #include <utility> // for std::forward
 #include "stir/common.h"
 
-#if defined(__cpp_lib_format) && (__cpp_lib_format >= 201907L)
+#if (defined(__cpp_lib_format) != 0) && (__cpp_lib_format >= 201907L)
 #  include <format>
 namespace internal_format = std; // using std::format;
 #else
@@ -37,7 +37,7 @@ template <typename... Args>
 std::string
 format(const char* fmt, Args&&... args)
 {
-#if defined(__cpp_lib_format) && (__cpp_lib_format >= 201907L)
+#if (defined(__cpp_lib_format) != 0) && (__cpp_lib_format >= 201907L)
   return internal_format::vformat(fmt, std::make_format_args(args...));
 #else
   return internal_format::format(fmt, std::forward<Args>(args)...);

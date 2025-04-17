@@ -1,7 +1,7 @@
 # include all git submodules that should be built with STIR
 add_subdirectory(fmt)
 
-# override default compile variables of fmt to make it compatible with shared objects
+# ensure fmt is built with position independent code
 if (TARGET fmt)
-    target_compile_options(fmt PRIVATE "-fPIC")
+  set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
