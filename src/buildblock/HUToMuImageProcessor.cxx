@@ -21,6 +21,7 @@
 #include "stir/info.h"
 #include "stir/error.h"
 #include "stir/round.h"
+#include "stir/format.h"
 #ifdef HAVE_JSON
 #  include <nlohmann/json.hpp>
 #endif
@@ -133,8 +134,11 @@ HUToMuImageProcessor<TargetT>::get_record_from_json()
   const int keV = stir::round(this->target_photon_energy);
   // Get desired kVp as integer value
   const int kVp = stir::round(this->kilovoltage_peak);
-  stir::info(boost::format("HUToMu: finding record with manufacturer: '%s', keV=%d, kVp=%d in file '%s'")
-                 % manufacturer_upper_case % keV % kVp % this->filename,
+  stir::info(format("HUToMu: finding record with manufacturer: '{}', keV={}, kVp={} in file '{}'",
+                    manufacturer_upper_case,
+                    keV,
+                    kVp,
+                    this->filename),
              2);
 
   // Extract appropriate chunk of JSON file for given manufacturer.

@@ -28,7 +28,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -73,12 +73,12 @@ DynamicDiscretisedDensity::set_density(const DiscretisedDensity<3, float>& densi
   double dis_end = density.get_exam_info().time_frame_definitions.get_end_time(1);
 
   if (fabs(dyn_start - dis_start) > 1e-10)
-    error(boost::format("DynamicDiscretisedDensity::set_density: Time frame start should match (is %1% but expected %2%)")
-          % dis_start % dyn_start);
+    error(format(
+        "DynamicDiscretisedDensity::set_density: Time frame start should match (is {} but expected {})", dis_start, dyn_start));
 
   if (fabs(dyn_end - dis_end) > 1e-10)
-    error(boost::format("DynamicDiscretisedDensity::set_density: Time frame end should match (is %1% but expected %2%)") % dis_end
-          % dyn_end);
+    error(
+        format("DynamicDiscretisedDensity::set_density: Time frame end should match (is {} but expected {})", dis_end, dyn_end));
 
   this->_densities.at(frame_num - 1).reset(density.clone());
 }

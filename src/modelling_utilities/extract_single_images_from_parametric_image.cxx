@@ -21,8 +21,8 @@
   extract_single_images_from_parametric_image output_filename_pattern input_header_filename output_format_parameter_file
   \endcode
 
-  The output filename should look something like this: `param_im_%d_output.file_extension`,
-  so that we can use boost format. In this fashion, you can can specify the output file extension
+  The output filename should look something like this: `param_im_{}_output.file_extension`,
+  so that we can use fmt::format. In this fashion, you can can specify the output file extension
   should you wish.
 
   An example of an output parameter file is as follows:
@@ -48,6 +48,7 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 int
 main(int argc, char* argv[])
@@ -106,13 +107,14 @@ main(int argc, char* argv[])
           std::string current_filename;
           try
             {
-              current_filename = boost::str(boost::format(argv[1]) % i);
+              current_filename = format(argv[1], i);
             }
           catch (std::exception& e)
             {
-              error(boost::format("Error using 'output_filename' pattern (which is set to '%1%'). "
-                                  "Check syntax for boost::format. Error is:\n%2%")
-                    % argv[1] % e.what());
+              error(format("Error using 'output_filename' pattern (which is set to '{}'). "
+                           "Check syntax for fmt::format. Error is:\n{}",
+                           argv[1],
+                           e.what()));
               return EXIT_FAILURE;
             }
 
