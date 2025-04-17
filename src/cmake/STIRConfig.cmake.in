@@ -81,6 +81,8 @@ endif()
 
 find_package(Boost @Boost_VERSION_STRING@ REQUIRED)
 
+find_package(fmt REQUIRED)
+
 if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
   set(ITK_DIR "@ITK_DIR@")
