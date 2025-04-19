@@ -44,16 +44,24 @@ VectorWithOffset<T>::init()
 
 template <class T>
 void
-VectorWithOffset<T>::init(const int min_index, const int max_index, T* const data_ptr, bool copy_data)
+VectorWithOffset<T>::init_with_copy(const int min_index, const int max_index, T const* const data_ptr)
 {
   this->pointer_access = false;
+  this->resize(min_index, max_index);
+  std::copy(data_ptr, data_ptr + this->length, this->begin());
+}
+
+template <class T>
+void
+VectorWithOffset<T>::init(const int min_index, const int max_index, T* const data_ptr, bool copy_data)
+{
   if (copy_data)
     {
-      this->resize(min_index, max_index);
-      std::copy(data_ptr, data_ptr + this->length, this->begin());
+      this->init_with_copy(min_index, max_index, data_ptr);
     }
   else
     {
+      this->pointer_access = false;
       this->length = static_cast<unsigned>(max_index - min_index) + 1;
       this->start = min_index;
       this->begin_allocated_memory = data_ptr;
@@ -296,8 +304,7 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index, 
 {
   // first set empty, such that resize() will work ok
   this->init();
-  // note: need a const_cast, but it's safe because we will copy the data
-  this->init(min_index, max_index, const_cast<T*>(data_ptr), /* copy_data = */ true);
+  this->init_with_copy(min_index, max_index, data_ptr);
 }
 
 template <class T>

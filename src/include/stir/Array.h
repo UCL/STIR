@@ -317,11 +317,19 @@ private:
   //! A pointer to the allocated chunk if the array is constructed that way, zero otherwise
   shared_ptr<elemT[]> _allocated_full_data_ptr;
 
+  //! change the array to a new range of indices, copy data from \c data_ptr
+  /*!
+    \arg data_ptr should point to a contiguous block of correct size
+
+    The C-array \a data_ptr will be accessed with the last dimension running fastest
+    ("row-major" order).
+  */
+  inline void init_with_copy(const IndexRange<num_dimensions>& range, elemT const* const data_ptr);
   //! change the array to a new range of indices, pointing to \c data_ptr
   /*!
     \arg data_ptr should point to a contiguous block of correct size
 
-    The C-array \data_ptr will be accessed with the last dimension running fastest
+    The C-array \a data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
   */
   inline void init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data);
@@ -577,6 +585,11 @@ private:
   template <int num_dimensions2, class elemT2>
   friend class Array;
 
+  //! change vector with new index range and copy data from \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline void init_with_copy(const IndexRange<1>& range, elemT const* const data_ptr);
   //! change vector with new index range and point to \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
