@@ -371,9 +371,18 @@ protected:
 
   //! Called internally to see if all variables are consistent
   inline void check_state() const;
-  //! change vector with new index range and point to \c data_ptr
+  //! change vector with new index range and copy data from \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
+
+    calls resize()
+  */
+  inline void init_with_copy(const int min_index, const int max_index, T const* const data_ptr);
+  //! change vector with new index range and optionally point to \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+    \arg copy_data if \c true, fall-back to init_with_copy(min_index, max_index, data_ptr). Otherwise, make
+      this object point to the same memory as data_ptr.
   */
   inline void init(const int min_index, const int max_index, T* const data_ptr, bool copy_data);
 
