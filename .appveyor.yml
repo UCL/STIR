@@ -1,4 +1,5 @@
-shallow_clone: true
+#shallow_clone: true
+clone_depth: 10
 
 skip_commits:
   files:
