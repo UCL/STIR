@@ -21,7 +21,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 namespace ecat
@@ -37,7 +37,7 @@ CListModeDataECAT8_32bit::CListModeDataECAT8_32bit(const std::string& listmode_f
   const std::string originating_system(this->interfile_parser.get_exam_info().originating_system);
   shared_ptr<Scanner> this_scanner_sptr(Scanner::get_scanner_from_name(originating_system));
   if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
-    error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system);
+    error(format("Unknown value for originating_system keyword: '{}", originating_system));
 
   this->set_proj_data_info_sptr(interfile_parser.data_info_ptr->create_shared_clone());
 
@@ -71,11 +71,11 @@ CListModeDataECAT8_32bit::open_lm_file()
   prepend_directory_name(full_data_file_name, directory_name);
   filename = std::string(full_data_file_name);
 
-  info(boost::format("CListModeDataECAT8_32bit: opening file %1%") % filename);
+  info(format("CListModeDataECAT8_32bit: opening file {}", filename));
   shared_ptr<std::istream> stream_ptr(new std::fstream(filename.c_str(), std::ios::in | std::ios::binary));
   if (!(*stream_ptr))
     {
-      warning("CListModeDataECAT8_32bit: cannot open file '%s'", filename.c_str());
+      warning(format("CListModeDataECAT8_32bit: cannot open file '{}'", filename.c_str()));
       return Succeeded::no;
     }
   current_lm_data_ptr.reset(new InputStreamWithRecords<CListRecordT, bool>(

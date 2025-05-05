@@ -30,10 +30,10 @@
 #include "stir/FilePath.h"
 #include "stir/IO/stir_ecat_common.h"
 #include "stir/error.h"
+#include "stir/format.h"
 // Non-STIR includes
 #include <fstream>
 #include <math.h>
-#include <boost/format.hpp>
 #include "driver_types.h"
 // NiftyPET includes
 #include "def.h"
@@ -1090,10 +1090,14 @@ check_im_sizes(const int stir_dim[3], const int np_dim[3])
 {
   for (int i = 0; i < 3; ++i)
     if (stir_dim[i] != np_dim[i])
-      throw std::runtime_error((boost::format("NiftyPETHelper::check_im_sizes() - "
-                                              "STIR image (%1%, %2%, %3%) should be == (%4%,%5%,%6%).")
-                                % stir_dim[0] % stir_dim[1] % stir_dim[2] % np_dim[0] % np_dim[1] % np_dim[2])
-                                   .str());
+      throw std::runtime_error(format("NiftyPETHelper::check_im_sizes() - "
+                                      "STIR image ({}, {}, {}) should be == ({},{},{}).",
+                                      stir_dim[0],
+                                      stir_dim[1],
+                                      stir_dim[2],
+                                      np_dim[0],
+                                      np_dim[1],
+                                      np_dim[2]));
 }
 
 void
@@ -1108,11 +1112,14 @@ check_voxel_spacing(const DiscretisedDensity<3, float>& stir)
 
   for (unsigned i = 0; i < 3; ++i)
     if (std::abs(stir_spacing[int(i) + 1] - np_spacing[i]) > 1e-4f)
-      throw std::runtime_error((boost::format("NiftyPETHelper::check_voxel_spacing() - "
-                                              "STIR image (%1%, %2%, %3%) should be == (%4%,%5%,%6%).")
-                                % stir_spacing[1] % stir_spacing[2] % stir_spacing[3] % np_spacing[0] % np_spacing[1]
-                                % np_spacing[2])
-                                   .str());
+      throw std::runtime_error(format("NiftyPETHelper::check_voxel_spacing() - "
+                                      "STIR image ({}, {}, {}) should be == ({},{},{}).",
+                                      stir_spacing[1],
+                                      stir_spacing[2],
+                                      stir_spacing[3],
+                                      np_spacing[0],
+                                      np_spacing[1],
+                                      np_spacing[2]));
 }
 
 void
@@ -1217,9 +1224,10 @@ get_vals_for_proj_data_conversion(std::vector<int>& sizes,
 
   // Make sure they're the same size
   if (np_vec.size() != unsigned(num_proj_data_elems))
-    error(boost::format("NiftyPETHelper::get_vals_for_proj_data_conversion "
-                        "NiftyPET and STIR sinograms are different sizes (%1% for STIR versus %2% for NP")
-          % num_proj_data_elems % np_vec.size());
+    error(format("NiftyPETHelper::get_vals_for_proj_data_conversion "
+                 "NiftyPET and STIR sinograms are different sizes ({} for STIR versus {} for NP",
+                 num_proj_data_elems,
+                 np_vec.size()));
 }
 
 void

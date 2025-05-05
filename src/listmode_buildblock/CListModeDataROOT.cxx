@@ -27,7 +27,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -112,9 +112,9 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
       this_scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
       if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
         {
-          warning(boost::format("CListModeDataROOT: Unknown value for originating_system keyword: '%s.\n WIll try to "
-                                "figure out the scanner's geometry from the parameters")
-                  % originating_system);
+          warning(format("CListModeDataROOT: Unknown value for originating_system keyword: '{}'.\n WIll try to "
+                         "figure out the scanner's geometry from the parameters",
+                         originating_system));
           give_it_a_try = true;
         }
       else
@@ -223,7 +223,7 @@ CListModeDataROOT::get_empty_record_sptr() const
 Succeeded
 CListModeDataROOT::open_lm_file()
 {
-  info(boost::format("CListModeDataROOT: used ROOT file %s") % this->root_file_sptr->get_ROOT_filename());
+  info(format("CListModeDataROOT: used ROOT file {}", this->root_file_sptr->get_ROOT_filename()));
   return Succeeded::yes;
 }
 
@@ -375,8 +375,10 @@ CListModeDataROOT::check_scanner_definition(std::string& ret)
       return Succeeded::no;
     }
   if (max_num_timing_bins <= 0 || size_timing_bin <= 1.F || timing_resolution <= 0.F)
-    info(boost::format("CListModeDataROOT: TOF information is missing. Set relevant keywords if you need TOF:\n\t%s\n\t%s\n\t%s")
-         % max_num_timing_bins_keyword % size_timing_bin_keyword % timing_resolution_keyword);
+    info(format("CListModeDataROOT: TOF information is missing. Set relevant keywords if you need TOF:\n\t{}\n\t{}\n\t{}",
+                max_num_timing_bins_keyword,
+                size_timing_bin_keyword,
+                timing_resolution_keyword));
 
   return Succeeded::yes;
 }

@@ -21,6 +21,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <iostream>
 
 // for ncat
@@ -111,8 +112,11 @@ parse_line(const std::string& deformation_field_from_NCAT_file,
       warning("Error in line in NCAT file %s: inconsistent coordinates\n\"%s\"",
               deformation_field_from_NCAT_file.c_str(),
               line.c_str());
-      info(boost::format("%1% %2% %3% %4%") % new_voxel_coords % current_voxel_coords % current_displacement % new_voxel_coords
-           - current_voxel_coords - current_displacement);
+      info(format("{} {} {} {}",
+                  new_voxel_coords,
+                  current_voxel_coords,
+                  current_displacement,
+                  new_voxel_coords - current_voxel_coords - current_displacement));
       return Succeeded::no;
     }
 #endif
@@ -166,7 +170,7 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3, float>& 
           || current_voxel[3] < deformation_field[1][current_voxel[1]][current_voxel[2]].get_min_index()
           || current_voxel[3] > deformation_field[1][current_voxel[1]][current_voxel[2]].get_max_index())
         {
-          info(boost::format("Coordinates out of range : %1% %2%") % current_voxel % current_displacement);
+          info(format("Coordinates out of range : {} {}", current_voxel, current_displacement));
           return Succeeded::no;
         }
       deformation_field[1][current_voxel] = current_displacement_in_mm.z();
@@ -193,13 +197,13 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3, float>& defor
       read_from_file<DiscretisedDensity<3, float>>(deformation_field_from_file_z));
   if (is_null_ptr(image_sptr))
     {
-      error(boost::format("Error reading %1%") % deformation_field_from_file_z);
+      error(format("Error reading {}", deformation_field_from_file_z));
       return Succeeded::no;
     }
   VoxelsOnCartesianGrid<float> const* voxels_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> const*>(image_sptr.get());
   if (is_null_ptr(voxels_ptr))
     {
-      error(boost::format("Error reading %1%: should be of type VoxelsOnCartesianGrid") % deformation_field_from_file_z);
+      error(format("Error reading {}: should be of type VoxelsOnCartesianGrid", deformation_field_from_file_z));
       return Succeeded::no;
     }
   deformation_field[1] = *image_sptr;
@@ -209,7 +213,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3, float>& defor
   image_sptr = read_from_file<DiscretisedDensity<3, float>>(deformation_field_from_file_y);
   if (is_null_ptr(image_sptr))
     {
-      error(boost::format("Error reading %1%") % deformation_field_from_file_y.c_str());
+      error(format("Error reading {}", deformation_field_from_file_y.c_str()));
       return Succeeded::no;
     }
   deformation_field[2] = *image_sptr;
@@ -217,7 +221,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3, float>& defor
   image_sptr = read_from_file<DiscretisedDensity<3, float>>(deformation_field_from_file_x);
   if (is_null_ptr(image_sptr))
     {
-      error(boost::format("Error reading %1%") % deformation_field_from_file_x.c_str());
+      error(format("Error reading {}", deformation_field_from_file_x.c_str()));
       return Succeeded::no;
     }
   deformation_field[3] = *image_sptr;
@@ -391,7 +395,7 @@ NonRigidObjectTransformationUsingBSplines<num_dimensions, elemT>::NonRigidObject
   VoxelsOnCartesianGrid<float> const* voxels_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> const*>(image_sptr.get());
 
   if (is_null_ptr(voxels_ptr))
-    error(boost::format("Error reading %1%: should be of type VoxelsOnCartesianGrid") % filename_x);
+    error(format("Error reading {}: should be of type VoxelsOnCartesianGrid", filename_x));
 
   this->_origin = image_sptr->get_origin();
   this->_grid_spacing = voxels_ptr->get_grid_spacing();

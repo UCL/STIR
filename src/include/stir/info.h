@@ -37,11 +37,11 @@ START_NAMESPACE_STIR
 
   \todo At a later stage, it will also write to a log-file.
 
-  \c boost::format is useful in this context.
+  \c stir::format is useful in this context.
 
   \par Example
   \code
-  info(boost::format("Running sub-iteration %1% of total %2%") % subiter_num % total);
+  info(format("Running sub-iteration {} of total {}", subiter_num, total));
 
   info("Running a really complicated algorithm");
   \endcode

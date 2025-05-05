@@ -23,5 +23,5 @@ if (STIR_MPI)
   SET_PROPERTY(TARGET OSMAPOSL PROPERTY LINK_FLAGS ${MPI_CXX_LINK_FLAGS})
 endif()
 
-target_link_libraries(iterative_OSMAPOSL PUBLIC recon_buildblock )
+target_link_libraries(iterative_OSMAPOSL PUBLIC recon_buildblock PUBLIC fmt)
 

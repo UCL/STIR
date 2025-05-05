@@ -42,7 +42,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 
@@ -1789,19 +1789,22 @@ Scanner::check_consistency() const
     { //! Check consistency of axial and transaxial spacing for block geometry
       if (get_num_axial_buckets() != 1)
         {
-          warning(boost::format("BlocksOnCylindrical num_axial_buckets (%d) is greater than 1. This is not supported yet. "
-                                "Consider multiplying the number of axial_blocks_per_bucket by %d.")
-                  % get_num_axial_buckets() % get_num_axial_buckets());
+          warning(format("BlocksOnCylindrical num_axial_buckets ({}) is greater than 1. This is not supported yet. "
+                         "Consider multiplying the number of axial_blocks_per_bucket by {}.",
+                         get_num_axial_buckets(),
+                         get_num_axial_buckets()));
           return Succeeded::no;
         }
       { // Assert that each block contains an equal number of axial crystals
         if (get_num_rings() % get_num_axial_crystals_per_bucket() != 0)
           {
-            warning(boost::format("Error in GeometryBlocksOnCylindrical: number of rings (%d) is not a multiple of the "
-                                  "get_num_axial_crystals_per_bucket "
-                                  "(%d) = num_axial_crystals_per_block (%d) * num_axial_blocks_per_bucket (%d)")
-                    % get_num_rings() % get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_block()
-                    % get_num_axial_blocks_per_bucket());
+            warning(format("Error in GeometryBlocksOnCylindrical: number of rings ({}) is not a multiple of the "
+                           "get_num_axial_crystals_per_bucket "
+                           "({}) = num_axial_crystals_per_block ({}) * num_axial_blocks_per_bucket ({})",
+                           get_num_rings(),
+                           get_num_axial_crystals_per_bucket(),
+                           get_num_axial_crystals_per_block(),
+                           get_num_axial_blocks_per_bucket()));
           }
       }
       if (get_axial_crystal_spacing() * get_num_axial_crystals_per_block() > get_axial_block_spacing())

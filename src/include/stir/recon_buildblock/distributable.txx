@@ -26,7 +26,7 @@
 #include "stir/HighResWallClockTimer.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
@@ -158,8 +158,8 @@ LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
   }
   CPU_timer.stop();
   wall_clock_timer.stop();
-  info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s") % CPU_timer.value()
-       % wall_clock_timer.value());
+  info(format(
+      "Computation times for distributable_computation, CPU {}s, wall-clock {}s", CPU_timer.value(), wall_clock_timer.value()));
 }
 
 END_NAMESPACE_STIR

@@ -25,7 +25,7 @@
 
 */
 
-#include "boost/format.hpp"
+#include "stir/format.h"
 #include "stir/warning.h"
 START_NAMESPACE_STIR
 
@@ -86,7 +86,7 @@ ProjDataInfo::get_tof_bin(const double delta) const
         return i;
     }
   // TODO handle differently
-  warning(boost::format("TOF delta time %g out of range") % delta);
+  warning(format("TOF delta time {} out of range", delta));
   return min_tof_pos_num;
 }
 
@@ -105,7 +105,7 @@ ProjDataInfo::get_unmashed_tof_bin(const double delta) const
       return i;
   }
   // TODO handle differently
-  warning(boost::format("TOF delta time %g out of range") % delta);
+  warning(format("TOF delta time {} out of range", delta));
   return min_tof_pos_num;
 
 }
