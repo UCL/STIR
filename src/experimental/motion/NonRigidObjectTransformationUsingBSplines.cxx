@@ -170,7 +170,13 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3, float>& 
           || current_voxel[3] < deformation_field[1][current_voxel[1]][current_voxel[2]].get_min_index()
           || current_voxel[3] > deformation_field[1][current_voxel[1]][current_voxel[2]].get_max_index())
         {
-          info(format("Coordinates out of range : {} {}", current_voxel, current_displacement));
+          info(format("Coordinates out of range : ({}, {}, {}) ({}, {}, {})",
+                      current_voxel.z(),
+                      current_voxel.y(),
+                      current_voxel.x(),
+                      current_displacement.z(),
+                      current_displacement.y(),
+                      current_displacement.x()));
           return Succeeded::no;
         }
       deformation_field[1][current_voxel] = current_displacement_in_mm.z();

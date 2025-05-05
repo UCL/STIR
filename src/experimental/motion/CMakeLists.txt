@@ -11,5 +11,5 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(${dir} PUBLIC numerics_buildblock local_buildblock )
+target_link_libraries(${dir} PUBLIC numerics_buildblock local_buildblock PRIVATE fmt)
 

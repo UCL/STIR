@@ -30,6 +30,9 @@ environment:
 init:
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
+install:
+  - git submodule update --init --recursive
+
 build_script:
   # find boost on Appveyor. Version depends on VM
   - for /D %%d in (C:\Libraries\boost_*) do set BOOST_ROOT=%%d
