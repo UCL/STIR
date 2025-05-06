@@ -469,16 +469,14 @@ def DOI_adaption(projdata, DOI_new):
 def check_if_compressed(header_filename):
     with open(header_filename) as f:
         data = f.read()
-    try:
-        match = re.search(r'compression\s*:=\s*(\w+)', data)
+    match = re.search(r'compression\s*:=\s*(\w+)', data)
+    if match:
         if match.group(1) == 'off':
             print('Compression is off, can proceed')
         else:
-            print('You are trying to read e7tools compressed data. Please uncompress first!')
-            sys.exit()
-    except:
+            raise ValueError('You are trying to read e7tools compressed data. Please uncompress first!')
+    else:
         print('No compression info found in header!')
-        pass
 
 def plot_2d_image(idx,vol,title,clims=None,cmap="viridis"):
     """Customized version of subplot to plot 2D image"""
@@ -506,10 +504,10 @@ def remove_scan_data_lines_from_interfile_header(header_filename_new, header_fil
     with open(header_filename_old) as f:
         data = f.read()
 
-    data_type_string = 'scan data type description[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'scan data type description[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
-    num_data_types_string = 'number of scan data types[^\n]*\s*:=\s*[^\n]*\n'
+    num_data_types_string = r'number of scan data types[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(num_data_types_string, '', data)
 
     with open(header_filename_new, 'w') as f2:
@@ -529,7 +527,7 @@ def remove_data_offset(header_filename_new, header_filename_old):
     with open(header_filename_old) as f:
         data = f.read()
 
-    data_type_string = 'data offset in bytes[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'data offset in bytes[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
     with open(header_filename_new, 'w') as f2:
@@ -539,7 +537,7 @@ def add_data_offset(header_filename_new, header_filename_old):
     with open(header_filename_old) as f:
         data = f.read()
 
-    offset_string = '\ndata offset in bytes[1]:= 84760000'
+    offset_string = r'\ndata offset in bytes[1]:= 84760000'
     pattern = r'(%TOF mashing factor\s*:=[^\n]*)'
     data = re.sub(pattern, r'\1' + offset_string, data)
 
@@ -550,11 +548,11 @@ def replace_siemens_convention_in_interfile_header(header_name_new, header_name)
     with open(header_name) as f:
         data = f.read()
 
-    poss = re.search('matrix axis label\[2\]:=plane', data).span()
+    poss = re.search(r'matrix axis label\[2\]:=plane', data).span()
     data = data.replace(data[poss[0]:poss[1]], \
         'matrix axis label[2]:=sinogram views')
 
-    poss = re.search('matrix axis label\[3\]:=projection', data).span()
+    poss = re.search(r'matrix axis label\[3\]:=projection', data).span()
     data = data.replace(data[poss[0]:poss[1]], \
         'matrix axis label[3]:=number of sinograms')
 
@@ -565,7 +563,7 @@ def change_max_ring_distance(header_name_new, header_name, max_ring_diff):
     with open(header_name) as f:
         data = f.read()
 
-    poss = re.search('%maximum ring difference\s*:=[^\n]*', data).span()
+    poss = re.search(r'%maximum ring difference\s*:=[^\n]*', data).span()
     data = data.replace(data[poss[0]:poss[1]], \
         '%maximum ring difference:={}'.format(int(max_ring_diff)))
 
@@ -581,19 +579,19 @@ def remove_tof_dimension(header_name_new, header_name):
     data = data.replace(data[poss[0]:poss[1]], \
         'number of dimensions:={}'.format(3))
 
-    data_type_string = 'matrix size\[4\]\s*:=[^\n]*\n'
+    data_type_string = r'matrix size\[4\]\s*:=[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
-    data_type_string = 'matrix axis label\[4\]*\s*:=TOF bin*\n'
+    data_type_string = r'matrix axis label\[4\]*\s*:=TOF bin*\n'
     data = re.sub(data_type_string, '', data)
 
-    data_type_string = 'scale factor \(ps\/bin\) (.*)\n'
+    data_type_string = r'scale factor \(ps\/bin\) (.*)\n'
     data = re.sub(data_type_string, '', data)
 
-    data_type_string = '%TOF mashing factor[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'%TOF mashing factor[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '%TOF mashing factor :=0\n', data)
 
-    data_type_string = '%number of TOF time bins[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'%number of TOF time bins[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
     with open(header_name_new, 'w') as f2:
