@@ -14,7 +14,7 @@
 ## execute
 ##  set cmd= %cmd% -d ./Debug
 ##  set cmd= %cmd% --os scatter_520_2D.mhdr
-## 
+##
 ## This way, it will write smoothed randoms, a mu-map and a sinogram for
 ## normalization to file.
 ##
@@ -29,7 +29,7 @@
 ##  - prompts-sino_uncompr_00.s.hdr & .s
 ##  - smoothed_randoms_00.h33 & .s (in the "Debug" folder)
 ##  - umap_00.h33 & .i (in the "Debug" folder)
-##       note: we highly recommend using this mu-map, as it is "cut to the FOV" 
+##       note: we highly recommend using this mu-map, as it is "cut to the FOV"
 ##       and is positioned at scanner center.
 ##  - norm3d_00.h33 & .a (in the "Debug" folder)
 ##  - scatter_520_2D.s.hdr & .s (wherever you set the path to in the batch file)
@@ -56,7 +56,7 @@
 #
 
 #%%
-import os, sys, re, argparse
+import os, re, argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import stir
@@ -79,10 +79,14 @@ def process_files(prompts_header_filename,
     Args:
         prompts_header_filename (str): filename of the prompts sinogram header file, including path
         mu_map_header (str, optional): filename of mu-map header file, must be in the same folder as prompts file. Defaults to 'umap_00.h33'.
-        randoms_data_filename (str, optional): filename of randoms sinogram header file, must be in the same folder as prompts file. Defaults to 'smoothed_rand_00.s'.
-        scatter_2D_header_filename (str, optional): filename of 2D scatter header file, must be in the same folder as prompts file. Defaults to 'scat_00_00.s.hdr'.
-        norm_sino_data_filename (str, optional): filename of norm sinogram header file, must be in the same folder as prompts file. Defaults to 'norm3d_00.a'.
-        attenuation_corr_factor_data_filename (str, optional): filename of attenuation correction factor header file, must be in the same folder as prompts file. Defaults to 'acf_00.a'.
+        randoms_data_filename (str, optional): filename of randoms sinogram header file, must be in the same
+            folder as prompts file. Defaults to 'smoothed_rand_00.s'.
+        scatter_2D_header_filename (str, optional): filename of 2D scatter header file, must be in the same
+            folder as prompts file. Defaults to 'scat_00_00.s.hdr'.
+        norm_sino_data_filename (str, optional): filename of norm sinogram header file, must be in the same
+            folder as prompts file. Defaults to 'norm3d_00.a'.
+        attenuation_corr_factor_data_filename (str, optional): filename of attenuation correction factor header
+            file, must be in the same folder as prompts file. Defaults to 'acf_00.a'.
         STIR_output_folder (str, optional): folder where files are written to. Defaults to 'processing', within prompts folder.
     """
     data_folder_PATH = os.path.dirname(prompts_header_filename)
@@ -125,7 +129,7 @@ def process_files(prompts_header_filename,
         os.mkdir(STIR_output_folder)
     except FileExistsError:
         print("STIR output folder exists, files are overwritten")
-        
+
     #%%
     ###################### PROMPTS FILE ############################
     ##### first, we check if the prompts file is compressed
@@ -159,7 +163,6 @@ def process_files(prompts_header_filename,
     ######## select display variables
     central_slice = proj_info.get_num_axial_poss(0)//2
     TOF_bin = proj_info.get_num_tof_poss()//2
-    view = proj_info.get_num_views()//2
     # to draw line-profiles, we'll average over a few slices, specify how many:
     thickness_half = 5
 
@@ -204,7 +207,7 @@ def process_files(prompts_header_filename,
     if apply_DOI_adaption: DOI_adaption(norm_sino, 10)
     norm_sino_arr = stirextra.to_numpy(norm_sino)
 
-    ##### in case there were bad miniblocks during your measurement, the norm-file 
+    ##### in case there were bad miniblocks during your measurement, the norm-file
     ##### might contain negative values. We'll set them to a very high value here, such
     ##### that the detection efficiencies (1/norm-value) will be 0 (numerically)
     norm_sino_arr[norm_sino_arr<=0.] = 10^37
@@ -412,8 +415,11 @@ def process_files(prompts_header_filename,
 
     fig, ax = plt.subplots(figsize = (8,6))
 
-    ax.plot(np.mean(prompts_precorr_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='Prompts, pre-corrected f. multi. factors')
-    ax.plot(np.mean(additive_term_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='additive term')
+    prompts_mean = np.mean(prompts_precorr_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0))
+    ax.plot(prompts_mean, label="Prompts, pre-corrected f. multi. factors")
+
+    add_term_mean = np.mean(additive_term_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0))
+    ax.plot(add_term_mean, label="additive term")
 
     ax.set_xlabel('Radial distance (bin)')
     ax.set_ylabel('total counts')
@@ -482,7 +488,7 @@ def plot_2d_image(idx,vol,title,clims=None,cmap="viridis"):
     """Customized version of subplot to plot 2D image"""
     plt.subplot(*idx)
     plt.imshow(vol,cmap=cmap)
-    if not clims is None:
+    if clims is not None:
         plt.clim(clims)
     plt.colorbar(shrink=.5, aspect=.9)
     plt.title(title)
@@ -571,7 +577,7 @@ def change_max_ring_distance(header_name_new, header_name, max_ring_diff):
         f2.write(data)
 
 def remove_tof_dimension(header_name_new, header_name):
-    
+
     with open(header_name) as f:
         data = f.read()
 
@@ -611,7 +617,7 @@ if __name__ == '__main__':
     parser.add_argument('--STIR_output_folder', default='processing', help="The folder where the output files are written to")
 
     args = parser.parse_args()
-    
+
     process_files(args.prompts_filename_inclPath,
           mu_map_header=args.mu_map_header,
           randoms_data_filename=args.randoms_data_filename,
