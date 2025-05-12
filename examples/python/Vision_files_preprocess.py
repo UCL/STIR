@@ -157,7 +157,7 @@ def process_files(prompts_header_filename,
     ## so we're creatiing one here
     proj_info = prompts_from_e7.get_proj_data_info()
     nonTOF_proj_info = proj_info.create_non_tof_clone()
-    nonTOFtemplate=stir.ProjDataInterfile(prompts_from_e7.get_exam_info(), nonTOF_proj_info, os.path.join(STIR_output_folder,nonTOF_template_sinogram_name))
+    stir.ProjDataInterfile(prompts_from_e7.get_exam_info(), nonTOF_proj_info, os.path.join(STIR_output_folder,nonTOF_template_sinogram_name))
 
     #%%
     ######## select display variables
@@ -413,7 +413,7 @@ def process_files(prompts_header_filename,
     prompts_precorr_arr = stirextra.to_numpy(prompts_precorr_f_multi_fact)
     additive_term_arr = stirextra.to_numpy(add_sino)
 
-    fig, ax = plt.subplots(figsize = (8,6))
+    _, ax = plt.subplots(figsize = (8,6))
 
     prompts_mean = np.mean(prompts_precorr_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0))
     ax.plot(prompts_mean, label="Prompts, pre-corrected f. multi. factors")
@@ -437,7 +437,7 @@ def process_files(prompts_header_filename,
     BG_arr = scatter_3D_unnormalized_arr + randoms_arr
 
     #%%
-    fig, ax = plt.subplots(figsize = (8,6))
+    _, ax = plt.subplots(figsize = (8,6))
 
     ax.plot(np.mean(prompts_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='Prompts')
     ax.plot(np.mean(BG_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='BG term')
