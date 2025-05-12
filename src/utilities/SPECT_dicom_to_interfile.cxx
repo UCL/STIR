@@ -22,16 +22,24 @@
 */
 #include <iostream>
 #include <fstream>
+#include <memory>
+#include <string>
 
 #include <boost/format.hpp>
 
 #include <gdcmReader.h>
 #include <gdcmStringFilter.h>
+#include <gdcmValue.h>
+#include <gdcmImageChangeTransferSyntax.h>
+#include <gdcmAttribute.h>
+#include <gdcmImageReader.h>
+#include <gdcmImageWriter.h>
 
 #include "stir/info.h"
 #include "stir/error.h"
 #include "stir/warning.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/Interfileheader.h"
 
 enum class EnergyWindowInfo
 {
@@ -45,6 +53,10 @@ enum class RadionuclideInfo
   CodingSchemDesignator,
   CodeMeaning
 };
+enum class DetectorInfo
+{
+    RadialPosition
+};
 enum class CalibrationInfo
 {
 };
@@ -53,21 +65,24 @@ stir::Succeeded
 GetEnergyWindowInfo(const gdcm::File& file, const EnergyWindowInfo request, std::string& dst, const int sequence_idx);
 stir::Succeeded
 GetRadionuclideInfo(const gdcm::File& file, const RadionuclideInfo request, std::string& dst, const int sequence_idx = 1);
+stir::Succeeded
+GetDetectorInfo(const gdcm::File& file, const DetectorInfo request, std::string& dst, const int sequence_idx = -1);
 
 class SPECTDICOMData
 {
 public:
   SPECTDICOMData(const std::string& DICOM_filename) { dicom_filename = DICOM_filename; };
   stir::Succeeded get_interfile_header(std::string& output_header, const std::string& data_filename, const int dataset_num) const;
-  stir::Succeeded get_proj_data(const std::string& output_file) const;
-  stir::Succeeded open_dicom_file();
+  stir::Succeeded get_proj_data(const std::string& output_file ) const;
+  stir::Succeeded open_dicom_file(bool is_planar);
+  std::vector<float> store_pixel_buffer_as_float_vector(const gdcm::ByteValue*& bv) const;
+  bool is_planar = false;
   int num_energy_windows = 1;
   int num_frames = 0;
   int num_of_projections = 0;
   std::vector<std::string> energy_window_name;
 
 private:
-  // shared_ptr<stir::ProjDataInfo> proj_data_info_sptr;
   std::string dicom_filename;
 
   float start_angle = 0.0f;
@@ -75,14 +90,13 @@ private:
   int actual_frame_duration = 0; // frame duration in msec
   int num_of_rotations = 0;
   std::string direction_of_rotation, isotope_name;
-  int extent_of_rotation;
-  float calibration_factor;
+  float extent_of_rotation = 0.0f;
+  float calibration_factor = -1;
   std::string rotation_radius;
 
   std::vector<float> lower_en_window_thres;
   std::vector<float> upper_en_window_thres;
 
-  int num_dimensions;
   std::vector<std::string> matrix_labels;
   std::vector<int> matrix_size;
   std::vector<double> pixel_sizes;
@@ -127,7 +141,7 @@ GetDICOMTagInfo(const gdcm::File& file, const gdcm::Tag tag, std::string& dst, c
           try
             {
               const gdcm::DataElement& de = file.GetDataSet().GetDataElement(t);
-              const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+              const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
               if (!sqi)
                 {
                   // try next sequence
@@ -140,6 +154,7 @@ GetDICOMTagInfo(const gdcm::File& file, const gdcm::Tag tag, std::string& dst, c
                   // try next sequence
                   continue;
                 }
+
               const gdcm::Item& item = sqi->GetItem(sequence_idx);
 
               element = item.GetDataElement(tag);
@@ -184,12 +199,12 @@ GetEnergyWindowInfo(const gdcm::File& file, const EnergyWindowInfo request, std:
 
       // Get Energy Window Info Sequence
       const gdcm::DataElement& de = file.GetDataSet().GetDataElement(energy_window_info_seq);
-      const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
       const gdcm::Item& item = sqi->GetItem(sequence_idx);
 
       // Get Energy Window Range Sequence
       const gdcm::DataElement& element = item.GetDataElement(energy_window_range_seq);
-      const gdcm::SequenceOfItems* sqi2 = element.GetValueAsSQ();
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi2 = element.GetValueAsSQ();
       if (sqi2->GetNumberOfItems() > 1)
         stir::warning("Energy window sequence contains more than 1 window. Ignoring all later ones");
       const gdcm::Item& item2 = sqi2->GetItem(1);
@@ -238,7 +253,7 @@ GetRadionuclideInfo(const gdcm::File& file, const RadionuclideInfo request, std:
 
       // Get Radiopharmaceutical Info Sequence
       const gdcm::DataElement& de = file.GetDataSet().GetDataElement(radiopharm_info_seq_tag);
-      const gdcm::SequenceOfItems* sqi = de.GetValueAsSQ();
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
       const gdcm::Item& item = sqi->GetItem(sequence_idx);
 
       // Get Radiopnuclide Code Sequence
@@ -246,7 +261,7 @@ GetRadionuclideInfo(const gdcm::File& file, const RadionuclideInfo request, std:
       const gdcm::DataElement& element = item.GetDataElement(radionuclide_code_seq_tag);
       if (element.GetVL() > 0)
         {
-          const gdcm::SequenceOfItems* sqi2 = element.GetValueAsSQ();
+          const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi2 = element.GetValueAsSQ();
           const gdcm::Item& item2 = sqi2->GetItem(sequence_idx);
           // std::cout<< "num items"<< sqi2->GetNumberOfItems();
           // std::cout << item2 << std::endl;
@@ -274,7 +289,74 @@ GetRadionuclideInfo(const gdcm::File& file, const RadionuclideInfo request, std:
 }
 
 stir::Succeeded
-SPECTDICOMData::open_dicom_file()
+GetDetectorInfo( const gdcm::File& file, const DetectorInfo request, std::string& dst, const int sequence_idx )
+{
+  // Check for an unrecognized request.
+  if (request != DetectorInfo::RadialPosition)
+    {
+      dst = "";
+      return stir::Succeeded::no;
+    }
+
+  try
+    {
+      const gdcm::DataElement& de = file.GetDataSet().GetDataElement(gdcm::Tag(0x0054, 0x0022));
+      const gdcm::SmartPointer<gdcm::SequenceOfItems> sqi = de.GetValueAsSQ();
+      const int num_detector_information_squence_items = sqi->GetNumberOfItems();
+
+      for (int _sequence_id = 1; _sequence_id <= num_detector_information_squence_items; _sequence_id++)
+        {
+          // If a specific sequence item was requested, ignore all others.
+          if (sequence_idx != -1 && _sequence_id != sequence_idx)
+            continue;
+
+          if (request == DetectorInfo::RadialPosition)
+            {
+              std::string radius_as_string;
+              if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1142), radius_as_string, _sequence_id) == stir::Succeeded::yes)
+                {
+                  // Replace the \\ characters with commas.
+                  std::replace(radius_as_string.begin(), radius_as_string.end(), char('\\'), char(','));
+                  // Remove empty spaces.
+                  radius_as_string.erase(std::remove_if(radius_as_string.begin(), radius_as_string.end(), isspace),
+                                         radius_as_string.end());
+                  
+
+                  // For all but the first string copy we need to prepend the radius_as_string with ","
+                  if (dst.empty())
+                    {
+                      dst = (radius_as_string);
+                    }
+                  else
+                    {
+                      dst += ",";
+                      dst += (radius_as_string);
+                    }
+                  std::cout << "Radii (Detector " << _sequence_id << "): " << radius_as_string << std::endl;
+                }
+              else
+                {
+                  stir::warning("GetDetectorInfo: cannot read detector info");
+                  dst = "";
+                  return stir::Succeeded::no;
+                }
+           }
+        }
+      return stir::Succeeded::yes;
+    }
+  catch (...)
+    {
+      stir::warning("GetDetectorInfo: cannot read detector info");
+      dst = "";
+      return stir::Succeeded::no;
+    }
+
+  dst = "";
+  return stir::Succeeded::no;
+}
+
+stir::Succeeded
+SPECTDICOMData::open_dicom_file(bool is_planar)
 {
 
   stir::info(boost::format("SPECTDICOMData: opening file %1%") % dicom_filename);
@@ -306,9 +388,10 @@ SPECTDICOMData::open_dicom_file()
       std::cout << "Patient name: " << patient_name << std::endl;
     }
   std::string no_of_proj_as_str;
+  std::string no_of_det_as_str;
   std::string start_angle_as_string;
   std::string angular_step_as_string;
-  std::string extent_of_rotation_as_string;
+  std::string scan_arc_as_string;
   std::string radius_as_string;
   std::string actual_frame_duration_as_string;
   std::string calib_factor_as_string;
@@ -318,17 +401,14 @@ SPECTDICOMData::open_dicom_file()
   std::string lower_window_as_string;
   std::string upper_window_as_string;
 
-  {
-    std::string str;
-    if (GetDICOMTagInfo(file, gdcm::Tag(0x0028, 0x0008), str) == stir::Succeeded::yes)
-      {
-        num_frames = std::stoi(str);
-        std::cout << "Number of frames: " << num_frames << std::endl;
-      }
-  }
 
-  this->num_of_projections = 1;
-  this->calibration_factor = -1;
+  std::string str;
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0028, 0x0008), str) == stir::Succeeded::yes)
+    {
+      num_frames = std::stoi(str);
+      std::cout << "Number of frames: " << num_frames << std::endl;
+    }
+   
   if (GetRadionuclideInfo(file, RadionuclideInfo::CodeMeaning, isotope_name) == stir::Succeeded::yes)
     {
       std::cout << "Isotope name: " << isotope_name << std::endl;
@@ -339,12 +419,13 @@ SPECTDICOMData::open_dicom_file()
       actual_frame_duration = std::stoi(actual_frame_duration_as_string);
     }
 
-  {
-    this->num_energy_windows = 0;
-    std::string str;
-    if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0011), str) == stir::Succeeded::yes)
+  this->num_energy_windows = 0;
+  std::string str;
+  if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0011), str) == stir::Succeeded::yes)
+    {
       this->num_energy_windows = std::stoi(str);
-  }
+    }
+
   if (this->num_energy_windows == 0)
     {
       std::cout << "No energy window information found\n";
@@ -379,59 +460,96 @@ SPECTDICOMData::open_dicom_file()
         }
     }
 
-  if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0053), no_of_proj_as_str) == stir::Succeeded::yes)
+  this->num_of_projections = 1;
+  if (!is_planar)
     {
-      num_of_projections = std::stoi(no_of_proj_as_str);
-      std::cout << "Number of projections: " << num_of_projections << std::endl;
-    }
+      // Determine the number of projections
+      // Given as the product of the number of frames in rotation and the number of detectors.
+      int num_of_frames_per_detector = 0;
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0053), no_of_proj_as_str) == stir::Succeeded::yes)
+        {
+          num_of_frames_per_detector = std::stoi(no_of_proj_as_str);
+          std::cout << "Number of frames per detector: " << num_of_frames_per_detector << std::endl;
+        }
 
-  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1140), direction_of_rotation) == stir::Succeeded::yes)
-    {
-      if (direction_of_rotation == "CC")
-        direction_of_rotation = "CCW";
+      int num_of_detectors = 0;
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0021), no_of_det_as_str) == stir::Succeeded::yes)
+        {
+          num_of_detectors = std::stoi(no_of_det_as_str);
+        }
 
-      std::cout << "Direction of rotation: " << direction_of_rotation << std::endl;
-    }
+      if ((num_of_frames_per_detector * num_of_detectors) > 0)
+        {
+          num_of_projections = num_of_frames_per_detector * num_of_detectors;
+          std::cout << "Number of projections: " << num_of_projections << std::endl;
+        }
 
-  if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0200), start_angle_as_string) == stir::Succeeded::yes)
-    {
-      start_angle = std::stof(start_angle_as_string);
-      std::cout << "Starting angle: " << std::fixed << std::setprecision(6) << start_angle << std::endl;
-    }
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1140), direction_of_rotation) == stir::Succeeded::yes)
+        {
+          if (direction_of_rotation == "CC")
+            direction_of_rotation = "CCW";
 
-  if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x1322), calib_factor_as_string) == stir::Succeeded::yes)
-    {
-      calibration_factor = std::stof(calib_factor_as_string);
-      std::cout << "calibration factor: " << std::fixed << std::setprecision(6) << calibration_factor << std::endl;
-    }
+          std::cout << "Direction of rotation: " << direction_of_rotation << std::endl;
+        }
 
-  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1144), angular_step_as_string) == stir::Succeeded::yes)
-    {
-      angular_step = std::stof(angular_step_as_string);
-      std::cout << "Angular step: " << std::fixed << std::setprecision(6) << angular_step << std::endl;
-    }
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x0200), start_angle_as_string) == stir::Succeeded::yes)
+        {
+          start_angle = std::stof(start_angle_as_string);
+          std::cout << "Starting angle: " << std::fixed << std::setprecision(6) << start_angle << std::endl;
+        }
 
-  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1143), extent_of_rotation_as_string) == stir::Succeeded::yes)
-    {
-      extent_of_rotation = std::stoi(extent_of_rotation_as_string);
-      std::cout << "Rotation extent: " << extent_of_rotation << std::endl;
-    }
-  else
-    {
-      extent_of_rotation = 360;
-      stir::warning("Rotation was not present in DICOM file. Setting it to 360");
-    }
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1144), angular_step_as_string) == stir::Succeeded::yes)
+        {
+          angular_step = std::stof(angular_step_as_string);
+          std::cout << "Angular step: " << std::fixed << std::setprecision(6) << angular_step << std::endl;
+        }
 
-  if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1142), radius_as_string) == stir::Succeeded::yes)
-    {
-      rotation_radius = (radius_as_string);
-      char slash = '\\';
-      char comma = ',';
-      std::cout << "Radius: " << radius_as_string << " " << slash << std::endl;
-      std::replace(rotation_radius.begin(), rotation_radius.end(), slash, comma);
-    }
+      // Set the extent of rotation as the product of the scan arc and the number of detectors.
+      // Note that in the presence of multiple detector heads, this assumes that the angular extent of
+      // do NOT overlap.
+      float scan_arc = 0;
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1143), scan_arc_as_string) == stir::Succeeded::yes)
+        {
+          scan_arc = std::stof(scan_arc_as_string);
+          std::cout << "Scan Arc: " << std::fixed << std::setprecision(6) << scan_arc << std::endl;
+        }
 
-  num_dimensions = 2;
+      // Assert that the factors were valid before calculating the extent of rotation.
+      if (num_of_detectors > 0 && scan_arc > 0)
+        {
+          extent_of_rotation = num_of_detectors * scan_arc;
+        }
+      else
+        {
+          stir::warning(boost::format("SPECTDICOMData: cannot determine extent of rotation."));
+          extent_of_rotation = stir::MinimalInterfileHeader::double_value_not_set;
+        }
+      std::cout << "Rotation extent: " << std::fixed << std::setprecision(6) << extent_of_rotation << std::endl;
+
+      // Get the radial positions of the detector head(s) for all heads.
+      if (GetDetectorInfo(file, DetectorInfo::RadialPosition, radius_as_string) == stir::Succeeded::yes)
+        {
+          rotation_radius = radius_as_string;
+          std::cout << "Radial Positions: " << rotation_radius << std::endl;
+        }
+
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0018, 0x1143), extent_of_rotation_as_string) == stir::Succeeded::yes)
+        {
+          extent_of_rotation = std::stoi(extent_of_rotation_as_string);
+          std::cout << "Rotation extent: " << extent_of_rotation << std::endl;
+        }
+      else
+        {
+          extent_of_rotation = 360;
+          stir::warning("Rotation was not present in DICOM file. Setting it to 360");
+        }
+
+      if (GetDICOMTagInfo(file, gdcm::Tag(0x0054, 0x1322), calib_factor_as_string) == stir::Succeeded::yes)
+        {
+          calibration_factor = std::stof(calib_factor_as_string);
+          std::cout << "calibration factor: " << std::fixed << std::setprecision(6) << calibration_factor << std::endl;
+        }
+    }
 
   matrix_labels.push_back("axial coordinate");
   matrix_labels.push_back("bin coordinate");
@@ -457,7 +575,6 @@ SPECTDICOMData::open_dicom_file()
         {
           curr = pixel_size_as_string.find('\\', prev);
           std::string found = pixel_size_as_string.substr(prev, curr - prev);
-          //    std::cout << "found = " << found << std::endl;
           pixel_sizes.push_back(std::stof(found));
           prev = curr + 1;
         }
@@ -487,7 +604,7 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
   ss << "!version of keys := 3.3" << std::endl;
   ss << "name of data file := " << data_filename_only << std::endl;
   ss << "data offset in bytes := "
-     << this->matrix_size.at(0) * this->matrix_size.at(1) * this->num_of_projections * dataset_num * 4 // float hard-wired
+     << this->matrix_size.at(0) * this->matrix_size.at(1) * this->num_of_projections * dataset_num * sizeof(float)
      << std::endl;
   ss << std::endl;
 
@@ -496,7 +613,7 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
   ss << "!type of data := Tomographic" << std::endl;
   ss << "imagedata byte order := LITTLEENDIAN" << std::endl;
   ss << "!number format := float" << std::endl;
-  ss << "!number of bytes per pixel := 4" << std::endl;
+  ss << "!number of bytes per pixel := " << sizeof(float) << std::endl;
   ss << "calibration factor:= " << this->calibration_factor << std::endl;
   if (!this->isotope_name.empty())
     ss << "isotope name:= " << this->isotope_name << std::endl;
@@ -548,19 +665,36 @@ SPECTDICOMData::get_interfile_header(std::string& output_header, const std::stri
   return stir::Succeeded::yes;
 }
 
+std::vector<float>
+SPECTDICOMData::store_pixel_buffer_as_float_vector(const gdcm::ByteValue*& bv) const
+{
+  std::vector<float> pixel_data_as_float;
+  uint64_t n_elements = (uint64_t)bv->GetLength() / sizeof(uint16_t);
+  uint16_t* ptr = (uint16_t*)bv->GetPointer();
+
+  uint64_t ct = 0;
+  while (ct < n_elements)
+    {
+      uint16_t val = *ptr;
+      pixel_data_as_float.push_back((float)val);
+      ptr++;
+      ct++;
+    }
+
+  return pixel_data_as_float;
+}
+
 stir::Succeeded
 SPECTDICOMData::get_proj_data(const std::string& output_file) const
 {
 
-  std::unique_ptr<gdcm::Reader> DICOM_reader(new gdcm::Reader);
+  std::unique_ptr<gdcm::ImageReader> DICOM_reader(new gdcm::ImageReader);
   DICOM_reader->SetFileName(dicom_filename.c_str());
-
   try
     {
       if (!DICOM_reader->Read())
         {
-          stir::error(boost::format("SPECTDICOMData: cannot read file %1%") % dicom_filename);
-          // return stir::Succeeded::no;
+          stir::error(boost::format("in SPECTDICOMData::get_proj_data() - cannot read file %1%") % dicom_filename);
         }
     }
   catch (const std::string& e)
@@ -570,39 +704,59 @@ SPECTDICOMData::get_proj_data(const std::string& output_file) const
     }
 
   const gdcm::File& file = DICOM_reader->GetFile();
-
   const gdcm::DataElement& de = file.GetDataSet().GetDataElement(gdcm::Tag(0x7fe0, 0x0010));
-  const gdcm::ByteValue* bv = de.GetByteValue();
+  const gdcm::ByteValue* bv = de.GetByteValue(); // Only works when data are not compressed.
+
+  // Check if the pixel data pointer is NULL, if so the data were likely compressed.
+  std::vector<float> pixel_data_as_float;
   if (!bv)
     {
-      stir::warning("GDCM GetByteValue failed on x7fe0, 0x0010");
-      return stir::Succeeded::no;
+      stir::warning(boost::format("in SPECTDICOMData::get_proj_data() - attempting to decompress pixel data from: %1%")
+                    % dicom_filename);
+      gdcm::ImageChangeTransferSyntax change;
+      change.SetTransferSyntax(gdcm::TransferSyntax::ImplicitVRLittleEndian);
+      change.SetInput(DICOM_reader->GetImage());
+
+      // Assert that the change in transfer syntax was successful. Return otherwise.
+      try
+        {
+          if (!change.Change())
+            {
+              stir::error(boost::format("in SPECTDICOMData::get_proj_data() - decompression failed."));
+            }
+        }
+      catch (const std::string& e)
+        {
+          std::cerr << e << std::endl;
+          return stir::Succeeded::no;
+        }
+
+      const gdcm::DataElement& de_uncmp = change.GetOutput().GetDataElement();
+      const gdcm::ByteValue* bv_uncmp = de_uncmp.GetByteValue();
+      // Assert that pixel buffer is now accessible. Return otherwise.
+      try
+        {
+          if (!bv_uncmp)
+            {
+              stir::error(boost::format("in SPECTDICOMData::get_proj_data() - pixel data are not accessible."));
+            }
+          else
+            {
+              std::cout << "In SPECTDICOMData::get_proj_data() - decompression of pixel data successful." << std::endl;
+              pixel_data_as_float = store_pixel_buffer_as_float_vector(bv_uncmp);
+            }
+        }
+      catch (const std::string& e)
+        {
+          std::cerr << e << std::endl;
+          return stir::Succeeded::no;
+        }
     }
-  /*
-  std::string tmpFile = "tmp.s";
-  std::ofstream outfile(tmpFile.c_str(), std::ios::out | std::ios::binary);
-
-  if (!outfile.is_open()) {
-    std::cerr << "Unable to write proj data to " << tmpFile;
-    return stir::Succeeded::no;
-  }
-  bv->WriteBuffer(outfile);
-  outfile.close();*/
-
-  uint64_t len0 = (uint64_t)bv->GetLength() / 2;
-  std::cout << "Number of data points = " << len0 << std::endl;
-
-  std::vector<float> pixel_data_as_float;
-
-  uint16_t* ptr = (uint16_t*)bv->GetPointer();
-
-  uint64_t ct = 0;
-  while (ct < len0)
+  else
     {
-      uint16_t val = *ptr;
-      pixel_data_as_float.push_back((float)val);
-      ptr++;
-      ct++;
+      // No uncompression required.
+      std::cout << "In SPECTDICOMData::get_proj_data() - pixel data are accessible." << std::endl;
+      pixel_data_as_float = store_pixel_buffer_as_float_vector(bv);
     }
 
   std::ofstream final_out(output_file.c_str(), std::ios::out | std::ofstream::binary);
