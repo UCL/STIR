@@ -213,7 +213,7 @@ def process_files(prompts_header_filename,
     norm_sino_arr[norm_sino_arr<=0.] = 10^37
     norm_sino.fill(norm_sino_arr.flat)
 
-    #### this is the data STIR needs in an Acquisition Sensitivity model, so we'll write it out
+    #### this is the data STIR needs in a bin-normalisation from projdata, so we'll write it out
     norm_sino.write_to_file(os.path.join(STIR_output_folder,norm_filename_fSTIR))
 
     #%%
