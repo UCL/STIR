@@ -30,6 +30,7 @@
 #include "stir/error.h"
 #include "stir/format.h"
 #include "boost/lexical_cast.hpp"
+#include "boost/format.hpp"
 
 using std::string;
 
@@ -100,7 +101,7 @@ PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_subsensitivity_filename
   this->subsensitivity_filenames = filenames;
   try
     {
-      const std::string test_sensitivity_filename = runtime_format(this->subsensitivity_filenames.c_str(), 0);
+      const std::string test_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % 0);
     }
   catch (std::exception& e)
     {
@@ -217,7 +218,7 @@ PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_up(shared_ptr<TargetT> 
                       std::string current_sensitivity_filename;
                       try
                         {
-                          current_sensitivity_filename = runtime_format(this->subsensitivity_filenames.c_str(), subset);
+                          current_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % subset);
                         }
                       catch (std::exception& e)
                         {

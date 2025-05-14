@@ -44,6 +44,7 @@
 #include "stir/Succeeded.h"
 #include "stir/error.h"
 #include "stir/format.h"
+#include <boost/format.hpp>
 
 int
 main(int argc, char* argv[])
@@ -91,7 +92,7 @@ main(int argc, char* argv[])
           std::string current_filename;
           try
             {
-              current_filename = format(argv[1], i);
+              current_filename = boost::str(boost::format(argv[1]) % i);
             }
           catch (std::exception& e)
             {

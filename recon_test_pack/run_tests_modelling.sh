@@ -126,7 +126,7 @@ generate_image ${INPUTDIR}generate_p5.par
 fi
 assemble_images p0005-p5.${imgext} p0005.hv p5.hv
 # test
-extract_single_images_from_parametric_image p0005-p5_{}.hv p0005-p5.${imgext}
+extract_single_images_from_parametric_image p0005-p5_%d.hv p0005-p5.${imgext}
 if compare_image p0005-p5_1.hv p0005.hv; then
     : # ok
 else
@@ -145,17 +145,17 @@ get_dynamic_images_from_parametric_images dyn_from_p0005-p5.hv p0005-p5.${imgext
 # run and test Patlak estimation
 apply_patlak_to_images indirect_Patlak.hv dyn_from_p0005-p5.hv ${INPUTDIR}PatlakPlot.par
 echo "Test Patlak round-trip"
-extract_single_images_from_parametric_image indirect_Patlak_img_{}.hv indirect_Patlak.hv
+extract_single_images_from_parametric_image indirect_Patlak_img_%d.hv indirect_Patlak.hv
 echo "indirect to original"
 for par in 1 2; do
     compare_image indirect_Patlak_img_${par}.hv p0005-p5_${par}.hv
 done
 
 # Create the appropriate proj_data files
-extract_single_images_from_dynamic_image dyn_from_p0005-p5_img_f{}g1d0b0.hv dyn_from_p0005-p5.hv
+extract_single_images_from_dynamic_image dyn_from_p0005-p5_img_f%dg1d0b0.hv dyn_from_p0005-p5.hv
 # if [ ! -r fwd_dyn_from_p0005-p5.S ]; then
 
-for fr in `count 23 28`; do
+for fr in $(seq 23 28); do
     forward_project fwd_dyn_from_p0005-p5_f${fr}g1d0b0  dyn_from_p0005-p5_img_f${fr}g1d0b0.hv ${INPUTDIR}ECAT_931_projdata_template.hs > fwd_dyn_from_p0005-p5_f${fr}g1d0b0.log 2>&1
 done
 #fi
@@ -165,10 +165,10 @@ done
 stir_math -s --including-first --times-scalar 0 --add-scalar 1 all_ones.hs fwd_dyn_from_p0005-p5_f23g1d0b0.hs
 
 tmpvar="" ;
-for fr in `count 1 23 `; do
+for fr in $(seq 1 23); do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f23g1d0b0.hs"
 done
-for fr in `count 24 28 `; do
+for fr in $(seq 24 28); do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f${fr}g1d0b0.hs"
 done
 
@@ -184,8 +184,8 @@ for direct in OSMAPOSL OSSPS ; do
     INPUT=fwd_dyn_from_p0005-p5.hs INIT=indirect_Patlak.hv ${MPIRUN} P${direct} P${direct}.par > P${direct}.log 2>&1
 
     echo "Compare the direct parametric images to the original ones"
-    extract_single_images_from_parametric_image p0005-p5_img_f{}g1d0b0.hv p0005-p5.${imgext}
-    extract_single_images_from_parametric_image P${direct}_${ITER}_img_f{}g1d0b0.hv P${direct}_${ITER}.hv
+    extract_single_images_from_parametric_image p0005-p5_img_f%dg1d0b0.hv p0005-p5.${imgext}
+    extract_single_images_from_parametric_image P${direct}_${ITER}_img_f%dg1d0b0.hv P${direct}_${ITER}.hv
     for par in 1 2; do
         compare_image -t .01 P${direct}_${ITER}_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
     done
@@ -198,7 +198,7 @@ echo "Multiply the  dynamic images with the model matrix to get images in the pa
 # first make a copy
 stir_math --parametric  test_mult_dyn_with_model.hv indirect_Patlak.hv
 mult_model_with_dyn_images test_mult_dyn_with_model.hv dyn_from_p0005-p5.hv ${INPUTDIR}PatlakPlot.par
-extract_single_images_from_parametric_image test_mult_dyn_with_model_img_f{}g1d0b0.hv test_mult_dyn_with_model.hv
+extract_single_images_from_parametric_image test_mult_dyn_with_model_img_f%dg1d0b0.hv test_mult_dyn_with_model.hv
 
 echo " "
 echo "Min Counts for Par 1 "
@@ -246,7 +246,7 @@ fi
 # These lines are commented out. KT has no idea what they were supposed to test
 # (there isn't actually any real test here currently)
 ## Extract Sensitivity Frames
-#extract_single_images_from_dynamic_image sens_img_f{}g1d0b0.hv sens.hv
+#extract_single_images_from_dynamic_image sens_img_f%dg1d0b0.hv sens.hv
 #
 #echo "The sensitivity image is not tested, yet!!!"
 ## Multiply the parametric images with the sensitivity images ### NOT IMPLEMENTED YET
