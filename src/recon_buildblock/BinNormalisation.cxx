@@ -27,7 +27,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -72,17 +72,18 @@ BinNormalisation::check(const ProjDataInfo& proj_data_info) const
   if (!this->_already_set_up)
     error("BinNormalisation method called without calling set_up first.");
   if (!(*this->proj_data_info_sptr >= proj_data_info))
-    error(boost::format(
-              "BinNormalisation set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
-          % this->proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+    error(format("BinNormalisation set-up with different geometry for projection data.\nSet_up was with\n{}\nCalled with\n{}",
+                 this->proj_data_info_sptr->parameter_info(),
+                 proj_data_info.parameter_info()));
 }
 
 void
 BinNormalisation::check(const ExamInfo& exam_info) const
 {
   if (!(*this->exam_info_sptr == exam_info))
-    error(boost::format("BinNormalisation set-up with different ExamInfo.\n Set_up was with\n%1%\nCalled with\n%2%")
-          % this->exam_info_sptr->parameter_info() % exam_info.parameter_info());
+    error(format("BinNormalisation set-up with different ExamInfo.\n Set_up was with\n{}\nCalled with\n{}",
+                 this->exam_info_sptr->parameter_info(),
+                 exam_info.parameter_info()));
 }
 
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops

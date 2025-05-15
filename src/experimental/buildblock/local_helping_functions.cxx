@@ -8,6 +8,7 @@
 #include "stir_experimental/local_helping_functions.h"
 #include "stir/IndexRange2D.h"
 #include "stir/info.h"
+#include "stir/format.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -185,7 +186,7 @@ padd_filter_coefficients_3D_and_make_them_symmetric(
             {
               float tmp = filter_coefficients[k][j][i];
               padded_filter_coefficients_3D[k + min_z][j + min_y][i + min_x] = filter_coefficients[k][j][i];
-              info(boost::format("%1%  ") % padded_filter_coefficients_3D[k + min_z][j + min_y][i + min_x]);
+              info(format("{}  ", padded_filter_coefficients_3D[k + min_z][j + min_y][i + min_x]));
               float tmp_1 = padded_filter_coefficients_3D[k + min_z][j + min_y][i + min_x];
               // padded_filter_coefficients_3D[size-pad_k][size-pad_j][size-pad_i] = filter_coefficients[k][j][i];
             }
@@ -197,7 +198,7 @@ padd_filter_coefficients_3D_and_make_them_symmetric(
     for (int j = -4; j <= 4; j++)
       for (int i = -4; i <= 4; i++)
         {
-          info(boost::format("%1%  ") % padded_filter_coefficients_3D[k][j][i]);
+          info(format("{}  ", padded_filter_coefficients_3D[k][j][i]));
         }
 }
 

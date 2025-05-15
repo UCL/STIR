@@ -28,7 +28,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/MultipleDataSetHeader.h"
 #include "stir/DiscretisedDensity.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -77,9 +77,9 @@ protected:
 
         // Check that there is time frame information
         if (t->get_exam_info().get_time_frame_definitions().get_num_frames() != 1)
-          error(str(boost::format(
-                        "The individual components of a dynamic image should contain 1 time frame, but image %1% contains %2%.")
-                    % i % t->get_exam_info().get_time_frame_definitions().get_num_frames()));
+          error(format("The individual components of a dynamic image should contain 1 time frame, but image {} contains {}.",
+                       i,
+                       t->get_exam_info().get_time_frame_definitions().get_num_frames()));
         double start = t->get_exam_info().get_time_frame_definitions().get_start_time(1);
         double end = t->get_exam_info().get_time_frame_definitions().get_end_time(1);
         // Set some info on the first frame

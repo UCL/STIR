@@ -39,7 +39,6 @@ limitations under the License.
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 

@@ -26,6 +26,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include "stir/is_null_ptr.h"
 
 // include the following to set defaults
@@ -136,12 +137,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::p
 
   if (this->_additive_gated_proj_data_filename != "0")
     {
-      info(boost::format("Reading additive projdata data %1%") % this->_additive_gated_proj_data_filename);
+      info(format("Reading additive projdata data {}", this->_additive_gated_proj_data_filename));
       this->_additive_gated_proj_data_sptr = GatedProjData::read_from_file(this->_additive_gated_proj_data_filename);
     }
   if (this->_normalisation_gated_proj_data_filename != "1")
     {
-      info(boost::format("Reading normalisation projdata data %1%") % this->_normalisation_gated_proj_data_filename);
+      info(format("Reading normalisation projdata data {}", this->_normalisation_gated_proj_data_filename));
       this->_normalisation_gated_proj_data_sptr = GatedProjData::read_from_file(this->_normalisation_gated_proj_data_filename);
     }
 
@@ -380,7 +381,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::s
 
     for (unsigned int gate_num = 1; gate_num <= this->get_time_gate_definitions().get_num_gates(); ++gate_num)
       {
-        info(boost::format("Objective Function for Gate Number: %1%") % gate_num);
+        info(format("Objective Function for Gate Number: {}", gate_num));
         this->_single_gate_obj_funcs[gate_num].set_projector_pair_sptr(this->_projector_pair_ptr);
         this->_single_gate_obj_funcs[gate_num].set_proj_data_sptr(this->_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
         this->_single_gate_obj_funcs[gate_num].set_max_segment_num_to_process(this->_max_segment_num_to_process);

@@ -21,7 +21,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #ifdef HAVE_LLN_MATRIX
 #  include "stir/IO/stir_ecat7.h"
 #else
@@ -178,7 +178,7 @@ CListModeDataECAT<CListRecordT>::open_lm_file(unsigned int new_lm_file) const
       char rest[50];
       sprintf(rest, "_%d.lm", new_lm_file);
       filename += rest;
-      info(boost::format("CListModeDataECAT: opening file %1%") % filename);
+      info(format("CListModeDataECAT: opening file {}", filename));
       shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
       if (!(*stream_ptr))
         {

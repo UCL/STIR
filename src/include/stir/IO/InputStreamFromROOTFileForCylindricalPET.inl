@@ -17,6 +17,7 @@
   \author Robbie Twyman
 */
 #include "stir/error.h"
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -57,7 +58,7 @@ InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_singles_uni
   else if (this->singles_readout_depth == 4) // One PMT per crystal
     return 1;
   else
-    error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
+    error(format("Singles readout depth ({}) is invalid", this->singles_readout_depth));
 
   return 0;
 }
@@ -74,7 +75,7 @@ InputStreamFromROOTFileForCylindricalPET::get_num_trans_crystals_per_singles_uni
   else if (this->singles_readout_depth == 4) // One PMT per crystal
     return 1;
   else
-    error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
+    error(format("Singles readout depth ({}) is invalid", this->singles_readout_depth));
 
   return 0;
 }

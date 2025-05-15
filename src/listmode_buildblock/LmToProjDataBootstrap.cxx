@@ -27,6 +27,7 @@
 #include "stir/info.h"
 #include "stir/error.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 #include <iostream>
 #include <algorithm>
 
@@ -215,7 +216,7 @@ LmToProjDataBootstrap<LmToProjDataT>::start_new_time_frame(const unsigned int ne
 
   num_times_to_replicate_iter = num_times_to_replicate.begin();
 
-  info(boost::format("Filled in replication vector for %1% events.") % total_num_events_in_this_frame);
+  info(format("Filled in replication vector for {} events.", total_num_events_in_this_frame));
   this->lm_data_ptr->set_get_position(start_of_this_frame);
 }
 

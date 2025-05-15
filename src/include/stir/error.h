@@ -59,11 +59,11 @@ void error(const char* const s, ...);
 
   \todo At a later stage, it will also write to a log-file.
 
-  \c boost::format is useful in this context.
+  \c stir::format is useful in this context.
 
   \par Example
   \code
-  error(boost::format("Incorrect number of subsets: %d") % num_subsets);
+  error(format("Incorrect number of subsets: {}", num_subsets));
 
   error("This does not work");
   \endcode

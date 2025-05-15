@@ -25,7 +25,7 @@
 #include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/Scanner.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <iostream>
 #include <fstream>
 
@@ -40,7 +40,7 @@ CListModeDataGEHDF5::CListModeDataGEHDF5(const std::string& listmode_filename)
     : listmode_filename(listmode_filename)
 {
   if (open_lm_file() == Succeeded::no)
-    error(boost::format("CListModeDataGEHDF5: error opening the listmode file for filename %s") % listmode_filename);
+    error(format("CListModeDataGEHDF5: error opening the listmode file for filename {}", listmode_filename));
 }
 
 std::string
@@ -68,7 +68,7 @@ CListModeDataGEHDF5::get_empty_record_sptr() const
 Succeeded
 CListModeDataGEHDF5::open_lm_file()
 {
-  info(boost::format("CListModeDataGEHDF5: opening file %1%") % listmode_filename);
+  info(format("CListModeDataGEHDF5: opening file {}", listmode_filename));
   if (!GEHDF5Wrapper::check_GE_signature(listmode_filename))
     {
       //! \todo N.E:Write a msg
@@ -84,8 +84,10 @@ CListModeDataGEHDF5::open_lm_file()
   this->first_time_stamp = inputFile.read_dataset_uint32("/HeaderData/ListHeader/firstTmAbsTimeStamp");
   const std::uint32_t last_time_stamp = inputFile.read_dataset_uint32("/HeaderData/ListHeader/lastTmAbsTimeStamp");
   this->lm_duration_in_millisecs = last_time_stamp - this->first_time_stamp;
-  info(boost::format("First/last time-stamp: %1%/%2%. Duration %3% ms.") % this->first_time_stamp % last_time_stamp
-           % this->lm_duration_in_millisecs,
+  info(format("First/last time-stamp: {}/{}. Duration {} ms.",
+              this->first_time_stamp,
+              last_time_stamp,
+              this->lm_duration_in_millisecs),
        2);
 
   //! \todo N.E: Remove hard-coded sizes; (they're stored in GEHDF5Wrapper)

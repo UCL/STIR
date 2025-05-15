@@ -34,6 +34,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include "stir/CPUTimer.h"
 
@@ -105,7 +106,7 @@ construct_scaled_filter_coefficients(Array<3, float>& new_filter_coefficients_3D
           const int size_x = size;
           int filter_length = static_cast<int>(floor(kernel_1d.get_length() / 2));
 
-          info(boost::format("Now doing size %1%") % size);
+          info(format("Now doing size {}", size));
 
           float inverse_sq_kapas;
           if (fabs((double)sq_kapas) > 0.000000000001)
@@ -670,7 +671,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients(
     }
   const float threshold = 0.0001F * max_in_viewgram;
 
-  info(boost::format(" THRESHOLD IS %1%") % threshold);
+  info(format(" THRESHOLD IS {}", threshold));
 
   find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                all_segments,
@@ -692,7 +693,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients(
       delete all_attenuation_segments[segment_num];
     }
 
-  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+  info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max()));
 
   for (int k = in_density_cast->get_min_z(); k <= in_density_cast->get_max_z(); k++)
     for (int j = in_density_cast->get_min_y(); j <= in_density_cast->get_max_y(); j++)
@@ -844,7 +845,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients(
                   // const bool z_direction_trivial= false;//TODO parse
 
                   Array<3, float> new_coeffs;
-                  info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
+                  info(format("computing new filter for sq_kappas {} at index {}", sq_kapas, k_index));
                   construct_scaled_filter_coefficients(new_coeffs, filter_coefficients, z_direction_trivial, sq_kapas);
                   filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);
                 }
@@ -876,7 +877,7 @@ ModifiedInverseAverigingImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, 
   static int count = 0;
   // every time it's called, counter is incremented
   count++;
-  info(boost::format("checking the counter  %1%") % count);
+  info(format("checking the counter  {}", count));
 
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(in_density);
 
@@ -1035,7 +1036,7 @@ ModifiedInverseAverigingImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, 
             }
           const float threshold = 0.0001F * max_in_viewgram;
 
-          info(boost::format(" THRESHOLD IS %1%") % threshold);
+          info(format(" THRESHOLD IS {}", threshold));
 
           find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                        all_segments,
@@ -1056,7 +1057,7 @@ ModifiedInverseAverigingImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, 
               delete all_segments[segment_num];
             }
 
-          info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+          info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max()));
 
           char* file1 = "kappa1";
           // cerr <<"  - Saving " << file1 << endl;

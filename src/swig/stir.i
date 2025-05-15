@@ -62,6 +62,7 @@
  #include "stir/ProjDataInMemory.h"
  #include "stir/copy_fill.h"
  #include "stir/ProjDataInterfile.h"
+#include "stir/format.h"
 
  #include "stir/Radionuclide.h"
  #include "stir/RadionuclideDB.h"
@@ -166,7 +167,6 @@
 #include "stir/inverse_SSRB.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
-#include <boost/format.hpp>
 #include <stdexcept>
 
    // TODO need this (bug in swig)
@@ -414,7 +414,7 @@
        }
        if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
        {
-         throw std::runtime_error(boost::str(boost::format("number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d") % 
+         throw std::runtime_error(format("number of dimensions in matlab array is incorrect for constructing a stir array of dimension {}", 
                                              num_dimensions)); 
        }
        if (do_resize)
@@ -507,8 +507,8 @@
        }
        if (matlab_num_dims != static_cast<mwSize>(1))
        {
-         throw std::runtime_error(boost::str(boost::format("number of dimensions %d of matlab array is incorrect for constructing a stir coordinate of dimension %d (expecting a column vector)") % 
-                                             matlab_num_dims % num_dimensions)); 
+         throw std::runtime_error(format("number of dimensions {} of matlab array is incorrect for constructing a stir coordinate of dimension {} (expecting a column vector)", 
+                                             matlab_num_dims , num_dimensions)); 
        }
        if (m_sizes[0]!=static_cast<mwSize>(num_dimensions))
        {

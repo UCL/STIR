@@ -28,6 +28,7 @@ See STIR/LICENSE.txt for details
 #include "stir/include.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include "stir/round.h"
 #include <iostream>
@@ -102,7 +103,7 @@ construct_scaled_filter_coefficients_3D(Array<3, float>& new_filter_coefficients
               const int size_y = size;
               const int size_x = size;
 
-              info(boost::format("Now doing size %1%") % size);
+              info(format("Now doing size {}", size));
 
               float inverse_sq_kapas;
               if (fabs((double)sq_kapas) > 0.000000000001)
@@ -397,8 +398,7 @@ construct_scaled_filter_coefficients_3D(Array<3, float>& new_filter_coefficients
                 }
               else
                 {
-                  info(boost::format("kernel lengths found: (z,y,x): (%1%,%2%,%3%)") % kernel_length_z % kernel_length_y
-                       % kernel_length_x);
+                  info(format("kernel lengths found: (z,y,x): ({},{},{})", kernel_length_z, kernel_length_y, kernel_length_x));
                   new_filter_coefficients_3D_array.grow(IndexRange3D(-(kernel_length_z - 1),
                                                                      kernel_length_z - 1,
                                                                      -(kernel_length_y - 1),
@@ -606,7 +606,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::precalculate_filter_coefficients_3
   shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = new ProjMatrixByDenselUsingRayTracing;
 
   proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(), image_sptr);
-  info(boost::format("%1%") % proj_matrix_ptr->parameter_info());
+  info(format("{}", proj_matrix_ptr->parameter_info()));
 
   fwd_densels_all(all_segments,
                   proj_matrix_ptr,
@@ -666,7 +666,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::precalculate_filter_coefficients_3
     }
   const float threshold = 0.0001F * max_in_viewgram;
 
-  info(boost::format(" THRESHOLD IS %1%") % threshold);
+  info(format(" THRESHOLD IS {}", threshold));
 
   find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                all_segments,
@@ -688,7 +688,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::precalculate_filter_coefficients_3
       delete all_attenuation_segments[segment_num];
     }
 
-  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+  info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max()));
 
   for (int k = in_density_cast->get_min_z(); k <= in_density_cast->get_max_z(); k++)
     for (int j = in_density_cast->get_min_y(); j <= in_density_cast->get_max_y(); j++)
@@ -834,7 +834,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::precalculate_filter_coefficients_3
               if (filter_lookup[k_index] == NULL)
                 {
                   Array<3, float> new_coeffs;
-                  info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
+                  info(format("computing new filter for sq_kappas {} at index {}", sq_kapas, k_index));
                   construct_scaled_filter_coefficients_3D(new_coeffs, filter_coefficients, sq_kapas);
                   filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);
                   all_filter_coefficients[k][j][i] = filter_lookup[k_index];
@@ -881,7 +881,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::virtual_apply(DiscretisedDensity<3
   static int count = 0;
   // every time it's called, counter is incremented
   count++;
-  info(boost::format("checking the counter  %1%") % count);
+  info(format("checking the counter  {}", count));
 
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(in_density);
 
@@ -930,8 +930,9 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::virtual_apply(DiscretisedDensity<3
 
   if (recompute_filters)
     {
-      info(boost::format("Min,max in coefficients: %1%, %2%") % precomputed_coefficients_image->find_min() * rescaling_coefficient
-           % precomputed_coefficients_image->find_max() * rescaling_coefficient);
+      info(format("Min,max in coefficients: {}, {}",
+                  precomputed_coefficients_image->find_min() * rescaling_coefficient,
+                  precomputed_coefficients_image->find_max() * rescaling_coefficient));
       info("In here nonseparable");
       float max = precomputed_coefficients_image->find_max() * rescaling_coefficient;
 
@@ -939,7 +940,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::virtual_apply(DiscretisedDensity<3
 	if (count==1)
 	  k_interval = max*.01F;
 #    endif
-      info(boost::format(" New k_interval is %1%   ") % k_interval);
+      info(format(" New k_interval is {}   ", k_interval));
 
       for (int k = precomputed_coefficients_image_cast->get_min_z(); k <= precomputed_coefficients_image_cast->get_max_z(); k++)
         for (int j = precomputed_coefficients_image_cast->get_min_y(); j <= precomputed_coefficients_image_cast->get_max_y(); j++)
@@ -957,7 +958,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::virtual_apply(DiscretisedDensity<3
 
                 {
 
-                  info(boost::format("Now doing index %1% i.e. value %2% for tmp %3%") % k_index % k_index * k_interval % tmp);
+                  info(format("Now doing index {} i.e. value {} for tmp {}", k_index, k_index * k_interval, tmp));
                   if (tmp > 0.0000001)
                     {
                       Array<3, float> new_coeffs;
@@ -980,7 +981,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::virtual_apply(DiscretisedDensity<3
               all_filter_coefficients[k][j][i] = filter_lookup[k_index];
 #    else
 
-              info(boost::format("Now doing tmp %1%") % tmp);
+              info(format("Now doing tmp {}", tmp));
               if (tmp > 0.0000001)
                 {
                   Array<3, float> new_coeffs;

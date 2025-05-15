@@ -52,7 +52,7 @@
 #  include "stir/modelling/ParametricDiscretisedDensity.h"
 #endif
 #include "stir/date_time_functions.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <fstream>
 #include <algorithm>
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
@@ -152,9 +152,9 @@ read_interfile_image(istream& input, const string& directory_for_data)
   // Check number of time frames
   if (image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames() > 1)
     {
-      warning(str(boost::format("Discretised density should contain 1 time frame, but this image contains %1%. "
-                                "Only the first will be kept, and the rest discarded.")
-                  % image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames()));
+      warning(format("Discretised density should contain 1 time frame, but this image contains {}. "
+                     "Only the first will be kept, and the rest discarded.",
+                     image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames()));
       ExamInfo exam_info = image_ptr->get_exam_info();
       exam_info.time_frame_definitions.set_num_time_frames(1);
       image_ptr->set_exam_info(exam_info);
@@ -681,7 +681,7 @@ write_basic_interfile_image_header(const string& header_file_name,
     ofstream output_header(header_name.c_str(), ios::out);
     if (!output_header.good())
       {
-        error(boost::format("Error opening old-style Interfile header %1% for writing") % header_name);
+        error(format("Error opening old-style Interfile header {} for writing", header_name));
         return Succeeded::no;
       }
 

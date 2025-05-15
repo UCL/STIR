@@ -31,7 +31,7 @@
 #include <cmath>
 #include <string>
 #include <stdexcept>
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 #include "stir/info.h"
@@ -140,13 +140,13 @@ TimeFrameDefinitions::TimeFrameDefinitions(const string& filename)
     if (is_interfile_signature(signature))
       {
 #ifndef NDEBUG
-        info(boost::format("TimeFrameDefinitions: trying to read '%s' as Interfile") % filename);
+        info(format("TimeFrameDefinitions: trying to read '{}' as Interfile", filename));
 #endif
         InterfileHeader hdr;
 
         if (!hdr.parse(filename.c_str(), false)) // silent parsing
           {
-            error(boost::format("Parsing of Interfile header failed for file '%s'") % filename);
+            error(format("Parsing of Interfile header failed for file '{}'", filename));
           }
         *this = hdr.get_exam_info().time_frame_definitions;
       }

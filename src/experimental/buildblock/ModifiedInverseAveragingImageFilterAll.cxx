@@ -28,6 +28,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include "stir/round.h"
 #include <iostream>
@@ -1095,7 +1096,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients(
     }
   const float threshold = 0.0001F * max_in_viewgram;
 
-  info(boost::format(" THRESHOLD IS %1%") % threshold);
+  info(format(" THRESHOLD IS {}", threshold));
 
   find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                all_segments,
@@ -1117,7 +1118,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients(
       delete all_attenuation_segments[segment_num];
     }
 
-  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+  info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max()));
 
   for (int k = in_density_cast->get_min_z(); k <= in_density_cast->get_max_z(); k++)
     for (int j = in_density_cast->get_min_y(); j <= in_density_cast->get_max_y(); j++)
@@ -1291,7 +1292,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients(
               if (filter_lookup[k_index] == NULL)
                 {
                   Array<3, float> new_coeffs;
-                  info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
+                  info(format("computing new filter for sq_kappas {} at index {}", sq_kapas, k_index));
                   construct_scaled_filter_coefficients_3D(new_coeffs, filter_coefficients, sq_kapas);
                   filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);
                   all_filter_coefficients[k][j][i] = filter_lookup[k_index];
@@ -1385,7 +1386,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
   shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = new ProjMatrixByDenselUsingRayTracing;
 
   proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(), image_sptr);
-  info(boost::format("%1%") % proj_matrix_ptr->parameter_info());
+  info(format("{}", proj_matrix_ptr->parameter_info()));
 
   fwd_densels_all(all_segments,
                   proj_matrix_ptr,
@@ -1445,7 +1446,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
     }
   const float threshold = 0.0001F * max_in_viewgram;
 
-  info(boost::format(" THRESHOLD IS %1%") % threshold);
+  info(format(" THRESHOLD IS {}", threshold));
 
   find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                all_segments,
@@ -1467,7 +1468,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
       delete all_attenuation_segments[segment_num];
     }
 
-  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+  info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max()));
 
   for (int k = in_density_cast->get_min_z(); k <= in_density_cast->get_max_z(); k++)
     for (int j = in_density_cast->get_min_y(); j <= in_density_cast->get_max_y(); j++)
@@ -1635,7 +1636,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
               if (filter_lookup[k_index] == NULL)
                 {
                   Array<2, float> new_coeffs;
-                  info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
+                  info(format("computing new filter for sq_kappas {} at index {}", sq_kapas, k_index));
                   construct_scaled_filter_coefficients_2D(new_coeffs, filter_coefficients, sq_kapas);
                   filter_lookup[k_index] = new ArrayFilter2DUsingConvolution<float>(new_coeffs);
                   all_filter_coefficients[k][j][i] = filter_lookup[k_index];
@@ -1784,7 +1785,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
     }
   const float threshold = 0.0001F * max_in_viewgram;
 
-  info(boost::format(" THRESHOLD IS %1%") % threshold);
+  info(format(" THRESHOLD IS {}", threshold));
 
   find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                all_segments,
@@ -1806,7 +1807,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
       delete all_attenuation_segments[segment_num];
     }
 
-  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+  info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max()));
 
   for (int k = in_density_cast->get_min_z(); k <= in_density_cast->get_max_z(); k++)
     for (int j = in_density_cast->get_min_y(); j <= in_density_cast->get_max_y(); j++)
@@ -1939,7 +1940,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
               if (filter_lookup[k_index] == NULL)
                 {
                   // Array <1,float> new_coeffs;
-                  info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
+                  info(format("computing new filter for sq_kappas {} at index {}", sq_kapas, k_index));
                   // construct_scaled_filter_coefficients_1D(new_coeffs, filter_coefficients,sq_kapas);
                   filter_lookup[k_index] = new ModifiedInverseAverigingArrayFilter<3, float>(filter_coefficients, sq_kapas);
                   all_filter_coefficients[k][j][i] = filter_lookup[k_index];
@@ -1978,7 +1979,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::virtual_apply(DiscretisedDensity<
   static int count = 0;
   // every time it's called, counter is incremented
   count++;
-  info(boost::format(" checking the counter  %1%") % count);
+  info(format(" checking the counter  {}", count));
 
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(in_density);
 
@@ -2074,7 +2075,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::virtual_apply(DiscretisedDensity<
                       for (int i = -26; i <= 26; i++)
                         {
                           //  cerr << k <<"   "<< j <<"   "<< i <<"   "<< endl;
-                          info(boost::format("%1%     ") % (*precomputed_coefficients_image)[k][j][i]);
+                          info(format("{}     ", (*precomputed_coefficients_image)[k][j][i]));
                           if ((*precomputed_coefficients_image)[k][j][i] > 0.00001)
                             {
                               all_filter_coefficients_separable[k][j][i] = new ModifiedInverseAverigingArrayFilter<3, float>(
@@ -2230,7 +2231,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::virtual_apply(DiscretisedDensity<
             }
           const float threshold = 0.0001F * max_in_viewgram;
 
-          info(boost::format(" THRESHOLD IS %1%") % threshold);
+          info(format(" THRESHOLD IS {}", threshold));
 
           find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                        all_segments,
@@ -2251,7 +2252,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::virtual_apply(DiscretisedDensity<
               delete all_segments[segment_num];
             }
 
-          info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+          info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max());
 
           char* file1 = "kappa1";
           // cerr <<"  - Saving " << file1 << endl;
@@ -2293,157 +2294,154 @@ ModifiedInverseAveragingImageFilterAll<elemT>::virtual_apply(DiscretisedDensity<
             for (int j = in_density_cast_0.get_min_y(); j <= in_density_cast_0.get_max_y(); j++)
               for (int i = in_density_cast_0.get_min_x(); i <= in_density_cast_0.get_max_x(); i++)
                 {
+            // WARNING - only works for segment zero at the moment
+            // do the calculation of kappa0 here
+            kappa0_ptr_bck->fill(0);
+            (*all_segments_for_kappa0[all_segments.get_min_index()]).fill(0);
+            if (true) // attenuation_proj_data_filename !="1")
+              {
 
-                  // WARNING - only works for segment zero at the moment
-                  // do the calculation of kappa0 here
-                  kappa0_ptr_bck->fill(0);
-                  (*all_segments_for_kappa0[all_segments.get_min_index()]).fill(0);
-                  if (true) // attenuation_proj_data_filename !="1")
-                    {
+                shared_ptr<VoxelsOnCartesianGrid<float>> in_density_cast_tmp
+                    = new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),
+                                                                    in_density_cast_0.get_max_z(),
+                                                                    -mask_size + 6,
+                                                                    mask_size + 6,
+                                                                    -mask_size + 6,
+                                                                    mask_size + 6),
+                                                       in_density.get_origin(),
+                                                       in_density_cast_0.get_voxel_size());
 
-                      shared_ptr<VoxelsOnCartesianGrid<float>> in_density_cast_tmp
-                          = new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),
-                                                                          in_density_cast_0.get_max_z(),
-                                                                          -mask_size + 6,
-                                                                          mask_size + 6,
-                                                                          -mask_size + 6,
-                                                                          mask_size + 6),
-                                                             in_density.get_origin(),
-                                                             in_density_cast_0.get_voxel_size());
+                const int min_j = max(in_density_cast_0.get_min_y(), j - mask_size);
+                const int max_j = min(in_density_cast_0.get_max_y(), j + mask_size);
+                const int min_i = max(in_density_cast_0.get_min_x(), i - mask_size);
+                const int max_i = min(in_density_cast_0.get_max_x(), i + mask_size);
 
-                      const int min_j = max(in_density_cast_0.get_min_y(), j - mask_size);
-                      const int max_j = min(in_density_cast_0.get_max_y(), j + mask_size);
-                      const int min_i = max(in_density_cast_0.get_min_x(), i - mask_size);
-                      const int max_i = min(in_density_cast_0.get_max_x(), i + mask_size);
+                // the mask size is in 2D only
 
-                      // the mask size is in 2D only
+                for (int j_in = min_j; j_in <= max_j; j_in++)
+                  for (int i_in = min_i; i_in <= max_i; i_in++)
 
-                      for (int j_in = min_j; j_in <= max_j; j_in++)
-                        for (int i_in = min_i; i_in <= max_i; i_in++)
+                    (*in_density_cast_tmp)[k][j_in - j + 6][i_in - i + 6] = in_density_cast_0[k][j_in][i_in];
 
-                          (*in_density_cast_tmp)[k][j_in - j + 6][i_in - i + 6] = in_density_cast_0[k][j_in][i_in];
+                fwd_densels_all(all_segments_for_kappa0,
+                                proj_matrix_ptr,
+                                proj_data_ptr,
+                                in_density_cast_0.get_min_z(),
+                                in_density_cast_0.get_max_z(),
+                                in_density_cast_tmp->get_min_y(),
+                                in_density_cast_tmp->get_max_y(),
+                                in_density_cast_tmp->get_min_x(),
+                                in_density_cast_tmp->get_max_x(),
+                                *in_density_cast_tmp);
 
-                      fwd_densels_all(all_segments_for_kappa0,
-                                      proj_matrix_ptr,
-                                      proj_data_ptr,
-                                      in_density_cast_0.get_min_z(),
-                                      in_density_cast_0.get_max_z(),
-                                      in_density_cast_tmp->get_min_y(),
-                                      in_density_cast_tmp->get_max_y(),
-                                      in_density_cast_tmp->get_min_x(),
-                                      in_density_cast_tmp->get_max_x(),
-                                      *in_density_cast_tmp);
+                find_inverse_and_bck_densels(*kappa0_ptr_bck,
+                                             all_segments_for_kappa0,
+                                             all_attenuation_segments,
+                                             vox_image_ptr_kappa1->get_min_z(),
+                                             vox_image_ptr_kappa1->get_max_z(),
+                                             // 0,0,0,0,
+                                             6,
+                                             6,
+                                             6,
+                                             6,
+                                             *proj_matrix_ptr,
+                                             false,
+                                             threshold,
+                                             true);
+                (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][6][6];
 
-                      find_inverse_and_bck_densels(*kappa0_ptr_bck,
-                                                   all_segments_for_kappa0,
-                                                   all_attenuation_segments,
-                                                   vox_image_ptr_kappa1->get_min_z(),
-                                                   vox_image_ptr_kappa1->get_max_z(),
-                                                   // 0,0,0,0,
-                                                   6,
-                                                   6,
-                                                   6,
-                                                   6,
-                                                   *proj_matrix_ptr,
-                                                   false,
-                                                   threshold,
-                                                   true);
-                      (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][6][6];
+                *output_att << k << "  " << j << "  " << i << "  " << (*kappa0_ptr_bck)[k][j][i] << endl;
+              }
+            else
+              {
+                const int min_j = max(in_density_cast_0.get_min_y(), j - mask_size);
+                const int max_j = min(in_density_cast_0.get_max_y(), j + mask_size);
+                const int min_i = max(in_density_cast_0.get_min_x(), i - mask_size);
+                const int max_i = min(in_density_cast_0.get_max_x(), i + mask_size);
 
-                      *output_att << k << "  " << j << "  " << i << "  " << (*kappa0_ptr_bck)[k][j][i] << endl;
-                    }
-                  else
-                    {
-                      const int min_j = max(in_density_cast_0.get_min_y(), j - mask_size);
-                      const int max_j = min(in_density_cast_0.get_max_y(), j + mask_size);
-                      const int min_i = max(in_density_cast_0.get_min_x(), i - mask_size);
-                      const int max_i = min(in_density_cast_0.get_max_x(), i + mask_size);
+                fwd_densels_all(all_segments_for_kappa0,
+                                proj_matrix_ptr,
+                                proj_data_ptr,
+                                in_density_cast_0.get_min_z(),
+                                in_density_cast_0.get_max_z(),
+                                min_j,
+                                max_j,
+                                min_i,
+                                max_i,
+                                // j-2,j+2,
+                                // i-2,i+2,
+                                in_density_cast_0);
 
-                      fwd_densels_all(all_segments_for_kappa0,
-                                      proj_matrix_ptr,
-                                      proj_data_ptr,
-                                      in_density_cast_0.get_min_z(),
-                                      in_density_cast_0.get_max_z(),
-                                      min_j,
-                                      max_j,
-                                      min_i,
-                                      max_i,
-                                      // j-2,j+2,
-                                      // i-2,i+2,
-                                      in_density_cast_0);
+                find_inverse_and_bck_densels(*kappa0_ptr_bck,
+                                             all_segments_for_kappa0,
+                                             all_attenuation_segments,
+                                             vox_image_ptr_kappa1->get_min_z(),
+                                             vox_image_ptr_kappa1->get_max_z(),
+                                             j,
+                                             j,
+                                             i,
+                                             i,
+                                             *proj_matrix_ptr,
+                                             false,
+                                             threshold,
+                                             true);
 
-                      find_inverse_and_bck_densels(*kappa0_ptr_bck,
-                                                   all_segments_for_kappa0,
-                                                   all_attenuation_segments,
-                                                   vox_image_ptr_kappa1->get_min_z(),
-                                                   vox_image_ptr_kappa1->get_max_z(),
-                                                   j,
-                                                   j,
-                                                   i,
-                                                   i,
-                                                   *proj_matrix_ptr,
-                                                   false,
-                                                   threshold,
-                                                   true);
+                *output_noatt << k << "  " << j << "  " << i << "  " << (*kappa0_ptr_bck)[k][j][i] << endl;
+              }
+            //	cerr << "min and max in image - kappa0 " <<kappa0_ptr_bck->find_min()
+            //	<< ", " << kappa0_ptr_bck->find_max() << endl;
 
-                      *output_noatt << k << "  " << j << "  " << i << "  " << (*kappa0_ptr_bck)[k][j][i] << endl;
-                    }
-                  //	cerr << "min and max in image - kappa0 " <<kappa0_ptr_bck->find_min()
-                  //	<< ", " << kappa0_ptr_bck->find_max() << endl;
+            char* file0 = "kappa0";
+            write_basic_interfile(file0, *kappa0_ptr_bck);
 
-                  char* file0 = "kappa0";
-                  write_basic_interfile(file0, *kappa0_ptr_bck);
+            float sq_kapas;
 
-                  float sq_kapas;
+            if (fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001
+                && fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001)
+              {
+                sq_kapas = ((*kappa0_ptr_bck)[k][j][i] * (*kappa0_ptr_bck)[k][j][i])
+                           / ((*kappa1_ptr_bck)[k][j][i] * (*kappa1_ptr_bck)[k][j][i]);
 
-                  if (fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001
-                      && fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001)
-                    {
-                      sq_kapas = ((*kappa0_ptr_bck)[k][j][i] * (*kappa0_ptr_bck)[k][j][i])
-                                 / ((*kappa1_ptr_bck)[k][j][i] * (*kappa1_ptr_bck)[k][j][i]);
+                *output1 << " Values of kapa0 and kapa1" << endl;
+                *output1 << "for k   " << k;
+                *output1 << ":";
+                *output1 << j;
+                *output1 << ",";
+                *output1 << i;
+                *output1 << "    ";
+                //*output1 <<(*image_sptr_0)[k][j][i];
+                *output1 << (*kappa0_ptr_bck)[k][j][i];
+                *output1 << "     ";
+                *output1 << (*kappa1_ptr_bck)[k][j][i];
+                *output1 << endl;
+                *output << "for k   " << k;
+                *output << ":";
+                *output << j;
+                *output << ",";
+                *output << i;
+                *output << "    ";
+                *output << sq_kapas;
+                *output << endl;
 
-                      *output1 << " Values of kapa0 and kapa1" << endl;
-                      *output1 << "for k   " << k;
-                      *output1 << ":";
-                      *output1 << j;
-                      *output1 << ",";
-                      *output1 << i;
-                      *output1 << "    ";
-                      //*output1 <<(*image_sptr_0)[k][j][i];
-                      *output1 << (*kappa0_ptr_bck)[k][j][i];
-                      *output1 << "     ";
-                      *output1 << (*kappa1_ptr_bck)[k][j][i];
-                      *output1 << endl;
-                      *output << "for k   " << k;
-                      *output << ":";
-                      *output << j;
-                      *output << ",";
-                      *output << i;
-                      *output << "    ";
-                      *output << sq_kapas;
-                      *output << endl;
-
-                      // sq_kapas = 10;
-                      inverse_filter = ModifiedInverseAverigingArrayFilter<3, elemT>(filter_coefficients, sq_kapas);
-                      // construct_scaled_filter_coefficients(new_coeffs, filter_coefficients,sq_kapas);
-                      // all_filter_coefficients[k][j][i] =
-                      //	  new ArrayFilter3DUsingConvolution<elemT>(new_coeffs);
-                      all_filter_coefficients_separable[k][j][i]
-                          = new ModifiedInverseAverigingArrayFilter<3, elemT>(inverse_filter);
-                    }
-                  else
-                    {
-                      sq_kapas = 0;
-                      inverse_filter = ModifiedInverseAverigingArrayFilter<3, elemT>();
-                      all_filter_coefficients_separable[k][j][i]
-                          = new ModifiedInverseAverigingArrayFilter<3, elemT>(inverse_filter);
-                    }
+                // sq_kapas = 10;
+                inverse_filter = ModifiedInverseAverigingArrayFilter<3, elemT>(filter_coefficients, sq_kapas);
+                // construct_scaled_filter_coefficients(new_coeffs, filter_coefficients,sq_kapas);
+                // all_filter_coefficients[k][j][i] =
+                //	  new ArrayFilter3DUsingConvolution<elemT>(new_coeffs);
+                all_filter_coefficients_separable[k][j][i] = new ModifiedInverseAverigingArrayFilter<3, elemT>(inverse_filter);
+              }
+            else
+              {
+                sq_kapas = 0;
+                inverse_filter = ModifiedInverseAverigingArrayFilter<3, elemT>();
+                all_filter_coefficients_separable[k][j][i] = new ModifiedInverseAverigingArrayFilter<3, elemT>(inverse_filter);
+              }
                 }
 
           for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
             {
-              delete all_segments_for_kappa0[segment_num];
-              delete all_attenuation_segments[segment_num];
+            delete all_segments_for_kappa0[segment_num];
+            delete all_attenuation_segments[segment_num];
             }
         }
     }
@@ -2478,7 +2476,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::virtual_apply(DiscretisedDensity<
                   if (k == in_density_cast_0.get_min_z() && j == in_density_cast_0.get_min_y()
                       && i == in_density_cast_0.get_min_x() && count == 300)
                     {
-                      info(boost::format(" IN the LOOP %1%   %2%  %3%   ") % k % j % i);
+                      info(format(" IN the LOOP {}   {}  {}   ", k, j, i));
                       for (int k = in_density_cast_0.get_min_z(); k <= in_density_cast_0.get_max_z(); k++)
                         for (int j = in_density_cast_0.get_min_y(); j <= in_density_cast_0.get_max_y(); j++)
                           for (int i = in_density_cast_0.get_min_x(); i <= in_density_cast_0.get_max_x(); i++)

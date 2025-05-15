@@ -165,10 +165,10 @@ done
 stir_math -s --including-first --times-scalar 0 --add-scalar 1 all_ones.hs fwd_dyn_from_p0005-p5_f23g1d0b0.hs
 
 tmpvar="" ;
-for fr in `count 1 23 `; do
+for fr in `count 1 23`; do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f23g1d0b0.hs"
 done
-for fr in `count 24 28 `; do
+for fr in `count 24 28`; do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f${fr}g1d0b0.hs"
 done
 

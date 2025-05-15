@@ -26,6 +26,7 @@
 #include "stir/HighResWallClockTimer.h"
 #include "stir/GeometryBlocksOnCylindrical.h"
 #include "stir/IO/write_to_file.h"
+#include "stir/format.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
@@ -68,11 +69,13 @@ GeometryBlocksOnCylindricalTests::run_monotonic_axial_coordinates_in_detector_ma
 
         if (monotonic_axial_coordinates_in_detector_map_test(scanner_sptr) == Succeeded::no)
           {
-            warning(boost::format("Monothonic axial coordinates test failed for:\n"
-                                  "\taxial_crystal_per_block =\t%1%\n"
-                                  "\taxial_blocks_per_bucket =\t%2%\n"
-                                  "\tnum_axial_buckets =\t\t\t%3%")
-                    % num_axial_crystals_per_blocks % num_axial_blocks_per_bucket % num_axial_buckets);
+            warning(format("Monothonic axial coordinates test failed for:\n"
+                           "\taxial_crystal_per_block =\t{}\n"
+                           "\taxial_blocks_per_bucket =\t{}\n"
+                           "\tnum_axial_buckets =\t\t\t{}",
+                           num_axial_crystals_per_blocks,
+                           num_axial_blocks_per_bucket,
+                           num_axial_buckets));
             everything_ok = false;
             return;
           }
@@ -95,9 +98,9 @@ GeometryBlocksOnCylindricalTests::monotonic_axial_coordinates_in_detector_map_te
     }
   catch (const std::runtime_error& e)
     {
-      warning(boost::format("Caught runtime_error while creating GeometryBlocksOnCylindrical: %1%\n"
-                            "Failing the test.")
-              % e.what());
+      warning(format("Caught runtime_error while creating GeometryBlocksOnCylindrical: {}\n"
+                     "Failing the test.",
+                     e.what()));
       return Succeeded::no;
     }
 
@@ -118,10 +121,14 @@ GeometryBlocksOnCylindricalTests::monotonic_axial_coordinates_in_detector_map_te
           else if (coord.z() < prev_min_axial_coord)
             {
               float delta = coord.z() - prev_min_axial_coord;
-              warning(boost::format("Axial Coordinates are not monotonic.\n"
-                                    "Next axial index =\t\t%1%, Next axial coord (mm) =\t\t%2%  (%3%)\n"
-                                    "Previous axial index =\t%4%, Previous axial coord (mm) =\t%5%")
-                      % axial_idx % coord.z() % delta % min_axial_pos % prev_min_axial_coord);
+              warning(format("Axial Coordinates are not monotonic.\n"
+                             "Next axial index =\t\t{}, Next axial coord (mm) =\t\t{}  ({})\n"
+                             "Previous axial index =\t{}, Previous axial coord (mm) =\t{}",
+                             axial_idx,
+                             coord.z(),
+                             delta,
+                             min_axial_pos,
+                             prev_min_axial_coord));
               return Succeeded::no;
             }
         }

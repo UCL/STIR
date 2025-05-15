@@ -30,6 +30,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 // include the following to set defaults
 #ifndef USE_PMRT
@@ -148,7 +149,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::pos
 
   if (this->_additive_dyn_proj_data_filename != "0")
     {
-      info(boost::format("Reading additive projdata data %1%") % this->_additive_dyn_proj_data_filename);
+      info(format("Reading additive projdata data {}", this->_additive_dyn_proj_data_filename));
       this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
         {
@@ -536,8 +537,8 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
       }
   }
 #ifndef NDEBUG
-  info(boost::format("INPUT max: (%1% , %2%)") % input.construct_single_density(1).find_max()
-       % input.construct_single_density(2).find_max());
+  info(
+      format("INPUT max: ({} , {})", input.construct_single_density(1).find_max(), input.construct_single_density(2).find_max()));
 #endif // NDEBUG
   DynamicDiscretisedDensity dyn_input = this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_output = this->_dyn_image_template;
@@ -561,17 +562,17 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
       */
       dyn_input[frame_num] /= scale_factor[frame_num];
 #ifndef NDEBUG
-      info(boost::format("scale factor[%1%]: %2%") % frame_num % scale_factor[frame_num]);
-      info(boost::format("dyn_input[%1%] max after scale: %2%") % frame_num % dyn_input[frame_num].find_max());
+      info(format("scale factor[{}]: {}", frame_num, scale_factor[frame_num]));
+      info(format("dyn_input[{}] max after scale: {}", frame_num, dyn_input[frame_num].find_max()));
 #endif // NDEBUG
       this->_single_frame_obj_funcs[frame_num].add_multiplication_with_approximate_sub_Hessian_without_penalty(
           dyn_output[frame_num], dyn_input[frame_num], subset_num);
 #ifndef NDEBUG
-      info(boost::format("dyn_output[%1%] max before scale: %2%") % frame_num % dyn_output[frame_num].find_max());
+      info(format("dyn_output[{}] max before scale: {}", frame_num, dyn_output[frame_num].find_max()));
 #endif // NDEBUG
       dyn_output[frame_num] *= scale_factor[frame_num];
 #ifndef NDEBUG
-      info(boost::format("dyn_output[%1%] max after scale: %2%") % frame_num % dyn_output[frame_num].find_max());
+      info(format("dyn_output[{}] max after scale: {}", frame_num, dyn_output[frame_num].find_max()));
 #endif // NDEBUG
     }  // end of loop over frames
   shared_ptr<TargetT> unnormalised_temp(output.get_empty_copy());
@@ -580,8 +581,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
   // Trick to use a better step size for the two parameters.
   (this->_patlak_plot_sptr->get_model_matrix()).normalise_parametric_image_with_model_sum(*temp, *unnormalised_temp);
 #ifndef NDEBUG
-  info(boost::format("TEMP max: (%1% , %2%)") % temp->construct_single_density(1).find_max()
-       % temp->construct_single_density(2).find_max());
+  info(format("TEMP max: ({} , {})", temp->construct_single_density(1).find_max(), temp->construct_single_density(2).find_max()));
   // Writing images
   write_to_file("all_params_one_input.img", input);
   write_to_file("temp_denominator.img", *temp);
@@ -606,8 +606,8 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
       ++temp_iter;
     }
 #ifndef NDEBUG
-  info(boost::format("OUTPUT max: (%1% , %2%)") % output.construct_single_density(1).find_max()
-       % output.construct_single_density(2).find_max());
+  info(format(
+      "OUTPUT max: ({} , {})", output.construct_single_density(1).find_max(), output.construct_single_density(2).find_max()));
 #endif // NDEBUG
 
   return Succeeded::yes;
@@ -642,8 +642,8 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
       }
   }
 #ifndef NDEBUG
-  info(boost::format("INPUT max: (%1% , %2%)") % input.construct_single_density(1).find_max()
-       % input.construct_single_density(2).find_max());
+  info(
+      format("INPUT max: ({} , {})", input.construct_single_density(1).find_max(), input.construct_single_density(2).find_max()));
 #endif // NDEBUG
   DynamicDiscretisedDensity dyn_input = this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_current_image_estimate = this->_dyn_image_template;
@@ -665,8 +665,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
   // Trick to use a better step size for the two parameters.
   (this->_patlak_plot_sptr->get_model_matrix()).normalise_parametric_image_with_model_sum(*temp, *unnormalised_temp);
 #ifndef NDEBUG
-  info(boost::format("TEMP max: (%1% , %2%)") % temp->construct_single_density(1).find_max()
-       % temp->construct_single_density(2).find_max());
+  info(format("TEMP max: ({} , {})", temp->construct_single_density(1).find_max(), temp->construct_single_density(2).find_max()));
   // Writing images
   write_to_file("all_params_one_input.img", input);
   write_to_file("temp_denominator.img", *temp);
@@ -691,8 +690,8 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
       ++temp_iter;
     }
 #ifndef NDEBUG
-  info(boost::format("OUTPUT max: (%1% , %2%)") % output.construct_single_density(1).find_max()
-       % output.construct_single_density(2).find_max());
+  info(format(
+      "OUTPUT max: ({} , {})", output.construct_single_density(1).find_max(), output.construct_single_density(2).find_max()));
 #endif // NDEBUG
 
   return Succeeded::yes;

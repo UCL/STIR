@@ -16,7 +16,6 @@
 #include "stir/recon_buildblock/SPECTUB_Tools.h"
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
 #include "stir/spatial_transformation/InvertAxis.h"
 

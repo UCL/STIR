@@ -18,4 +18,4 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(Shape_buildblock PUBLIC buildblock IO numerics_buildblock )
+target_link_libraries(Shape_buildblock PUBLIC buildblock IO numerics_buildblock PRIVATE fmt)

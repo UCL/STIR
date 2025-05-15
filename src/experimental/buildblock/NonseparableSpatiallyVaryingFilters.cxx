@@ -27,6 +27,7 @@ See STIR/LICENSE.txt for details
 #include "stir/SegmentByView.h"
 #include "stir/info.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 
 #include "stir/round.h"
 #include <iostream>
@@ -744,7 +745,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D(
     }
   const float threshold = 0.0001F * max_in_viewgram;
 
-  info(boost::format(" THRESHOLD IS %1%") % threshold);
+  info(format(" THRESHOLD IS {}", threshold));
 
   find_inverse_and_bck_densels(*kappa1_ptr_bck,
                                all_segments,
@@ -766,7 +767,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D(
       delete all_attenuation_segments[segment_num];
     }
 
-  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
+  info(format("min and max in image - kappa1 {}, {}", kappa1_ptr_bck->find_min(), kappa1_ptr_bck->find_max()));
 
   for (int k = in_density_cast->get_min_z(); k <= in_density_cast->get_max_z(); k++)
     for (int j = in_density_cast->get_min_y(); j <= in_density_cast->get_max_y(); j++)
@@ -918,7 +919,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D(
               if (filter_lookup[k_index] == NULL)
                 {
                   Array<2, float> new_coeffs;
-                  info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
+                  info(format("computing new filter for sq_kappas {} at index {}", sq_kapas, k_index));
                   construct_scaled_filter_coefficients_2D(
                       new_coeffs, filter_coefficients, sq_kapas, number_of_coefficients_before_padding);
                   filter_lookup[k_index] = new ArrayFilter2DUsingConvolution<float>(new_coeffs);
@@ -956,7 +957,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::virtual_apply(DiscretisedDensity<3, 
   static int count = 0;
   // every time it's called, counter is incremented
   count++;
-  info(boost::format(" checking the counter  %1%") % count);
+  info(format(" checking the counter  {}", count));
 
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(in_density);
 
@@ -1027,7 +1028,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::virtual_apply(DiscretisedDensity<3, 
               && count == 300 && precomputed_coefficients_filename != "1" && normalised_bck_filename != "1")
 
             {
-              info(boost::format(" IN the LOOP %1%   %2%  %3%   ") % k % j % i);
+              info(format(" IN the LOOP {}   {}  {}   ", k, j, i));
               for (int k = in_density_cast_0.get_min_z(); k <= in_density_cast_0.get_max_z(); k++)
                 for (int j = in_density_cast_0.get_min_y(); j <= in_density_cast_0.get_max_y(); j++)
                   for (int i = in_density_cast_0.get_min_x(); i <= in_density_cast_0.get_max_x(); i++)

@@ -68,7 +68,7 @@
 #endif
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 using std::vector;
 using std::pair;
@@ -195,7 +195,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing(
 
   if (this->additive_projection_data_filename != "0")
     {
-      info(boost::format("Reading additive projdata data %1%") % this->additive_projection_data_filename);
+      info(format("Reading additive projdata data {}", this->additive_projection_data_filename));
       this->additive_proj_data_sptr = ProjData::read_from_file(this->additive_projection_data_filename);
     };
 
@@ -995,8 +995,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
         const int thread_num = 0;
         const int num_threads = 1;
 #endif
-        info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, TOF: %d") % thread_num % num_threads
-                 % viewgram_idx.segment_num() % viewgram_idx.view_num() % viewgram_idx.timing_pos_num(),
+        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
+                    thread_num,
+                    num_threads,
+                    viewgram_idx.segment_num(),
+                    viewgram_idx.view_num(),
+                    viewgram_idx.timing_pos_num()),
              2);
       }
       // first compute data-term: y*norm^2
@@ -1129,8 +1133,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
         const int thread_num = 0;
         const int num_threads = 1;
 #endif
-        info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, TOF: %d") % thread_num % num_threads
-                 % viewgram_idx.segment_num() % viewgram_idx.view_num() % viewgram_idx.timing_pos_num(),
+        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
+                    thread_num,
+                    num_threads,
+                    viewgram_idx.segment_num(),
+                    viewgram_idx.view_num(),
+                    viewgram_idx.timing_pos_num()),
              2);
       }
       input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(viewgram_idx, symmetries_sptr);
@@ -1162,8 +1170,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
         const int thread_num = 0;
         const int num_threads = 1;
 #endif
-        info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, TOF: %d") % thread_num % num_threads
-                 % viewgram_idx.segment_num() % viewgram_idx.view_num() % viewgram_idx.timing_pos_num(),
+        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
+                    thread_num,
+                    num_threads,
+                    viewgram_idx.segment_num(),
+                    viewgram_idx.view_num(),
+                    viewgram_idx.timing_pos_num()),
              2);
       }
       // Compute ybar_sq_viewgram = [ F(current_image_est) + additive ]^2

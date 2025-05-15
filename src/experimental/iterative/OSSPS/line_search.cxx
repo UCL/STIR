@@ -19,6 +19,7 @@
 
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #error this code does not compile right now
 
@@ -130,7 +131,7 @@ OSSPSReconstruction<TargetT>::line_search(const TargetT& current_estimate, const
       {
         previous = current;
         FUNC(value_at_current, current);
-        info(boost::format("line search at %1% value %2%") % current % value_at_current);
+        info(format("line search at {} value {}", current, value_at_current));
         if (value_at_current <= value_at_min && value_at_max <= value_at_current)
           {
             min_alpha = current;
@@ -168,7 +169,7 @@ OSSPSReconstruction<TargetT>::line_search(const TargetT& current_estimate, const
                 for (current = list_from; current <= list_to; current += increment)
                   {
                     FUNC(value_at_current, current);
-                    info(boost::format("%1% d %2%") % current % value_at_current - value_at_min);
+                    info(format("{} d {}", current, value_at_current - value_at_min));
                   }
                 exit(EXIT_FAILURE);
               }
@@ -196,8 +197,8 @@ OSSPSReconstruction<TargetT>::line_search(const TargetT& current_estimate, const
     result = current;
   }
   timer.stop();
-  info(boost::format("line search took %1% s CPU time") % timer.value());
-  info(boost::format("value for alpha %1%") % result);
+  info(format("line search took {} s CPU time", timer.value()));
+  info(format("value for alpha {}", result));
   /*
   this->output_file_format_ptr->
         write_to_file("curr_est", current_estimate);

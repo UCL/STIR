@@ -31,7 +31,6 @@
 #include <string>
 #include "stir/data/SinglesRatesFromGEHDF5.h"
 #include "stir/data/randoms_from_singles.h"
-#include <boost/format.hpp>
 
 using std::cerr;
 using std::endl;

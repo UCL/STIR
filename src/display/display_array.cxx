@@ -72,7 +72,7 @@
 #include "stir/ML_norm.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <iostream>
 #include "stir/warning.h"
 
@@ -412,7 +412,7 @@ display_pgm(const Array<3, elemT>& plane_stack,
       }
   }
 
-  info(boost::format("Scaled maximum in image = %1%") % scaled_max);
+  info(format("Scaled maximum in image = {}", scaled_max));
 
   for (int z = min_indices[1]; z <= max_indices[1]; z++)
     {
@@ -432,7 +432,7 @@ display_pgm(const Array<3, elemT>& plane_stack,
         }
     }
   fclose(pgm);
-  info(boost::format("Wrote PGM plane_stack to file %1%") % name);
+  info(format("Wrote PGM plane_stack to file {}", name));
 }
 
 END_NAMESPACE_STIR
@@ -458,7 +458,7 @@ display(const Array<3, elemT>& plane_stack,
   assert(plane_stack.get_min_index() == text.get_min_index());
   assert(plane_stack.get_max_index() == text.get_max_index());
 
-  info(boost::format("Displaying %1%") % (title == 0 ? "" : title));
+  info(format("Displaying {}", (title == 0 ? "" : title)));
 #if defined(STIR_PGM)
   display_pgm(plane_stack, scale_factors, text, maxi, title, scale);
 #endif

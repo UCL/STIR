@@ -26,7 +26,7 @@
 #include "stir/interfile_keyword_functions.h"
 #include "stir/stream.h"
 #include "stir/is_null_ptr.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/error.h"
 #include <typeinfo>
 #include <fstream>
@@ -335,7 +335,7 @@ KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
   map_element* elem_ptr = find_in_keymap(standardised_keyword);
   if (elem_ptr != 0)
     {
-      warning(boost::format("KeyParser: keyword '%s' already registered for parsing, overwriting previous value") % keyword);
+      warning(format("KeyParser: keyword '{}' already registered for parsing, overwriting previous value", keyword));
       *elem_ptr = new_element;
     }
   else
@@ -1015,7 +1015,7 @@ KeyParser::set_variable()
   if (!current_index)
     {
       if (current->vectorised_key_level > 0)
-        error(boost::format("Error parsing: expected a vectorised key as in \"%1%[1]\", but no bracket found") % keyword);
+        error(format("Error parsing: expected a vectorised key as in \"{}[1]\", but no bracket found", keyword));
 
       switch (current->type)
         {
@@ -1081,8 +1081,7 @@ KeyParser::set_variable()
   else // Sets vector elements using current_index
     {
       if (current->vectorised_key_level == 0)
-        error(boost::format("Error parsing: encountered unexpected \"vectorisation\" of key: \"%1%[%2%]\"") % keyword
-              % current_index);
+        error(format("Error parsing: encountered unexpected \"vectorisation\" of key: \"{}[{}]\"", keyword, current_index));
 
       switch (current->type)
         {

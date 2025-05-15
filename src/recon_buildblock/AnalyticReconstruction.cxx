@@ -29,6 +29,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <iostream>
 #include "stir/IO/OutputFileFormat.h"
 
@@ -170,8 +171,7 @@ AnalyticReconstruction::reconstruct(shared_ptr<TargetT> const& target_image_sptr
           info("Applying post-filter");
           this->post_filter_sptr->apply(*target_image_sptr);
 
-          info(boost::format("  min and max after post-filtering %1% %2%") % target_image_sptr->find_min()
-               % target_image_sptr->find_max());
+          info(format("  min and max after post-filtering {} {}", target_image_sptr->find_min(), target_image_sptr->find_max()));
         }
     }
   this->stop_timers();

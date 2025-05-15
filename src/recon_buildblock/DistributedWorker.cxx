@@ -34,7 +34,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #include <exception>
 
@@ -64,7 +64,7 @@ main(int argc, char** argv)
       MPI_Comm_size(MPI_COMM_WORLD, &distributed::num_processors); /*Finds the number of processes being used*/
       MPI_Get_processor_name(processor_name, &namelength);
 
-      stir::info(boost::format("Process %d of %d on %s") % my_rank % distributed::num_processors % processor_name);
+      stir::info(format("Process {} of {} on {}", my_rank, distributed::num_processors, processor_name));
 
       // master
       if (my_rank == 0)
@@ -78,7 +78,7 @@ main(int argc, char** argv)
             {
               return_value = stir::distributable_main(argc, argv);
               if (distributed::total_rpc_time_slaves != 0)
-                stir::info(boost::format("Total time used for RPC-processing: %1%") % distributed::total_rpc_time_slaves);
+                stir::info(format("Total time used for RPC-processing: {}", distributed::total_rpc_time_slaves));
             }
         }
       else // slaves
@@ -430,7 +430,7 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
           delete mult_viewgrams_ptr;
       }
     if (distributed::rpc_time)
-      stir::info(boost::format("Slave %1% used %2% seconds for PRC-processing.") % my_rank % distributed::total_rpc_time_2);
+      stir::info(format("Slave {} used {} seconds for PRC-processing.", my_rank, distributed::total_rpc_time_2));
   }
 }
 

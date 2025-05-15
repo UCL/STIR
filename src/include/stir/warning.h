@@ -49,11 +49,11 @@ void warning(const char* const s, ...);
 
   \todo At a later stage, it will also write to a log-file.
 
-  \c boost::format is useful in this context.
+  \c stir::format is useful in this context.
 
   \par Example
   \code
-  warning(boost::format("Type is like this: %1%. Not sure if that will work.") % projdata_info.parameter_info());
+  warning(format("Type is like this: {}. Not sure if that will work.", projdata_info.parameter_info()));
 
   warning("This might not work");
   \endcode

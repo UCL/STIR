@@ -21,7 +21,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -140,8 +140,7 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity& new_gated_image,
   std::string explanation;
   if (!(gated_image.get_densities()[0])->has_same_characteristics(*(gated_image.get_densities()[0]), explanation))
     {
-      error(boost::format("GatedSpatialTransformation::warp_image needs the same sizes for input and output images: %1%")
-            % explanation);
+      error(format("GatedSpatialTransformation::warp_image needs the same sizes for input and output images: {}", explanation));
     }
   new_gated_image.set_time_gate_definitions(this->_gate_defs);
   assert(gated_image.get_time_gate_definitions().get_num_gates()
@@ -190,9 +189,9 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity& gated_image,
     }
   if ((gated_image.get_densities())[0]->size_all() != (this->_spatial_transformation_y.get_densities())[0]->size_all())
     {
-      info(boost::format("Number of voxels in one gated image: %1%") % (gated_image.get_densities())[0]->size_all());
-      info(boost::format("Number of voxels in one motion vector gated image: %1%")
-           % (this->_spatial_transformation_y.get_densities())[0]->size_all());
+      info(format("Number of voxels in one gated image: {}", (gated_image.get_densities())[0]->size_all()));
+      info(format("Number of voxels in one motion vector gated image: {}",
+                  (this->_spatial_transformation_y.get_densities())[0]->size_all()));
       error("GatedSpatialTransformation::warp_image needs the same sizes for motion vectors and input/output images.\n");
     }
   const shared_ptr<DiscretisedDensity<3, float>> reference_image_sptr(reference_image.clone());

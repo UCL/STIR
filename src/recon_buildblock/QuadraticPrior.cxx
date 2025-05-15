@@ -28,6 +28,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <algorithm>
 using std::min;
 using std::max;
@@ -368,7 +369,7 @@ QuadraticPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_grad
         }
     }
 
-  info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min());
+  info(format("Prior gradient max {}, min {}\n", prior_gradient.find_max(), prior_gradient.find_min()));
 
   static int count = 0;
   ++count;
@@ -519,8 +520,9 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3, elemT
         }
     }
 
-  info(boost::format("parabolic_surrogate_curvature max %1%, min %2%\n") % parabolic_surrogate_curvature.find_max()
-       % parabolic_surrogate_curvature.find_min());
+  info(format("parabolic_surrogate_curvature max {}, min {}\n",
+              parabolic_surrogate_curvature.find_max(),
+              parabolic_surrogate_curvature.find_min()));
   /*{
     static int count = 0;
     ++count;

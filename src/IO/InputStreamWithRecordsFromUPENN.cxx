@@ -40,7 +40,7 @@ InputStreamWithRecordsFromUPENN::get_total_number_of_events(CListRecordPENN& rec
       if (this->get_next_record(record) == Succeeded::no)
         break;
       if (counter > 1 && counter % 1000000L == 0)
-        //            info( boost::format("Counting records: %1% ") % counter);
+        //            info( format("Counting records: {} ", counter));
         std::cout << "\r" << counter << " events counted " << std::flush;
       counter++;
     }

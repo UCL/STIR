@@ -44,6 +44,7 @@
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/info.h"
+#include "stir/format.h"
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/distributed_functions.h"
 #  include "stir/recon_buildblock/distributed_test_functions.h"
@@ -267,8 +268,11 @@ distributable_computation_cache_enabled(const shared_ptr<ForwardProjectorByBin>&
           // the slave has not yet processed this vs_num, so the viewgrams have to be sent
           if (new_viewgrams == true)
             {
-              info(boost::format("Sending segment %1%, view %2%, TOF bin %3% to slave %4%\n") % view_segment_num.segment_num()
-                   % view_segment_num.view_num() % timing_pos_num % next_receiver);
+              info(format("Sending segment {}, view {}, TOF bin {} to slave {}\n",
+                          view_segment_num.segment_num(),
+                          view_segment_num.view_num(),
+                          timing_pos_num,
+                          next_receiver));
 
               shared_ptr<RelatedViewgrams<float>> y;
               shared_ptr<RelatedViewgrams<float>> additive_binwise_correction_viewgrams;
@@ -293,8 +297,11 @@ distributable_computation_cache_enabled(const shared_ptr<ForwardProjectorByBin>&
             } // if(new_viewgram)
           else
             {
-              info(boost::format("Re-using  segment %1%, view %2%, TOF bin %3% to slave %4%\n") % view_segment_num.segment_num()
-                   % view_segment_num.view_num() % timing_pos_num % next_receiver);
+              info(format("Re-using  segment {}, view {}, TOF bin {} to slave {}\n",
+                          view_segment_num.segment_num(),
+                          view_segment_num.view_num(),
+                          timing_pos_num,
+                          next_receiver));
               // send vs_num with reuse-tag, the slave will immediatelly start calculation
               distributed::send_view_segment_numbers(view_segment_num, REUSE_VIEWGRAM_TAG, next_receiver);
             }
@@ -337,9 +344,10 @@ distributable_computation_cache_enabled(const shared_ptr<ForwardProjectorByBin>&
     // TODO this message relies on knowledge of count, count2 which might be inappropriate for
     // the call-back function
 #ifndef STIR_NO_RUNNING_LOG
-  info(boost::format(
-           "\tNumber of (cancelled) singularities: %1%\n\tNumber of (cancelled) negative numerators: %2%\n\tIteration: %3%secs\n")
-       % count % count2 % iteration_timer.value());
+  info(format("\tNumber of (cancelled) singularities: {}\n\tNumber of (cancelled) negative numerators: {}\n\tIteration: {}secs\n",
+              count,
+              count2,
+              iteration_timer.value()));
 #endif
 
   int_values[0] = 3;

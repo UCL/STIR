@@ -44,11 +44,11 @@
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 
-#include <boost/format.hpp>
 #include <memory>
 #include <iostream>
 #include <sstream>
@@ -220,7 +220,7 @@ OSMAPOSLReconstruction<TargetT>::set_MAP_model(const std::string& arg)
 {
   this->MAP_model = arg;
   if (MAP_model != "additive" && MAP_model != "multiplicative")
-    error(boost::format("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'") % MAP_model);
+    error(format("MAP model should have as value 'additive' or 'multiplicative', while it is '{}'", MAP_model));
 }
 
 //*********** other functions ***********
@@ -386,7 +386,7 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
 #endif // PARALLEL
 
   const int subset_num = this->get_subset_num();
-  info(boost::format("Now processing subset #: %1%") % subset_num);
+  info(format("Now processing subset #: {}", subset_num));
 
   this->compute_sub_gradient_without_penalty_plus_sensitivity(
       *multiplicative_update_image_ptr, current_image_estimate, subset_num);
@@ -463,7 +463,7 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
                small_num);
       }
 
-    info(boost::format("Number of (cancelled) singularities in Sensitivity division: %1%") % count);
+    info(format("Number of (cancelled) singularities in Sensitivity division: {}", count));
   }
 
   if (this->inter_update_filter_interval > 0 && !is_null_ptr(this->inter_update_filter_ptr)
@@ -495,8 +495,11 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
           = *std::max_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
       const float new_min = static_cast<float>(this->minimum_relative_change);
       const float new_max = static_cast<float>(this->maximum_relative_change);
-      info(boost::format("Update image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max
-           % (min(current_min, new_min)) % (max(current_max, new_max)));
+      info(format("Update image old min,max: {}, {}, new min,max {}, {}",
+                  current_min,
+                  current_max,
+                  (min(current_min, new_min)),
+                  (max(current_max, new_max))));
 
       threshold_upper_lower(
           multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all(), new_min, new_max);
@@ -507,7 +510,7 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
 
 #ifdef PARALLEL
   timerSubset.Stop();
-  info(boost::format("Subset: %1%secs") % timerSubset.GetTime());
+  info(format("Subset: {}secs", timerSubset.GetTime()));
 #endif
 }
 

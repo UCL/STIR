@@ -29,7 +29,7 @@
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
 #include "stir/info.h"
 #include "stir/numerics/fourier.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <iostream>
 
 using std::cerr;
@@ -132,13 +132,17 @@ build_metz(VectorWithOffset<elemT>& kernel, float N, float fwhm, float MmPerVox,
       int Res = (int)(log((sqrt(8 * n * log(10.) * s2) + stretch) / sampling_interval) / log(2.) + 1);
       Res = (int)pow(2.0, (double)Res); // MJ 12/05/98 made adaptive
 
-      info(boost::format("Filter parameters:\n"
-                         "Variance: %1%\n"
-                         "Voxel dimension (in mm): %2%\n"
-                         "Samples per voxel: %3%\n"
-                         "Sampling interval (in mm):  %4%\n"
-                         "FFT vector length: %5%")
-           % s2 % MmPerVox % samples_per_voxel % sampling_interval % Res);
+      info(format("Filter parameters:\n"
+                  "Variance: {}\n"
+                  "Voxel dimension (in mm): {}\n"
+                  "Samples per voxel: {}\n"
+                  "Sampling interval (in mm):  {}\n"
+                  "FFT vector length: {}",
+                  s2,
+                  MmPerVox,
+                  samples_per_voxel,
+                  sampling_interval,
+                  Res));
 
       /* allocate memory to metz arrays */
       VectorWithOffset<elemT> filter(Res);

@@ -29,6 +29,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include "stir/is_null_ptr.h"
 #include "stir/DataProcessor.h"
 #include <vector>
@@ -37,7 +38,6 @@
 #  include "stir/DiscretisedDensity.h"
 #  include <omp.h>
 #endif
-#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -95,9 +95,9 @@ BackProjectorByBin::check(const ProjDataInfo& proj_data_info) const
   if (!this->_already_set_up)
     error("BackProjectorByBin method called without calling set_up first.");
   if (!(*this->_proj_data_info_sptr >= proj_data_info))
-    error(boost::format(
-              "BackProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
-          % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+    error(format("BackProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n{}\nCalled with\n{}",
+                 this->_proj_data_info_sptr->parameter_info(),
+                 proj_data_info.parameter_info()));
 }
 
 void
@@ -217,10 +217,10 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
           RelatedViewgrams<float> viewgrams;
 #  pragma omp critical(BACKPROJECTORBYBIN_GETVIEWGRAMS)
           viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
-          info(boost::format("Processing view %1% of segment %2%, TOF bin %3%") % vs.view_num() % vs.segment_num() % k, 3);
+          info(format("Processing view {} of segment {}, TOF bin {}", vs.view_num(), vs.segment_num(), k), 3);
 #else
           const RelatedViewgrams<float> viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
-          info(boost::format("Processing view %1% of segment %2%, TOF bin %3%") % vs.view_num() % vs.segment_num() % k, 3);
+          info(format("Processing view {} of segment {}, TOF bin {}", vs.view_num(), vs.segment_num(), k), 3);
 #endif
 
           back_project(viewgrams);

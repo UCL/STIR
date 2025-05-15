@@ -30,7 +30,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/HighResWallClockTimer.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
@@ -371,7 +371,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
   if (icache.is_regular_file())
     {
-      info(boost::format("Loading Listmode cache from disk %1%") % icache.get_as_string());
+      info(format("Loading Listmode cache from disk {}", icache.get_as_string()));
       std::ifstream fin(icache.get_as_string(), std::ios::in | std::ios::binary | std::ios::ate);
 
       const std::size_t num_records = fin.tellg() / sizeof(Bin);
@@ -410,7 +410,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       return true; // need to return something to avoid compiler warning
     }
 
-  info(boost::format("Cached Events: %1% ") % record_cache.size(), 2);
+  info(format("Cached Events: {} ", record_cache.size()), 2);
   return (file_id + 1) == this->num_cache_files;
 }
 
@@ -522,7 +522,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
             }
 
           if (record_cache.size() > 1 && record_cache.size() % 500000L == 0)
-            info(boost::format("Read Prompt Events (this batch): %1% ") % record_cache.size(), 3);
+            info(format("Read Prompt Events (this batch): {} ", record_cache.size()), 3);
 
           if (this->num_events_to_use > 0)
             if (cached_events >= static_cast<std::size_t>(this->num_events_to_use))
@@ -546,12 +546,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         error("Internal error in reading listmode files: end times do not match. Please raise a bug report");
     }
 
-  info(boost::format("Loaded %1% prompts from list-mode file") % cached_events, 2);
+  info(format("Loaded {} prompts from list-mode file", cached_events), 2);
 
   // add additive term to current cache
   if (this->has_add)
     {
-      info(boost::format("Caching Additive corrections for : %1% events.") % record_cache.size(), 2);
+      info(format("Caching Additive corrections for : {} events.", record_cache.size()), 2);
 
 #ifdef STIR_OPENMP
 #  pragma omp parallel
@@ -667,7 +667,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   const int min_segment_num = this->proj_data_info_sptr->get_min_segment_num();
   const int max_segment_num = this->proj_data_info_sptr->get_max_segment_num();
 
-  info(boost::format("Calculating sensitivity for subset %1%") % subset_num);
+  info(format("Calculating sensitivity for subset {}", subset_num));
 
   int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
   int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;

@@ -38,12 +38,12 @@
 #include <numeric>
 #include <ctime>
 #include <complex>
-#include <boost/format.hpp>
 #include "stir/numerics/fourier.h"
 #include "stir/interpolate.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #define POSITIVE_Z_SHIFT -1
 #define NEGATIVE_Z_SHIFT 1
@@ -178,7 +178,7 @@ FourierRebinning::rebin()
   for (int seg_num = 0; seg_num <= max_segment_num_to_process; seg_num++)
     {
 
-      info(boost::format("FORE Rebinning :: Processing segment No %1% *") % seg_num);
+      info(format("FORE Rebinning :: Processing segment No {} *", seg_num));
 
       // TODO at present, the processing is done by segment. However, it's fairly easy to
       // change this to by sinogram (the rebinning call below will do everything
@@ -271,7 +271,7 @@ FourierRebinning::rebin()
     {
 
       if (plane % 10 == 0)
-        info(boost::format("FORE Rebinning :: Inv FFT rebinned z-position (slice) = %1%") % plane);
+        info(format("FORE Rebinning :: Inv FFT rebinned z-position (slice) = {}", plane));
 
       // CON Create a temporary 2D array of complex numbers to store the rebinned and summed fourier coefficients for one slice.
       // CON This data is then inverse FFTd and copied to a sinogram data structure.
@@ -323,8 +323,10 @@ FourierRebinning::rebin()
 
     } // CON end loop over planes
 
-  info(boost::format("FORE Rebinning :: 2D Rebinned sinograms => Min = %1%, Max= %2%, Sum = %3%") % sino2D_rebinned.find_min()
-       % sino2D_rebinned.find_max() % sino2D_rebinned.sum());
+  info(format("FORE Rebinning :: 2D Rebinned sinograms => Min = {}, Max= {}, Sum = {}",
+              sino2D_rebinned.find_min(),
+              sino2D_rebinned.find_max(),
+              sino2D_rebinned.sum()));
 
   // CON finally write the rebinned sinograms to file
   const Succeeded success_this_sino = rebinned_proj_data_sptr->set_segment(sino2D_rebinned);
@@ -365,7 +367,7 @@ FourierRebinning::do_rebinning(Array<3, std::complex<float>>& FT_rebinned_data,
     {
 
       if (axial_pos_num % 10 == 0)
-        info(boost::format("FORE Rebinning z (slice) = %1%") % axial_pos_num);
+        info(format("FORE Rebinning z (slice) = {}", axial_pos_num));
       Array<2, float> current_sinogram(IndexRange2D(0, num_tang_poss_pow2 - 1, 0, num_views_pow2 - 1));
 
       // CL Calculate the 2D FFT of P(w,k) of the merged segment
@@ -403,10 +405,12 @@ FourierRebinning::do_rebinning(Array<3, std::complex<float>>& FT_rebinned_data,
 
   if (fore_debug_level > 0)
     {
-      info(boost::format("Total rebinned: %1%\n"
-                         "Total missed: %2%\n"
-                         "Total rebinned SSRB: %3%")
-           % (count_rebinned.total - local_rebinned) % (count_rebinned.miss - local_miss) % (count_rebinned.ssrb - local_ssrb));
+      info(format("Total rebinned: {}\n"
+                  "Total missed: {}\n"
+                  "Total rebinned SSRB: {}",
+                  (count_rebinned.total - local_rebinned),
+                  (count_rebinned.miss - local_miss),
+                  (count_rebinned.ssrb - local_ssrb)));
     }
 }
 
@@ -670,29 +674,30 @@ FourierRebinning::fore_check_parameters(int num_tang_poss_pow2, int num_views_po
 
   if (wmin >= num_tang_poss_pow2 / 2 || kmin >= num_views_pow2 / 2)
     {
-      warning(boost::format("FORE initialisation :: The parameter wmin or kmin is larger than the highest frequency component "
-                            "computed by the FFT algorithm\n"
-                            "                       Choose an value smaller than the largest frequency\n"
-                            "                       kmin must be smaller than %1% and wmin must be smaller than %2%")
-              % (num_tang_poss_pow2 / 2) % (num_views_pow2 / 2));
+      warning(format("FORE initialisation :: The parameter wmin or kmin is larger than the highest frequency component "
+                     "computed by the FFT algorithm\n"
+                     "                       Choose an value smaller than the largest frequency\n"
+                     "                       kmin must be smaller than {} and wmin must be smaller than {}",
+                     (num_tang_poss_pow2 / 2),
+                     (num_views_pow2 / 2)));
       return Succeeded::no;
     }
 
   if (kc >= num_views_pow2 / 2)
     {
-      warning(boost::format("FORE initialisation :: Your parameter kc is larger than the highest frequency component in w (FTT "
-                            "of radial coordinate s)\n"
-                            "                       Choose an value smaller than the largest frequency\n"
-                            "                       kc must be smaller than %1%")
-              % num_views_pow2);
+      warning(format("FORE initialisation :: Your parameter kc is larger than the highest frequency component in w (FTT "
+                     "of radial coordinate s)\n"
+                     "                       Choose an value smaller than the largest frequency\n"
+                     "                       kc must be smaller than {}",
+                     num_views_pow2));
       return Succeeded::no;
     }
 
   if (max_segment_num_to_process > proj_data_sptr->get_num_segments())
     {
-      warning(boost::format("FORE initialisation :: Your data set stores %1% segments\n"
-                            "                       The maximum number of segments to process variable is larger than that.")
-              % (proj_data_sptr->get_num_segments() / 2 + 1));
+      warning(format("FORE initialisation :: Your data set stores {} segments\n"
+                     "                       The maximum number of segments to process variable is larger than that.",
+                     (proj_data_sptr->get_num_segments() / 2 + 1)));
       return Succeeded::no;
     }
 

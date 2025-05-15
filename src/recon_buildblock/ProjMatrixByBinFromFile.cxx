@@ -32,7 +32,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
-//#include "boost/format.hpp"
+//#include "stir/format"
 //#include "stir/info.h"
 #include "boost/cstdint.hpp"
 #include "boost/scoped_ptr.hpp"
@@ -297,8 +297,8 @@ read_lor(std::istream& fst, ProjMatrixElemsForOneBin& lor)
     bin.tangential_pos_num() = c;
     bin.set_bin_value(0);
     lor.set_bin(bin);
-    // info(boost::format("Read bin (s:%d,a:%d,v:%d,t:%d)") %
-    //		       bin.segment_num()%bin.axial_pos_num()%bin.view_num()%bin.tangential_pos_num());
+    // info(format("Read bin (s:{},a:{},v:{},t:{})",
+    //		       bin.segment_num(),bin.axial_pos_num(),bin.view_num(),bin.tangential_pos_num()));
   }
   boost::uint32_t count;
   fst.read((char*)&count, sizeof(boost::uint32_t));

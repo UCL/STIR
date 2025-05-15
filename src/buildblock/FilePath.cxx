@@ -26,8 +26,7 @@
 
 #include "stir/warning.h"
 #include "stir/error.h"
-
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 #if defined(__OS_WIN__)
 #  include <windows.h>
@@ -49,7 +48,7 @@ FilePath::FilePath()
 FilePath::FilePath(const std::string& __str, bool _run_checks)
 {
   if (__str.size() == 0)
-    error(boost::format("FilePath: Cannot initialise empty path."));
+    error("FilePath: Cannot initialise empty path.");
 
   my_string = __str;
 
@@ -72,7 +71,7 @@ FilePath::is_directory() const
   struct stat info;
 
   if (stat(my_string.c_str(), &info) != 0)
-    error(boost::format("FilePath: Cannot access %1%.") % my_string);
+    error(format("FilePath: Cannot access {}.", my_string));
   else if (info.st_mode & S_IFDIR)
     return true;
 #endif
@@ -92,7 +91,7 @@ FilePath::is_regular_file() const
   struct stat info;
 
   if (stat(my_string.c_str(), &info) != 0)
-    error(boost::format("FilePath: Cannot access %1%.") % my_string);
+    error(format("FilePath: Cannot access {}.", my_string));
   else if (info.st_mode & S_IFREG)
     return true;
 #endif
@@ -147,7 +146,7 @@ FilePath::append(const std::string& p)
 {
   // Check permissions
   if (!is_writable())
-    error(boost::format("FilePath: %1% is not writable.") % my_string);
+    error(format("FilePath: {} is not writable.", my_string));
 
   std::string new_path = my_string;
 
@@ -156,7 +155,7 @@ FilePath::append(const std::string& p)
     {
       if (!is_regular_file())
         {
-          error(boost::format("FilePath: Cannot find a directory in %1%.") % my_string);
+          error(format("FilePath: Cannot find a directory in {}.", my_string));
         }
       else
         {
@@ -177,7 +176,7 @@ FilePath::append(const std::string& p)
       // if current level already exists move to the next.
       if (FilePath::exists(new_path) == true)
         {
-          warning(boost::format("FilePath: Path %1% already exists.") % new_path);
+          warning(format("FilePath: Path {} already exists.", new_path));
           continue;
         }
       int nError;
@@ -301,7 +300,7 @@ FilePath::checks() const
 
   if (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
     {
-      error(boost::format("FilePath: File %1% is neither a directory nor a file") % my_string);
+      error(format("FilePath: File {} is neither a directory nor a file", my_string));
     }
 
 #else
@@ -310,12 +309,12 @@ FilePath::checks() const
     {
       if ((s.st_mode & S_IFDIR) && (s.st_mode & S_IFREG))
         {
-          error(boost::format("FilePath: File %1% is neither a directory nor a file") % my_string);
+          error(format("FilePath: File {} is neither a directory nor a file", my_string));
         }
     }
   else
     {
-      error(boost::format("FilePath: Maybe %1% does not exist?") % my_string);
+      error(format("FilePath: Maybe {} does not exist?", my_string));
     }
 #endif
 }

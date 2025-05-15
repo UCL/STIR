@@ -45,6 +45,8 @@
 # add folder where this file resides to the cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
 
+find_package(fmt REQUIRED)
+
 include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
 
 set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")

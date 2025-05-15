@@ -32,7 +32,7 @@
 #include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 #include "stir/SegmentByView.h"
 #include "stir/ArcCorrection.h"
@@ -98,7 +98,7 @@ SRT2DSPECTReconstruction::set_up(shared_ptr<SRT2DSPECTReconstruction::TargetT> c
   atten_data_ptr = ProjData::read_from_file(attenuation_projection_filename);
 
   if (num_segments_to_combine >= 0 && num_segments_to_combine % 2 == 0)
-    error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
+    error(format("num_segments_to_combine has to be odd (or -1), but is {}", num_segments_to_combine));
 
   if (num_segments_to_combine == -1)
     {
@@ -129,7 +129,7 @@ SRT2DSPECTReconstruction::method_info() const
 SRT2DSPECTReconstruction::SRT2DSPECTReconstruction(const std::string& parameter_filename)
 {
   initialise(parameter_filename);
-  info(boost::format("%1%") % parameter_info());
+  info(format("{}", parameter_info()));
 }
 
 SRT2DSPECTReconstruction::SRT2DSPECTReconstruction()
@@ -341,7 +341,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   schedule(dynamic) nowait #endif */
   for (ith = 0; ith < sth; ith++)
     {
-      info(boost::format("View %d of %d") % ith % sth);
+      info(format("View {} of {}", ith, sth));
 
       //-- Loading the viewgram
       /*#ifdef STIR_OPENMP
