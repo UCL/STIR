@@ -1,7 +1,7 @@
 #
 #
 
-set(dir analytic_DDSR2D)
+set(dir analytic_DDSR2D) 
 
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
