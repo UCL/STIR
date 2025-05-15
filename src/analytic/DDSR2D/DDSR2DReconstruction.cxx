@@ -289,7 +289,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	
 	// Some constants 
 	const int sp = sino.get_num_tangential_poss(), sth = sino.get_num_views(); 
-	float dp = 2.0/(sp-1), dth = 2.0*M_PI/sth; 
+	float dp = 2.0/(sp-1); 
 	int p_cutoff = 0; 
 	if(noise_filter <= 0) { 
 		p_cutoff = 0; 
@@ -535,7 +535,6 @@ if(image.get_x_size() != sp) {
 		int sy = sx; 
 		//float xn1[sx], yn1[sy]; 
   std::vector<float> xn1(sx,0.0f), yn1(sy,0.0f);
-		float dx1 = 2./(sx-1), dy1 = 2./(sy-1); 
 		float dx = 2./(sp-1), dy = 2./(sp-1); 
 		float val; 
 
