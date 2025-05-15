@@ -3,7 +3,7 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-#  Copyright (C) 2014, 2022, 2024 University College London
+#  Copyright (C) 2014, 2022, 2024, 2024, 2025 University College London
 #  This file is part of STIR.
 #
 #  SPDX-License-Identifier: Apache-2.0
@@ -61,6 +61,8 @@ echo "Using `command -v FBP2D`"
 echo "Using `command -v FBP3DRP`"
 echo "Using `command -v SRT2D`"
 echo "Using `command -v SRT2DSPECT`"
+echo "Using `command -v GRD2D`"
+echo "Using `command -v DDSR2D`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
@@ -106,7 +108,7 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # warning: currently OSMAPOSL needs to be run before OSSPS as 
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
-for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT OSMAPOSL OSSPS ; do  
+for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do  
   echo "========== Testing `command -v ${recon}`"
   # Check if we have CUDA code and parallelproj.
   # If so, check for test files in CUDA/*
@@ -133,26 +135,30 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT OSMAPOSL OSSPS ; do
         is_analytic=1
       elif expr "$recon" : SRT > /dev/null; then
         is_analytic=1
+      elif expr "$recon" : GRD > /dev/null; then
+        is_analytic=1
+      elif expr "$recon" : DDSR > /dev/null; then
+        is_analytic=1		
       fi
       if [ $is_analytic = 1 ]; then
-          if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
-            echo "Skipping TOF as not yet supported for FBP and SRT"
-            break
-          fi
-	  if expr "$recon" : SRT2DSPECT > /dev/null; then
-	    suffix=$SPECT_suffix
-	    export suffix
-          else   
-            suffix=$zero_view_suffix
-            export suffix
-            echo "Running precorrection"
-	    correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
-	    if [ $? -ne 0 ]; then
-              echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
-	      error_log_files="${error_log_files} my_correct_projdata_simulation.log"
-	      break
-	    fi
-          fi
+        if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
+          echo "Skipping TOF as not yet supported for FBP, SRT, GRD and DDSR."
+          break
+        fi
+		  if expr "$recon" : '\(SRT2DSPECT\|DDSR2D\)' > /dev/null; then
+		    	suffix=$SPECT_suffix
+		    	export suffix
+	      else   
+	          	suffix=$zero_view_suffix
+	            export suffix
+	            echo "Running precorrection"
+		    	correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
+		    	if [ $? -ne 0 ]; then
+	              echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+		      		error_log_files="${error_log_files} my_correct_projdata_simulation.log"
+		      	break
+		  		fi
+	      fi
       else
           suffix="$dataSuffix"
           export suffix
