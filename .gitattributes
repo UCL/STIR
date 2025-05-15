@@ -2,6 +2,7 @@
 [attr]cppfiles
 [attr]cfiles
 [attr]pyfiles
+* text eol=lf
 *.cpp  cppfiles
 *.cxx  cppfiles
 *.h  cppfiles
@@ -16,7 +17,6 @@
 *.root  -text -diff
 *.gz     -text -diff
 *.nii     -text -diff
-*.sh    eol=lf
 *.jpg   -text -diff
 *.png   -text -diff
 *.gif   -text -diff

@@ -92,7 +92,16 @@ main(int argc, char* argv[])
           std::string current_filename;
           try
             {
-              current_filename = boost::str(boost::format(argv[1]) % i);
+              if (std::string(argv[1]).find("%"))
+                {
+                  warning("The output_filename pattern is using the boost::format convention ('\%d')."
+                          "It is recommended to use fmt::format/std::format style formatting ('{}').");
+                  current_filename = boost::str(boost::format(argv[1]) % i);
+                }
+              else
+                {
+                  current_filename = format(argv[1], i);
+                }
             }
           catch (std::exception& e)
             {

@@ -155,7 +155,7 @@ done
 extract_single_images_from_dynamic_image dyn_from_p0005-p5_img_f%dg1d0b0.hv dyn_from_p0005-p5.hv
 # if [ ! -r fwd_dyn_from_p0005-p5.S ]; then
 
-for fr in $(seq 23 28); do
+for fr in `count 23 28`; do
     forward_project fwd_dyn_from_p0005-p5_f${fr}g1d0b0  dyn_from_p0005-p5_img_f${fr}g1d0b0.hv ${INPUTDIR}ECAT_931_projdata_template.hs > fwd_dyn_from_p0005-p5_f${fr}g1d0b0.log 2>&1
 done
 #fi
@@ -165,10 +165,10 @@ done
 stir_math -s --including-first --times-scalar 0 --add-scalar 1 all_ones.hs fwd_dyn_from_p0005-p5_f23g1d0b0.hs
 
 tmpvar="" ;
-for fr in $(seq 1 23); do
+for fr in `count 1 23`; do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f23g1d0b0.hs"
 done
-for fr in $(seq 24 28); do
+for fr in `count 24 28`; do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f${fr}g1d0b0.hs"
 done
 

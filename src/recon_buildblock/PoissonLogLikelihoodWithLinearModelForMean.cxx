@@ -101,7 +101,16 @@ PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_subsensitivity_filename
   this->subsensitivity_filenames = filenames;
   try
     {
-      const std::string test_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % 0);
+      if (this->subsensitivity_filenames.find("%"))
+        {
+          warning("The subsensitivity_filenames pattern is using the boost::format convention ('\%d')."
+                  "It is recommended to use fmt::format/std::format style formatting ('{}').");
+          const std::string test_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % 0);
+        }
+      else
+        {
+          const std::string test_sensitivity_filename = format(this->subsensitivity_filenames.c_str(), 0);
+        }
     }
   catch (std::exception& e)
     {
@@ -218,7 +227,16 @@ PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_up(shared_ptr<TargetT> 
                       std::string current_sensitivity_filename;
                       try
                         {
-                          current_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                          if (this->subsensitivity_filenames.find("%"))
+                            {
+                              warning("The subsensitivity_filenames pattern is using the boost::format convention ('\%d')."
+                                      "It is recommended to use fmt::format/std::format style formatting ('{}').");
+                              current_sensitivity_filename = boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                            }
+                          else
+                            {
+                              current_sensitivity_filename = runtime_format(this->subsensitivity_filenames.c_str(), subset);
+                            }
                         }
                       catch (std::exception& e)
                         {
