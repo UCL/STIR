@@ -145,7 +145,7 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
           echo "Skipping TOF as not yet supported for FBP, SRT, GRD and DDSR."
           break
         fi
-		  if expr "$recon" : '\(SRT2DSPECT\|DDSR2D\)' > /dev/null; then
+		  if expr "$recon" : 'SRT2DSPECT\|DDSR2D' > /dev/null; then
 		    	suffix=$SPECT_suffix
 		    	export suffix
 	      else   
