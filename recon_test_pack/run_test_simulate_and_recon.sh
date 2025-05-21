@@ -145,20 +145,23 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
           echo "Skipping TOF as not yet supported for FBP, SRT, GRD and DDSR."
           break
         fi
-		  if expr "$recon" : 'SRT2DSPECT\|DDSR2D' > /dev/null; then
+		  if expr "$recon" : SRT2DSPECT > /dev/null; then
 		    	suffix=$SPECT_suffix
 		    	export suffix
-	      else   
+                  elif expr "$recon" : DDSR2D > /dev/null; then
+		    	suffix=$SPECT_suffix
+		    	export suffix
+	      	  else   
 	          	suffix=$zero_view_suffix
-	            export suffix
-	            echo "Running precorrection"
+	                export suffix
+	                echo "Running precorrection"
 		    	correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
 		    	if [ $? -ne 0 ]; then
-	              echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+	                echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
 		      		error_log_files="${error_log_files} my_correct_projdata_simulation.log"
 		      	break
-		  		fi
-	      fi
+		  	fi
+	          fi
       else
           suffix="$dataSuffix"
           export suffix
