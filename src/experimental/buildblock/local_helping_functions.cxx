@@ -1,3 +1,9 @@
+/*
+    \author Sanida Mustafovic
+    Copyright (C) 2000- 2002, IRSL
+    SPDX-License-Identifier: Apache-2.0
+    See STIR/LICENSE.txt for details
+*/
 
 
 #include "stir_experimental/local_helping_functions.h"

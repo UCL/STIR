@@ -6,15 +6,7 @@
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
@@ -273,6 +265,12 @@ public:
 
   //! fill elements with value \a n
   inline void fill(const T &n);
+
+    //! Sets elements below value to the value
+  inline void apply_lower_threshold(const T &lower);
+
+  //! Sets elements above value to the value
+  inline void apply_upper_threshold(const T &upper);
 
   //! \name access to the data via a pointer
   //@{

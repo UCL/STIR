@@ -20,15 +20,7 @@
     Copyright (C) 2015, 2018-2019, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -177,6 +169,9 @@ void
 ForwardProjectorByBin::forward_project(ProjData& proj_data,
                                        int subset_num, int num_subsets, bool zero)
 {
+  if (!_density_sptr)
+    error("You need to call set_input() forward_project()");
+
     if (_density_sptr->get_exam_info().imaging_modality.is_unknown()
         || proj_data.get_exam_info().imaging_modality.is_unknown())
       warning("forward_project. Imaging modality unknown for either the image or the projection data or both.\n"
@@ -203,7 +198,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
 #ifdef STIR_OPENMP
-#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(dynamic)
 #endif
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -256,6 +251,9 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 {
   if (viewgrams.get_num_viewgrams()==0)
     return;
+  if (!_density_sptr)
+    error("You need to call set_input() forward_project()");
+
   check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
   start_timers();
 

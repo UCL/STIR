@@ -43,6 +43,7 @@ exclude scattered events := ${MAXIMUM_ORDER_OF_SCATTER}
 ; If set the random events will be skipped
 
 exclude random events := ${EXCLUDE_RANDOM}
+check energy window information := 1  ; Default 1
 offset (num of detectors) := 0 
 
 low energy window (keV) := 0  		; Default 0

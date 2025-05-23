@@ -16,15 +16,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -43,6 +35,7 @@ START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
+class ProjDataInfoCylindrical;
 
 /*!
   \ingroup symmetries
@@ -179,6 +172,10 @@ private:
   VectorWithOffset<int> num_planes_per_axial_pos;
   //! a list of values for every segment_num
   VectorWithOffset<float> axial_pos_to_z_offset;
+  //! a list with the average ring difference for every segment_num
+  VectorWithOffset<float> deltas;
+
+  void initialise_deltas(const ProjDataInfoCylindrical*);
 
 #if 0
   // at the moment, we don't need the following 2 members

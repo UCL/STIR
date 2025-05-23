@@ -1,17 +1,10 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -25,6 +18,7 @@
   \author Sanida Mustafovic
   \author PARAPET project
   \author Richard Brown
+  \author Parisa Khateri
 
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
@@ -127,6 +121,9 @@ protected:
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
   int bytes_per_pixel;
+  
+  std::string isotope_name;
+  float calibration_factor;
 private:
 
   // Louvain la Neuve style of 'image scaling factors'
@@ -207,6 +204,7 @@ class InterfileImageHeader : public InterfileHeader
 {
  private:
   typedef InterfileHeader base_type;
+    
 
 public:
   InterfileImageHeader();
@@ -291,6 +289,21 @@ private:
   float energy_resolution;
   //! Reference energy.
   float reference_energy;
+  
+  //! \name new variables for block geometry
+  //@{
+  std::string scanner_orientation;
+  std::string scanner_geometry;
+  float axial_distance_between_crystals_in_cm;
+  float transaxial_distance_between_crystals_in_cm;
+  float axial_distance_between_blocks_in_cm;
+  float transaxial_distance_between_blocks_in_cm;
+  //@}
+  
+  //! \name new variables for generic geometry
+  //@{
+  std::string crystal_map;
+  //@}
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;

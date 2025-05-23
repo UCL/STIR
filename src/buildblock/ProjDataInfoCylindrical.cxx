@@ -2,19 +2,11 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
-    Copyright (C) 2013, 2018, University College London
+    Copyright (C) 2013, 2018, 2021, University College London
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -42,6 +34,9 @@
 
 #include "stir/round.h"
 #include "stir/numerics/norm.h"
+#include "stir/warning.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
 #include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
@@ -74,8 +69,32 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
    min_ring_diff(min_ring_diff_v),
    max_ring_diff(max_ring_diff_v)
 {
-  
   azimuthal_angle_sampling = static_cast<float>(_PI/num_views);
+  azimuthal_angle_offset = scanner_ptr->get_intrinsic_azimuthal_tilt();
+  // adjust offset for view-mashing
+  {
+    const int num_detectors_per_ring =  scanner_ptr->get_num_detectors_per_ring();
+    if ((num_detectors_per_ring > 2) && (num_views*2 != num_detectors_per_ring))
+      {
+        if ((num_detectors_per_ring % (num_views*2)) != 0)
+          {
+            warning(boost::format("Expected the number of views (%1%) to be related to the number of detectors per ring (%2%),"
+                                  " but this is not the case. Continuing anyway (but without adjusting the azimuthal angle offset).")
+                    % num_views % num_detectors_per_ring);
+          }
+        else
+          {
+            const int view_mashing = get_view_mashing_factor();
+            const float offset_inc =  static_cast<float>(_PI/(num_detectors_per_ring/2) * (view_mashing-1)/2.F);
+            info(boost::format("Detected view-mashing factor %1% from the number of views (%2%) and the number of detectors per ring (%3%).\n"
+                               "Adjusting the azimuthal angle offset accordingly (an extra offset of %4% degrees)")
+                 % view_mashing % num_views % num_detectors_per_ring % (offset_inc * 180 / _PI));
+
+            azimuthal_angle_offset += offset_inc;
+          }
+      }
+  }
+
   ring_radius.resize(0,0);
   ring_radius[0] = get_scanner_ptr()->get_effective_ring_radius();
   ring_spacing= get_scanner_ptr()->get_ring_spacing() ;
@@ -329,6 +348,13 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
   assert((ring1_plus_ring2 - ring_diff)%2 == 0);
 }
 
+
+void
+ProjDataInfoCylindrical::
+set_azimuthal_angle_offset(const float angle_v)
+{
+  azimuthal_angle_offset =  angle_v;
+}
 
 void
 ProjDataInfoCylindrical::

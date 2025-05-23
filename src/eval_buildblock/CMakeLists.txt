@@ -6,8 +6,8 @@ set(dir eval_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  compute_ROI_values
-  ROIValues
+  compute_ROI_values.cxx
+  ROIValues.cxx
 )
 
 

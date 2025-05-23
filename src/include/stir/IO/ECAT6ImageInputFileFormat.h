@@ -4,15 +4,7 @@
     Copyright (C) 2006, Hammersmith Imanet Ltd
     Copyright (C) 2013, University College London
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -31,15 +23,16 @@
 #include "stir/error.h"
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/ecat6_utils.h"
+#include "stir/deprecated.h"
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 //! Class for reading images in ECAT6 file-format.
 /*! \ingroup ECAT
-    \preliminary
+    \deprecated
 
 */
-class ECAT6ImageInputFileFormat :
+class STIR_DEPRECATED ECAT6ImageInputFileFormat :
 public InputFileFormat<DiscretisedDensity<3,float> >
 {
  public:

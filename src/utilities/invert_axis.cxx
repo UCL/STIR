@@ -2,15 +2,7 @@
  Copyright (C) 2011 - 2013, King's College London
  This file is part of STIR.
 
- This file is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 2.3 of the License, or
- (at your option) any later version.
-
- This file is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
+ SPDX-License-Identifier: Apache-2.0
 
  See STIR/LICENSE.txt for details
  */
@@ -44,8 +36,8 @@ int main(int argc, char **argv)
   std::string name(axis_name);
  // const int num_planes = atoi(argv[3]);
 std::cout<<" the axis to invert is "<< name<<std::endl;
-const std::auto_ptr<DiscretisedDensity<3,float> > image_aptr(DiscretisedDensity<3,float>::read_from_file(input_filename));
-const std::auto_ptr<DiscretisedDensity<3,float> > out_image_aptr(image_aptr->clone());
+const std::unique_ptr<DiscretisedDensity<3,float> > image_aptr(DiscretisedDensity<3,float>::read_from_file(input_filename));
+const std::unique_ptr<DiscretisedDensity<3,float> > out_image_aptr(image_aptr->clone());
 
 DiscretisedDensity<3,float>& image = *image_aptr;
 DiscretisedDensity<3,float>& out_image = *out_image_aptr;

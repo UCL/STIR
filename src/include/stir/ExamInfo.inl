@@ -1,16 +1,8 @@
 /*
-    Copyright (C) 2016, University College London
+    Copyright (C) 2016, 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -79,9 +71,20 @@ ExamInfo::set_energy_window_pair(std::vector<int> val)
 }
 
 
+void
+ExamInfo::set_calibration_factor( const float cal_val)
+{
+    calibration_factor = cal_val;
+}
+
+void
+ExamInfo::set_radionuclide(const Radionuclide& arg)
+{
+    radionuclide = arg;
+}
+
 //Get the lower energy boundary for all the energy windows. en_window is set to 0 by default
 //So that it will work also in the case of 1 energy window
-
 float
 ExamInfo::get_low_energy_thres(int en_window) const
 {
@@ -127,6 +130,25 @@ pair.second=en_win_pair[1];
 
 }
 
+
+float
+ExamInfo::get_calibration_factor() const
+{
+    return this->calibration_factor;
+}
+
+Radionuclide
+ExamInfo::get_radionuclide() const
+{
+    return radionuclide;
+}
+
+void
+ExamInfo::set_energy_information_from(const ExamInfo& other)
+{
+  this->up_energy_thres = other.up_energy_thres;
+  this->low_energy_thres = other.low_energy_thres;
+}
 
 
 END_NAMESPACE_STIR

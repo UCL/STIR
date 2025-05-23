@@ -12,7 +12,11 @@ Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
 
-
+; optional keywords to create "virtual" crystals to accomodate for gaps between blocks
+; if you do not specify these, the STIR defaults (determined by the "originating system")
+; will be used.
+Number of virtual axial crystals per block := 0
+Number of virtual transaxial crystals per block:= 0
 
 GATE scanner type := GATE_ECAT_PET
 GATE_ECAT_PET Parameters :=
@@ -41,13 +45,20 @@ number of crystals Z := 8
 ; per singles unit. 
 Singles readout depth := 1
 
-;
-; If set the scattered events will be skipped
+; If set the unscattered events will be skipped (Default := 0)
+exclude unscattered events := 0
+
+; If set the true events will be skipped (Default := 0)
+exclude non-random events := 0
+
+; If set the scattered events will be skipped (Default := 0)
 exclude scattered events := 0
 
-;
-; If set the random events will be skipped
+; If set the random events will be skipped (Default := 0)
 exclude random events := 0 
+
+; If check events are within the specified energy window (Default := 1)
+check energy window information := 1
 
 ; 
 ; STIR will try to align the data. 

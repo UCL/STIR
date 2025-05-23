@@ -1,16 +1,9 @@
 /*
-    Copyright (C) 2013, 2018, 202 University College London
+    Copyright (C) 2021 National Physical Laboratory
+    Copyright (C) 2013, 2018, 2020-2021 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -20,6 +13,7 @@
   \brief  This file declares the class stir::ExamInfo
   \author Kris Thielemans
   \author Nikos Efthimiou
+  \author Daniel Deidda
 */
 
 
@@ -29,8 +23,7 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
-#include "stir/shared_ptr.h"
-
+#include "stir/Radionuclide.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -43,6 +36,7 @@ START_NAMESPACE_STIR
 
   \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
+  
   */
 class ExamInfo
 {
@@ -56,7 +50,8 @@ public :
   */
 
   ExamInfo()
-    : start_time_in_secs_since_1970(0.)
+    : start_time_in_secs_since_1970(0.),
+    calibration_factor(-1.F)
     {
 
       num_windows = 1;
@@ -65,19 +60,23 @@ public :
       en_win_pair.resize(2);
       low_energy_thres[0]=-1.F;
       up_energy_thres[0]=-1.F;
-      en_win_pair[0]=1.F;
-      en_win_pair[1]=1.F;
+      en_win_pair[0]=1;
+      en_win_pair[1]=1;
 
    }
 
 
   std::string originating_system;
-  
+    
   ImagingModality imaging_modality;
 
   PatientPosition patient_position;
 
   TimeFrameDefinitions time_frame_definitions;
+  
+  Radionuclide radionuclide;
+  
+//  double branching_ratio;
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
   { return time_frame_definitions; }
@@ -96,6 +95,10 @@ public :
   //! Get the number of energy windows
   inline int  get_num_energy_windows() const;
   inline std::pair<int,int> get_energy_window_pair() const;
+  //! Get the calibration factor
+  inline  float get_calibration_factor() const;
+  //! Get the radionuclide name
+  inline Radionuclide get_radionuclide() const;
   //@}
 
 
@@ -113,6 +116,13 @@ public :
   inline void set_num_energy_windows(int n_win);
   //! Set the energy window pair
   inline void set_energy_window_pair(std::vector<int> val);
+
+  //! Set the Calibration factor
+  inline void set_calibration_factor(const float cal_val);
+  //! Set the radionuclide
+  inline void set_radionuclide(const Radionuclide& arg);
+  //! Copy energy information from another ExamInfo
+  inline void set_energy_information_from(const ExamInfo&);
   //@}
 
   inline bool has_energy_information() const
@@ -131,6 +141,9 @@ public :
       time_frame_definitions = new_time_frame_definitions;
     }
 
+  //!  Warning: the operator == does not check that originating system is consistent!
+  bool operator == (const ExamInfo &p1) const ;
+  
   //! Clone and create shared_ptr of the copy
   shared_ptr<ExamInfo> create_shared_clone()
   {
@@ -141,6 +154,9 @@ public :
   /*! the returned string is not intended for parsing. */
   std::string parameter_info() const;
 
+protected:
+  
+  float calibration_factor;
   private:
   //!
   //! \brief num_windows

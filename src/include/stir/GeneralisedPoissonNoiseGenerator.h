@@ -2,15 +2,7 @@
     Copyright (C) 2017, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -27,7 +19,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <functional>
 // boost::serialization::make_array was moved in boost 1.64
 #if BOOST_VERSION == 106400
 #include <boost/serialization/array_wrapper.hpp>
@@ -71,7 +63,7 @@ class GeneralisedPoissonNoiseGenerator
     {
       std::transform(array_in.begin_all(), array_in.end_all(),
                      array_out.begin_all(),
-                     boost::bind(generate_scaled_poisson_random, _1, this->scaling_factor, this->preserve_mean));
+                     std::bind(generate_scaled_poisson_random, std::placeholders::_1, this->scaling_factor, this->preserve_mean));
     }
 
   void

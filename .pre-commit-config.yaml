@@ -1,0 +1,6 @@
+repos:
+-   repo: git://github.com/doublify/pre-commit-clang-format
+    rev: '62302476'
+    hooks:
+    -   id: clang-format
+        files: \.(c|cc|cxx|cpp|h|hpp|hxx|inl|txx)$

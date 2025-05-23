@@ -5,8 +5,8 @@ set(dir numerics_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  fourier
-  determinant
+  fourier.cxx
+  determinant.cxx
 )
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx

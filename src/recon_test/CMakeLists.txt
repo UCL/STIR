@@ -2,15 +2,7 @@
 # Copyright (C) 2013-2014, University College London
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -23,18 +15,20 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
-	test_DataSymmetriesForBins_PET_CartesianGrid
-        test_FBP2D
-        test_FBP3DRP
-        test_OSMAPOSL
+	test_DataSymmetriesForBins_PET_CartesianGrid.cxx
+        test_FBP2D.cxx
+        test_FBP3DRP.cxx
+        test_priors.cxx
+        test_blocks_on_cylindrical_projectors.cxx
 )
 
 
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
-        fwdtest
-        bcktest
-        recontest
-        test_data_processor_projectors
+        fwdtest.cxx
+        bcktest.cxx
+        recontest.cxx
+        test_data_processor_projectors.cxx
+        test_OSMAPOSL.cxx
 )
 
 include(stir_test_exe_targets)
@@ -50,4 +44,11 @@ endif()
 # test_data_processor_projectors requires input argument
 ADD_TEST(test_data_processor_projectors test_data_processor_projectors ${CMAKE_SOURCE_DIR}/recon_test_pack/Utahscat600k_ca_seg4.hs)
 
-# TODO test_modelling.sh
+
+# test_OSMAPOSL can take input argument
+ADD_TEST(test_OSMAPOSL_ray_tracing_matrix  test_OSMAPOSL)
+
+if (parallelproj_FOUND)
+  ADD_TEST(test_OSMAPOSL_parallelproj  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_parallelproj.par)
+endif()
+

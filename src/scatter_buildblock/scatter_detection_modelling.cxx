@@ -2,17 +2,10 @@
 //
 /*
   Copyright (C) 2004- 2009, Hammersmith Imanet
+  Copyright (C) 2021, University of Leeds
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details. 
+  SPDX-License-Identifier: Apache-2.0 
 
   See STIR/LICENSE.txt for details
 */
@@ -25,11 +18,11 @@
   \author Pablo Aguiar
   \author Nikolaos Dikaios
   \author Kris Thielemans
-
+  \author Viet Ahn Dao
 */
 
 #include "stir/scatter/ScatterSimulation.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/numerics/erf.h"
 #include "stir/info.h"
 #include "stir/CPUTimer.h"
@@ -79,9 +72,21 @@ find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
         error("ScatterSimulation::find_detectors: need to call set_up() first");
 #endif
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-  this->proj_data_info_cyl_noarc_cor_sptr->
-    find_cartesian_coordinates_of_detection(
-                                            detector_coord_A,detector_coord_B,bin);
+  auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+  if(ptr){
+    ptr->
+      find_cartesian_coordinates_of_detection(
+                                              detector_coord_A,detector_coord_B,bin);
+  }else{
+    auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+    if(ptr){
+      ptr->
+        find_cartesian_coordinates_of_detection(
+                                                detector_coord_A,detector_coord_B,bin);
+    }else{
+      error("wrong type of projection data for scatter simulation");
+    }
+  }
   det_num_A =
     this->find_in_detection_points_vector(detector_coord_A + 
                                           this->shift_detector_coordinates_to_origin);

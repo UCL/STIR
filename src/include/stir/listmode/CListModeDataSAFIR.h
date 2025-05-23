@@ -2,9 +2,9 @@
 
  Coincidence LM Data Class for SAFIR: Header File
  Jannis Fischer
- jannis.fischer@cern.ch
  
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
+	Copyright 2020 Positrigo AG, Zurich
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@
 #include "stir/shared_ptr.h"
 
 #include "stir/listmode/CListRecordSAFIR.h"
-#include "stir/listmode/DetectorCoordinateMapFromFile.h"
+#include "stir/DetectorCoordinateMap.h"
 
 START_NAMESPACE_STIR
 
@@ -62,7 +62,7 @@ public:
 	\par
 	Takes as arguments the filenames of the coicidence listmode file, the crystal map (text) file, and the template projection data file
 	*/
-	CListModeDataSAFIR( const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename);
+	CListModeDataSAFIR( const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename, const double lor_randomization_sigma = 0.0);
 	
 	virtual std::string get_name() const;
 	virtual shared_ptr <CListRecord> get_empty_record_sptr() const;
@@ -90,7 +90,7 @@ private:
 	mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
 	mutable std::vector< unsigned int> saved_get_positions;
 	Succeeded open_lm_file() const;
-	shared_ptr<DetectorCoordinateMapFromFile> map;
+	shared_ptr<DetectorCoordinateMap> map;
 };
 	
 END_NAMESPACE_STIR

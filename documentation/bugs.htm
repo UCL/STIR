@@ -6,7 +6,8 @@
 
   <body  bgcolor="fdffe6" text="000000" link="0000ff" vlink="800080">
 <h1>Known problems in the current release of the STIR software</h1>
-See also the release notes for the current version.
+See also the release notes for the current version and the
+<a href="https://github.com/UCL/STIR/issues">issue tracker on GitHub</a>.
 
 <ul>
 <li>Currently the implementation if the incremental interpolating
@@ -31,6 +32,8 @@ are wrong, even though the programs might run till the end.
 forward project images with smaller or larger number of planes
 will show up some problems, which we thought to have removed already :-/ .
 </li>
+<li>Dead-time code for ECAT7 files might currently give wrong results due to uncertainty
+  in units for singles rates</li>
 <li>  CPU times reported are invalid on Windows 9?, maybe ME as well. They are
 fine on NT and later.There doesn't seem to be a way to get 
 CPU times in the older Windows versions. 
@@ -39,6 +42,7 @@ CPU times in the older Windows versions.
  <strong>unmatched</strong> projectors. This can give problems in certain
 situations. It is <strong>strongly recommended</strong> to change this to use
 the ray tracing matrix projectors (use some extra rays to approximate strip-integrals).
+</li>
 </ul>
 
 

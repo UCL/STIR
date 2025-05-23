@@ -14,6 +14,7 @@
 */
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 

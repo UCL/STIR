@@ -3,15 +3,7 @@
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -366,29 +358,18 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
                                      const TargetT &current_estimate, 
                                      const int subset_num)
 {
-  if (subset_num<0 || subset_num>=this->get_num_subsets())
-    error("compute_sub_gradient_without_penalty subset_num out-of-range error");
-
-  this->
-    compute_sub_gradient_without_penalty_plus_sensitivity(gradient, 
-                                                          current_estimate,
-                                                          subset_num);
-  // compute gradient -= sub_sensitivity
-  {
-    typename TargetT::full_iterator gradient_iter =
-      gradient.begin_all();
-    const typename TargetT::full_iterator gradient_end = 
-      gradient.end_all();
-    typename TargetT::const_full_iterator sensitivity_iter =
-      this->get_subset_sensitivity(subset_num).begin_all_const();
-    while (gradient_iter != gradient_end)
-      {
-        *gradient_iter -= (*sensitivity_iter);
-        ++gradient_iter; ++sensitivity_iter;
-      }
-  }
+  this->actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, false);
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
+                                                      const TargetT &current_estimate,
+                                                      const int subset_num)
+{
+  actual_compute_subset_gradient_without_penalty(gradient, current_estimate, subset_num, true);
+}
 
 template<typename TargetT>
 void

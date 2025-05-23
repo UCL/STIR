@@ -1,18 +1,10 @@
 //
 //
 /*
-  Copyright (C) 2018,2020 University College London
+  Copyright (C) 2018, 2020, 2021 University College London
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -27,12 +19,14 @@
   \par Usage:
   \code 
   extract_single_images_from_parametric_image output_filename_pattern input_header_filename output_format_parameter_file
+  \endcode
 
-  The output filename should look something like this: param_im_%d_output.file_extension,
+  The output filename should look something like this: `param_im_%d_output.file_extension`,
   so that we can use boost format. In this fashion, you can can specify the output file extension
   should you wish.
-
+  
   An example of an output parameter file is as follows:
+  \code
     OutputFileFormat Parameters:=
     output file format type := interfile
     interfile Output File Format Parameters:=
@@ -42,6 +36,8 @@
     End:=
 
   \endcode
+
+  \sa get_dynamic_images_from_parametric_images.cxx to get dynamic images from parametric images.
 
 */
 

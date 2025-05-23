@@ -4,13 +4,17 @@
 # Default filenames are for output of unlist_and_randoms.sh.
 # Author: Kris Thielemans
 # Edits: Ander Biguri
+# SPDX-License-Identifier: Apache-2.0
+# See STIR/LICENSE.txt for details
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/GE-Signa-PETMR}
+: ${pardir:=$(dirname $0)}
+# convert to absolute path (assumes that it exists), from DVK's answer on stackexchange
+pardir=`cd "$pardir";pwd`
 
 # names are from unlist_and_randoms
 : ${sino_input:=sinospan2_f1g1d0b0.hs}
-: ${randoms3d:=randomsspan2.hs}
+: ${randoms3d:=randomsspan2_f1g1d0b0.hs}
 export sino_input randoms3d # used by scatter_estimation.par
 
 : ${num_subsets:=14}

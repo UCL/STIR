@@ -8,15 +8,7 @@
     Copyright (C) 2019 - 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -238,6 +230,14 @@ OSMAPOSLReconstruction<TargetT>::
 set_minimum_relative_change(const double arg)
 {
   this->minimum_relative_change  = arg;
+}
+
+template <typename TargetT> 
+void 
+OSMAPOSLReconstruction<TargetT>::
+set_enforce_initial_positivity(const bool arg)
+{
+  this->enforce_initial_positivity = arg;
 }
   
 template <typename TargetT>
@@ -470,7 +470,7 @@ update_estimate(TargetT &current_image_estimate)
       divide(multiplicative_update_image_ptr->begin_all(),
              multiplicative_update_image_ptr->end_all(), 
              sensitivity.begin_all(),
-             small_num);
+             0.F); // no need to find a threshold for division by sensitivity
     }
     else
     {
@@ -522,7 +522,12 @@ update_estimate(TargetT &current_image_estimate)
             ++sensitivity_iter;
           }
         }
-      }         
+      }
+
+      // do the division
+      // TODO: The thresholding implied in "divide" potentially fails with parametric images
+      // as the different parametric images can have very different scales.
+      // See https://github.com/UCL/STIR/issues/906
       divide(multiplicative_update_image_ptr->begin_all(),
              multiplicative_update_image_ptr->end_all(), 
              denominator_ptr->begin_all(),

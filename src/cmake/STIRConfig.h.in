@@ -2,15 +2,7 @@
     Copyright (C) 2016-2017, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -73,9 +65,16 @@ namespace stir {
 
 #cmakedefine STIR_WITH_NiftyPET_PROJECTOR
 
+#cmakedefine STIR_WITH_Parallelproj_PROJECTOR
+#cmakedefine parallelproj_built_with_CUDA
+
 #cmakedefine STIR_OPENMP
 
 #cmakedefine STIR_MPI
+
+#cmakedefine STIR_CONFIG_DIR "@STIR_CONFIG_DIR@"
+
+#cmakedefine nlohmann_json_FOUND "@nlohmann_json_FOUND@"
 
 #cmakedefine STIR_USE_BOOST_SHARED_PTR
 
@@ -89,5 +88,5 @@ namespace stir {
 #endif
 
 #cmakedefine STIR_PROJECTORS_AS_V3
-
+#cmakedefine STIR_LEGACY_IGNORE_VIEW_OFFSET
 #endif //  __stir_config__H__

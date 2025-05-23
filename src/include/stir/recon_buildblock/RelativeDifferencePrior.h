@@ -5,15 +5,7 @@
     Copyright (C) 2019- 2020, UCL,
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details.
 */
@@ -62,8 +54,8 @@ START_NAMESPACE_STIR
   a smoothing scalar term and the \f$\epsilon\f$ is a small non-negative value included to prevent division by zero.
   Please note that the RDP is only well defined for non-negative voxel values.
   For more details, see: <em> J. Nuyts, D. Beque, P. Dupont, and L. Mortelmans,
-  “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,”
-  vol. 49, no. 1, pp. 56–60, 2002. </em>
+  "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,"
+  vol. 49, no. 1, pp. 56-60, 2002. </em>
 
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in 
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
@@ -120,10 +112,6 @@ class RelativeDifferencePrior:  public
 
   //! Constructs it explicitly
   RelativeDifferencePrior(const bool only_2D, float penalization_factor, float gamma, float epsilon);
-  
-  virtual bool
-    parabolic_surrogate_curvature_depends_on_argument() const
-    { return false; }
 
   //! compute the value of the function
   double

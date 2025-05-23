@@ -1,14 +1,7 @@
 /*
     Copyright (C) 2020, University College London
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -42,11 +35,30 @@ public:
   {}
   virtual ~TestFBP3DRP() {}
 
+  virtual std::unique_ptr<ProjDataInfo>
+    construct_default_proj_data_info_uptr() const;
   
   virtual void construct_reconstructor();
   void run_tests();
 };
 
+std::unique_ptr<ProjDataInfo>
+TestFBP3DRP::
+construct_default_proj_data_info_uptr() const
+{
+  // construct a small scanner and sinogram
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+  // currently need this for limitation in the backprojector
+  scanner_sptr->set_intrinsic_azimuthal_tilt(0.F);
+  scanner_sptr->set_num_rings(5);
+  std::unique_ptr<ProjDataInfo> proj_data_info_uptr(
+        ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                      /*span=*/3,
+                                      /*max_delta=*/4,
+                                      /*num_views=*/128,
+                                      /*num_tang_poss=*/128));
+  return proj_data_info_uptr;
+}
 
 void
 TestFBP3DRP::

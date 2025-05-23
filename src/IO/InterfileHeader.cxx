@@ -3,17 +3,10 @@
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -25,6 +18,7 @@
   \author Kris Thielemans
   \author PARAPET project
   \author Richard Brown
+  \author Parisa Khateri
 */
 
 #include "stir/IO/InterfileHeader.h"
@@ -34,9 +28,12 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/RadionuclideDB.h"
 #include "stir/info.h"
 #include <numeric>
 #include <functional>
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::binary_function;
@@ -76,7 +73,7 @@ MinimalInterfileHeader::MinimalInterfileHeader()
   add_key("imaging modality",
     KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_imaging_modality,
     &imaging_modality_as_string);
-
+  
   add_key("version of keys",
           KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_version_specific_keys,
           &version_of_keys);
@@ -168,6 +165,7 @@ InterfileHeader::InterfileHeader()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
+  calibration_factor=-1;
 
 
 
@@ -177,6 +175,9 @@ InterfileHeader::InterfileHeader()
   add_key("originating system", &exam_info_sptr->originating_system);
   ignore_key("GENERAL DATA");
   ignore_key("GENERAL IMAGE DATA");
+  
+  add_key("calibration factor", &calibration_factor); 
+  add_key("isotope name", &isotope_name); 
   add_key("study date", &study_date_time.date);
   add_key("study_time", &study_date_time.time);
   add_key("type of data", 
@@ -269,7 +270,14 @@ bool InterfileHeader::post_processing()
       catch(...)
         {}
     }
-
+  
+//  if(this->calibration_factor>0)
+      this->exam_info_sptr->set_calibration_factor(calibration_factor);
+  
+      // here I need to cal the DB and set the Radionuclide member
+     RadionuclideDB radionuclide_db;
+     this->exam_info_sptr->set_radionuclide(radionuclide_db.get_radionuclide(exam_info_sptr->imaging_modality,isotope_name));
+  
   if (patient_orientation_index<0 || patient_rotation_index<0)
     return true;
   // warning: relies on index taking same values as enums in PatientPosition
@@ -536,8 +544,7 @@ bool InterfileImageHeader::post_processing()
 
   if (InterfileHeader::post_processing() == true)
     return true;
-
-
+  
   if (PET_data_type_values[PET_data_type_index] != "Image")
     { warning("Interfile error: expecting an image\n");  return true; }
   
@@ -648,6 +655,36 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   reference_energy = -1.f;
   add_key("Reference energy (in keV)",
           &reference_energy);
+
+  // new keys for block geometry
+  scanner_orientation = "X";
+  add_key("Scanner orientation (X or Y)",
+          KeyArgument::ASCII, &scanner_orientation);
+
+  scanner_geometry = "Cylindrical";
+  add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",
+          KeyArgument::ASCII, &scanner_geometry);
+
+  axial_distance_between_crystals_in_cm = -0.1;
+  add_key("distance between crystals in axial direction (cm)",
+          &axial_distance_between_crystals_in_cm);
+
+  transaxial_distance_between_crystals_in_cm = -0.1;
+  add_key("distance between crystals in transaxial direction (cm)",
+          &transaxial_distance_between_crystals_in_cm);
+
+  axial_distance_between_blocks_in_cm = -0.1;
+  add_key("distance between blocks in axial direction (cm)",
+          &axial_distance_between_blocks_in_cm);
+
+  transaxial_distance_between_blocks_in_cm = -0.1;
+  add_key("distance between blocks in transaxial direction (cm)",
+        &transaxial_distance_between_blocks_in_cm);
+  // end of new keys for block geometry
+  //new keys for generic geometry
+  crystal_map = "";
+  add_key("Name of crystal map", &crystal_map);
+  //end of new keys for generic geometry
 
   ignore_key("end scanner parameters");
   
@@ -1142,7 +1179,18 @@ bool InterfilePDFSHeader::post_processing()
         energy_resolution = guessed_scanner_ptr->get_energy_resolution();
     if (reference_energy < 0)
         reference_energy = guessed_scanner_ptr->get_reference_energy();
-    
+  
+    // new variables for block geometry
+    if (axial_distance_between_crystals_in_cm < 0)
+      axial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_transaxial_crystal_spacing()/10;
+    if (transaxial_distance_between_crystals_in_cm < 0)
+      transaxial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_transaxial_crystal_spacing()/10;
+    if (axial_distance_between_blocks_in_cm < 0)
+      axial_distance_between_blocks_in_cm = guessed_scanner_ptr->get_axial_block_spacing()/10;
+    if (transaxial_distance_between_blocks_in_cm < 0)
+      transaxial_distance_between_blocks_in_cm = guessed_scanner_ptr->get_transaxial_block_spacing()/10;
+    // end of new variables for block geometry
+
     // consistency check with values of the guessed_scanner_ptr we guessed above
 
     if (num_rings != guessed_scanner_ptr->get_num_rings())
@@ -1278,6 +1326,37 @@ bool InterfilePDFSHeader::post_processing()
 //    mismatch_between_header_and_guess = true;
       }
     }
+    
+    // new variables for block geometry
+    if (fabs(axial_distance_between_crystals_in_cm
+              -guessed_scanner_ptr->get_axial_crystal_spacing()/10) > .001)
+      {
+  warning("Interfile warning: 'distance between crystals in axial direction (cm)' (%f) is expected to be %f.\n",
+       axial_distance_between_crystals_in_cm, guessed_scanner_ptr->get_axial_crystal_spacing()/10);
+       mismatch_between_header_and_guess = true;
+      }
+    if (fabs(transaxial_distance_between_crystals_in_cm
+              -guessed_scanner_ptr->get_transaxial_crystal_spacing()/10) > .001)
+      {
+  warning("Interfile warning: 'distance between crystals in transaxial direction (cm)' (%f) is expected to be %f.\n",
+       transaxial_distance_between_crystals_in_cm, guessed_scanner_ptr->get_transaxial_crystal_spacing()/10);
+       mismatch_between_header_and_guess = true;
+      }
+    if (fabs(axial_distance_between_blocks_in_cm
+              -guessed_scanner_ptr->get_axial_block_spacing()/10) > .001)
+      {
+  warning("Interfile warning: 'distance between crystals in axial direction (cm)' (%f) is expected to be %f.\n",
+       axial_distance_between_blocks_in_cm, guessed_scanner_ptr->get_axial_block_spacing()/10);
+       mismatch_between_header_and_guess = true;
+      }
+  if (fabs(transaxial_distance_between_blocks_in_cm
+            -guessed_scanner_ptr->get_transaxial_block_spacing()/10) > .001)
+     {
+  warning("Interfile warning: 'distance between crystals in axial direction (cm)' (%f) is expected to be %f.\n",
+    transaxial_distance_between_blocks_in_cm, guessed_scanner_ptr->get_transaxial_block_spacing()/10);
+    mismatch_between_header_and_guess = true;
+     }
+   // end of new variables for block geometry
 
     // end of checks. If they failed, we ignore the guess
     if (mismatch_between_header_and_guess)
@@ -1316,7 +1395,16 @@ bool InterfilePDFSHeader::post_processing()
       warning("Interfile warning: 'axial crystals per singles unit' invalid.\n");
     if (num_transaxial_crystals_per_singles_unit <= 0)
       warning("Interfile warning: 'transaxial crystals per singles unit' invalid.\n");
-
+    // new variables for block geometry
+    if (axial_distance_between_crystals_in_cm <= 0)
+      warning("Interfile warning: 'distance between crystals in axial direction (cm)' invalid.\n");
+    if (transaxial_distance_between_crystals_in_cm <= 0)
+      warning("Interfile warning: 'distance between crystals in transaxial direction (cm)' invalid.\n");
+    if (axial_distance_between_blocks_in_cm <= 0)
+      warning("Interfile warning: 'distance between blocks in axial direction (cm)' invalid.\n");
+    if (transaxial_distance_between_blocks_in_cm <= 0)
+      warning("Interfile warning: 'distance between blocks in transaxial direction (cm)' invalid.\n");
+    // end of new variables for block geometry
   }
 
   // finally, we construct a new scanner object with
@@ -1341,7 +1429,15 @@ bool InterfilePDFSHeader::post_processing()
                 num_transaxial_crystals_per_singles_unit,
                 num_detector_layers,
                 energy_resolution,
-                reference_energy));
+                reference_energy,
+                scanner_orientation,
+                scanner_geometry,
+                static_cast<float>(axial_distance_between_crystals_in_cm*10.),
+                static_cast<float>(transaxial_distance_between_crystals_in_cm*10.),
+                static_cast<float>(axial_distance_between_blocks_in_cm*10.),
+                static_cast<float>(transaxial_distance_between_blocks_in_cm*10.),
+                crystal_map
+                ));
 
   bool is_consistent =
     scanner_ptr_from_file->check_consistency() == Succeeded::yes;
@@ -1356,10 +1452,11 @@ bool InterfilePDFSHeader::post_processing()
  
 
   // float azimuthal_angle_sampling =_PI/num_views;
-
-
-
-
+  
+  
+   
+    if (scanner_geometry == "Cylindrical")
+      {
   if (is_arccorrected)
     {
       if (effective_central_bin_size_in_cm <= 0)
@@ -1402,7 +1499,48 @@ bool InterfilePDFSHeader::post_processing()
 		  data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
 	}
     }
-  //cerr << data_info_ptr->parameter_info() << endl;
+      }
+    else if(scanner_geometry == "BlocksOnCylindrical")// if block geometry
+      {
+        data_info_sptr.reset(
+          new ProjDataInfoBlocksOnCylindricalNoArcCorr (
+                  scanner_ptr_from_file,
+                  sorted_num_rings_per_segment,
+                  sorted_min_ring_diff,
+                  sorted_max_ring_diff,
+                  num_views,num_bins));
+        if (effective_central_bin_size_in_cm>0 &&
+          fabs(effective_central_bin_size_in_cm -
+              data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
+        {
+      warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
+        "Value in header is %g while I expect %g from the inner ring radius etc\n"
+        "Ignoring value in header",
+        effective_central_bin_size_in_cm,
+        data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
+        }    
+      }
+      else  // if generic geometry
+        {
+            data_info_sptr.reset(
+        new ProjDataInfoGenericNoArcCorr (
+                      scanner_ptr_from_file,
+                      sorted_num_rings_per_segment,
+                      sorted_min_ring_diff,
+                      sorted_max_ring_diff,
+                      num_views,num_bins));
+            if (effective_central_bin_size_in_cm>0 &&
+                    fabs(effective_central_bin_size_in_cm -
+                    data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
+            {
+                warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
+                "Value in header is %g while I expect %g from the inner ring radius etc\n"
+                "Ignoring value in header",
+                effective_central_bin_size_in_cm,
+                data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
+            }
+        }
+  //cerr << data_info_sptr->parameter_info() << endl;
   
   // Set the bed position
   data_info_sptr->set_bed_position_horizontal(bed_position_horizontal);

@@ -9,23 +9,17 @@
   \brief defines various classes for specifying a line in 3 dimensions
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
+  \author Parisa Khateri
 
 
 */
 /*
     Copyright (C) 2004 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2013, Kris Thielemans
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -155,7 +149,7 @@ class LORCylindricalCoordinates_z_and_radius
     }
   coordT _radius;
 
-private:
+ protected:
   coordT _z1;
   coordT _z2;
 };
@@ -308,6 +302,11 @@ class LORAs2Points : public LOR<coordT>
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
 				    const double radius) const;
+ 
+ //! Calculate intersections with block. Used in: ProjDataInfoBlocksOnCylindrical::get_LOR
+  Succeeded
+  change_representation_for_block(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&,
+          const double radius) const;
 
  private:
   CartesianCoordinate3D<coordT> _p1;
@@ -434,6 +433,10 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
+#endif
   typedef LORInAxialAndNoArcCorrSinogramCoordinates<coordT> self_type;
   typedef LORCylindricalCoordinates_z_and_radius<coordT> private_base_type;
 

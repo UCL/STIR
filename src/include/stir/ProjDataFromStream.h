@@ -19,15 +19,7 @@
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -143,10 +135,10 @@ public:
   float get_scale_factor() const;  
 
   //! Get the value of bin.
-  float get_bin_value(const Bin& this_bin) const;
+  virtual float get_bin_value(const Bin& this_bin) const;
   
   //! Set the value of the bin
-  void set_bin_value(const Bin &bin);
+  virtual void set_bin_value(const Bin &bin);
     
 protected:
   //! the stream with the data

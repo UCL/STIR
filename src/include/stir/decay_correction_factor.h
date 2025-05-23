@@ -4,15 +4,7 @@
     Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -36,7 +28,7 @@ START_NAMESPACE_STIR
 //! Compute decay-correction factor for a time frame
 /*!
    \ingroup buildblock 
-   This function computes the factor eneded to convert <i>average number of counts per second</i> to
+   This function computes the factor needed to convert <i>average number of counts per second</i> to
    <i>activity at time 0</i>, i.e. it returns
    \f[ \frac{(t_2-t_1)}{ \int_{t_1}^{t_2} \! 2^{-t/\mathrm{halflife}} \, dt} \f]
  */
@@ -48,7 +40,7 @@ decay_correction_factor(const double isotope_halflife, const double start_time, 
 
   return 
     std::fabs(lambda*(end_time-start_time)) < .01
-    ? std::exp(-start_time*lambda) // if very short frame, we can ignore the duration
+    ? std::exp(start_time*lambda) // if very short frame, we can ignore the duration
     : lambda*(end_time-start_time)/
       (std::exp(-start_time*lambda)-std::exp(-end_time*lambda));
 }

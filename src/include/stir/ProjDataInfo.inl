@@ -7,15 +7,7 @@
     Copyright (C) 2016, 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -57,6 +49,14 @@ int
 ProjDataInfo::get_num_tangential_poss() const
 { return  max_tangential_pos_num - min_tangential_pos_num + 1; }
 
+int
+ProjDataInfo::get_num_tof_poss() const
+{ return 1; /* always 1 at the moment */ }
+
+int
+ProjDataInfo::get_tof_mash_factor() const
+{ return 0; }
+
 int 
 ProjDataInfo::get_min_segment_num() const
 { return (max_axial_pos_per_seg.get_min_index()); }
@@ -92,6 +92,18 @@ int
 ProjDataInfo::get_max_tangential_pos_num()const
 { return max_tangential_pos_num; }
 
+int
+ProjDataInfo::get_min_tof_pos_num() const
+{
+    return 0;
+}
+
+int
+ProjDataInfo::get_max_tof_pos_num() const
+{
+    return 0;
+}
+
 float 
 ProjDataInfo::get_costheta(const Bin& bin) const
 {
@@ -121,13 +133,19 @@ ProjDataInfo::get_scanner_sptr() const
 
 
 int
-ProjDataInfo::get_num_sinograms() const
+ProjDataInfo::get_num_non_tof_sinograms() const
 {
   int num_sinos = 0;
   for (int s=this->get_min_segment_num(); s<= this->get_max_segment_num(); ++s)
     num_sinos += this->get_num_axial_poss(s);
 
   return num_sinos;
+}
+
+int
+ProjDataInfo::get_num_sinograms() const
+{
+    return this->get_num_non_tof_sinograms()*this->get_num_tof_poss();
 }
 
 std::size_t

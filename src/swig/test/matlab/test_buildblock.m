@@ -3,15 +3,7 @@
 %    Copyright (C) 2013-2015 University College London
 %    This file is part of STIR.
 %
-%    This file is free software; you can redistribute it and/or modify
-%    it under the terms of the GNU Lesser General Public License as published by
-%    the Free Software Foundation; either version 2.1 of the License, or
-%    (at your option) any later version.
-
-%    This file is distributed in the hope that it will be useful,
-%    but WITHOUT ANY WARRANTY; without even the implied warranty of
-%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%    GNU Lesser General Public License for more details.
+%    SPDX-License-Identifier: Apache-2.0
 %
 %    See STIR/LICENSE.txt for details
 %% Instructions
@@ -152,9 +144,9 @@ assert (s.get_num_rings()==32)
 assert (s.get_num_detectors_per_ring()==576)
 %% tests on ProjDataInfo
 % this doesn't work (no conversion), but probably rightly so
-% projdatainfo=stir.ProjDataInfoCylindricalNoArcCorr (stir.ProjDataInfo.ProjDataInfoCTI(s,3,3,8,6))
+% projdatainfo=stir.ProjDataInfoCylindricalNoArcCorr (stir.ProjDataInfo.construct_proj_data_info(s,3,3,8,6))
 s=stir.Scanner(stir.Scanner.E962());
-projdatainfo=stir.ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6);
+projdatainfo=stir.ProjDataInfo.construct_proj_data_info(s,3,9,8,6);
 %print projdatainfo
 assert( projdatainfo.get_scanner().get_num_rings()==32)
 sinogram=projdatainfo.get_empty_sinogram(1,2);
@@ -176,7 +168,7 @@ assert(a.find_max()==2)
 success=stir.Succeeded(stir.Succeeded.yes());
 
 s=stir.Scanner(stir.Scanner.E962());
-proj_data_info=stir.ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6);
+proj_data_info=stir.ProjDataInfo.construct_proj_data_info(s,3,9,8,6);
 proj_data=stir.ProjDataInMemory(stir.ExamInfo(), proj_data_info);
 seg=proj_data.get_segment_by_sinogram(0);
 

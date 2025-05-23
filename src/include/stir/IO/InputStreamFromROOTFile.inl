@@ -1,17 +1,9 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021 UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -22,6 +14,7 @@
 
   \author Nikos Efthimiou
   \author Harry Tsoumpas
+  \author Robert Twyman
 */
 
 #include "stir/IO/InputStreamFromROOTFile.h"
@@ -140,6 +133,24 @@ InputStreamFromROOTFile::set_maximum_order_of_scatter(int val)
 }
 
 void
+InputStreamFromROOTFile::set_exclude_true_events(bool val)
+{
+  exclude_nonrandom = val;
+}
+
+void
+InputStreamFromROOTFile::set_exclude_scattered_events(bool val)
+{
+  exclude_scatter = val;
+}
+
+void
+InputStreamFromROOTFile::set_exclude_unscattered_events(bool val)
+{
+  exclude_unscattered = val;
+}
+
+void
 InputStreamFromROOTFile::set_exclude_random_events(bool val)
 {
     exclude_randoms = val;
@@ -169,6 +180,34 @@ void
 InputStreamFromROOTFile::set_optional_ROOT_fields(bool val)
 {
     read_optional_root_fields = val;
+}
+
+
+int
+InputStreamFromROOTFile::
+get_num_axial_crystals_per_block_v() const
+{
+    return this->crystal_repeater_z+this->num_virtual_axial_crystals_per_block;
+}
+
+int
+InputStreamFromROOTFile::
+get_num_transaxial_crystals_per_block_v() const
+{
+    return this->crystal_repeater_y+this->num_virtual_transaxial_crystals_per_block;
+}
+
+int
+InputStreamFromROOTFile::
+get_num_virtual_axial_crystals_per_block() const
+{
+  return this->num_virtual_axial_crystals_per_block;
+}
+int
+InputStreamFromROOTFile::
+get_num_virtual_transaxial_crystals_per_block() const
+{
+  return this->num_virtual_transaxial_crystals_per_block;
 }
 
 END_NAMESPACE_STIR

@@ -7,15 +7,7 @@
 #  Copyright (C) 2020, University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #
@@ -31,12 +23,12 @@ out_filename=$1
 list_filename=$2
 
 echo "Finding first and last timing event in $list_filename (might take some time)"
-first=`list_lm_events --num-events-to-list 1 $list_filename|awk '/Time/{print $2}'`
+first=`list_lm_events --num-events-to-list 1 "$list_filename"|awk '/Time/{print $2}'`
 if [ -z "$first" ]; then
     echo "Error reading $list_filename" >&2
     exit 1
 fi
-last=`list_lm_events $list_filename |tail |grep Time |tail -n 1|awk '/Time/{print $2}'`
+last=`list_lm_events "$list_filename" |tail |grep Time |tail -n 1|awk '/Time/{print $2}'`
 if [ -z "$last" ]; then
     echo "Error reading last event from $list_filename" >&2
     exit 1
@@ -44,5 +36,5 @@ fi
 duration=`echo $first $last|awk '{print ($2 - $1)/1000}'`
 first_secs=`echo $first |awk '{print $1/1000}'`
 echo "Found first event: $first, last event: $last, duration in secs: $duration"
-echo "0 $first_secs" > $out_filename
-echo "1 $duration" >> $out_filename
+echo "0 $first_secs" > "$out_filename"
+echo "1 $duration" >> "$out_filename"

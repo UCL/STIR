@@ -1,3 +1,14 @@
+# currently empty attributes (using pre-commit)
+[attr]cppfiles
+[attr]cfiles
+[attr]pyfiles
+*.cpp  cppfiles
+*.cxx  cppfiles
+*.h  cppfiles
+*.inl  cppfiles
+*.txx  cppfiles
+*.c    cfiles
+*.py   pyfiles
 *.v     -text -diff
 *.s     -text -diff
 *.scn     -text -diff

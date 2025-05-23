@@ -17,15 +17,7 @@
     Copyright (C) 2015, 2018-2019, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -194,9 +186,9 @@ back_project(DiscretisedDensity<3,float>& density,
 void
 BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int num_subsets)
 {
-#ifndef NDEBUG
-    assert(fabs(_density_sptr->sum()) < 1.e-7F);
-#endif
+  if (!_density_sptr)
+    error("You need to call start_accumulating_in_new_target() before back_project()");
+
   check(*proj_data.get_proj_data_info_sptr(), *_density_sptr);
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers>
@@ -212,7 +204,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
 #endif
   {
 #ifdef STIR_OPENMP
-#pragma omp for schedule(runtime)
+#pragma omp for schedule(dynamic)
 #endif
     // note: older versions of openmp need an int as loop
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -272,6 +264,9 @@ back_project(const RelatedViewgrams<float>& viewgrams,
   if (viewgrams.get_num_viewgrams()==0)
     return;
 
+  if (!_density_sptr)
+    error("You need to call start_accumulating_in_new_target() before back_project()");
+
   check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
 
   start_timers();
@@ -314,6 +309,8 @@ void
 BackProjectorByBin::
 start_accumulating_in_new_target()
 {
+    if (!this->_already_set_up)
+      error("BackProjectorByBin method called without calling set_up first.");
 #ifdef STIR_OPENMP
   if (omp_get_num_threads()!=1)
       error("BackProjectorByBin::start_accumulating_in_new_target cannot be called inside a thread");

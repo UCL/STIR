@@ -2,15 +2,7 @@
     Copyright (C) 2020, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -27,6 +19,7 @@
 #include "stir/interfile_keyword_functions.h"
 #include "stir/info.h"
 #include "stir/warning.h"
+#include "stir/round.h"
 #include "boost/lexical_cast.hpp"
 #include "boost/format.hpp"
 #include <string>
@@ -49,7 +42,7 @@ int time_zone_offset_in_secs()
       //std::cerr << ", GMT: " << gmt->tm_hour << ',' << gmt->tm_isdst << "\n";
       time_t gm_time = mktime(gmt);
       // std::cerr << " diff Local-GMT: " << difftime(current_time, gm_time)/3600. << "\n";
-      tz_offset =difftime(current_time, gm_time);
+      tz_offset =round(difftime(current_time, gm_time));
     }
   return tz_offset;
 }

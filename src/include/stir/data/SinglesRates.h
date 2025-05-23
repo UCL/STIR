@@ -3,17 +3,10 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -34,20 +27,21 @@
 #include "stir/RegisteredObject.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
-
+#include "stir/deprecated.h"
 #include <vector>
 
 START_NAMESPACE_STIR
 
-
-
-
+class TimeFrameDefinitions;
 
 
 /*!
   \ingroup singles_buildblock
 
  \brief A single frame of singles information.
+
+ \todo This class does not store rates, but totals! Naming is all wrong.
+ \deprecated
  */
 class FrameSinglesRates
 {
@@ -125,39 +119,63 @@ class FrameSinglesRates
   \brief The base-class for using singles info
 
   <i>Singles</i> in PET are photons detected by a single detector. In PET they
-  are useful to estimate  dead-time.
+  are useful to estimate  dead-time or randoms.
 
-  This class allows to get the rate of singles during an acquisition.
-  There will be 1 rate per <i>singles unit</i>. See Scanner for
+  This class allows to get the singles-counts during an acquisition.
+  There will be 1 per <i>singles unit</i>. See Scanner for
   some more info.
+
 */
 class SinglesRates : public RegisteredObject<SinglesRates>
 {
 public: 
 
   virtual ~SinglesRates () {}
-  //! Get the singles rate for a particular singles unit and a frame with the specified start and end times.   
+  //! Get the (average) singles rate for a particular singles unit and a frame with the specified start and end times.
+  /*! The behaviour of this function is specified by the derived classes.
+    \warning Currently might return -1 if the \a start_time, \a end_time
+    are invalid (e.g. out of the measured range).
+
+    Default implementation uses `get_singles(...)/(end_time-start_time)`.
+  */
+  virtual float
+    get_singles_rate(const int singles_bin_index, 
+		     const double start_time, 
+		     const double end_time) const;
+
+  //! Get the number of singles for a particular singles unit and a frame with the specified start and end times.
   /*! The behaviour of this function is specified by the derived classes.
     \warning Currently might return -1 if the \a start_time, \a end_time
     are invalid (e.g. out of the measured range).
   */
   virtual float
-    get_singles_rate(const int singles_bin_index, 
-		     const double start_time, 
-		     const double end_time) const = 0;
+    get_singles(const int singles_bin_index,
+                 const double start_time,
+                 const double end_time) const = 0;
   
   //! Virtual function that returns the average singles rate given the detection positions and time-interval of detection 
   /*! The behaviour of this function is specified by the derived classes.
     \warning Currently might return -1 if the \a start_time, \a end_time
     are invalid (e.g. out of the measured range).
 
-    Default implementation uses Scanner::get_singles_bin_index().
+    Default implementation uses Scanner::get_singles_bin_index() and get_singles_rate(int,double,double).
   */
-
   virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
 				 const double start_time,
 				 const double end_time) const;
-  
+
+  //! Virtual function that returns the number of singles given the detection positions and time-interval of detection
+  /*! The behaviour of this function is specified by the derived classes.
+    \warning Currently might return -1 if the \a start_time, \a end_time
+    are invalid (e.g. out of the measured range).
+
+    Default implementation uses Scanner::get_singles_bin_index() and get_singles(int,double,double).
+  */
+
+  virtual float get_singles(const DetectionPosition<>& det_pos, 
+                            const double start_time,
+                            const double end_time) const;
+
   //! Get the scanner pointer
   inline const Scanner * get_scanner_ptr() const;
   
@@ -167,7 +185,12 @@ public:
   //virtual FrameSinglesRates get_rates_for_frame(double start_time,
   //                                              double end_time) const = 0;
   
-  
+#if 0
+  //! return time-intervals for singles that are recorded
+ virtual TimeFrameDefinitions
+   get_time_frame_definitions() const = 0;
+#endif
+
 protected:
   shared_ptr<Scanner> scanner_sptr;
 

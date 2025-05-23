@@ -4,15 +4,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -22,11 +14,11 @@ set(dir scatter_utilities)
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
-	estimate_scatter
-	create_tail_mask_from_ACFs
-	upsample_and_fit_single_scatter
-	simulate_scatter
-	scatter_likelihood_and_gradient
+	estimate_scatter.cxx
+	create_tail_mask_from_ACFs.cxx
+	upsample_and_fit_single_scatter.cxx
+	simulate_scatter.cxx
+	scatter_likelihood_and_gradient.cxx
 )
 
 include(stir_exe_targets)

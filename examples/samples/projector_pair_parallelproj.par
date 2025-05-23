@@ -1,0 +1,6 @@
+projector pair parameters:=
+; example file specifying a projector pair using the parallelproj projectors
+projector pair type := parallelproj
+  Projector Pair Using Parallelproj Parameters:=
+  End Projector Pair Using Parallelproj Parameters:=
+End projector pair parameters:=

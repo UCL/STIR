@@ -13,15 +13,7 @@
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -118,9 +110,15 @@ public:
   */
   SeparableConvolutionImageFilter(const VectorWithOffset< VectorWithOffset<elemT> >& filter_coefficients);
 
-  //VectorWithOffset<elemT> get_filter_coefficients();
-  
-  
+  //! Overloaded get and set methods the filter coefficients for axis or set of filter coefficients
+  //@{
+  VectorWithOffset<VectorWithOffset<elemT>> get_filter_coefficients();
+  void set_filter_coefficients(const VectorWithOffset<VectorWithOffset<elemT>>& v);
+  // These methods are made available as VectorWithOffset<VectorWithOffset<elemT>> is not accessable via swig
+  VectorWithOffset<elemT> get_filter_coefficients(const int axis);
+  void set_filter_coefficients(const int axis, const VectorWithOffset<elemT>& v);
+  //@}
+
 private:
   // silly business because KeyParser supports only LIST_OF_DOUBLES
   // TODO remove

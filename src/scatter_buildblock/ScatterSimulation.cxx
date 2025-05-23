@@ -2,17 +2,10 @@
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 - 2016, 2019, 2020 University College London
     Copyright (C) 2018-2019, University of Hull
+    Copyright (C) 2021, University of Leeds
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -24,6 +17,7 @@
   \author Nikos Efthimiou
   \author Charalampos Tsoumpas
   \author Kris Thielemans
+  \author Viet Ahn Dao
 */
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/ViewSegmentNumbers.h"
@@ -56,7 +50,6 @@ START_NAMESPACE_STIR
 
 ScatterSimulation::
 ScatterSimulation()
-  : _already_set_up(false)
 {
     this->set_defaults();
 }
@@ -68,16 +61,41 @@ ScatterSimulation::
     scatt_points_vector.clear();
 }
 
+bool ScatterSimulation::get_use_cache() const
+{
+  return this->use_cache;
+}
+
+void ScatterSimulation::set_use_cache(bool value)
+{
+  if (value == this->use_cache)
+    return;
+
+  this->remove_cache_for_integrals_over_activity();
+  this->remove_cache_for_integrals_over_attenuation();
+  this->use_cache = value;
+}
+
 Succeeded
 ScatterSimulation::
 process_data()
 {
     if (!this->_already_set_up)
         error("ScatterSimulation: need to call set_up() first");
+    if(is_null_ptr(output_proj_data_sptr))
+        error("ScatterSimulation: output projection data not set. Aborting.");
+
     // this is useful in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
-    //show energy window information
+    // check if output has same info as templates
+    {
+      if ((*output_proj_data_sptr->get_proj_data_info_sptr()) !=
+          (*this->get_template_proj_data_info_sptr()))
+        error("ScatterSimulation: output projection data incompatible with what was used for set_up()");
+      // TODO enable check on exam_info but this has no operator== yet
+    }
 
+    //show energy window information
     std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
 
     if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
@@ -101,8 +119,6 @@ process_data()
             }
 
     }
-
-
 
     info("ScatterSimulator: Running Scatter Simulation ...");
     info("ScatterSimulator: Initialising ...");
@@ -131,7 +147,6 @@ process_data()
     float total_scatter = 0 ;
 
     info("ScatterSimulator: Initialization finished ...");
-
     for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
          vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
          ++vs_num.segment_num())
@@ -144,7 +159,7 @@ process_data()
             bin_counter +=
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
-            /* ////////////////// SCATTER ESTIMATION TIME ////////////////*/
+            /* ////////////////// SCATTER ESTIMATION TIME //////////////// */
             {
                 wall_clock_timer.stop(); // must be stopped before getting the value
                 info(boost::format("%1$5u / %2% bins done. Total time elapsed %3$5.2f secs, remaining about %4$5.2f mins (ignoring caching).")
@@ -251,6 +266,7 @@ ScatterSimulation::set_defaults()
     this->template_proj_data_filename = "";
     this->remove_cache_for_integrals_over_activity();
     this->remove_cache_for_integrals_over_attenuation();
+    this->_already_set_up = false;
 }
 
 void
@@ -351,15 +367,20 @@ set_up()
         error("ScatterSimulation: density image not set. Aborting.");
 
     if(downsample_scanner_bool)
+      {
+        if (this->_already_set_up)
+          error("ScatterSimulation: set_up() called twice. This is currently not supported.");
+
         downsample_scanner();
+      }
 
     if(is_null_ptr(density_image_for_scatter_points_sptr))
     {
+        if (this->_already_set_up)
+          error("ScatterSimulation: set_up() called twice. This is currently not supported.");
         downsample_density_image_for_scatter_points(zoom_xy, zoom_z, zoom_size_xy, zoom_size_z);
     }
 
-    if(is_null_ptr(output_proj_data_sptr))
-        error("ScatterSimulation: output projection data not set. Aborting.");
 //    {
 //        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
 //                                                               this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
@@ -380,8 +401,13 @@ set_up()
     {
         CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
         // check above statement
-        this->proj_data_info_cyl_noarc_cor_sptr->find_cartesian_coordinates_of_detection(
-                    detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+            auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+            ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        }else{
+            auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get());
+            ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        }
         assert(detector_coord_A.z() == 0);
         assert(detector_coord_B.z() == 0);
         // check that get_m refers to the middle of the scanner
@@ -392,11 +418,20 @@ set_up()
         assert(fabs(m_last + m_first) < m_last * 10E-4);
     }
 #endif
-    this->shift_detector_coordinates_to_origin =
+    if(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+            this->shift_detector_coordinates_to_origin =
             CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+    }else{
+        if(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*> (proj_data_info_cyl_noarc_cor_sptr.get())){
+            // align BlocksOnCylindrical scanner ring 0 to z=0.
+            this->shift_detector_coordinates_to_origin =
+            CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+        }
+        // align Generic geometry here.
+    }
 
 #if 1
-    // checks on image zooming to avvoid getting incorrect results
+    // checks on image zooming to avoid getting incorrect results
     {
       check_z_to_middle_consistent(*this->activity_image_sptr, "activity");
       check_z_to_middle_consistent(*this->density_image_sptr, "attenuation");
@@ -527,6 +562,7 @@ set_density_image_for_scatter_points(const std::string& filename)
     this->density_image_for_scatter_points_filename=filename;
     shared_ptr<DiscretisedDensity<3,float> > sptr(read_from_file<DiscretisedDensity<3,float> >(filename));    
     this->set_density_image_for_scatter_points_sptr(sptr);
+    this->_already_set_up = false;
 }
 
 void
@@ -540,6 +576,7 @@ set_image_downsample_factors(float _zoom_xy, float _zoom_z,
     zoom_z = _zoom_z;
     zoom_size_xy = _size_zoom_xy;
     zoom_size_z = _size_zoom_z;
+    _already_set_up = false;
 }
 
 void
@@ -650,6 +687,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
+    this->_already_set_up = false;
 }
 
 
@@ -720,7 +758,7 @@ set_output_proj_data_sptr(shared_ptr<ProjData> arg)
     this->output_proj_data_sptr = arg;
 }
 
-shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
+shared_ptr<const ProjDataInfo>
 ScatterSimulation::
 get_template_proj_data_info_sptr() const
 {
@@ -747,10 +785,15 @@ set_template_proj_data_info(const std::string& filename)
 void
 ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
 {
-    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
+    this->_already_set_up = false;
+    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr* >(arg.clone()));
 
-    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
-        error("ScatterSimulation: Can only handle non-arccorrected data");
+    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr)){
+        this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
+        if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr)){
+            error("ScatterSimulation: Can only handle non-arccorrected data");
+        }
+    }
 
     // find final size of detection_points_vector
     this->total_detectors =
@@ -776,13 +819,22 @@ void
 ScatterSimulation::
 set_exam_info(const ExamInfo& arg)
 {
-   this->template_exam_info_sptr = arg.create_shared_clone();
+  this->_already_set_up = false;
+  this->template_exam_info_sptr = arg.create_shared_clone();
 
-    for (int i = 0; i < arg.get_num_energy_windows(); ++i)
+  for (int i = 0; i < arg.get_num_energy_windows(); ++i)
     {
      this->template_exam_info_sptr->set_high_energy_thres(arg.get_high_energy_thres(i),i);
      this->template_exam_info_sptr->set_low_energy_thres(arg.get_low_energy_thres(i),i);
      }
+}
+
+void
+ScatterSimulation::
+set_exam_info_sptr(const shared_ptr<const ExamInfo> arg)
+{
+    this->_already_set_up = false;
+    this->template_exam_info_sptr = arg->create_shared_clone();
 }
 
 Succeeded
@@ -825,7 +877,6 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
       + 5; // add 5 to avoid strange edge-effects, certainly with B-splines
     new_scanner_sptr->set_max_num_non_arccorrected_bins(round(approx_num_non_arccorrected_bins+.5F));
     new_scanner_sptr->set_default_bin_size(new_scanner_sptr->get_effective_ring_radius() * _PI / new_num_dets); // approx new detector size
-
     // Find how much is the delta ring
     // If the previous projdatainfo had max segment == 1 then should be from SSRB
     // in ScatterEstimation. Otherwise use the max possible.
@@ -865,6 +916,7 @@ Succeeded ScatterSimulation::downsample_images_to_scanner_size()
         activity_image_sptr.reset(tmp);
 
         this->remove_cache_for_integrals_over_activity();
+        this->_already_set_up = false;
     }
 
     if(!is_null_ptr(density_image_sptr))
@@ -877,6 +929,7 @@ Succeeded ScatterSimulation::downsample_images_to_scanner_size()
         density_image_sptr.reset(tmp);
 
         this->remove_cache_for_integrals_over_attenuation();
+        this->_already_set_up = false;
     }
 
     // zooming of density_image_for_scatter_points_sptr will happen in set_up
@@ -889,6 +942,7 @@ ScatterSimulation::
 set_attenuation_threshold(const float arg)
 {
     attenuation_threshold = arg;
+    this->_already_set_up = false;
 }
 
 void
@@ -896,6 +950,7 @@ ScatterSimulation::
 set_randomly_place_scatter_points(const bool arg)
 {
     randomly_place_scatter_points = arg;
+    this->_already_set_up = false;
 }
 
 void

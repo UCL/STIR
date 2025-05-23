@@ -7,29 +7,23 @@
   \brief Implementations for LORCoordinates.h
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
-
+  \author Parisa Khateri
 
 */
 /*
     Copyright (C) 2004- 2013, Hammersmith Imanet Ltd
+    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/modulo.h"
 #include "stir/Succeeded.h"
-
+#include <algorithm>
 START_NAMESPACE_STIR
 
 /********************************************************************
@@ -91,8 +85,13 @@ LORInAxialAndSinogramCoordinates(const coordT z1,
 				 const coordT radius)
   :
   LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius),
-   _phi(phi), _s(s)
+  _phi(to_0_2pi(phi)), _s(s)
 {
+  if (_phi>=_PI)
+    {
+      _phi -= coordT(_PI); _s = -_s;
+      std::swap(private_base_type::_z1,private_base_type::_z2);
+    }
   check_state();
 }
 
@@ -114,9 +113,14 @@ LORInAxialAndNoArcCorrSinogramCoordinates(const coordT z1,
 				   const coordT beta,
 				   const coordT radius)
   : LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius),
-   _phi(phi), _beta(beta)
+   _phi(to_0_2pi(phi)), _beta(beta)
   
 {
+  if (_phi>=_PI)
+    {
+      _phi -= coordT(_PI); _beta = -_beta;
+      std::swap(private_base_type::_z1,private_base_type::_z2);
+    }
   check_state();
 }
 
@@ -441,6 +445,40 @@ get_intersections_with_cylinder(LORAs2Points<coordT>& lor,
                                 const double radius) const
 {
   return find_LOR_intersections_with_cylinder(lor, *this, radius);
+}
+
+template <class coordT>
+Succeeded
+LORAs2Points<coordT>::
+change_representation_for_block(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>& lor,
+                              const double radius) const
+{
+  const CartesianCoordinate3D<coordT>& c1 = this->p1();
+  const CartesianCoordinate3D<coordT>& c2 = this->p2();
+
+  //To check if LOR is inside the detector
+  const CartesianCoordinate3D<coordT> d = c2 - c1;
+  const double dxy2 = (square(d.x())+square(d.y()));
+  const double argsqrt=
+      (square(radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
+
+  LORInCylinderCoordinates<coordT> cyl_coords;
+  cyl_coords.reset(static_cast<float>(radius));
+
+  cyl_coords.p1().psi() =
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT>(atan2(c1.x(),-c1.y())));
+  cyl_coords.p2().psi() =
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT>(atan2(c2.x(),-c2.y())));
+  cyl_coords.p1().z() =
+    static_cast<coordT>(c1.z());
+  cyl_coords.p2().z() =
+    static_cast<coordT>(c2.z());
+  lor = cyl_coords;
+
+  if (argsqrt<=0)
+    return Succeeded::no; // LOR is outside detector radius
+  else
+    return Succeeded::yes;
 }
 
 #define DEFINE_LOR_GET_FUNCTIONS(TYPE)                                       \

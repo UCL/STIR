@@ -1,0 +1,37 @@
+---
+BasedOnStyle : GNU
+---
+Language : Cpp
+FixNamespaceComments: true
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+AlwaysBreakTemplateDeclarations: true
+# Set BraceWrapping. Most of these are GNU but not all.
+# Sadly, apparently we need to give all of them though, as when using BreakBeforeBraces=GNU,
+# customisations get ignored.
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: true
+  AfterStruct:     true
+  AfterUnion:      true
+  AfterExternBlock: true
+  BeforeCatch:     true
+  BeforeElse:      true
+  IndentBraces:    true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+  # non-standard GNU
+  SplitEmptyFunction: false
+ColumnLimit:     130
+IndentPPDirectives: AfterHash
+PointerAlignment: Left
+SortIncludes:    false
+SortUsingDeclarations: false
+SpaceBeforeParens: ControlStatements
+Standard:        Cpp11
+...

@@ -2,18 +2,10 @@
 //
 /*
   Copyright (C) 2005- 2011, Hammersmith Imanet Ltd
-  Copyright (C) 2018, University College London
+  Copyright (C) 2018, 2021 University College London
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -27,7 +19,7 @@
 
   \par Usage:
   \code 
-  get_dynamic_images_from_parametric_images output_parametric_image input_dynamic_image [par_file [output_format_par_file]]
+  get_dynamic_images_from_parametric_images output_dynamic_image input_parametric_image [par_file [output_format_par_file]]
   \endcode
   
   \par
@@ -35,6 +27,8 @@
   - The dynamic images will be in decaying counts if the plasma data are in decaying counts.
   
   An optional output file format parameter file can also be given. An example for this might be:
+    
+    \code 
     output file format parameters :=
     output file format type := Interfile
     interfile Output File Format Parameters:=
@@ -42,10 +36,10 @@
     number_of_bytes_per_pixel:=4
     End Interfile Output File Format Parameters:=
     end :=
-  
-  \sa PatlakPlot.h for the \a par_file
+     \endcode
 
-  \todo Add to the Doxygen documentation how exactly this utility works.
+  \sa PatlakPlot for the \a par_file
+  \sa extract_single_images_from_parametric_image.cxx to extract the individual frames from the dynamic image
 
 */
 

@@ -7,15 +7,7 @@
     Copyright (C) 2020, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -29,11 +21,13 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Gemma Fardell
 
 */
 
 
 #include "stir/VectorWithOffset.h"
+#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 /*! 
@@ -126,11 +120,23 @@ public:
   //! dividing the elements of the current vector by an \c elemT 
   inline NumericVectorWithOffset & operator/= (const elemT &v);
 
-  //! a*x+b*y, where a and b are scalar, and x and y are vectors
+  //! \deprecated a*x+b*y (\see xapyb)
   template <typename elemT2>
-    inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
+    STIR_DEPRECATED inline void axpby(const elemT2 a, const NumericVectorWithOffset& x,
                       const elemT2 b, const NumericVectorWithOffset& y);
+                      
+  //! set values of the array to x*a+y*b, where a and b are scalar
+  inline void xapyb(const NumericVectorWithOffset& x, const elemT a,
+                    const NumericVectorWithOffset& y, const elemT b);
 
+  //! set the values of the array to x*a+y*b, where a and b are vectors
+  inline void xapyb(const NumericVectorWithOffset& x, const NumericVectorWithOffset& a,
+                    const NumericVectorWithOffset& y, const NumericVectorWithOffset& b); 
+
+  //! set the values of the array to self*a+y*b, where a and b are scalar or vectors
+  template <class T2>
+  inline void sapyb(const T2& a,
+                    const NumericVectorWithOffset& y, const T2& b); 
 };
 
 END_NAMESPACE_STIR

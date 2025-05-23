@@ -4,15 +4,7 @@
     Copyright (C) 2005 - 2011 Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -26,6 +18,7 @@
 */
 #include "stir/decay_correction_factor.h"
 #include "stir/numerics/integrate_discrete_function.h"
+#include <functional>
 
 START_NAMESPACE_STIR
 
@@ -61,8 +54,8 @@ void  PlasmaData::read_plasma_data(const std::string input_string)
     if (std::getline(data_stream, first_line))
     {
       // replace leading/trailing whitespace 
-      first_line.erase(std::find_if(first_line.rbegin(), first_line.rend(), std::bind1st(std::not_equal_to<char>(), ' ')).base(), first_line.end());
-      first_line.erase(first_line.begin(), std::find_if(first_line.begin(), first_line.end(), std::bind1st(std::not_equal_to<char>(), ' ')));
+      first_line.erase(std::find_if(first_line.rbegin(), first_line.rend(), std::bind(std::not_equal_to<char>(), ' ', std::placeholders::_1)).base(), first_line.end());
+      first_line.erase(first_line.begin(), std::find_if(first_line.begin(), first_line.end(), std::bind(std::not_equal_to<char>(), ' ', std::placeholders::_1)));
       // now first, check if the first line is a single character. 
       // this is best done in C style, cleaner than iterating over chars
       char* p;

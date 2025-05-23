@@ -12,15 +12,7 @@
     Copyright (C) 2019, 2020, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -180,10 +172,30 @@ ProjDataInMemory::get_bin_value(Bin& bin)
   return buffer[index];
 }
 
+void 
+ProjDataInMemory::set_bin_value(const Bin& bin)
+{
+  // first find offset in the stream
+  std::vector<std::streamoff> offsets = get_offsets_bin(bin);
+  const std::streamoff total_offset = offsets[0];
+  // now convert to index in the buffer
+  const int index = static_cast<int>(total_offset/sizeof(float));
+  
+   buffer[index]=bin.get_bin_value();
+}
+
 void
 ProjDataInMemory::
-axpby(const float a, const ProjData& x,
-      const float b, const ProjData& y)
+axpby( const float a, const ProjData& x,
+       const float b, const ProjData& y)
+{
+  xapyb(x,a,y,b);
+}
+
+void
+ProjDataInMemory::
+xapyb(const ProjData& x, const float a,
+      const ProjData& y, const float b)
 {
     // To use this method, we require that all three proj data be ProjDataInMemory
     // So cast them. If any null pointers, fall back to default functionality
@@ -191,7 +203,7 @@ axpby(const float a, const ProjData& x,
     const ProjDataInMemory *y_pdm = dynamic_cast<const ProjDataInMemory*>(&y);
     // At least one is not ProjDataInMemory, fall back to default
     if (is_null_ptr(x_pdm) || is_null_ptr(y_pdm)) {
-        ProjData::axpby(a,x,b,y);
+        ProjData::xapyb(x,a,y,b);
         return;
     }
 
@@ -200,7 +212,7 @@ axpby(const float a, const ProjData& x,
     // First check that info match
     if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
             *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
-        error("ProjDataInMemory::axpby: ProjDataInfo don't match");
+        error("ProjDataInMemory::xapyb: ProjDataInfo don't match");
 
 #if 0
     // Get number of elements
@@ -213,8 +225,68 @@ axpby(const float a, const ProjData& x,
     for (unsigned i=0; i<numel; ++i)
         buffer[i] = a*x_buffer[i] + b*y_buffer[i];
 #else
-    this->buffer.axpby(a, x_pdm->buffer, b, y_pdm->buffer);
+    this->buffer.xapyb(x_pdm->buffer, a, y_pdm->buffer, b);
 #endif
+}
+      
+void
+ProjDataInMemory::
+xapyb(const ProjData& x, const ProjData& a,
+      const ProjData& y, const ProjData& b)
+{
+    // To use this method, we require that all three proj data be ProjDataInMemory
+    // So cast them. If any null pointers, fall back to default functionality
+    const ProjDataInMemory *x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
+    const ProjDataInMemory *y_pdm = dynamic_cast<const ProjDataInMemory*>(&y);
+    const ProjDataInMemory *a_pdm = dynamic_cast<const ProjDataInMemory*>(&a);
+    const ProjDataInMemory *b_pdm = dynamic_cast<const ProjDataInMemory*>(&b);
+
+
+    // At least one is not ProjDataInMemory, fall back to default
+    if (is_null_ptr(x_pdm) || is_null_ptr(y_pdm) ||
+        is_null_ptr(a_pdm) || is_null_ptr(b_pdm)) {
+        ProjData::xapyb(x,a,y,b);
+        return;
+    }
+
+    // Else, all are ProjDataInMemory
+
+    // First check that info match
+    if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *a.get_proj_data_info_sptr() ||
+        *get_proj_data_info_sptr() != *b.get_proj_data_info_sptr())
+        error("ProjDataInMemory::xapyb: ProjDataInfo don't match");
+
+#if 0
+    // Get number of elements
+    const std::size_t numel = size_all();
+
+    float *buffer = this->buffer.get();
+    const float *x_buffer = x_pdm->buffer.get();
+    const float *y_buffer = y_pdm->buffer.get();
+    const float *a_buffer = a_pdm->buffer.get();
+    const float *b_buffer = b_pdm->buffer.get();
+
+    for (unsigned i=0; i<numel; ++i)
+        buffer[i] = a_buffer[i]*x_buffer[i] + b_buffer[i]*y_buffer[i];
+#else
+    this->buffer.xapyb(x_pdm->buffer, a_pdm->buffer, y_pdm->buffer, b_pdm->buffer);
+#endif
+}
+
+void
+ProjDataInMemory::
+sapyb(const float a, const ProjData& y, const float b)
+{
+  this->xapyb(*this,a,y,b);
+}
+
+void
+ProjDataInMemory::
+sapyb(const ProjData& a, const ProjData& y,const ProjData& b)
+{
+  this->xapyb(*this,a,y,b);
 }
 
 END_NAMESPACE_STIR

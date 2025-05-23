@@ -4,16 +4,9 @@
 #define __stir_IO_InputFileFormat_h__
 /*
     Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -64,11 +57,21 @@ class InputFileFormat
     open_read_binary(input, filename);
     return this->actual_can_read(signature, input);
   }
-  
+
+
+  //! read data from a stream
+  /*! This function should throw an exception if the read fails.
+
+      \warning This member throws for most implementations. Use a filename instead.
+  */
   virtual unique_ptr<DataT>
     read_from_file(std::istream& input) const = 0;
   
-  // note: need to have 2 for header-based file-formats which might need directory info
+  //! read data from a filename
+  /*! This function should throw an exception if the read fails.
+
+    Default implementation used \c open_read_binary and \c read_from_file(std::istream&).
+  */
   virtual 
     unique_ptr<DataT>
     read_from_file(const std::string& filename) const

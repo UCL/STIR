@@ -1,21 +1,13 @@
 /*
- Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
- Copyright (C) 2019-2020, University College London
- Copyright (C) 2016-2017, PETsys Electronics
- This file is part of STIR.
- 
- This file is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 2.1 of the License, or
- (at your option) any later version.
- 
- This file is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
- 
- See STIR/LICENSE.txt for details
- */
+    Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2019-2020, University College London
+    Copyright (C) 2016-2017, PETsys Electronics
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
  
  \file
@@ -45,7 +37,7 @@
 
 static void print_usage_and_exit(const std::string& program_name)
 {
-  std::cerr<<"Usage: " << program_name << " [--display | --print-KL | --include-block-timing-model] \\\n"
+  std::cerr<<"Usage: " << program_name << " [--display | --print-KL | --include-block-timing-model | --for-symmetry-per-block] \\\n"
 	   << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
 	   << " set num_iterations to 0 to do only efficiencies\n";
   exit(EXIT_FAILURE);
@@ -65,6 +57,7 @@ int main(int argc, char **argv)
   bool do_KL = false;
   bool do_geo = true;
   bool do_block = false;
+  bool do_symmetry_per_block = false;
 
   // first process command line options
   while (argc>0 && argv[0][0]=='-' && argc>=1)
@@ -89,6 +82,11 @@ int main(int argc, char **argv)
 	  do_block = true;
 	  --argc; ++argv;
 	}
+      else if (strcmp(argv[0], "--for-symmetry-per-block")==0)
+	{
+	  do_symmetry_per_block = true;
+	  --argc; ++argv;
+	}
       else
 	print_usage_and_exit(program_name);
     }
@@ -105,51 +103,81 @@ int main(int argc, char **argv)
   shared_ptr<ProjData> model_data = ProjData::read_from_file(argv[3]);
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
   const std::string out_filename_prefix = argv[1];
-  const int num_rings = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_rings();
-  const int num_detectors_per_ring = 
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_detectors_per_ring();
   const int num_transaxial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_transaxial_blocks();
-  const int num_axial_blocks =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_axial_blocks();
-    const int num_transaxial_crystals_per_block =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_transaxial_crystals_per_block();
-    const int num_axial_crystals_per_block =
-    measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
-    get_num_axial_crystals_per_block();
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_blocks();
+    const int num_axial_blocks =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_blocks();
+    const int virtual_axial_crystals =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                get_num_virtual_axial_crystals_per_block();
+    const int virtual_transaxial_crystals =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_virtual_transaxial_crystals_per_block();
+    const int num_physical_rings =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_rings() -(num_axial_blocks-1)*virtual_axial_crystals;
+    const int num_physical_detectors_per_ring =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_detectors_per_ring() -num_transaxial_blocks*virtual_transaxial_crystals;
+    const int num_transaxial_buckets =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_buckets();
+    const int num_axial_buckets =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_buckets();
+    const int num_transaxial_blocks_per_bucket =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_blocks_per_bucket();
+    const int num_axial_blocks_per_bucket =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_blocks_per_bucket();
+
+    int num_physical_transaxial_crystals_per_basic_unit =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_transaxial_crystals_per_block()-virtual_transaxial_crystals;
+    int num_physical_axial_crystals_per_basic_unit =
+            measured_data->get_proj_data_info_sptr()->get_scanner_sptr()->
+                    get_num_axial_crystals_per_block()-virtual_axial_crystals;
+   // If there are multiple buckets, we increase the symmetry size to a bucket. Otherwise, we use a block.
+    if(do_symmetry_per_block==false) {
+      if(num_transaxial_buckets >1) {
+	    num_physical_transaxial_crystals_per_basic_unit *= num_transaxial_blocks_per_bucket;
+      }
+      if(num_axial_buckets >1) {
+            num_physical_axial_crystals_per_basic_unit *= num_axial_blocks_per_bucket;
+      }
+    }
 
 
-    
+
+
+
     CPUTimer timer;
     timer.start();
-    
+
     FanProjData model_fan_data;
     FanProjData fan_data;
-    Array<2,float> data_fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
-    DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
-    
-    GeoData3D measured_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
-    GeoData3D norm_geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
-    
+    Array<2,float> data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
+    DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
+
+    GeoData3D measured_geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+    GeoData3D norm_geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+
     BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
     BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
 
 
-    make_fan_data(model_fan_data, *model_data);
+    make_fan_data_remove_gaps(model_fan_data, *model_data);
     {
         // next could be local if KL is not computed below
         FanProjData measured_fan_data;
         float threshold_for_KL;
         // compute factors dependent on the data
         {
-            make_fan_data(measured_fan_data, *measured_data);
-    
+            make_fan_data_remove_gaps(measured_fan_data, *measured_data);
+
 /* TEMP FIX */
  for (int ra = model_fan_data.get_min_ra(); ra <= model_fan_data.get_max_ra(); ++ra)
     {
@@ -157,7 +185,7 @@ int main(int argc, char **argv)
         {
           for (int rb = std::max(ra,model_fan_data.get_min_rb(ra)); rb <= model_fan_data.get_max_rb(ra); ++rb)
             {
-              for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)      
+              for (int b = model_fan_data.get_min_b(a); b <= model_fan_data.get_max_b(a); ++b)
                 if (model_fan_data(ra,a,rb,b) == 0)
                   measured_fan_data(ra,a,rb,b) = 0;
             }
@@ -328,22 +356,22 @@ int main(int argc, char **argv)
                     display(norm_block_data, "raw block norm");
                     display(fan_data, "block norm");
                 }
-            } // end block
+           } // end block
   
 
  //// print KL for fansums
-         if (do_KL)
-       {
-    Array<2,float> fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
-    GeoData3D geo_data(num_axial_crystals_per_block, num_transaxial_crystals_per_block/2, num_rings, num_detectors_per_ring ); //inputes have to be modified
-    BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
+            if (do_KL)
+            {
+                Array<2,float> fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
+                GeoData3D geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit/2, num_physical_rings, num_physical_detectors_per_ring ); //inputes have to be modified
+                BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks-1, num_transaxial_blocks-1);
    
-            make_fan_sum_data(fan_sums, fan_data);
-            make_geo_data(geo_data, fan_data);
-            make_block_data(block_data, measured_fan_data);
+                make_fan_sum_data(fan_sums, fan_data);
+                make_geo_data(geo_data, fan_data);
+                make_block_data(block_data, measured_fan_data);
             
-std::cerr << "KL on fans: " << KL(measured_fan_data, fan_data,0) << ", " << KL(measured_geo_data,geo_data,0) << std::endl;
-}
+                std::cerr << "KL on fans: " << KL(measured_fan_data, fan_data,0) << ", " << KL(measured_geo_data,geo_data,0) << std::endl;
+            }
         }
     }
     timer.stop();

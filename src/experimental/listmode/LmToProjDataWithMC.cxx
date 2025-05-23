@@ -7,6 +7,7 @@
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2021, University College London
     See STIR/LICENSE.txt for details
 */
 #include "stir_experimental/listmode/LmToProjDataWithMC.h"
@@ -57,21 +58,21 @@ bool
 LmToProjDataWithMC::
 post_processing()
 {
-  if (LmToProjData::post_processing())
-    return true;
-   
+  return LmToProjData::post_processing();
+}
+
+Succeeded LmToProjDataWithMC::set_up()
+{
   if (is_null_ptr(ro3d_ptr))
   {
-    warning("Invalid Rigid Object 3D Motion object\n");
-    return true;
+    error("Invalid Rigid Object 3D Motion object");
   }
 
   if (reference_position_is_average_position_in_frame)
     {
       if (!is_null_ptr(_reference_abs_time_sptr))
 	{
-	  warning("time interval for reference position is set, but you asked for average over each frame");
-	  return true;
+	  error("time interval for reference position is set, but you asked for average over each frame");
 	}
     }
   else
@@ -79,8 +80,7 @@ post_processing()
       // set transformation_to_reference_position
       if (is_null_ptr(_reference_abs_time_sptr))
 	{
-	  warning("time interval for reference position is not set");
-	  return true;
+	  error("time interval for reference position is not set");
 	}
       {
 	const RigidObject3DTransformation av_motion = 

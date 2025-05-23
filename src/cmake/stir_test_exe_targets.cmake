@@ -3,15 +3,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -92,15 +84,15 @@ endmacro( create_stir_mpi_test)
 #### use the above macros for each target in dir_SIMPLE_TEST_EXE_SOURCES etc
 
 foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES}})
-   create_stir_test (${executable}.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+   create_stir_test (${executable} "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 endforeach()
 
 # identical to above, but without including the registries as dependencies
 foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}})
-   create_stir_test (${executable}.cxx "${STIR_LIBRARIES}" "")
+   create_stir_test (${executable} "${STIR_LIBRARIES}" "")
 endforeach()
 
 foreach(executable ${${dir_INVOLVED_TEST_EXE_SOURCES}})
-   create_stir_involved_test (${executable}.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
+   create_stir_involved_test (${executable} "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 endforeach()
 

@@ -8,15 +8,7 @@
     Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -33,6 +25,8 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/Scanner.h"
 #include "stir/Viewgram.h"
 #include "stir/Sinogram.h"
@@ -75,7 +69,7 @@ float
 ProjDataInfo::get_sampling_in_t(const Bin& bin) const
 {
   return
-    (get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
+    abs(get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
      get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()-1,bin.tangential_pos_num()))
      )/2;
 }
@@ -84,7 +78,7 @@ float
 ProjDataInfo::get_sampling_in_m(const Bin& bin) const
 {
   return
-    (get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
+    abs(get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
      get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()-1,bin.tangential_pos_num()))
      )/2;
 }
@@ -94,7 +88,7 @@ float
 ProjDataInfo::get_sampling_in_s(const Bin& bin) const
 {
   return
-    (get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()+1)) -
+    abs(get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()+1)) -
      get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()-1))
      )/2;
 }
@@ -159,6 +153,11 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
   max_tangential_pos_num = max_tang_poss;
 }
 
+void
+ProjDataInfo::set_tof_mash_factor(const int)
+{
+  warning("TOF support not yet enabled.");
+}
 
 ProjDataInfo::ProjDataInfo()
   : bed_position_horizontal(0.F), bed_position_vertical(0.F)
@@ -421,22 +420,34 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   
   const float bin_size = scanner->get_default_bin_size();
   
-  
-  if (arc_corrected)
+  if (scanner->get_scanner_geometry() == "BlocksOnCylindrical")
+    return
+      new ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner,
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
+  else if (scanner->get_scanner_geometry() == "Generic")
+    return
+      new ProjDataInfoGenericNoArcCorr(scanner,
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
+  else if (scanner->get_scanner_geometry() == "Cylindrical" && arc_corrected)
     return
     new ProjDataInfoCylindricalArcCorr(scanner,bin_size,
                                        num_axial_pos_per_segment,
-                                       min_ring_difference, 
+                                       min_ring_difference,
                                        max_ring_difference,
                                        num_views,num_tangential_poss);
   else
     return
     new ProjDataInfoCylindricalNoArcCorr(scanner,
-                                       num_axial_pos_per_segment,
-                                       min_ring_difference, 
-                                       max_ring_difference,
-                                       num_views,num_tangential_poss);
-
+                                   num_axial_pos_per_segment,
+                                   min_ring_difference,
+                                   max_ring_difference,
+                                   num_views,num_tangential_poss);
 }
 
 unique_ptr<ProjDataInfo>

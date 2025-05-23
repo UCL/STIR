@@ -32,6 +32,13 @@ PostFiltering<DataT>::post_processing()
 }
 
 template <class DataT>
+void
+PostFiltering<DataT>::set_filter_sptr(shared_ptr<DataProcessor< DataT > > filter_sptr_v)
+{
+  this->filter_sptr = filter_sptr_v;
+}
+
+template <class DataT>
 Succeeded
 PostFiltering<DataT>::process_data(DataT& arg)
 {
