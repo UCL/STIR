@@ -14,6 +14,7 @@
 #define _WM_SPECTUB_H
 
 #include <string>
+#include <vector>
 
 namespace SPECTUB
 {
@@ -84,7 +85,7 @@ typedef struct
   int Nsli;   // number of slices
   float thcm; // slice thickness in cm
 
-  int Nang;                  // number of projection angles
+  int Nang;   // number of projection angles
   std::vector<float> angles; // projection angles. degrees from upper detection plane (parallel to table). Negative for CW
                              // rotations (see manual)
 
