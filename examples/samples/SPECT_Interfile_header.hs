@@ -5,7 +5,7 @@
 !imaging modality := nucmed
 
 ; name of file with binary data
-name of data file := somefile.s
+name of data file := SPECT_Interfile_header.hs
 
 !version of keys := 3.3
 !GENERAL DATA :=

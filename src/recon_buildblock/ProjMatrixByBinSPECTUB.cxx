@@ -24,12 +24,14 @@
 #include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
+#include "stir/stream.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
@@ -254,9 +256,6 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
   this->voxel_size = image_info_ptr->get_voxel_size();
   this->origin = image_info_ptr->get_origin();
 
-  const ProjDataInfoCylindricalArcCorr* proj_Data_Info_Cylindrical
-      = dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(this->proj_data_info_ptr.get());
-
   CPUTimer timer;
   timer.start();
 
@@ -299,12 +298,20 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
   vox.thcm = vol.thcm;
 
   //... projecction parameters ..........................................
-  prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_intrinsic_azimuthal_tilt() * float(180 / _PI);
-  prj.incr = proj_Data_Info_Cylindrical->get_azimuthal_angle_sampling() * float(180 / _PI);
-  prj.thcm = proj_Data_Info_Cylindrical->get_axial_sampling(0) / 10;
+  prj.angles = std::vector<float>(prj.Nang);
+  {
+    Bin bin;
+    for (int i = 0; i < prj.Nang; i++)
+      {
+        bin.view_num() = i;
+        prj.angles[i] = static_cast<float>(this->proj_data_info_ptr->get_phi(bin) * 180 / _PI);
+      }
+    // all bins will have same axial sampling
+    prj.thcm = this->proj_data_info_ptr->get_sampling_in_m(bin) / 10;
+  }
 
   //.......geometrical and other derived parameters of projection structure...........
-  prj.Nsli = proj_Data_Info_Cylindrical->get_num_axial_poss(0); // number of slices
+  prj.Nsli = this->proj_data_info_ptr->get_num_axial_poss(0); // number of slices
   prj.lngcm = prj.Nbin * prj.szcm;                              // length in cm of the detection line
   prj.Nbp = prj.Nbin * prj.Nsli;                                // number of bins for each projection angle (2D-projection)
   prj.Nbt = prj.Nbp * prj.Nang;                                 // total number of bins considering all the projection angles
@@ -328,7 +335,35 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
               "SPECTUB Matrix (probably) only works with equal number of slices for projection data (%1%) and image (%2%)")
           % wmh.prj.Nsli % vol.Nsli);
   //....rotation radius .................................................
-  const VectorWithOffset<float> radius_all_views = proj_Data_Info_Cylindrical->get_ring_radii_for_all_views();
+  VectorWithOffset<float> radius_all_views(prj.Nang);
+  {
+    if (auto proj_Data_Info_Cylindrical = dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(this->proj_data_info_ptr.get()))
+      {
+        radius_all_views = proj_Data_Info_Cylindrical->get_ring_radii_for_all_views();
+      }
+    else if (auto proj_data_info_subset_ptr = dynamic_cast<const ProjDataInfoSubsetByView *>(this->proj_data_info_ptr.get()))
+      {
+        if (auto proj_Data_Info_Cylindrical = dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(
+                proj_data_info_subset_ptr->get_original_proj_data_info_sptr().get()))
+          {
+            for (int i = 0; i < prj.Nang; ++i)
+              {
+                Bin bin;
+                bin.view_num() = i;
+                const int org_view = proj_data_info_subset_ptr->get_original_bin(bin).view_num();
+                radius_all_views[i] = proj_Data_Info_Cylindrical->get_ring_radius(org_view);
+              }
+          }
+        else
+          {
+            error("ProjMatrixByBinSPECTUB: can only handle ProjDataInfoCylindricalArcCorr");
+          }
+      }
+    else
+      {
+        error("ProjMatrixByBinSPECTUB: can only handle ProjDataInfoCylindricalArcCorr");
+      }
+  }
 
   {
     const auto max_radius = *std::max_element(radius_all_views.begin(), radius_all_views.end());
@@ -492,8 +527,7 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
   info_stream << "Number of slices: " << wmh.vol.Nsli << "\tslice_thickness: " << wmh.vol.thcm << std::endl;
   info_stream << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << "\taxial size: " << wmh.prj.thcm
               << std::endl;
-  info_stream << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr
-              << "\tFirst angle: " << wmh.prj.ang0 << std::endl;
+  info_stream << "Number of angles: " << wmh.prj.Nang << "\tangles (deg): " << wmh.prj.angles << std::endl;
   info_stream << "Number of subsets: " << wmh.prj.NOS << std::endl;
   if (wmh.do_att)
     {
