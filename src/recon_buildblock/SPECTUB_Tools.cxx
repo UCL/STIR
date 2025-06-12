@@ -51,7 +51,7 @@ write_wm_FC(SPECTUB::wm_da_type& wm)
   int ia_acum = 0;
 
   if ((fid = fopen(wm.OSfn.c_str(), "wb")) == NULL)
-    error_wmtools_SPECT(31, wm.OSfn);
+    stir::error("write_wm_FC: Could not open file '" + wm.OSfn + "' for writing");
 
   fwrite(&(wm.NbOS), sizeof(int), 1, fid); // to write number of rows of wm (NbOS)
   fwrite(&(wm.Nvox), sizeof(int), 1, fid); // to write number of columns of wm (Nvox)
@@ -110,7 +110,7 @@ write_wm_hdr(SPECTUB::wm_da_type& wm, SPECTUB::wmh_type& wmh)
 {
   ofstream stream1(wm.fn_hdr.c_str());
   if (!stream1)
-    error_wmtools_SPECT(31, wm.fn_hdr);
+    stir::error("write_wm_hdr: Could not open file '" + wm.fn_hdr + "' for writing");
 
   //....... image and projections characteristics.........
 
@@ -217,7 +217,7 @@ write_wm_STIR(wm_da_type& wm)
   FILE* fid;
 
   if ((fid = fopen(wm.OSfn.c_str(), "wb")) == NULL)
-    error_wmtools_SPECT(31, wm.OSfn);
+    stir::error("write_wm_STIR: Could not open file '" + wm.OSfn + "' for writing");
 
   //...loop for matrix elements: projection index ..................
 
