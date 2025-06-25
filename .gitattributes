@@ -17,6 +17,7 @@ scripts/* text eol=lf
 *.root  -text -diff
 *.gz     -text -diff
 *.nii     -text -diff
+*.sh    eol=lf
 *.jpg   -text -diff
 *.png   -text -diff
 *.gif   -text -diff
