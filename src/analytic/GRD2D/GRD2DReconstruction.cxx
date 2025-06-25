@@ -1,0 +1,518 @@
+/*
+    Copyright (C) 2025 University College London
+
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup GRD2D
+  \brief Implementation of class stir::GRD2DReconstruction
+
+  \author Dimitra Kyriakopoulou
+  \author Kris Thielemans
+
+*/
+  
+#include "stir/analytic/GRD2D/GRD2DReconstruction.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ArcCorrection.h"
+#include "stir/SSRB.h"
+#include "stir/ProjDataInMemory.h"
+#include "stir/Bin.h"
+#include "stir/round.h"
+#include "stir/display.h"
+#include <algorithm>
+#include "stir/IO/interfile.h"
+
+#include "stir/Sinogram.h" 
+#include "stir/Viewgram.h"
+#include <complex> 
+#include <math.h>
+#include "stir/numerics/fourier.h"
+#include <boost/math/special_functions/bessel.hpp> 
+#include "stir/info.h"
+#include <boost/format.hpp>
+
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
+#include "stir/num_threads.h"
+
+#include <vector>
+#include <iostream>
+#include <cmath> // For M_PI and other math functions
+#ifndef M_PI
+#  define M_PI 3.14159265358979323846
+#endif
+
+START_NAMESPACE_STIR
+
+const char * const
+GRD2DReconstruction::registered_name =
+  "GRD2D";
+  
+  
+void 
+GRD2DReconstruction::
+set_defaults()
+{
+  base_type::set_defaults();
+
+  display_level=0; // no display
+  num_segments_to_combine = -1;
+	zoom = 1; 
+  noise_filter = -1; 
+  alpha_gridding = 1; 
+  kappa_gridding = 4; 
+}
+
+void 
+GRD2DReconstruction::initialise_keymap()
+{
+  base_type::initialise_keymap();
+
+  parser.add_start_key("GRD2DParameters");
+  parser.add_stop_key("End");
+  parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
+  parser.add_key("Display level",&display_level);
+	parser.add_key("zoom", &zoom);
+  parser.add_key("noise filter",&noise_filter);
+  parser.add_key("alpha for gridding",&alpha_gridding);
+  parser.add_key("kappa for gridding",&kappa_gridding);
+}
+
+void 
+GRD2DReconstruction::
+ask_parameters()
+{ 
+   
+  base_type::ask_parameters();
+
+  num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
+  display_level = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: filtered viewgrams) ? ", 0,2,0);
+
+  noise_filter =  ask_num(" Noise filter (-1 to disable)",0.,1., 1.);
+  alpha_gridding =  ask_num(" Alpha parameter for gridding ? ",1.,2., 1.);
+  kappa_gridding =  ask_num(" Kappa parameter for gridding ? ",2.,8., 4.);
+  
+#if 0
+    // do not ask the user for the projectors to prevent them entering
+    // silly things
+  do 
+    {
+      back_projector_sptr =
+	BackProjectorByBin::ask_type_and_parameters();
+    }
+#endif
+
+}
+
+bool GRD2DReconstruction::post_processing() 
+{
+  return base_type::post_processing();
+}
+
+Succeeded
+GRD2DReconstruction::
+set_up(shared_ptr <GRD2DReconstruction::TargetT > const& target_data_sptr)
+{
+  if (base_type::set_up(target_data_sptr) == Succeeded::no)
+    return Succeeded::no;
+
+  if (noise_filter > 1)
+     error(boost::format("Noise filter has to be between 0 and 1 but is %g") % noise_filter);
+  //  {
+  //    warning("Noise filter has to be between 0 and 1 but is %g\n", noise_filter);
+  //    return true;
+  //  }
+    
+  if (alpha_gridding < 1 || alpha_gridding > 2)
+		error(boost::format("Alpha for gridding has to be between 1 and 2 but is %g") % alpha_gridding);    
+    
+  if (kappa_gridding < 2 || kappa_gridding > 8)
+		 error(boost::format("Kappa for gridding has to be between 2 and 8 but is %g") % kappa_gridding);
+  
+if (num_segments_to_combine>=0 && num_segments_to_combine%2==0)
+    error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
+
+
+    if (num_segments_to_combine==-1)
+    {
+      const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_cyl_sptr =
+	dynamic_pointer_cast<const ProjDataInfoCylindrical>(proj_data_ptr->get_proj_data_info_sptr());
+
+      if (is_null_ptr(proj_data_info_cyl_sptr))
+        num_segments_to_combine = 1; //cannot SSRB non-cylindrical data yet
+      else
+	{
+	  if (proj_data_info_cyl_sptr->get_min_ring_difference(0) !=
+	      proj_data_info_cyl_sptr->get_max_ring_difference(0)
+	      ||
+	      proj_data_info_cyl_sptr->get_num_segments()==1)
+	    num_segments_to_combine = 1;
+	  else
+	    num_segments_to_combine = 3;
+	}
+    }
+
+
+    return Succeeded::yes;
+}
+
+
+std::string GRD2DReconstruction::method_info() const
+{
+  return "GRD2D";
+}
+
+GRD2DReconstruction::
+GRD2DReconstruction(const std::string& parameter_filename)
+{  
+  initialise(parameter_filename);
+  //std::cerr<<parameter_info() << std::endl;
+  info(boost::format("%1%") % parameter_info());
+}
+
+GRD2DReconstruction::GRD2DReconstruction()
+{
+  set_defaults();
+}
+
+GRD2DReconstruction::
+GRD2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, 
+			const double noise_filter_v, 
+			const double alpha_gridding_v, 
+			const double kappa_gridding_v, 
+			const double zoom_v,
+		    const int num_segments_to_combine_v
+)
+{
+  set_defaults();
+
+  noise_filter = noise_filter_v; 
+  alpha_gridding = alpha_gridding_v; 
+  kappa_gridding = kappa_gridding_v; 
+  zoom = zoom_v;
+  num_segments_to_combine = num_segments_to_combine_v;
+  proj_data_ptr = proj_data_ptr_v;
+  // have to check here because we're not parsing
+ /* if (post_processing_only_GRD2D_parameters() == true)
+    error("GRD2D: Wrong parameter values. Aborting\n");*/
+}
+
+Succeeded 
+GRD2DReconstruction::
+actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
+{
+
+ 
+  // perform SSRB
+/*  if (num_segments_to_combine>1)
+    {   
+      const ProjDataInfoCylindrical& proj_data_info_cyl =
+	dynamic_cast<const ProjDataInfoCylindrical&>
+	(*proj_data_ptr->get_proj_data_info_sptr());
+
+      //  full_log << "SSRB combining " << num_segments_to_combine 
+      //           << " segments in input file to a new segment 0\n" << std::endl; 
+
+      shared_ptr<ProjDataInfo> 
+	ssrb_info_sptr(SSRB(proj_data_info_cyl, 
+			    num_segments_to_combine,
+			    1, 0,
+			    (num_segments_to_combine-1)/2 ));
+      shared_ptr<ProjData> 
+	proj_data_to_GRD_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
+      SSRB(*proj_data_to_GRD_ptr, *proj_data_ptr);
+      proj_data_ptr = proj_data_to_GRD_ptr;
+    }
+  else
+    {
+      // just use the proj_data_ptr we have already
+    } */
+
+  // check if segment 0 has direct sinograms
+  {
+    const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
+    if(fabs(tan_theta ) > 1.E-4)
+      {
+	warning("GRD2D: segment 0 has non-zero tan(theta) %g", tan_theta);
+	return Succeeded::no;
+      }
+  }
+
+   // unused warning
+  float tangential_sampling;
+  // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
+  // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
+  shared_ptr<const ProjDataInfo> arc_corrected_proj_data_info_sptr;
+
+  // arc-correction if necessary
+ /* ArcCorrection arc_correction;
+  bool do_arc_correction = false;
+  if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
+      (proj_data_ptr->get_proj_data_info_sptr())))
+    {
+      // it's already arc-corrected
+      arc_corrected_proj_data_info_sptr =
+	proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
+      tangential_sampling =
+	dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
+	(*proj_data_ptr->get_proj_data_info_sptr()).get_tangential_sampling();  
+    }
+  else
+    {
+      // TODO arc-correct to voxel_size
+      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) ==
+	  Succeeded::no)
+	return Succeeded::no;
+      do_arc_correction = true;
+      // TODO full_log
+      warning("GRD2D will arc-correct data first");
+      arc_corrected_proj_data_info_sptr =
+	arc_correction.get_arc_corrected_proj_data_info_sptr();
+      tangential_sampling =
+	arc_correction.get_arc_corrected_proj_data_info().get_tangential_sampling();  
+    }*/
+  //ProjDataInterfile ramp_filtered_proj_data(arc_corrected_proj_data_info_sptr,"ramp_filtered");
+	  
+	
+  VoxelsOnCartesianGrid<float>& image =
+    dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
+
+  density_ptr->fill(0);
+  
+	Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0,0); 
+	
+	//float M_PIf = M_PI; 
+	const int sp = sino.get_num_tangential_poss(), sth = sino.get_num_views(); 
+	float dp = 2.0/sp, dth = M_PI/sth;
+	
+	// pad to the next power of 2 for FFT
+	const int sp1 = 2*pow(2,ceil(log2(sp))); 
+	
+	const float alpha = alpha_gridding; //1.0; 
+	const float beta = 1.0*sp1/sp; 
+	const float K = kappa_gridding; // 4.0f; //; % min=4 max=6
+	
+	// gridding
+	std::vector<float> pn1(sp1);
+	std::vector<float> thn(sth);
+	std::vector<float> xn(sp);
+	std::vector<float> yn(sp);
+	for(int ith=0; ith<sth; ith++) thn[ith]=ith*M_PI/sth; 
+	for(int ip=0; ip<sp1; ip++) pn1[ip]=-sp/4.0+ip*(sp/2.0)/(sp1-1);
+	for(int ix=0; ix<sp; ix++) xn[ix]=-1.0+2.0*ix/(sp-1); 
+	for(int iy=0; iy<sp; iy++) yn[iy]=-1.0+2.0*iy/(sp-1); 
+		
+	
+	const int min_tang = sino.get_min_tangential_pos_num(); 
+	const int min_xy = image.get_min_x(); 
+	
+	
+	IndexRange2D span(sino.get_num_views(),sp1); 
+	Array< 2, std::complex<float> > P(span);
+	Array< 1, float > s(sp1);
+	Array< 1, std::complex<float> > a;
+	IndexRange2D span2(sp1,sp1); 
+	Array< 2, std::complex<float> > ff(span2);
+	std::complex<float> f1, f2; 
+	int l1a, l1b, l2a, l2b; 
+
+
+	
+	int p_cutoff;  
+	if(noise_filter <= 0) { 
+		p_cutoff = 0; 
+	} else { 
+		noise_filter = noise_filter > 1 ? 1 : noise_filter; 
+		p_cutoff = floor(floor(sp1/2.0)*(1-noise_filter)); 
+		std::cout << "p_cutoff = " << 2*p_cutoff << " of " << sp1 << std::endl; 
+	}
+ 
+
+	
+	float ar = alpha*sp*dp/2.0f;
+	float u = K/(2.0f*beta*sp*dp); 
+	
+	
+  std::vector<std::vector<float>> PGx(sth, std::vector<float>(sp1)); 
+  std::vector<std::vector<float>> PGy(sth, std::vector<float>(sp1));
+	for(int ith=0; ith<sth; ith++){ 
+		for(int ip=0; ip<sp1; ip++){ 
+			PGx[ith][ip] = pn1[ip]*cos(thn[ith]); 
+			PGy[ith][ip] = pn1[ip]*sin(thn[ith]); 
+		}
+	}
+	
+	// TODO Bessel window and weights can be calculated only once and be used for every slice
+	
+	for(int iz=proj_data_ptr->get_min_axial_pos_num(0); iz<=proj_data_ptr->get_max_axial_pos_num(0); iz++) {
+		
+	std::cout << "Reconstructing slice " << (iz+1) << " of " << proj_data_ptr->get_num_axial_poss(0) << "..." << std::endl; 
+	sino = proj_data_ptr->get_sinogram(iz, 0); 
+	
+	
+	for(int ith=0; ith<sth; ith++){ 
+		s.fill(0); 
+		for(int ip=0; ip<sp; ip++){ 
+			s[(sp1-sp)/2+ip] = sino[ith][ip+min_tang]; 
+		}
+		
+
+		fftshift(s, sp1); 
+		
+		a = fourier_1d_for_real_data(s);
+		
+		for(int i=0; i<=sp1/2; i++) P[ith][i] = a[sp1/2-i];
+		for(int i=1; i<sp1/2; i++) P[ith][sp1/2+i] = std::conj(a[i]);
+		
+		if(p_cutoff > 0) {
+			for(int i=0; i<p_cutoff; i++) P[ith][i] = 0;
+			for(int i=sp1-p_cutoff; i<sp1; i++) P[ith][i] = 0;
+		}
+	}
+	
+	ff.fill(0); 
+	const float sp1dp = sp1*dp;
+	for(int ith=0; ith<sth; ith++){ 
+		for(int ip=0; ip<sp1; ip++){ 
+			l1a = ceil((-u+PGx[ith][ip])*sp1dp); 
+			if(l1a<-sp1/2) l1a = -sp1/2; 
+			l1b = floor((u+PGx[ith][ip])*sp1dp); 
+			if(l1b>sp1/2-1) l1b = sp1/2-1; 
+			
+			l2a = ceil((-u+PGy[ith][ip])*sp1dp); 
+			if(l2a<-sp1/2) l2a = -sp1/2; 
+			l2b = floor((u+PGy[ith][ip])*sp1dp); 
+			if(l2b>sp1/2-1) l2b = sp1/2-1;
+			
+			for(int l1=l1a; l1<=l1b; l1++){ 
+				float T1 = l1/sp1dp-PGx[ith][ip];
+				float wKB1 = boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T1/u,2)))/(2.0f*u);
+				for(int l2=l2a; l2<=l2b; l2++){ 
+					float T2 = l2/sp1dp-PGy[ith][ip];
+					ff[l1+sp1/2][l2+sp1/2] = ff[l1+sp1/2][l2+sp1/2] + 
+						abs(ip-sp1/2.0f)*wKB1*((float)boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T2/u,2))))/(2.0f*u)*P[ith][ip];
+				}
+			}
+		}
+	}
+
+	
+	// gridding
+	ff = ff*dth/(sp1*dp);
+	
+	
+	fftshift(ff,sp1); 
+	inverse_fourier(ff);
+	fftshift(ff,sp1); 
+	
+	// gridding
+	int spf = 2*floor(sp/2); // make dimensions even
+	//float img[spf][spf]; 
+  std::vector<std::vector<float>> img(spf, std::vector<float>(spf));
+	for(int ix=-spf/2; ix<=spf/2-1; ix++){ 
+		for(int iy=-spf/2; iy<=spf/2-1; iy++){ 
+			img[ix+spf/2][iy+spf/2] = std::real(ff[ix+sp1/2][iy+sp1/2]/
+				((float)(sinh(2*M_PI*ar*u*sqrt(1-pow(ix*dp/ar,2)))/(2*M_PI*ar*u*sqrt(1-pow(ix*dp/ar,2)))*
+				 sinh(2*M_PI*ar*u*sqrt(1-pow(iy*dp/ar,2)))/(2*M_PI*ar*u*sqrt(1-pow(iy*dp/ar,2))))));
+		}
+	}
+
+	if(image.get_x_size() != sp || zoom != 1) { 
+		// perform bilinear interpolation 
+		if(iz==0) 
+			std::cerr << "Image dimension mismatch, tangential positions " << sp << ", xy output " << image.get_x_size() << "\n Interpolating..." << std::endl; 
+		int sx = image.get_x_size(); 
+		int sy = sx; 
+  	std::vector<float> xn1(sx);
+    std::vector<float> yn1(sy);
+		float dx1 = 2./(sx-1), dy1 = 2./(sy-1); 
+		float dx = 2./(sp-1), dy = 2./(sp-1); 
+		float val; 
+
+		for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
+		for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
+
+		for(int ix=1; ix<sx-1; ix++) { 
+			for(int iy=1; iy<sy-1; iy++) { 
+				if(pow(xn1[ix],2)+pow(yn1[iy],2)>1) 
+					val = 0.;
+				else {					
+					// bilinear interpolation 
+					int y0 = (int) ((yn1[iy]-yn[0])/dy); 
+					int x0 = (int) ((xn1[ix]-xn[0])/dx); 
+					float tx = (xn1[ix]-xn[0])/dx - x0; 
+					float ty = (yn1[iy]-yn[0])/dy - y0; 
+					
+					float ya = img[y0][x0]*tx + img[y0][x0+1]*(1.-tx); 
+					float yb = img[y0+1][x0]*tx + img[y0+1][x0+1]*(1.-tx); 
+					val = ya*ty + yb*(1.-ty); 
+				}
+				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)/zoom*2.832;  
+			}
+		}
+ 
+	} else { 	
+		for(int ix=1; ix<=sp-1; ix++) { 
+				for(int iy=1; iy<=sp-1; iy++) { 
+					if(pow(xn[ix],2)+pow(yn[iy],2)>1) 
+						image[iz][ix+min_xy][iy+min_xy] = 0; 
+					else
+						image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*2.832;  
+						}
+			}
+	}
+
+	}
+	
+		
+  if (display_level>0)
+    display(image, image.find_max(), "GRD image");
+
+  return Succeeded::yes;
+}
+
+template <typename T>
+void 
+GRD2DReconstruction::fftshift(Array< 1 , T >& a, int size)
+{
+	T temp=0; 
+	for(int i=0; i<size/2; i++){ 
+		temp = a[i]; 
+		a[i] = a[size/2+i];
+		a[size/2+i] = temp;
+	}
+}
+
+template <typename T>
+void 
+GRD2DReconstruction::fftshift(Array< 2 , std::complex< T > >& a, int size)
+{
+	std::complex<T> temp; 
+	for(int i=0; i<size; i++){ 
+		for(int j=0; j<size/2; j++){ 
+			temp = a[i][j]; 
+			a[i][j] = a[i][size/2+j];
+			a[i][size/2+j] = temp;
+		}
+	}
+	for(int i=0; i<size; i++){ 
+		for(int j=0; j<size/2; j++){ 
+			temp = a[j][i]; 
+			a[j][i] = a[size/2+j][i];
+			a[size/2+j][i] = temp;
+		}
+	}
+}
+
+
+END_NAMESPACE_STIR
