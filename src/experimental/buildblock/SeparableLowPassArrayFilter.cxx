@@ -1,6 +1,7 @@
 
 #include "stir_experimental/SeparableLowPassArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
+#include "stir/format.h"
 
 #include <iostream>
 #include <fstream>
@@ -35,7 +36,7 @@ SeparableLowPassArrayFilter<num_dimensions, elemT>::SeparableLowPassArrayFilter(
 
   info("Printing filter coefficients");
   for (int i = filter_coefficients_v.get_min_index(); i <= filter_coefficients_v.get_max_index(); i++)
-    info(boost::format("%1%   %2%   ") % i % filter_coefficients_v[i]);
+    info(format("{}   {}   ", i, filter_coefficients_v[i]));
   // err << " Z_TRIVIAL "  << z_trivial << endl;
 
   if (!z_trivial)

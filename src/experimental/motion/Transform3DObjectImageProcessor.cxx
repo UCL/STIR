@@ -22,6 +22,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 START_NAMESPACE_STIR
 
 template <>
@@ -74,8 +75,8 @@ Transform3DObjectImageProcessor<elemT>::post_processing()
           return true;
         }
     }
-  info(boost::format("'transformation' quaternion  %1%") % this->transformation.get_quaternion());
-  info(boost::format("'transformation' translation  %1%") % this->transformation.get_translation());
+  info(format("'transformation' quaternion  {}", this->transformation.get_quaternion()));
+  info(format("'transformation' translation  {}", this->transformation.get_translation()));
 #else
   if (is_null_ptr(transformation_sptr))
     {
@@ -112,7 +113,7 @@ Transform3DObjectImageProcessor<elemT>::virtual_set_up(const DiscretisedDensity<
               = find_grid_coords_of_transformed_centres_and_jacobian(density, density, *this->transformation_sptr);
         }
       timer.stop();
-      info(boost::format("CPU time for computing centre coords %1% secs") % timer.value());
+      info(format("CPU time for computing centre coords {} secs", timer.value()));
     }
   else
     {

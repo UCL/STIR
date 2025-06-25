@@ -33,6 +33,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include <iostream>
 #include <memory>
@@ -202,10 +203,10 @@ OSSPSReconstruction<TargetT>::precompute_denominator_of_conditioner_without_pena
       precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all(), [](float& a) { return a = -a; });
 
   timer.stop();
-  info(boost::format("Precomputing denominator took %1% s CPU time") % timer.value());
+  info(format("Precomputing denominator took {} s CPU time", timer.value()));
   float min_val = *std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all());
   float max_val = *std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all());
-  info(boost::format("min and max in precomputed denominator %1%, %2%") % min_val % max_val);
+  info(format("min and max in precomputed denominator {}, {}", min_val, max_val));
   if (min_val < -0)
     warning("Precomputing denominator has negative values! "
             "This may be due to the objective function not being concave");
@@ -214,7 +215,7 @@ OSSPSReconstruction<TargetT>::precompute_denominator_of_conditioner_without_pena
   {
     std::string fname = this->output_filename_prefix + "_precomputed_denominator";
 
-    info(boost::format("  - Saving %1%") % fname);
+    info(format("  - Saving {}", fname));
     this->output_file_format_ptr->write_to_file(fname, *precomputed_denominator_ptr);
   }
 
@@ -304,7 +305,7 @@ OSSPSReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate)
 #endif // PARALLEL
 
   const int subset_num = this->get_subset_num();
-  info(boost::format("Now processing subset #: %1%") % subset_num);
+  info(format("Now processing subset #: {}", subset_num));
 
   // TODO make member or static parameter to avoid reallocation all the time
   unique_ptr<TargetT> numerator_ptr(current_image_estimate.get_empty_copy());
@@ -313,10 +314,10 @@ OSSPSReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate)
   //*numerator_ptr *= this->num_subsets;
   std::transform(numerator_ptr->begin_all(), numerator_ptr->end_all(), numerator_ptr->begin_all(), _1 * this->num_subsets);
 
-  info(boost::format("num subsets %1%") % this->num_subsets);
-  info(boost::format("this->num_subsets*subgradient : max %1%, min %2%")
-       % *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
-       % *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all()));
+  info(format("num subsets {}", this->num_subsets));
+  info(format("this->num_subsets*subgradient : max {}, min {}",
+              *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all()),
+              *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all())));
 
   // now divide by denominator
 
@@ -343,9 +344,9 @@ OSSPSReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate)
       // KT 09/12/2002 new
       // avoid division by 0 by thresholding the denominator to be strictly positive
       threshold_min_to_small_positive_value(work_image_ptr->begin_all(), work_image_ptr->end_all(), 10.E-6F);
-      info(boost::format(" denominator max %1%, min %2%")
-           % *std::max_element(work_image_ptr->begin_all(), work_image_ptr->end_all())
-           % *std::min_element(work_image_ptr->begin_all(), work_image_ptr->end_all()));
+      info(format(" denominator max {}, min {}",
+                  *std::max_element(work_image_ptr->begin_all(), work_image_ptr->end_all()),
+                  *std::min_element(work_image_ptr->begin_all(), work_image_ptr->end_all())));
 
       if (!recompute_penalty_term_in_denominator)
         {
@@ -372,7 +373,7 @@ OSSPSReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate)
   const float relaxation_parameter
       = this->relaxation_parameter / (1 + this->relaxation_gamma * (this->subiteration_num / this->num_subsets));
 
-  info(boost::format("relaxation parameter = %1%") % relaxation_parameter);
+  info(format("relaxation parameter = {}", relaxation_parameter));
 
   const float alpha = 1.F; //  line_search(current_image_estimate, *numerator_ptr);
   // *numerator_ptr *= relaxation_parameter * alpha;
@@ -387,9 +388,9 @@ OSSPSReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate)
     }
 
   {
-    info(boost::format("additive update image min,max: %1%, %2%")
-         % *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
-         % *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all()));
+    info(format("additive update image min,max: {}, {}",
+                *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all()),
+                *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all())));
   }
   current_image_estimate += *numerator_ptr;
 
@@ -399,8 +400,11 @@ OSSPSReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate)
     const float current_max = *std::max_element(current_image_estimate.begin_all(), current_image_estimate.end_all());
     const float new_min = 0.F;
     const float new_max = static_cast<float>(upper_bound);
-    info(boost::format("current image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max
-         % std::max(current_min, new_min) % std::min(current_max, new_max));
+    info(format("current image old min,max: {}, {}, new min,max {}, {}",
+                current_min,
+                current_max,
+                std::max(current_min, new_min),
+                std::min(current_max, new_max)));
 
     threshold_upper_lower(current_image_estimate.begin_all(), current_image_estimate.end_all(), new_min, new_max);
   }
@@ -409,7 +413,7 @@ OSSPSReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate)
   // cerr << "Subset : " << subset_timer.value() << "secs " <<endl;
 #else // PARALLEL
   timerSubset.Stop();
-  info(boost::format("Subset: %1%secs") % timerSubset.GetTime());
+  info(format("Subset: {}secs", timerSubset.GetTime()));
 
 #endif
 }

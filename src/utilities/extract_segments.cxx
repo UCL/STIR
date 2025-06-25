@@ -33,7 +33,7 @@
 #include "stir/utilities.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Bin.h"
-#include "boost/format.hpp"
+#include "stir/format.h"
 
 using std::cerr;
 
@@ -62,7 +62,7 @@ main(int argc, char* argv[])
         std::string output_filename = filename;
         replace_extension(output_filename, "");
         output_filename += "seg";
-        output_filename += boost::str(boost::format("%d") % segment_num);
+        output_filename += format("{}", segment_num);
         if (is_tof)
           output_filename += "_tof" + std::to_string(tof_pos_num);
 

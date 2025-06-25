@@ -27,7 +27,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -70,12 +70,12 @@ BinNormalisationFromAttenuationImage::post_processing()
   {
     const float amax = attenuation_image_ptr->find_max();
     if ((amax < .08F) || (amax > .2F))
-      warning(boost::format("BinNormalisationFromAttenuationImage:\n"
-                            "\tattenuation image data are supposed to be in units cm^-1\n"
-                            "\tReference: water has mu .096 cm^-1\n"
-                            "\tMax in attenuation image: %1%\n"
-                            "\tContinuing as you might know what you are doing.")
-              % amax);
+      warning(format("BinNormalisationFromAttenuationImage:\n"
+                     "\tattenuation image data are supposed to be in units cm^-1\n"
+                     "\tReference: water has mu .096 cm^-1\n"
+                     "\tMax in attenuation image: {}\n"
+                     "\tContinuing as you might know what you are doing.",
+                     amax));
   }
 #ifndef NEWSCALE
   /*

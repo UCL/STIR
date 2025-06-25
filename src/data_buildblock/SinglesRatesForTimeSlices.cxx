@@ -23,7 +23,7 @@
 #include "stir/data/SinglesRatesForTimeSlices.h"
 #include "stir/round.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <vector>
 #include <utility>
 #include <algorithm>
@@ -280,13 +280,14 @@ SinglesRatesForTimeSlices::get_singles(const int singles_bin_index, const double
   slice_end_time = _times[start_slice];
 
   if (start_time > end_time)
-    error(boost::format("get_singles() called with start_time %1% larger than end time %2%") % start_time % end_time);
+    error(format("get_singles() called with start_time {} larger than end time {}", start_time, end_time));
   if (start_time < get_slice_start_time(start_slice) - 1e-2 /* allow for some rounding */)
-    error(boost::format("get_singles() called with start time %1% which is smaller than the start time in the data (%2%)")
-          % start_time % slice_start_time);
+    error(format("get_singles() called with start time {} which is smaller than the start time in the data ({})",
+                 start_time,
+                 slice_start_time));
   if (end_time > _times[end_slice] + 1e-2 /* allow for some rounding */)
-    error(boost::format("get_singles() called with end time %1% which is larger than the end time in the data (%2%)") % end_time
-          % slice_end_time);
+    error(format(
+        "get_singles() called with end time {} which is larger than the end time in the data ({})", end_time, slice_end_time));
 
   double old_duration = slice_end_time - slice_start_time;
   double included_duration = slice_end_time - start_time;
@@ -297,7 +298,6 @@ SinglesRatesForTimeSlices::get_singles(const int singles_bin_index, const double
   total_singles = fraction * _singles[start_slice][singles_bin_index];
   if (start_slice < end_slice)
     {
-
       // Calculate the fraction of the end_slice to include.
       slice_start_time = get_slice_start_time(end_slice);
       slice_end_time = _times[end_slice];

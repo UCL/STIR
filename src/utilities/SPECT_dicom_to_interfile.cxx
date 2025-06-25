@@ -22,14 +22,14 @@
 */
 #include <iostream>
 #include <fstream>
-
-#include <boost/format.hpp>
+#include <memory>
 
 #include <gdcmReader.h>
 #include <gdcmStringFilter.h>
 
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include "stir/warning.h"
 #include "stir/Succeeded.h"
 
@@ -158,7 +158,14 @@ GetDICOMTagInfo(const gdcm::File& file, const gdcm::Tag tag, std::string& dst, c
     }
   catch (...)
     {
-      stir::error(boost::format("GetDICOMTagInfo: cannot read tag %1% sequence index %2%") % tag % sequence_idx);
+      stir::error(stir::format(
+          "GetDICOMTagInfo: cannot read tag {} sequence index {}",
+          [&]() { // using lambda function to leverage the operator<< to transform tag to string
+            std::stringstream ss;
+            ss << tag;
+            return ss.str();
+          }(),
+          sequence_idx));
       return stir::Succeeded::no;
     }
 
@@ -277,7 +284,7 @@ stir::Succeeded
 SPECTDICOMData::open_dicom_file()
 {
 
-  stir::info(boost::format("SPECTDICOMData: opening file %1%") % dicom_filename);
+  stir::info(stir::format("SPECTDICOMData: opening file {}", dicom_filename));
 
   std::unique_ptr<gdcm::Reader> DICOM_reader(new gdcm::Reader);
   DICOM_reader->SetFileName(dicom_filename.c_str());
@@ -286,7 +293,7 @@ SPECTDICOMData::open_dicom_file()
     {
       if (!DICOM_reader->Read())
         {
-          stir::error(boost::format("SPECTDICOMData: cannot read file %1%") % dicom_filename);
+          stir::error(stir::format("SPECTDICOMData: cannot read file {}", dicom_filename));
           // return stir::Succeeded::no;
         }
     }
@@ -559,7 +566,7 @@ SPECTDICOMData::get_proj_data(const std::string& output_file) const
     {
       if (!DICOM_reader->Read())
         {
-          stir::error(boost::format("SPECTDICOMData: cannot read file %1%") % dicom_filename);
+          stir::error(stir::format("SPECTDICOMData: cannot read file {}", dicom_filename));
           // return stir::Succeeded::no;
         }
     }
@@ -660,9 +667,11 @@ main(int argc, char* argv[])
   std::cout << "Read successfully!" << std::endl;
 
   if (spect.num_of_projections * spect.num_energy_windows != spect.num_frames)
-    stir::warning(boost::format("num_projections (%1%) * num_energy_windows (%2%) != num_frames (%3%)\n"
-                                "This could be gated or dynamic data. The interfile header(s) will be incorrect!")
-                  % spect.num_of_projections % spect.num_energy_windows % spect.num_frames);
+    stir::warning(stir::format("num_projections ({}) * num_energy_windows ({}) != num_frames ({})\n"
+                               "This could be gated or dynamic data. The interfile header(s) will be incorrect!",
+                               spect.num_of_projections,
+                               spect.num_energy_windows,
+                               spect.num_frames));
   const std::string data_filename(output_prefix + ".s");
   stir::Succeeded s = spect.get_proj_data(data_filename);
 

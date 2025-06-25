@@ -27,7 +27,7 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include "stir/numerics/divide.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -90,9 +90,10 @@ BinNormalisationPETFromComponents::set_up(const shared_ptr<const ExamInfo>& exam
       }
     if (!ok)
       {
-        warning(boost::format("BinNormalisationPETFromComponents: incompatible projection data:\nNorm projdata "
-                              "info:\n%s\nEmission projdata info:\n%s\n--- (end of incompatible projection data info)---\n")
-                % norm_proj.parameter_info() % proj.parameter_info());
+        warning(format("BinNormalisationPETFromComponents: incompatible projection data:\nNorm projdata "
+                       "info:\n{}\nEmission projdata info:\n{}\n--- (end of incompatible projection data info)---\n",
+                       norm_proj.parameter_info(),
+                       proj.parameter_info()));
         return Succeeded::no;
       }
   }

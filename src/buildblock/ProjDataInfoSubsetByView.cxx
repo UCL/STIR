@@ -19,7 +19,7 @@
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Bin.h"
 #include "stir/Array.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/error.h"
 
 START_NAMESPACE_STIR
@@ -50,7 +50,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
       // Check all views within range
       if (0 > this_view || this_view >= num_views)
         {
-          error(boost::format("ProjDataInfoSubsetByView: views[%d]=%s out of range (%d).") % i % this_view % num_views);
+          error(format("ProjDataInfoSubsetByView: views[{}]={} out of range ({}).", i, this_view, num_views));
         }
 
       // Check all views are unique in this subset
@@ -59,7 +59,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
           auto prev_view = views[j];
           if (this_view == prev_view)
             {
-              error(boost::format("ProjDataInfoSubsetByView: repeated view: views[%d]=views[%s]=%s") % i % j % this_view);
+              error(format("ProjDataInfoSubsetByView: repeated view: views[{}]=views[{}]={}", i, j, this_view));
             }
         }
     }

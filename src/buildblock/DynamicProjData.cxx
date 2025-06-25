@@ -36,7 +36,7 @@
 #include "stir/IO/InterfileHeader.h"
 #include "stir/IO/interfile.h"
 #include "stir/MultipleDataSetHeader.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <fstream>
 #include <math.h>
 #include "stir/warning.h"
@@ -88,13 +88,13 @@ DynamicProjData::read_from_file(
   if (is_interfile_signature(signature))
     {
 #ifndef NDEBUG
-      info(boost::format("DynamicProjData::read_from_file trying to read %s as Interfile") % filename);
+      info(format("DynamicProjData::read_from_file trying to read {} as Interfile", filename));
 #endif
       unique_ptr<DynamicProjData> ptr(read_interfile_DPDFS(filename, std::ios::in));
       if (!is_null_ptr(ptr))
         return ptr;
       else
-        error(boost::format("DynamicProjData::read_from_file failed to read %s as Interfile") % filename);
+        error(format("DynamicProjData::read_from_file failed to read {} as Interfile", filename));
     }
 
 #ifdef HAVE_LLN_MATRIX
@@ -159,7 +159,7 @@ DynamicProjData::read_from_file(
     {
 
 #ifndef NDEBUG
-      info(boost::format("DynamicProjData::read_from_file trying to read %s as a Multi file.") % filename);
+      info(format("DynamicProjData::read_from_file trying to read {} as a Multi file.", filename));
 #endif
 
       unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename));
@@ -169,7 +169,7 @@ DynamicProjData::read_from_file(
     }
 
   // return a zero pointer if we get here
-  warning(boost::format("DynamicProjData::read_from_file cannot read '%s'. Unsupported file format?") % filename);
+  warning(format("DynamicProjData::read_from_file cannot read '{}'. Unsupported file format?", filename));
   return unique_ptr<DynamicProjData>();
 }
 
@@ -246,14 +246,14 @@ read_interfile_DPDFS(istream& input, const string& directory_for_data, const std
   DynamicProjData* dynamic_proj_data_ptr = new DynamicProjData(hdr.get_exam_info_sptr());
   if (is_null_ptr(dynamic_proj_data_ptr))
     {
-      error(boost::format("DynamicProjData: error allocating memory for new object (for file \"%1%\")") % full_data_file_name);
+      error(format("DynamicProjData: error allocating memory for new object (for file \"{}\")", full_data_file_name));
     }
   dynamic_proj_data_ptr->resize(hdr.get_exam_info().time_frame_definitions.get_num_time_frames());
 
   // now set all proj_data_sptrs
   for (unsigned int frame_num = 1; frame_num <= dynamic_proj_data_ptr->get_num_frames(); ++frame_num)
     {
-      info(boost::format("Using data offset %1% for frame %2% in file %3%\n") % data_offset % frame_num % full_data_file_name);
+      info(format("Using data offset {} for frame {} in file {}\n", data_offset, frame_num, full_data_file_name));
       shared_ptr<ExamInfo> current_exam_info_sptr(new ExamInfo(*hdr.get_exam_info_sptr()));
       std::vector<std::pair<double, double>> frame_times;
       frame_times.push_back(std::make_pair(hdr.get_exam_info().time_frame_definitions.get_start_time(frame_num),
@@ -272,7 +272,7 @@ read_interfile_DPDFS(istream& input, const string& directory_for_data, const std
                                                                  static_cast<float>(hdr.image_scaling_factors[0][0])));
       if (is_null_ptr(proj_data_sptr))
         {
-          error(boost::format("DynamicProjData: error reading frame %1% from file '%2%'") % frame_num % full_data_file_name);
+          error(format("DynamicProjData: error reading frame {} from file '{}'", frame_num, full_data_file_name));
         }
 
       dynamic_proj_data_ptr->set_proj_data_sptr(proj_data_sptr, frame_num);
@@ -299,8 +299,9 @@ read_interfile_DPDFS(istream& input, const string& directory_for_data, const std
             {
               if (fabs(static_cast<double>(data_offset) - hdr.data_offset_each_dataset[frame_num]) < data_offset_increment)
                 {
-                  error(boost::format("data offset for frame %1% is too small. Difference in offsets needs to be at least %2%")
-                        % (frame_num + 1) % data_offset_increment);
+                  error(format("data offset for frame {} is too small. Difference in offsets needs to be at least {}",
+                               (frame_num + 1),
+                               data_offset_increment));
                 }
               data_offset = hdr.data_offset_each_dataset[frame_num];
             }
@@ -317,7 +318,7 @@ read_interfile_DPDFS(const string& filename, const std::ios::openmode open_mode)
   std::ifstream image_stream(filename.c_str(), open_mode);
   if (!image_stream)
     {
-      error(boost::format("DynamicProjData: couldn't open file '%s'") % filename);
+      error(format("DynamicProjData: couldn't open file '{}'", filename));
     }
 
   return read_interfile_DPDFS(image_stream, get_directory_name(filename), open_mode);

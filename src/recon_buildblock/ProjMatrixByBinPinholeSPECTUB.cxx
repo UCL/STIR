@@ -43,6 +43,7 @@ using std::nothrow;
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
 #include "stir/info.h"
+#include "stir/format.h"
 #include "stir/CPUTimer.h"
 #ifdef STIR_OPENMP
 #  include "stir/num_threads.h"
@@ -50,7 +51,6 @@ using std::nothrow;
 
 //#include "boost/cstdint.hpp"
 //#include "boost/scoped_ptr.hpp"
-#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
@@ -838,7 +838,7 @@ ProjMatrixByBinPinholeSPECTUB::set_up(
     {
       wm_calculation_mph(false, kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[kOS], wmh, wm, pcf);
     }
-  info(boost::format("Done estimating size of matrix. Execution time, CPU %1% s") % timer.value(), 2);
+  info(format("Done estimating size of matrix. Execution time, CPU {} s", timer.value()), 2);
 
   this->already_setup = true;
 }
@@ -946,8 +946,9 @@ ProjMatrixByBinPinholeSPECTUB::compute_one_subset(const int kOS) const
   for (int i = 0; i < wmh.prj.NbOS; i++)
     ne += Nitems[kOS][i];
 
-  info(boost::format("Total number of non-zero weights in this view: %1%, estimated size: %2% MB") % ne
-           % (wm.do_save_STIR ? (ne + 10 * wmh.prj.NbOS) / 104857.6 : ne / 131072),
+  info(format("Total number of non-zero weights in this view: {}, estimated size: {} MB",
+              ne,
+              (wm.do_save_STIR ? (ne + 10 * wmh.prj.NbOS) / 104857.6 : ne / 131072)),
        2);
 
   //... memory allocation for wm float arrays ....................................................
@@ -957,7 +958,7 @@ ProjMatrixByBinPinholeSPECTUB::compute_one_subset(const int kOS) const
   //... wm calculation ...............................................................................
 
   wm_calculation_mph(true, kOS, &psf_bin, &psf_subs, &psf_aux, &kern, attmap, msk_3d, Nitems[kOS], wmh, wm, pcf);
-  info(boost::format("Weight matrix calculation done, CPU %1% s") % timer.value(), 2);
+  info(format("Weight matrix calculation done, CPU {} s", timer.value()), 2);
 
   //... fill lor ..........................
   for (int j = 0; j < wmh.prj.NbOS; j++)
@@ -986,7 +987,7 @@ ProjMatrixByBinPinholeSPECTUB::compute_one_subset(const int kOS) const
       this->cache_proj_matrix_elems_for_one_bin(lor);
     }
 
-  info(boost::format("Total time after transfering to ProjMatrixElemsForOneBin, CPU %1% s") % timer.value(), 2);
+  info(format("Total time after transfering to ProjMatrixElemsForOneBin, CPU {} s", timer.value()), 2);
 }
 
 void
@@ -1001,7 +1002,7 @@ ProjMatrixByBinPinholeSPECTUB::calculate_proj_matrix_elems_for_one_bin(ProjMatri
   if (!this->keep_all_views_in_cache)
     this->clear_cache();
 
-  info(boost::format("Computing matrix elements for view %1%") % view_num, 2);
+  info(format("Computing matrix elements for view {}", view_num), 2);
   compute_one_subset(view_num);
 
   lor.erase();

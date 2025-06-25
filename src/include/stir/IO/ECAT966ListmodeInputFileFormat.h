@@ -24,7 +24,7 @@
 #include "stir/info.h"
 #include "stir/error.h"
 #include <string>
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 #ifndef HAVE_LLN_MATRIX
 #  error HAVE_LLN_MATRIX not define: you need the lln ecat library.
@@ -116,7 +116,7 @@ public:
         pos -= 2;
       }
     const std::string filename_prefix = filename.substr(0, pos);
-    info(boost::format("Reading ECAT listmode file with prefix %1%") % filename_prefix);
+    info(format("Reading ECAT listmode file with prefix {}", filename_prefix));
 
     return unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT966>(filename_prefix));
   }

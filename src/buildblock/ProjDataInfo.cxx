@@ -46,6 +46,7 @@
 #include "stir/utilities.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include <iostream>
 #include <typeinfo>
@@ -54,7 +55,6 @@
 #include <sstream>
 #include "stir/info.h"
 #include "boost/foreach.hpp"
-#include "boost/format.hpp"
 
 using std::string;
 using std::vector;
@@ -239,9 +239,13 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
           tof_bin_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].low_lim));
           tof_bin_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].high_lim));
           // I could imagine a better printing.
-          info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") % k % tof_bin_boundaries_mm[k].low_lim
-               % tof_bin_boundaries_mm[k].high_lim % tof_bin_boundaries_ps[k].low_lim % tof_bin_boundaries_ps[k].high_lim
-               % get_sampling_in_k(bin));
+          info(format("Tbin {}: {} - {} mm ({} - {} ps) = {}",
+                      k,
+                      tof_bin_boundaries_mm[k].low_lim,
+                      tof_bin_boundaries_mm[k].high_lim,
+                      tof_bin_boundaries_ps[k].low_lim,
+                      tof_bin_boundaries_ps[k].high_lim,
+                      get_sampling_in_k(bin)));
         }
     }
   else if ((scanner_ptr->is_tof_ready() && new_num <= 0)
@@ -492,15 +496,13 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
 {
   const int num_ring = scanner->get_num_rings();
   if (max_delta > num_ring - 1)
-    error(boost::format("construct_proj_data_info: max_ring_difference %d is too large, number of rings is %d") % max_delta
-          % num_ring);
+    error(format("construct_proj_data_info: max_ring_difference {} is too large, number of rings is {}", max_delta, num_ring));
   if (span < 1)
-    error(boost::format("construct_proj_data_info: span %d has to be larger than 0") % span);
+    error(format("construct_proj_data_info: span {} has to be larger than 0", span));
   if (span > 2 * num_ring - 1)
-    error(boost::format("construct_proj_data_info: span %d is too large for a scanner with %d rings") % span % num_ring);
+    error(format("construct_proj_data_info: span {} is too large for a scanner with {} rings", span, num_ring));
   if (max_delta < (span - 1) / 2)
-    error(boost::format("construct_proj_data_info: max_ring_difference %d has to be at least (span-1)/2, span is %d") % max_delta
-          % span);
+    error(format("construct_proj_data_info: max_ring_difference {} has to be at least (span-1)/2, span is {}", max_delta, span));
 
   // Construct first a temporary list of min and max ring diff per segment (0,1,2,3...)
   vector<int> RDmintmp(num_ring);
@@ -528,10 +530,12 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   if (RDmaxtmp[seg_num] > max_delta)
     {
       if (max_delta < num_ring - 1)
-        warning(boost::format("Creation of ProjDataInfo with span=%1% and max_delta=%2% leads to a 'smaller' last segment than "
-                              "the others (did you mean to set max_delta=%3%?).\n"
-                              "This is fine, but note that in previous versions of STIR this last segment was dropped.")
-                % span % max_delta % RDmaxtmp[seg_num]);
+        warning(format("Creation of ProjDataInfo with span={} and max_delta={} leads to a 'smaller' last segment than "
+                       "the others (did you mean to set max_delta={}?).\n"
+                       "This is fine, but note that in previous versions of STIR this last segment was dropped.",
+                       span,
+                       max_delta,
+                       RDmaxtmp[seg_num]));
       // Palak Wadwha changed this to max_delta to accomodate GE scanners, it is more general anyway.
       RDmaxtmp[seg_num] = max_delta;
     }
