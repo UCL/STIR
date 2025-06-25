@@ -73,6 +73,12 @@
       <li>
         Default ECAT scanner configurations updated to use a negative intrinsic tilt.
       </li>
+      <li>
+        Boost format was replaced by fmt for formatting strings. If C++20 or newer is used, instead of using fmt as a git submodule, the standard library implementation is being used.
+        Import <code>stir/format.h</code> and then use the <code>format()</code> function to create strings containing various variables. If the format string is not known at compile time,
+        use <code>runtime_format()</code> instead.<br>
+        <a href=https://github.com/UCL/STIR/pull/1591>PR #1591</a>
+      </li>
     </ul>
 
 <h3>Bug fixes</h3>
