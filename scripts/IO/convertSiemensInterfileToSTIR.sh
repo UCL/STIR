@@ -43,7 +43,7 @@ fi
 # replace a number of keywords according to the proposed Interfile standard
 # due to restrictions of many sed versions, we first use @ in the replacement string to indicate a newline, 
 # and then use tr to replace @ with an actual newline 
-cat "${in}" | tr -d '\r' | sed \
+tr -d '\r' < "${in}" | sed \
  -e "s/!INTERFILE *$/!INTERFILE :=/" \
  -e "s/GENERAL IMAGE DATA *:=/GENERAL IMAGE DATA :=@!type of data := PET@/" \
  -e "s/image data byte order/imagedata byte order/" \
