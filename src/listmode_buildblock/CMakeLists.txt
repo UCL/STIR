@@ -14,6 +14,7 @@ set(${dir_LIB_SOURCES}
 	LmToProjDataWithRandomRejection.cxx
         CListModeDataECAT8_32bit.cxx
         CListRecordECAT8_32bit.cxx
+        CListModeDataBasedOnCoordinateMap.cxx
 	CListModeDataSAFIR.cxx
 )
 
