@@ -136,3 +136,12 @@ if (NOT MINI_STIR)
   target_link_libraries(IO PUBLIC modelling_buildblock )
   target_link_libraries(IO PUBLIC listmode_buildblock)
 endif()
+
+set(PETSIRD_dir ../../PETSIRD/cpp/generated)
+add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
+
+target_include_directories(IO PUBLIC ${PETSIRD_dir})
+# needed for helpers
+target_include_directories(IO PUBLIC ${PETSIRD_dir}/..)
+target_include_directories(IO PUBLIC ${PETSIRD_dir}/../helpers/include)
+target_link_libraries(IO PUBLIC petsird_generated)
