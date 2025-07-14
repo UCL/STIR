@@ -86,7 +86,7 @@ target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
 
 set(TARGET ${STIR_BUILDBLOCK_LIB})
 
-target_link_libraries(${TARGET})
+target_link_libraries(${TARGET} PRIVATE fmt)
 
 if (LLN_FOUND)
   target_include_directories(${TARGET} PUBLIC ${LLN_INCLUDE_DIRS})
@@ -137,3 +137,28 @@ if (HAVE_JSON)
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
   target_include_directories(${TARGET} PRIVATE "${TMP}")
 endif()
+
+if (HAVE_PETSIRD)
+#set(PETSIRD_dir ../../PETSIRD/cpp/generated)
+#add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
+
+target_include_directories(IO PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(IO PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(IO PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/helpers/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+#target_link_libraries(IO PUBLIC petsird_generated)
+endif()
+
+
+
