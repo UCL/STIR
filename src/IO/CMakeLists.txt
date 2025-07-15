@@ -157,7 +157,7 @@ target_include_directories(IO PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(IO PUBLIC petsird_generated)
+#target_link_libraries(IO PUBLIC petsird_generated)
 endif()
 
 
