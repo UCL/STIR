@@ -83,6 +83,7 @@ endif() # MINI_STIR
 
 include(stir_lib_target)
 
+
 target_link_libraries(IO PRIVATE fmt)
 
 if (LLN_FOUND)
@@ -137,10 +138,10 @@ if (NOT MINI_STIR)
   target_link_libraries(IO PUBLIC listmode_buildblock)
 endif()
 
-#if (HAVE_PETSIRD)
-	#target_include_directories(IO PUBLIC ${PETSIRD_dir})
-	## needed for helpers
-	#target_include_directories(IO PUBLIC ${PETSIRD_dir}/..)
-	#target_include_directories(IO PUBLIC ${PETSIRD_dir}/../helpers/include)
-	#target_link_libraries(IO PUBLIC petsird_generated)
-#endif()
+if (HAVE_PETSIRD)
+  target_include_directories(IO PUBLIC ${PETSIRD_dir})
+  ## needed for helpers
+  target_include_directories(IO PUBLIC ${PETSIRD_dir}/..)
+  target_include_directories(IO PUBLIC ${PETSIRD_dir}/../helpers/include)
+  target_link_libraries(IO PUBLIC petsird_generated)
+endif()

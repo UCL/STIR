@@ -140,10 +140,10 @@ public:
 
   std::unique_ptr<data_type> read_from_file(const std::string& filename) const override
   {
-    info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
-    actual_do_parsing(filename);
-    return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR<EventDataType>>(
-        listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
+    // info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
+    // actual_do_parsing(filename);
+    // return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR<EventDataType>>(
+    //     listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
   }
 
 protected:
