@@ -15,13 +15,19 @@ set(${dir_LIB_SOURCES}
         CListModeDataECAT8_32bit.cxx
         CListRecordECAT8_32bit.cxx
         CListModeDataBasedOnCoordinateMap.cxx
-	CListModeDataSAFIR.cxx
+        CListModeDataSAFIR.cxx
 )
 
 if (HAVE_HDF5)
 list(APPEND ${dir_LIB_SOURCES}
         CListModeDataGEHDF5.cxx
         # CListRecordGEHDF5.cxx
+)
+endif()
+
+if (HAVE_PETSIRD)
+list(APPEND ${dir_LIB_SOURCES}
+        CListModeDataPETSIRD.cxx
 )
 endif()
 
