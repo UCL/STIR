@@ -32,9 +32,7 @@
 #ifndef __stir_listmode_CListModeDataBasedOnCoordinateMap_H__
 #define __stir_listmode_CListModeDataBasedOnCoordinateMap_H__
 
-#include <iostream>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "stir/listmode/CListModeData.h"
@@ -44,39 +42,24 @@
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
 
-#include "stir/listmode/CListRecordSAFIR.h"
+// #include "stir/listmode/CListRecordSAFIR.h"
 #include "stir/DetectorCoordinateMap.h"
 
 START_NAMESPACE_STIR
 
-template <class CListRecordT>
 class CListModeDataBasedOnCoordinateMap : public CListModeData
 {
 public:
-  /*! Constructor
-  \par
-  Takes as arguments the filenames of the coicidence listmode file, the crystal map (text) file, and the template projection data
-  file
-  */
-  CListModeDataBasedOnCoordinateMap(const std::string& listmode_filename,
-                     const std::string& crystal_map_filename,
-                     const std::string& template_proj_data_filename,
-                     const double lor_randomization_sigma = 0.0);
-
-  CListModeDataBasedOnCoordinateMap(const std::string& listmode_filename, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
   std::string get_name() const override;
   shared_ptr<CListRecord> get_empty_record_sptr() const override;
   Succeeded get_next_record(CListRecord& record_of_general_type) const override;
   Succeeded reset() override;
 
-  /*!
-  This function should save the position in input file. This is not implemented but disabled.
-  Returns 0 in the moement.
-  \todo Maybe provide real implementation?
-  */
-  SavedPosition save_get_position() override { return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position()); }
-  Succeeded set_get_position(const SavedPosition& pos) override { return current_lm_data_ptr->set_get_position(pos); }
+  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() = 0;
+
+  SavedPosition save_get_position() override { return static_cast<SavedPosition>(get_current_lm_file()->save_get_position()); }
+  Succeeded set_get_position(const SavedPosition& pos) override { return get_current_lm_file()->set_get_position(pos); }
 
   /*!
   Returns just false in the moment.
@@ -86,7 +69,7 @@ public:
 
 protected:
   std::string listmode_filename;
-  mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool>> current_lm_data_ptr;
+
   mutable std::vector<unsigned int> saved_get_positions;
   virtual Succeeded open_lm_file() const = 0;
 
@@ -94,7 +77,49 @@ protected:
 };
 
 
+// CListModeDataBasedOnCoordinateMap::CListModeDataBasedOnCoordinateMap(const std::string& listmode_filename,
+//                                                                      const std::string& crystal_map_filename,
+//                                                                      const std::string& template_proj_data_filename,
+//                                                                      const double lor_randomization_sigma)
+//     : listmode_filename(listmode_filename)
+// {
+//   if (!crystal_map_filename.empty())
+//     {
+//       map = MAKE_SHARED<DetectorCoordinateMap>(crystal_map_filename, lor_randomization_sigma);
+//     }
+//   else
+//     {
+//       if (lor_randomization_sigma != 0)
+//         error("SAFIR currently does not support LOR-randomisation unless a map is specified");
+//     }
+//   shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+//   _exam_info_sptr->imaging_modality = ImagingModality::PT;
+//   this->exam_info_sptr = _exam_info_sptr;
 
+//          // Here we are reading the scanner data from the template projdata
+//   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
+//   this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
+
+//   if (open_lm_file() == Succeeded::no)
+//     {
+//       error("CListModeDataSAFIR: Could not open listmode file " + listmode_filename + "\n");
+//     }
+// }
+
+// // CListModeDataBasedOnCoordinateMap::CListModeDataBasedOnCoordinateMap(const std::string& listmode_filename,
+// //                                                      const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+// //     : listmode_filename(listmode_filename)
+// // {
+// //   shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+// //   _exam_info_sptr->imaging_modality = ImagingModality::PT;
+// //   this->exam_info_sptr = _exam_info_sptr;
+// //   this->set_proj_data_info_sptr(proj_data_info_sptr->create_shared_clone());
+
+// //   if (open_lm_file() == Succeeded::no)
+// //     {
+// //       error("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"");
+// //     }
+// // }
 
 END_NAMESPACE_STIR
 

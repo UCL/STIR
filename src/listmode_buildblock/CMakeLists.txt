@@ -15,13 +15,19 @@ set(${dir_LIB_SOURCES}
         CListModeDataECAT8_32bit.cxx
         CListRecordECAT8_32bit.cxx
         CListModeDataBasedOnCoordinateMap.cxx
-	CListModeDataSAFIR.cxx
+        CListModeDataSAFIR.cxx
 )
 
 if (HAVE_HDF5)
 list(APPEND ${dir_LIB_SOURCES}
         CListModeDataGEHDF5.cxx
         # CListRecordGEHDF5.cxx
+)
+endif()
+
+if (HAVE_PETSIRD)
+list(APPEND ${dir_LIB_SOURCES}
+        CListModeDataPETSIRD.cxx
 )
 endif()
 
@@ -67,4 +73,25 @@ if (HAVE_HDF5)
     # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
     target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
   endif()
+endif()
+
+if (HAVE_PETSIRD)
+#set(PETSIRD_dir ../../PETSIRD/cpp/generated)
+#add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
+
+target_include_directories(listmode_buildblock PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(listmode_buildblock PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(listmode_buildblock PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/helpers/include>
+  $<INSTALL_INTERFACE:include>
+)
+#target_link_libraries(IO PUBLIC petsird_generated)
 endif()
