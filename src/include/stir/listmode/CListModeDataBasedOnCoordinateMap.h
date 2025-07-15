@@ -32,9 +32,7 @@
 #ifndef __stir_listmode_CListModeDataBasedOnCoordinateMap_H__
 #define __stir_listmode_CListModeDataBasedOnCoordinateMap_H__
 
-#include <iostream>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "stir/listmode/CListModeData.h"
@@ -44,40 +42,23 @@
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
 
-#include "stir/listmode/CListRecordSAFIR.h"
+// #include "stir/listmode/CListRecordSAFIR.h"
 #include "stir/DetectorCoordinateMap.h"
 
 START_NAMESPACE_STIR
 
-template <class CListRecordT>
 class CListModeDataBasedOnCoordinateMap : public CListModeData
 {
 public:
-  /*! Constructor
-  \par
-  Takes as arguments the filenames of the coicidence listmode file, the crystal map (text) file, and the template projection data
-  file
-  */
-  CListModeDataBasedOnCoordinateMap(const std::string& listmode_filename,
-                                    const std::string& crystal_map_filename,
-                                    const std::string& template_proj_data_filename,
-                                    const double lor_randomization_sigma = 0.0);
-
-  CListModeDataBasedOnCoordinateMap(const std::string& listmode_filename,
-                                    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
-
   std::string get_name() const override;
   shared_ptr<CListRecord> get_empty_record_sptr() const override;
   Succeeded get_next_record(CListRecord& record_of_general_type) const override;
   Succeeded reset() override;
 
-  /*!
-  This function should save the position in input file. This is not implemented but disabled.
-  Returns 0 in the moement.
-  \todo Maybe provide real implementation?
-  */
-  SavedPosition save_get_position() override { return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position()); }
-  Succeeded set_get_position(const SavedPosition& pos) override { return current_lm_data_ptr->set_get_position(pos); }
+  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() = 0;
+
+  SavedPosition save_get_position() override { return static_cast<SavedPosition>(get_current_lm_file()->save_get_position()); }
+  Succeeded set_get_position(const SavedPosition& pos) override { return get_current_lm_file()->set_get_position(pos); }
 
   /*!
   Returns just false in the moment.
@@ -87,7 +68,7 @@ public:
 
 protected:
   std::string listmode_filename;
-  mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool>> current_lm_data_ptr;
+
   mutable std::vector<unsigned int> saved_get_positions;
   virtual Succeeded open_lm_file() const = 0;
 
