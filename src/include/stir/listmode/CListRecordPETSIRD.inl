@@ -131,5 +131,5 @@ namespace detail
 //   det_pos_pair.pos2().tangential_coord() = detB;
 // }
 
-
+} // namespace detail
 END_NAMESPACE_STIR
