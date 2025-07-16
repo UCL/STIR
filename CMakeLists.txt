@@ -297,8 +297,6 @@ if(NOT DISABLE_PETSIRD)
       RESULT_VARIABLE JUST_RESULT
   )
 
-  # set(PETSIRD_dir ../../PETSIRD/cpp/generated)
-      add_subdirectory(${PROJECT_SOURCE_DIR}/PETSIRD/cpp petsird_generated)
   if(JUST_RESULT EQUAL 0)
       set(HAVE_PETSIRD TRUE)
       set(PETSIRD_base_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)

@@ -39,7 +39,9 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 
-// #include "binary/protocols.h"
+#include "../../PETSIRD/cpp/generated/binary/protocols.h"
+#include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
+
 // #include "helpers/include/petsird_helpers.h"
 // #include "helpers/include/petsird_helpers/create.h"
 // #include "helpers/include/petsird_helpers/geometry.h"
@@ -50,23 +52,21 @@ Coincidence LM Data Class for PETSIRD: Implementation
 
 START_NAMESPACE_STIR
 
-CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
-                                           const std::string& crystal_map_filename,
-                                           const std::string& template_proj_data_filename,
-                                           const double lor_randomization_sigma)
+CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
 {
   CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
-  petsird::Header header;
-  petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
-  petsird_reader.ReadHeader(header);
-  petsird::ScannerInformation scanner_info = header.scanner;
-  petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
+  // petsird::Header header;
+  // petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
+  // petsird_reader.ReadHeader(header);
+  // petsird::ScannerInformation scanner_info = header.scanner;
+  // petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
+
   // need to get  inner_ring_radius, num_detector_layers, num_transaxial_crystals_per_block, num_axial_crystals_per_block
   //  transaxial_crystal_spacing,average_depth_of_interaction,axial_crystal_spacing, num_rings, ring_spacing, num_axial_blocks,
   //  num_oftransaxial_blocks
   //  these are from rep_module.object
 
-  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
+  // std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
   //  petsird::ReplicatedDetectorModule = scanner_geo.replicated_modules;
 
   // if (!crystal_map_filename.empty())
@@ -109,7 +109,5 @@ CListModeDataPETSIRD::open_lm_file() const
   //                                                    ByteOrder::little_endian != ByteOrder::get_native_order()));
   // return Succeeded::yes;
 }
-
-// template class CListModeDataPETSIRD<CListRecordPETSIRD>;
 
 END_NAMESPACE_STIR

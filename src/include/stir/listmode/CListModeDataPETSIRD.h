@@ -60,25 +60,20 @@ START_NAMESPACE_STIR
 class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
 {
 public:
-  CListModeDataPETSIRD(const std::string& listmode_filename)
-  {
-    CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
-  }
-  CListModeDataPETSIRD(const std::string& listmode_filename,
-                       const std::string& crystal_map_filename,
-                       const std::string& template_proj_data_filename,
-                       const double lor_randomization_sigma = 0.0);
+  CListModeDataPETSIRD(const std::string& listmode_filename);
 
-  shared_ptr<CListRecord> get_empty_record_sptr() const override { return nullptr; }
+  shared_ptr<CListRecord> get_empty_record_sptr() const override;
 
-  Succeeded get_next_record(CListRecord& record_of_general_type) const override { return Succeeded::no; }
+  Succeeded get_next_record(CListRecord& record_of_general_type) const override;
 
-  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() override {}
+  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() override { return current_lm_data_ptr; }
 
   bool has_delayeds() const override { return false; }
 
 protected:
   virtual Succeeded open_lm_file() const override;
+
+  mutable shared_ptr<InputStreamWithRecords<CListRecordPETSIRD, bool>> current_lm_data_ptr;
 };
 
 END_NAMESPACE_STIR
