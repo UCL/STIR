@@ -60,6 +60,19 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
                                            const double lor_randomization_sigma)
 {
   CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
+  petsird::Header header;
+  petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
+  petsird_reader.ReadHeader(header);
+  petsird::ScannerInformation scanner_info = header.scanner;
+  petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
+  // need to get  inner_ring_radius, num_detector_layers, num_transaxial_crystals_per_block, num_axial_crystals_per_block
+  //  transaxial_crystal_spacing,average_depth_of_interaction,axial_crystal_spacing, num_rings, ring_spacing, num_axial_blocks,
+  //  num_oftransaxial_blocks
+  //  these are from rep_module.object
+
+  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
+  //  petsird::ReplicatedDetectorModule = scanner_geo.replicated_modules;
+
   // if (!crystal_map_filename.empty())
   //   {
   //     this->map = MAKE_SHARED<DetectorCoordinateMap>(crystal_map_filename, lor_randomization_sigma);
