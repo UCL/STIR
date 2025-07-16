@@ -49,9 +49,6 @@
 
 #include "stir/DetectorCoordinateMap.h"
 #include "boost/make_shared.hpp"
-// #include "petsird_helpers.h"
-// #include "petsird_helpers/create.h"
-// #include "petsird_helpers/geometry.h"
 
 START_NAMESPACE_STIR
 
@@ -59,18 +56,6 @@ START_NAMESPACE_STIR
 Provides interface of the record class to STIR by implementing get_LOR(). It uses an optional map from detector indices to
 coordinates to specify LORAs2Points from given detection pair indices.
 
-The record has the following format (for little-endian byte order)
-\code
-        unsigned ringA : 8;
-        unsigned ringB : 8;
-        unsigned detA : 16;
-        unsigned detB : 16;
-        unsigned layerA : 4;
-        unsigned layerB : 4;
-        unsigned reserved : 6;
-        unsigned isDelayed : 1;
-        unsigned type : 1;
-\endcode
   \ingroup listmode
 */
 
@@ -170,16 +155,6 @@ public:
   }
   inline bool is_time() const { return type; }
 
-private:
-#if STIRIsNativeByteOrderBigEndian
-  boost::uint64_t type : 1;
-  boost::uint64_t reserved : 15;
-  boost::uint64_t time : 48;
-#else
-  boost::uint64_t time : 48;
-  boost::uint64_t reserved : 15;
-  boost::uint64_t type : 1;
-#endif
 };
 
 

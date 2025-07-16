@@ -38,7 +38,10 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/error.h"
-
+#include "binary/protocols.h"
+#include "helpers/include/petsird_helpers.h"
+#include "helpers/include/petsird_helpers/create.h"
+#include "helpers/include/petsird_helpers/geometry.h"
 //#include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
