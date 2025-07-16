@@ -79,6 +79,12 @@ if (HAVE_HDF5)
  )
 endif()
 
+if (HAVE_PETSIRD)
+list(APPEND ${dir_LIB_SOURCES}
+PETSIRDCListmodeInputFileFormat.cxx
+)
+endif()
+
 endif() # MINI_STIR
 
 include(stir_lib_target)
@@ -139,12 +145,16 @@ if (NOT MINI_STIR)
 endif()
 
 if (HAVE_PETSIRD)
-# # #set(PETSIRD_dir ../../PETSIRD/cpp/generated)
+  #set(PETSIRD_dir ../../PETSIRD/cpp/generated)
 
-# # target_include_directories(IO PUBLIC
-# #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
-# #   $<INSTALL_INTERFACE:include>
-# # )
+
+target_include_directories(IO PUBLIC
+  $<BUILD_INTERFACE:${PETSIRD_base_dir}>
+  $<BUILD_INTERFACE:${PETSIRD_base_dir}/binary>
+  $<BUILD_INTERFACE:${PETSIRD_base_dir}/helpers/include>
+  $<BUILD_INTERFACE:${PETSIRD_base_dir}/yardl>
+)
+
 
 # # target_include_directories(IO PUBLIC
 # #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>

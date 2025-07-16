@@ -60,6 +60,10 @@ START_NAMESPACE_STIR
 class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
 {
 public:
+  CListModeDataPETSIRD(const std::string& listmode_filename)
+  {
+    CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
+  }
   CListModeDataPETSIRD(const std::string& listmode_filename,
                        const std::string& crystal_map_filename,
                        const std::string& template_proj_data_filename,
