@@ -66,6 +66,10 @@
 #    include "stir/IO/InputStreamFromROOTFileForECATPET.h"
 #  endif
 
+#  ifdef HAVE_PETSIRD
+#    include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
+#  endif
+
 #  ifdef HAVE_UPENN
 #    include "stir/IO/PENNListmodeInputFileFormat.h"
 #    include "stir/IO/InputStreamWithRecordsFromUPENNbin.h"
@@ -157,7 +161,6 @@ static InputStreamWithRecordsFromUPENNtxt::RegisterIt dummy686062;
 #  endif
 
 #  ifdef HAVE_PETSIRD
-#    include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
 static RegisterInputFileFormat<PETSIRDCListmodeInputFileFormat> LMdummyPETSIRD(10);
 #  endif
 
