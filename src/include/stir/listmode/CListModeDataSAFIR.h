@@ -33,10 +33,7 @@ Jannis Fischer
 #define __stir_listmode_CListModeDataSAFIR_H__
 
 
-#include <iostream>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "stir/listmode/CListModeDataBasedOnCoordinateMap.h"
 #include "stir/ProjData.h"
@@ -44,8 +41,6 @@ Jannis Fischer
 #include "stir/listmode/CListRecord.h"
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
-
-#include "stir/listmode/CListRecordSAFIR.h"
 
 START_NAMESPACE_STIR
 
@@ -57,7 +52,7 @@ START_NAMESPACE_STIR
   coordinates.
 */
 template <class CListRecordT>
-class CListModeDataSAFIR : public CListModeDataBasedOnCoordinateMap<CListRecordT>
+class CListModeDataSAFIR : public CListModeDataBasedOnCoordinateMap
 {
 public:
 
@@ -66,9 +61,18 @@ public:
                      const std::string& template_proj_data_filename,
                      const double lor_randomization_sigma = 0.0);
 
-protected:
-  virtual Succeeded open_lm_file() const;
+  CListModeDataSAFIR(const std::string& listmode_filename, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
+  shared_ptr<CListRecord> get_empty_record_sptr() const override;
+  Succeeded get_next_record(CListRecord& record_of_general_type) const override;
+
+  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file(){
+    return current_lm_data_ptr;
+  };
+
+protected:
+  virtual Succeeded open_lm_file() const override;
+  mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool>> current_lm_data_ptr;
 };
 
 END_NAMESPACE_STIR

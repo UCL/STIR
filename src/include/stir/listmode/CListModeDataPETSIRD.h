@@ -45,11 +45,12 @@ Jannis Fischer
 #include "stir/listmode/CListRecord.h"
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
-#include "petsird_helpers.h"
-#include "petsird_helpers/create.h"
-#include "petsird_helpers/geometry.h"
 
-#include "stir/listmode/CListRecordPETSIRD.h"
+// #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
+// #include "petsird_helpers/create.h"
+// #include "petsird_helpers/geometry.h"
+
+// #include "stir/listmode/CListRecordPETSIRD.h"
 
 START_NAMESPACE_STIR
 
@@ -60,8 +61,8 @@ START_NAMESPACE_STIR
   By providing crystal map and template projection data files, the coordinates are read from files and used defining the LOR
   coordinates.
 */
-template <class CListRecordT>
-class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap<CListRecordT>
+
+class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
 {
 public:
 
@@ -70,8 +71,18 @@ public:
                      const std::string& template_proj_data_filename,
                      const double lor_randomization_sigma = 0.0);
 
+  shared_ptr<CListRecord> get_empty_record_sptr() const override {
+
+    return nullptr;
+  }
+
+  Succeeded get_next_record(CListRecord& record_of_general_type) const override{
+
+    return Succeeded::no;
+  }
+
 protected:
-  virtual Succeeded open_lm_file() const;
+  virtual Succeeded open_lm_file() const override;
 
 };
 

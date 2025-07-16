@@ -44,8 +44,24 @@
 #include "stir/utilities.h"
 #include "stir/ParsingObject.h"
 
-#include "stir/listmode/CListRecordPETSIRD.h"
+// #include "stir/listmode/CListRecordPETSIRD.h"
 #include "stir/listmode/CListModeDataPETSIRD.h"
+
+// #include "../../../../PETSIRD/cpp/generated/yardl/yardl.h"
+// #include "../../PETSIRD/cpp/generated/types.h"
+// #ifdef HAVE_HDF5
+// // #  include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
+// // using petsird::hdf5::PETSIRDReader;
+// #else
+// // #  include "../../PETSIRD/cpp/generated/binary/protocols.h"
+// // using petsird::binary::PETSIRDReader;
+// #endif
+
+
+// #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
+
+// #include "types.h"
+// #include "hdf5/protocols.h"
 
 START_NAMESPACE_STIR
 
@@ -76,7 +92,9 @@ each event.
 "PETSIRD CListModeData\0" and "NeuroLF CListModeData\0". If either is successfull, the class claims it can read the file format. The
 rest of the file is read as records as specified as template parameter, e.g. CListRecordPETSIRD.
 */
-template <class EventDataType>
+
+// using namespace petsird::binary;
+
 class PETSIRDCListmodeInputFileFormat : public InputFileFormat<ListModeData>, public ParsingObject
 {
 public:
@@ -93,43 +111,47 @@ public:
   //! CListModeData").
   bool can_read(const FileSignature& signature, const std::string& filename) const override
   {
-    // Looking for the right key in the parameter file
-    std::ifstream par_file(filename.c_str());
-    std::string key;
-    std::getline(par_file, key, ':');
-    key = standardise_interfile_keyword(key);
-    if (key != std::string("clistmodedataPETSIRD parameters"))
-      {
-        return false;
-      }
-    if (!actual_do_parsing(filename))
-      return false;
-    std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
-    char* buffer = new char[32];
-    data_file.read(buffer, 32);
-    bool cr = false;
-    // depending on used template, check header of listmode file for correct format
-    if (std::is_same<EventDataType, CListEventDataPETSIRD>::value)
-      {
-        cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) || !strncmp(buffer, "PETSIRD CListModeData\0", 20));
-      }
-    else if (std::is_same<EventDataType, CListEventDataNeuroLF>::value)
-      {
-        cr = !strncmp(buffer, "NeuroLF CListModeData\0", 20);
-      }
-    else
-      {
-        warning("PETSIRDCListModeInputFileFormat was initialised with an unexpected template.");
-      }
+    int nikos = 0;
+    std::string d = filename;
+    // PETSIRDReader ndn(d);
+    // // Looking for the right key in the parameter file
+    // std::ifstream par_file(filename.c_str());
+    // std::string key;
+    // std::getline(par_file, key, ':');
+    // key = standardise_interfile_keyword(key);
+    // if (key != std::string("clistmodedataPETSIRD parameters"))
+    //   {
+    //     return false;
+    //   }
+    // if (!actual_do_parsing(filename))
+    //   return false;
+    // std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
+    // char* buffer = new char[32];
+    // data_file.read(buffer, 32);
+    // bool cr = false;
+    // // depending on used template, check header of listmode file for correct format
+    // if (std::is_same<EventDataType, CListEventDataPETSIRD>::value)
+    //   {
+    //     cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) || !strncmp(buffer, "PETSIRD CListModeData\0", 20));
+    //   }
+    // else if (std::is_same<EventDataType, CListEventDataNeuroLF>::value)
+    //   {
+    //     cr = !strncmp(buffer, "NeuroLF CListModeData\0", 20);
+    //   }
+    // else
+    //   {
+    //     warning("PETSIRDCListModeInputFileFormat was initialised with an unexpected template.");
+    //   }
 
-    if (!cr)
-      {
-        warning("PETSIRDCListModeInputFileFormat tried to read file " + listmode_filename
-                + " but it seems to have the wrong signature.");
-      }
+    // if (!cr)
+    //   {
+    //     warning("PETSIRDCListModeInputFileFormat tried to read file " + listmode_filename
+    //             + " but it seems to have the wrong signature.");
+    //   }
 
-    delete[] buffer;
-    return cr;
+    // delete[] buffer;
+    // return cr;
+    return true;
   }
 
   std::unique_ptr<data_type> read_from_file(std::istream& input) const override
@@ -179,14 +201,14 @@ protected:
 
   bool actual_do_parsing(const std::string& filename) const
   {
-    // Ugly const_casts here, but I don't see an other nice way to use the parser
-    if (const_cast<PETSIRDCListmodeInputFileFormat<EventDataType>*>(this)->parse(filename.c_str()))
-      {
-        info(const_cast<PETSIRDCListmodeInputFileFormat<EventDataType>*>(this)->parameter_info());
-        return true;
-      }
-    else
-      return false;
+    // // Ugly const_casts here, but I don't see an other nice way to use the parser
+    // if (const_cast<PETSIRDCListmodeInputFileFormat<EventDataType>*>(this)->parse(filename.c_str()))
+    //   {
+    //     info(const_cast<PETSIRDCListmodeInputFileFormat<EventDataType>*>(this)->parameter_info());
+    //     return true;
+    //   }
+    // else
+    //   return false;
   }
 
   bool post_processing() override

@@ -51,14 +51,13 @@
 
 START_NAMESPACE_STIR
 
-template <class Derived>
 LORAs2Points<float>
-CListEventPETSIRD<Derived>::get_LOR() const
+CListEventPETSIRD::get_LOR() const
 {
   LORAs2Points<float> lor;
   DetectionPositionPair<> det_pos_pair;
 
-  static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
+  // static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
 
   lor.p1() = map_to_use().get_coordinate_for_index(det_pos_pair.pos1());
   lor.p2() = map_to_use().get_coordinate_for_index(det_pos_pair.pos2());
@@ -68,81 +67,69 @@ CListEventPETSIRD<Derived>::get_LOR() const
 
 namespace detail
 {
-template <class PDIT>
-static inline bool
-get_bin_for_det_pos_pair(Bin& bin, DetectionPositionPair<>& det_pos_pair, const ProjDataInfo& proj_data_info)
-{
-  if (auto proj_data_info_ptr = dynamic_cast<const PDIT*>(&proj_data_info))
-    {
-      if (proj_data_info_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
-        bin.set_bin_value(1);
-      else
-        bin.set_bin_value(-1);
-      return true;
-    }
-  else
-    return false;
-}
-} // namespace detail
+// template <class PDIT>
+// static inline bool
+// get_bin_for_det_pos_pair(Bin& bin, DetectionPositionPair<>& det_pos_pair, const ProjDataInfo& proj_data_info)
+// {
+//   if (auto proj_data_info_ptr = dynamic_cast<const PDIT*>(&proj_data_info))
+//     {
+//       if (proj_data_info_ptr->get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
+//         bin.set_bin_value(1);
+//       else
+//         bin.set_bin_value(-1);
+//       return true;
+//     }
+//   else
+//     return false;
+// }
+// } // namespace detail
 
-template <class Derived>
-void
-CListEventPETSIRD<Derived>::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
-{
-  DetectionPositionPair<> det_pos_pair;
-  static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
+// template <class Derived>
+// void
+// CListEventPETSIRD<Derived>::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+// {
+//   DetectionPositionPair<> det_pos_pair;
+//   static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
 
-  if (!map_sptr)
-    {
-      // transform det_pos_pair into stir conventions
-      det_pos_pair.pos1() = map_to_use().get_det_pos_for_index(det_pos_pair.pos1());
-      det_pos_pair.pos2() = map_to_use().get_det_pos_for_index(det_pos_pair.pos2());
+//   if (!map_sptr)
+//     {
+//       // transform det_pos_pair into stir conventions
+//       det_pos_pair.pos1() = map_to_use().get_det_pos_for_index(det_pos_pair.pos1());
+//       det_pos_pair.pos2() = map_to_use().get_det_pos_for_index(det_pos_pair.pos2());
 
-      if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
-        {
-          bin.set_bin_value(-1);
-          return;
-        }
+//       if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
+//         {
+//           bin.set_bin_value(-1);
+//           return;
+//         }
 
-      if (!detail::get_bin_for_det_pos_pair<ProjDataInfoGenericNoArcCorr>(bin, det_pos_pair, proj_data_info))
-        {
-          if (!detail::get_bin_for_det_pos_pair<ProjDataInfoCylindricalNoArcCorr>(bin, det_pos_pair, proj_data_info))
-            error("Wrong type of proj-data-info for PETSIRD");
-        }
-    }
-  else
-    {
-      const stir::CartesianCoordinate3D<float> c1 = map_sptr->get_coordinate_for_index(det_pos_pair.pos1());
-      const stir::CartesianCoordinate3D<float> c2 = map_sptr->get_coordinate_for_index(det_pos_pair.pos2());
-      const LORAs2Points<float> lor(c1, c2);
-      bin = proj_data_info.get_bin(lor);
-    }
-}
+//       if (!detail::get_bin_for_det_pos_pair<ProjDataInfoGenericNoArcCorr>(bin, det_pos_pair, proj_data_info))
+//         {
+//           if (!detail::get_bin_for_det_pos_pair<ProjDataInfoCylindricalNoArcCorr>(bin, det_pos_pair, proj_data_info))
+//             error("Wrong type of proj-data-info for PETSIRD");
+//         }
+//     }
+//   else
+//     {
+//       const stir::CartesianCoordinate3D<float> c1 = map_sptr->get_coordinate_for_index(det_pos_pair.pos1());
+//       const stir::CartesianCoordinate3D<float> c2 = map_sptr->get_coordinate_for_index(det_pos_pair.pos2());
+//       const LORAs2Points<float> lor(c1, c2);
+//       bin = proj_data_info.get_bin(lor);
+//     }
+// }
 
-void
-CListEventDataPETSIRD::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)
-{
-  det_pos_pair.pos1().radial_coord() = layerA;
-  det_pos_pair.pos2().radial_coord() = layerB;
+// void
+// CListEventDataPETSIRD::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)
+// {
+//   det_pos_pair.pos1().radial_coord() = layerA;
+//   det_pos_pair.pos2().radial_coord() = layerB;
 
-  det_pos_pair.pos1().axial_coord() = ringA;
-  det_pos_pair.pos2().axial_coord() = ringB;
+//   det_pos_pair.pos1().axial_coord() = ringA;
+//   det_pos_pair.pos2().axial_coord() = ringB;
 
-  det_pos_pair.pos1().tangential_coord() = detA;
-  det_pos_pair.pos2().tangential_coord() = detB;
-}
+//   det_pos_pair.pos1().tangential_coord() = detA;
+//   det_pos_pair.pos2().tangential_coord() = detB;
+// }
 
-void
-CListEventDataNeuroLF::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)
-{
-  det_pos_pair.pos1().radial_coord() = layerA;
-  det_pos_pair.pos2().radial_coord() = layerB;
-
-  det_pos_pair.pos1().axial_coord() = ringA;
-  det_pos_pair.pos2().axial_coord() = ringB;
-
-  det_pos_pair.pos1().tangential_coord() = detA;
-  det_pos_pair.pos2().tangential_coord() = detB;
-}
 
 END_NAMESPACE_STIR

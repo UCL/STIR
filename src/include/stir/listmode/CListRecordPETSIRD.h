@@ -49,9 +49,9 @@
 
 #include "stir/DetectorCoordinateMap.h"
 #include "boost/make_shared.hpp"
-#include "petsird_helpers.h"
-#include "petsird_helpers/create.h"
-#include "petsird_helpers/geometry.h"
+// #include "petsird_helpers.h"
+// #include "petsird_helpers/create.h"
+// #include "petsird_helpers/geometry.h"
 
 START_NAMESPACE_STIR
 
@@ -73,7 +73,7 @@ The record has the following format (for little-endian byte order)
 \endcode
   \ingroup listmode
 */
-template <class Derived>
+
 class CListEventPETSIRD : public CListEvent
 {
 public:
@@ -96,7 +96,7 @@ public:
   inline bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
   //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const override { return !(static_cast<const Derived*>(this)->is_prompt()); }
+  inline bool is_prompt() const override { return true; }//!(static_cast<const Derived*>(this)->is_prompt()); }
   //! Function to set map for detector indices to coordinates.
   /*! Use a null pointer to disable the mapping functionality */
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
@@ -111,95 +111,51 @@ private:
   const DetectorCoordinateMap& map_to_use() const { return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
 };
 
-//! Class for record with coincidence data using PETSIRD bitfield definition
-/*! \ingroup listmode */
-class CListEventDataPETSIRD
-{
-public:
-  //! Writes detection position pair to reference given as argument.
-  inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
+// //! Class for record with coincidence data using PETSIRD bitfield definition
+// /*! \ingroup listmode */
+// class CListEventDataPETSIRD
+// {
+// public:
+//   //! Writes detection position pair to reference given as argument.
+//   inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
 
-  //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const { return !isDelayed; }
+//   //! Returns 0 if event is prompt and 1 if delayed
+//   inline bool is_prompt() const { return !isDelayed; }
 
-  //! Returns 1 if if event is time and 0 if it is prompt
-  inline bool is_time() const { return type; }
+//   //! Returns 1 if if event is time and 0 if it is prompt
+//   inline bool is_time() const { return type; }
 
-  //! Can be used to set "promptness" of event.
-  inline Succeeded set_prompt(const bool prompt = true)
-  {
-    isDelayed = !prompt;
-    return Succeeded::yes;
-  }
+//   //! Can be used to set "promptness" of event.
+//   inline Succeeded set_prompt(const bool prompt = true)
+//   {
+//     isDelayed = !prompt;
+//     return Succeeded::yes;
+//   }
 
-private:
-#if STIRIsNativeByteOrderBigEndian
-  unsigned type : 1;
-  unsigned isDelayed : 1;
-  unsigned reserved : 6;
-  unsigned layerB : 4;
-  unsigned layerA : 4;
-  unsigned detB : 16;
-  unsigned detA : 16;
-  unsigned ringB : 8;
-  unsigned ringA : 8;
-#else
-  unsigned ringA : 8;
-  unsigned ringB : 8;
-  unsigned detA : 16;
-  unsigned detB : 16;
-  unsigned layerA : 4;
-  unsigned layerB : 4;
-  unsigned reserved : 6;
-  unsigned isDelayed : 1;
-  unsigned type : 1;
-#endif
-};
+// private:
+// #if STIRIsNativeByteOrderBigEndian
+//   unsigned type : 1;
+//   unsigned isDelayed : 1;
+//   unsigned reserved : 6;
+//   unsigned layerB : 4;
+//   unsigned layerA : 4;
+//   unsigned detB : 16;
+//   unsigned detA : 16;
+//   unsigned ringB : 8;
+//   unsigned ringA : 8;
+// #else
+//   unsigned ringA : 8;
+//   unsigned ringB : 8;
+//   unsigned detA : 16;
+//   unsigned detB : 16;
+//   unsigned layerA : 4;
+//   unsigned layerB : 4;
+//   unsigned reserved : 6;
+//   unsigned isDelayed : 1;
+//   unsigned type : 1;
+// #endif
+// };
 
-//! Class for record with coincidence data using NeuroLF bitfield definition
-/*! \ingroup listmode */
-class CListEventDataNeuroLF
-{
-public:
-  //! Writes detection position pair to reference given as argument.
-  inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
-
-  //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const { return !isDelayed; }
-
-  //! Returns 1 if if event is time and 0 if it is prompt
-  inline bool is_time() const { return type; }
-
-  //! Can be used to set "promptness" of event.
-  inline Succeeded set_prompt(const bool prompt = true)
-  {
-    isDelayed = !prompt;
-    return Succeeded::yes;
-  }
-
-private:
-#if STIRIsNativeByteOrderBigEndian
-  unsigned type : 1;
-  unsigned isDelayed : 1;
-  unsigned reserved : 8;
-  unsigned layerB : 3;
-  unsigned layerA : 3;
-  unsigned detB : 16;
-  unsigned detA : 16;
-  unsigned ringB : 8;
-  unsigned ringA : 8;
-#else
-  unsigned ringA : 8;
-  unsigned ringB : 8;
-  unsigned detA : 16;
-  unsigned detB : 16;
-  unsigned layerA : 3;
-  unsigned layerB : 3;
-  unsigned reserved : 8;
-  unsigned isDelayed : 1;
-  unsigned type : 1;
-#endif
-};
 
 //! Class for record with time data using PETSIRD bitfield definition
 /*! \ingroup listmode */
@@ -226,18 +182,16 @@ private:
 #endif
 };
 
-//! Class for general PETSIRD record, containing a union of data, time and raw record and providing access to certain elements.
-/*! \ingroup listmode */
-template <class DataType>
-class CListRecordPETSIRD : public CListRecord, public ListTime, public CListEventPETSIRD<CListRecordPETSIRD<DataType>>
+
+class CListRecordPETSIRD : public CListRecord, public ListTime, public CListEventPETSIRD
 {
 public:
   //! Returns event_data (without checking if the type is really event and not time).
-  DataType get_data() const { return this->event_data; }
+  CListEventPETSIRD get_data() const { return this->event_data; }
 
-  CListRecordPETSIRD()
-      : CListEventPETSIRD<CListRecordPETSIRD<DataType>>()
-  {}
+  // CListRecordPETSIRD()
+  //     : CListEventPETSIRD<CListRecordPETSIRD<DataType>>()
+  // {}
 
   ~CListRecordPETSIRD() override {}
 
@@ -249,9 +203,9 @@ public:
 
   const CListEvent& event() const override { return *this; }
 
-  virtual CListEventPETSIRD<CListRecordPETSIRD<DataType>>& event_PETSIRD() { return *this; }
+  virtual CListEventPETSIRD& event_PETSIRD() { return *this; }
 
-  virtual const CListEventPETSIRD<CListRecordPETSIRD<DataType>>& event_PETSIRD() const { return *this; }
+  virtual const CListEventPETSIRD& event_PETSIRD() const { return *this; }
 
   ListTime& time() override { return *this; }
 
@@ -259,8 +213,8 @@ public:
 
   virtual bool operator==(const CListRecord& e2) const
   {
-    return dynamic_cast<CListRecordPETSIRD<DataType> const*>(&e2) != 0
-           && raw == static_cast<CListRecordPETSIRD<DataType> const&>(e2).raw;
+    return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0
+           && raw == static_cast<CListRecordPETSIRD const&>(e2).raw;
   }
 
   inline unsigned long get_time_in_millisecs() const override { return time_data.get_time_in_millisecs(); }
@@ -293,13 +247,10 @@ private:
   // However, this is used as a feature if comparing events over the 'raw' type.
   union
   {
-    DataType event_data;
+    CListEventPETSIRD event_data;
     CListTimeDataPETSIRD time_data;
     boost::int64_t raw;
   };
-  BOOST_STATIC_ASSERT(sizeof(boost::uint64_t) == 8);
-  BOOST_STATIC_ASSERT(sizeof(DataType) == 8);
-  BOOST_STATIC_ASSERT(sizeof(CListTimeDataPETSIRD) == 8);
 };
 
 END_NAMESPACE_STIR

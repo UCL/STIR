@@ -261,49 +261,54 @@ else()
 endif()
 
 if(NOT DISABLE_PETSIRD)
-	if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-	    # Check if PETSIRD is already registered as a submodule
-	    execute_process(
-		COMMAND ${GIT_EXECUTABLE} config --file ${PROJECT_SOURCE_DIR}/.gitmodules --get-regexp "submodule\\.PETSIRD\\.path"
-		RESULT_VARIABLE SUBMOD_EXISTS
-		OUTPUT_QUIET
-		ERROR_QUIET
-	    )
+        if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+            # Check if PETSIRD is already registered as a submodule
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} config --file ${PROJECT_SOURCE_DIR}/.gitmodules --get-regexp "submodule\\.PETSIRD\\.path"
+                RESULT_VARIABLE SUBMOD_EXISTS
+                OUTPUT_QUIET
+                ERROR_QUIET
+            )
 
-	    if(NOT SUBMOD_EXISTS EQUAL 0)
-		message(STATUS "Adding PETSIRD submodule...")
-		execute_process(
-		    COMMAND ${GIT_EXECUTABLE} submodule add https://github.com/ETSInitiative/PETSIRD.git PETSIRD
-		    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-		    RESULT_VARIABLE GIT_ADD_RESULT
-		)
-		if(NOT GIT_ADD_RESULT EQUAL 0)
-		    message(WARNING "Submodule add failed with code ${GIT_ADD_RESULT}")
-		endif()
-	    else()
-		message(STATUS "PETSIRD submodule already exists in .gitmodules.")
-	    endif()
+            if(NOT SUBMOD_EXISTS EQUAL 0)
+                message(STATUS "Adding PETSIRD submodule...")
+                execute_process(
+                    COMMAND ${GIT_EXECUTABLE} submodule add https://github.com/ETSInitiative/PETSIRD.git PETSIRD
+                    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                    RESULT_VARIABLE GIT_ADD_RESULT
+                )
+                if(NOT GIT_ADD_RESULT EQUAL 0)
+                    message(WARNING "Submodule add failed with code ${GIT_ADD_RESULT}")
+                endif()
+            else()
+                message(STATUS "PETSIRD submodule already exists in .gitmodules.")
+            endif()
 
-	    # Always update/init to ensure it's ready
-	    execute_process(
-		COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-	    )
-	endif()
+            # Always update/init to ensure it's ready
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            )
+        endif()
 
-	execute_process(
-	    COMMAND just generate
-	    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/PETSIRD
-	    RESULT_VARIABLE JUST_RESULT
-	)
-	if(JUST_RESULT EQUAL 0)
-	    set(HAVE_PETSIRD TRUE)
-	    set(PETSIRD_base_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)
-	    message(STATUS "PETSIRD generation succeeded. THE PATH is ${PETSIRD_base_dir}. HAVE_PETSIRD set to TRUE.")
-	else()
-	    set(HAVE_PETSIRD FALSE)
-	    message(WARNING "PETSIRD generation failed with code ${JUST_RESULT}. HAVE_PETSIRD not set.")
-	endif()
+        add_subdirectory(${PROJECT_SOURCE_DIR}/PETSIRD/cpp PETSIRD_generated)
+
+        # execute_process(
+        #     COMMAND just generate
+        #     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/PETSIRD
+        #     RESULT_VARIABLE JUST_RESULT
+        # )
+        # if(JUST_RESULT EQUAL 0)
+        set(HAVE_PETSIRD ON)
+
+
+        # set(PETSIRD_base_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)
+        install(TARGETS petsird_generated EXPORT STIRTargets DESTINATION lib)
+        #     message(STATUS "PETSIRD generation succeeded. THE PATH is ${PETSIRD_base_dir}. HAVE_PETSIRD set to TRUE.")
+        # else()
+ #            set(HAVE_PETSIRD OFF)
+        #     message(WARNING "PETSIRD generation failed with code ${JUST_RESULT}. HAVE_PETSIRD not set.")
+        # endif()
 endif()
 
 #### enable support for ctest

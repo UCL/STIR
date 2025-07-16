@@ -30,7 +30,6 @@ Coincidence LM Data Class for SAFIR: Implementation
 */
 #include <iostream>
 #include <fstream>
-#include <typeinfo>
 
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
@@ -51,14 +50,11 @@ START_NAMESPACE_STIR;
 
 template <class CListRecordT>
 CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode_filename,
-                                                                                   const std::string& crystal_map_filename,
-                                                                                   const std::string& template_proj_data_filename,
-                                                                                   const double lor_randomization_sigma)
-    : CListModeDataBasedOnCoordinateMap<CListRecordT>(listmode_filename,
-                                                      crystal_map_filename,
-                                                      template_proj_data_filename,
-                                                      lor_randomization_sigma)
+                                                     const std::string& crystal_map_filename,
+                                                     const std::string& template_proj_data_filename,
+                                                     const double lor_randomization_sigma)
 {
+  CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
   if (!crystal_map_filename.empty())
     {
       this->map = MAKE_SHARED<DetectorCoordinateMap>(crystal_map_filename, lor_randomization_sigma);
@@ -83,6 +79,22 @@ CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode
 }
 
 template <class CListRecordT>
+CListModeDataSAFIR<CListRecordT>::CListModeDataSAFIR(const std::string& listmode_filename,
+                                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+{
+  CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  this->exam_info_sptr = _exam_info_sptr;
+  this->set_proj_data_info_sptr(proj_data_info_sptr->create_shared_clone());
+
+  if (open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataSAFIR: opening file \"" + listmode_filename + "\"");
+    }
+}
+
+template <class CListRecordT>
 Succeeded
 CListModeDataSAFIR<CListRecordT>::open_lm_file() const
 {
@@ -101,7 +113,28 @@ CListModeDataSAFIR<CListRecordT>::open_lm_file() const
   return Succeeded::yes;
 }
 
-template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
-template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
+template <class CListRecordT>
+shared_ptr<CListRecord>
+CListModeDataSAFIR<CListRecordT>::get_empty_record_sptr() const
+{
+  shared_ptr<CListRecordT> sptr(new CListRecordT);
+  sptr->event_SAFIR().set_scanner_sptr(this->get_proj_data_info_sptr()->get_scanner_sptr());
+  sptr->event_SAFIR().set_map_sptr(map);
+  return static_pointer_cast<CListRecord>(sptr);
+}
+
+
+template <class CListRecordT>
+Succeeded
+CListModeDataSAFIR<CListRecordT>::get_next_record(CListRecord& record_of_general_type) const
+{
+  CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
+  Succeeded status = current_lm_data_ptr->get_next_record(record);
+  // if( status == Succeeded::yes ) record.event_SAFIR().set_map_sptr(map);
+  return status;
+}
+
+// template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
+// template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
 
 END_NAMESPACE_STIR
