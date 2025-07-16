@@ -4,6 +4,7 @@
 
         Copyright 2015 ETH Zurich, Institute of Particle Physics
         Copyright 2020 Positrigo AG, Zurich
+        Copyright 2025 National Physical Laboratory
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -26,6 +27,8 @@
 
   \author Jannis Fischer
   \author Markus Jehl, Positrigo
+  \author Daniel Deidda
+
 */
 
 #ifndef __stir_IO_PETSIRDCListmodeInputFileFormat_H__
@@ -39,6 +42,8 @@
 #include "boost/algorithm/string.hpp"
 
 #include "stir/IO/InputFileFormat.h"
+#include "stir/IO/InputFileFormat.h"
+#include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include "stir/error.h"
 #include "stir/utilities.h"
@@ -51,37 +56,16 @@ START_NAMESPACE_STIR
 
 /*! \brief Class for reading PETSIRD coincidence listmode data.
 
-It reads a parameter file, which refers to
-  - optional crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces
-(see DetectorCoordinateMap)
-  - the binary data file with the coincidence listmode data in PETSIRD format (see CListModeDataPETSIRD)
-  - a template projection data file, which defines the scanner
-
-  If the map is not defined, the scanner detectors will be used. Otherwise, the nearest LOR of the scanner will be selected for
-each event.
-
-  An example of such a parameter file would be
-  \code
-        CListModeDataPETSIRD Parameters:=
-                listmode data filename:= listmode_input.clm.PETSIRD
-                template projection data filename:= <projdata-filename>
-        ; optional map specifying the actual location of the crystals
-                crystal map filename:= crystal_map.txt
-                ; optional random displacement of the LOR end-points in mm (only used of a map is present)
-        LOR randomization (Gaussian) sigma:=0
-        END CListModeDataPETSIRD Parameters:=
-  \endcode
-
   The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0",
-"PETSIRD CListModeData\0" and "NeuroLF CListModeData\0". If either is successfull, the class claims it can read the file format. The
-rest of the file is read as records as specified as template parameter, e.g. CListRecordPETSIRD.
+"PETSIRD". If either is successfull, the class claims it can read the file format. The
+rest of the file is read as records, e.g. CListRecordPETSIRD.
 */
 template <class EventDataType>
 class PETSIRDCListmodeInputFileFormat : public InputFileFormat<ListModeData>, public ParsingObject
 {
 public:
   PETSIRDCListmodeInputFileFormat() {}
-  const std::string get_name() const override { return "PETSIRD Coincidence Listmode File Format"; }
+  const std::string get_name() const override { return "PETSIRD"; }
 
   //! Checks in binary data file for correct signature.
   bool can_read(const FileSignature& signature, std::istream& input) const override
@@ -138,25 +122,47 @@ public:
     return unique_ptr<data_type>();
   }
 
-  std::unique_ptr<data_type> read_from_file(const std::string& filename) const override
+//  std::unique_ptr<data_type> read_from_file(const std::string& filename) const override
+//  {
+
+
+//    // info("PETSIRDCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
+//    // actual_do_parsing(filename);
+//    // return std::unique_ptr<data_type>(new CListModeDataPETSIRD<CListRecordPETSIRD<EventDataType>>(
+//    //     listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
+//  }
+protected:
+
+  virtual bool
+          actual_can_read(const FileSignature& signature,
+                                  std::istream &input) const
   {
-    // info("PETSIRDCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
-    // actual_do_parsing(filename);
-    // return std::unique_ptr<data_type>(new CListModeDataPETSIRD<CListRecordPETSIRD<EventDataType>>(
-    //     listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
+          if(!is_interfile_signature(signature.get_signature()))
+                  return false;
+          else
+          {
+              const std::string signature_as_string(signature.get_signature(), signature.size());
+              return signature_as_string.find("PETSIRD") != std::string::npos;
+          }
   }
 
-protected:
+
+  virtual unique_ptr<data_type> read_from_file(
+              const std::string& filename) const
+  {
+  return unique_ptr<data_type>(new CListModeDataPETSIRD(filename));
+  }
+
   typedef ParsingObject base_type;
   mutable std::string listmode_filename;
   mutable std::string crystal_map_filename;
   mutable std::string template_proj_data_filename;
   mutable double lor_randomization_sigma;
 
-  bool actual_can_read(const FileSignature& signature, std::istream& input) const override
-  {
-    return false; // cannot read from istream
-  }
+//  bool actual_can_read(const FileSignature& signature, std::istream& input) const override
+//  {
+//    return false; // cannot read from istream
+//  }
 
   void initialise_keymap() override
   {

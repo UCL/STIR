@@ -45,9 +45,6 @@ Jannis Fischer
 #include "stir/listmode/CListRecord.h"
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
-#include "petsird_helpers.h"
-#include "petsird_helpers/create.h"
-#include "petsird_helpers/geometry.h"
 
 #include "stir/listmode/CListRecordPETSIRD.h"
 

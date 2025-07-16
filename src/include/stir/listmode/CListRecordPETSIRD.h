@@ -49,9 +49,6 @@
 
 #include "stir/DetectorCoordinateMap.h"
 #include "boost/make_shared.hpp"
-#include "petsird_helpers.h"
-#include "petsird_helpers/create.h"
-#include "petsird_helpers/geometry.h"
 
 START_NAMESPACE_STIR
 
@@ -59,18 +56,6 @@ START_NAMESPACE_STIR
 Provides interface of the record class to STIR by implementing get_LOR(). It uses an optional map from detector indices to
 coordinates to specify LORAs2Points from given detection pair indices.
 
-The record has the following format (for little-endian byte order)
-\code
-        unsigned ringA : 8;
-        unsigned ringB : 8;
-        unsigned detA : 16;
-        unsigned detB : 16;
-        unsigned layerA : 4;
-        unsigned layerB : 4;
-        unsigned reserved : 6;
-        unsigned isDelayed : 1;
-        unsigned type : 1;
-\endcode
   \ingroup listmode
 */
 template <class Derived>
@@ -156,51 +141,6 @@ private:
 #endif
 };
 
-//! Class for record with coincidence data using NeuroLF bitfield definition
-/*! \ingroup listmode */
-class CListEventDataNeuroLF
-{
-public:
-  //! Writes detection position pair to reference given as argument.
-  inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
-
-  //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const { return !isDelayed; }
-
-  //! Returns 1 if if event is time and 0 if it is prompt
-  inline bool is_time() const { return type; }
-
-  //! Can be used to set "promptness" of event.
-  inline Succeeded set_prompt(const bool prompt = true)
-  {
-    isDelayed = !prompt;
-    return Succeeded::yes;
-  }
-
-private:
-#if STIRIsNativeByteOrderBigEndian
-  unsigned type : 1;
-  unsigned isDelayed : 1;
-  unsigned reserved : 8;
-  unsigned layerB : 3;
-  unsigned layerA : 3;
-  unsigned detB : 16;
-  unsigned detA : 16;
-  unsigned ringB : 8;
-  unsigned ringA : 8;
-#else
-  unsigned ringA : 8;
-  unsigned ringB : 8;
-  unsigned detA : 16;
-  unsigned detB : 16;
-  unsigned layerA : 3;
-  unsigned layerB : 3;
-  unsigned reserved : 8;
-  unsigned isDelayed : 1;
-  unsigned type : 1;
-#endif
-};
-
 //! Class for record with time data using PETSIRD bitfield definition
 /*! \ingroup listmode */
 class CListTimeDataPETSIRD
@@ -215,15 +155,7 @@ public:
   inline bool is_time() const { return type; }
 
 private:
-#if STIRIsNativeByteOrderBigEndian
-  boost::uint64_t type : 1;
-  boost::uint64_t reserved : 15;
-  boost::uint64_t time : 48;
-#else
-  boost::uint64_t time : 48;
-  boost::uint64_t reserved : 15;
-  boost::uint64_t type : 1;
-#endif
+
 };
 
 //! Class for general PETSIRD record, containing a union of data, time and raw record and providing access to certain elements.

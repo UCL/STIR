@@ -39,6 +39,8 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "binary/protocols.h"
+#include "petsird_helpers.h"
 
 //#include "boost/static_assert.hpp"
 
@@ -62,6 +64,12 @@ CListModeDataPETSIRD<CListRecordT>::CListModeDataPETSIRD(const std::string& list
                                                       template_proj_data_filename,
                                                       lor_randomization_sigma)
 {
+    petsird::Header header;
+    petsird::binary::PETSIRDReader petsird_reader(filename);
+    petsird_reader.ReadHeader(header);
+    ProjDataInfoGenericNoArcCorr projdata_info;
+    ExamInfo exam_info;
+    Scanner scanner_info(Scanner::Unknown_scanner);
   if (!crystal_map_filename.empty())
     {
       this->map = MAKE_SHARED<DetectorCoordinateMap>(crystal_map_filename, lor_randomization_sigma);
@@ -75,7 +83,8 @@ CListModeDataPETSIRD<CListRecordT>::CListModeDataPETSIRD(const std::string& list
   _exam_info_sptr->imaging_modality = ImagingModality::PT;
   this->exam_info_sptr = _exam_info_sptr;
 
-         // Here we are reading the scanner data from the template projdata
+  // Here we are reading the scanner data from the template projdata from the petsird header
+
   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
   this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
