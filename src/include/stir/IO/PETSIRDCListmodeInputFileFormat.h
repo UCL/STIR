@@ -59,7 +59,6 @@ rest of the file is read as records, e.g. CListRecordPETSIRD.
 class PETSIRDCListmodeInputFileFormat : public InputFileFormat<ListModeData>
 {
 public:
-  PETSIRDCListmodeInputFileFormat() {}
   const std::string get_name() const override { return "PETSIRD"; }
 
   //! Checks in binary data file for correct signature.
