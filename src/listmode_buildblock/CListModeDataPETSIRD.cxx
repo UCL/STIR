@@ -40,6 +40,9 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 #include "binary/protocols.h"
+#include "helpers/include/petsird_helpers.h"
+#include "helpers/include/petsird_helpers/create.h"
+#include "helpers/include/petsird_helpers/geometry.h"
 //#include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
@@ -65,9 +68,17 @@ CListModeDataPETSIRD<CListRecordT>::CListModeDataPETSIRD(const std::string& list
     petsird::Header header;
     petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
     petsird_reader.ReadHeader(header);
-    ProjDataInfoGenericNoArcCorr projdata_info;
-    ExamInfo exam_info;
-    Scanner scanner_info(Scanner::Unknown_scanner);
+    petsird::ScannerInformation scanner_info=header.scanner;
+    petsird::ScannerGeometry scanner_geo=scanner_info.scanner_geometry;
+//    scanner_geo.replicated_modules;
+
+
+
+//    ExamInfo exam_info;
+//    Scanner scanner_info(Scanner::Unknown_scanner);
+
+
+
   if (!crystal_map_filename.empty())
     {
       this->map = MAKE_SHARED<DetectorCoordinateMap>(crystal_map_filename, lor_randomization_sigma);
