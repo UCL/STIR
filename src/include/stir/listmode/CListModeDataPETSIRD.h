@@ -45,11 +45,7 @@ Jannis Fischer
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
 
-// #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
-// #include "petsird_helpers/create.h"
-// #include "petsird_helpers/geometry.h"
-
-// #include "stir/listmode/CListRecordPETSIRD.h"
+#include "stir/listmode/CListRecordPETSIRD.h"
 
 START_NAMESPACE_STIR
 
@@ -72,6 +68,10 @@ public:
   shared_ptr<CListRecord> get_empty_record_sptr() const override { return nullptr; }
 
   Succeeded get_next_record(CListRecord& record_of_general_type) const override { return Succeeded::no; }
+
+  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() override {}
+
+  bool has_delayeds() const override { return false; }
 
 protected:
   virtual Succeeded open_lm_file() const override;

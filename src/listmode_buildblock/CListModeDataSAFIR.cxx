@@ -114,7 +114,7 @@ CListModeDataSAFIR<CListRecordT>::open_lm_file() const
 }
 
 template <class CListRecordT>
-shared_ptr<CListRecord>
+shared_ptr<CListRecordT>
 CListModeDataSAFIR<CListRecordT>::get_empty_record_sptr() const
 {
   shared_ptr<CListRecordT> sptr(new CListRecordT);
@@ -125,7 +125,7 @@ CListModeDataSAFIR<CListRecordT>::get_empty_record_sptr() const
 
 template <class CListRecordT>
 Succeeded
-CListModeDataSAFIR<CListRecordT>::get_next_record(CListRecord& record_of_general_type) const
+CListModeDataSAFIR<CListRecordT>::get_next_record(CListRecordT& record_of_general_type) const
 {
   CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
   Succeeded status = current_lm_data_ptr->get_next_record(record);

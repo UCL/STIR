@@ -149,15 +149,17 @@ private:
 class CListTimeDataPETSIRD
 {
 public:
-  inline unsigned long get_time_in_millisecs() const { return static_cast<unsigned long>(time); }
+  inline unsigned long get_time_in_millisecs() const
+  { /*return static_cast<unsigned long>(time);*/
+  }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
   {
-    time = ((boost::uint64_t(1) << 49) - 1) & static_cast<boost::uint64_t>(time_in_millisecs);
+    // time = ((boost::uint64_t(1) << 49) - 1) & static_cast<boost::uint64_t>(time_in_millisecs);
     return Succeeded::yes;
   }
-  inline bool is_time() const { return type; }
-
-private:
+  inline bool is_time() const
+  { /*return type; */
+  }
 };
 
 class CListRecordPETSIRD : public CListRecord, public ListTime, public CListEventPETSIRD
