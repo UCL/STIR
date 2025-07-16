@@ -31,6 +31,7 @@ if (NOT MINI_STIR)
   InterfileHeaderSiemens.cxx
   InterfileDynamicDiscretisedDensityOutputFileFormat.cxx
   InterfileParametricDiscretisedDensityOutputFileFormat.cxx
+  MultiDynamicDiscretisedDensityInputFileFormat.cxx
   MultiDynamicDiscretisedDensityOutputFileFormat.cxx
   MultiParametricDiscretisedDensityOutputFileFormat.cxx
 

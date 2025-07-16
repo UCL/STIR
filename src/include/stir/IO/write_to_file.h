@@ -22,7 +22,6 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
-#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -50,7 +49,7 @@ write_to_file(const std::string& filename, const DataT& data)
 
   if (OutputFileFormat<typename DataT::hierarchy_base_type>::default_sptr()->write_to_file(filename_used, data) != Succeeded::yes)
     {
-      error(format("Error writing data to file '{}'", filename));
+      error("Error writing data to file '" + filename + "'");
     }
   return filename_used;
 }

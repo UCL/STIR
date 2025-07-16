@@ -30,7 +30,6 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include "stir/format.h"
 
 // include the following to set defaults
 #ifndef USE_PMRT
@@ -149,7 +148,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::pos
 
   if (this->_additive_dyn_proj_data_filename != "0")
     {
-      info(format("Reading additive projdata data {}", this->_additive_dyn_proj_data_filename));
+      info("Reading additive projdata data " + this->_additive_dyn_proj_data_filename);
       this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
         {
