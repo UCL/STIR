@@ -536,8 +536,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
       }
   }
 #ifndef NDEBUG
-  info(
-      format("INPUT max: ({} , {})", input.construct_single_density(1).find_max(), input.construct_single_density(2).find_max()));
+  info("INPUT max: (" + std::to_string(input.construct_single_density(1).find_max()) + ", " + std::to_string(input.construct_single_density(2).find_max()) + ")");
 #endif // NDEBUG
   DynamicDiscretisedDensity dyn_input = this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_output = this->_dyn_image_template;
