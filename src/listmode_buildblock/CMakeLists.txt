@@ -75,17 +75,17 @@ if (HAVE_PETSIRD)
 #set(PETSIRD_dir ../../PETSIRD/cpp/generated)
 #add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
 
-target_include_directories(IO PUBLIC
+target_include_directories(listmode_buildblock PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
   $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(IO PUBLIC
+target_include_directories(listmode_buildblock PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
   $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(IO PUBLIC
+target_include_directories(listmode_buildblock PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/helpers/include>
   $<INSTALL_INTERFACE:include>
 )

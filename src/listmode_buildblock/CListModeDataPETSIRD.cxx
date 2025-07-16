@@ -40,8 +40,6 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 #include "binary/protocols.h"
-#include "petsird_helpers.h"
-
 //#include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
@@ -65,7 +63,7 @@ CListModeDataPETSIRD<CListRecordT>::CListModeDataPETSIRD(const std::string& list
                                                       lor_randomization_sigma)
 {
     petsird::Header header;
-    petsird::binary::PETSIRDReader petsird_reader(filename);
+    petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
     petsird_reader.ReadHeader(header);
     ProjDataInfoGenericNoArcCorr projdata_info;
     ExamInfo exam_info;
