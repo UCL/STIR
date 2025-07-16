@@ -34,7 +34,6 @@
 #ifndef __stir_IO_PETSIRDCListmodeInputFileFormat_H__
 #define __stir_IO_PETSIRDCListmodeInputFileFormat_H__
 
-#include <algorithm>
 #include <cstring>
 #include <string>
 #include <iostream>
@@ -43,30 +42,10 @@
 
 #include "stir/IO/InputFileFormat.h"
 #include "stir/IO/InputFileFormat.h"
-#include "stir/IO/interfile.h"
-#include "stir/info.h"
 #include "stir/error.h"
-#include "stir/utilities.h"
-#include "stir/ParsingObject.h"
 
 // #include "stir/listmode/CListRecordPETSIRD.h"
 #include "stir/listmode/CListModeDataPETSIRD.h"
-
-// #include "../../../../PETSIRD/cpp/generated/yardl/yardl.h"
-// #include "../../PETSIRD/cpp/generated/types.h"
-// #ifdef HAVE_HDF5
-// // #  include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
-// // using petsird::hdf5::PETSIRDReader;
-// #else
-// // #  include "../../PETSIRD/cpp/generated/binary/protocols.h"
-// // using petsird::binary::PETSIRDReader;
-// #endif
-
-
-// #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
-
-// #include "types.h"
-// #include "hdf5/protocols.h"
 
 START_NAMESPACE_STIR
 
@@ -77,9 +56,7 @@ START_NAMESPACE_STIR
 rest of the file is read as records, e.g. CListRecordPETSIRD.
 */
 
-// using namespace petsird::binary;
-
-class PETSIRDCListmodeInputFileFormat : public InputFileFormat<ListModeData>, public ParsingObject
+class PETSIRDCListmodeInputFileFormat : public InputFileFormat<ListModeData>
 {
 public:
   PETSIRDCListmodeInputFileFormat() {}
@@ -144,98 +121,7 @@ public:
     return unique_ptr<data_type>();
   }
 
-//  std::unique_ptr<data_type> read_from_file(const std::string& filename) const override
-//  {
-
-
-//    // info("PETSIRDCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
-//    // actual_do_parsing(filename);
-//    // return std::unique_ptr<data_type>(new CListModeDataPETSIRD<CListRecordPETSIRD<EventDataType>>(
-//    //     listmode_filename, crystal_map_filename, template_proj_data_filename, lor_randomization_sigma));
-//  }
-protected:
-
-  virtual bool
-          actual_can_read(const FileSignature& signature,
-                                  std::istream &input) const
-  {
-          if(!is_interfile_signature(signature.get_signature()))
-                  return false;
-          else
-          {
-              const std::string signature_as_string(signature.get_signature(), signature.size());
-              return signature_as_string.find("PETSIRD") != std::string::npos;
-          }
-  }
-
-
-  virtual unique_ptr<data_type> read_from_file(
-              const std::string& filename) const
-  {
-  return unique_ptr<data_type>(new CListModeDataPETSIRD(filename));
-  }
-
-  typedef ParsingObject base_type;
-  mutable std::string listmode_filename;
-  mutable std::string crystal_map_filename;
-  mutable std::string template_proj_data_filename;
-  mutable double lor_randomization_sigma;
-
-//  bool actual_can_read(const FileSignature& signature, std::istream& input) const override
-//  {
-//    return false; // cannot read from istream
-//  }
-
-  void initialise_keymap() override
-  {
-    base_type::initialise_keymap();
-    this->parser.add_start_key("CListModeDataPETSIRD Parameters");
-    this->parser.add_key("listmode data filename", &listmode_filename);
-    this->parser.add_key("crystal map filename", &crystal_map_filename);
-    this->parser.add_key("template projection data filename", &template_proj_data_filename);
-    this->parser.add_key("LOR randomization (Gaussian) sigma", &lor_randomization_sigma);
-    this->parser.add_stop_key("END CListModeDataPETSIRD Parameters");
-  }
-
-  void set_defaults() override
-  {
-    base_type::set_defaults();
-    crystal_map_filename = "";
-    template_proj_data_filename = "";
-    lor_randomization_sigma = 0.0;
-  }
-
-  bool actual_do_parsing(const std::string& filename) const
-  {
-    // // Ugly const_casts here, but I don't see an other nice way to use the parser
-    // if (const_cast<PETSIRDCListmodeInputFileFormat<EventDataType>*>(this)->parse(filename.c_str()))
-    //   {
-    //     info(const_cast<PETSIRDCListmodeInputFileFormat<EventDataType>*>(this)->parameter_info());
-    //     return true;
-    //   }
-    // else
-    //   return false;
-  }
-
-  bool post_processing() override
-  {
-    if (!file_exists(listmode_filename))
-      return true;
-    else if (!file_exists(template_proj_data_filename))
-      return true;
-    else
-      {
-        return false;
-      }
-    return true;
-  }
-
-private:
-  bool file_exists(const std::string& filename)
-  {
-    std::ifstream infile(filename.c_str());
-    return infile.good();
-  }
+  std::unique_ptr<data_type> read_from_file(const std::string& filename) const override {}
 };
 END_NAMESPACE_STIR
 #endif

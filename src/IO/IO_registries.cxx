@@ -156,10 +156,10 @@ static InputStreamWithRecordsFromUPENNtxt::RegisterIt dummy686062;
 // static RegisterInputFileFormat<PENNImageInputFileFormat> idummy1(2);
 #  endif
 
-# ifdef HAVE_PETSIRD
-# include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
-static RegisterInputFileFormat<::stir::stir::PETSIRDCListmodeInputFileFormat> LMdummyPETSIRD(10);
-#endif
+#  ifdef HAVE_PETSIRD
+#    include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
+static RegisterInputFileFormat<PETSIRDCListmodeInputFileFormat> LMdummyPETSIRD(10);
+#  endif
 
 #endif // MINI_STIR
 END_NAMESPACE_STIR

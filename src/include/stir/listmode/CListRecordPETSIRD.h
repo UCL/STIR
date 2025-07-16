@@ -1,36 +1,36 @@
 /* CListRecordPETSIRD.h
 
- Coincidence Event Class for PETSIRD: Header File
+Coincidence Event Class for PETSIRD: Header File
 
-        Copyright 2015 ETH Zurich, Institute of Particle Physics
-        Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-        Copyright 2020, 2022 Positrigo AG, Zurich
-        Copyright 2025 National Physical Laboratory
+     Copyright 2015 ETH Zurich, Institute of Particle Physics
+     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+     Copyright 2020, 2022 Positrigo AG, Zurich
+     Copyright 2025 National Physical Laboratory
 
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
 
-                http://www.apache.org/licenses/LICENSE-2.0
+             http://www.apache.org/licenses/LICENSE-2.0
 
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
 
  */
 
 /*!
 
-  \file
-  \ingroup listmode
-  \brief Declaration of class stir::CListEventPETSIRD and stir::CListRecordPETSIRD with supporting classes
+\file
+\ingroup listmode
+\brief Declaration of class stir::CListEventPETSIRD and stir::CListRecordPETSIRD with supporting classes
 
-  \author Jannis Fischer
-  \author Parisa Khateri
-  \author Markus Jehl
-  \author Daniel Deidda
+\author Jannis Fischer
+\author Parisa Khateri
+\author Markus Jehl
+\author Daniel Deidda
 */
 
 #ifndef __stir_listmode_CListRecordPETSIRD_H__
@@ -56,7 +56,7 @@ START_NAMESPACE_STIR
 Provides interface of the record class to STIR by implementing get_LOR(). It uses an optional map from detector indices to
 coordinates to specify LORAs2Points from given detection pair indices.
 
-  \ingroup listmode
+\ingroup listmode
 */
 
 class CListEventPETSIRD : public CListEvent
@@ -81,7 +81,7 @@ public:
   inline bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
   //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const override { return true; }//!(static_cast<const Derived*>(this)->is_prompt()); }
+  inline bool is_prompt() const override { return true; } //!(static_cast<const Derived*>(this)->is_prompt()); }
   //! Function to set map for detector indices to coordinates.
   /*! Use a null pointer to disable the mapping functionality */
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
@@ -141,22 +141,19 @@ private:
 // #endif
 // };
 
-
 //! Class for record with time data using PETSIRD bitfield definition
 /*! \ingroup listmode */
 class CListTimeDataPETSIRD
 {
 public:
-  inline unsigned long get_time_in_millisecs() const { return static_cast<unsigned long>(time); }
+  inline unsigned long get_time_in_millisecs() const { /*return static_cast<unsigned long>(time);*/ }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
   {
-    time = ((boost::uint64_t(1) << 49) - 1) & static_cast<boost::uint64_t>(time_in_millisecs);
+    // time = ((boost::uint64_t(1) << 49) - 1) & static_cast<boost::uint64_t>(time_in_millisecs);
     return Succeeded::yes;
   }
-  inline bool is_time() const { return type; }
-
+  inline bool is_time() const { /*return type; */ }
 };
-
 
 class CListRecordPETSIRD : public CListRecord, public ListTime, public CListEventPETSIRD
 {
@@ -188,8 +185,7 @@ public:
 
   virtual bool operator==(const CListRecord& e2) const
   {
-    return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0
-           && raw == static_cast<CListRecordPETSIRD const&>(e2).raw;
+    return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).raw;
   }
 
   inline unsigned long get_time_in_millisecs() const override { return time_data.get_time_in_millisecs(); }
