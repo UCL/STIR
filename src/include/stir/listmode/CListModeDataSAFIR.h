@@ -64,9 +64,13 @@ public:
   shared_ptr<CListRecordT> get_empty_record_sptr() const override;
   Succeeded get_next_record(CListRecordT& record_of_general_type) const override;
 
-  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() { return current_lm_data_ptr; };
-
   bool has_delayeds() const override { return false; }
+
+  Succeeded reset() override;
+
+  SavedPosition save_get_position() override { return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position()); }
+
+  Succeeded set_get_position(const SavedPosition& pos) override { return current_lm_data_ptr->set_get_position(pos); }
 
 protected:
   virtual Succeeded open_lm_file() const override;

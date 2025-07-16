@@ -315,6 +315,7 @@ if(NOT DISABLE_PETSIRD)
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/PETSIRD
       RESULT_VARIABLE JUST_RESULT
   )
+
   if(JUST_RESULT EQUAL 0)
       set(HAVE_PETSIRD TRUE)
       set(PETSIRD_base_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)
@@ -323,6 +324,11 @@ if(NOT DISABLE_PETSIRD)
       set(HAVE_PETSIRD FALSE)
       message(WARNING "PETSIRD generation failed with code ${JUST_RESULT}. HAVE_PETSIRD not set.")
   endif()
+  set(PETSIRD_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)
+  add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
+  install(TARGETS petsird_generated
+          EXPORT STIRTargets
+          DESTINATION lib)
 endif()
 
 #### enable support for ctest

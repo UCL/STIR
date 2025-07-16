@@ -133,6 +133,13 @@ CListModeDataSAFIR<CListRecordT>::get_next_record(CListRecordT& record_of_genera
   return status;
 }
 
+template <class CListRecordT>
+Succeeded
+CListModeDataSAFIR<CListRecordT>::reset()
+{
+  return current_lm_data_ptr->reset();
+}
+
 // template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
 // template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
 
