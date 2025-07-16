@@ -51,14 +51,12 @@ class CListModeDataBasedOnCoordinateMap : public CListModeData
 {
 public:
   std::string get_name() const override;
-  // shared_ptr<CListRecord> get_empty_record_sptr() const override;
-  // Succeeded get_next_record(CListRecord& record_of_general_type) const override;
-  Succeeded reset() override;
 
-  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() = 0;
+  // virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() = 0;
 
-  SavedPosition save_get_position() override { return static_cast<SavedPosition>(get_current_lm_file()->save_get_position()); }
-  Succeeded set_get_position(const SavedPosition& pos) override { return get_current_lm_file()->set_get_position(pos); }
+  SavedPosition save_get_position() override = 0;
+
+  Succeeded set_get_position(const SavedPosition& pos) override = 0;
 
 protected:
   std::string listmode_filename;

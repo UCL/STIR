@@ -36,7 +36,7 @@ Coincidence LM Data Class for SAFIR: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 
-//#include "boost/static_assert.hpp"
+// #include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataSAFIR.h"
 #include "stir/listmode/CListRecordSAFIR.h"
@@ -131,6 +131,13 @@ CListModeDataSAFIR<CListRecordT>::get_next_record(CListRecordT& record_of_genera
   Succeeded status = current_lm_data_ptr->get_next_record(record);
   // if( status == Succeeded::yes ) record.event_SAFIR().set_map_sptr(map);
   return status;
+}
+
+template <class CListRecordT>
+Succeeded
+CListModeDataSAFIR<CListRecordT>::reset()
+{
+  return current_lm_data_ptr->reset();
 }
 
 // template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;

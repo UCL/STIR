@@ -47,6 +47,9 @@ Jannis Fischer
 
 #include "stir/listmode/CListRecordPETSIRD.h"
 
+#include "../../PETSIRD/cpp/generated/binary/protocols.h"
+#include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
+
 START_NAMESPACE_STIR
 
 /*!
@@ -60,21 +63,24 @@ START_NAMESPACE_STIR
 class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
 {
 public:
-  CListModeDataPETSIRD(const std::string& listmode_filename,
-                       const std::string& crystal_map_filename,
-                       const std::string& template_proj_data_filename,
-                       const double lor_randomization_sigma = 0.0);
+  CListModeDataPETSIRD(const std::string& listmode_filename);
 
-  shared_ptr<CListRecord> get_empty_record_sptr() const override { return nullptr; }
+  virtual shared_ptr<CListRecord> get_empty_record_sptr() const override;
 
-  Succeeded get_next_record(CListRecord& record_of_general_type) const override { return Succeeded::no; }
+  virtual Succeeded get_next_record(CListRecord& record_of_general_type) const override;
 
-  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() override {}
+  SavedPosition save_get_position() override {}
 
-  bool has_delayeds() const override { return false; }
+  Succeeded set_get_position(const SavedPosition& pos) override {}
+
+  virtual bool has_delayeds() const override { return true; }
+
+  Succeeded reset() override {}
 
 protected:
   virtual Succeeded open_lm_file() const override;
+
+  mutable shared_ptr<petsird::hdf5::PETSIRDReader> current_lm_data_ptr;
 };
 
 END_NAMESPACE_STIR
