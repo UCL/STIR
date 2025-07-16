@@ -33,7 +33,6 @@ Jannis Fischer
 #ifndef __stir_listmode_CListModeDataPETSIRD_H__
 #define __stir_listmode_CListModeDataPETSIRD_H__
 
-
 #include <iostream>
 #include <string>
 #include <utility>
@@ -46,11 +45,7 @@ Jannis Fischer
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
 
-// #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
-// #include "petsird_helpers/create.h"
-// #include "petsird_helpers/geometry.h"
-
-// #include "stir/listmode/CListRecordPETSIRD.h"
+#include "stir/listmode/CListRecordPETSIRD.h"
 
 START_NAMESPACE_STIR
 
@@ -65,25 +60,21 @@ START_NAMESPACE_STIR
 class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
 {
 public:
-
   CListModeDataPETSIRD(const std::string& listmode_filename,
-                     const std::string& crystal_map_filename,
-                     const std::string& template_proj_data_filename,
-                     const double lor_randomization_sigma = 0.0);
+                       const std::string& crystal_map_filename,
+                       const std::string& template_proj_data_filename,
+                       const double lor_randomization_sigma = 0.0);
 
-  shared_ptr<CListRecord> get_empty_record_sptr() const override {
+  shared_ptr<CListRecord> get_empty_record_sptr() const override { return nullptr; }
 
-    return nullptr;
-  }
+  Succeeded get_next_record(CListRecord& record_of_general_type) const override { return Succeeded::no; }
 
-  Succeeded get_next_record(CListRecord& record_of_general_type) const override{
+  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() override {}
 
-    return Succeeded::no;
-  }
+  bool has_delayeds() const override { return false; }
 
 protected:
   virtual Succeeded open_lm_file() const override;
-
 };
 
 END_NAMESPACE_STIR

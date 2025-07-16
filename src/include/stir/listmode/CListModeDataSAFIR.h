@@ -32,7 +32,6 @@ Jannis Fischer
 #ifndef __stir_listmode_CListModeDataSAFIR_H__
 #define __stir_listmode_CListModeDataSAFIR_H__
 
-
 #include <string>
 
 #include "stir/listmode/CListModeDataBasedOnCoordinateMap.h"
@@ -55,7 +54,6 @@ template <class CListRecordT>
 class CListModeDataSAFIR : public CListModeDataBasedOnCoordinateMap
 {
 public:
-
   CListModeDataSAFIR(const std::string& listmode_filename,
                      const std::string& crystal_map_filename,
                      const std::string& template_proj_data_filename,
@@ -63,12 +61,12 @@ public:
 
   CListModeDataSAFIR(const std::string& listmode_filename, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
-  shared_ptr<CListRecord> get_empty_record_sptr() const override;
-  Succeeded get_next_record(CListRecord& record_of_general_type) const override;
+  shared_ptr<CListRecordT> get_empty_record_sptr() const override;
+  Succeeded get_next_record(CListRecordT& record_of_general_type) const override;
 
-  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file(){
-    return current_lm_data_ptr;
-  };
+  virtual shared_ptr<InputStreamWithRecords<CListRecord, bool>> get_current_lm_file() { return current_lm_data_ptr; };
+
+  bool has_delayeds() const override { return false; }
 
 protected:
   virtual Succeeded open_lm_file() const override;
