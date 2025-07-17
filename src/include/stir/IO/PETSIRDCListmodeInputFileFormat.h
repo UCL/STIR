@@ -56,10 +56,12 @@ public:
   const std::string get_name() const override { return "PETSIRD"; }
 
   //! Checks in binary data file for correct signature.
-  bool can_read(const FileSignature& signature, const std::string& filename) const override;
+  bool can_read(const FileSignature& signature, const std::string& filename) override;
 
 protected:
   bool actual_can_read(const FileSignature& signature, std::istream& input) const override { return false; }
+
+  bool use_hdf5 = false;
 
 public:
   unique_ptr<data_type> read_from_file(std::istream& input) const override
@@ -71,7 +73,7 @@ public:
   unique_ptr<data_type> read_from_file(const std::string& filename) const override
   {
     info("PETSIRDCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
-    return unique_ptr<data_type>(new CListModeDataPETSIRD(filename));
+    return unique_ptr<data_type>(new CListModeDataPETSIRD(filename, use_hdf5));
   }
 };
 END_NAMESPACE_STIR
