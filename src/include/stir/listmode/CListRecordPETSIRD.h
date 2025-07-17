@@ -41,14 +41,12 @@ Coincidence Event Class for PETSIRD: Header File
 #include "stir/Succeeded.h"
 #include "stir/ByteOrderDefine.h"
 
-#include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 
 #include "stir/DetectorCoordinateMap.h"
-#include "boost/make_shared.hpp"
-// #include "petsird_helpers.h"
-// #include "petsird_helpers/create.h"
-// #include "petsird_helpers/geometry.h"
+#include "types.h"
+
+// #include "../../PETSIRD/cpp/generated/types.h"
 
 START_NAMESPACE_STIR
 
@@ -70,9 +68,6 @@ public:
   //! Override the default implementation
   inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
-  //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const override { return true; }
-
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
   /*! Set the scanner */
   /*! Currently only used if the map is not set. */
@@ -80,25 +75,45 @@ public:
 
   virtual bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
+  virtual bool is_prompt() const override { return _prompt; }
+
+  virtual Succeeded set_prompt(const bool prompt) override
+  {
+    _prompt = prompt;
+    return Succeeded::yes;
+  }
+
+  void set_PETSIRD_ranges(int _numberOfModules, int _numberOfElementsIndices)
+  {
+    numberOfModules = _numberOfModules;
+    numberOfElementsIndices = _numberOfElementsIndices;
+  }
+
+  int numberOfModules;
+
+  int numberOfElementsIndices;
+
+  std::pair<int, int> det_0, det_1;
+
 private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   shared_ptr<const Scanner> scanner_sptr;
+  bool _prompt;
 
   const DetectorCoordinateMap& map_to_use() const { return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
 };
 
-//! Class for record with time data using PETSIRD bitfield definition
-/*! \ingroup listmode */
 class CListTimePETSIRD : public ListTime
 {
 public:
-  inline unsigned long get_time_in_millisecs() const { /*return static_cast<unsigned long>(time);*/ }
+  inline unsigned long get_time_in_millisecs() const { return static_cast<unsigned long>(time); }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
   {
-    // time = ((boost::uint64_t(1) << 49) - 1) & static_cast<boost::uint64_t>(time_in_millisecs);
+    time = time_in_millisecs;
     return Succeeded::yes;
   }
-  inline bool is_time() const { /*return type; */ }
+  inline bool is_time() const { return true; }
+  uint32_t time;
 };
 
 class CListRecordPETSIRD : public CListRecord
@@ -106,31 +121,41 @@ class CListRecordPETSIRD : public CListRecord
 public:
   CListRecordPETSIRD() {}
 
-  ~CListRecordPETSIRD() override {}
+  // ~CListRecordPETSIRD() override {}
 
-  bool is_time() const override { /*return time_data.is_time();*/ }
+  bool is_time() const override { return true; /*time_data.is_time();*/ }
 
-  bool is_event() const override { /*return !time_data.is_time();*/ }
+  bool is_event() const override { return true; }
 
-  ListEvent& event() override { return event_data; }
-  const ListEvent& event() const override { return event_data; }
+  CListEventPETSIRD& event() override { return event_data; }
+  const CListEventPETSIRD& event() const override { /*return event_data;*/ }
 
-  ListTime& time() override { return time_data; }
-  const ListTime& time() const override { return time_data; }
+  CListTimePETSIRD& time() override { return time_data; }
+  const CListTimePETSIRD& time() const override { return time_data; }
 
-  // virtual bool operator==(const CListRecordPETSIRD& e2) const
-  // {
-  //   // return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).r;
-  // }
-
-  // inline bool is_prompt() const override { /*return event_data.is_prompt();*/ }
-
-  Succeeded init_from_data_ptr(const char* const data_ptr, const std::size_t size_of_record, const bool do_byte_swap)
+  bool operator==(const CListRecordPETSIRD& e2) const
   {
-    // assert(size_of_record >= 8);
-    // std::copy(data_ptr, data_ptr + 8, reinterpret_cast<char*>(&raw)); // TODO necessary for operator==
-    // if (do_byte_swap)
-    //   ByteOrder::swap_order(raw);
+    // return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).r;
+  }
+
+  virtual Succeeded init_from_data(const petsird::CoincidenceEvent& data, bool is_prompt = true)
+  {
+    auto decodeElementAndModuleIndex
+        = [](int linearIndex, int energyIndex, int numberOfElementsIndices, int numberOfModules) -> std::pair<int, int> {
+      int reduced = (linearIndex - energyIndex) / numberOfModules;
+      int moduleIndex = reduced / numberOfElementsIndices;
+      int elementIndex = reduced % numberOfElementsIndices;
+      return { elementIndex, moduleIndex };
+    };
+
+    event_data.det_0
+        = decodeElementAndModuleIndex(data.detection_bins[0], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
+    event_data.det_1
+        = decodeElementAndModuleIndex(data.detection_bins[1], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
+
+    std::cout << event_data.det_0.first << "  " << event_data.det_0.second << std::endl;
+    std::cout << event_data.det_1.first << "  " << event_data.det_1.second << std::endl;
+    event_data.set_prompt(is_prompt);
     return Succeeded::yes;
   }
 
