@@ -39,9 +39,10 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 
-// #include "helpers/include/petsird_helpers.h"
+#include "binary/protocols.h"
+#include "helpers/include/petsird_helpers.h"
 // #include "helpers/include/petsird_helpers/create.h"
-// #include "helpers/include/petsird_helpers/geometry.h"
+#include "helpers/include/petsird_helpers/geometry.h"
 // #include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
@@ -53,19 +54,47 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
 {
   this->listmode_filename = listmode_filename;
 
-  // petsird::Header header;
-  // petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
-  // petsird_reader.ReadHeader(header);
-  // petsird::ScannerInformation scanner_info = header.scanner;
-  // petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
-
+  petsird::Header header;
+  petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
+  petsird_reader.ReadHeader(header);
+  petsird::ScannerInformation scanner_info = header.scanner;
+  petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
+  const petsird::TypeOfModule type_of_module{ 0 };
   // need to get  inner_ring_radius, num_detector_layers, num_transaxial_crystals_per_block, num_axial_crystals_per_block
   //  transaxial_crystal_spacing,average_depth_of_interaction,axial_crystal_spacing, num_rings, ring_spacing, num_axial_blocks,
   //  num_oftransaxial_blocks
   //  these are from rep_module.object
 
-  // std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
-  //  petsird::ReplicatedDetectorModule = scanner_geo.replicated_modules;
+  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
+  int num_modules = scanner_geo.replicated_modules[type_of_module].transforms.size();
+  int num_elements_per_module = scanner_geo.replicated_modules[type_of_module].object.detecting_elements.transforms.size();
+  const auto& tof_bin_edges = header.scanner.tof_bin_edges[type_of_module][type_of_module];
+  const auto num_tof_bins = tof_bin_edges.NumberOfBins();
+  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges[type_of_module];
+  const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
+  //   coordinates of first detecting bin (module_id,element_id, energy_id)
+  //   const petsird::ExpandedDetectionBin expanded_detection_bin{ 0, 0, 0 };
+  const auto box_shape = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
+  // get center of box (this should be in a loop to create a map
+
+  for (uint32_t module = 0; module < num_modules; module++)
+    for (uint32_t elem = 0; elem < num_elements_per_module; elem++)
+      for (uint32_t ener = 0; ener < num_event_energy_bins; ener++)
+        {
+          petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, ener };
+          const auto box_shape
+              = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
+          CartesianCoordinate3D<float> mean_pos;
+          for (auto& corner : box_shape.corners)
+            { // if STIR (z,y,x) -> PETSIRD (-y, -x, z) pheraps  the order below needs to be changed
+              mean_pos.x() = +corner.c[0] / box_shape.corners.size();
+              mean_pos.y() = +corner.c[1] / box_shape.corners.size();
+              mean_pos.z() = +corner.c[2] / box_shape.corners.size();
+            }
+          //       save  mean pos into map
+        }
+
+  //   petsird::ReplicatedDetectorModule = scanner_geo.replicated_modules;
 
   // if (!crystal_map_filename.empty())
   //   {
