@@ -47,11 +47,4 @@ CListModeDataBasedOnCoordinateMap::get_name() const
   return listmode_filename;
 }
 
-
-Succeeded
-CListModeDataBasedOnCoordinateMap::reset()
-{
-  return get_current_lm_file()->reset();
-}
-
 END_NAMESPACE_STIR

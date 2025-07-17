@@ -36,12 +36,9 @@ Coincidence Event Class for PETSIRD: Header File
 #ifndef __stir_listmode_CListRecordPETSIRD_H__
 #define __stir_listmode_CListRecordPETSIRD_H__
 
-#include <random>
-
 #include "stir/listmode/CListRecord.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/Succeeded.h"
-#include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
 
 #include "boost/static_assert.hpp"
@@ -62,9 +59,6 @@ coordinates to specify LORAs2Points from given detection pair indices.
 class CListEventPETSIRD : public CListEvent
 {
 public:
-  /*! Default constructor will not work as it does not initialize a map to relate
-  detector indices and space coordinates. Always use either set_scanner_sptr or set_map_sptr after default construction.
-  */
   inline CListEventPETSIRD() {}
 
   //! Returns LOR corresponding to the given event.
@@ -73,21 +67,15 @@ public:
   //! Override the default implementation
   inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
-  //! This method checks if the template is valid for LmToProjData
-  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
-   *  Most scanners have listmode data that correspond to non arc-corrected data and
-   *  this check avoids a crash when an unsupported template is used as input.
-   */
-  inline bool is_valid_template(const ProjDataInfo&) const override { return true; }
-
   //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const override { return true; } //!(static_cast<const Derived*>(this)->is_prompt()); }
-  //! Function to set map for detector indices to coordinates.
-  /*! Use a null pointer to disable the mapping functionality */
+  inline bool is_prompt() const override { return true; }
+
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
   /*! Set the scanner */
   /*! Currently only used if the map is not set. */
   inline void set_scanner_sptr(shared_ptr<const Scanner> new_scanner_sptr) { scanner_sptr = new_scanner_sptr; }
+
+  virtual bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
 private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
@@ -96,54 +84,9 @@ private:
   const DetectorCoordinateMap& map_to_use() const { return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
 };
 
-// //! Class for record with coincidence data using PETSIRD bitfield definition
-// /*! \ingroup listmode */
-// class CListEventDataPETSIRD
-// {
-// public:
-//   //! Writes detection position pair to reference given as argument.
-//   inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
-
-//   //! Returns 0 if event is prompt and 1 if delayed
-//   inline bool is_prompt() const { return !isDelayed; }
-
-//   //! Returns 1 if if event is time and 0 if it is prompt
-//   inline bool is_time() const { return type; }
-
-//   //! Can be used to set "promptness" of event.
-//   inline Succeeded set_prompt(const bool prompt = true)
-//   {
-//     isDelayed = !prompt;
-//     return Succeeded::yes;
-//   }
-
-// private:
-// #if STIRIsNativeByteOrderBigEndian
-//   unsigned type : 1;
-//   unsigned isDelayed : 1;
-//   unsigned reserved : 6;
-//   unsigned layerB : 4;
-//   unsigned layerA : 4;
-//   unsigned detB : 16;
-//   unsigned detA : 16;
-//   unsigned ringB : 8;
-//   unsigned ringA : 8;
-// #else
-//   unsigned ringA : 8;
-//   unsigned ringB : 8;
-//   unsigned detA : 16;
-//   unsigned detB : 16;
-//   unsigned layerA : 4;
-//   unsigned layerB : 4;
-//   unsigned reserved : 6;
-//   unsigned isDelayed : 1;
-//   unsigned type : 1;
-// #endif
-// };
-
 //! Class for record with time data using PETSIRD bitfield definition
 /*! \ingroup listmode */
-class CListTimeDataPETSIRD
+class CListTimePETSIRD : public ListTime
 {
 public:
   inline unsigned long get_time_in_millisecs() const { /*return static_cast<unsigned long>(time);*/ }
@@ -155,73 +98,42 @@ public:
   inline bool is_time() const { /*return type; */ }
 };
 
-class CListRecordPETSIRD : public CListRecord, public ListTime, public CListEventPETSIRD
+class CListRecordPETSIRD : public CListRecord
 {
 public:
-  //! Returns event_data (without checking if the type is really event and not time).
-  CListEventPETSIRD get_data() const { return this->event_data; }
-
-  // CListRecordPETSIRD()
-  //     : CListEventPETSIRD<CListRecordPETSIRD<DataType>>()
-  // {}
+  CListRecordPETSIRD() {}
 
   ~CListRecordPETSIRD() override {}
 
-  bool is_time() const override { return time_data.is_time(); }
+  bool is_time() const override { /*return time_data.is_time();*/ }
 
-  bool is_event() const override { return !time_data.is_time(); }
+  bool is_event() const override { /*return !time_data.is_time();*/ }
 
-  CListEvent& event() override { return *this; }
+  ListEvent& event() override { return event_data; }
+  const ListEvent& event() const override { return event_data; }
 
-  const CListEvent& event() const override { return *this; }
+  ListTime& time() override { return time_data; }
+  const ListTime& time() const override { return time_data; }
 
-  virtual CListEventPETSIRD& event_PETSIRD() { return *this; }
+  // virtual bool operator==(const CListRecordPETSIRD& e2) const
+  // {
+  //   // return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).r;
+  // }
 
-  virtual const CListEventPETSIRD& event_PETSIRD() const { return *this; }
-
-  ListTime& time() override { return *this; }
-
-  const ListTime& time() const override { return *this; }
-
-  virtual bool operator==(const CListRecord& e2) const
-  {
-    return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).raw;
-  }
-
-  inline unsigned long get_time_in_millisecs() const override { return time_data.get_time_in_millisecs(); }
-
-  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) override
-  {
-    return time_data.set_time_in_millisecs(time_in_millisecs);
-  }
-
-  inline bool is_prompt() const override { return event_data.is_prompt(); }
+  // inline bool is_prompt() const override { /*return event_data.is_prompt();*/ }
 
   Succeeded init_from_data_ptr(const char* const data_ptr, const std::size_t size_of_record, const bool do_byte_swap)
   {
-    assert(size_of_record >= 8);
-    std::copy(data_ptr, data_ptr + 8, reinterpret_cast<char*>(&raw)); // TODO necessary for operator==
-    if (do_byte_swap)
-      ByteOrder::swap_order(raw);
+    // assert(size_of_record >= 8);
+    // std::copy(data_ptr, data_ptr + 8, reinterpret_cast<char*>(&raw)); // TODO necessary for operator==
+    // if (do_byte_swap)
+    //   ByteOrder::swap_order(raw);
     return Succeeded::yes;
   }
 
-  std::size_t size_of_record_at_ptr(const char* const /*data_ptr*/, const std::size_t /*size*/, const bool /*do_byte_swap*/) const
-  {
-    return 8;
-  }
-
 private:
-  // use C++ union to save data, you can only use one at a time,
-  // but compiler will not check which one was used!
-  // Be careful not to read event data from time record and vice versa!!
-  // However, this is used as a feature if comparing events over the 'raw' type.
-  union
-  {
-    CListEventPETSIRD event_data;
-    CListTimeDataPETSIRD time_data;
-    boost::int64_t raw;
-  };
+  CListEventPETSIRD event_data;
+  CListTimePETSIRD time_data;
 };
 
 END_NAMESPACE_STIR

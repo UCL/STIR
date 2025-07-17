@@ -54,15 +54,19 @@ START_NAMESPACE_STIR
 LORAs2Points<float>
 CListEventPETSIRD::get_LOR() const
 {
-  LORAs2Points<float> lor;
-  DetectionPositionPair<> det_pos_pair;
+  // LORAs2Points<float> lor;
+  // DetectionPositionPair<> det_pos_pair;
 
-  // static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
+  // // static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
 
-  lor.p1() = map_to_use().get_coordinate_for_index(det_pos_pair.pos1());
-  lor.p2() = map_to_use().get_coordinate_for_index(det_pos_pair.pos2());
+  // lor.p1() = map_to_use().get_coordinate_for_index(det_pos_pair.pos1());
+  // lor.p2() = map_to_use().get_coordinate_for_index(det_pos_pair.pos2());
 
-  return lor;
+  // return lor;
 }
+
+void
+CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+{}
 
 END_NAMESPACE_STIR

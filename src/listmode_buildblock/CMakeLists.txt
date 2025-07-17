@@ -95,5 +95,5 @@ if (HAVE_PETSIRD)
 #   $<INSTALL_INTERFACE:include>
 # )
 
-#target_link_libraries(IO PUBLIC petsird_generated)
+target_link_libraries(listmode_buildblock PUBLIC petsird_generated)
 endif()

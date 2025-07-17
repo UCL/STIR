@@ -174,8 +174,9 @@ if (HAVE_PETSIRD)
 
 # # target_link_libraries(IO PUBLIC petsird_generated)
 
-set(PETSIRD_dir ../../PETSIRD/cpp/generated)
-add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
+# set(PETSIRD_dir ../../PETSIRD/cpp/generated)
+# add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
+
 # install(TARGETS petsird_generated
 #         EXPORT STIRTargets
 #         DESTINATION lib)

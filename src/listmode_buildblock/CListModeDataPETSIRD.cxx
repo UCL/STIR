@@ -39,22 +39,20 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 
-#include "../../PETSIRD/cpp/generated/binary/protocols.h"
-#include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
-
 // #include "helpers/include/petsird_helpers.h"
 // #include "helpers/include/petsird_helpers/create.h"
 // #include "helpers/include/petsird_helpers/geometry.h"
 // #include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
-// #include "stir/listmode/CListRecordPETSIRD.h"
+#include "stir/listmode/CListRecordPETSIRD.h"
 
 START_NAMESPACE_STIR
 
 CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
 {
-  CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
+  this->listmode_filename = listmode_filename;
+
   // petsird::Header header;
   // petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
   // petsird_reader.ReadHeader(header);
@@ -86,28 +84,31 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
   // shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
   // this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
-  // if (this->open_lm_file() == Succeeded::no)
-  //   {
-  //     error("CListModeDataPETSIRD: Could not open listmode file " + listmode_filename + "\n");
-  //   }
+  if (this->open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataPETSIRD: Could not open listmode file " + listmode_filename + "\n");
+    }
 }
 
 Succeeded
 CListModeDataPETSIRD::open_lm_file() const
 {
-  // shared_ptr<istream> stream_ptr(new fstream(this->listmode_filename.c_str(), ios::in | ios::binary));
-  // if (!(*stream_ptr))
-  //   {
-  //     return Succeeded::no;
-  //   }
-  // info("CListModeDataPETSIRD: opening file \"" + this->listmode_filename + "\"", 2);
-  // stream_ptr->seekg((std::streamoff)32);
-  // this->current_lm_data_ptr.reset(
-  //     new InputStreamWithRecords<CListRecordT, bool>(stream_ptr,
-  //                                                    sizeof(CListTimeDataPETSIRD),
-  //                                                    sizeof(CListTimeDataPETSIRD),
-  //                                                    ByteOrder::little_endian != ByteOrder::get_native_order()));
-  // return Succeeded::yes;
+  current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
+  return Succeeded::yes;
+}
+
+shared_ptr<CListRecord>
+CListModeDataPETSIRD::get_empty_record_sptr() const
+{
+  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD());
+  return sptr;
+}
+
+Succeeded
+CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
+{
+  CListRecordPETSIRD& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
+  // return current_lm_data_ptr->get_next_record(record);
 }
 
 END_NAMESPACE_STIR
