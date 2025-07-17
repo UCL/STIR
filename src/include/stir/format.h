@@ -35,7 +35,7 @@ START_NAMESPACE_STIR
 
 template <typename... Args>
 std::string
-format(internal_format::format_string<Args...> fmt, Args&&... args)
+format(internal_format::string_view fmt, Args&&... args)
 {
 #if defined(__cpp_lib_format) && (__cpp_lib_format >= 201907L)
   return internal_format::vformat(fmt, std::make_format_args(args...));
@@ -47,7 +47,7 @@ format(internal_format::format_string<Args...> fmt, Args&&... args)
 // this is an alternative function definition for instances where the format string is not known at compile time
 template <typename... Args>
 std::string
-runtime_format(const std::string& fmt, Args&&... args)
+runtime_format(internal_format::string_view fmt, Args&&... args)
 {
 #if defined(__cpp_lib_format) && (__cpp_lib_format >= 201907L)
   return internal_format::vformat(fmt, std::make_format_args(args...));
