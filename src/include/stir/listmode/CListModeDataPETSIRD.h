@@ -33,22 +33,16 @@ Jannis Fischer
 #ifndef __stir_listmode_CListModeDataPETSIRD_H__
 #define __stir_listmode_CListModeDataPETSIRD_H__
 
-#include <iostream>
 #include <string>
-#include <utility>
-#include <vector>
-
 #include "stir/listmode/CListModeDataBasedOnCoordinateMap.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/listmode/CListRecord.h"
-#include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
 
 #include "stir/listmode/CListRecordPETSIRD.h"
 
-#include "../../PETSIRD/cpp/generated/binary/protocols.h"
-#include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
+#include "../../PETSIRD/cpp/generated/protocols.h"
 
 START_NAMESPACE_STIR
 
@@ -63,7 +57,7 @@ START_NAMESPACE_STIR
 class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
 {
 public:
-  CListModeDataPETSIRD(const std::string& listmode_filename);
+  CListModeDataPETSIRD(const std::string& listmode_filename, bool use_hdf5);
 
   virtual shared_ptr<CListRecord> get_empty_record_sptr() const override;
 
@@ -77,10 +71,25 @@ public:
 
   Succeeded reset() override {}
 
+  inline unsigned long int get_total_number_of_events() const override { return total_events; }
+
 protected:
   virtual Succeeded open_lm_file() const override;
 
-  mutable shared_ptr<petsird::hdf5::PETSIRDReader> current_lm_data_ptr;
+  mutable shared_ptr<petsird::PETSIRDReaderBase> current_lm_data_ptr;
+
+private:
+  const bool use_hdf5;
+
+  unsigned long int total_events = 0;
+
+  mutable unsigned long int curr_event_in_event_block = 0;
+
+  mutable petsird::TimeBlock curr_time_block;
+
+  mutable petsird::EventTimeBlock curr_event_block;
+
+  const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
 };
 
 END_NAMESPACE_STIR

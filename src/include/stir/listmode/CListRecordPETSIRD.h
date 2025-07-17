@@ -41,11 +41,12 @@ Coincidence Event Class for PETSIRD: Header File
 #include "stir/Succeeded.h"
 #include "stir/ByteOrderDefine.h"
 
-#include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 
 #include "stir/DetectorCoordinateMap.h"
 #include "boost/make_shared.hpp"
+
+#include "../../PETSIRD/cpp/generated/types.h"
 
 START_NAMESPACE_STIR
 
@@ -115,6 +116,10 @@ public:
   ListTime& time() override { return time_data; }
   const ListTime& time() const override { return time_data; }
 
+  CListEventPETSIRD& event_PETSIRD() { return event_data; }
+
+  const CListEventPETSIRD& event_PETSIRD() const { return event_data; }
+
   // virtual bool operator==(const CListRecordPETSIRD& e2) const
   // {
   //   // return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).r;
@@ -122,7 +127,7 @@ public:
 
   // inline bool is_prompt() const override { /*return event_data.is_prompt();*/ }
 
-  Succeeded init_from_data_ptr(const char* const data_ptr, const std::size_t size_of_record, const bool do_byte_swap)
+  Succeeded init_from_data_ptr(const petsird::CoincidenceEvent&)
   {
     // assert(size_of_record >= 8);
     // std::copy(data_ptr, data_ptr + 8, reinterpret_cast<char*>(&raw)); // TODO necessary for operator==

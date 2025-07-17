@@ -91,7 +91,7 @@ public:
 
   //! Checks in binary data file for correct signature (can be either "SAFIR CListModeData", "NeuroLF CListModeData" or "MUPET
   //! CListModeData").
-  bool can_read(const FileSignature& signature, const std::string& filename) const override
+  bool can_read(const FileSignature& signature, const std::string& filename) override
   {
     // Looking for the right key in the parameter file
     std::ifstream par_file(filename.c_str());

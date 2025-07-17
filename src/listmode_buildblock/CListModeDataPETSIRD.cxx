@@ -44,19 +44,26 @@ Coincidence LM Data Class for PETSIRD: Implementation
 // #include "helpers/include/petsird_helpers/create.h"
 #include "helpers/include/petsird_helpers/geometry.h"
 // #include "boost/static_assert.hpp"
+#include "../../PETSIRD/cpp/generated/binary/protocols.h"
+#include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/CListRecordPETSIRD.h"
 
 START_NAMESPACE_STIR
 
-CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
+CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename, bool use_hdf5)
+    : use_hdf5(use_hdf5)
 {
   this->listmode_filename = listmode_filename;
 
   petsird::Header header;
-  petsird::binary::PETSIRDReader petsird_reader(listmode_filename);
-  petsird_reader.ReadHeader(header);
+  if (use_hdf5)
+    current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
+  else
+    current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
+
+  current_lm_data_ptr->ReadHeader(header);
   petsird::ScannerInformation scanner_info = header.scanner;
   petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
   const petsird::TypeOfModule type_of_module{ 0 };
@@ -64,6 +71,15 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
   //  transaxial_crystal_spacing,average_depth_of_interaction,axial_crystal_spacing, num_rings, ring_spacing, num_axial_blocks,
   //  num_oftransaxial_blocks
   //  these are from rep_module.object
+
+  // Get the first TimeBlock
+  if (current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+    error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abord.");
+
+  if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
+    curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+  else
+    error("CListModeDataPETSIRD: holds_alternative not true. Abord.");
 
   std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
   int num_modules = scanner_geo.replicated_modules[type_of_module].transforms.size();
@@ -73,8 +89,9 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
   const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges[type_of_module];
   const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
   //   coordinates of first detecting bin (module_id,element_id, energy_id)
-  //   const petsird::ExpandedDetectionBin expanded_detection_bin{ 0, 0, 0 };
+  const petsird::ExpandedDetectionBin expanded_detection_bin{ 0, 0, 0 };
   const auto box_shape = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
+
   // get center of box (this should be in a loop to create a map
 
   for (uint32_t module = 0; module < num_modules; module++)
@@ -84,6 +101,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename)
           petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, ener };
           const auto box_shape
               = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
+
           CartesianCoordinate3D<float> mean_pos;
           for (auto& corner : box_shape.corners)
             { // if STIR (z,y,x) -> PETSIRD (-y, -x, z) pheraps  the order below needs to be changed
@@ -129,7 +147,10 @@ CListModeDataPETSIRD::open_lm_file() const
 shared_ptr<CListRecord>
 CListModeDataPETSIRD::get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD());
+  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD);
+  std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event_PETSIRD().set_scanner_sptr(this->get_proj_data_info_sptr()->get_scanner_sptr());
+  std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event_PETSIRD().set_map_sptr(map);
+
   return sptr;
 }
 
@@ -137,7 +158,23 @@ Succeeded
 CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 {
   CListRecordPETSIRD& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
-  // return current_lm_data_ptr->get_next_record(record);
+  petsird::CoincidenceEvent& curr_event
+      = curr_event_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]].at(curr_event_in_event_block);
+
+  Succeeded ok = record.init_from_data_ptr(curr_event);
+
+  if (ok == Succeeded::no)
+    return Succeeded::no;
+
+  curr_event_in_event_block++;
+  if (curr_event_in_event_block == curr_event_block.prompt_events.size())
+    {
+      if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+        return Succeeded::no;
+      curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+      curr_event_in_event_block = 0;
+    }
+  return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR
