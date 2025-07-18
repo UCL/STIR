@@ -40,8 +40,6 @@ Jannis Fischer
 #include "stir/listmode/CListRecord.h"
 #include "stir/shared_ptr.h"
 
-#include "stir/listmode/CListRecordPETSIRD.h"
-
 #include "../../PETSIRD/cpp/generated/protocols.h"
 
 START_NAMESPACE_STIR
@@ -90,6 +88,8 @@ private:
   mutable petsird::EventTimeBlock curr_event_block;
 
   const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
+
+  shared_ptr<Scanner> this_scanner_sptr;
 };
 
 END_NAMESPACE_STIR
