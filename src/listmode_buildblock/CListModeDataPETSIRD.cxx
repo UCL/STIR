@@ -275,8 +275,13 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
                                                  const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list)
 {
   // Determine DOI based on material
-  const std::string& material = scanner_info.bulk_materials[0].name;
-  float average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
+  float average_doi = 0.0;
+  if (scanner_info.bulk_materials.size() > 0)
+    {
+      const std::string& material = scanner_info.bulk_materials[0].name;
+      if (material.size() > 0)
+        average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
+    }
 
   const petsird::TypeOfModule type_of_module = replicated_module_list.size();
   if (type_of_module > 1)
@@ -325,7 +330,7 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
   figure_out_block_angles(unique_angle_modules, rotation_axis, replicated_module_list);
 
   std::vector<float> block_angular_spacing;
-  if (!get_spacing_uniform(block_angular_spacing, unique_angle_modules)) /// epsilon * 10000) // relax epsilon here
+  if (!get_spacing_uniform(block_angular_spacing, unique_angle_modules, 1e-2)) /// epsilon * 10000) // relax epsilon here
     return false;
 
   std::vector<float> element_horizontal_spacing, element_vertical_spacing;
