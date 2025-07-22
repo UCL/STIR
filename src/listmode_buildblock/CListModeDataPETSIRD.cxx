@@ -2,11 +2,7 @@
 
 Coincidence LM Data Class for PETSIRD: Implementation
 
-     Copyright 2015 ETH Zurich, Institute of Particle Physics
-     Copyright 2020 Positrigo AG, Zurich
-     Copyright 2021 University College London
-     Copyright 2025 National Physical Laboratory
-
+    Copyright 2025, MGH / HST A. Martinos Center for Biomedical Imaging
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -26,12 +22,10 @@ Coincidence LM Data Class for PETSIRD: Implementation
 \ingroup listmode
 \brief implementation of class stir::CListModeDataPETSIRD
 
-\author Jannis Fischer
-\author Kris Thielemans
-\author Markus Jehl
 \author Daniel Deidda
+\author Nikos Efthimiou
 */
-#include "stir/ExamInfo.h"
+
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/error.h"
@@ -49,6 +43,363 @@ Coincidence LM Data Class for PETSIRD: Implementation
 
 START_NAMESPACE_STIR
 
+namespace matrix
+{
+
+using Mat3 = std::array<std::array<float, 3>, 3>;
+using Vec3 = std::array<float, 3>;
+
+inline Mat3
+transpose(const Mat3& mat)
+{
+  std::array<std::array<float, 3>, 3> result{};
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j)
+      result[j][i] = mat[i][j];
+  return result;
+}
+
+inline Mat3
+subtract(const Mat3& A, const Mat3& B)
+{
+  std::array<std::array<float, 3>, 3> result{};
+  for (size_t i = 0; i < 3; ++i)
+    for (size_t j = 0; j < 3; ++j)
+      result[i][j] = A[i][j] - B[i][j];
+  return result;
+}
+
+inline Vec3
+getAxisFromSkew(const Mat3& S)
+{
+  return {
+    0.5f * (S[2][1] - S[1][2]), // x
+    0.5f * (S[0][2] - S[2][0]), // y
+    0.5f * (S[1][0] - S[0][1])  // z
+  };
+}
+
+} // namespace matrix
+
+inline bool
+get_spacing_uniform(std::vector<float>& spacing, const std::set<float>& unsorted_block_poss, double epsilon = 1e-4)
+{
+  std::vector<float> sorted_z(unsorted_block_poss.begin(), unsorted_block_poss.end());
+  for (size_t i = 1; i < sorted_z.size(); ++i)
+    {
+      spacing.push_back(std::abs(sorted_z[i] - sorted_z[i - 1]));
+    }
+
+  return std::all_of(spacing.begin(), spacing.end(), [&](float s) { return std::abs(s - spacing.front()) <= epsilon; });
+}
+
+const std::set<float>&
+getLargestVector(const std::set<float>& x, const std::set<float>& y, const std::set<float>& z)
+{
+  const std::set<float>* largest = &x;
+  int axis = 0;
+  if (y.size() > largest->size())
+    {
+      largest = &y;
+      axis = 1;
+    }
+  else if (z.size() > largest->size())
+    {
+      largest = &z;
+      axis = 2;
+    }
+
+  info(format("I believe the axial direction is the {}.", axis));
+  return *largest;
+}
+
+void
+CListModeDataPETSIRD::find_uniqe_values_1D(std::set<float>& values, const std::vector<float>& input)
+{
+  for (float val : input)
+    {
+      // std::cout << val << std::endl;
+      values.insert(val);
+    }
+}
+
+void
+CListModeDataPETSIRD::find_uniqe_values_2D(std::set<float>& values, const std::vector<std::vector<float>>& input)
+{
+  for (size_t row = 0; row < input.size(); ++row)
+    for (size_t col = 0; col < input[row].size(); ++col)
+      values.insert(input[row][col]);
+}
+
+int
+CListModeDataPETSIRD::figure_out_scanner_blocks_and_rotation_axis(
+    std::set<float>& unique_dim1_values,
+    std::set<float>& unique_dim2_values,
+    std::set<float>& unique_dim3_values,
+    const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list)
+{
+  auto insertTranslations = [&](const petsird::RigidTransformation& trans) {
+    unique_dim1_values.insert(trans.matrix.at(0, 3));
+    unique_dim2_values.insert(trans.matrix.at(1, 3));
+    unique_dim3_values.insert(trans.matrix.at(2, 3));
+  };
+
+  auto extractRotationMatrix = [](const petsird::RigidTransformation& trans) -> matrix::Mat3 {
+    matrix::Mat3 R;
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        R[i][j] = trans.matrix.at(i, j);
+    return R;
+    // skew = matrix::subtract(R, matrix::transpose(R));
+    // auto rot = matrix::getAxisFromSkew(skew);
+  };
+
+  std::array<std::array<float, 3>, 3> skew;
+  int detected_axis = -1;
+
+  for (const auto& module : replicated_module_list)
+    for (const auto& mod_trans : module.transforms)
+      {
+        insertTranslations(mod_trans);
+        matrix::Mat3 R = extractRotationMatrix(mod_trans);
+        skew = matrix::subtract(R, matrix::transpose(R));
+        auto axis_vec = matrix::getAxisFromSkew(skew);
+
+        int current_axis = -1;
+        for (int i = 0; i < 3; ++i)
+          {
+            if (std::abs(axis_vec[i]) > 1e-6f)
+              {
+                if (current_axis != -1)
+                  {
+                    warning("Rotation involves multiple axis components. Possibly non-pure rotation.");
+                    current_axis = -2; // Sentinel for mixed axes
+                    return -1;
+                  }
+                current_axis = i;
+              }
+          }
+
+        if (current_axis >= 0)
+          {
+            if (detected_axis == -1)
+              detected_axis = current_axis;
+            else if (detected_axis != current_axis)
+              warning("Inconsistent rotation axis detected between modules.");
+          }
+      }
+  info(format("Rotation axis of blocks inferred as axis index {}", detected_axis));
+  return detected_axis;
+}
+
+void
+CListModeDataPETSIRD::figure_out_block_element_transformations(
+    std::set<float>& unique_dim1_values,
+    std::set<float>& unique_dim2_values,
+    std::set<float>& unique_dim3_values,
+    float& radius,
+    int& radius_index,
+    const int rotation_axis,
+    const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list)
+{
+
+  auto insert_translation = [&](const petsird::RigidTransformation& trans) {
+    unique_dim1_values.insert(trans.matrix.at(0, 3));
+    unique_dim2_values.insert(trans.matrix.at(1, 3));
+    unique_dim3_values.insert(trans.matrix.at(2, 3));
+  };
+
+  auto detect_radius = [&](const petsird::RigidTransformation& trans) -> bool {
+    for (int i = 0; i < 3; ++i)
+      {
+        if (i == rotation_axis)
+          continue;
+        float candidate = trans.matrix.at(i, 3);
+        if (candidate > 0.0f)
+          {
+            radius = candidate;
+            radius_index = i;
+            return true;
+          }
+      }
+    return false;
+  };
+
+  for (const auto& module : replicated_module_list)
+    {
+      for (const auto& el_trans : module.object.detecting_elements.transforms)
+        {
+          if (radius == 0.0f)
+            {
+              if (!detect_radius(el_trans))
+                {
+                  error("Unable to determine radius from translation components.");
+                  continue;
+                }
+            }
+          else
+            {
+              float current = el_trans.matrix.at(radius_index, 3);
+              if (std::abs(current - radius) > 1e-4f)
+                warning("Mixed radii detected. Consider checking for misaligned modules.");
+            }
+
+          insert_translation(el_trans);
+          // std::cout << el_trans.matrix << std::endl;
+        }
+    }
+}
+
+void
+CListModeDataPETSIRD::figure_out_block_angles(std::set<float>& unique_angle_modules,
+                                              const int rot_axis,
+                                              const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list)
+{
+  for (const auto& module : replicated_module_list)
+    for (const auto& transform : module.transforms)
+      {
+        if (rot_axis == 0)
+          unique_angle_modules.insert(
+              std::fabs(int(1000.F * std::atan2(transform.matrix.at(1, 0), transform.matrix.at(2, 0))) / 1000.F));
+        else if (rot_axis == 1)
+          unique_angle_modules.insert(
+              std::fabs(int(1000.F * std::atan2(transform.matrix.at(2, 0), transform.matrix.at(0, 0))) / 1000.F));
+        else if (rot_axis == 2)
+          unique_angle_modules.insert(
+              std::fabs(int(1000.F * std::atan2(transform.matrix.at(1, 0), transform.matrix.at(0, 0))) / 1000.F));
+      }
+}
+
+bool
+CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformation& scanner_info,
+                                                 const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list)
+{
+  // Determine DOI based on material
+  const std::string& material = scanner_info.bulk_materials[0].name;
+  float average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
+
+  const petsird::TypeOfModule type_of_module = replicated_module_list.size();
+  if (type_of_module > 1)
+    {
+      info("Multiple types of PETSIRD modules are not supported. Abord.");
+      return false;
+    }
+
+  const auto& tof_bin_edges = scanner_info.tof_bin_edges[type_of_module - 1][type_of_module - 1];
+  std::cout << "Num. of TOF bins " << tof_bin_edges.NumberOfBins() << std::endl;
+
+  std::set<float> unique_tof_values;
+  find_uniqe_values_2D(unique_tof_values, scanner_info.tof_resolution);
+
+  int num_modules = replicated_module_list[0].transforms.size();
+  std::set<float> unique_dim1_values, unique_dim2_values, unique_dim3_values;
+  std::set<float> unique_tof_resolutions;
+
+  const int rotation_axis = figure_out_scanner_blocks_and_rotation_axis(
+      unique_dim1_values, unique_dim2_values, unique_dim3_values, replicated_module_list);
+  if (rotation_axis == -1)
+    return false;
+
+  const std::set<float>& main_axis = getLargestVector(unique_dim1_values, unique_dim2_values, unique_dim3_values);
+
+  std::vector<float> block_axial_spacing;
+  get_spacing_uniform(block_axial_spacing, main_axis);
+
+  info(format("I counted {} axial blocks with spacing {}", unique_dim3_values.size(), block_axial_spacing[0]));
+
+  int num_transaxial_blocks = num_modules / main_axis.size();
+  info(format("I deduce that the scanner has {} transaxial number of blocks", num_transaxial_blocks));
+
+  float radius = 0;
+  int radius_indx = -1;
+
+  std::set<float> unique_elements_dim1_values, unique_elements_dim2_values, unique_elements_dim3_values;
+  figure_out_block_element_transformations(unique_elements_dim1_values,
+                                           unique_elements_dim2_values,
+                                           unique_elements_dim3_values,
+                                           radius,
+                                           radius_indx,
+                                           rotation_axis,
+                                           replicated_module_list);
+  std::set<float> unique_angle_modules;
+  figure_out_block_angles(unique_angle_modules, rotation_axis, replicated_module_list);
+
+  std::vector<float> block_angular_spacing;
+  if (!get_spacing_uniform(block_angular_spacing, unique_angle_modules)) /// epsilon * 10000) // relax epsilon here
+    return false;
+
+  std::vector<float> element_horizontal_spacing, element_vertical_spacing;
+  std::set<float> unique_elements_horizontal_values, unique_elements_vertical_values;
+  if (radius_indx == 0)
+    {
+      if (!get_spacing_uniform(element_horizontal_spacing, unique_elements_dim3_values))
+        return false;
+      if (!get_spacing_uniform(element_vertical_spacing, unique_elements_dim2_values))
+        return false;
+      unique_elements_horizontal_values = unique_elements_dim3_values;
+      unique_elements_vertical_values = unique_elements_dim2_values;
+    }
+  else
+    {
+      error("TODO!");
+    }
+
+  this_scanner_sptr.reset(
+      new Scanner(Scanner::User_defined_scanner,
+                  std::string("PETSIRD_defined_scanner"),
+                  /* num dets per ring */
+                  (num_transaxial_blocks * unique_elements_vertical_values.size()),
+                  unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
+                  /* number of non arccor bins */
+                  (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                  /* number of maximum arccor bins */
+                  (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                  /* inner ring radius */
+                  radius,
+                  /* doi */ average_doi,
+                  /* ring spacing */
+                  element_horizontal_spacing[0] * 10.f,
+                  // bin_size_v
+                  element_vertical_spacing[0] * 10.f,
+                  /*intrinsic_tilt_v*/
+                  0.f,
+                  /*num_axial_blocks_per_bucket_v */
+                  unique_dim3_values.size(),
+                  /*num_transaxial_blocks_per_bucket_v*/
+                  1,
+                  /*num_axial_crystals_per_block_v*/
+                  unique_elements_horizontal_values.size(),
+                  /*num_transaxial_crystals_per_block_v*/
+                  unique_elements_vertical_values.size(),
+                  /*num_axial_crystals_per_singles_unit_v*/
+                  unique_elements_horizontal_values.size(),
+                  /*num_transaxial_crystals_per_singles_unit_v*/
+                  unique_elements_vertical_values.size(),
+                  /*num_detector_layers_v*/
+                  1,                                             // num_detector_layers_v
+                  scanner_info.energy_resolution_at_511.front(), // energy_resolution_v
+                  511,                                           // reference_energy_v
+                  1,
+                  0.F,
+                  0.F,                                                                 // non-TOF
+                  "BlocksOnCylindrical",                                               // scanner_geometry_v
+                  *unique_elements_horizontal_values.begin(),                          // axial_crystal_spacing_v
+                  std::round(*unique_elements_vertical_values.begin() * 10.0f) / 10.F, // transaxial_crystal_spacing_v
+                  block_axial_spacing.front(),                                         // axial_block_spacing_v
+                  radius * block_angular_spacing.front(),                              // transaxial_block_spacing_v
+                  ""                                                                   // crystal_map_file_name_v
+                  ));
+
+  // /* maximum number of timing bins */
+  // tof_bin_edges.NumberOfBins(),
+  // /* size of basic TOF bin */
+  // 10,
+  // /* Scanner's timing resolution */
+  // *unique_tof_values.begin()));
+
+  return true;
+}
+
 CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename, bool use_hdf5)
     : use_hdf5(use_hdf5)
 {
@@ -63,11 +414,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   current_lm_data_ptr->ReadHeader(header);
   petsird::ScannerInformation scanner_info = header.scanner;
   petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
-  const petsird::TypeOfModule type_of_module{ 0 };
-  // need to get  inner_ring_radius, num_detector_layers, num_transaxial_crystals_per_block, num_axial_crystals_per_block
-  //  transaxial_crystal_spacing,average_depth_of_interaction,axial_crystal_spacing, num_rings, ring_spacing, num_axial_blocks,
-  //  num_oftransaxial_blocks
-  //  these are from rep_module.object
+  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
 
   // Get the first TimeBlock
   // if (
@@ -80,252 +427,28 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   else
     error("CListModeDataPETSIRD: holds_alternative not true. Abord.");
 
-  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
-  int num_modules = scanner_geo.replicated_modules[type_of_module].transforms.size();
-
-  int num_elements_per_module = scanner_geo.replicated_modules[type_of_module].object.detecting_elements.transforms.size();
-
-  const auto& tof_bin_edges = header.scanner.tof_bin_edges[type_of_module][type_of_module];
-  std::cout << "Num. of TOF bins " << tof_bin_edges.NumberOfBins() << std::endl;
-
-  std::cout << header.scanner.tof_resolution.size() << " " << header.scanner.tof_resolution[0].size() << std::endl;
-
-  std::set<double> unique_tof_values;
-  for (int module_type1 = 0; module_type1 < type_of_module; module_type1++)
+  if (isCylindricalConfiguration(scanner_info, replicated_module_list))
     {
-      std::cout << header.scanner.tof_resolution[module_type1].at(0) << std::endl;
-      unique_tof_values.insert(header.scanner.tof_resolution[module_type1].at(0));
+      int tof_mash_factor = 1;
+      proj_data_info_sptr = std::const_pointer_cast<const ProjDataInfo>(
+          ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+                                                 1,
+                                                 this_scanner_sptr->get_num_rings() - 1,
+                                                 this_scanner_sptr->get_num_detectors_per_ring() / 2,
+                                                 this_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                 /* arc_correction*/ false,
+                                                 tof_mash_factor)
+              ->create_shared_clone());
     }
-
-  if (unique_tof_values.size() > 1)
-    error("We do not support multiple TOF resolutions. Abord.");
-
-  //
-  // for (uint32_t tof_bin = 0; tof_bin < tof_bin_edges.NumberOfBins(); module++)
-  //   {
-
-  //     auto& tt = header.scanner.tof_resolution
-  //                    // unique_z_values.insert(tz);
-
-  //                    std::cout
-  //                << mod_trans.matrix << "\r" << std::endl;
-  //   }
-
-  // const auto num_tof_bins = tof_bin_edges.NumberOfBins();
-  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges[type_of_module];
-  const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
-  //   coordinates of first detecting bin (module_id,element_id, energy_id)
-  const petsird::ExpandedDetectionBin expanded_detection_bin{ 0, 0, 0 };
-  // const auto box_shape = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
-
-  // get center of box (this should be in a loop to create a map
-
-  std::cout << scanner_info.gantry_alignment->matrix << std::endl;
-
-  double epsilon = 1e-6;
-  std::set<double> unique_z_values;
-  std::set<double> unique_tof_resolutions;
-  std::set<double> unique_angle_modules;
-  for (uint32_t module = 0; module < num_modules; module++)
+  else
     {
-      petsird::RigidTransformation& mod_trans = scanner_geo.replicated_modules[type_of_module].transforms[module];
-      double tz = mod_trans.matrix.at(2, 3);
-      unique_z_values.insert(tz);
-      // std::cout << mod_trans.matrix << "\r" << std::endl;
-      unique_angle_modules.insert(
-          std::fabs(int(1000.F * std::atan2(mod_trans.matrix.at(1, 0), mod_trans.matrix.at(0, 0))) / 1000.F));
-      std::cout << "Angular blocks "
-                << std::fabs(int(1000.F * std::atan2(mod_trans.matrix.at(1, 0), mod_trans.matrix.at(0, 0))) / 1000.F)
-                << std::endl;
+      error("TODO:GenericScanner");
     }
-
-  std::vector<double> sorted_z(unique_z_values.begin(), unique_z_values.end());
-  std::vector<double> spacings;
-  for (size_t i = 1; i < sorted_z.size(); ++i)
-    {
-      spacings.push_back(std::abs(sorted_z[i] - sorted_z[i - 1]));
-    }
-
-  double first = spacings.front();
-  for (const auto& s : spacings)
-    {
-      if (std::abs(s - first) > epsilon)
-        error("Unequally spaced blocks. Probably. Abord.");
-    }
-
-  std::cout << "I counted " << unique_z_values.size() << " axial number of blocks with spacing " << spacings[0] << std::endl;
-  int num_heads = num_modules / unique_z_values.size();
-  std::cout << "I deduce that the scanner has " << num_heads << "transaxial number of blocks" << std::endl;
-  float radius = 0;
-  std::set<double> unique_elements_y_values;
-  std::set<double> unique_elements_z_values;
-  for (uint32_t elem = 0; elem < num_elements_per_module; elem++)
-    {
-      // const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
-      // const auto& det_els = rep_module.object.detecting_elements;
-      // const auto& mod_transform = rep_module.transforms[expanded_detection_bin.module_index];
-      // const auto& transform = det_els.transforms[expanded_detection_bin.element_index];
-      // return transform_BoxShape(mult_transforms({ mod_transform, transform }), det_els.object.shape);
-
-      // petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, ener };
-      // const auto box_shape
-      //     = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
-
-      petsird::RigidTransformation& el_trans
-          = scanner_geo.replicated_modules[type_of_module].object.detecting_elements.transforms[elem]; // .transforms[module];
-      if (radius == 0)
-        radius = el_trans.matrix.at(0, 3);
-      else if (radius != el_trans.matrix.at(0, 3))
-        error("Unsupported mixed radii. Abord.");
-
-      unique_elements_y_values.insert(el_trans.matrix.at(1, 3));
-      unique_elements_z_values.insert(el_trans.matrix.at(2, 3));
-    }
-
-  std::vector<double> sorted_angles_modules(unique_angle_modules.begin(), unique_angle_modules.end());
-  std::vector<double> spacing_angles;
-  for (size_t i = 1; i < sorted_angles_modules.size(); ++i)
-    {
-      spacing_angles.push_back(std::abs(sorted_angles_modules[i] - sorted_angles_modules[i - 1]));
-    }
-
-  double first_angle = spacing_angles.front();
-  for (const auto& s : spacing_angles)
-    {
-      if (std::abs(s - first_angle) > epsilon * 10000) // relax epsilon here
-        {
-          std::cout << std::abs(s - first_angle) << std::endl;
-          error("Unequally spaced blocks. Probably. Abord.");
-        }
-    }
-
-  for (auto& e : unique_elements_y_values)
-    std::cout << "Y: " << e << std::endl;
-
-  std::vector<double> sorted_elements_y(unique_elements_y_values.begin(), unique_elements_y_values.end());
-  std::vector<double> element_y_spacings;
-  for (size_t i = 1; i < sorted_elements_y.size(); ++i)
-    {
-      element_y_spacings.push_back(std::abs(sorted_elements_y[i] - sorted_elements_y[i - 1]));
-    }
-
-  double element_y_first = element_y_spacings.front();
-  for (const auto& s : element_y_spacings)
-    {
-      if (std::abs(s - element_y_first) > epsilon)
-        error("Unequally spaced elements on the y axis. Probably. Abord.");
-    }
-
-  for (auto& e : unique_elements_z_values)
-    std::cout << "Z: " << e << std::endl;
-
-  std::vector<double> sorted_elements_z(unique_elements_z_values.begin(), unique_elements_z_values.end());
-  std::vector<double> element_z_spacings;
-  for (size_t i = 1; i < sorted_elements_z.size(); ++i)
-    {
-      element_z_spacings.push_back(std::abs(sorted_elements_z[i] - sorted_elements_z[i - 1]));
-    }
-
-  double element_z_first = element_z_spacings.front();
-  for (const auto& s : element_z_spacings)
-    {
-      if (std::abs(s - element_z_first) > epsilon)
-        error("Unequally spaced elements on the z axis. Probably. Abord.");
-    }
-
-  std::cout << "The scanner radius should be " << radius << std::endl;
-
-  std::cout << (num_heads * unique_elements_y_values.size()) << "\r"
-            << (num_heads * unique_elements_y_values.size()) / unique_elements_y_values.size()
-            << "\r" // get_num_transaxial_blocks
-            << unique_elements_y_values.size() << std::endl;
-
-  this_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
-                                      std::string("PETSIRD_defined_scanner"),
-                                      /* num dets per ring */
-                                      (num_heads * unique_elements_y_values.size()),
-                                      unique_z_values.size() * unique_elements_z_values.size() /* num of rings */,
-                                      /* number of non arccor bins */
-                                      (num_heads * unique_elements_y_values.size()) / 2,
-                                      /* number of maximum arccor bins */
-                                      (num_heads * unique_elements_y_values.size()) / 2,
-                                      /* inner ring radius */
-                                      radius,
-                                      /* doi */ 1.F,
-                                      /* ring spacing */
-                                      element_z_spacings[0] * 10.f,
-                                      // bin_size_v
-                                      element_y_spacings[0] * 10.f,
-                                      /*intrinsic_tilt_v*/
-                                      0.f,
-                                      /*num_axial_blocks_per_bucket_v */
-                                      unique_z_values.size(),
-                                      /*num_transaxial_blocks_per_bucket_v*/
-                                      1,
-                                      /*num_axial_crystals_per_block_v*/
-                                      unique_elements_z_values.size(),
-                                      /*num_transaxial_crystals_per_block_v*/
-                                      unique_elements_y_values.size(),
-                                      /*num_axial_crystals_per_singles_unit_v*/
-                                      unique_elements_z_values.size(),
-                                      /*num_transaxial_crystals_per_singles_unit_v*/
-                                      unique_elements_y_values.size(),
-                                      /*num_detector_layers_v*/
-                                      1,  // num_detector_layers_v
-                                      -1, // energy_resolution_v
-                                      -1, // reference_energy_v
-                                      1,
-                                      0.F,
-                                      0.F,                                              // non-TOF
-                                      "BlocksOnCylindrical",                            // scanner_geometry_v
-                                      element_z_spacings[0],                            // axial_crystal_spacing_v
-                                      std::round(element_y_spacings[0] * 10.0f) / 10.F, // transaxial_crystal_spacing_v
-                                      spacings[0],                                      // axial_block_spacing_v
-                                      radius * spacing_angles.front(),                  // transaxial_block_spacing_v
-                                      ""                                                // crystal_map_file_name_v
-                                      ));
-
-  // /* maximum number of timing bins */
-  // tof_bin_edges.NumberOfBins(),
-  // /* size of basic TOF bin */
-  // 10,
-  // /* Scanner's timing resolution */
-  // *unique_tof_values.begin()));
-  int tof_mash_factor = 1;
-  proj_data_info_sptr = std::const_pointer_cast<const ProjDataInfo>(
-      ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
-                                             1,
-                                             this_scanner_sptr->get_num_rings() - 1,
-                                             this_scanner_sptr->get_num_detectors_per_ring() / 2,
-                                             this_scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                             /* arc_correction*/ false,
-                                             tof_mash_factor)
-          ->create_shared_clone());
-
-  //   petsird::ReplicatedDetectorModule = scanner_geo.replicated_modules;
-
-  // if (!crystal_map_filename.empty())
-  //   {
-  //     this->map = MAKE_SHARED<DetectorCoordinateMap>(crystal_map_filename, lor_randomization_sigma);
-  //   }
-  // else
-  //   {
-  //     if (lor_randomization_sigma != 0)
-  //       error("PETSIRD currently does not support LOR-randomisation unless a map is specified");
-  //   }
-  // shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
-  // _exam_info_sptr->imaging_modality = ImagingModality::PT;
-  // this->exam_info_sptr = _exam_info_sptr;
-
-  //        // Here we are reading the scanner data from the template projdata
-  // shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
-  // this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
   // if (this->open_lm_file() == Succeeded::no)
   //   {
   //     error("CListModeDataPETSIRD: Could not open listmode file " + listmode_filename + "\n");
   //   }
-  int nikos = 0;
 }
 
 Succeeded

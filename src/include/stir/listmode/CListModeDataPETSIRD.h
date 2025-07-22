@@ -1,11 +1,8 @@
 /* CListModeDataPETSIRD.h
 
-Coincidence LM Data Class for PETSIRD: Header File
-Jannis Fischer
+Coincidence LM Data Class for PETSIRD
 
-     Copyright 2015 ETH Zurich, Institute of Particle Physics
-     Copyright 2020 Positrigo AG, Zurich
-     Copyright 2025 National Physical Laboratory
+     Copyright 2025, MGH / HST A. Martinos Center for Biomedical Imaging
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -28,15 +25,15 @@ Jannis Fischer
 \brief Declaration of class stir::CListModeDataPETSIRD
 
 \author Daniel Deidda
+\author Nikos Efthimiou
 */
 
 #ifndef __stir_listmode_CListModeDataPETSIRD_H__
 #define __stir_listmode_CListModeDataPETSIRD_H__
 
-#include <string>
+#include <set>
 #include "stir/listmode/CListModeDataBasedOnCoordinateMap.h"
 #include "stir/ProjData.h"
-#include "stir/ProjDataInfo.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/shared_ptr.h"
 
@@ -90,6 +87,29 @@ private:
   const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
 
   shared_ptr<Scanner> this_scanner_sptr;
+
+  bool isCylindricalConfiguration(const petsird::ScannerInformation& scanner_info,
+                                  const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);
+
+  void find_uniqe_values_1D(std::set<float>& values, const std::vector<float>& input);
+
+  void find_uniqe_values_2D(std::set<float>& values, const std::vector<std::vector<float>>& input);
+
+  int figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique_dim1_values,
+                                                  std::set<float>& unique_dim2_values,
+                                                  std::set<float>& unique_dim3_values,
+                                                  const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);
+  void figure_out_block_element_transformations(std::set<float>& unique_dim1_values,
+                                                std::set<float>& unique_dim2_values,
+                                                std::set<float>& unique_dim3_values,
+                                                float& radius,
+                                                int& radius_index,
+                                                const int rotation_axis,
+                                                const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);
+
+  void figure_out_block_angles(std::set<float>& unique_angle_modules,
+                               const int rot_axis,
+                               const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);
 };
 
 END_NAMESPACE_STIR
