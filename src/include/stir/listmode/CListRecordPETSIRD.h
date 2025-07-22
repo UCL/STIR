@@ -44,9 +44,9 @@ Coincidence Event Class for PETSIRD: Header File
 #include "boost/cstdint.hpp"
 
 #include "stir/DetectorCoordinateMap.h"
-#include "boost/make_shared.hpp"
+#include "types.h"
 
-#include "../../PETSIRD/cpp/generated/types.h"
+// #include "../../PETSIRD/cpp/generated/types.h"
 
 START_NAMESPACE_STIR
 
@@ -68,9 +68,6 @@ public:
   //! Override the default implementation
   inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
-  //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const override { return m_is_prompt; }
-
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
   /*! Set the scanner */
   /*! Currently only used if the map is not set. */
@@ -78,18 +75,34 @@ public:
 
   virtual bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
-  inline void set_type(bool val) { m_is_prompt = val; };
+  virtual bool is_prompt() const override { return _prompt; }
+
+  virtual Succeeded set_prompt(const bool prompt) override
+  {
+    _prompt = prompt;
+    return Succeeded::yes;
+  }
+
+  void set_PETSIRD_ranges(int _numberOfModules, int _numberOfElementsIndices)
+  {
+    numberOfModules = _numberOfModules;
+    numberOfElementsIndices = _numberOfElementsIndices;
+  }
+
+  int numberOfModules;
+
+  int numberOfElementsIndices;
+
+  std::pair<int, int> det_0, det_1;
 
 private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   shared_ptr<const Scanner> scanner_sptr;
+  bool _prompt;
 
-  bool m_is_prompt = true;
   const DetectorCoordinateMap& map_to_use() const { return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
 };
 
-//! Class for record with time data using PETSIRD bitfield definition
-/*! \ingroup listmode */
 class CListTimePETSIRD : public ListTime
 {
 public:
@@ -108,32 +121,41 @@ class CListRecordPETSIRD : public CListRecord
 public:
   CListRecordPETSIRD() {}
 
-  ~CListRecordPETSIRD() override {}
+  // ~CListRecordPETSIRD() override {}
 
-  bool is_time() const override { return time_data.is_time(); }
+  bool is_time() const override { return true; /*time_data.is_time();*/ }
 
   bool is_event() const override { return true; }
 
-  ListEvent& event() override { return event_data; }
-  const ListEvent& event() const override { return event_data; }
+  CListEventPETSIRD& event() override { return event_data; }
+  const CListEventPETSIRD& event() const override { /*return event_data;*/ }
 
-  ListTime& time() override { return time_data; }
-  const ListTime& time() const override { return time_data; }
+  CListTimePETSIRD& time() override { return time_data; }
+  const CListTimePETSIRD& time() const override { return time_data; }
 
-  CListEventPETSIRD& event_PETSIRD() { return event_data; }
-
-  const CListEventPETSIRD& event_PETSIRD() const { return event_data; }
-
-  // virtual bool operator==(const CListRecordPETSIRD& e2) const
-  // {
-  //   // return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).r;
-  // }
-
-  // inline bool is_prompt() const override { /*return event_data.is_prompt();*/ }
-
-  Succeeded init_from_data_ptr(const petsird::CoincidenceEvent& data, bool is_prompt = true)
+  bool operator==(const CListRecordPETSIRD& e2) const
   {
-    event_data.set_type(is_prompt);
+    // return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).r;
+  }
+
+  virtual Succeeded init_from_data(const petsird::CoincidenceEvent& data, bool is_prompt = true)
+  {
+    auto decodeElementAndModuleIndex
+        = [](int linearIndex, int energyIndex, int numberOfElementsIndices, int numberOfModules) -> std::pair<int, int> {
+      int reduced = (linearIndex - energyIndex) / numberOfModules;
+      int moduleIndex = reduced / numberOfElementsIndices;
+      int elementIndex = reduced % numberOfElementsIndices;
+      return { elementIndex, moduleIndex };
+    };
+
+    event_data.det_0
+        = decodeElementAndModuleIndex(data.detection_bins[0], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
+    event_data.det_1
+        = decodeElementAndModuleIndex(data.detection_bins[1], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
+
+    std::cout << event_data.det_0.first << "  " << event_data.det_0.second << std::endl;
+    std::cout << event_data.det_1.first << "  " << event_data.det_1.second << std::endl;
+    event_data.set_prompt(is_prompt);
     return Succeeded::yes;
   }
 

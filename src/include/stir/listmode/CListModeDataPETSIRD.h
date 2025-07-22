@@ -56,17 +56,15 @@ public:
 
   virtual shared_ptr<CListRecord> get_empty_record_sptr() const override;
 
-  virtual Succeeded get_next_record(CListRecord& record_of_general_type) const override;
+  Succeeded get_next_record(CListRecord& record_of_general_type) const override;
 
-  SavedPosition save_get_position() override {}
+  SavedPosition save_get_position() override { return static_cast<SavedPosition>(curr_event_in_event_block); }
 
-  Succeeded set_get_position(const SavedPosition& pos) override {}
+  Succeeded set_get_position(const SavedPosition& pos) override { return Succeeded::yes; }
 
   virtual bool has_delayeds() const override { return m_has_delayeds; }
 
-  Succeeded reset() override {}
-
-  inline unsigned long int get_total_number_of_events() const override { return total_events; }
+  Succeeded reset() override { return Succeeded::yes; }
 
 protected:
   virtual Succeeded open_lm_file() const override;
@@ -76,11 +74,13 @@ protected:
 private:
   const bool use_hdf5;
 
-  unsigned long int total_events = 0;
-
   mutable unsigned long int curr_event_in_event_block = 0;
 
   mutable petsird::TimeBlock curr_time_block;
+
+  int numberOfModules;
+
+  int numberOfElementsIndices;
 
   mutable petsird::EventTimeBlock curr_event_block;
 
@@ -90,7 +90,7 @@ private:
 
   mutable bool curr_is_prompt = true;
 
-  mutable bool m_has_delayeds = false;
+  mutable bool m_has_delayeds;
 
   bool isCylindricalConfiguration(const petsird::ScannerInformation& scanner_info,
                                   const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);

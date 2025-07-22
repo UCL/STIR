@@ -297,7 +297,8 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
   std::set<float> unique_tof_values;
   find_uniqe_values_2D(unique_tof_values, scanner_info.tof_resolution);
 
-  int num_modules = replicated_module_list[0].transforms.size();
+  numberOfModules = replicated_module_list[0].NumberOfObjects();
+  numberOfElementsIndices = replicated_module_list[0].object.detecting_elements.NumberOfObjects();
   std::set<float> unique_dim1_values, unique_dim2_values, unique_dim3_values;
   std::set<float> unique_tof_resolutions;
 
@@ -313,7 +314,7 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
 
   info(format("I counted {} axial blocks with spacing {}", unique_dim3_values.size(), block_axial_spacing[0]));
 
-  int num_transaxial_blocks = num_modules / main_axis.size();
+  int num_transaxial_blocks = numberOfModules / main_axis.size();
   info(format("I deduce that the scanner has {} transaxial number of blocks", num_transaxial_blocks));
 
   float radius = 0;
@@ -409,7 +410,7 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
 CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename, bool use_hdf5)
     : use_hdf5(use_hdf5)
 {
-  this->listmode_filename = listmode_filename;
+  CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
 
   petsird::Header header;
   if (use_hdf5)
@@ -436,7 +437,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   if (isCylindricalConfiguration(scanner_info, replicated_module_list))
     {
       int tof_mash_factor = 1;
-      proj_data_info_sptr = std::const_pointer_cast<const ProjDataInfo>(
+      this->set_proj_data_info_sptr(std::const_pointer_cast<const ProjDataInfo>(
           ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                  1,
                                                  this_scanner_sptr->get_num_rings() - 1,
@@ -444,23 +445,37 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
                                                  this_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                  /* arc_correction*/ false,
                                                  tof_mash_factor)
-              ->create_shared_clone());
+              ->create_shared_clone()));
     }
   else
     {
       error("TODO:GenericScanner");
     }
 
-  // if (this->open_lm_file() == Succeeded::no)
-  //   {
-  //     error("CListModeDataPETSIRD: Could not open listmode file " + listmode_filename + "\n");
-  //   }
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
+  // Only PET scanners supported
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  _exam_info_sptr->originating_system = std::string("PETSIRD_defined_scanner");
+  // _exam_info_sptr->set_low_energy_thres(scanner_i);
+  // _exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
+
+  this->exam_info_sptr = _exam_info_sptr;
+
+  // N.E.: In my experience the first time block is always empty.
+  // So I use this unncessessary call to skip to the next.
+  if (this->open_lm_file() == Succeeded::no)
+    {
+      error("CListModeDataPETSIRD: Could not open listmode file " + listmode_filename + "\n");
+    }
 }
 
 Succeeded
 CListModeDataPETSIRD::open_lm_file() const
 {
   // current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
+  if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+    return Succeeded::no;
+  curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   return Succeeded::yes;
 }
 
@@ -468,9 +483,10 @@ shared_ptr<CListRecord>
 CListModeDataPETSIRD::get_empty_record_sptr() const
 {
   shared_ptr<CListRecord> sptr(new CListRecordPETSIRD);
-  std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event_PETSIRD().set_scanner_sptr(
+  std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_scanner_sptr(
       this->get_proj_data_info_sptr()->get_scanner_sptr());
-  std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event_PETSIRD().set_map_sptr(map);
+  std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_PETSIRD_ranges(numberOfModules, numberOfElementsIndices);
+  // std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event_PETSIRD().set_map_sptr(map);
 
   return sptr;
 }
@@ -478,15 +494,18 @@ CListModeDataPETSIRD::get_empty_record_sptr() const
 Succeeded
 CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 {
-  auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
 
+  auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
   const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support mulitple pairs of modules.
   const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events->at(0).at(0) : prompt_list;
 
   const auto& event_list = curr_is_prompt ? prompt_list : delayed_list;
 
-  if (record.init_from_data_ptr(event_list.at(curr_event_in_event_block), curr_is_prompt) == Succeeded::no
-      || record.time().set_time_in_millisecs(curr_event_block.time_interval.start) == Succeeded::no)
+  if (event_list.size() == 0)
+    return Succeeded::no;
+
+  if (record.init_from_data(event_list.at(curr_event_in_event_block), curr_is_prompt) == Succeeded::no
+      || record_of_general_type.time().set_time_in_millisecs(curr_event_block.time_interval.start) == Succeeded::no)
     {
       return Succeeded::no;
     }
@@ -498,7 +517,7 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
       return Succeeded::yes;
     }
 
-  // -Once we hit the size of the vector
+  // - Once we hit the size of the vector
   curr_event_in_event_block = 0;
 
   if (!m_has_delayeds || curr_is_prompt)
