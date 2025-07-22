@@ -69,7 +69,7 @@ public:
   inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
   //! Returns 0 if event is prompt and 1 if delayed
-  inline bool is_prompt() const override { return true; }
+  inline bool is_prompt() const override { return m_is_prompt; }
 
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
   /*! Set the scanner */
@@ -78,10 +78,13 @@ public:
 
   virtual bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
+  inline void set_type(bool val) { m_is_prompt = val; };
+
 private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   shared_ptr<const Scanner> scanner_sptr;
 
+  bool m_is_prompt = true;
   const DetectorCoordinateMap& map_to_use() const { return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
 };
 
@@ -90,13 +93,14 @@ private:
 class CListTimePETSIRD : public ListTime
 {
 public:
-  inline unsigned long get_time_in_millisecs() const { /*return static_cast<unsigned long>(time);*/ }
+  inline unsigned long get_time_in_millisecs() const { return static_cast<unsigned long>(time); }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
   {
-    // time = ((boost::uint64_t(1) << 49) - 1) & static_cast<boost::uint64_t>(time_in_millisecs);
+    time = time_in_millisecs;
     return Succeeded::yes;
   }
-  inline bool is_time() const { /*return type; */ }
+  inline bool is_time() const { return true; }
+  uint32_t time;
 };
 
 class CListRecordPETSIRD : public CListRecord
@@ -106,9 +110,9 @@ public:
 
   ~CListRecordPETSIRD() override {}
 
-  bool is_time() const override { /*return time_data.is_time();*/ }
+  bool is_time() const override { return time_data.is_time(); }
 
-  bool is_event() const override { /*return !time_data.is_time();*/ }
+  bool is_event() const override { return true; }
 
   ListEvent& event() override { return event_data; }
   const ListEvent& event() const override { return event_data; }
@@ -127,12 +131,9 @@ public:
 
   // inline bool is_prompt() const override { /*return event_data.is_prompt();*/ }
 
-  Succeeded init_from_data_ptr(const petsird::CoincidenceEvent&)
+  Succeeded init_from_data_ptr(const petsird::CoincidenceEvent& data, bool is_prompt = true)
   {
-    // assert(size_of_record >= 8);
-    // std::copy(data_ptr, data_ptr + 8, reinterpret_cast<char*>(&raw)); // TODO necessary for operator==
-    // if (do_byte_swap)
-    //   ByteOrder::swap_order(raw);
+    event_data.set_type(is_prompt);
     return Succeeded::yes;
   }
 

@@ -284,6 +284,7 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
     }
 
   const petsird::TypeOfModule type_of_module = replicated_module_list.size();
+
   if (type_of_module > 1)
     {
       info("Multiple types of PETSIRD modules are not supported. Abord.");
@@ -477,23 +478,50 @@ CListModeDataPETSIRD::get_empty_record_sptr() const
 Succeeded
 CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 {
-  CListRecordPETSIRD& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
-  petsird::CoincidenceEvent& curr_event
-      = curr_event_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]].at(curr_event_in_event_block);
+  auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
 
-  Succeeded ok = record.init_from_data_ptr(curr_event);
+  const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support mulitple pairs of modules.
+  const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events->at(0).at(0) : prompt_list;
 
-  if (ok == Succeeded::no)
-    return Succeeded::no;
+  const auto& event_list = curr_is_prompt ? prompt_list : delayed_list;
 
-  curr_event_in_event_block++;
-  if (curr_event_in_event_block == curr_event_block.prompt_events.size())
+  if (record.init_from_data_ptr(event_list.at(curr_event_in_event_block), curr_is_prompt) == Succeeded::no
+      || record.time().set_time_in_millisecs(curr_event_block.time_interval.start) == Succeeded::no)
     {
+      return Succeeded::no;
+    }
+
+  ++curr_event_in_event_block;
+
+  if (curr_event_in_event_block < event_list.size())
+    {
+      return Succeeded::yes;
+    }
+
+  // -Once we hit the size of the vector
+  curr_event_in_event_block = 0;
+
+  if (!m_has_delayeds || curr_is_prompt)
+    {
+      if (m_has_delayeds)
+        {
+          curr_is_prompt = false;
+        }
+      else
+        {
+          if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+            return Succeeded::no;
+          curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+        }
+    }
+  else
+    {
+      curr_is_prompt = true;
       if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
         return Succeeded::no;
       curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
-      curr_event_in_event_block = 0;
     }
+
   return Succeeded::yes;
 }
 

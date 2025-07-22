@@ -62,7 +62,7 @@ public:
 
   Succeeded set_get_position(const SavedPosition& pos) override {}
 
-  virtual bool has_delayeds() const override { return true; }
+  virtual bool has_delayeds() const override { return m_has_delayeds; }
 
   Succeeded reset() override {}
 
@@ -84,9 +84,13 @@ private:
 
   mutable petsird::EventTimeBlock curr_event_block;
 
-  const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
+  petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
 
   shared_ptr<Scanner> this_scanner_sptr;
+
+  mutable bool curr_is_prompt = true;
+
+  mutable bool m_has_delayeds = false;
 
   bool isCylindricalConfiguration(const petsird::ScannerInformation& scanner_info,
                                   const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);
