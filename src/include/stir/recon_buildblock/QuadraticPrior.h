@@ -128,6 +128,7 @@ public:
                                       const DiscretisedDensity<3, elemT>& input) const override;
 
   //! get penalty weights for the neighbourhood
+  //const Array<3, float>& get_weights() const;
   Array<3, float> get_weights() const;
 
   //! set penalty weights for the neighbourhood

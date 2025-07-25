@@ -21,6 +21,7 @@
 #include "stir/recon_buildblock/FilterRootPrior.h"
 #include "stir/DataProcessor.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
+#include "stir/recon_buildblock/GibbsQuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #include "stir/recon_buildblock/LogcoshPrior.h"
@@ -98,6 +99,7 @@ static PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixBy
 
 static FilterRootPrior<DiscretisedDensity<3, float>>::RegisterIt dummy4;
 static QuadraticPrior<float>::RegisterIt dummy5;
+static GibbsQuadraticPrior<float>::RegisterIt dummyGibbsQuadratic;
 static PLSPrior<float>::RegisterIt dummyPLS;
 static RelativeDifferencePrior<float>::RegisterIt dummyRelativeDifference;
 static LogcoshPrior<float>::RegisterIt dummyLogcosh;

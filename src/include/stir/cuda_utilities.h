@@ -20,6 +20,7 @@
 #include "stir/Array.h"
 #include "stir/info.h"
 #include <vector>
+#include <cuda_runtime.h>
 
 START_NAMESPACE_STIR
 
@@ -62,6 +63,17 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
       // Copy the data to the stir_array
       std::copy(tmp_data.begin(), tmp_data.end(), stir_array.begin_all());
     }
+}
+
+template <typename elemT>
+__device__ __forceinline__
+float get_voxel(const elemT* in, int x, int y, int z, int3 Image_dimensions)
+{
+    if (x < 0 || x >= Image_dimensions.x ||
+        y < 0 || y >= Image_dimensions.y ||
+        z < 0 || z >= Image_dimensions.z)
+        return 0.0f; // or your chosen boundary value
+    return in[z * Image_dimensions.y * Image_dimensions.x + y * Image_dimensions.x + x];
 }
 
 END_NAMESPACE_STIR

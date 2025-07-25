@@ -162,7 +162,8 @@ QuadraticPrior<elemT>::is_convex() const
 
 //! get penalty weights for the neigbourhood
 template <typename elemT>
-Array<3, float>
+//const Array<3, float>&
+Array<3, float> 
 QuadraticPrior<elemT>::get_weights() const
 {
   return this->weights;
@@ -174,7 +175,7 @@ void
 QuadraticPrior<elemT>::set_weights(const Array<3, float>& w)
 {
   this->weights = w;
-}
+} 
 
 //! get current kappa image
 /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
@@ -227,6 +228,7 @@ compute_weights(Array<3, float>& weights, const CartesianCoordinate3D<float>& gr
         }
 }
 
+/*
 template <typename elemT>
 double
 QuadraticPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
@@ -272,12 +274,84 @@ QuadraticPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
 
-              /* formula:
-                sum_dx,dy,dz
-                 1/4 weights[dz][dy][dx] *
-                 (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 *
-                 (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-              */
+              //  formula:
+              //   sum_dx,dy,dz
+              //    1/4 weights[dz][dy][dx] *
+              //    (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 *
+              //    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+              
+              for (int dz = min_dz; dz <= max_dz; ++dz)
+                for (int dy = min_dy; dy <= max_dy; ++dy)
+                  for (int dx = min_dx; dx <= max_dx; ++dx)
+                    {
+                      double current = weights[dz][dy][dx]
+                                       * square(current_image_estimate[z][y][x] - current_image_estimate[z + dz][y + dy][x + dx])
+                                       / 4;
+
+                      if (do_kappa)
+                        current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
+
+                      result += current;
+                    }
+            }
+        }
+    }
+  return result * this->penalisation_factor;
+}*/
+
+
+
+template <typename elemT>
+double
+QuadraticPrior<elemT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
+{
+  if (this->penalisation_factor == 0)
+    {
+      return 0.;
+    }
+
+  this->check(current_image_estimate);
+
+  const DiscretisedDensityOnCartesianGrid<3, elemT>& current_image_cast
+      = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, elemT>&>(current_image_estimate);
+
+  if (this->weights.get_length() == 0)
+    {
+      compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
+    }
+
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
+
+  double result = 0.;
+  const int min_z = current_image_estimate.get_min_index();
+  const int max_z = current_image_estimate.get_max_index(); 
+  for (int z = min_z; z <= max_z; z++)
+    {
+      const int min_dz = max(weights.get_min_index(), min_z - z);
+      const int max_dz = min(weights.get_max_index(), max_z - z);
+
+      const int min_y = current_image_estimate[z].get_min_index();
+      const int max_y = current_image_estimate[z].get_max_index();
+
+      for (int y = min_y; y <= max_y; y++)
+        {
+          const int min_dy = max(weights[0].get_min_index(), min_y - y);
+          const int max_dy = min(weights[0].get_max_index(), max_y - y);
+
+          const int min_x = current_image_estimate[z][y].get_min_index();
+          const int max_x = current_image_estimate[z][y].get_max_index();
+
+          for (int x = min_x; x <= max_x; x++)
+            {
+              const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
+              const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
+
+              //  formula:
+              //   sum_dx,dy,dz
+              //    1/4 weights[dz][dy][dx] *
+              //    (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 *
+              //    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+              
               for (int dz = min_dz; dz <= max_dz; ++dz)
                 for (int dy = min_dy; dy <= max_dy; ++dy)
                   for (int dx = min_dx; dx <= max_dx; ++dx)
@@ -323,7 +397,7 @@ QuadraticPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_grad
 
   const int min_z = current_image_estimate.get_min_index();
   const int max_z = current_image_estimate.get_max_index();
-  for (int z = min_z; z <= max_z; z++)
+  for (int z = min_z; z <= max_z; z++  )
     {
       const int min_dz = max(weights.get_min_index(), min_z - z);
       const int max_dz = min(weights.get_max_index(), max_z - z);
@@ -412,12 +486,11 @@ QuadraticPrior<elemT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessi
   const int z = coords[1];
   const int y = coords[2];
   const int x = coords[3];
+
   const int min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel.get_min_index() - z);
   const int max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel.get_max_index() - z);
-
   const int min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel[z].get_min_index() - y);
   const int max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel[z].get_max_index() - y);
-
   const int min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel[z][y].get_min_index() - x);
   const int max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel[z][y].get_max_index() - x);
 
@@ -557,6 +630,7 @@ QuadraticPrior<elemT>::add_multiplication_with_approximate_Hessian(DiscretisedDe
 
   const int min_z = output.get_min_index();
   const int max_z = output.get_max_index();
+  
   for (int z = min_z; z <= max_z; z++)
     {
       const int min_dz = max(weights.get_min_index(), min_z - z);
@@ -577,7 +651,7 @@ QuadraticPrior<elemT>::add_multiplication_with_approximate_Hessian(DiscretisedDe
             {
               const int min_dx = max(weights[0][0].get_min_index(), min_x - x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x - x);
-
+    
               elemT result = 0;
               for (int dz = min_dz; dz <= max_dz; ++dz)
                 for (int dy = min_dy; dy <= max_dy; ++dy)

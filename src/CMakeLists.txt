@@ -29,6 +29,11 @@ option(BUILD_EXECUTABLES
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
+# Locate and include the CUDA Toolkit headers
+find_package(CUDAToolkit REQUIRED)
+include_directories(BEFORE SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
+include_directories(BEFORE SYSTEM /usr/local/cuda-12.9/targets/x86_64-linux/include/nvtx3)
+
 ### Settings for external libraries
 
 if (LLN_FOUND)
@@ -69,7 +74,7 @@ endif()
 
 #### Swig related
 option(BUILD_SWIG_PYTHON
-       "Use SWIG to generate python bindings for STIR (experimental)" OFF)
+       "Use SWIG to generate python bindings for STIR (experimental)" ON)
 
 option(BUILD_SWIG_OCTAVE
        "Use SWIG to generate octave bindings for STIR (experimental)" OFF)

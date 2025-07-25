@@ -23,6 +23,7 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
@@ -63,6 +64,8 @@ public:
       Note that a row corresponds to an object of `DataT`.
       The method (as implemented in derived classes) should store the result in \c prior_Hessian_for_single_densel.
    */
+  virtual double compute_gradient_times_input(const DataT& input, const DataT& current_estimate);
+
   virtual void compute_Hessian(DataT& prior_Hessian_for_single_densel,
                                const BasicCoordinate<3, int>& coords,
                                const DataT& current_image_estimate) const;
@@ -74,6 +77,8 @@ public:
       Instead, accumulate_Hessian_times_input() should be used. This method remains for backwards comparability.
        \warning The derived class should accumulate in \a output.
   */
+  virtual void compute_Hessian_diagonal(DataT& Hessian_diagonal, const DataT& current_estimate) const;
+
   virtual void add_multiplication_with_approximate_Hessian(DataT& output, const DataT& input) const;
 
   //! This should compute the multiplication of the Hessian with a vector and add it to \a output

@@ -27,6 +27,15 @@
 
 START_NAMESPACE_STIR
 
+// template class stir::OutputFileFormat<stir::DiscretisedDensity<3, double>>;
+
+// template<>
+// stir::shared_ptr<stir::OutputFileFormat<stir::DiscretisedDensity<3, double>>>
+// stir::OutputFileFormat<stir::DiscretisedDensity<3, double>>::_default_sptr;
+
+
+
+
 template class OutputFileFormat<DiscretisedDensity<3, float>>;
 template class OutputFileFormat<DynamicDiscretisedDensity>;
 template class OutputFileFormat<ParametricVoxelsOnCartesianGrid>;
