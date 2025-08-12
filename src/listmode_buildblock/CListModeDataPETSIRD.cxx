@@ -309,11 +309,6 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
 
   const std::set<float>& main_axis = getLargestVector(unique_dim1_values, unique_dim2_values, unique_dim3_values);
 
-  std::vector<float> block_axial_spacing;
-  get_spacing_uniform(block_axial_spacing, main_axis);
-
-  info(format("I counted {} axial blocks with spacing {}", unique_dim3_values.size(), block_axial_spacing[0]));
-
   int num_transaxial_blocks = numberOfModules / main_axis.size();
   info(format("I deduce that the scanner has {} transaxial number of blocks", num_transaxial_blocks));
 
@@ -350,6 +345,20 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
     {
       error("TODO!");
     }
+
+  std::vector<float> block_axial_spacing;
+  get_spacing_uniform(block_axial_spacing, main_axis);
+  if (block_axial_spacing.size() < 1)
+    {
+      //      std::set<int>::iterator it = unique_elements_horizontal_values.begin();
+      //      std::advance(it,0);
+      float begin = *std::next(unique_elements_horizontal_values.begin(), 0);
+      //      std::advance(it,unique_elements_horizontal_values.size()-1);
+      float end = *std::next(unique_elements_horizontal_values.begin(), unique_elements_horizontal_values.size() - 1);
+      block_axial_spacing.push_back(std::abs(end - begin));
+    }
+
+  info(format("I counted {} axial blocks with spacing {}", unique_dim3_values.size(), block_axial_spacing[0]));
 
   this_scanner_sptr.reset(
       new Scanner(Scanner::User_defined_scanner,
@@ -433,8 +442,9 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   else
     error("CListModeDataPETSIRD: holds_alternative not true. Abord.");
-
-  if (isCylindricalConfiguration(scanner_info, replicated_module_list))
+  isCylindricalConfiguration(scanner_info, replicated_module_list);
+  bool b = false;
+  if (b) // isCylindricalConfiguration(scanner_info, replicated_module_list))
     {
       int tof_mash_factor = 1;
       this->set_proj_data_info_sptr(std::const_pointer_cast<const ProjDataInfo>(
@@ -449,7 +459,51 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     }
   else
     {
-      error("TODO:GenericScanner");
+      //      this_scanner_sptr.get_
+      DetectorCoordinateMap::det_pos_to_coord_type petsird_map;
+      const petsird::TypeOfModule type_of_module = replicated_module_list.size() - 1;
+      //      const auto event_energy_bin_edges=scanner_info.event_energy_bin_edges[type_of_module];
+      //      const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
+      //      error("TODO:GenericScanner");
+      for (uint32_t module = 0; module < numberOfModules; module++)
+        for (uint32_t elem = 0; elem < numberOfElementsIndices; elem++)
+          //            for (uint32_t ener = 0; ener < num_event_energy_bins; ener++) //energy not supported yet
+          {
+            int index = module * numberOfElementsIndices + elem;
+            //              Here we are going to assume that the index = module*numberOfElementsIndices+elem is equal to ax+
+            //              num_ax*tang+ num_ax*num_tang*rad then we will pass this to the map sorter (set_detector_map))
+            //              therefore we can get ax, tang and rad from index
+            /*
+             * rad = index/(num_ax*num_tang)
+             * tang =(index-rad*num_ax*num_tang)/num_ax -num_tang/2
+             * ax = index mod num_ax
+             */
+
+            int rad_pos = index / (this_scanner_sptr->get_num_rings() * this_scanner_sptr->get_num_detectors_per_ring());
+            int ax_pos = (index - rad_pos * this_scanner_sptr->get_num_rings() * this_scanner_sptr->get_num_detectors_per_ring())
+                         / this_scanner_sptr->get_num_detectors_per_ring();
+            int tang_pos = index % this_scanner_sptr->get_num_detectors_per_ring();
+
+            DetectionPosition<> detpos(tang_pos, ax_pos, rad_pos);
+            petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, 1 };
+
+            auto box_shape = petsird_helpers::geometry::get_detecting_box(scanner_info, type_of_module, expanded_detection_bin);
+            CartesianCoordinate3D<float> mean_coord;
+
+            for (auto& corner : box_shape.corners)
+              { // if STIR (z,y,x) -> PETSIRD (-y, -x, z) pheraps  the order below needs to be changed
+                mean_coord.x() = +corner.c[0] / box_shape.corners.size();
+                mean_coord.y() = +corner.c[1] / box_shape.corners.size();
+                mean_coord.z() = +corner.c[2] / box_shape.corners.size();
+              }
+
+            //       save  mean pos into map
+            petsird_map[detpos] = mean_coord;
+            std::cout << detpos.radial_coord() << "," << detpos.axial_coord() << "," << detpos.tangential_coord() << ","
+                      << mean_coord.x() << "," << mean_coord.y() << "," << mean_coord.z() << "," << std::endl;
+          }
+
+      this->map->set_detector_map(petsird_map);
     }
 
   shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);

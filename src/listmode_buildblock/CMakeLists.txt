@@ -78,6 +78,7 @@ if (HAVE_PETSIRD)
 target_include_directories(listmode_buildblock PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/helpers/include>
   $<INSTALL_INTERFACE:include>
 )
 
