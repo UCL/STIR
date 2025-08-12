@@ -1,3 +1,6 @@
 [submodule "external_helpers/fmt"]
 	path = external_helpers/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "PETSIRD"]
+	path = PETSIRD
+	url = https://github.com/ETSInitiative/PETSIRD.git

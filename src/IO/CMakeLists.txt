@@ -79,9 +79,16 @@ if (HAVE_HDF5)
  )
 endif()
 
+if (HAVE_PETSIRD)
+list(APPEND ${dir_LIB_SOURCES}
+  PETSIRDCListmodeInputFileFormat.cxx
+)
+endif()
+
 endif() # MINI_STIR
 
 include(stir_lib_target)
+
 
 target_link_libraries(IO PRIVATE fmt)
 
@@ -136,3 +143,49 @@ if (NOT MINI_STIR)
   target_link_libraries(IO PUBLIC modelling_buildblock )
   target_link_libraries(IO PUBLIC listmode_buildblock)
 endif()
+
+if (HAVE_PETSIRD)
+#   #set(PETSIRD_dir ../../PETSIRD/cpp/generated)
+
+
+target_include_directories(IO PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
+  $<INSTALL_INTERFACE:include>
+)
+
+
+# # # target_include_directories(IO PUBLIC
+# # #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
+# # #   $<INSTALL_INTERFACE:include>
+# # # )
+
+# # # target_include_directories(IO PUBLIC
+# # #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/helpers/include>
+# # #   $<INSTALL_INTERFACE:include>
+# # # )
+# # target_include_directories(IO PUBLIC
+# #   $<BUILD_INTERFACE:${PETSIRD_base_dir}/helpers/include>
+# #   $<BUILD_INTERFACE:${PETSIRD_base_dir}/generated>
+# #   $<BUILD_INTERFACE:${PETSIRD_base_dir}/generated/yardl>
+# #   $<INSTALL_INTERFACE:include>
+# # )
+
+# # target_link_libraries(IO PUBLIC petsird_generated)
+
+# set(PETSIRD_dir ../../PETSIRD/cpp/generated)
+# add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
+
+# install(TARGETS petsird_generated
+#         EXPORT STIRTargets
+#         DESTINATION lib)
+
+# target_include_directories(IO PUBLIC ${PETSIRD_dir})
+# # needed for helpers
+# target_include_directories(IO PUBLIC ${PETSIRD_dir}/..)
+# target_include_directories(IO PUBLIC ${PETSIRD_dir}/../helpers/include)
+target_link_libraries(IO PUBLIC petsird_generated)
+endif()
+
+
+

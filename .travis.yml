@@ -35,7 +35,7 @@ matrix:
      packages:
      - *addons_apt_packages
      - [g++-6]
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-6 CXX=g++-6
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DDISABLE_PETSIRD:BOOL=ON" CC=gcc-6 CXX=g++-6
  - os: linux
    python: 3
    addons:
@@ -43,7 +43,7 @@ matrix:
      packages:
      - *addons_apt_packages
      - [g++-5, libinsighttoolkit4-dev]
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DDISABLE_HDF5=ON" CC=gcc-5 CXX=g++-5
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DDISABLE_HDF5=ON -DDISABLE_PETSIRD:BOOL=ON" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
    addons:
@@ -51,7 +51,7 @@ matrix:
      packages:
      - *addons_apt_packages
      - [g++-7, libinsighttoolkit4-dev]
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-7 CXX=g++-7
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON -DDISABLE_PETSIRD:BOOL=ON" CC=gcc-7 CXX=g++-7
  - os: linux
    dist: focal
    python: 3
@@ -60,7 +60,7 @@ matrix:
      packages:
      - *addons_apt_packages
      - [g++-9, libinsighttoolkit4-dev, nlohmann-json3-dev]
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-9 CXX=g++-9
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON -DDISABLE_PETSIRD:BOOL=ON" CC=gcc-9 CXX=g++-9
  - os: linux
    dist: focal
    python: 3
@@ -69,7 +69,7 @@ matrix:
      packages:
      - *addons_apt_packages
      - [g++-10, nlohmann-json3-dev]
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON" CC=gcc-10 CXX=g++-10
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DDISABLE_PETSIRD:BOOL=ON" CC=gcc-10 CXX=g++-10
  - os: linux
    # note: can't get it to install on focal due to a package problem
    dist: bionic
@@ -79,14 +79,14 @@ matrix:
      packages:
      - *addons_apt_packages
      - [clang, libomp-dev]
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON"  CC=clang CXX=clang++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON -DDISABLE_PETSIRD:BOOL=ON"  CC=clang CXX=clang++
 
    ####  osx
    # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
  - os: osx
    osx_image: xcode12.2
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DDISABLE_PETSIRD:BOOL=ON" CC=gcc CXX=g++
    # Disable as ROOT is currently failing via brew (as it wants to build it, and which causes a timeout)
  #- os: osx
  #  python: 3
@@ -94,7 +94,7 @@ matrix:
  - os: osx
    osx_image: xcode11.3
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON -DDISABLE_PETSIRD:BOOL=ON" CC=clang CXX=clang++
 
    # osx, OpenMP using llvm clang
    # disable due to LLVM clang 12.0.1 problem 
@@ -105,7 +105,7 @@ matrix:
 
 env:
   global:
-  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DDISABLE_PETSIRD:BOOL=ON -DCMAKE_BUILD_TYPE=Release"
 
 # No need for sudo
 sudo: false
