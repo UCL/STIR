@@ -43,10 +43,10 @@
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 using std::ifstream;
 using std::max;
-#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -117,13 +117,13 @@ find_sampling_and_z_size(float& z_sampling, float& s_sampling, int& z_size, cons
     if (s_sampling <= 0)
       {
         s_sampling = proj_data_info_ptr->get_sampling_in_s(Bin(0, 0, 0, 0));
-        info(boost::format("Determining voxel size from default_bin_size failed as it is not set.\n"
-                           "Using sampling_in_s for central bin %1%.")
-             % s_sampling);
+        info(format("Determining voxel size from default_bin_size failed as it is not set.\n"
+                    "Using sampling_in_s for central bin {}.",
+                    s_sampling));
       }
     else
       {
-        info(boost::format("Determined voxel size by dividing default_bin_size (%1%) by zoom") % s_sampling);
+        info(format("Determined voxel size by dividing default_bin_size ({}) by zoom", s_sampling));
       }
   }
 }

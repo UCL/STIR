@@ -54,7 +54,7 @@
 #include "stir/stream.h"
 #include <algorithm>
 #include <math.h>
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
@@ -110,8 +110,8 @@ ProjMatrixByBinUsingRayTracing::post_processing()
     return true;
   if (this->num_tangential_LORs < 1)
     {
-      warning(boost::format("ProjMatrixByBinUsingRayTracing: num_tangential_LORs should be at least 1, but is %d")
-              % this->num_tangential_LORs);
+      warning(format("ProjMatrixByBinUsingRayTracing: num_tangential_LORs should be at least 1, but is {}",
+                     this->num_tangential_LORs));
       return true;
     }
   this->already_setup = false;
@@ -288,12 +288,14 @@ ProjMatrixByBinUsingRayTracing::set_up(
 
   if (sampling_distance_of_adjacent_LORs_xy / num_tangential_LORs > voxel_size.x() + 1.E-3
       || sampling_distance_of_adjacent_LORs_xy / num_tangential_LORs > voxel_size.y() + 1.E-3)
-    warning(
-        boost::format("ProjMatrixByBinUsingRayTracing used for pixel size (x,y)=(%g,%g) "
-                      "that is smaller than the central bin size (%g) divided by num_tangential_LORs (%d).\n"
-                      "This matrix will completely miss some voxels for some (or all) views. It is therefore to best to increase "
-                      "'number of rays in tangential direction to trace for each bin'.")
-        % voxel_size.x() % voxel_size.y() % sampling_distance_of_adjacent_LORs_xy % num_tangential_LORs);
+    warning(format("ProjMatrixByBinUsingRayTracing used for pixel size (x,y)=({},{}) "
+                   "that is smaller than the central bin size ({}) divided by num_tangential_LORs ({}).\n"
+                   "This matrix will completely miss some voxels for some (or all) views. It is therefore to best to increase "
+                   "'number of rays in tangential direction to trace for each bin'.",
+                   voxel_size.x(),
+                   voxel_size.y(),
+                   sampling_distance_of_adjacent_LORs_xy,
+                   num_tangential_LORs));
 
   if (use_actual_detector_boundaries)
     {
@@ -673,9 +675,10 @@ ProjMatrixByBinUsingRayTracing::calculate_proj_matrix_elems_for_one_bin(ProjMatr
 
   // merging code assumes integer multiple
   if (fabs(sampling_distance_of_adjacent_LORs_z / voxel_size.z() - num_lors_per_axial_pos) > 1E-3)
-    error(boost::format("ProjMatrixByBinUsingRayTracing: currently need sampling distance in axial direction (%f) to be an "
-                        "integer multiple of the voxel size (%g)")
-          % sampling_distance_of_adjacent_LORs_z % voxel_size.z());
+    error(format("ProjMatrixByBinUsingRayTracing: currently need sampling distance in axial direction ({}) to be an "
+                 "integer multiple of the voxel size ({})",
+                 sampling_distance_of_adjacent_LORs_z,
+                 voxel_size.z()));
 
   // find offset in z, taking into account if there are 1 or more LORs
   // KT 20/06/2001 take origin.z() into account

@@ -83,6 +83,8 @@ endif() # MINI_STIR
 
 include(stir_lib_target)
 
+target_link_libraries(IO PRIVATE fmt)
+
 if (LLN_FOUND)
   target_include_directories(IO PUBLIC ${LLN_INCLUDE_DIRS})
   target_link_libraries(IO PUBLIC ${LLN_LIBRARIES})

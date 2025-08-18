@@ -57,7 +57,7 @@ endif()
 
 include(stir_lib_target)
 
-target_link_libraries(listmode_buildblock PUBLIC data_buildblock )
+target_link_libraries(listmode_buildblock PUBLIC data_buildblock PRIVATE fmt)
 
 if (HAVE_HDF5)
   # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h

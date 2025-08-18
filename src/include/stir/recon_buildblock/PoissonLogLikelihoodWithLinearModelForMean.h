@@ -99,7 +99,7 @@ START_NAMESPACE_STIR
   ; pattern for filename for reading the subset sensitivities, or writing if recomputed
   ; if use_subset_sensitivities=1
   ; e.g. subsens_%d.hv
-  ; boost::format is used with the pattern (which means you can use it like sprintf)
+  ; fmt::format is used with the pattern
   subset sensitivity filenames:=
   \endverbatim
 
@@ -185,7 +185,7 @@ public:
   //! get filename pattern to read (or write) the subset sensitivities
   /*! will be a zero string if not set.
   Could be e.g. "subsens_%d.hv"
-  boost::format is used with the pattern (which means you can use it like sprintf)
+  fmt::format is used with the pattern
  */
   std::string get_subsensitivity_filenames() const;
 
@@ -208,7 +208,7 @@ public:
   //! set filename pattern to read (or write) the subset sensitivities
   /*! set to a zero-length string to avoid reading/writing a file
   Could be e.g. "subsens_%d.hv"
-  boost::format is used with the pattern (which means you can use it like sprintf)
+  fmt::format is used with the pattern (which means you can use it like sprintf)
 
   Calls error() if the pattern is invalid.
  */

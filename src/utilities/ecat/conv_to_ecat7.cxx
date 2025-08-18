@@ -45,10 +45,10 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
 #include "stir/IO/stir_ecat7.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 #include <iostream>
 #include <vector>
 #include <string>
-#include <boost/format.hpp>
 
 using std::cerr;
 using std::endl;
@@ -215,7 +215,7 @@ main(int argc, char* argv[])
       MatrixFile* mptr = matrix_create(cti_name, MAT_CREATE, &mhead);
       if (mptr == 0)
         {
-          warning(boost::format("conv_to_ecat7: error opening output file %s. Remove first if it exists already") % cti_name);
+          warning(format("conv_to_ecat7: error opening output file {}. Remove first if it exists already", cti_name));
           return EXIT_FAILURE;
         }
       unsigned int frame_num = 1;
@@ -261,7 +261,7 @@ main(int argc, char* argv[])
       MatrixFile* mptr = matrix_create(cti_name, MAT_CREATE, &mhead);
       if (mptr == 0)
         {
-          warning(boost::format("conv_to_ecat7: error opening output file %s. Remove first if it exists already") % cti_name);
+          warning(format("conv_to_ecat7: error opening output file {}. Remove first if it exists already", cti_name));
           return EXIT_FAILURE;
         }
 

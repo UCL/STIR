@@ -34,6 +34,7 @@
 #include "stir/Viewgram.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include <fstream>
 #include <list>
@@ -96,7 +97,7 @@ find_inverse(ProjData* proj_data_ptr_out, const ProjData* proj_data_ptr_in)
             continue;
         }
     }
-  info(boost::format("Max number in viewgram is: %1%") % max_in_viewgram);
+  info(format("Max number in viewgram is: {}", max_in_viewgram));
 
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
     for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; timing_pos_num++)

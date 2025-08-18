@@ -30,7 +30,7 @@
 #include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 #ifdef STIR_OPENMP
 #  include <omp.h>
@@ -89,7 +89,7 @@ SRT2DReconstruction::set_up(shared_ptr<SRT2DReconstruction::TargetT> const& targ
     return Succeeded::no;
 
   if (num_segments_to_combine >= 0 && num_segments_to_combine % 2 == 0)
-    error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
+    error(format("num_segments_to_combine has to be odd (or -1), but is {}", num_segments_to_combine));
 
   if (num_segments_to_combine == -1)
     {
@@ -119,7 +119,7 @@ SRT2DReconstruction::method_info() const
 SRT2DReconstruction::SRT2DReconstruction(const std::string& parameter_filename)
 {
   initialise(parameter_filename);
-  info(boost::format("%1%") % parameter_info());
+  info(format("{}", parameter_info()));
 }
 
 SRT2DReconstruction::SRT2DReconstruction()
@@ -141,7 +141,7 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   // perform SSRB
   if (num_segments_to_combine > 1)
     {
-      info(boost::format("Performing SSRB with num_segments_to_combine = %d") % num_segments_to_combine);
+      info(format("Performing SSRB with num_segments_to_combine = {}", num_segments_to_combine));
       const ProjDataInfoCylindrical& proj_data_info_cyl
           = dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_ptr->get_proj_data_info_sptr());
 

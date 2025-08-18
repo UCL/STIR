@@ -29,6 +29,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Shape/Ellipsoid.h"
+#include "stir/format.h"
 #include <string>
 
 using std::endl;
@@ -184,7 +185,7 @@ TestProjDataInfoSubsets::construct_test_image_data(const ProjData& template_proj
 
   ellipsoid.construct_volume(*image, Coordinate3D<int>(1, 1, 1));
 
-  cerr << boost::format("\t Generated ellipsoid image, min=%f, max=%f") % image->find_min() % image->find_max() << endl;
+  cerr << format("\t Generated ellipsoid image, min={}, max={}", image->find_min(), image->find_max()) << endl;
   return image;
 }
 
