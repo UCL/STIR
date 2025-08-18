@@ -13,31 +13,45 @@
   \ingroup CUDA
   \brief implementation of the stir::CudaGibbsQuadraticPrior class
 
-  \author Matteo Colombo
+  \author Matteo Neel Colombo
   \author Kris Thielsmann
 */
 
 #include "stir/recon_buildblock/GibbsQuadraticPrior.h"
 #include "stir/BasicCoordinate.h"
 
-
-
 START_NAMESPACE_STIR
-
 
 // Implementation of constructors
 template <typename elemT>
 CudaGibbsQuadraticPrior<elemT>::CudaGibbsQuadraticPrior()
-  : base_type() {}
+{
+  set_defaults();
+}
 
 template <typename elemT>
 CudaGibbsQuadraticPrior<elemT>::CudaGibbsQuadraticPrior(const bool only_2D, float penalisation_factor)
   : base_type(only_2D, penalisation_factor) {}
 
+template <typename elemT>
+void
+CudaGibbsQuadraticPrior<elemT>::set_defaults()
+{
+  base_type::set_defaults();
+}
+
+template <typename elemT>
+void
+CudaGibbsQuadraticPrior<elemT>::initialise_keymap()
+{
+  this->parser.add_start_key("Cuda Gibbs Quadratic Prior Parameters");
+  base_type::initialise_keymap();
+  this->parser.add_stop_key("END Cuda Gibbs Quadratic Prior Parameters");
+}
+
 // Explicit template instantiations
 template class QuadraticPotential<float>;
 template class CudaGibbsQuadraticPrior<float>;
-// template class QuadraticPotential<double>;
-// template class CudaGibbsQuadraticPrior<double>;
+
 
 END_NAMESPACE_STIR

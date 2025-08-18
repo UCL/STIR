@@ -1,3 +1,25 @@
+//
+//
+/*
+    Copyright (C) 2025, University College London
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup priors
+  \ingroup CUDA
+  \brief Declaration of class stir::GibbsQuadraticPrior
+
+  This class implements a Gibbs prior with quadratic potential function
+  for regularization in image reconstruction.
+
+  \author Matteo Neel Colombo
+  \author Kris Thielemans
+*/
 
 #ifndef __stir_recon_buildblock_GibbsQuadraticPrior_H__
 #define __stir_recon_buildblock_GibbsQuadraticPrior_H__
@@ -7,10 +29,42 @@
 #include "stir/RegisteredParsingObject.h"
 
 #ifdef STIR_WITH_CUDA
-# include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
+#   include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
 #endif
 
 START_NAMESPACE_STIR
+
+/*!
+  \ingroup priors
+  \brief A Gibbs prior with Quadratic Potential for image regularization.
+
+  This class implements a Gibbs prior using a quadratic potential function,
+  which provides smooth regularization by penalizing differences between
+  neighboring pixels. The quadratic potential is the simplest and most
+  commonly used form of regularization in image reconstruction.
+
+  The prior energy is:
+  \f[
+  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} V\left(f_r - f_{r+dr}\right)
+  \f]
+  where:
+  - \f$f_r\f$ and \f$f_{r+dr}\f$ are pixel values at positions \f$r\f$ and \f$r+dr\f$
+  - \f$w_{dr}\f$ are distance-dependent weights
+  - \f$\kappa\f$ provides spatially-varying penalty weights (optional)
+  - \f$V(x) = \frac{1}{2}x^2\f$ is the quadratic potential function
+
+    \par Usage Example:
+  \code
+  auto prior = std::make_shared<GibbsQuadraticPrior<float>>();
+  prior->set_penalisation_factor(0.01);
+  prior->set_up(target_image);
+  \endcode
+
+
+  \see CudaGibbsQuadraticPrior for CUDA-accelerated version
+  \see GibbsQuadraticPrior for standard CPU version
+
+*/
 
 
 
@@ -70,6 +124,12 @@ public:
   GibbsQuadraticPrior();
   GibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
 
+  void set_defaults() override;
+
+protected:
+
+  void initialise_keymap() override;
+
 };
 
 
@@ -92,23 +152,16 @@ public:
 
     CudaGibbsQuadraticPrior();
     CudaGibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
+    
+    void set_defaults() override;
+
+  protected:
+
+    void initialise_keymap() override;
+
   };
 #endif
 
-
 END_NAMESPACE_STIR
 
-
 #endif
-
-
-
-
-
-
-
-
-
-
-
-

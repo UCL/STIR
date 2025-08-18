@@ -32,7 +32,6 @@
 #include "stir/error.h"
 #include <algorithm>
 #include <omp.h>
-#include <omp.h>
 using std::min;
 using std::max;
 
@@ -43,12 +42,10 @@ void
 GibbsPrior<elemT,potentialT>::initialise_keymap()
 {
   base_type::initialise_keymap();
-  this->parser.add_start_key("Gibbs Prior Parameters");
   this->parser.add_key("only 2D", &only_2D);
   this->parser.add_key("kappa filename", &kappa_filename);
   this->parser.add_key("weights", &weights);
   this->parser.add_key("gradient filename prefix", &gradient_filename_prefix);
-  this->parser.add_stop_key("END Gibbs Prior Parameters");
 }
 
 template <typename elemT, typename potentialT>
@@ -124,9 +121,6 @@ GibbsPrior<elemT,potentialT>::set_up(shared_ptr<const DiscretisedDensity<3, elem
   Image_min_indices = target_cast.get_min_indices();
   Image_max_indices = target_cast.get_max_indices();
 
-  // Image_min_indices = {Im_min_indices[3], Im_min_indices[2], Im_min_indices[1]};
-  // Image_max_indices = {Im_max_indices[3], Im_max_indices[2], Im_max_indices[1]};
-
   this->_already_set_up = true;
   return Succeeded::yes;
 }
@@ -141,10 +135,7 @@ GibbsPrior<elemT,potentialT>::check(DiscretisedDensity<3, elemT> const& current_
     {
       std::string explanation;
       if (!this->kappa_ptr->has_same_characteristics(current_image_estimate, explanation))
-      //PROBLEMA REGISTERED NAME
-        // error(std::string(registered_name)
-        //       + ": kappa image does not have the same index range as the reconstructed image:" + explanation);
-        error(": kappa image does not have the same index range as the reconstructed image:" + explanation);
+        error(": GibbsPrior : kappa image does not have the same index range as the reconstructed image:" + explanation);
     }
 }
 
@@ -156,6 +147,7 @@ GibbsPrior<elemT,potentialT>::set_defaults()
   this->only_2D = false;
   this->kappa_ptr.reset();
   this->weights.recycle();
+  this->_already_set_up = false;
 }
 
 template <typename elemT, typename PotentialT>
@@ -275,26 +267,26 @@ GibbsPrior<elemT,PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
   double result = 0.0;
-  #pragma omp parallel for reduction(+:result) 
+  #pragma omp parallel for collapse(3) reduction(+:result) 
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
       {
-
         const int min_dz = max(weight_min_indices.z(), Image_min_indices.z() - z);
         const int max_dz = min(weight_max_indices.z(), Image_max_indices.z() - z);
         const int min_dy = max(weight_min_indices.y(), Image_min_indices.y() - y);
         const int max_dy = min(weight_max_indices.y(), Image_max_indices.y() - y);
         const int min_dx = max(weight_min_indices.x(), Image_min_indices.x() - x);
         const int max_dx = min(weight_max_indices.x(), Image_max_indices.x() - x);
-        //Periodic boundary on x and y tried, working but slower.
+
         const elemT val_center = current_image_estimate[z][y][x];
         
-       
         for (int dz = min_dz; dz <= max_dz; ++dz)
           for (int dy = min_dy; dy <= max_dy; ++dy)
             for (int dx = min_dx; dx <= max_dx; ++dx)
-              {
+              {   
+                  if((dx ==0) && (dy == 0) && (dz == 0))
+                    continue; 
                   const elemT val_neigh = current_image_estimate[z + dz][y + dy][x + dx];
                   double current =  weights[dz][dy][dx] *
                                     this->potential.value(val_center, val_neigh, z, y, x);
@@ -305,7 +297,6 @@ GibbsPrior<elemT,PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& 
                   result += current;
               }
       }
-        
 
   return result * this->penalisation_factor;
 }
@@ -328,7 +319,7 @@ GibbsPrior<elemT,PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& pri
     
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  #pragma omp parallel for
+  #pragma omp parallel for collapse(3)
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
@@ -376,9 +367,8 @@ GibbsPrior<elemT,PotentialT>::compute_gradient_times_input(const DiscretisedDens
     
   const bool do_kappa = !is_null_ptr(kappa_ptr);
   
-  
   double result = 0.0;
-  #pragma omp parallel for reduction(+:result)
+  #pragma omp parallel for collapse(3) reduction(+:result)
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
@@ -410,7 +400,6 @@ GibbsPrior<elemT,PotentialT>::compute_gradient_times_input(const DiscretisedDens
   return result * this->penalisation_factor;
 }
 
-
 template <typename elemT, typename PotentialT>
 void
 GibbsPrior<elemT,PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel,
@@ -418,16 +407,16 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prio
                                        const DiscretisedDensity<3, elemT>& current_image_estimate) const
 {
   assert(prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
+  this->check(current_image_estimate);
+  if (this->_already_set_up == false)
+    error("GibbsPrior: set_up has not been called");
   prior_Hessian_for_single_densel.fill(0);
   if (this->penalisation_factor == 0)
     {
+      prior_Hessian_for_single_densel.fill(0);
       return;
     }
-
-  this->check(current_image_estimate);
-
-
-
+    
   DiscretisedDensityOnCartesianGrid<3, elemT>& prior_Hessian_for_single_densel_cast
       = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, elemT>&>(prior_Hessian_for_single_densel);
 
@@ -437,16 +426,15 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prio
   const int z = coords[1];
   const int y = coords[2];
   const int x = coords[3];
-  
-  const int min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel.get_min_index() - z);
-  const int max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel.get_max_index() - z);
 
-  const int min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel[z].get_min_index() - y);
-  const int max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel[z].get_max_index() - y);
+  const elemT val_center = current_image_estimate[z][y][x];
 
-  const int min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel[z][y].get_min_index() - x);
-  const int max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel[z][y].get_max_index() - x);
-
+  const int min_dz = max(weight_min_indices.z(), Image_min_indices.z() - z);
+  const int max_dz = min(weight_max_indices.z(), Image_max_indices.z() - z);
+  const int min_dy = max(weight_min_indices.y(), Image_min_indices.y() - y);
+  const int max_dy = min(weight_max_indices.y(), Image_max_indices.y() - y);
+  const int min_dx = max(weight_min_indices.x(), Image_min_indices.x() - x);
+  const int max_dx = min(weight_max_indices.x(), Image_max_indices.x() - x);
   for (int dz = min_dz; dz <= max_dz; ++dz)
     for (int dy = min_dy; dy <= max_dy; ++dy)
       for (int dx = min_dx; dx <= max_dx; ++dx)
@@ -461,9 +449,9 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prio
                     {
                       elemT diagonal_current
                           = weights[ddz][ddy][ddx]
-                            * this->potential.derivative_20(current_image_estimate[z][y][x],
-                                                                       current_image_estimate[z + dz][y + dy][x + dx],
-                                                                       z, y, x);
+                            * 2 * this->potential.derivative_20(val_center,
+                                                                current_image_estimate[z + ddz][y + ddy][x + ddx],
+                                                                z, y, x);
                       if (do_kappa)
                         diagonal_current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + ddz][y + ddy][x + ddx];
                       current += diagonal_current;
@@ -472,14 +460,15 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prio
           else
             {
               // The j != k vases (off-diagonal Hessian elements)
-              current = weights[dz][dy][dx]
-                        * this->potential.derivative_11(current_image_estimate[z][y][x],
-                                                                       current_image_estimate[z + dz][y + dy][x + dx],
-                                                                       z, y, x);
+              current = weights[dz][dy][dx] 
+                        * 2 * this->potential.derivative_11(val_center,
+                                                            current_image_estimate[z + dz][y + dy][x + dx],
+                                                            z, y, x);
               if (do_kappa)
                 current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
             }
-          prior_Hessian_for_single_densel_cast[z + dz][y + dy][x + dx] = +current * this->penalisation_factor;
+          prior_Hessian_for_single_densel_cast[z + dz][y + dy][x + dx] = current * this->penalisation_factor;
+          // std::cout<<"val ["<<z + dz<<"]["<<y + dy<<"]["<<x + dx<<"] = "<<current<<std::endl;
         }
 }
 
@@ -501,7 +490,7 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, ele
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  #pragma omp parallel for
+  #pragma omp parallel for collapse(3)
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
@@ -535,96 +524,72 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, ele
 template <typename elemT, typename PotentialT>
 void
 GibbsPrior<elemT,PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
-                                                      const DiscretisedDensity<3, elemT>&  current_estimate,
+                                                      const DiscretisedDensity<3, elemT>&  current_image_estimate,
                                                       const DiscretisedDensity<3, elemT>&  input) const
 {
-  // TODO this function overlaps enormously with parabolic_surrogate_curvature
-  // the only difference is that parabolic_surrogate_curvature uses input==1
-
-  assert(output.has_same_characteristics(input));
+  //Preliminary Checks
+  assert(output.has_same_characteristics(current_image_estimate));
+  assert(input.has_same_characteristics(current_image_estimate));
+  this->check(current_image_estimate);
+  if (this->_already_set_up == false)
+    error("GibbsPrior: set_up has not been called");
   if (this->penalisation_factor == 0)
     {
       return;
     }
 
   this->check(input);
-
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  const int min_z = output.get_min_index();
-  const int max_z = output.get_max_index();
+  #pragma omp parallel for collapse(3)
+  for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
+    for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
+      for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
+      {
+        const int min_dz = max(weight_min_indices.z(), Image_min_indices.z() - z);
+        const int max_dz = min(weight_max_indices.z(), Image_max_indices.z() - z);
+        const int min_dy = max(weight_min_indices.y(), Image_min_indices.y() - y);
+        const int max_dy = min(weight_max_indices.y(), Image_max_indices.y() - y);
+        const int min_dx = max(weight_min_indices.x(), Image_min_indices.x() - x);
+        const int max_dx = min(weight_max_indices.x(), Image_max_indices.x() - x);
 
-  const int weight_min_z = weights.get_min_index();
-  const int weight_max_z = weights.get_max_index();
-  const int weight_min_y = weights[0].get_min_index();
-  const int weight_max_y = weights[0].get_max_index();
-  const int weight_min_x = weights[0][0].get_min_index();
-  const int weight_max_x = weights[0][0].get_max_index();
+        const elemT val_center   = current_image_estimate[z][y][x];
+        const elemT input_center = input[z][y][x];
 
-  #pragma omp parallel for
-  for (int z = min_z; z <= max_z; z++)
-    {
-      const int min_dz = max(weight_min_z, min_z - z);
-      const int max_dz = min(weight_max_z, max_z - z);
+        // At this point, we have j = [z][y][x]
+        // The next for loops will have k = [z+dz][y+dy][x+dx]
+        // The following computes
+        //[H y]_j =
+        //      \sum_{k\in N_j} w_{(j,k)} f''_{d}(x_j,x_k) y_j +
+        //      \sum_{(i \in N_j) \ne j} w_{(j,i)} f''_{od}(x_j, x_i) y_i
+        // Note the condition in the second sum that i is not equal to j
 
-      const int min_y = output[z].get_min_index();
-      const int max_y = output[z].get_max_index();
-
-      for (int y = min_y; y <= max_y; y++)
-        {
-          const int min_dy = max(weight_min_y, min_y - y);
-          const int max_dy = min(weight_max_y, max_y - y);
-
-          const int min_x = output[z][y].get_min_index();
-          const int max_x = output[z][y].get_max_index();
-
-          for (int x = min_x; x <= max_x; x++)
+        elemT result = 0;
+        for (int dz = min_dz; dz <= max_dz; ++dz)
+          for (int dy = min_dy; dy <= max_dy; ++dy)
+            for (int dx = min_dx; dx <= max_dx; ++dx)
             {
-              const int min_dx = max(weight_min_x, min_x - x);
-              const int max_dx = min(weight_max_x, max_x - x);
+              elemT current = weights[dz][dy][dx];
+              const elemT val_neigh = current_image_estimate[z + dz][y + dy][x + dx];
+              const elemT input_neigh = input[z + dz][y + dy][x + dx];
 
-              // At this point, we have j = [z][y][x]
-              // The next for loops will have k = [z+dz][y+dy][x+dx]
-              // The following computes
-              //[H y]_j =
-              //      \sum_{k\in N_j} w_{(j,k)} f''_{d}(x_j,x_k) y_j +
-              //      \sum_{(i \in N_j) \ne j} w_{(j,i)} f''_{od}(x_j, x_i) y_i
-              // Note the condition in the second sum that i is not equal to j
+              if ( (dz == 0) && (dy == 0) && (dx == 0))
+                  current *= this->potential.derivative_20(val_center, val_neigh, z, y , x) *
+                            input_center;
 
-              elemT result = 0;
-              for (int dz = min_dz; dz <= max_dz; ++dz)
-              for (int dy = min_dy; dy <= max_dy; ++dy)
-              for (int dx = min_dx; dx <= max_dx; ++dx)
-              {
-                elemT current = weights[dz][dy][dx];
-                if (current == elemT(0))
-                  continue;
-       
-                if ( (dz == 0) && (dy == 0) && (dx == 0))
-                  {
-                    current *= this->potential.derivative_20(current_estimate[z][y][x],
-                                                                  current_estimate[z][y][x],
-                                                                  z, y, x)
-                                * input[z][y][x];          
-                  }
-                else
-                  {
-                    // std::cout<<'of_diag'<<std::endl;
-                    current *= (potential.derivative_20(current_estimate[z][y][x], current_estimate[z + dz][y + dy][x + dx], z, y, x)
-                                    * input[z][y][x]
-                                + potential.derivative_11(current_estimate[z][y][x], current_estimate[z + dz][y + dy][x + dx], z, y, x)
-                                      * input[z + dz][y + dy][x + dx]);
-                  }
+              else
+                  current *= potential.derivative_20(val_center, val_neigh, z, y, x)*input_center +
+                            potential.derivative_11(val_center, val_neigh, z, y, x)*input_neigh;
 
-                if (do_kappa)
-                  current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
-                result += current;
-        }
-
-              output[z][y][x] += 2 *result * this->penalisation_factor;
+              if (do_kappa)
+                current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
+                
+              result += current;
             }
-        }
-    }
+
+        output[z][y][x] += 2 *result * this->penalisation_factor;
+      }
+
 }
 
 END_NAMESPACE_STIR

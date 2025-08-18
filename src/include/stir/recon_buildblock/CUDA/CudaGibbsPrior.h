@@ -67,19 +67,22 @@ START_NAMESPACE_STIR
   for parameter keywords.
 */
 
-template <typename elemT, typename CudaPotentialT>
-class CudaGibbsPrior : public GibbsPrior<elemT, CudaPotentialT>
+template <typename elemT, typename PotentialT>
+class CudaGibbsPrior : public GibbsPrior<elemT, PotentialT>
 {
 private:
-  typedef GibbsPrior<elemT, CudaPotentialT> base_type;
+  typedef GibbsPrior<elemT, PotentialT> base_type;
 
 protected:
-  //! CUDA grid and block dimensions
+  //GPU block and grid dimensions 
   dim3 block_dim;
   dim3 grid_dim;
 
-  elemT *d_image_data, *d_gradient_data;
+  // Variable used for shared memory
+  int threads_per_block = block_dim.x * block_dim.y * block_dim.z;
+  size_t shared_mem_bytes = threads_per_block * sizeof(elemT);
 
+  elemT* d_image_data = nullptr;
   int3 d_Image_dim;
   int3 d_Image_max_indices;
   int3 d_Image_min_indices;
@@ -88,8 +91,12 @@ protected:
 
   float* d_weights_data = nullptr;
   elemT* d_kappa_data = nullptr;
-  CudaPotentialT potential;
-  
+
+  // Buffers for GPU outputs
+  mutable double* d_scalar = nullptr; 
+  mutable elemT* d_input_data = nullptr;
+  mutable elemT* d_output_data = nullptr;
+
 public:
 
   CudaGibbsPrior();
@@ -118,14 +125,15 @@ public:
 
   //! CUDA-accelerated Hessian times input computation
   void accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
-                                      const DiscretisedDensity<3, elemT>& current_estimate,
+                                      const DiscretisedDensity<3, elemT>& current_image_estimate,
                                       const DiscretisedDensity<3, elemT>& input) const override;
-                      
+
 };
 
 END_NAMESPACE_STIR
 
 #ifdef __CUDACC__
+// CUDA compiler sees everything
 #include "stir/recon_buildblock/CUDA/CudaGibbsPrior.cuh"
 #endif
 

@@ -15,7 +15,7 @@
   \ingroup CUDA
   \brief Instantiations of class stir::CudaGibbsRelativeDifferencePrior
 
-  \author Matteo Colombo
+  \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
@@ -27,17 +27,33 @@ START_NAMESPACE_STIR
 // Implementation of constructors
 template <typename elemT>
 GibbsQuadraticPrior<elemT>::GibbsQuadraticPrior()
-  : base_type() {}
+{
+  set_defaults();
+}
 
 template <typename elemT>
 GibbsQuadraticPrior<elemT>::GibbsQuadraticPrior(const bool only_2D, float penalisation_factor)
   : base_type(only_2D, penalisation_factor) {}
 
+
+template <typename elemT>
+void
+GibbsQuadraticPrior<elemT>::set_defaults()
+{
+  base_type::set_defaults();
+}
+
+template <typename elemT>
+void
+GibbsQuadraticPrior<elemT>::initialise_keymap()
+{
+  this->parser.add_start_key("Gibbs Quadratic Prior Parameters");
+  base_type::initialise_keymap();
+  this->parser.add_stop_key("END Gibbs Quadratic Prior Parameters");
+}
+
 // Explicit template instantiations
 template class QuadraticPotential<float>;
 template class GibbsQuadraticPrior<float>;
-
-// template class QuadraticPotential<double>;
-// template class GibbsQuadraticPrior<double>;
 
 END_NAMESPACE_STIR

@@ -47,7 +47,7 @@
 
 #  ifdef STIR_WITH_CUDA
 #    include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
-#  
+#    include <nvToolsExt.h>
 #  endif
 //#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #endif
@@ -320,7 +320,9 @@ public:
   void prior_value()
   {
     auto im = this->image_sptr->clone();
+
     auto v = this->prior_sptr->compute_value(*this->image_sptr);
+
     v += 2; // to avoid compiler warning about unused variable
     delete im;
   }
@@ -358,6 +360,7 @@ Timings::run_it(TimedFunction f, const std::string& item, const unsigned runs)
   for (unsigned r = runs; r != 0; --r)
     (this->*f)();
   this->stop_timers();
+
   std::cout << name << '\t' << std::setw(32) << std::left << item << '\t' << std::fixed << std::setprecision(3) << std::setw(24)
             << std::right << this->get_CPU_timer_value() / runs * 1000 << '\t' << std::fixed << std::setprecision(3)
             << std::setw(24) << std::right << this->get_wall_clock_timer_value() / runs * 1000 << std::endl;
@@ -436,24 +439,20 @@ Timings::run_all(const unsigned runs)
   if (!skip_priors)
     {
       {
-        // std::cout<< std::endl;
-        // std::string name, value_str, grad_str,grad_times_input_str, hessian_diag_str;
-        // std::ostringstream oss;
-        // std::cout<< "CPU Timings: "<< std::endl;
-        // std::cout<< std::endl;
-
+        std::cout<< std::endl;
+        std::string name, value_str, grad_str,grad_times_input_str, hessian_str,hessian_diag_str;
+        std::ostringstream oss;
+        std::cout<< "CPU Timings: "<< std::endl;
+        std::cout<< std::endl;
 
         // this->prior_sptr = std::make_shared<GibbsQuadraticPrior<float>>(false, 1.F);
         // this->prior_sptr->set_up(this->image_sptr);
         // auto gibbs_ptr = std::dynamic_pointer_cast<GibbsQuadraticPrior<float>>(this->prior_sptr);
         
-        // for (const auto& link : gibbs_ptr->weight_links) 
+        //     for (const auto& link : gibbs_ptr->weight_links) 
         //     std::cout << "(" << link.x << "," << link.y << "," << link.z << ")" << std::endl;
     
-
-
-
-        // //Quadratic
+        //Quadratic
         // this->prior_sptr = std::make_shared<GibbsQuadraticPrior<float>>(false, 1.F);
         // this->prior_sptr->set_up(this->image_sptr);
         // name = this->prior_sptr->get_registered_name();
@@ -477,11 +476,16 @@ Timings::run_all(const unsigned runs)
         // oss << name << " Hessian_diag (max = "<<*std::max_element(this->prior_hessian_diag_sptr->begin_all(), this->prior_hessian_diag_sptr->end_all())<< ")";
         // hessian_diag_str = oss.str();
 
+        // oss.str("");  
+        // oss << name << " hessian row ";
+        // hessian_str = oss.str();
+
         // this->run_it(&Timings::prior_value, value_str, runs * 10);
         // this->run_it(&Timings::prior_grad, grad_str, runs * 10);
-        // // this->run_it(&Timings::prior_grad_times_input, grad_times_input_str, runs * 10);
-        // // this->run_it(&Timings::prior_hessian_diag, hessian_diag_str, runs * 10);
-        // // std::cout << "Dot product: " << grad_dot_input << std::endl;
+        // this->run_it(&Timings::prior_grad_times_input, grad_times_input_str, runs * 10);
+        // this->run_it(&Timings::prior_hessian_diag, hessian_diag_str, runs * 10);
+        // this->run_it(&Timings::prior_hessian, hessian_str, runs * 10);
+        // std::cout << "Dot product: " << grad_dot_input << std::endl;
         // this->prior_sptr = nullptr;
         // std::cout<< std::endl;
 
@@ -493,18 +497,29 @@ Timings::run_all(const unsigned runs)
         // oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         // value_str = oss.str();
 
+        //oss.str("");  
+        //oss << name << " hessian row ";
+        //hessian_str = oss.str();
+
         // this->run_it(&Timings::prior_value, value_str, runs * 10);
-        // // this->run_it(&Timings::prior_grad, name + " gradient" , runs * 10);
+        // this->run_it(&Timings::prior_grad, name + " gradient" , runs * 10);
+        // this->run_it(&Timings::prior_hessian, hessian_str, runs * 10);
         // this->prior_sptr = nullptr;
         // std::cout<< std::endl;
         
-        // // //Rdp
+        //RDP
         // this->prior_sptr = std::make_shared<GibbsRelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
         // this->prior_sptr->set_up(this->image_sptr);
         // name = this->prior_sptr->get_registered_name();
+
         // oss.str("");    
         // oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         // value_str = oss.str();
+
+        // oss.str("");  
+        // oss << name << " hessian row ";
+        // hessian_str = oss.str();
+  
 
         // this->run_it(&Timings::prior_value, value_str, runs * 10);
         // // this->run_it(&Timings::prior_grad, name + " gradient" , runs * 10);
@@ -514,6 +529,7 @@ Timings::run_all(const unsigned runs)
         // this->prior_sptr = std::make_shared<RelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
         // this->prior_sptr->set_up(this->image_sptr);
         // name = this->prior_sptr->get_registered_name();
+
         // oss.str("");    
         // oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         // value_str = oss.str();
@@ -532,20 +548,20 @@ Timings::run_all(const unsigned runs)
         std::cout<< "GPU Timings: "<< std::endl;
         std::cout<< std::endl;
 
-        //Quadratic
-        this->prior_sptr = std::make_shared<CudaGibbsQuadraticPrior<float>>(false, 1.F);
-        this->prior_sptr->set_up(this->image_sptr);
-        name = this->prior_sptr->get_registered_name();
+        // //Quadratic
+        // this->prior_sptr = std::make_shared<CudaGibbsQuadraticPrior<float>>(false, 1.F);
+        // this->prior_sptr->set_up(this->image_sptr);
+        // name = this->prior_sptr->get_registered_name();
 
-        oss.str("");  
-        oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")          ";
-        value_str = oss.str();
+        // oss.str("");  
+        // oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")          ";
+        // value_str = oss.str();
 
-        oss.str("");  
-        this->prior_sptr->compute_gradient(*this->prior_grad_sptr, *this->image_sptr);
-        double grad_dot_input = inner_product(*this->image_sptr, *this->prior_grad_sptr);
-        oss << name << " grad (" << grad_dot_input << ")          ";
-        grad_str = oss.str();
+        // oss.str("");  
+        // this->prior_sptr->compute_gradient(*this->prior_grad_sptr, *this->image_sptr);
+        // double grad_dot_input = inner_product(*this->image_sptr, *this->prior_grad_sptr);
+        // oss << name << " grad (" << grad_dot_input << ")          ";
+        // grad_str = oss.str();
 
         // oss.str("");  
         // oss << name << " grad times input (" << this->prior_sptr->compute_gradient_times_input(*this->image_sptr, *this->image_sptr) << ")  ";
@@ -558,40 +574,41 @@ Timings::run_all(const unsigned runs)
         
         // this->run_it(&Timings::prior_value, value_str, runs * 10);
         // this->run_it(&Timings::prior_hessian_diag, hessian_diag_str, runs * 10);
-        this->run_it(&Timings::prior_grad, grad_str, runs * 10);
+        // this->run_it(&Timings::prior_grad, grad_str, runs * 10);
         // this->run_it(&Timings::prior_grad_times_input, grad_times_input_str, runs * 10);
         // this->prior_sptr = nullptr;
         // std::cout<< std::endl;
 
-        // //Rdp
-        // this->prior_sptr = std::make_shared<CudaGibbsRelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
-        // this->prior_sptr->set_up(this->image_sptr);
-        // name = this->prior_sptr->get_registered_name();
-        // oss.str("");  
-        // oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
-        // value_str = oss.str();
-
-        // this->run_it(&Timings::prior_value, value_str, runs * 10);
-        // // this->run_it(&Timings::prior_grad, name + " gradient" , runs * 10);
-        // this->prior_sptr = nullptr;
-        // std::cout<< std::endl;
-
-        // //Original Rdp
+        
+        //Original Rdp
         // this->prior_sptr = std::make_shared<CudaRelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
         // this->prior_sptr->set_up(this->image_sptr);
         // name = this->prior_sptr->get_registered_name();
         // oss.str("");  
         // oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         // value_str = oss.str();
-
-        // this->run_it(&Timings::prior_value, value_str, runs * 10);
-        // // this->run_it(&Timings::prior_grad, name + " gradient" , runs * 10);
+        
+        // // this->run_it(&Timings::prior_value, value_str, runs * 10);
+        // this->run_it(&Timings::prior_grad, name + " gradient" , runs * 10);
         // this->prior_sptr = nullptr;
         // std::cout<< std::endl;
         
+        // //Rdp
+        this->prior_sptr = std::make_shared<CudaGibbsRelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
+        this->prior_sptr->set_up(this->image_sptr);
+        name = this->prior_sptr->get_registered_name();
+  
+        oss.str("");  
+        oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
+        value_str = oss.str();
+  
+        // this->run_it(&Timings::prior_value, value_str, runs * 10);
+        this->run_it(&Timings::prior_grad, name + " gradient" , runs * 10);
+        this->prior_sptr = nullptr;
+        std::cout<< std::endl;
         
       }
-#  endif
+      #  endif
     }
 #endif
 }

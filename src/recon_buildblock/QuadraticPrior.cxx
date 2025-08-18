@@ -441,9 +441,6 @@ QuadraticPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_grad
             }
         }
     }
-
-  info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min());
-
   static int count = 0;
   ++count;
   if (gradient_filename_prefix.size() > 0)

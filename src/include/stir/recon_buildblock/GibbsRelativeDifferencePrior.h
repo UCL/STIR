@@ -14,7 +14,10 @@
   \ingroup CUDA
   \brief Declaration of class stir::CudaGibbsRelativeDifferencePrior
 
-  \author Matteo Colombo
+  This class implements a Gibbs prior with relative difference potential function
+  for regularization in image reconstruction.
+
+  \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
@@ -24,6 +27,7 @@
 
 #include "stir/recon_buildblock/GibbsPrior.h"
 #include "stir/RegisteredParsingObject.h"
+#include <cmath>
 
 #ifdef STIR_WITH_CUDA
 #   include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
@@ -33,46 +37,39 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup priors
-  \ingroup CUDA
-  \brief A class in the GeneralisedPrior hierarchy.
+  \brief A Gibbs prior with Relative Difference Potential for image regularization.
 
-  This implements a Gibbs prior with Relative Difference Potential.
+  This class implements a Gibbs prior using a relative difference potential function,
+  which is particularly effective for preserving edges while smoothing noise in 
+  reconstructed images. The potential function normalizes differences by the sum
+  of neighboring pixel values, making it adaptive to local image intensity.
 
-  The prior is
+  The prior energy is:
   \f[
-  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} V((f_r - f_{r+dr})/(f_r + f_{r+dr} + \gamma |f_r - f_{r+dr}| + \epsilon))
+  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} V\left(\frac{f_r - f_{r+dr}}{f_r + f_{r+dr} + \gamma |f_r - f_{r+dr}| + \epsilon}\right)
   \f]
-  where \f$w_{dr}\f$ are weights depending on the distance between \f$r\f$ and \f$r+dr\f$.
-  The weights are computed such that the global maximum of the prior is independent
-  of the voxel size.
+  where:
+  - \f$f_r\f$ and \f$f_{r+dr}\f$ are pixel values at positions \f$r\f$ and \f$r+dr\f$
+  - \f$w_{dr}\f$ are distance-dependent weights
+  - \f$\kappa\f$ provides spatially-varying penalty weights (optional)
+  - \f$\gamma\f$ controls edge preservation (higher values = more edge preservation)
+  - \f$\epsilon\f$ prevents division by zero in uniform regions
 
-  The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
-  Jeff Fessler's papers. It should have identical dimensions to the image for which the
-  penalty is computed. If \f$\kappa\f$ is not set, this prior will use 1 for all \f$\kappa_r\f$.
+  \par Usage Example:
+  \code
+  auto prior = std::make_shared<GibbsRelativeDifferencePrior<float>>();
+  prior->set_penalisation_factor(0.01);
+  prior->set_up(target_image);
+  \endcode
 
-  By default, a 3x3x3 or 3x3 neighbourhood is used where the weights are set to
-  x-voxel_size divided by the Euclidean distance between the points.
 
-  \par Parameters for parsing
-
-  \verbatim
-  Gibbs Relative Difference Prior Parameters:=
-  ; next defaults to 0, set to 1 to restrict the prior to 2D only
-  only 2D := 0
-  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-  ; defaults to 3x3x3 or 3x3 as mentioned above
-  ; weights := {{ {1,2,1}, {2,0,2}, {1,2,1} }}
-  ; optional:
-  ; kappa filename:=
-  ; gamma := 1
-  ; epsilon := 0
-  END Gibbs Relative Difference Prior Parameters:=
-  \endverbatim
-
+  \see CudaGibbsRelativeDifferencePrior for CUDA-accelerated version
+  \see GibbsQuadraticPrior for standard CPU version
 */
 
 
 // Forward declaration for CudaRelativeDifferencePotential
+#ifndef IGNORESWIG
 template <typename elemT>
 class RelativeDifferencePotential
 {
@@ -104,16 +101,20 @@ public:
   derivative_20(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
   {
   // For now, return 0 (not implemented)
-  return 0.0;
+  return pow(2 * val_neigh + epsilon, 2) / pow(val_center + val_neigh + gamma * std::abs(val_center - val_neigh) + epsilon, 3);
   }
   //! CUDA device function for computing the mixed derivative
   __host__ __device__ inline double
   derivative_11(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
   {
   // For now, return 0 (not implemented)
-  return 0.0;
+  return - ((2*val_center  + epsilon) * (2*val_neigh + epsilon)) / pow(val_center + val_neigh + gamma * std::abs(val_center - val_neigh) + epsilon, 3);
   }
 };
+#endif // SWIG
+
+template <typename elemT>
+class RelativeDifferencePotential;
 
 // Device function implementations for CudaRelativeDifferencePotential
 template <typename elemT>
@@ -139,8 +140,13 @@ public:
   void  set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
   void  set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
 
-};
+  void set_defaults() override;
 
+protected:
+
+  void initialise_keymap() override;
+
+};
 
 #ifdef STIR_WITH_CUDA
   template <typename elemT>
@@ -161,10 +167,17 @@ public:
     CudaGibbsRelativeDifferencePrior();
     CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor,float gamma_v, float epsilon_v);
 
-  float get_gamma() const { return this->potential.gamma; }
-  float get_epsilon() const { return this->potential.epsilon; }
-  void  set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
-  void  set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
+    float get_gamma() const { return this->potential.gamma; }
+    float get_epsilon() const { return this->potential.epsilon; }
+    void  set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
+    void  set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
+
+    void set_defaults() override;
+
+  protected:
+    
+    void initialise_keymap() override;
+
 
   };
 #endif

@@ -14,7 +14,7 @@
   \ingroup CUDA
   \brief Instantiations of class stir::CudaGibbsRelativeDifferencePrior
 
-  \author Matteo Colombo
+  \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
@@ -26,17 +26,34 @@ START_NAMESPACE_STIR
 // Implementation of constructors
 template <typename elemT>
 CudaGibbsRelativeDifferencePrior<elemT>::CudaGibbsRelativeDifferencePrior()
-  : base_type() {this->potential.gamma = 2.0f; this->potential.epsilon = 0.0f;}
+{
+  set_defaults();
+}
 
 template <typename elemT>
 CudaGibbsRelativeDifferencePrior<elemT>::CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor,float gamma_v, float epsilon_v)
   : base_type(only_2D, penalisation_factor) {this->potential.gamma = gamma_v; this->potential.epsilon = epsilon_v;}
 
-// Explicit template instantiations
-//template class RelativeDifferencePotential<float>;
-template class CudaGibbsRelativeDifferencePrior<float>;
+template <typename elemT>
+void
+CudaGibbsRelativeDifferencePrior<elemT>::set_defaults()
+{
+  base_type::set_defaults();
+  this->potential.gamma = 2;
+  this->potential.epsilon = 1e-7F;
+}
 
-// template class RelativeDifferencePotential<double>;
-// template class CudaGibbsRelativeDifferencePrior<double>;
+template <typename elemT>
+void
+CudaGibbsRelativeDifferencePrior<elemT>::initialise_keymap()
+{
+  this->parser.add_start_key("Cuda Gibbs Relative Difference Prior Parameters");
+  base_type::initialise_keymap();
+  this->parser.add_key("gamma value", &this->potential.gamma);
+  this->parser.add_key("epsilon value", &this->potential.epsilon);
+  this->parser.add_stop_key("END Cuda Gibbs Relative Difference Prior Parameters");
+}
+
+template class CudaGibbsRelativeDifferencePrior<float>;
 
 END_NAMESPACE_STIR

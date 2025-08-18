@@ -65,16 +65,18 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
     }
 }
 
-template <typename elemT>
-__device__ __forceinline__
-float get_voxel(const elemT* in, int x, int y, int z, int3 Image_dimensions)
+inline void
+checkCudaError(const std::string& operation)
 {
-    if (x < 0 || x >= Image_dimensions.x ||
-        y < 0 || y >= Image_dimensions.y ||
-        z < 0 || z >= Image_dimensions.z)
-        return 0.0f; // or your chosen boundary value
-    return in[z * Image_dimensions.y * Image_dimensions.x + y * Image_dimensions.x + x];
+  cudaError_t cuda_error = cudaGetLastError();
+  if (cuda_error != cudaSuccess)
+    {
+      const char* err = cudaGetErrorString(cuda_error);
+      error(std::string("CudaGibbsPrior: CUDA error in ") + operation + ": " + err);
+    }
 }
+
+
 
 END_NAMESPACE_STIR
 
