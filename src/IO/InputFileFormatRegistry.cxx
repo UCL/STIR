@@ -31,7 +31,5 @@ template class InputFileFormatRegistry<ParametricVoxelsOnCartesianGrid>;
 template class InputFileFormatRegistry<DynamicDiscretisedDensity>;
 template class InputFileFormatRegistry<ListModeData>;
 template class InputFileFormatRegistry<DiscretisedDensity<3, CartesianCoordinate3D<float>>>;
-// template class InputFileFormatRegistry<DiscretisedDensity<3, double>>;
-
 
 END_NAMESPACE_STIR
