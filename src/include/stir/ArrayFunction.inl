@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2024, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -16,10 +17,6 @@
   \author Kris Thielemans (some functions based on some earlier work by Darren Hague)
   \author PARAPET project
 
-
-  \warning Compilers without partial specialisation of templates are
-   catered for by explicit instantiations. If you need it for any other
-   types, you'd have to add them by hand.
  */
 #include "stir/BasicCoordinate.h"
 #include "stir/array_index_functions.h"
@@ -27,13 +24,7 @@
 
 #include <cmath>
 #include <complex>
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-using ::log;
-using ::exp;
-} // namespace std
-#endif
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
@@ -108,6 +99,122 @@ in_place_apply_function(T& v, FUNCTION f)
       ++iter;
     }
   return v;
+}
+
+template <int num_dim, typename elemTout, typename elemT1, typename elemT2, typename BinaryFunctionT>
+inline void
+apply_binary_func_element_wise(Array<num_dim, elemTout>& out,
+                               const Array<num_dim, elemT1>& in1,
+                               const Array<num_dim, elemT2>& in2,
+                               BinaryFunctionT f)
+{
+  std::transform(in1.begin_all(), in1.end_all(), in2.begin_all(), out.begin_all(), f);
+}
+
+template <int num_dim,
+          typename elemTout,
+          typename elemT1,
+          typename elemT2,
+          typename PredicateBinaryFunctionT,
+          typename BinaryFunctionT>
+inline void
+apply_binary_func_element_wise(Array<num_dim, elemTout>& out,
+                               const Array<num_dim, elemT1>& in1,
+                               const Array<num_dim, elemT2>& in2,
+                               PredicateBinaryFunctionT predicate,
+                               BinaryFunctionT f)
+{
+  auto in1_iter = in1.begin_all();
+  const auto in1_end = in1.end_all();
+  auto in2_iter = in2.begin_all();
+  auto out_iter = out.begin_all();
+  while (in1_iter != in1_end)
+    {
+      if (predicate(*in1_iter, *in2_iter))
+        *out_iter = f(*in1_iter, *in2_iter);
+      ++in1_iter;
+      ++in2_iter;
+      ++out_iter;
+    }
+}
+
+template <int num_dim, typename elemTout, typename elemT1, typename elemT2, typename elemT3, typename BinaryFunctionT>
+inline void
+apply_binary_func_element_wise(Array<num_dim, elemTout>& out,
+                               const Array<num_dim, elemT1>& in1,
+                               const Array<num_dim, elemT2>& in2,
+                               const Array<num_dim, elemT3>& where,
+                               BinaryFunctionT f)
+{
+  auto in1_iter = in1.begin_all();
+  const auto in1_end = in1.end_all();
+  auto in2_iter = in2.begin_all();
+  auto out_iter = out.begin_all();
+  auto where_iter = where.begin_all();
+  while (in1_iter != in1_end)
+    {
+      if (*where_iter)
+        *out_iter = f(*in1_iter, *in2_iter);
+      ++in1_iter;
+      ++in2_iter;
+      ++where_iter;
+      ++out_iter;
+    }
+}
+
+template <int num_dim, typename elemTinout, typename elemT2, typename BinaryFunctionT>
+inline void
+in_place_apply_binary_func_element_wise(Array<num_dim, elemTinout>& inout, const Array<num_dim, elemT2>& in2, BinaryFunctionT f)
+{
+  auto inout_iter = inout.begin_all();
+  const auto inout_end = inout.end_all();
+  auto in2_iter = in2.begin_all();
+  while (inout_iter != inout_end)
+    {
+      *inout_iter = f(*inout_iter, *in2_iter);
+      ++inout_iter;
+      ++in2_iter;
+    }
+}
+
+template <int num_dim, typename elemTinout, typename elemT2, typename PredicateBinaryFunctionT, typename BinaryFunctionT>
+inline void
+in_place_apply_binary_func_element_wise(Array<num_dim, elemTinout>& inout,
+                                        const Array<num_dim, elemT2>& in2,
+                                        PredicateBinaryFunctionT predicate,
+                                        BinaryFunctionT f)
+{
+  auto inout_iter = inout.begin_all();
+  const auto inout_end = inout.end_all();
+  auto in2_iter = in2.begin_all();
+  while (inout_iter != inout_end)
+    {
+      if (predicate(*inout_iter, *in2_iter))
+        *inout_iter = f(*inout_iter, *in2_iter);
+      ++inout_iter;
+      ++in2_iter;
+    }
+}
+
+template <int num_dim, typename elemTinout, typename elemT2, typename elemT3, typename BinaryFunctionT>
+inline void
+in_place_apply_binary_func_element_wise(Array<num_dim, elemTinout>& inout,
+                                        const Array<num_dim, elemT2>& in2,
+                                        const Array<num_dim, elemT3>& where,
+                                        BinaryFunctionT f)
+{
+  auto inout_iter = inout.begin_all();
+  const auto inout_end = inout.end_all();
+  auto in2_iter = in2.begin_all();
+  auto where_iter = where.begin_all();
+  while (inout_iter != inout_end)
+    {
+      if (*where_iter)
+        *inout_iter = f(*inout_iter, *in2_iter);
+      ++inout_iter;
+      ++in2_iter;
+      ++where_iter;
+    }
 }
 
 template <int num_dim, typename elemT, typename FunctionObjectPtr>
