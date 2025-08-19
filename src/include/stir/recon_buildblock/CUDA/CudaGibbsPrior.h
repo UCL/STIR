@@ -24,13 +24,9 @@
 #include "stir/recon_buildblock/GibbsPrior.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
+#include <cuda_runtime.h>
 #include "stir/shared_ptr.h"
-#include "stir/cuda_utilities.h"
 #include <string>
-
-// #ifndef __CUDACC__
-// #error This file needs to be included when compiling with CUDA
-// #endif
 
 START_NAMESPACE_STIR
 

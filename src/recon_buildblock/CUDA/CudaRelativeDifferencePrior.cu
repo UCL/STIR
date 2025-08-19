@@ -26,7 +26,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
-#include "stir/cuda_utilities.h"
+#include "stir/cuda_utilities.cuh"
 #include <cuda_runtime.h>
 #include <numeric>
 

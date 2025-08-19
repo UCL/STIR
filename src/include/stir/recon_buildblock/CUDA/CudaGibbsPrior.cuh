@@ -31,7 +31,7 @@
 #include "stir/Array.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/cuda_utilities.h"
+#include "stir/cuda_utilities.cuh"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include <cuda_runtime.h>
@@ -41,47 +41,6 @@
 START_NAMESPACE_STIR
 
 // CUDA kernels for CudaGibbsPrior
-
-// typedef for the value (array) in the CUDA kernel
-// We need double for numerical accuracy according to test_priors.cxx
-// typedef double value_type;
-
-template <typename elemT>
-__device__ inline void
-blockReduction(elemT* shared_mem, int thread_in_block, int block_threads)
-{
-  // Parallel reduction in shared memory
-  for (int stride = block_threads / 2; stride > 0; stride /= 2)
-    {
-      if (thread_in_block < stride)
-        shared_mem[thread_in_block] += shared_mem[thread_in_block + stride];
-      __syncthreads();
-    }
-}
-
-// Generic, architecture-compatible atomicAdd for double and convertible types
-template <typename elemT>
-__device__ inline double
-atomicAddGeneric(double* address, elemT val)
-{
-  double dval = static_cast<double>(val);
-#if __CUDA_ARCH__ >= 600
-  return atomicAdd(address, dval);
-#else
-  // Use atomicCAS for double-precision atomicAdd on older architectures
-  unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
-  unsigned long long int old = *address_as_ull, assumed;
-
-  do
-    {
-      assumed = old;
-      double updated = __longlong_as_double(assumed) + dval;
-      old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
-  } while (assumed != old);
-
-  return __longlong_as_double(old);
-#endif
-}
 
 template <class elemT, typename PotentialT>
 __global__ static void
