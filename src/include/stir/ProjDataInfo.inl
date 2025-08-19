@@ -25,7 +25,6 @@
 
 */
 
-#include "stir/format.h"
 #include "stir/warning.h"
 START_NAMESPACE_STIR
 
@@ -86,7 +85,7 @@ ProjDataInfo::get_tof_bin(const double delta) const
         return i;
     }
   // TODO handle differently
-  warning(format("TOF delta time {} out of range", delta));
+  warning("TOF delta time " + std::to_string(delta) + " out of range");
   return min_tof_pos_num;
 }
 

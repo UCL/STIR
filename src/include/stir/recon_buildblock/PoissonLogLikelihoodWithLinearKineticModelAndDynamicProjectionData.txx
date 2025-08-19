@@ -4,7 +4,7 @@
 /*
   Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
   Copyright (C) 2011 Kris Thielemans
-  Copyright (C) 2013m 2018, University College London
+  Copyright (C) 2013, 2018, University College London
 
   This file is part of STIR.
 
@@ -30,7 +30,6 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include "stir/format.h"
 
 // include the following to set defaults
 #ifndef USE_PMRT
@@ -149,7 +148,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::pos
 
   if (this->_additive_dyn_proj_data_filename != "0")
     {
-      info(format("Reading additive projdata data {}", this->_additive_dyn_proj_data_filename));
+      info("Reading additive projdata data " + this->_additive_dyn_proj_data_filename);
       this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
         {
@@ -537,8 +536,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
       }
   }
 #ifndef NDEBUG
-  info(
-      format("INPUT max: ({} , {})", input.construct_single_density(1).find_max(), input.construct_single_density(2).find_max()));
+  info("INPUT max: (" + std::to_string(input.construct_single_density(1).find_max()) + ", " + std::to_string(input.construct_single_density(2).find_max()) + ")");
 #endif // NDEBUG
   DynamicDiscretisedDensity dyn_input = this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_output = this->_dyn_image_template;

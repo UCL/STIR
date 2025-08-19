@@ -109,7 +109,7 @@ PoissonLogLikelihoodWithLinearModelForMean<TargetT>::set_subsensitivity_filename
         }
       else
         {
-          const std::string test_sensitivity_filename = format(this->subsensitivity_filenames.c_str(), 0);
+          const std::string test_sensitivity_filename = runtime_format(this->subsensitivity_filenames.c_str(), 0);
         }
     }
   catch (std::exception& e)

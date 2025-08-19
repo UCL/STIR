@@ -335,7 +335,7 @@ KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
   map_element* elem_ptr = find_in_keymap(standardised_keyword);
   if (elem_ptr != 0)
     {
-      warning(format("KeyParser: keyword '{}' already registered for parsing, overwriting previous value", keyword));
+      warning(stir::format("KeyParser: keyword '{}' already registered for parsing, overwriting previous value", keyword));
       *elem_ptr = new_element;
     }
   else
@@ -1015,7 +1015,7 @@ KeyParser::set_variable()
   if (!current_index)
     {
       if (current->vectorised_key_level > 0)
-        error(format("Error parsing: expected a vectorised key as in \"{}[1]\", but no bracket found", keyword));
+        error(stir::format("Error parsing: expected a vectorised key as in \"{}[1]\", but no bracket found", keyword));
 
       switch (current->type)
         {
@@ -1081,7 +1081,7 @@ KeyParser::set_variable()
   else // Sets vector elements using current_index
     {
       if (current->vectorised_key_level == 0)
-        error(format("Error parsing: encountered unexpected \"vectorisation\" of key: \"{}[{}]\"", keyword, current_index));
+        error(stir::format("Error parsing: encountered unexpected \"vectorisation\" of key: \"{}[{}]\"", keyword, current_index));
 
       switch (current->type)
         {
