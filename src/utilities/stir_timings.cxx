@@ -47,7 +47,6 @@
 
 #  ifdef STIR_WITH_CUDA
 #    include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
-#    include <nvToolsExt.h>
 #  endif
 //#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #endif

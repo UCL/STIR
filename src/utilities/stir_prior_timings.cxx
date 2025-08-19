@@ -12,7 +12,6 @@
 #include "stir/Verbosity.h"
 #include "stir/num_threads.h"
 #include "/usr/local/cuda/include/cuda_profiler_api.h"
-#include <nvToolsExt.h>
 #include <cuda_runtime.h>
 #include "stir/recon_buildblock/GibbsQuadraticPrior.h"
 #include "stir/recon_buildblock/GibbsRelativeDifferencePrior.h"
