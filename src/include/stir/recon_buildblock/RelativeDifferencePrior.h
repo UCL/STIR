@@ -220,8 +220,8 @@ protected:
   //@{
   double value(const elemT x_j, const elemT x_k) const;
   elemT derivative_10(const elemT x, const elemT y) const;
-  double derivative_20(const elemT x_j, const elemT x_k) const;
-  double derivative_11(const elemT x_j, const elemT x_k) const;
+  elemT derivative_20(const elemT x_j, const elemT x_k) const;
+  elemT derivative_11(const elemT x_j, const elemT x_k) const;
   //@}
 };
 

@@ -620,7 +620,7 @@ RelativeDifferencePrior<elemT>::accumulate_Hessian_times_input(DiscretisedDensit
 }
 
 template <typename elemT>
-double
+elemT
 RelativeDifferencePrior<elemT>::derivative_20(const elemT x_j, const elemT x_k) const
 {
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)
@@ -630,7 +630,7 @@ RelativeDifferencePrior<elemT>::derivative_20(const elemT x_j, const elemT x_k) 
 }
 
 template <typename elemT>
-double
+elemT
 RelativeDifferencePrior<elemT>::derivative_11(const elemT x_j, const elemT x_k) const
 {
   if (x_j > 0.0 || x_k > 0.0 || this->epsilon > 0.0)

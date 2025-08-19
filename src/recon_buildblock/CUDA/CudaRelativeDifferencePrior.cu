@@ -177,7 +177,6 @@ computeCudaRelativeDifferencePriorValueKernel(value_type* tmp_value,
               const elemT diff = (image[inputIndex] - image[neighbourIndex]);
               const elemT add = (image[inputIndex] + image[neighbourIndex]);
               double current = (weights[weightsIndex] * 0.5 * diff * diff) / (add + gamma * std::abs(diff) + epsilon);
-              
               if (do_kappa)
                 {
                   current *= kappa[inputIndex] * kappa[neighbourIndex];
