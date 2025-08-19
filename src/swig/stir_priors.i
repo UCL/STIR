@@ -14,10 +14,7 @@
   \author Robert Twyman
 */
 
-%{
-#define STIR_WITH_CUDA
-%}
-#define STIR_WITH_CUDA
+
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
@@ -47,11 +44,6 @@
         stir::PriorWithParabolicSurrogate<TargetT  > >);
 %shared_ptr(stir::LogcoshPrior<elemT>);
 
-%shared_ptr(stir::RegisteredParsingObject< stir::CudaRelativeDifferencePrior<elemT>,
-         stir::GeneralisedPrior<TargetT >,
-         stir::RelativeDifferencePrior<elemT> >);
-%shared_ptr(stir::CudaRelativeDifferencePrior<elemT>);
-
 %shared_ptr(stir::QuadraticPotential<elemT>);
 
 %shared_ptr(stir::GibbsPrior<elemT, stir::QuadraticPotential<elemT>>);
@@ -60,12 +52,6 @@
   stir::GibbsPrior<elemT, stir::QuadraticPotential<elemT>> >);
 %shared_ptr(stir::GibbsQuadraticPrior<elemT>);
 
-%shared_ptr(stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>>);
-%shared_ptr(stir::RegisteredParsingObject< stir::CudaGibbsQuadraticPrior<elemT>,
-  stir::GeneralisedPrior<TargetT >,
-  stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>> >);
-%shared_ptr(stir::CudaGibbsQuadraticPrior<elemT>);
-    
 %shared_ptr(stir::RelativeDifferencePotential<elemT>);
 
 %shared_ptr(stir::GibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>>);
@@ -74,29 +60,46 @@
   stir::GibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >);
 %shared_ptr(stir::GibbsRelativeDifferencePrior<elemT>);
 
-%shared_ptr(stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>>);
-%shared_ptr(stir::RegisteredParsingObject< stir::CudaGibbsRelativeDifferencePrior<elemT>,
-  stir::GeneralisedPrior<TargetT >,
-  stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >);
-%shared_ptr(stir::CudaGibbsRelativeDifferencePrior<elemT>);
+#ifdef STIR_WITH_CUDA
+  %shared_ptr(stir::RegisteredParsingObject< stir::CudaRelativeDifferencePrior<elemT>,
+          stir::GeneralisedPrior<TargetT >,
+          stir::RelativeDifferencePrior<elemT> >);
+  %shared_ptr(stir::CudaRelativeDifferencePrior<elemT>);
+
+  %shared_ptr(stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>>);
+  %shared_ptr(stir::RegisteredParsingObject< stir::CudaGibbsQuadraticPrior<elemT>,
+    stir::GeneralisedPrior<TargetT >,
+    stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>> >);
+  %shared_ptr(stir::CudaGibbsQuadraticPrior<elemT>);
+
+  %shared_ptr(stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>>);
+  %shared_ptr(stir::RegisteredParsingObject< stir::CudaGibbsRelativeDifferencePrior<elemT>,
+    stir::GeneralisedPrior<TargetT >,
+    stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >);
+  %shared_ptr(stir::CudaGibbsRelativeDifferencePrior<elemT>);
+#endif
+
 
 
 
 #undef elemT
 #undef TargetT
+%include "stir/recon_buildblock/GeneralisedPrior.h"
 %include "stir/recon_buildblock/GibbsPrior.h"
-%include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
+
+#ifdef STIR_WITH_CUDA
+  %include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
+  %include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#endif
 
 %include "stir/recon_buildblock/GibbsQuadraticPrior.h"
 %include "stir/recon_buildblock/GibbsRelativeDifferencePrior.h"
 
-%include "stir/recon_buildblock/GeneralisedPrior.h"
 %include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
 %include "stir/recon_buildblock/QuadraticPrior.h"
 %include "stir/recon_buildblock/PLSPrior.h"
 %include "stir/recon_buildblock/RelativeDifferencePrior.h"
 %include "stir/recon_buildblock/LogcoshPrior.h"
-%include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
 
 #define TargetT stir::DiscretisedDensity<3,float>
 #define elemT float
@@ -128,13 +131,6 @@ stir::RegisteredParsingObject< stir::LogcoshPrior<elemT>,
         stir::PriorWithParabolicSurrogate<TargetT  > >;
 %template (LogcoshPrior3DFloat) stir::LogcoshPrior<elemT>;
 
-%template (RPCudaRelativeDifferencePrior3DFloat)
-  stir::RegisteredParsingObject< stir::CudaRelativeDifferencePrior<elemT>,
-     stir::GeneralisedPrior<TargetT >,
-     stir::RelativeDifferencePrior<elemT> >;
-%template (CudaRelativeDifferencePrior3DFloat) stir::CudaRelativeDifferencePrior<elemT>;
-
-
 %template (QuadraticPotential3DFloat) stir::QuadraticPotential<elemT>;
 
 %nodefaultctor stir::GibbsPrior;
@@ -147,20 +143,8 @@ stir::GeneralisedPrior<TargetT >,
 stir::GibbsPrior<elemT, stir::QuadraticPotential<elemT>> >;
 %template (GibbsQuadraticPrior3DFloat) stir::GibbsQuadraticPrior<elemT>;
 
-%nodefaultctor stir::CudaGibbsPrior;
-%ignore stir::CudaGibbsPrior::CudaGibbsPrior;
-%template (CudaGibbsPrior3DFloat_Q) stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>>;
-
-%template (RPCudaGibbsQuadraticPrior3DFloat)
-stir::RegisteredParsingObject< stir::CudaGibbsQuadraticPrior<elemT>,
-stir::GeneralisedPrior<TargetT >,
-stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>> >;
-%template (CudaGibbsQuadraticPrior3DFloat) stir::CudaGibbsQuadraticPrior<elemT>;
-
 %template (RelativeDifference3DFloat) stir::RelativeDifferencePotential<elemT>;
 
-%nodefaultctor stir::GibbsPrior;
-%ignore stir::GibbsPrior::GibbsPrior;
 %template (GibbsPrior3DFloat_RD) stir::GibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>>;
 
 %template (RPGibbsRelativeDifferencePrior3DFloat)
@@ -169,15 +153,33 @@ stir::GeneralisedPrior<TargetT >,
 stir::GibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >;
 %template (GibbsRelativeDifferencePrior3DFloat) stir::GibbsRelativeDifferencePrior<elemT>;
 
-%nodefaultctor stir::CudaGibbsPrior;
-%ignore stir::CudaGibbsPrior::CudaGibbsPrior;
-%template (CudaGibbsPrior3DFloat_RD) stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>>;
+#ifdef STIR_WITH_CUDA
+  %template (RPCudaRelativeDifferencePrior3DFloat)
+    stir::RegisteredParsingObject< stir::CudaRelativeDifferencePrior<elemT>,
+      stir::GeneralisedPrior<TargetT >,
+      stir::RelativeDifferencePrior<elemT> >;
+  %template (CudaRelativeDifferencePrior3DFloat) stir::CudaRelativeDifferencePrior<elemT>;
 
-%template (RPCudaGibbsRelativeDifferencePrior3DFloat)
-stir::RegisteredParsingObject< stir::CudaGibbsRelativeDifferencePrior<elemT>,
-stir::GeneralisedPrior<TargetT >,
-stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >;
-%template (CudaGibbsRelativeDifferencePrior3DFloat) stir::CudaGibbsRelativeDifferencePrior<elemT>;
+  %nodefaultctor stir::CudaGibbsPrior;
+  %ignore stir::CudaGibbsPrior::CudaGibbsPrior;
+  %template (CudaGibbsPrior3DFloat_RD) stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>>;
+
+  %template (RPCudaGibbsRelativeDifferencePrior3DFloat)
+  stir::RegisteredParsingObject< stir::CudaGibbsRelativeDifferencePrior<elemT>,
+  stir::GeneralisedPrior<TargetT >,
+  stir::CudaGibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >;
+  %template (CudaGibbsRelativeDifferencePrior3DFloat) stir::CudaGibbsRelativeDifferencePrior<elemT>;
+
+  %nodefaultctor stir::CudaGibbsPrior;
+  %ignore stir::CudaGibbsPrior::CudaGibbsPrior;
+  %template (CudaGibbsPrior3DFloat_Q) stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>>;
+
+  %template (RPCudaGibbsQuadraticPrior3DFloat)
+  stir::RegisteredParsingObject< stir::CudaGibbsQuadraticPrior<elemT>,
+  stir::GeneralisedPrior<TargetT >,
+  stir::CudaGibbsPrior<elemT, stir::QuadraticPotential<elemT>> >;
+  %template (CudaGibbsQuadraticPrior3DFloat) stir::CudaGibbsQuadraticPrior<elemT>;
+#endif
 
 
 

@@ -74,7 +74,6 @@ if (NOT MINI_STIR)
     write_sinogram_to_txt.cxx
     find_sum_projection_of_viewgram_and_sinogram.cxx
     separate_true_from_random_scatter_for_necr.cxx
-    stir_prior_timings.cxx
     stir_timings.cxx
     )
 
@@ -97,9 +96,7 @@ else() # MINI_STIR
 
   set(${dir_EXE_SOURCES}
     stir_timings.cxx
-    stir_prior_timings.cxx
     )
 endif()
     
 include(stir_exe_targets)
-
