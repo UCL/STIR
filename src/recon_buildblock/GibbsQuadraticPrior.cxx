@@ -53,7 +53,6 @@ GibbsQuadraticPrior<elemT>::initialise_keymap()
 }
 
 // Explicit template instantiations
-template class QuadraticPotential<float>;
 template class GibbsQuadraticPrior<float>;
 
 END_NAMESPACE_STIR
