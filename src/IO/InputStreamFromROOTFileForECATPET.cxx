@@ -186,7 +186,8 @@ InputStreamFromROOTFileForECATPET::set_up(const std::string& header_path)
 bool
 InputStreamFromROOTFileForECATPET::check_all_required_keywords_are_set(std::string& ret) const
 {
-  std::ostringstream stream("InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ");
+  std::ostringstream stream;
+  stream << "InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ";
   bool ok = true;
 
   if (crystal_repeater_x == -1)
