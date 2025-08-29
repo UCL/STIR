@@ -30,6 +30,13 @@ option(BUILD_SHARED_LIBS
        "Use shared libraries" OFF)
 
 ### Settings for external libraries
+# Locate and include the CUDA Toolkit headers
+find_package(CUDAToolkit REQUIRED)
+include_directories(BEFORE SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
+include_directories(BEFORE SYSTEM /usr/local/cuda-12.9/targets/x86_64-linux/include/nvtx3)
+include_directories(BEFORE SYSTEM /usr/local/cuda-12.9/targets/x86_64-linux/include)
+
+
 
 if (LLN_FOUND)
   set(HAVE_ECAT ON)

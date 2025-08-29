@@ -38,6 +38,8 @@
 #include <numeric>
 #include <algorithm>
 
+#include <nvToolsExt.h>
+
 START_NAMESPACE_STIR
 
 // CUDA kernels for CudaGibbsPrior
@@ -145,6 +147,19 @@ Gradient_Kernel(elemT* gradient,
                 const int3 d_weight_min_indices,
                 const PotentialT potential)
 {
+  // extern __shared__ elemT shared[];
+
+  // int thread_in_block = threadIdx.z * blockDim.y * blockDim.x +
+  //                       threadIdx.y * blockDim.x + 
+  //                       threadIdx.x;
+
+
+
+  // for (int i = thread_in_block; i < 27; i += blockDim.x*blockDim.y*blockDim.z)
+  //     shared[i] = weights[i];
+
+  // __syncthreads();
+
   const int thread_id_x = blockIdx.x * blockDim.x + threadIdx.x;
   const int thread_id_y = blockIdx.y * blockDim.y + threadIdx.y;
   const int thread_id_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -162,6 +177,7 @@ Gradient_Kernel(elemT* gradient,
                          thread_id_x;
 
   const elemT val_center = current_image[inputIndex];
+
   //Boundary conditions for the neighbourhood
   const int min_dz = max(d_weight_min_indices.z, d_Image_min_indices.z - Image_coord.z);
   const int max_dz = min(d_weight_max_indices.z, d_Image_max_indices.z - Image_coord.z);
@@ -169,6 +185,7 @@ Gradient_Kernel(elemT* gradient,
   const int max_dy = min(d_weight_max_indices.y, d_Image_max_indices.y - Image_coord.y);
   const int min_dx = max(d_weight_min_indices.x, d_Image_min_indices.x - Image_coord.x);
   const int max_dx = min(d_weight_max_indices.x, d_Image_max_indices.x - Image_coord.x);
+
   const int weights_size_y = d_weight_max_indices.y - d_weight_min_indices.y + 1;
   const int weights_size_x = d_weight_max_indices.x - d_weight_min_indices.x + 1;
 
@@ -189,6 +206,10 @@ Gradient_Kernel(elemT* gradient,
                                          (dx - d_weight_min_indices.x);
               //Neighbour voxel contribution
               const elemT val_neigh    = current_image[neighbourIndex];
+     
+              // elemT current            = weights[weightsIndex] *
+              //                            potential.derivative_10(val_center, val_neigh, Image_coord.z, Image_coord.y, Image_coord.x);
+              // elemT val_neigh = 5.0f;
               elemT current            = weights[weightsIndex] *
                                          potential.derivative_10(val_center, val_neigh, Image_coord.z, Image_coord.y, Image_coord.x);
 
@@ -471,6 +492,7 @@ CudaGibbsPrior<elemT, PotentialT>::~CudaGibbsPrior()
     cudaFree(d_output_data);
   if (d_input_data)
     cudaFree(d_input_data);
+
 }
 
 template <typename elemT, typename PotentialT>
@@ -528,14 +550,13 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>
 
   if (this->_already_set_up == false)
       error("CudaGibbsPrior: set_up has not been called");
-  
-  //Copy data from host to device
+
   array_to_device(d_image_data, current_image_estimate);
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(d_kappa_data)))
     error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
-
+  
   Gradient_Kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
                                             d_image_data,
                                             d_weights_data,
@@ -548,9 +569,10 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>
                                             d_weight_max_indices,
                                             d_weight_min_indices,
                                             this->potential);
-
+                
   checkCudaError("compute_gradient kernel");
 
+  cudaDeviceSynchronize();
   array_to_host(prior_gradient, d_output_data);
 
   // Optional: write gradient to file

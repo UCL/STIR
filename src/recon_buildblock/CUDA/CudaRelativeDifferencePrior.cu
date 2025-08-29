@@ -44,7 +44,7 @@ computeCudaRelativeDifferencePriorGradientKernel(elemT* tmp_grad,
                                                  const float penalisation_factor,
                                                  const int z_dim,
                                                  const int y_dim,
-                                                 const int x_dim)
+                                                 const int x_dim) goo
 {
   // Get the voxel in x, y, z dimensions
   const int z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -98,6 +98,8 @@ computeCudaRelativeDifferencePriorGradientKernel(elemT* tmp_grad,
               const elemT add_3 = (image[inputIndex] + 3 * image[neighbourIndex]);
               double current = weights[weightsIndex] * (diff * (gamma * diff_abs + add_3 + 2 * epsilon))
                                / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));
+              // double current = weights[weightsIndex] * (diff * (gamma * diff_abs + add_3 + 2 * epsilon));
+                       
               if (do_kappa)
                 {
                   current *= kappa[inputIndex] * kappa[neighbourIndex];

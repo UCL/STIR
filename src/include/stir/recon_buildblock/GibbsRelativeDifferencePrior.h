@@ -80,27 +80,38 @@ public:
   __host__ __device__ inline double
   value(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const
   {
-  const elemT diff = val_center - val_neigh;
-  const elemT add = val_center + val_neigh;
+    const elemT diff = val_center - val_neigh;
+    const elemT add = val_center + val_neigh;
   
-  return 0.5 * (diff * diff) / (add + gamma * fabs(diff) + epsilon);
+    return 0.5 * (diff * diff) / (add + gamma * fabs(diff) + epsilon);
   }
+
   //! CUDA device function for computing the first derivative with respect to first argument
   __host__ __device__ inline double
   derivative_10(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
   {
   const elemT diff = val_center - val_neigh;
   const elemT add = val_center + val_neigh;
-  const elemT diff_abs = fabs(diff);
-  const elemT add_3 = val_center + 3 * val_neigh;
+  // const elemT add_3 = val_center + 3 * val_neigh;
 
-  return 0.5 * (diff * (gamma * diff_abs + add_3 + 2 * epsilon)) / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));
+  const elemT diff_abs = fabs(diff);
+  const elemT A = add + gamma *diff_abs + epsilon;
+  const elemT den = 1.0/ (A*A);
+  
+  // original
+  // return 0.5 * (diff * (gamma * diff_abs + add_3 + 2 * epsilon)) / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));
+
+  return 0.5 * (diff * (A + 2 * val_neigh +  epsilon))*den;
+
   }
+
   //! CUDA device function for computing the second derivative with respect to first argument
   __host__ __device__ inline double
   derivative_20(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
   {
-  // For now, return 0 (not implemented)
+    // elemT NUM =  (2* val_neigh + epsilon);
+    // elemT DEN = (val_center + val_neigh + gamma * fabs(val_center - val_neigh) + epsilon);
+    // return NUM*NUM/(DEN*DEN*DEN);
   return pow(2 * val_neigh + epsilon, 2) / pow(val_center + val_neigh + gamma * std::abs(val_center - val_neigh) + epsilon, 3);
   }
   //! CUDA device function for computing the mixed derivative

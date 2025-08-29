@@ -11,7 +11,6 @@
 #include "stir/error.h"
 #include "stir/Verbosity.h"
 #include "stir/num_threads.h"
-#include "/usr/local/cuda/include/cuda_profiler_api.h"
 #include <cuda_runtime.h>
 #include "stir/recon_buildblock/GibbsQuadraticPrior.h"
 #include "stir/recon_buildblock/GibbsRelativeDifferencePrior.h"
@@ -25,11 +24,15 @@
 
 #include <iostream>
 #include <string>
-#include <chrono>
+#include <chrono>  
 #include <ctime>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+
+
+#include <nvToolsExt.h>
+#include <cuda_profiler_api.h>
 
 int runs = 1;
 
@@ -131,148 +134,145 @@ int main(int argc, char** argv)
   // std::cout << "value = "<< quad_prior_sptr->compute_value(*image_sptr) << std::endl;
 
   //VALUE TEST
-  double val = 0;
+  // double val = 0;
 
-  auto gibbs_prior_sptr = std::make_shared<GibbsQuadraticPrior<float>>();
-  gibbs_prior_sptr->set_penalisation_factor(1.F);
-  gibbs_prior_sptr->set_up(image_sptr);
-  if(kappa_sptr) gibbs_prior_sptr->set_kappa_sptr(kappa_sptr);
-  val =  gibbs_prior_sptr->compute_value(*image_sptr);
-  std::cout << "gibbs value =  " << val << std::endl;
+  // auto gibbs_prior_sptr = std::make_shared<GibbsRelativeDifferencePrior<float>>();
+  // gibbs_prior_sptr->set_penalisation_factor(1.F);
+  // gibbs_prior_sptr->set_up(image_sptr);
+  // if(kappa_sptr) gibbs_prior_sptr->set_kappa_sptr(kappa_sptr);
+  // val =  gibbs_prior_sptr->compute_value(*image_sptr);
+  // std::cout << "gibbs value =  " << val << std::endl;
 
-  auto CUDA_gibbs_prior_sptr = std::make_shared<CudaGibbsQuadraticPrior<float>>();
-  CUDA_gibbs_prior_sptr->set_penalisation_factor(1.F);
-  CUDA_gibbs_prior_sptr->set_up(image_sptr);
-  if(kappa_sptr) CUDA_gibbs_prior_sptr->set_kappa_sptr(kappa_sptr);
-  val = CUDA_gibbs_prior_sptr->compute_value(*image_sptr);
-  std::cout << "CUDA gibbs value =  " << val << std::endl;
+   auto CUDA_gibbs_prior_sptr = std::make_shared<CudaGibbsRelativeDifferencePrior<float>>();
+   CUDA_gibbs_prior_sptr->set_penalisation_factor(1.F);
+   CUDA_gibbs_prior_sptr->set_up(image_sptr);
+  // if(kappa_sptr) CUDA_gibbs_prior_sptr->set_kappa_sptr(kappa_sptr);
+  // val = CUDA_gibbs_prior_sptr->compute_value(*image_sptr);
+  // std::cout << "CUDA gibbs value =  " << val << std::endl;
 
-  auto original_prior_sptr = std::make_shared<QuadraticPrior<float>>(false, 1.F);
+  auto original_prior_sptr = std::make_shared<CudaRelativeDifferencePrior<float>>(false, 1.F,2.F,1e-7F);
   if(kappa_sptr) original_prior_sptr->set_kappa_sptr(kappa_sptr);
   original_prior_sptr->set_up(image_sptr);
-  val = original_prior_sptr->compute_value(*image_sptr);
-  std::cout << "original value =  " << val << std::endl;
+  // val = original_prior_sptr->compute_value(*image_sptr);
+  // std::cout << "original value =  " << val << std::endl;
 
-  //gradient TEST 
-  std::cout<<std::endl;
+  // //gradient TEST 
+  // std::cout<<std::endl;
   shared_ptr<VoxelsOnCartesianGrid<float>> output_sptr,input_sptr;
   output_sptr.reset(image_sptr->clone());
   input_sptr.reset(image_sptr->clone());
 
-  val=0;
-  gibbs_prior_sptr->compute_gradient(*output_sptr, *image_sptr);
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-  {
-    val += (*output_sptr)[z][y][x] * (*input_sptr)[z][y][x];
-  }
-  std::cout << "gibbs gradient dot input = " << val <<"("<<gibbs_prior_sptr->compute_gradient_times_input(*input_sptr,*image_sptr)<<")"<< std::endl;
+  // val=0;
+  // gibbs_prior_sptr->compute_gradient(*output_sptr, *image_sptr);
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  // {
+  //   val += (*output_sptr)[z][y][x] * (*input_sptr)[z][y][x];
+  // }
+  // std::cout << "gibbs gradient dot input = " << val <<"("<<gibbs_prior_sptr->compute_gradient_times_input(*input_sptr,*image_sptr)<<")"<< std::endl;
 
-  val=0;
+  // val=0;
+  // CUDA_gibbs_prior_sptr->compute_gradient(*output_sptr, *image_sptr);
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  // {
+  //   val += (*output_sptr)[z][y][x] * (*input_sptr)[z][y][x];
+  // }
+  // std::cout << "CUDA gibbs gradient dot input = " << val <<"("<<CUDA_gibbs_prior_sptr->compute_gradient_times_input(*input_sptr,*image_sptr)<<")"<< std::endl;
+
+
+  double val=0;
   CUDA_gibbs_prior_sptr->compute_gradient(*output_sptr, *image_sptr);
   for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
   for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
   for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
   {
-    val += (*output_sptr)[z][y][x] * (*input_sptr)[z][y][x];
+    val += (*output_sptr)[z][y][x];
   }
-  std::cout << "CUDA gibbs gradient dot input = " << val <<"("<<CUDA_gibbs_prior_sptr->compute_gradient_times_input(*input_sptr,*image_sptr)<<")"<< std::endl;
+  std::cout << "original gradient sum = " << val << std::endl;
 
-
-  val=0;
-  original_prior_sptr->compute_gradient(*output_sptr, *image_sptr);
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-  {
-    val += (*output_sptr)[z][y][x] * (*input_sptr)[z][y][x];
-  }
-  std::cout << "original gradient dot input = " << val << std::endl;
-
-  //HESSIAN TEST
-  std::cout<<std::endl;
-  double hess,hess_times_inp;
+  // //HESSIAN TEST
+  // std::cout<<std::endl;
+  // double hess,hess_times_inp;
   
-  BasicCoordinate<3, int> A = make_coordinate(50, 0, 0);
+  // BasicCoordinate<3, int> A = make_coordinate(50, 0, 0);
 
-  gibbs_prior_sptr->compute_Hessian(*output_sptr, A, *image_sptr);
-  //gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
-  hess=0;
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-    hess += (*output_sptr)[z][y][x];
-  std::cout << "gibbs Hessian sum: " << hess << std::endl;
+  // gibbs_prior_sptr->compute_Hessian(*output_sptr, A, *image_sptr);
+  // //gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+  // hess=0;
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  //   hess += (*output_sptr)[z][y][x];
+  // std::cout << "gibbs Hessian sum: " << hess << std::endl;
 
-  CUDA_gibbs_prior_sptr->compute_Hessian(*output_sptr, A, *image_sptr);
-  //CUDA_gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
-  hess =0;
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-    hess += (*output_sptr)[z][y][x];
-  std::cout << "CUDA gibbs Hessian sum: " << hess << std::endl;
+  // CUDA_gibbs_prior_sptr->compute_Hessian(*output_sptr, A, *image_sptr);
+  // //CUDA_gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+  // hess =0;
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  //   hess += (*output_sptr)[z][y][x];
+  // std::cout << "CUDA gibbs Hessian sum: " << hess << std::endl;
 
-  original_prior_sptr->compute_Hessian(*output_sptr, A, *image_sptr);
-  //original_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
-  hess =0;
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-    hess += (*output_sptr)[z][y][x];
-  std::cout << "original Hessian sum: " << hess << std::endl;
+  // original_prior_sptr->compute_Hessian(*output_sptr, A, *image_sptr);
+  // //original_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+  // hess =0;
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  //   hess += (*output_sptr)[z][y][x];
+  // std::cout << "original Hessian sum: " << hess << std::endl;
     
-  std::cout<<std::endl;
-  output_sptr->fill(0.F);
-  input_sptr.reset(image_sptr->clone());
-  gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
-  hess=0;
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-    hess += (*output_sptr)[z][y][x];
-  std::cout << "gibbs Hessian_times_input sum: " << hess << std::endl;
+  // std::cout<<std::endl;
+  // output_sptr->fill(0.F);
+  // input_sptr.reset(image_sptr->clone());
+  // gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+  // hess=0;
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  //   hess += (*output_sptr)[z][y][x];
+  // std::cout << "gibbs Hessian_times_input sum: " << hess << std::endl;
 
-  output_sptr->fill(0.F);
-  input_sptr.reset(image_sptr->clone());
-  CUDA_gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
-  hess=0;
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-    hess += (*output_sptr)[z][y][x];
-  std::cout << "CUDA Hessian_times_input sum: " << hess << std::endl;
+  // output_sptr->fill(0.F);
+  // input_sptr.reset(image_sptr->clone());
+  // CUDA_gibbs_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+  // hess=0;
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  //   hess += (*output_sptr)[z][y][x];
+  // std::cout << "CUDA Hessian_times_input sum: " << hess << std::endl;
 
-  output_sptr->fill(0.F);
-  input_sptr.reset(image_sptr->clone());
-  original_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
-  hess=0;
-  for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
-  for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
-  for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
-    hess += (*output_sptr)[z][y][x];
-  std::cout << "CUDA Hessian_times_input sum: " << hess << std::endl;
+  // output_sptr->fill(0.F);
+  // input_sptr.reset(image_sptr->clone());
+  // original_prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+  // hess=0;
+  // for (int z = output_sptr->get_min_index(); z <= output_sptr->get_max_index(); ++z)
+  // for (int y = output_sptr->operator[](z).get_min_index(); y <= output_sptr->operator[](z).get_max_index(); ++y)
+  // for (int x = output_sptr->operator[](z)[y].get_min_index(); x <= output_sptr->operator[](z)[y].get_max_index(); ++x)
+  //   hess += (*output_sptr)[z][y][x];
+  // std::cout << "CUDA Hessian_times_input sum: " << hess << std::endl;
 
 
 
-  // auto gibbs_rdp = std::make_shared<CudaGibbsRelativeDifferencePrior<float>>(false, 1.F, 2.F, 2);
-  // gibbs_rdp->set_up(image_sptr);
 
-  // auto rdp = std::make_shared<CudaRelativeDifferencePrior<float>>(false, 1.F, 2.F, 2);
-  // rdp->set_up(image_sptr);
 
-  // std::cout<<"compute_value: "<<gibbs_rdp->compute_value(*image_sptr)<<std::endl;
-  // std::cout<<"compute_value: "<<rdp->compute_value(*image_sptr)<<std::endl;
 
   //   float time_comp_val = Time_it([&]() {
 
-  //   rdp->compute_gradient(*output_sptr, *image_sptr);
+  //   CUDA_gibbs_prior_sptr->compute_gradient(*output_sptr, *image_sptr);
   // });
-  // std::cout << "timing " << time_comp_val << " ms" << std::endl;
+  // std::cout << "gibbs gradient timing " << time_comp_val << " ms" << std::endl;
 
+  // float time_comp_val = Time_it([&]() {
 
-
+  //   original_prior_sptr->compute_gradient(*output_sptr, *image_sptr);
+  // });
+  // std::cout << "cuda original timing " << time_comp_val << " ms" << std::endl;
 
   // time_comp_val = Time_it([&]() {
 
