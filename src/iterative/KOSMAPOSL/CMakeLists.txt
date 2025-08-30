@@ -23,5 +23,5 @@ if (STIR_MPI)
   SET_PROPERTY(TARGET KOSMAPOSL PROPERTY LINK_FLAGS ${MPI_CXX_LINK_FLAGS})
 endif()
 
-target_link_libraries(iterative_KOSMAPOSL PUBLIC recon_buildblock PRIVATE fmt)
+target_link_libraries(iterative_KOSMAPOSL PUBLIC recon_buildblock ${FMT_DEPENDENCY})
 

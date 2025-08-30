@@ -135,7 +135,7 @@ if (HAVE_JSON)
   target_include_directories(buildblock PUBLIC "${TMP}")
 endif()
 
-target_link_libraries(buildblock PRIVATE fmt)
+target_link_libraries(buildblock ${FMT_DEPENDENCY})
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)

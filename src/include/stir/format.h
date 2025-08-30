@@ -23,6 +23,10 @@
 #include <utility> // for std::forward
 #include "stir/common.h"
 
+#if __cplusplus >= 202002L // C++-20
+#  include <version>       // need this for __cpp_lib_format
+#endif
+
 #if defined(__cpp_lib_format) && (__cpp_lib_format >= 201907L)
 #  include <format>
 namespace internal_format = std; // using std::format;

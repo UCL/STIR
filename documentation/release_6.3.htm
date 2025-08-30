@@ -91,7 +91,11 @@
         Boost format was replaced by fmt for formatting strings. If C++20 or newer is used, instead of using fmt as a git submodule, the standard library implementation is being used.
         Import <code>stir/format.h</code> and then use the <code>format()</code> function to create strings containing various variables. If the format string is not known at compile time,
         use <code>runtime_format()</code> instead.<br>
-        <a href=https://github.com/UCL/STIR/pull/1591>PR #1591</a>
+        <b>Note for C++ developers:</b> If you <code>stir/format.h</code>, you need to make sure that your library or utility has the correct dependency by using the <code>FMT_DEPENDENCIES</code> CMake variable, e.g.
+        <pre>
+          target_link_libraries(my_library PUBLIC buildblock ${FMT_DEPENDENCIES})
+        </pre>
+        <a href=https://github.com/UCL/STIR/pull/1591>PR #1591</a> and <a href=https://github.com/UCL/STIR/pull/1605>PR #1605</a>
       </li>
   </ul>
 
