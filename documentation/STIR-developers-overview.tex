@@ -1317,9 +1317,9 @@ set(${dir_LIB_SOURCES}
 )
 
 # declare dependencies on other STIR libraries, for instance to depend on the "normal" STIR buildblock
-# The variable FMT_DEPENDENCIES is necessary if your library uses stir/format.h
+# The variable FMT_DEPENDENCY is necessary if your library uses stir/format.h
 # (see STIR/CMakeLists.txt)
-target_link_libraries($(dir) PUBLIC buildblock ${FMT_DEPENDENCIES})
+target_link_libraries($(dir) PUBLIC buildblock ${FMT_DEPENDENCY})
 
 include(stir_lib_target)
 \end{verbatim}
@@ -1342,6 +1342,14 @@ static myOutputFileFormat::RegisterIt dummy1;
 \end{verbatim}
 If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{extra\_stir\_dirs.cmake}
 as above, everything should work as expected.
+
+\textbf{WARNING:}\\
+Until we switch to C++-20, we use the \R2Lurl{https://github.com/fmtlib/fmt}{fmt} library to
+provide functionality similar to \texttt{std::format}. This is done using a git submodule
+and a header-only dependency.
+Please do \textbf{not} use \texttt{stir/format.h} in your header files (.h or .inl), as this
+will create a dependency on fmt include files for external programs, more than likely leading to
+compilation problems.
 
 \section{Contributing to STIR}
 See
