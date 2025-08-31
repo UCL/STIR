@@ -26,7 +26,7 @@ else()
       message(FATAL_ERROR "The {fmt} submodule was not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
     endif()
     # Use this variable to add a dependency for every library/utility that uses format()
-    set(FMT_DEPENDENCY PRIVATE fmt::fmt-header-only PARENT_SCOPE)
+    #set(FMT_DEPENDENCY PRIVATE fmt::fmt-header-only PARENT_SCOPE)
 
   add_subdirectory(fmt)
 

@@ -31,6 +31,7 @@
 #  include <format>
 namespace internal_format = std; // using std::format;
 #else
+#  define FMT_HEADER_ONLY 1
 #  include "fmt/format.h"
 namespace internal_format = fmt; // using fmt::format;
 #endif
