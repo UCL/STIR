@@ -25,8 +25,6 @@ else()
     if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external_helpers/fmt/CMakeLists.txt")
       message(FATAL_ERROR "The {fmt} submodule was not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
     endif()
-    # Use this variable to add a dependency for every library/utility that uses format()
-    #set(FMT_DEPENDENCY PRIVATE fmt::fmt-header-only PARENT_SCOPE)
 
   add_subdirectory(fmt)
 
@@ -34,5 +32,10 @@ else()
   if (TARGET fmt)
     set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
   endif()
+
+  # In fact, stir/format.h will set it to use fmt header-only, so we only want to know
+  # the headers are.
+  get_target_property(FMT_INCLUDE_DIRS fmt::fmt-header-only INTERFACE_INCLUDE_DIRECTORIES)
+  set(FMT_INCLUDE_DIRS ${FMT_INCLUDE_DIRS} PARENT_SCOPE)
 endif()
 

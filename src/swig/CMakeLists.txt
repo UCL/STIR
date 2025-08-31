@@ -129,7 +129,10 @@ if(BUILD_SWIG_PYTHON)
    set_property(TARGET ${SWIG_MODULE_stir_REAL_NAME} PROPERTY SWIG_GENERATED_COMPILE_OPTIONS /bigobj)
   endif()
   SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
-  SWIG_LINK_LIBRARIES(stir PUBLIC ${STIR_LIBRARIES} ${STIR_Python_dependency} ${FMT_DEPENDENCY})
+  if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
+    set_property(TARGET ${SWIG_MODULE_stir_REAL_NAME} PROPERTY SWIG_GENERATED_INCLUDE_DIRECTORIES ${FMT_INCLUDE_DIRS})
+  endif()
+  SWIG_LINK_LIBRARIES(stir PUBLIC ${STIR_LIBRARIES} ${STIR_Python_dependency})
   target_link_libraries(${SWIG_MODULE_stir_REAL_NAME} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
   CONFIGURE_FILE(./pyfragments.swg ./ COPYONLY)
 
@@ -176,7 +179,10 @@ if (BUILD_SWIG_OCTAVE)
   endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
   SWIG_WORKAROUND(${SWIG_MODULE_stiroct_REAL_NAME})
-  SWIG_LINK_LIBRARIES(stiroct PUBLIC ${STIR_LIBRARIES} ${OCTAVE_LIBRARIES} ${FMT_DEPENDENCY})
+  if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
+    set_property(TARGET ${SWIG_MODULE_stiroct_REAL_NAME} PROPERTY SWIG_GENERATED_INCLUDE_DIRECTORIES ${FMT_INCLUDE_DIRS})
+  endif()
+  SWIG_LINK_LIBRARIES(stiroct PUBLIC ${STIR_LIBRARIES} ${OCTAVE_LIBRARIES})
 
   # add OCTAVE_INCFLAGS to swig-generated file only, not to all files as 
   # 1) we don't need it at the moment 2) we'd need to change from -Ibla to bla
@@ -207,9 +213,12 @@ if (BUILD_SWIG_MATLAB)
         LINK_FLAGS "${Matlab_CXXLINKER_FLAGS}"
         FOLDER "Matlab")
   SWIG_WORKAROUND(${SWIG_MODULE_stirMATLAB_REAL_NAME})
+  if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
+    set_property(TARGET ${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTY SWIG_GENERATED_INCLUDE_DIRECTORIES ${FMT_INCLUDE_DIRS})
+  endif()
   target_link_libraries(${SWIG_MODULE_stirMATLAB_REAL_NAME} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 	
-  SWIG_LINK_LIBRARIES(stirMATLAB PUBLIC ${STIR_LIBRARIES}  ${Matlab_LIBRARIES} ${FMT_DEPENDENCY})
+  SWIG_LINK_LIBRARIES(stirMATLAB PUBLIC ${STIR_LIBRARIES}  ${Matlab_LIBRARIES})
 
   target_include_directories(${SWIG_MODULE_stirMATLAB_REAL_NAME} PUBLIC ${Matlab_INCLUDE_DIRS})
   # disabled, as currently set via add_definitions in main CMakeLists.txt

@@ -49,4 +49,4 @@ if( "${GRAPHICS}" STREQUAL "X")
 	target_link_libraries(${dir} PUBLIC ${X11_LIBRARIES} ${CURSES_LIBRARY})
 endif()
 
-target_link_libraries(${dir} PUBLIC buildblock ${FMT_DEPENDENCY})
+target_link_libraries(${dir} PUBLIC buildblock)
