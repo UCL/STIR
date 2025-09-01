@@ -32,6 +32,11 @@
 namespace internal_format = std; // using std::format;
 #else
 #  define FMT_HEADER_ONLY 1
+#  if defined(_MSC_VER)
+// MS VC compiler needs the /utf-8 compiler switch to be able to handle fmt with Unicode support
+// Instead, we just disable it.
+#    define FMT_UNICODE 0
+#  endif
 #  include "fmt/format.h"
 namespace internal_format = fmt; // using fmt::format;
 #endif
