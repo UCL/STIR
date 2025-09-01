@@ -1316,12 +1316,10 @@ set(${dir_LIB_SOURCES}
    my_source2.cxx
 )
 
-# declare dependencies on other STIR libraries, for instance to depend on the "normal" STIR buildblock
-# The variable FMT_DEPENDENCY is necessary if your library uses stir/format.h
-# (see STIR/CMakeLists.txt)
-target_link_libraries($(dir) PUBLIC buildblock ${FMT_DEPENDENCY})
-
 include(stir_lib_target)
+
+# declare dependencies on other STIR libraries, for instance to depend on the "normal" STIR buildblock
+target_link_libraries($(dir) PUBLIC buildblock)
 \end{verbatim}
 
 \item Re-run \textbf{CMake} and set the CMake variable \texttt{STIR\_LOCAL} to the directory where your

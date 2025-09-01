@@ -1,6 +1,6 @@
 # include all git submodules that should be built with STIR
 
-#### Check if std::format exists (and is good enough)
+#### Check if std::format exists (and is good enough). If not, use fmt submodule.
 
 set(CODE "
 #include <version>
@@ -34,7 +34,7 @@ else()
   endif()
 
   # In fact, stir/format.h will set it to use fmt header-only, so we only want to know
-  # the headers are.
+  # where the headers are.
   get_target_property(FMT_INCLUDE_DIRS fmt::fmt-header-only INTERFACE_INCLUDE_DIRECTORIES)
   set(FMT_INCLUDE_DIRS ${FMT_INCLUDE_DIRS} PARENT_SCOPE)
 endif()
