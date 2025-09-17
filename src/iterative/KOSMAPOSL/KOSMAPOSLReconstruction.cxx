@@ -735,15 +735,10 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
             {
               for (int x = min_x; x <= max_x; x++)
                 {
-                  // Your check for a valid range.
                   if (!((*anatomical_prior_sptrs[i])[z][y][x] >= -1000000 && (*anatomical_prior_sptrs[i])[z][y][x] <= 1000000))
                   {
-                      // This is now safely handled by the reduction.
                       warning_nan_inf = true;
                   }
-
-                  // This is the original behavior you requested to keep.
-                  // It is executed for EVERY voxel, including NaN.
                   kmean += (*anatomical_prior_sptrs[i])[z][y][x];
                   nv += 1;
                 }
@@ -758,7 +753,7 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
 
       kmean = kmean / nv;
 
-      
+
 #ifdef STIR_OPENMP
 #  if _OPENMP < 201107
 #    pragma omp parallel for
