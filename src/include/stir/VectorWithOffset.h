@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
-    Copyright (C) 2023 - 2024, University College London
+    Copyright (C) 2023 - 2025, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -371,18 +371,21 @@ protected:
 
   //! Called internally to see if all variables are consistent
   inline void check_state() const;
-  //! change vector with new index range and copy data from \c data_ptr
+  //! change vector to the new index range and copy data from \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
 
     calls resize()
   */
   inline void init_with_copy(const int min_index, const int max_index, T const* const data_ptr);
-  //! change vector with new index range and optionally point to \c data_ptr
+  //! initialise vector to the given index range and either copy from or point to \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
     \arg copy_data if \c true, fall-back to init_with_copy(min_index, max_index, data_ptr). Otherwise, make
       this object point to the same memory as data_ptr.
+
+    \warning This function should only be called from within a constructor. It will ignore any existing content
+    and therefore would cause memory leaks.
   */
   inline void init(const int min_index, const int max_index, T* const data_ptr, bool copy_data);
 
