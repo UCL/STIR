@@ -18,7 +18,7 @@
 */
 
 #include "stir/MultipleDataSetHeader.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/warning.h"
 
 START_NAMESPACE_STIR
@@ -58,7 +58,7 @@ MultipleDataSetHeader::post_processing()
     {
       if (_filenames[i].size() == unsigned(0))
         {
-          warning(boost::format("MultipleDataSetHeader: Data set[%1%] is empty.") % i);
+          warning(format("MultipleDataSetHeader: Data set[{}] is empty.", i));
           empty_filenames = true;
         }
     }

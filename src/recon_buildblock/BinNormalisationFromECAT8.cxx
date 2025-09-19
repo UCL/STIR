@@ -46,7 +46,6 @@
 #include <algorithm>
 #include <fstream>
 #include <cctype>
-#include <boost/format.hpp>
 using std::ofstream;
 using std::fstream;
 using std::ios;

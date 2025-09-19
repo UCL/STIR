@@ -57,7 +57,7 @@ InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_singles_uni
   else if (this->singles_readout_depth == 4) // One PMT per crystal
     return 1;
   else
-    error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
+    error("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid");
 
   return 0;
 }
@@ -74,7 +74,7 @@ InputStreamFromROOTFileForCylindricalPET::get_num_trans_crystals_per_singles_uni
   else if (this->singles_readout_depth == 4) // One PMT per crystal
     return 1;
   else
-    error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
+    error("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid");
 
   return 0;
 }

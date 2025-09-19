@@ -43,6 +43,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 // The calculation of the attenuation coefficients
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
@@ -237,8 +238,8 @@ ScatterEstimation::post_processing()
       local_parser.add_parsing_key("reconstruction type", &this->reconstruction_template_sptr);
       if (!local_parser.parse(this->recon_template_par_filename.c_str()))
         {
-          warning(boost::format("ScatterEstimation: Error parsing reconstruction parameters file %1%. Aborting.")
-                  % this->recon_template_par_filename);
+          warning(format("ScatterEstimation: Error parsing reconstruction parameters file {}. Aborting.",
+                         this->recon_template_par_filename));
           return true;
         }
     }
@@ -287,8 +288,8 @@ ScatterEstimation::post_processing()
 
       if (!masking_parameters.filter_sptr->parse(this->masking_parameters.filter_filename.c_str()))
         {
-          warning(boost::format("ScatterEstimation: Error parsing post filter parameters file %1%. Aborting.")
-                  % this->masking_parameters.filter_filename);
+          warning(format("ScatterEstimation: Error parsing post filter parameters file {}. Aborting.",
+                         this->masking_parameters.filter_filename));
           return true;
         }
     }
@@ -1258,9 +1259,9 @@ ScatterEstimation::project_mask_image()
       shared_ptr<ProjMatrixByBin> PM(new ProjMatrixByBinUsingRayTracing());
       forward_projector_for_mask_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
     }
-  info(boost::format("ScatterEstimation: Forward projector used for the calculation of "
-                     "the tail mask: %1%")
-       % forward_projector_for_mask_sptr->parameter_info());
+  info(format("ScatterEstimation: Forward projector used for the calculation of "
+              "the tail mask: {}",
+              forward_projector_for_mask_sptr->parameter_info()));
 
   shared_ptr<ProjData> mask_projdata;
   if (run_in_2d_projdata)
@@ -1318,8 +1319,7 @@ ScatterEstimation::project_mask_image()
   else
     {
       if (!create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str()))
-        error(boost::format("Error parsing parameters file %1%, for creating mask tails from ACFs.")
-              % this->tail_mask_par_filename);
+        error(format("Error parsing parameters file {}, for creating mask tails from ACFs.", this->tail_mask_par_filename));
     }
 
   create_tail_mask_from_acfs.set_input_projdata_sptr(mask_projdata);

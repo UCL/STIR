@@ -1,4 +1,5 @@
-shallow_clone: true
+#shallow_clone: true
+clone_depth: 10
 
 skip_commits:
   files:
@@ -30,6 +31,9 @@ environment:
 init:
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
+install:
+  - git submodule update --init --recursive
+
 build_script:
   # find boost on Appveyor. Version depends on VM
   - for /D %%d in (C:\Libraries\boost_*) do set BOOST_ROOT=%%d
@@ -49,7 +53,7 @@ build_script:
   - mkdir build
   - mkdir install
   - cd build
-  - cmake.exe .. -A x64 -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DCMAKE_PREFIX_PATH:PATH="%CONDA_PREFIX%"
+  - cmake.exe .. -A x64 -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DPython_EXECUTABLE=%CONDA_PREFIX%\python.exe -DCMAKE_PREFIX_PATH:PATH="%CONDA_PREFIX%"
   - cmake.exe --build . --config %CONFIGURATION%
   - cmake.exe --build . --target install --config %CONFIGURATION%
   - conda deactivate

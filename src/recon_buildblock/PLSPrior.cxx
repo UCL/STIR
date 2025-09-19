@@ -28,6 +28,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <algorithm>
 using std::min;
 using std::max;
@@ -182,7 +183,7 @@ PLSPrior<elemT>::get_anatomical_grad_sptr(int direction) const
     {
       return this->anatomical_grad_z_sptr;
     }
-  error(boost::format("PLSPrior::get_anatomical_grad_sptr called with out-of-range argument: %1%") % direction);
+  error(format("PLSPrior::get_anatomical_grad_sptr called with out-of-range argument: {}", direction));
   // will never get here, but this avoids a compiler warning
   shared_ptr<DiscretisedDensity<3, elemT>> dummy;
   return dummy;
@@ -293,7 +294,7 @@ PLSPrior<elemT>::set_kappa_filename(const std::string& filename)
 {
   kappa_filename = filename;
   this->kappa_ptr = read_from_file<DiscretisedDensity<3, elemT>>(kappa_filename);
-  info(boost::format("Reading kappa data '%1%'") % kappa_filename);
+  info(format("Reading kappa data '{}'", kappa_filename));
 }
 
 //! Set anatomical filename
@@ -303,7 +304,7 @@ PLSPrior<elemT>::set_anatomical_filename(const std::string& filename)
 {
   anatomical_filename = filename;
   this->anatomical_sptr = read_from_file<DiscretisedDensity<3, elemT>>(anatomical_filename);
-  info(boost::format("Reading anatomical data '%1%'") % anatomical_filename);
+  info(format("Reading anatomical data '{}'", anatomical_filename));
 }
 
 template <typename elemT>
@@ -666,7 +667,7 @@ PLSPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
         }
     }
 
-  info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min());
+  info(format("Prior gradient max {}, min {}\n", prior_gradient.find_max(), prior_gradient.find_min()));
 
   static int count = 0;
   ++count;

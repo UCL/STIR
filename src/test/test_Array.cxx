@@ -51,13 +51,13 @@
 #include "stir/utilities.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 #include "stir/HighResWallClockTimer.h"
 
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
-#include <boost/format.hpp>
 using std::ofstream;
 using std::ifstream;
 using std::plus;
@@ -258,8 +258,10 @@ private:
           {
             std::stringstream full_message;
             // construct useful error message even though we use a boolean check
-            full_message << boost::format("unequal values are %2% and %3%. %1%: difference larger than .5") % message
-                                % static_cast<elemT>(*data_read_back_iter) % *diff_iter;
+            full_message << format("unequal values are {} and {}. {}: difference larger than .5",
+                                   static_cast<elemT>(*data_read_back_iter),
+                                   *diff_iter,
+                                   message);
             // difference should be maximum .5 (but we test with slightly larger tolerance to accomodate numerical precision)
             test_failed = check(fabs(*diff_iter - *data_read_back_iter) <= .502, full_message.str().c_str());
           }

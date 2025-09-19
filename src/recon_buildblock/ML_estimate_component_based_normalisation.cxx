@@ -28,7 +28,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/ProjData.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <fstream>
 #include <string>
 #include <algorithm>
@@ -190,7 +190,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                   std::cerr << "model*norm min " << fan_data.find_min() << " ,max " << fan_data.find_max() << std::endl;
                   if (do_display)
                     display(fan_data, "model_times_norm");
-                  info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
+                  info(format("KL {}", KL(measured_fan_data, fan_data, threshold_for_KL)));
                   // now restore for further iterations
                   fan_data = model_fan_data;
                   apply_geo_norm(fan_data, norm_geo_data);
@@ -239,7 +239,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
         if (do_KL)
           {
             apply_geo_norm(fan_data, norm_geo_data);
-            info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
+            info(format("KL {}", KL(measured_fan_data, fan_data, threshold_for_KL)));
           }
         if (do_display)
           {
@@ -274,7 +274,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
           if (do_KL)
             {
               apply_block_norm(fan_data, norm_block_data);
-              info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
+              info(format("KL {}", KL(measured_fan_data, fan_data, threshold_for_KL)));
             }
           if (do_display)
             {
@@ -299,7 +299,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
             make_geo_data(geo_data, fan_data);
             make_block_data(block_data, measured_fan_data);
 
-            info(boost::format("KL on fans: %1%, %2") % KL(measured_fan_data, fan_data, 0) % KL(measured_geo_data, geo_data, 0));
+            info(format("KL on fans: {}, {}", KL(measured_fan_data, fan_data, 0), KL(measured_geo_data, geo_data, 0)));
           }
       }
   }

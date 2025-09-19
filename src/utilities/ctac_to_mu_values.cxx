@@ -34,6 +34,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/getopt.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 #include <string>
 #include <exception>
 
@@ -103,7 +104,7 @@ main(int argc, char* argv[])
     {
       // If the user does not specify a value for kVP, assume 120 kVp.
       kVp_str = "120";
-      stir::info(boost::format("No value for kVp given, assuming %s") % kVp_str);
+      stir::info(format("No value for kVp given, assuming {}", kVp_str));
     }
 
   try
@@ -114,7 +115,7 @@ main(int argc, char* argv[])
       hu_to_mu.set_target_photon_energy(std::stof(keV_str));
       hu_to_mu.set_kilovoltage_peak(std::stof(kVp_str));
       // Read DICOM data
-      stir::info(boost::format("ctac_to_mu_values: opening file %1%") % input_filename);
+      stir::info(format("ctac_to_mu_values: opening file {}", input_filename));
       unique_ptr<FloatImageType> input_image_sptr(stir::read_from_file<FloatImageType>(input_filename));
       hu_to_mu.set_up(*input_image_sptr);
 

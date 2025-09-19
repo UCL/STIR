@@ -11,7 +11,7 @@
 #include "stir/scatter/CreateTailMaskFromACFs.h"
 #include "stir/Bin.h"
 #include "boost/lambda/lambda.hpp"
-#include "boost/format.hpp"
+#include "stir/format.h"
 #include "stir/error.h"
 
 START_NAMESPACE_STIR
@@ -148,8 +148,7 @@ CreateTailMaskFromACFs::process_data()
               count += mask_left_size + mask_right_size;
 #endif
             }
-          info(boost::format("%1% bins in mask for sinogram at segment %2%, axial_pos %3%") % count % bin.segment_num()
-               % bin.axial_pos_num());
+          info(format("{} bins in mask for sinogram at segment {}, axial_pos {}", count, bin.segment_num(), bin.axial_pos_num()));
           if (this->mask_proj_data->set_sinogram(mask_sinogram) != Succeeded::yes)
             return Succeeded::no;
         }

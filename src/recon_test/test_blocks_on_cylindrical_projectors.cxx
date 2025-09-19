@@ -229,7 +229,7 @@ BlocksTests::run_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardPr
   proj_data_info_blocks_sptr = set_direct_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
   //    now forward-project images
 
-  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(format("Test blocks on Cylindrical: Forward projector used: {}", forw_projector1.parameter_info()));
 
   forw_projector1.set_up(proj_data_info_blocks_sptr, image1_sptr);
 
@@ -347,7 +347,7 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
   shared_ptr<DiscretisedDensity<3, float>> image2_sptr(image2.clone());
   write_to_file("plane30", *image2_sptr);
 
-  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(format("Test blocks on Cylindrical: Forward projector used: {}", forw_projector1.parameter_info()));
 
   forw_projector1.set_up(proj_data_info_blocks_sptr, image_sptr);
 
@@ -508,7 +508,7 @@ BlocksTests::run_axial_projection_test(ForwardProjectorByBin& forw_projector, Ba
   shared_ptr<DiscretisedDensity<3, float>> bck_proj_image_sptr(image.clone());
   write_to_file("axial_test", *image_sptr);
 
-  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector.parameter_info());
+  // info(format("Test blocks on Cylindrical: Forward projector used: {}", forw_projector.parameter_info()));
 
   forw_projector.set_up(proj_data_info_blocks_sptr, image_sptr);
   back_projector.set_up(proj_data_info_blocks_sptr, bck_proj_image_sptr);
@@ -639,7 +639,7 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   proj_data_info_blocks_reord_sptr = set_direct_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerBlocks_reord_sptr, 4);
 
   //    now forward-project images
-  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(format("Test blocks on Cylindrical: Forward projector used: {}", forw_projector1.parameter_info()));
   auto projdata1 = std::make_shared<ProjDataInMemory>(exam_info_sptr, proj_data_info_blocks_sptr);
   forw_projector1.set_up(proj_data_info_blocks_sptr, image1_sptr);
   forw_projector1.forward_project(*projdata1, *image1_sptr);
@@ -723,7 +723,7 @@ BlocksTests::run_projection_test(ForwardProjectorByBin& forw_projector1, Forward
   proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr);
 
   //    now forward-project images
-  // info(boost::format("Test blocks on Cylindrical: Forward projector used: %1%") % forw_projector1.parameter_info());
+  // info(format("Test blocks on Cylindrical: Forward projector used: {}", forw_projector1.parameter_info()));
 
   forw_projector1.set_up(proj_data_info_blocks_sptr, image1_sptr);
   auto projdata1 = std::make_shared<ProjDataInterfile>(

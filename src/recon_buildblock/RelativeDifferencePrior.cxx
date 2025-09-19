@@ -30,6 +30,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <algorithm>
 #include <cmath>
 using std::min;
@@ -436,7 +437,7 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
         }
     }
 
-  info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min(), 3);
+  info(format("Prior gradient max {}, min {}\n", prior_gradient.find_max(), prior_gradient.find_min()), 3);
 
   static int count = 0;
   ++count;

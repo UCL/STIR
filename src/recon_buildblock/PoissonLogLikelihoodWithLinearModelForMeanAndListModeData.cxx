@@ -30,6 +30,7 @@
 #include "stir/FilePath.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 using std::vector;
 using std::pair;
@@ -105,7 +106,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
 
   if (this->additive_projection_data_filename != "0")
     {
-      info(boost::format("Reading additive projdata data '%1%'") % additive_projection_data_filename);
+      info(format("Reading additive projdata data '{}'", additive_projection_data_filename));
       this->set_additive_proj_data_sptr(ProjData::read_from_file(this->additive_projection_data_filename));
     }
 
@@ -205,7 +206,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::set_skip_lm_
         this->set_use_subset_sensitivities(arg);
         this->set_subsensitivity_filenames(cache_path + "sens_%d.hv");
       }
-      //    info(boost::format("Reading sensitivity from '%1%'") % this->get_subsensitivity_filenames());
+      //    info(format("Reading sensitivity from '{}'", this->get_subsensitivity_filenames()));
     }
   else
     error("set_skip_lm_input_file(): First set the cache path!");
@@ -336,10 +337,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::set_up_befor
             }
           if (!ok)
             {
-              error(boost::format(
-                        "Incompatible additive projection data:\nAdditive projdata info:\n%s\nEmission projdata info:\n%s\n"
-                        "--- (end of incompatible projection data info)---\n")
-                    % add_proj.parameter_info() % proj.parameter_info());
+              error(format("Incompatible additive projection data:\nAdditive projdata info:\n{}\nEmission projdata info:\n{}\n"
+                           "--- (end of incompatible projection data info)---\n",
+                           add_proj.parameter_info(),
+                           proj.parameter_info()));
             }
         }
     }
