@@ -62,7 +62,7 @@ VectorWithOffset<T>::init(const int min_index, const int max_index, T* const dat
   else
     {
       this->pointer_access = false;
-      this->length = static_cast<unsigned>(max_index - min_index) + 1;
+      this->length = max_index >= min_index ? static_cast<unsigned>(max_index - min_index) + 1 : 0U;
       this->start = min_index;
       this->begin_allocated_memory = data_ptr;
       this->end_allocated_memory = data_ptr + this->length;
