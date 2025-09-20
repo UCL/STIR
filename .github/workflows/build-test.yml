@@ -191,8 +191,11 @@ jobs:
               fi
               LLVMDIR=$HOMEBREW_PREFIX/opt/llvm@${{ matrix.compiler_version }}
               LDFLAGS="-L${LLVMDIR}/lib/c++ -Wl,-rpath,${LLVMDIR}/lib/c++"
+              export SDKROOT=$(xcrun --show-sdk-path)
+              echo SDKROOT="$SDKROOT"
               # make available to jobs below
               echo LDFLAGS="$LDFLAGS" >> $GITHUB_ENV
+              echo SDKROOT="$SDKROOT" >> $GITHUB_ENV
               CC="${LLVMDIR}/bin/clang"
               CXX="${LLVMDIR}/bin/clang++"
             fi
