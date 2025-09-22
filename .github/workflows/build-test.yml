@@ -95,7 +95,8 @@ jobs:
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "ON"
           ROOT: "OFF"
-          ITK: "ON"
+          # Currently disabled due to out of disk space, see https://github.com/UCL/STIR/issues/1618
+          ITK: "OFF"
         - os: ubuntu-24.04
           compiler: gcc
           # currently CUDA doesn't support gcc 14 yet
