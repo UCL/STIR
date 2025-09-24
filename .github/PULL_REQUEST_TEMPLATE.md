@@ -20,3 +20,10 @@ Did you sign the STIR Contribution License Agreement?
   - [] I have implemented unit tests that cover any new or modified functionality (if applicable)
   - [] The code builds and runs on my machine
   - [] `documentation/release_XXX.md` has been updated with any functionality change (if applicable)
+
+## Contribution Notes
+
+Please tick the following: 
+
+ - [ ] The content of this Pull Request (the Contribution) is intentionally submitted for inclusion in STIR (the Work) under the terms and conditions of the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) License.
+ - [ ] I (or my institution) have signed the STIR Contribution License Agreement (not required for small changes).
