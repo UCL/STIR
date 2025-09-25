@@ -151,6 +151,10 @@ ProjDataFromStream::activate_TOF()
 void
 ProjDataFromStream::set_timing_poss_sequence_in_stream(const std::vector<int>& seq)
 {
+    if(!(seq[0]==this->proj_data_info_sptr->get_min_tof_pos_num() &&
+         seq[seq.size()-1]==this->proj_data_info_sptr->get_max_tof_pos_num()))
+        error("the timing position sequence is different from STIR convention 0-max!");
+
   this->timing_poss_sequence = seq;
 }
 

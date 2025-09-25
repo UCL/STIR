@@ -346,8 +346,12 @@ ProjDataInfoCylindricalNoArcCorr::get_all_det_pos_pairs_for_bin(vector<Detection
       // not sure how to handle even tof mashing
       assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1)); // TODOTOF
       // we will need to add all (unmashed) timing_pos for the current bin
-      min_timing_pos_num = bin.timing_pos_num() * get_tof_mash_factor() - (get_tof_mash_factor() / 2);
-      max_timing_pos_num = bin.timing_pos_num() * get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+      min_timing_pos_num = bin.timing_pos_num()
+                           * get_tof_mash_factor(); // bin.timing_pos_num()*get_tof_mash_factor() - (get_tof_mash_factor() / 2);
+      if (get_tof_mash_factor() == 0)
+        max_timing_pos_num = bin.timing_pos_num(); // bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+      else
+        max_timing_pos_num = bin.timing_pos_num() * get_tof_mash_factor() + (get_tof_mash_factor()) - 1;
     }
 
   unsigned int current_dp_num = 0;
@@ -368,6 +372,7 @@ ProjDataInfoCylindricalNoArcCorr::get_all_det_pos_pairs_for_bin(vector<Detection
               dps[current_dp_num].pos2().tangential_coord() = det2_num;
               dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
               dps[current_dp_num].timing_pos() = uncompressed_timing_pos_num;
+
               ++current_dp_num;
             }
         }
@@ -470,8 +475,7 @@ ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coord
 {
   const int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
 
-  int d1, d2, r1, r2;
-  int tpos = timing_pos_num;
+  int d1, d2, r1, r2, tpos;
 
   this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
 
@@ -481,7 +485,7 @@ ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coord
       d2 = det1;
       r1 = Ring_B;
       r2 = Ring_A;
-      tpos *= -1;
+      tpos = get_max_tof_pos_num() - timing_pos_num;
     }
   else
     {
@@ -489,6 +493,7 @@ ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coord
       d2 = det2;
       r1 = Ring_A;
       r2 = Ring_B;
+      tpos = timing_pos_num;
     }
 
 #if 0
@@ -519,7 +524,8 @@ ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coord
   coord_2 = lor.p2();
 
 #endif
-  if (tpos < 0)
+
+  if (tpos - get_max_tof_pos_num() / 2.F < 0)
     std::swap(coord_1, coord_2);
 }
 
