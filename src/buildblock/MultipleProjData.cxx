@@ -23,7 +23,7 @@
 #include "stir/KeyParser.h"
 #include "stir/MultipleDataSetHeader.h"
 #include <fstream>
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/info.h"
 #include "stir/error.h"
 
@@ -56,7 +56,7 @@ MultipleProjData::read_from_file(const std::string& parameter_file)
   MultipleDataSetHeader header;
 
   if (header.parse(parameter_file.c_str()) == false)
-    error(boost::format("MultipleProjData::read_from_file: Error parsing %1%") % parameter_file);
+    error(format("MultipleProjData::read_from_file: Error parsing {}", parameter_file));
 
   const int num_data_sets = header.get_num_data_sets();
 
@@ -69,7 +69,7 @@ MultipleProjData::read_from_file(const std::string& parameter_file)
   // Read the projdata
   for (int i = 0; i < num_data_sets; ++i)
     {
-      info(boost::format("MultipleProjData::read_from_file: Reading %1%") % header.get_filename(i));
+      info(format("MultipleProjData::read_from_file: Reading {}", header.get_filename(i)));
       // Create each of the individual proj datas
       multiple_proj_data->_proj_datas.push_back(ProjData::read_from_file(header.get_filename(i)));
     }

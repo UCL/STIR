@@ -75,6 +75,18 @@ jobs:
           parallelproj: "OFF"
           ROOT: "OFF"
           ITK: "ON"
+        # gcc-12, C++20 test (Interesting, as gcc-12 does not support all of C++20 yet).
+        # However, commented out, as this seems to hang during install step for unknown reasons.
+        # See https://github.com/UCL/STIR/pull/1605
+        # - os: ubuntu-24.04
+        #  compiler: gcc
+        #  compiler_version: 12
+        #  cuda_version: "0"
+        #  BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
+        #  BUILD_TYPE: "RelWithDebInfo"
+        #  parallelproj: "ON"
+        #  ROOT: "OFF"
+        #  ITK: "ON"
         - os: ubuntu-24.04
           compiler: gcc
           compiler_version: 14
@@ -83,7 +95,8 @@ jobs:
           BUILD_TYPE: "RelWithDebInfo"
           parallelproj: "ON"
           ROOT: "OFF"
-          ITK: "ON"
+          # Currently disabled due to out of disk space, see https://github.com/UCL/STIR/issues/1618
+          ITK: "OFF"
         - os: ubuntu-24.04
           compiler: gcc
           # currently CUDA doesn't support gcc 14 yet
@@ -179,8 +192,11 @@ jobs:
               fi
               LLVMDIR=$HOMEBREW_PREFIX/opt/llvm@${{ matrix.compiler_version }}
               LDFLAGS="-L${LLVMDIR}/lib/c++ -Wl,-rpath,${LLVMDIR}/lib/c++"
+              export SDKROOT=$(xcrun --show-sdk-path)
+              echo SDKROOT="$SDKROOT"
               # make available to jobs below
               echo LDFLAGS="$LDFLAGS" >> $GITHUB_ENV
+              echo SDKROOT="$SDKROOT" >> $GITHUB_ENV
               CC="${LLVMDIR}/bin/clang"
               CXX="${LLVMDIR}/bin/clang++"
             fi

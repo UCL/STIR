@@ -50,6 +50,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -178,7 +179,7 @@ main(int argc, char* argv[])
       else if (strcmp(argv[1], "--V") == 0)
         do_V = true;
       else
-        error(boost::format("Unknown option %s") % argv[1]);
+        error(format("Unknown option {}", argv[1]));
       --argc;
       ++argv;
     }

@@ -33,12 +33,12 @@
 #include "stir/IO/write_to_file.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include "stir/warning.h"
 #include "stir/stream.h"
 #include "stir/round.h"
 #include <fstream>
 #include <algorithm>
-#include <boost/format.hpp>
 
 #include "stir/zoom.h"
 #include "stir/SSRB.h"
@@ -134,11 +134,12 @@ ScatterSimulation::process_data()
           /* ////////////////// SCATTER ESTIMATION TIME //////////////// */
           {
             wall_clock_timer.stop(); // must be stopped before getting the value
-            info(boost::format(
-                     "%1$5u / %2% bins done. Total time elapsed %3$5.2f secs, remaining about %4$5.2f mins (ignoring caching).")
-                     % bin_counter % total_bins % wall_clock_timer.value()
-                     % ((wall_clock_timer.value() - previous_timer) * (total_bins - bin_counter)
-                        / (bin_counter - previous_bin_count) / 60),
+            info(format("{} / {} bins done. Total time elapsed {:5.2f} secs, remaining about {:5.2f} mins (ignoring caching).",
+                        bin_counter,
+                        total_bins,
+                        wall_clock_timer.value(),
+                        ((wall_clock_timer.value() - previous_timer) * (total_bins - bin_counter)
+                         / (bin_counter - previous_bin_count) / 60)),
                  /* verbosity level*/ 3);
             previous_timer = wall_clock_timer.value();
             previous_bin_count = bin_counter;
@@ -157,7 +158,7 @@ ScatterSimulation::process_data()
       return Succeeded::no;
     }
 
-  info(boost::format("TOTAL SCATTER counts before upsampling and norm = %g") % total_scatter);
+  info(format("TOTAL SCATTER counts before upsampling and norm = {}", total_scatter));
   this->write_log(wall_clock_timer.value(), total_scatter);
   return Succeeded::yes;
 }
@@ -421,10 +422,11 @@ ScatterSimulation::check_z_to_middle_consistent(const DiscretisedDensity<3, floa
       = (act_image.get_max_index() + act_image.get_min_index()) * act_image.get_voxel_size().z() / 2.F;
 
   if (abs(z_to_middle - z_to_middle_standard) > .1)
-    error(boost::format("ScatterSimulation: limitation in #planes and voxel-size for the %1% image.\n"
-                        "This would cause a shift of %2%mm w.r.t. the activity image.\n"
-                        "(see https://github.com/UCL/STIR/issues/495.")
-          % name % (z_to_middle - z_to_middle_standard));
+    error(format("ScatterSimulation: limitation in #planes and voxel-size for the {} image.\n"
+                 "This would cause a shift of {}mm w.r.t. the activity image.\n"
+                 "(see https://github.com/UCL/STIR/issues/495.",
+                 name,
+                 (z_to_middle - z_to_middle_standard)));
 }
 
 void
@@ -538,9 +540,17 @@ ScatterSimulation::downsample_density_image_for_scatter_points(float _zoom_xy, f
   if (_zoom_xy < 0 || _zoom_z < 0)
     {
       VoxelsOnCartesianGrid<float> tmpl_density(this->density_image_sptr->get_exam_info_sptr(), *proj_data_info_sptr);
-      info(boost::format("ScatterSimulation: template density to find zoom factors: voxel-sizes %1%, size %2%, product %3%")
-               % tmpl_density.get_voxel_size() % tmpl_density.get_lengths()
-               % (tmpl_density.get_voxel_size() * BasicCoordinate<3, float>(tmpl_density.get_lengths())),
+      info(format("ScatterSimulation: template density to find zoom factors: voxel-sizes ({}, {}, {}), size ({}, {}, {}), "
+                  "product ({}, {}, {})",
+                  tmpl_density.get_voxel_size().z(),
+                  tmpl_density.get_voxel_size().y(),
+                  tmpl_density.get_voxel_size().x(),
+                  tmpl_density.get_lengths().at(1),
+                  tmpl_density.get_lengths().at(2),
+                  tmpl_density.get_lengths().at(3),
+                  tmpl_density.get_voxel_size().z() * static_cast<float>(tmpl_density.get_lengths().at(1)),
+                  tmpl_density.get_voxel_size().y() * static_cast<float>(tmpl_density.get_lengths().at(2)),
+                  tmpl_density.get_voxel_size().x() * static_cast<float>(tmpl_density.get_lengths().at(3))),
            3);
       if (_zoom_xy < 0)
         _zoom_xy = tmp_att.get_voxel_size().x() / tmpl_density.get_voxel_size().x();
@@ -576,7 +586,7 @@ ScatterSimulation::downsample_density_image_for_scatter_points(float _zoom_xy, f
     // see http://github.com/UCL/STIR/issues/495
     zoom_z = static_cast<float>(new_z - 1) / (old_z - 1);
     if (_zoom_z > 0 && abs(zoom_z - _zoom_z) > .1)
-      error(boost::format("Current limitation in ScatterSimulation: use zoom_z==-1 or %1%") % zoom_z);
+      error(format("Current limitation in ScatterSimulation: use zoom_z==-1 or {}", zoom_z));
   }
 
   const CartesianCoordinate3D<float> new_voxel_size = tmp_att.get_voxel_size() / make_coordinate(zoom_z, zoom_xy, zoom_xy);
@@ -588,9 +598,17 @@ ScatterSimulation::downsample_density_image_for_scatter_points(float _zoom_xy, f
       new_voxel_size));
   // assign to class member
   this->density_image_for_scatter_points_sptr = vox_sptr;
-  info(boost::format("ScatterSimulation: scatter-point image: voxel-sizes %1%, size %2%, total-length %3%")
-           % vox_sptr->get_voxel_size() % vox_sptr->get_lengths()
-           % (vox_sptr->get_voxel_size() * (BasicCoordinate<3, float>(vox_sptr->get_lengths() + 1.F))),
+  info(format("ScatterSimulation: scatter-point image: voxel-sizes ({}, {}, {}), size ({}, {}, {}), "
+              "total-length ({}, {}, {})",
+              vox_sptr->get_voxel_size().z(),
+              vox_sptr->get_voxel_size().y(),
+              vox_sptr->get_voxel_size().x(),
+              vox_sptr->get_lengths().at(1),
+              vox_sptr->get_lengths().at(2),
+              vox_sptr->get_lengths().at(3),
+              vox_sptr->get_voxel_size().z() * static_cast<float>(vox_sptr->get_lengths().at(1)),
+              vox_sptr->get_voxel_size().y() * static_cast<float>(vox_sptr->get_lengths().at(2)),
+              vox_sptr->get_voxel_size().x() * static_cast<float>(vox_sptr->get_lengths().at(3))),
        2);
   // fill values from original attenuation image
   ZoomOptions scaling(ZoomOptions::preserve_values);
@@ -606,11 +624,11 @@ ScatterSimulation::downsample_density_image_for_scatter_points(float _zoom_xy, f
         int num_planes_per_scanner_ring = round(num_planes_per_scanner_ring_float);
 
         if (fabs(num_planes_per_scanner_ring_float - num_planes_per_scanner_ring) > 1.E-2)
-            warning(boost::format("ScatterSimulation: DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
+            warning(format("ScatterSimulation: DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
                                   "equal to the ring spacing of the scanner divided by an integer. This is not a problem here."
                                   "However, if you are planning to use this in an Scatter Estimation loop it might create problems."
                                   "Reconsider your z-axis downsampling."
-                                  "(Image z-spacing is %1% and ring spacing is %2%)") % image_plane_spacing % proj_data_info_sptr->get_ring_spacing());
+                                  "(Image z-spacing is {} and ring spacing is {})", image_plane_spacing , proj_data_info_sptr->get_ring_spacing()));
     }
 #endif
 
@@ -925,7 +943,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                     new_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                     false));
 
-  info(boost::format("ScatterSimulation: down-sampled scanner info:\n%1%") % templ_proj_data_info_sptr->parameter_info(), 3);
+  info(format("ScatterSimulation: down-sampled scanner info:\n{}", templ_proj_data_info_sptr->parameter_info()), 3);
   this->set_template_proj_data_info(*templ_proj_data_info_sptr);
   this->set_output_proj_data(this->output_proj_data_filename);
 

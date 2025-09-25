@@ -87,6 +87,16 @@
     <li>
       Default ECAT scanner configurations updated to use a negative intrinsic tilt.
     </li>
+      <li>
+        Boost format was replaced by `std::format` for formatting strings. If C++20 or newer is
+        not yet used, a work-around is in place by using the [{fmt} library](https://github.com/fmtlib/fmt/)
+        (included as as a git submodule).
+        Import <code>stir/format.h</code> and then use the <code>format()</code> function to create strings containing various variables. If the format string is not known at compile time,
+        use <code>runtime_format()</code> instead.<br>
+        Check the updated STIR-developers-overview.
+        <br>
+        <a href=https://github.com/UCL/STIR/pull/1591>PR #1591</a> and <a href=https://github.com/UCL/STIR/pull/1605>PR #1605</a>
+      </li>
   </ul>
 
   <h3>Bug fixes</h3>
@@ -161,6 +171,11 @@
       declaration and use the <code>ArrayType</code> template-alias in places where
       a rectangular array that might live on a GPU is intended.<br>
       <a href=https://github.com/UCL/STIR/pull/1589>PR #1589</a>
+    </li>
+    <li>
+      <code>Array</code> copy constructor now also uses contiguous memory allocation (as opposed to a sequence of 1D vectors).
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1592>PR #1592</a>.
     </li>
   </ul>
 

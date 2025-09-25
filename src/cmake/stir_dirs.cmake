@@ -104,6 +104,7 @@ if (NOT MINI_STIR)
   list(APPEND STIR_TEST_DIRS
     test/numerics
     test/modelling
+    recon_test
     )
 
   if (STIR_WITH_NiftyPET_PROJECTOR)

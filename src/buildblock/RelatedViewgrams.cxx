@@ -23,7 +23,7 @@
 */
 
 #include "stir/RelatedViewgrams.h"
-#include "boost/format.hpp"
+#include "stir/format.h"
 
 #ifdef _MSC_VER
 // disable warning that constructor with PMessage is not implemented
@@ -81,36 +81,33 @@ template <typename elemT>
 bool
 RelatedViewgrams<elemT>::has_same_characteristics(self_type const& other, string& explanation) const
 {
-  using boost::format;
-  using boost::str;
-
   if (*this->get_proj_data_info_sptr() != *other.get_proj_data_info_sptr())
     {
-      explanation = str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
-                        % this->get_proj_data_info_sptr()->parameter_info() % other.get_proj_data_info_sptr()->parameter_info());
+      explanation = format("Differing projection data info:\n{}\n-------- vs-------\n {}",
+                           this->get_proj_data_info_sptr()->parameter_info(),
+                           other.get_proj_data_info_sptr()->parameter_info());
       return false;
     }
   if (*this->get_symmetries_ptr() != *other.get_symmetries_ptr())
     {
-      explanation = str(format("Differing symmetries"));
+      explanation = "Differing symmetries";
       return false;
     }
   if (this->get_basic_view_num() != other.get_basic_view_num())
     {
-      explanation
-          = str(format("Differing basic view number: %1% vs %2%") % this->get_basic_view_num() % other.get_basic_view_num());
+      explanation = format("Differing basic view number: {} vs {}", this->get_basic_view_num(), other.get_basic_view_num());
       return false;
     }
   if (this->get_basic_segment_num() != other.get_basic_segment_num())
     {
-      explanation = str(format("Differing basic segment number: %1% vs %2%") % this->get_basic_segment_num()
-                        % other.get_basic_segment_num());
+      explanation
+          = format("Differing basic segment number: {} vs {}", this->get_basic_segment_num(), other.get_basic_segment_num());
       return false;
     }
   if (this->get_basic_timing_pos_num() != other.get_basic_timing_pos_num())
     {
-      explanation = str(format("Differing basic timing position index: %1% vs %2%") % this->get_basic_timing_pos_num()
-                        % other.get_basic_timing_pos_num());
+      explanation = format(
+          "Differing basic timing position index: {} vs {}", this->get_basic_timing_pos_num(), other.get_basic_timing_pos_num());
       return false;
     }
   return true;

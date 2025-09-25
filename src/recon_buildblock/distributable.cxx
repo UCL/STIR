@@ -51,7 +51,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <algorithm>
 
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
@@ -86,8 +86,7 @@ setup_distributable_computation(const shared_ptr<ProjectorByBinPair>& proj_pair_
 {
   set_num_threads();
 #ifdef STIR_OPENMP
-  info(boost::format("Using distributable_computation with %d threads on %d processors.") % omp_get_max_threads()
-       % omp_get_num_procs());
+  info(format("Using distributable_computation with {} threads on {} processors.", omp_get_max_threads(), omp_get_num_procs()));
 #endif
 
 #ifdef STIR_MPI
@@ -423,7 +422,7 @@ distributable_computation(const shared_ptr<ForwardProjectorByBin>& forward_proje
 #ifdef STIR_OPENMP
 #  pragma omp single
     {
-      info(boost::format("Starting loop with %1% threads") % omp_get_num_threads(), 2);
+      info(format("Starting loop with {} threads", omp_get_num_threads()), 2);
       local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
@@ -486,12 +485,18 @@ distributable_computation(const shared_ptr<ForwardProjectorByBin>& forward_proje
 
 #  ifdef STIR_OPENMP
             const int thread_num = omp_get_thread_num();
-            info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, timing_pos_num: %d") % thread_num
-                     % omp_get_num_threads() % view_segment_num.segment_num() % view_segment_num.view_num() % timing_pos_num,
+            info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, timing_pos_num: {}",
+                        thread_num,
+                        omp_get_num_threads(),
+                        view_segment_num.segment_num(),
+                        view_segment_num.view_num(),
+                        timing_pos_num),
                  3);
 #  else
-            info(boost::format("calculating segment_num: %d, view_num: %d, timing_pos_num: %d") % view_segment_num.segment_num()
-                     % view_segment_num.view_num() % timing_pos_num,
+            info(format("calculating segment_num: {}, view_num: {}, timing_pos_num: {}",
+                        view_segment_num.segment_num(),
+                        view_segment_num.view_num(),
+                        timing_pos_num),
                  3);
 #  endif
 
@@ -585,14 +590,13 @@ distributable_computation(const shared_ptr<ForwardProjectorByBin>& forward_proje
   {
     // TODO this message relies on knowledge of count, count2 which might be inappropriate for
     // the call-back function
-    info(boost::format("Number of (cancelled) singularities: %1%\nNumber of (cancelled) negative numerators: %2%") % count
-         % count2);
+    info(format("Number of (cancelled) singularities: {}\nNumber of (cancelled) negative numerators: {}", count, count2));
   }
 
   CPU_timer.stop();
   wall_clock_timer.stop();
-  info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s") % CPU_timer.value()
-       % wall_clock_timer.value());
+  info(format(
+      "Computation times for distributable_computation, CPU {}s, wall-clock {}s", CPU_timer.value(), wall_clock_timer.value()));
 }
 
 END_NAMESPACE_STIR

@@ -20,8 +20,8 @@
 #include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
+#include "stir/format.h"
 #include "stir/ProjData.h"
-#include <boost/format.hpp>
 #include <iostream>
 #include <string>
 
@@ -117,6 +117,6 @@ main(int argc, char** argv)
                                             do_display);
 
   timer.stop();
-  info(boost::format("CPU time %1% secs") % timer.value());
+  info(format("CPU time {} secs", timer.value()));
   return EXIT_SUCCESS;
 }

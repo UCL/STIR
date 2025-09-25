@@ -22,7 +22,7 @@
 #include "stir/error.h"
 #include "stir/round.h"
 #include "boost/lexical_cast.hpp"
-#include "boost/format.hpp"
+#include "stir/format.h"
 #include <string>
 
 START_NAMESPACE_STIR
@@ -85,7 +85,7 @@ unix_epoch_time_t()
       time_t loc_time_start = mktime(&time_info_start);
       epoch_offset = loc_time_start + time_zone_offset_in_secs();
       if (epoch_offset != 0)
-        info(boost::format("Using Unix epoch (1Jan1970) offset of %1%") % epoch_offset, 3);
+        info(format("Using Unix epoch (1Jan1970) offset of {}", epoch_offset), 3);
     }
 
   return epoch_offset;
@@ -99,7 +99,7 @@ DICOM_date_time_to_DT(const std::string& date_org, const std::string& time_org, 
   const std::string time = standardise_interfile_keyword(time_org);
   const std::string TZ = standardise_interfile_keyword(TZ_org);
   if ((date.size() != 8) || (time.size() < 6 || (time.size() > 6 && time[6] != '.')) || (!TZ.empty() && TZ.size() != 5))
-    error(boost::format("DICOM_date_time_to_DT: ill-formed input: date=%s, time=%s, TZ info=%s") % date % time % TZ);
+    error(format("DICOM_date_time_to_DT: ill-formed input: date={}, time={}, TZ info={}", date, time, TZ));
   return date + time + TZ;
 }
 
@@ -112,7 +112,7 @@ parse_DICOM_TZ(const std::string& tz, const bool silent)
       {
         tz_offset = time_zone_offset_in_secs();
         if (!silent)
-          warning(boost::format("No Time_Zone info in DICOM DT. Using local time-zone without DST (%+.0f secs)") % tz_offset);
+          warning(format("No Time_Zone info in DICOM DT. Using local time-zone without DST ({:+.0f} secs)", tz_offset));
       }
     }
   else
@@ -122,8 +122,7 @@ parse_DICOM_TZ(const std::string& tz, const bool silent)
       else
         {
           tz_offset = (boost::lexical_cast<double>(tz.substr(0, 3)) * 60 + boost::lexical_cast<double>(tz.substr(3))) * 60;
-          // info(boost::format("Found time zone difference in DICOM DT '%s' of %g secs")
-          //      % str % tz_offset, 2);
+          // info(format("Found time zone difference in DICOM DT '{}' of {} secs", str, tz_offset), 2);
         }
     }
   return tz_offset;
@@ -193,7 +192,7 @@ DICOM_datetime_to_secs_since_Unix_epoch(const std::string& str_org, bool silent)
           }
       }
   }
-  info(boost::format("DICOM DT '%s' = %.2fs since unix epoch (1970)") % str % time_diff, 3);
+  info(format("DICOM DT '{}' = {:.2f}s since unix epoch (1970)", str, time_diff), 3);
   return time_diff;
 }
 
@@ -204,17 +203,23 @@ secs_since_Unix_epoch_to_DICOM_datetime(double secs, int time_zone_offset_in_sec
   // check it's in minutes (as expected, but also imposed by DICOM)
   {
     if (round(tz_in_mins * 60 - secs) > 1)
-      error(boost::format("secs_since_Unix_epoch_to_DICOM_datetime: can only handle time_zone offsets that are a multiple of 60, "
-                          "argument was %d")
-            % time_zone_offset_in_secs);
+      error(format("secs_since_Unix_epoch_to_DICOM_datetime: can only handle time_zone offsets that are a multiple of 60, "
+                   "argument was {}",
+                   time_zone_offset_in_secs));
   }
 
   time_t time = round(floor(secs) + unix_epoch_time_t() + time_zone_offset_in_secs);
   struct tm* time_info = gmtime(&time);
-  return (boost::format("%04d%02d%02d%02d%02d%02d.%02d%+03d%02d") % (time_info->tm_year + 1900) % (time_info->tm_mon + 1)
-          % time_info->tm_mday % time_info->tm_hour % time_info->tm_min % time_info->tm_sec % round((secs - floor(secs)) * 100)
-          % (tz_in_mins / 60) % (tz_in_mins % 60))
-      .str();
+  return (format("{:04d}{:02d}{:02d}{:02d}{:02d}{:02d}.{:02d}{:+03d}{:02d}",
+                 (time_info->tm_year + 1900),
+                 (time_info->tm_mon + 1),
+                 time_info->tm_mday,
+                 time_info->tm_hour,
+                 time_info->tm_min,
+                 time_info->tm_sec,
+                 round((secs - floor(secs)) * 100),
+                 (tz_in_mins / 60),
+                 (tz_in_mins % 60)));
 }
 
 DateTimeStrings

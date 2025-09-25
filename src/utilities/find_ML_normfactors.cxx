@@ -27,7 +27,6 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>

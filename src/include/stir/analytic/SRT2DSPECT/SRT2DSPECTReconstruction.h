@@ -37,7 +37,6 @@
 #include <algorithm>
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/RegisteredParsingObject.h"

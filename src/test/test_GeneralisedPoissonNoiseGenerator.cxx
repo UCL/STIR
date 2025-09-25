@@ -22,7 +22,7 @@
 #include "stir/GeneralisedPoissonNoiseGenerator.h"
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <algorithm>
 #include <iostream>
 
@@ -68,11 +68,9 @@ GeneralisedPoissonNoiseGeneratorTests::run_one_test(const int size,
   const float actual_mean = preserve_mean ? mu : mu * scaling_factor;
   const float actual_variance = preserve_mean ? mu / scaling_factor : actual_mean;
 
-  boost::format formatter("size %1%, mu %2%, scaling_factor %3%, preserve_mean %4%");
-  formatter % size % mu % scaling_factor % preserve_mean;
-
-  check_if_equal(mean(acc), actual_mean, "test mean with " + formatter.str());
-  check_if_equal(variance(acc), actual_variance, "test variance with " + formatter.str());
+  std::string formatted = format("size {}, mu {}, scaling_factor {}, preserve_mean {}", size, mu, scaling_factor, preserve_mean);
+  check_if_equal(mean(acc), actual_mean, "test mean with " + formatted);
+  check_if_equal(variance(acc), actual_variance, "test variance with " + formatted);
 }
 
 void

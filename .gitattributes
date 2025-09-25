@@ -2,6 +2,7 @@
 [attr]cppfiles
 [attr]cfiles
 [attr]pyfiles
+scripts/* text eol=lf
 *.cpp  cppfiles
 *.cxx  cppfiles
 *.h  cppfiles
