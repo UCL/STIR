@@ -27,6 +27,7 @@
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/ArrayFunction.h"
 #include "stir/stream.h"
 #include "stir/info.h"
 #include "stir/warning.h"
@@ -780,49 +781,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_o
   return accum;
 }
 
-#if 0
-template<typename TargetT>
-float 
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-sum_projection_data() const
-{
-  
-  float counts=0.0F;
-  
-  for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; ++segment_num)
-  {
-	  for (int timing_pos_num = -max_timing_pos_num_to_process; timing_pos_num <= max_timing_pos_num_to_process; ++timing_pos_num)
-	  {
-		for (int view_num = proj_data_sptr->get_min_view_num();
-			 view_num <= proj_data_sptr->get_max_view_num();
-			 ++view_num)
-		{
-
-		  Viewgram<float>  viewgram=proj_data_sptr->get_viewgram(view_num,segment_num,false,timing_pos_num);
-
-		  //first adjust data
-
-		  // KT 05/07/2000 made parameters.zero_seg0_end_planes int
-		  if(segment_num==0 && zero_seg0_end_planes!=0)
-		  {
-			viewgram[viewgram.get_min_axial_pos_num()].fill(0);
-			viewgram[viewgram.get_max_axial_pos_num()].fill(0);
-		  }
-
-		  truncate_rim(viewgram,rim_truncation_sino);
-
-		  //now take totals
-		  counts+=viewgram.sum();
-		}
-	  }
-  }
-  
-  return counts;
-  
-}
-
-#endif
-
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::add_subset_sensitivity(TargetT& sensitivity,
@@ -1195,11 +1153,22 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
       // final_viewgram starts as measured data
       RelatedViewgrams<float> final_viewgram = this->get_proj_data().get_related_viewgrams(vg_idx_to_process[i], symmetries_sptr);
       {
+#if 0
         // Mult input_viewgram
         final_viewgram *= input_viewgrams_vec[i];
+        // Divide final_viewgram by ybar_sq_viewgram
         int tmp1 = 0, tmp2 = 0; // ignore counters returned by divide_and_truncate
-        // Divide final_viewgeam by ybar_sq_viewgram
         divide_and_truncate(final_viewgram, ybar_sq_viewgram, 0, tmp1, tmp2);
+#else
+        // use division where 0/x = 0, but truncate measured data to be >= 0 (as in the value and gradient)
+        constexpr auto div = [](float a, float b) { return a <= 0.F ? 0.F : a / b; };
+        auto f_iter = final_viewgram.begin();
+        auto yb_sq_iter = ybar_sq_viewgram.begin();
+        for (; f_iter != final_viewgram.end(); ++f_iter, ++yb_sq_iter)
+          in_place_apply_binary_func_element_wise(*f_iter, *yb_sq_iter, div);
+        // Mult input_viewgram
+        final_viewgram *= input_viewgrams_vec[i];
+#endif
       }
 
       // back-project final_viewgram
