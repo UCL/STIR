@@ -699,29 +699,6 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
       const int min_x = min_ind[3];
       const int max_x = max_ind[3];
 
-// #ifdef STIR_OPENMP
-// #  if _OPENMP < 201107
-// #    pragma omp parallel for
-// #  else
-// #    pragma omp parallel for collapse(3) reduction(+ : kmean, nv)
-// #  endif
-// #endif
-//       for (int z = min_z; z <= max_z; z++)
-//         {
-//           for (int y = min_y; y <= max_y; y++)
-//             {
-//               for (int x = min_x; x <= max_x; x++)
-//                 { // no break allowed inside a parallel for
-//                   if (!((*anatomical_prior_sptrs[i])[z][y][x] >= 0 && (*anatomical_prior_sptrs[i])[z][y][x] <= 1000000))
-//                     warning("The anatomical image might contain nan, negatives or infinitive. You might get all-zero image!");
-
-//                   kmean += (*anatomical_prior_sptrs[i])[z][y][x];
-//                   nv += 1;
-//                 }
-//             }
-//         }
-//       kmean = kmean / nv;
-
 #ifdef STIR_OPENMP
 #  if _OPENMP < 201107
 #    pragma omp parallel for reduction(+:kmean,nv)
@@ -752,7 +729,6 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
       }
 
       kmean = kmean / nv;
-
 
 #ifdef STIR_OPENMP
 #  if _OPENMP < 201107
