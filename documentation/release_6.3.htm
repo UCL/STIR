@@ -87,6 +87,14 @@
     <li>
       Default ECAT scanner configurations updated to use a negative intrinsic tilt.
     </li>
+    <li>
+      When computing the sensitivity images in <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code>,
+      we now avoid creating an extra <code>ProjDataInMemory</code> in most cases (there are still some corner
+      cases for TOF data when using non-TOF projector for the sensitivity, but then the memory overhead is small).
+      This enables LAFOV PET reconstructions with the "ray tracing" matrix (we use less memory, and we avoid running into a current
+      <code>ProjDataInMemory</code> <a href=https://github.com/UCL/STIR/issues/1505> limitation on the number of bins</a>).<br>
+      <a href=https://github.com/UCL/STIR/pull/1617>PR #1716</a>
+      </li>
       <li>
         Boost format was replaced by `std::format` for formatting strings. If C++20 or newer is
         not yet used, a work-around is in place by using the [{fmt} library](https://github.com/fmtlib/fmt/)
