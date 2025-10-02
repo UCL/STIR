@@ -85,6 +85,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange4D.h"
 #include "stir/Array.h"
+#include "stir/ArrayFwd.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/PixelsOnCartesianGrid.h"
