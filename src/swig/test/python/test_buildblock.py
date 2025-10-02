@@ -330,3 +330,21 @@ def test_xapyb_and_sapyb():
     projdata.sapyb(3,projdata,2)
     assert projdata.to_array().find_max()==approx_val
     assert projdata.to_array().find_min()==approx_val
+
+def test_multiply_crystal_factors():
+    # Create proj data
+    s=Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,1,9,8,6,False)
+    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    projdata.fill(1)
+
+    # Create array
+    efficiencies = FloatArray2D(IndexRange2D(Int2BasicCoordinate((0,0)), 
+                                Int2BasicCoordinate((s.get_num_rings() - 1, s.get_num_detectors_per_ring() - 1))))
+    efficiencies.fill(1)
+
+    # Test multiply_crystal_factors()
+    multiply_crystal_factors(projdata, efficiencies, 1.0)
+
+    assert projdata.find_max() == projdata.find_min()
+    assert projdata.find_max() == 36.0 # this is an empirical value
