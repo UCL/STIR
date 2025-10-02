@@ -347,4 +347,5 @@ def test_multiply_crystal_factors():
     multiply_crystal_factors(projdata, efficiencies, 1.0)
 
     assert projdata.find_max() == projdata.find_min()
-    assert projdata.find_max() == 36.0 # this is an empirical value
+    view_mash_factor = s.get_num_detectors_per_ring() / 2 / projdatainfo.get_num_views()`
+    assert projdata.find_max() == view_mash_factor  # only true for span=1, as in this test case
