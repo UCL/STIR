@@ -339,7 +339,7 @@ def test_multiply_crystal_factors():
     projdata.fill(1)
 
     # Create array
-    efficiencies = FloatArray2D(IndexRange2D(Int2BasicCoordinate((0,0)), 
+    efficiencies = FloatArray2D(IndexRange2D(Int2BasicCoordinate((0,0)),
                                 Int2BasicCoordinate((s.get_num_rings() - 1, s.get_num_detectors_per_ring() - 1))))
     efficiencies.fill(1)
 
