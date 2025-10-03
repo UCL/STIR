@@ -701,9 +701,9 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
 
 #ifdef STIR_OPENMP
 #  if _OPENMP < 201107
-#    pragma omp parallel for reduction(+:kmean,nv)
+#    pragma omp parallel for reduction(+ : kmean, nv)
 #  else
-#    pragma omp parallel for collapse(3) reduction(+:kmean,nv) reduction(||:warning_nan_inf)
+#    pragma omp parallel for collapse(3) reduction(+ : kmean, nv) reduction(|| : warning_nan_inf)
 #  endif
 #endif
       for (int z = min_z; z <= max_z; z++)
@@ -713,9 +713,9 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
               for (int x = min_x; x <= max_x; x++)
                 {
                   if (!((*anatomical_prior_sptrs[i])[z][y][x] >= -1000000 && (*anatomical_prior_sptrs[i])[z][y][x] <= 1000000))
-                  {
+                    {
                       warning_nan_inf = true;
-                  }
+                    }
                   kmean += (*anatomical_prior_sptrs[i])[z][y][x];
                   nv += 1;
                 }
@@ -724,9 +724,9 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
 
       // The warning is now outside the loop.
       if (warning_nan_inf)
-      {
+        {
           warning("The anatomical image might contain nan or infinitive. You might get all-zero image!");
-      }
+        }
 
       kmean = kmean / nv;
 
