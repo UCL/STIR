@@ -118,7 +118,16 @@ jobs:
           ITK: "OFF"
         - os: macOS-latest
           compiler: clang
-          compiler_version: 16
+          compiler_version: 18
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Release"
+          ROOT: "OFF"
+          ITK: "OFF"
+        - os: macOS-latest
+          compiler: clang
+          compiler_version: 21
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
@@ -191,7 +200,8 @@ jobs:
                 HOMEBREW_PREFIX=/usr/local
               fi
               LLVMDIR=$HOMEBREW_PREFIX/opt/llvm@${{ matrix.compiler_version }}
-              LDFLAGS="-L${LLVMDIR}/lib/c++ -Wl,-rpath,${LLVMDIR}/lib/c++"
+              # https://github.com/llvm/llvm-project/issues/94292#issuecomment-2149335628 says to remove this flag
+              # LDFLAGS="-L${LLVMDIR}/lib/c++ -Wl,-rpath,${LLVMDIR}/lib/c++"
               export SDKROOT=$(xcrun --show-sdk-path)
               echo SDKROOT="$SDKROOT"
               # make available to jobs below
