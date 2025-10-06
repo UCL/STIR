@@ -1,7 +1,7 @@
 # %%
 import stir
 import stirextra
-import matplotlib.pyplot as pylab
+import matplotlib.pyplot as plt
 import os
 
 # go to directory with input files
@@ -41,9 +41,7 @@ s = recon.set_up(target)
 
 # %%
 
-# compute gradient of objective function 
-# put some data in the image
-target.fill(1);
+# compute gradient of objective function
 # create a copy to store the gradient
 gradient=target.get_empty_copy();
 # compute gradient
@@ -52,22 +50,23 @@ poissonobj.compute_sub_gradient(gradient,target,subset_num)
 
 # extract to python for plotting
 npimage = stirextra.to_numpy(gradient)
-pylab.plot(npimage[10, 30, :])
-pylab.show()
+plt.plot(npimage[10, 30, :])
+plt.show()
 
 # this is useful to find the EM update (i.e. multiply with image)
 poissonobj.compute_sub_gradient_without_penalty_plus_sensitivity(gradient,target,subset_num)
 # extract to python for plotting
 npimage = stirextra.to_numpy(gradient)
-pylab.plot(npimage[10, 30, :])
-pylab.show()
+plt.plot(npimage[10, 30, :])
+plt.show()
 
-# The followin is just the first iteration you need to create a for loop to run all the iterations and subsets
+# The followin is just the first iteration you need to create a for
+# loop to run all the iterations and subsets
 EMupdate = multiply_images(target,gradient)
 # extract to python for plotting
 npimage = stirextra.to_numpy(EMupdate)
-pylab.plot(npimage[10, 30, :])
-pylab.show()
+plt.plot(npimage[10, 30, :])
+plt.show()
 
 
 
