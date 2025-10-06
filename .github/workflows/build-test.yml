@@ -111,6 +111,7 @@ jobs:
           compiler: gcc
           # compiler_version: 11
           cuda_version: "0"
+          # openmp=OFF as ON needs special stuff for Apple gcc which KT doesn't feel like getting into...
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Debug"
@@ -129,7 +130,7 @@ jobs:
           compiler: clang
           compiler_version: 21
           cuda_version: "0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           parallelproj: "OFF"
           BUILD_TYPE: "Release"
           ROOT: "OFF"
