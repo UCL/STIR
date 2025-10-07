@@ -274,14 +274,23 @@ SRT2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   for (ip = 0; ip < sp; ip++)
     p_ud[sp - ip - 1] = p[ip];
 
-  //-- Creation of the grid
-  for (k1 = 0; k1 < sx; k1++)
-    x1[k1] = -1.0 * sx / (sp + 1) + 2.0 * sx / (sp + 1) * k1 / (sx - 1);
-  //  x1[k1] = -1.0 * sx / ((sp + 1) * zoom) + k1 * 2.0 * sx / ((sp + 1) * zoom) / (sx - 1);
-  for (k2 = 0; k2 < sx; k2++)
-    x2[k2] = -1.0 * sx / (sp + 1) + 2.0 * sx / (sp + 1) * k2 / (sx - 1);
-  //  x2[k2] = -1.0 * sx / ((sp + 1) * zoom) + k2 * 2.0 * sx / ((sp + 1) * zoom) / (sx - 1);
+//--- Build grid in PHYSICAL mm, then normalize by Rmax so SRT stays in [-1,1]
+const float Rmax = 0.5f * (sp - 1) * tangential_sampling;
+const auto vox = image.get_voxel_size();
+const float vx = vox[3];
+const float vy = vox[2];
+const float cx = (sx - 1) * 0.5f;
+const float cy = (sy - 1) * 0.5f;
+for (k1 = 0; k1 < sx; ++k1) {
+    const float x_mm = (k1 - cx) * vx;
+    x1[k1] = x_mm / Rmax;
+}
+for (k2 = 0; k2 < sy; ++k2) {
+    const float y_mm = (k2 - cy) * vy;
+    x2[k2] = y_mm / Rmax;
+}
 
+    
   // Starting calculations per view
   // 2D algorithm only
 
