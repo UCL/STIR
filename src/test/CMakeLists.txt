@@ -43,6 +43,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_linear_regression.cxx
 	test_stir_math.cxx
 	test_time_of_flight.cxx
+	test_proj_data_info_subsets_spect.cxx
         # the next 2 are interactive, so we don't add a test for it, but only compile them
 	test_display.cxx
 	test_interpolate.cxx
@@ -101,6 +102,7 @@ if (BUILD_TESTING)
 # Add test for test_proj_data_info_subsets_spect with arguments
 ADD_TEST(NAME test_proj_data_info_subsets_spect
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_proj_data_info_subsets_spect ${CMAKE_SOURCE_DIR}/examples/samples/SPECT_Interfile_header.hs)
+add_STIR_CONFIG_DIR(test_proj_data_info_subsets_spect)
 
 ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in

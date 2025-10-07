@@ -22,6 +22,9 @@
 #include "stir/CPUTimer.h"
 #include "stir/zoom.h"
 #include "stir/IndexRange3D.h"
+#include "stir/Bin.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/Coordinate3D.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 /* include SPECTUB matrix*/
@@ -32,6 +35,8 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Shape/Ellipsoid.h"
+#include <stdexcept>
+#include <sstream>
 #include <string>
 
 using std::endl;
@@ -441,7 +446,16 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_s
         }
       auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
-      cerr << "\tTesting unbalanced subset " << subset_n << ": views " << subset_views << endl;
+      std::ostringstream subset_views_msg;
+      subset_views_msg << '[';
+      for (std::size_t view_idx = 0; view_idx < subset_views.size(); ++view_idx)
+        {
+          if (view_idx != 0)
+            subset_views_msg << ", ";
+          subset_views_msg << subset_views[view_idx];
+        }
+      subset_views_msg << ']';
+      cerr << "\tTesting unbalanced subset " << subset_n << ": views " << subset_views_msg.str() << endl;
       test_forward_projection_for_one_subset(
           input_image_sptr, full_forward_projection, *subset_forward_projection_uptr);
     }
