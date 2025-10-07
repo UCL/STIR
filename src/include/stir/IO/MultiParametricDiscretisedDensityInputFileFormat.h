@@ -29,7 +29,6 @@
 #include "stir/MultipleDataSetHeader.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 

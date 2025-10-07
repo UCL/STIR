@@ -133,11 +133,20 @@ TOF_transpose(std::vector<float>& mem_for_PP_back,
 void
 BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density) const
 {
+  {
+    std::string explanation;
+    if (!_density_sptr->has_same_characteristics(density, explanation))
+      {
+        error("BackProjectorByBinParallelproj::get_output: output image has different charachteristics from what was used for "
+              "set_up:\n"
+              + explanation);
+      }
+  }
   std::vector<float> image_vec;
   float* image_ptr;
-  if (_density_sptr->is_contiguous())
+  if (density.is_contiguous())
     {
-      image_ptr = _density_sptr->get_full_data_ptr();
+      image_ptr = density.get_full_data_ptr();
     }
   else
     {
@@ -271,9 +280,9 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   // --------------------------------------------------------------- //
   //   Parallelproj -> STIR image conversion
   // --------------------------------------------------------------- //
-  if (_density_sptr->is_contiguous())
+  if (density.is_contiguous())
     {
-      _density_sptr->release_full_data_ptr();
+      density.release_full_data_ptr();
     }
   else
     {

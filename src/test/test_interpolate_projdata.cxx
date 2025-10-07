@@ -42,6 +42,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/scatter/SingleScatterSimulation.h"
+#include "stir/format.h"
 
 #include "stir/RunTests.h"
 
@@ -949,7 +950,7 @@ InterpolationTests::transaxial_upsampling_interpolation_test_blocks()
         }
     }
 
-  info(boost::format("A total of %1% LORs were compared between the downsampled and the interpolated sinogram.") % tested_LORs);
+  info(format("A total of {} LORs were compared between the downsampled and the interpolated sinogram.", tested_LORs));
 }
 
 void

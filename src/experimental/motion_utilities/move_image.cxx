@@ -33,7 +33,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
-#include "boost/format.hpp"
+#include "stir/format.h"
 #include "stir/warning.h"
 
 START_NAMESPACE_STIR
@@ -150,7 +150,7 @@ MoveImage::process_data()
     {
       const double start_time = this->get_time_frame_defs().get_start_time(current_frame_num);
       const double end_time = this->get_time_frame_defs().get_end_time(current_frame_num);
-      info(boost::format("Doing frame %1% (from %2% to %3% secs)") % current_frame_num % start_time % end_time);
+      info(format("Doing frame {} (from {} to {} secs)", current_frame_num, start_time, end_time));
       set_frame_num_to_process(current_frame_num);
 
       out_density_sptr->fill(0);

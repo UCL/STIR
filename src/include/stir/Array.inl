@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-01-11, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023 - 2024, University College London
+    Copyright (C) 2023 - 2025, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -26,8 +26,13 @@
 #include "stir/assign.h"
 #include "stir/HigherPrecision.h"
 #include "stir/error.h"
-//#include "stir/info.h"
-//#include <string>
+
+#ifdef TESTARRAYDEBINFO
+#  include "stir/info.h"
+#  define DEBINFO(args) info(args)
+#else
+#  define DEBINFO(ARGS)
+#endif
 
 START_NAMESPACE_STIR
 
@@ -80,6 +85,21 @@ Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elem
 
 template <int num_dimensions, typename elemT>
 void
+Array<num_dimensions, elemT>::init_with_copy(const IndexRange<num_dimensions>& range, elemT const* const data_ptr)
+{
+  base_type::resize(range.get_min_index(), range.get_max_index());
+  auto iter = this->begin();
+  auto range_iter = range.begin();
+  auto ptr = data_ptr;
+  for (; iter != this->end(); ++iter, ++range_iter)
+    {
+      (*iter).init_with_copy(*range_iter, ptr);
+      ptr += range_iter->size_all();
+    }
+}
+
+template <int num_dimensions, typename elemT>
+void
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   resize(range);
@@ -96,7 +116,8 @@ Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
     : base_type(),
       _allocated_full_data_ptr(new elemT[range.size_all()])
 {
-  // info("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of size "
+  // DEBINFO("Array constructor range " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) + " of
+  // size "
   // + std::to_string(range.size_all())); set elements to zero
   std::for_each(this->_allocated_full_data_ptr.get(), this->_allocated_full_data_ptr.get() + range.size_all(), [](elemT& e) {
     assign(e, 0);
@@ -113,10 +134,12 @@ Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, sha
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array(const self& t)
-    : base_type(t),
-      _allocated_full_data_ptr(nullptr)
+    : base_type(),
+      _allocated_full_data_ptr(new elemT[t.size_all()])
 {
-  // info("constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
+  this->init(t.get_index_range(), this->_allocated_full_data_ptr.get(), false);
+  std::copy(t.begin_all(), t.end_all(), this->_allocated_full_data_ptr.get());
+  DEBINFO("constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
 }
 
 #ifndef SWIG
@@ -126,7 +149,7 @@ Array<num_dimensions, elemT>::Array(const base_type& t)
     : base_type(t),
       _allocated_full_data_ptr(nullptr)
 {
-  // info("constructor basetype " + std::to_string(num_dimensions) + " of size " + std::to_string(this->size_all()));
+  DEBINFO("constructor basetype " + std::to_string(num_dimensions) + " of size " + std::to_string(this->size_all()));
 }
 #endif
 
@@ -135,8 +158,8 @@ Array<num_dimensions, elemT>::~Array()
 {
   if (this->_allocated_full_data_ptr)
     {
-      // info("Array destructor full_data_ptr " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr)) +
-      // " of size " + std::to_string(this->size_all())); delete [] this->_allocated_full_data_ptr;
+      // DEBINFO("Array destructor full_data_ptr " + std::to_string(reinterpret_cast<std::size_t>(this->_allocated_full_data_ptr))
+      // + " of size " + std::to_string(this->size_all())); delete [] this->_allocated_full_data_ptr;
     }
 }
 
@@ -145,7 +168,7 @@ Array<num_dimensions, elemT>::Array(Array<num_dimensions, elemT>&& other) noexce
     : Array()
 {
   swap(*this, other);
-  // info("move constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
+  DEBINFO("move constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
 }
 
 template <int num_dimensions, typename elemT>
@@ -153,7 +176,7 @@ Array<num_dimensions, elemT>&
 Array<num_dimensions, elemT>::operator=(Array<num_dimensions, elemT> other)
 {
   swap(*this, other);
-  // info("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
+  DEBINFO("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
   return *this;
 }
 
@@ -569,6 +592,13 @@ Array<num_dimensions, elemT>::sapyb(const T& a, const Array& y, const T& b)
  **********************************************/
 template <class elemT>
 void
+Array<1, elemT>::init_with_copy(const IndexRange<1>& range, elemT const* const data_ptr)
+{
+  base_type::init_with_copy(range.get_min_index(), range.get_max_index(), data_ptr);
+}
+
+template <class elemT>
+void
 Array<1, elemT>::init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data)
 {
   base_type::init(range.get_min_index(), range.get_max_index(), data_ptr, copy_data);
@@ -975,3 +1005,5 @@ Array<1, elemT>::at(const BasicCoordinate<1, int>& c)
 };
 
 END_NAMESPACE_STIR
+
+#undef DEBINFO

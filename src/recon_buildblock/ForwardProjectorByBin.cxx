@@ -35,9 +35,9 @@
 #include "stir/info.h"
 #include "stir/error.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 #include "stir/DataProcessor.h"
 #include "stir/is_null_ptr.h"
-#include <boost/format.hpp>
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -80,9 +80,10 @@ ForwardProjectorByBin::check(const ProjDataInfo& proj_data_info) const
   if (!this->_already_set_up)
     error("ForwardProjectorByBin method called without calling set_up first.");
   if (!(*this->_proj_data_info_sptr >= proj_data_info))
-    error(boost::format(
-              "ForwardProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
-          % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+    error(
+        format("ForwardProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n{}\nCalled with\n{}",
+               this->_proj_data_info_sptr->parameter_info(),
+               proj_data_info.parameter_info()));
 }
 
 void
@@ -176,10 +177,10 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data, int subset_num, int 
   else if (_density_sptr->get_exam_info().imaging_modality != proj_data.get_exam_info().imaging_modality)
     error("forward_project: Imaging modality should be the same for the image and the projection data");
   if (subset_num < 0)
-    error(boost::format("forward_project: wrong subset number %1%") % subset_num);
+    error(format("forward_project: wrong subset number {}", subset_num));
   if (subset_num > num_subsets - 1)
-    error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)") % subset_num
-          % num_subsets);
+    error(
+        format("forward_project: wrong subset number {} (must be less than the number of subsets {})", subset_num, num_subsets));
   if (zero && num_subsets > 1)
     proj_data.fill(0.0);
   // this->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
@@ -212,9 +213,9 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data, int subset_num, int 
         {
           const ViewSegmentNumbers vs = vs_nums_to_process[i];
           if (proj_data.get_proj_data_info_sptr()->is_tof_data())
-            info(boost::format("Processing view %1% of segment %2% of TOF bin %3%") % vs.view_num() % vs.segment_num() % k, 3);
+            info(format("Processing view {} of segment {} of TOF bin {}", vs.view_num(), vs.segment_num(), k), 3);
           else
-            info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 3);
+            info(format("Processing view {} of segment {}", vs.view_num(), vs.segment_num()), 3);
           RelatedViewgrams<float> viewgrams = proj_data.get_empty_related_viewgrams(vs, symmetries_sptr, false, k);
           forward_project(viewgrams);
 #ifdef STIR_OPENMP

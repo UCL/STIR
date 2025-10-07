@@ -85,6 +85,7 @@
 #endif
 
 %include "stir/Array.h"
+%include "stir/ArrayFwd.h"
 
 namespace stir
 {
@@ -229,6 +230,10 @@ namespace stir
 %template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float>, float>;
 
   %template(FloatArray2D) stir::Array<2,float>;
+  %apply const stir::Array<2,float>& { const stir::ArrayType<2,float>& };
+  %apply stir::Array<2,float>& { stir::ArrayType<2,float>& };
+  %apply stir::Array<2,float>* { stir::ArrayType<2,float>* };
+
   // TODO name
   %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float>, float>;
   %template(FloatArray3D) stir::Array<3,float>;

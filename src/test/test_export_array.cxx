@@ -29,9 +29,8 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include "stir/copy_fill.h"
-
-#include <boost/format.hpp>
 
 #include "stir/ProjData.h"
 #include "stir/DynamicProjData.h"
@@ -123,12 +122,12 @@ ExportArrayTests::test_dynamic_data()
                                     false));
 
   const int num_of_gates = 3;
-  info(boost::format("Resizing the DynamicProjData for %1% gates... ") % num_of_gates);
+  info(format("Resizing the DynamicProjData for {} gates... ", num_of_gates));
   test_dynamic_projData_sptr->resize(num_of_gates);
 
   for (int i_gate = 1; i_gate <= num_of_gates; i_gate++)
     {
-      info(boost::format("Allocating and filling the %1% gate... ") % i_gate);
+      info(format("Allocating and filling the {} gate... ", i_gate));
 
       shared_ptr<ProjData> test_proj_data_gate_ptr(new ProjDataInMemory(test_exam_info_sptr, tmp_proj_data_info_sptr));
 
@@ -153,7 +152,7 @@ ExportArrayTests::test_dynamic_data()
   const int total_gates = static_cast<int>(test_dynamic_projData_sptr->get_num_proj_data());
   const int projdata_size = static_cast<int>(test_dynamic_projData_sptr->get_proj_data_size());
 
-  info(boost::format("Total size: %1%, number of gates: %2%, size of projdata %3%") % total_size % total_gates % projdata_size);
+  info(format("Total size: {}, number of gates: {}, size of projdata {}", total_size, total_gates, projdata_size));
   // Allocate 2D array to store the data.
   info("Allocating test array...");
   Array<2, float> test_array(IndexRange2D(0, total_gates, 0, projdata_size));
@@ -171,7 +170,7 @@ ExportArrayTests::test_dynamic_data()
 
   for (int i_gate = 0; i_gate < num_of_gates; i_gate++)
     {
-      info(boost::format("Allocating and filling the %1% gate... ") % (i_gate + 1));
+      info(format("Allocating and filling the {} gate... ", (i_gate + 1)));
 
       shared_ptr<ProjData> test_proj_data_gate_ptr(new ProjDataInMemory(test_exam_info_sptr, tmp_proj_data_info_sptr));
 
@@ -227,7 +226,7 @@ ExportArrayTests ::run_static_test(ProjData& test_proj_data, ProjData& check_pro
 
   for (int segment_num = test_proj_data.get_min_segment_num(); segment_num <= test_proj_data.get_max_segment_num(); ++segment_num)
     {
-      info(boost::format("Segment: %1% ") % segment_num);
+      info(format("Segment: {} ", segment_num));
       SegmentByView<float> segment_by_view_data = test_proj_data.get_empty_segment_by_view(segment_num);
 
       segment_by_view_data.fill(static_cast<float>(segment_num));

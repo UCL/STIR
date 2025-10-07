@@ -46,6 +46,7 @@
 #include "stir/info.h"
 #include "stir/error.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
 //#include "stir/modelling/ParametricDiscretisedDensity.h"
@@ -202,7 +203,7 @@ KOSMAPOSLReconstruction<TargetT>::post_processing()
     }
   for (unsigned int i = 0; i < this->anatomical_image_filenames.size(); i++)
     {
-      info(boost::format("Reading anatomical data '%1%'") % anatomical_image_filenames[i]);
+      info(format("Reading anatomical data '{}'", anatomical_image_filenames[i]));
       set_anatomical_prior_sptr(shared_ptr<TargetT>(read_from_file<TargetT>(anatomical_image_filenames[i])), i);
 
       if (is_null_ptr(this->anatomical_prior_sptrs[i]))
@@ -277,14 +278,14 @@ KOSMAPOSLReconstruction<TargetT>::set_up(shared_ptr<TargetT> const& target_image
   if (this->anatomical_prior_sptrs.size() != 0)
     {
       estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
-      info(boost::format("Kernel from anatomical image calculated "));
+      info("Kernel from anatomical image calculated ");
     }
   else
-    info(boost::format("Kernel will be calculated only from functional image "));
+    info("Kernel will be calculated only from functional image ");
 
   for (unsigned int i = 0; i < this->anatomical_prior_sptrs.size(); i++)
     {
-      info(boost::format("SDs from anatomical images calculated = '%1%'") % this->anatomical_sd[i]);
+      info(format("SDs from anatomical images calculated = '{}'", this->anatomical_sd[i]));
     }
 
   const DiscretisedDensityOnCartesianGrid<3, float>* current_anatomical_cast
@@ -689,6 +690,7 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
       double kmean = 0;
       double kStand_dev = 0;
       int nv = 0;
+      bool warning_nan_inf = false;
 
       const int min_z = min_ind[1];
       const int max_z = max_ind[1];
@@ -699,9 +701,9 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
 
 #ifdef STIR_OPENMP
 #  if _OPENMP < 201107
-#    pragma omp parallel for
+#    pragma omp parallel for reduction(+ : kmean, nv)
 #  else
-#    pragma omp parallel for collapse(3) reduction(+ : kmean, nv)
+#    pragma omp parallel for collapse(3) reduction(+ : kmean, nv) reduction(|| : warning_nan_inf)
 #  endif
 #endif
       for (int z = min_z; z <= max_z; z++)
@@ -709,15 +711,23 @@ KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::v
           for (int y = min_y; y <= max_y; y++)
             {
               for (int x = min_x; x <= max_x; x++)
-                { // no break allowed inside a parallel for
-                  if (!((*anatomical_prior_sptrs[i])[z][y][x] >= 0 && (*anatomical_prior_sptrs[i])[z][y][x] <= 1000000))
-                    warning("The anatomical image might contain nan, negatives or infinitive. You might get all-zero image!");
-
+                {
+                  if (!((*anatomical_prior_sptrs[i])[z][y][x] >= -1000000 && (*anatomical_prior_sptrs[i])[z][y][x] <= 1000000))
+                    {
+                      warning_nan_inf = true;
+                    }
                   kmean += (*anatomical_prior_sptrs[i])[z][y][x];
                   nv += 1;
                 }
             }
         }
+
+      // The warning is now outside the loop.
+      if (warning_nan_inf)
+        {
+          warning("The anatomical image might contain nan or infinitive. You might get all-zero image!");
+        }
+
       kmean = kmean / nv;
 
 #ifdef STIR_OPENMP
@@ -974,7 +984,7 @@ KOSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_alpha_coeffic
   unique_ptr<TargetT> multiplicative_update_image_ptr(current_alpha_coefficent_image.get_empty_copy());
 
   const int subset_num = this->get_subset_num();
-  info(boost::format("Now processing subset #: %1%") % subset_num);
+  info(format("Now processing subset #: {}", subset_num));
 
   //  the following condition sets the "iterative_kernel_image_frozen_sptr" member to the image ptr
   //  we have at the iteration select by "freeze_iterative_kernel_at_subiter_num"
@@ -1068,7 +1078,7 @@ KOSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_alpha_coeffic
              small_num);
     }
 
-  info(boost::format("Number of (cancelled) singularities in Sensitivity division: %1%") % count);
+  info(format("Number of (cancelled) singularities in Sensitivity division: {}", count));
 
   if (this->inter_update_filter_interval > 0 && !is_null_ptr(this->inter_update_filter_ptr)
       && !(this->subiteration_num % this->inter_update_filter_interval))
@@ -1097,8 +1107,11 @@ KOSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_alpha_coeffic
       const float current_max = *std::max_element(kmultiplicative_update_ptr->begin_all(), kmultiplicative_update_ptr->end_all());
       const float new_min = static_cast<float>(this->minimum_relative_change);
       const float new_max = static_cast<float>(this->maximum_relative_change);
-      info(boost::format("Update image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max
-           % (min(current_min, new_min)) % (max(current_max, new_max)));
+      info(format("Update image old min,max: {}, {}, new min,max {}, {}",
+                  current_min,
+                  current_max,
+                  (min(current_min, new_min)),
+                  (max(current_max, new_max))));
 
       threshold_upper_lower(kmultiplicative_update_ptr->begin_all(), kmultiplicative_update_ptr->end_all(), new_min, new_max);
     }
@@ -1134,7 +1147,7 @@ KOSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_alpha_coeffic
   // cerr << "Subset : " << subset_timer.value() << "secs " <<endl;
 #else // PARALLEL
   timerSubset.Stop();
-  info(boost::format("Subset: %1%secs") % timerSubset.GetTime());
+  info(format("Subset: {}secs", timerSubset.GetTime()));
 #endif
 }
 

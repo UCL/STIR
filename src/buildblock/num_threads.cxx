@@ -19,7 +19,6 @@
 #include "stir/num_threads.h"
 #include "stir/warning.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
 #include "stir/warning.h"
 
 #include <stdlib.h>

@@ -26,7 +26,7 @@
 #include "stir/Succeeded.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -111,10 +111,11 @@ BinNormalisationFromProjData::set_up(const shared_ptr<const ExamInfo>& exam_info
         return Succeeded::yes;
       else
         {
-          warning(boost::format(
-                      "BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n%s\nEmission projdata "
-                      "info (made non-TOF if norm is non-TOF):\n%s\n--- (end of incompatible projection data info)---\n")
-                  % norm_proj.parameter_info() % proj.parameter_info());
+          warning(
+              format("BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n{}\nEmission projdata "
+                     "info (made non-TOF if norm is non-TOF):\n{}\n--- (end of incompatible projection data info)---\n",
+                     norm_proj.parameter_info(),
+                     proj.parameter_info()));
           return Succeeded::no;
         }
     }

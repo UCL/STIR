@@ -35,6 +35,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include "stir/CPUTimer.h"
 #ifdef STIR_OPENMP
 #  include "stir/num_threads.h"
@@ -43,7 +44,6 @@
 //#include "boost/cstdint.hpp"
 //#include "boost/scoped_ptr.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
-#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <fstream>
@@ -328,12 +328,13 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
   // wmh.NpixAngOS = vol.Npix * prj.NangOS;
 
   if (std::abs(wmh.prj.thcm - vox.thcm) > .01F)
-    error(boost::format("SPECTUB Matrix (probably) only works with equal z-sampling for projection data (%1%) and image (%2%)")
-          % (wmh.prj.thcm * 10) % (vol.thcm * 10));
+    error(format("SPECTUB Matrix (probably) only works with equal z-sampling for projection data ({}) and image ({})",
+                 (wmh.prj.thcm * 10),
+                 (vol.thcm * 10)));
   if (std::abs(wmh.prj.Nsli - vol.Nsli) > .01F)
-    error(boost::format(
-              "SPECTUB Matrix (probably) only works with equal number of slices for projection data (%1%) and image (%2%)")
-          % wmh.prj.Nsli % vol.Nsli);
+    error(format("SPECTUB Matrix (probably) only works with equal number of slices for projection data ({}) and image ({})",
+                 wmh.prj.Nsli,
+                 vol.Nsli));
   //....rotation radius .................................................
   VectorWithOffset<float> radius_all_views(prj.Nang);
   {
@@ -725,7 +726,7 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
     } // end of LOOP: Subsets
 
   // delete_UB_SPECT_arrays();
-  info(boost::format("Done estimating size of matrix. Execution (CPU) time %1% s ") % timer.value(), 2);
+  info(format("Done estimating size of matrix. Execution (CPU) time {} s ", timer.value()), 2);
   // wm_SPECT ends here ---------------------------------------------------------------------------------------------
 
   this->already_setup = true;
@@ -836,8 +837,9 @@ ProjMatrixByBinSPECTUB::compute_one_subset(const int kOS, const float* Rrad) con
 
   //... size information ....................................................................
 
-  info(boost::format("total number of non-zero weights in this view: %1%, estimated size: %2% MB") % ne
-           % (this->wm.do_save_STIR ? (ne + 10 * prj.NbOS) / 104857.6 : ne / 131072),
+  info(format("total number of non-zero weights in this view: {}, estimated size: {} MB",
+              ne,
+              (this->wm.do_save_STIR ? (ne + 10 * prj.NbOS) / 104857.6 : ne / 131072)),
        2);
 
   //... memory allocation for wm float arrays ...................................
@@ -878,7 +880,7 @@ ProjMatrixByBinSPECTUB::compute_one_subset(const int kOS, const float* Rrad) con
 
   wm_calculation(
       kOS, ang, vox, bin, vol, prj, attmap, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS], this->wm, this->wmh, Rrad);
-  info(boost::format("Weight matrix calculation done. time %1% (s)") % timer.value(), 2);
+  info(format("Weight matrix calculation done. time {} (s)", timer.value()), 2);
 
   //... fill lor .........................
 
@@ -910,7 +912,7 @@ ProjMatrixByBinSPECTUB::compute_one_subset(const int kOS, const float* Rrad) con
       this->cache_proj_matrix_elems_for_one_bin(lor);
     }
 
-  info(boost::format("Total time after transfering to ProjMatrixElemsForOneBin. time %1% (s)") % timer.value(), 2);
+  info(format("Total time after transfering to ProjMatrixElemsForOneBin. time {} (s)", timer.value()), 2);
 }
 void
 ProjMatrixByBinSPECTUB::calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
@@ -936,7 +938,7 @@ ProjMatrixByBinSPECTUB::calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsF
           this->clear_cache();
           subset_already_processed.assign(prj.NOS, false);
         }
-      info(boost::format("Computing matrix elements for view %1%") % view_num,
+      info(format("Computing matrix elements for view {}", view_num),
            2); // potentially pass a wm, wmh[threadh] not sure if works then in setup we need an array of wmh
       compute_one_subset(kOS, Rrad);
       subset_already_processed[kOS] = true;

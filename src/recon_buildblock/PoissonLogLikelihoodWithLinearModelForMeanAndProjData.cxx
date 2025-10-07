@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2016-2024 University College London
+    Copyright (C) 2014, 2016-2025 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -68,7 +68,7 @@
 #endif
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 
 using std::vector;
 using std::pair;
@@ -195,7 +195,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing(
 
   if (this->additive_projection_data_filename != "0")
     {
-      info(boost::format("Reading additive projdata data %1%") % this->additive_projection_data_filename);
+      info(format("Reading additive projdata data {}", this->additive_projection_data_filename));
       this->additive_proj_data_sptr = ProjData::read_from_file(this->additive_projection_data_filename);
     };
 
@@ -832,19 +832,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::add_subset_sensi
   const int max_segment_num = this->max_segment_num_to_process;
 
   shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
-  // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
-  auto sens_proj_data_sptr
-      = std::make_shared<ProjDataInMemory>(this->proj_data_sptr->get_exam_info_sptr(), this->sens_proj_data_info_sptr);
-  sens_proj_data_sptr->fill(1.0F);
 
   if (this->sensitivity_uses_same_projector()
       && (!this->distributable_computation_already_setup
           || !this->latest_setup_distributable_computation_was_with_orig_projectors))
     {
-      // set TOF projectors to be used for the calculations
+      // set original (which could be TOF) projectors to be used for the calculations
       setup_distributable_computation(this->projector_pair_ptr,
                                       this->proj_data_sptr->get_exam_info_sptr(),
-                                      sens_proj_data_sptr->get_proj_data_info_sptr(),
+                                      this->sens_proj_data_info_sptr,
                                       std::shared_ptr<TargetT>(sensitivity.clone()),
                                       zero_seg0_end_planes,
                                       distributed_cache_enabled);
@@ -859,9 +855,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::add_subset_sensi
       shared_ptr<ForwardProjectorByBin> dummy_sptr;
       auto sens_projector_pair_sptr
           = std::make_shared<ProjectorByBinPairUsingSeparateProjectors>(dummy_sptr, this->sens_backprojector_sptr);
+
       setup_distributable_computation(sens_projector_pair_sptr,
                                       this->proj_data_sptr->get_exam_info_sptr(),
-                                      sens_proj_data_sptr->get_proj_data_info_sptr(),
+                                      this->sens_proj_data_info_sptr,
                                       std::shared_ptr<TargetT>(sensitivity.clone()),
                                       zero_seg0_end_planes,
                                       distributed_cache_enabled);
@@ -873,6 +870,18 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::add_subset_sensi
           "(sensitivity calculation)");
 
   this->ensure_norm_is_set_up_for_sensitivity();
+
+  // Even though we won't use the data, distributable_computation currently needs
+  // a valid proj_data as argument, to create the viewgrams from.
+  // Its content is irrelevant though.
+  // When using normal projectors, we will therefore use the existing proj_data_sptr.
+  // Otherwise, we create an object in memory (this is wasteful, but it is normally not very big, as it's non-TOF).
+  // TODO: create a "template" instead.
+  shared_ptr<ProjData> sens_proj_data_sptr = this->sensitivity_uses_same_projector()
+                                                 ? this->proj_data_sptr
+                                                 : std::make_shared<ProjDataInMemory>(this->proj_data_sptr->get_exam_info_sptr(),
+                                                                                      this->sens_proj_data_info_sptr,
+                                                                                      /* initialise_with_0 = */ false);
 
   distributable_sensitivity_computation(this->sens_backprojector_sptr,
                                         this->sens_symmetries_sptr,
@@ -995,8 +1004,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
         const int thread_num = 0;
         const int num_threads = 1;
 #endif
-        info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, TOF: %d") % thread_num % num_threads
-                 % viewgram_idx.segment_num() % viewgram_idx.view_num() % viewgram_idx.timing_pos_num(),
+        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
+                    thread_num,
+                    num_threads,
+                    viewgram_idx.segment_num(),
+                    viewgram_idx.view_num(),
+                    viewgram_idx.timing_pos_num()),
              2);
       }
       // first compute data-term: y*norm^2
@@ -1129,8 +1142,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
         const int thread_num = 0;
         const int num_threads = 1;
 #endif
-        info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, TOF: %d") % thread_num % num_threads
-                 % viewgram_idx.segment_num() % viewgram_idx.view_num() % viewgram_idx.timing_pos_num(),
+        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
+                    thread_num,
+                    num_threads,
+                    viewgram_idx.segment_num(),
+                    viewgram_idx.view_num(),
+                    viewgram_idx.timing_pos_num()),
              2);
       }
       input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(viewgram_idx, symmetries_sptr);
@@ -1162,8 +1179,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
         const int thread_num = 0;
         const int num_threads = 1;
 #endif
-        info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d, TOF: %d") % thread_num % num_threads
-                 % viewgram_idx.segment_num() % viewgram_idx.view_num() % viewgram_idx.timing_pos_num(),
+        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
+                    thread_num,
+                    num_threads,
+                    viewgram_idx.segment_num(),
+                    viewgram_idx.view_num(),
+                    viewgram_idx.timing_pos_num()),
              2);
       }
       // Compute ybar_sq_viewgram = [ F(current_image_est) + additive ]^2
@@ -1378,7 +1399,7 @@ distributable_sensitivity_computation(const shared_ptr<BackProjectorByBin>& back
                             &sensitivity,
                             &input_image,
                             proj_dat,
-                            true, // i.e. do read projection data
+                            false, // i.e. don't read projection data
                             subset_num,
                             num_subsets,
                             min_segment,
@@ -1494,16 +1515,17 @@ RPC_process_related_viewgrams_accumulate_loglikelihood(const shared_ptr<ForwardP
 };
 
 void
-RPC_process_related_viewgrams_sensitivity_computation(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-                                                      const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                                      RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                                      int& count,
-                                                      int& count2,
-                                                      double* log_likelihood_ptr,
-                                                      const RelatedViewgrams<float>* additive_binwise_correction_ptr,
-                                                      const RelatedViewgrams<float>* mult_viewgrams_ptr)
+RPC_process_related_viewgrams_sensitivity_computation(
+    const shared_ptr<ForwardProjectorByBin>&, // unused
+    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+    RelatedViewgrams<float>* template_viewgrams_ptr,
+    int&,                                                               // unused
+    int&,                                                               // unused
+    double*,                                                            // unused
+    const RelatedViewgrams<float>* /*additive_binwise_correction_ptr*/, // unused
+    const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {
-  assert(measured_viewgrams_ptr != NULL);
+  assert(template_viewgrams_ptr != NULL);
 
   if (mult_viewgrams_ptr)
     {
@@ -1511,7 +1533,8 @@ RPC_process_related_viewgrams_sensitivity_computation(const shared_ptr<ForwardPr
     }
   else
     {
-      back_projector_sptr->back_project(*measured_viewgrams_ptr);
+      template_viewgrams_ptr->fill(1.F);
+      back_projector_sptr->back_project(*template_viewgrams_ptr);
     }
 }
 
