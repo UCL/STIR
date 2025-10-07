@@ -122,65 +122,52 @@ protected:
 TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string& sinogram_filename)
     : _sinogram_filename(sinogram_filename)
 {
-    if (_sinogram_filename.empty())
+  if (_sinogram_filename.empty())
     {
-        throw std::runtime_error("Error: No sinogram file provided. Please specify a valid file.");
+      throw std::runtime_error("Error: No sinogram file provided. Please specify a valid file.");
     }
 }
-
 
 shared_ptr<VoxelsOnCartesianGrid<float>>
 TestProjDataInfoSubsets::construct_test_image_data(const ProjData& template_projdata)
 {
-    cerr << "\tGenerating default image of Ellipsoid" << endl;
+  cerr << "\tGenerating default image of Ellipsoid" << endl;
 
-    // Get the number of axial positions (slices) from the projection data
-    int z_size = template_projdata.get_proj_data_info_sptr()->get_num_axial_poss(0);
+  // Get the number of axial positions (slices) from the projection data
+  int z_size = template_projdata.get_proj_data_info_sptr()->get_num_axial_poss(0);
 
-    // Get the voxel size and origin from the ProjDataInfo
-    auto proj_data_info_sptr = template_projdata.get_proj_data_info_sptr();
-    CartesianCoordinate3D<float> voxel_sizes(
-        proj_data_info_sptr->get_sampling_in_t(Bin(0, 0, 0, 0)), // Axial direction
-        proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)), // Transaxial direction
-        proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0))  // Transaxial direction
-    );
+  // Get the voxel size and origin from the ProjDataInfo
+  auto proj_data_info_sptr = template_projdata.get_proj_data_info_sptr();
+  CartesianCoordinate3D<float> voxel_sizes(proj_data_info_sptr->get_sampling_in_t(Bin(0, 0, 0, 0)), // Axial direction
+                                           proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)), // Transaxial direction
+                                           proj_data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0))  // Transaxial direction
+  );
 
-    // Use default y_size and x_size from the ProjDataInfo
-    int y_size = proj_data_info_sptr->get_num_tangential_poss();
-    int x_size = y_size; // Assume square voxels (default for most cases)
+  // Use default y_size and x_size from the ProjDataInfo
+  int y_size = proj_data_info_sptr->get_num_tangential_poss();
+  int x_size = y_size; // Assume square voxels (default for most cases)
 
-    // Define origin
-    CartesianCoordinate3D<float> origin(0.0F, 0.0F, 0.0F);
+  // Define origin
+  CartesianCoordinate3D<float> origin(0.0F, 0.0F, 0.0F);
 
-    // Create the 3D index range for the image
-    IndexRange3D range(0,
-                       z_size - 1,
-                       -(y_size / 2),
-                       -(y_size / 2) + y_size - 1,
-                       -(x_size / 2),
-                       -(x_size / 2) + x_size - 1);
+  // Create the 3D index range for the image
+  IndexRange3D range(0, z_size - 1, -(y_size / 2), -(y_size / 2) + y_size - 1, -(x_size / 2), -(x_size / 2) + x_size - 1);
 
-    // Create the VoxelsOnCartesianGrid object
-    auto image = std::make_shared<VoxelsOnCartesianGrid<float>>(
-        template_projdata.get_exam_info_sptr(),
-        range,
-        origin,
-        voxel_sizes
-    );
+  // Create the VoxelsOnCartesianGrid object
+  auto image = std::make_shared<VoxelsOnCartesianGrid<float>>(template_projdata.get_exam_info_sptr(), range, origin, voxel_sizes);
 
-    // Make radius 0.8 FOV
-    auto radius = BasicCoordinate<3, float>(image->get_lengths()) * image->get_voxel_size() / 2.F;
-    auto centre = image->get_physical_coordinates_for_indices((image->get_min_indices() + image->get_max_indices()) / 2);
+  // Make radius 0.8 FOV
+  auto radius = BasicCoordinate<3, float>(image->get_lengths()) * image->get_voxel_size() / 2.F;
+  auto centre = image->get_physical_coordinates_for_indices((image->get_min_indices() + image->get_max_indices()) / 2);
 
-    // Create an ellipsoid object at the centre of the image
-    Ellipsoid ellipsoid(radius, centre);
+  // Create an ellipsoid object at the centre of the image
+  Ellipsoid ellipsoid(radius, centre);
 
-    // Construct the ellipsoid volume in the image
-    ellipsoid.construct_volume(*image, Coordinate3D<int>(1, 1, 1));
+  // Construct the ellipsoid volume in the image
+  ellipsoid.construct_volume(*image, Coordinate3D<int>(1, 1, 1));
 
-    return image;
+  return image;
 }
-
 
 shared_ptr<ProjectorByBinPairUsingProjMatrixByBin>
 TestProjDataInfoSubsets::construct_projector_pair(const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
@@ -190,11 +177,11 @@ TestProjDataInfoSubsets::construct_projector_pair(const shared_ptr<const ProjDat
 
   // Create the SPECT UB projection matrix
   auto proj_matrix_sptr = std::make_shared<ProjMatrixByBinSPECTUB>();
-  
+
   // Configure the projection matrix (you can adjust these parameters as needed)
-  proj_matrix_sptr->set_attenuation_type("no"); // No attenuation correction by default
+  proj_matrix_sptr->set_attenuation_type("no");              // No attenuation correction by default
   proj_matrix_sptr->set_resolution_model(0.1f, 0.0f, false); // Example resolution model
-  proj_matrix_sptr->set_keep_all_views_in_cache(true); // Optional: optimize for single-threaded computation
+  proj_matrix_sptr->set_keep_all_views_in_cache(true);       // Optional: optimize for single-threaded computation
 
   // Set up the projector pair using the SPECT UB projection matrix
   auto proj_pair_sptr = std::make_shared<ProjectorByBinPairUsingProjMatrixByBin>(proj_matrix_sptr);
@@ -204,7 +191,6 @@ TestProjDataInfoSubsets::construct_projector_pair(const shared_ptr<const ProjDat
 
   return proj_pair_sptr;
 }
-
 
 void
 TestProjDataInfoSubsets::fill_proj_data_with_forward_projection(
@@ -288,7 +274,6 @@ TestProjDataInfoSubsets::check_viewgrams(const ProjData& proj_data,
         }
     }
 }
-
 
 void
 TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
@@ -394,8 +379,7 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent(
 {
   cerr << "\tTesting Subset forward projection is consistent" << endl;
 
-  auto full_forward_projection
-      = generate_full_forward_projection(input_image_sptr, template_sino_sptr);
+  auto full_forward_projection = generate_full_forward_projection(input_image_sptr, template_sino_sptr);
 
   // ProjData subset;
   for (int subset_n = 0; subset_n < num_subsets; ++subset_n)
@@ -404,8 +388,7 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent(
           = _calc_regularly_sampled_views_for_subset(subset_n, num_subsets, full_forward_projection.get_num_views());
       auto subset_forward_projection_uptr = full_forward_projection.get_subset(subset_views);
 
-      test_forward_projection_for_one_subset(
-          input_image_sptr, full_forward_projection, *subset_forward_projection_uptr);
+      test_forward_projection_for_one_subset(input_image_sptr, full_forward_projection, *subset_forward_projection_uptr);
     }
 }
 
@@ -424,8 +407,7 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_s
       everything_ok = false;
     }
 
-  auto full_forward_projection
-      = generate_full_forward_projection(input_image_sptr, template_sino_sptr);
+  auto full_forward_projection = generate_full_forward_projection(input_image_sptr, template_sino_sptr);
 
   for (int subset_n = 0; subset_n < num_subsets; ++subset_n)
     {
@@ -456,8 +438,7 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_s
         }
       subset_views_msg << ']';
       cerr << "\tTesting unbalanced subset " << subset_n << ": views " << subset_views_msg.str() << endl;
-      test_forward_projection_for_one_subset(
-          input_image_sptr, full_forward_projection, *subset_forward_projection_uptr);
+      test_forward_projection_for_one_subset(input_image_sptr, full_forward_projection, *subset_forward_projection_uptr);
     }
 }
 
@@ -508,8 +489,7 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_reduced_segm
                                                  subset_reduced_seg_range_pdi_sptr);
 
       cerr << "\tTesting reduced segment range on subset " << subset_n << endl;
-      test_forward_projection_for_one_subset(
-          input_image_sptr, full_forward_projection, subset_forward_projection);
+      test_forward_projection_for_one_subset(input_image_sptr, full_forward_projection, subset_forward_projection);
     }
 }
 
@@ -517,9 +497,8 @@ ProjDataInMemory
 TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                                           const shared_ptr<const ProjData>& template_projdata_sptr)
 {
-  return generate_full_forward_projection(input_image_sptr,
-                                          template_projdata_sptr->get_proj_data_info_sptr(),
-                                          template_projdata_sptr->get_exam_info_sptr());
+  return generate_full_forward_projection(
+      input_image_sptr, template_projdata_sptr->get_proj_data_info_sptr(), template_projdata_sptr->get_exam_info_sptr());
 }
 
 ProjDataInMemory
@@ -529,9 +508,7 @@ TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const
 {
   check(input_image_sptr->find_max() > 0, "forward projection test run with empty image");
 
-  auto fwd_projector_sptr
-      = construct_projector_pair(template_projdata_info_sptr, input_image_sptr)
-            ->get_forward_projector_sptr();
+  auto fwd_projector_sptr = construct_projector_pair(template_projdata_info_sptr, input_image_sptr)->get_forward_projector_sptr();
 
   ProjDataInMemory full_forward_projection(template_examinfo_sptr, template_projdata_info_sptr);
   fwd_projector_sptr->set_input(*input_image_sptr);
@@ -547,9 +524,7 @@ TestProjDataInfoSubsets::generate_full_back_projection(const shared_ptr<const Pr
                                                        const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr)
 {
   auto back_projector_sptr
-      = construct_projector_pair(
-            input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr)
-            ->get_back_projector_sptr();
+      = construct_projector_pair(input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr)->get_back_projector_sptr();
 
   shared_ptr<VoxelsOnCartesianGrid<float>> full_back_projection_sptr(template_image_sptr->get_empty_copy());
   back_projector_sptr->back_project(*full_back_projection_sptr, *input_sino_sptr);
@@ -569,8 +544,7 @@ TestProjDataInfoSubsets::test_forward_projection_for_one_subset(
   auto subset_proj_data_info_sptr
       = std::dynamic_pointer_cast<const ProjDataInfoSubsetByView>(subset_forward_projection.get_proj_data_info_sptr());
 
-  auto subset_proj_pair_sptr = construct_projector_pair(
-      subset_forward_projection.get_proj_data_info_sptr(), input_image_sptr);
+  auto subset_proj_pair_sptr = construct_projector_pair(subset_forward_projection.get_proj_data_info_sptr(), input_image_sptr);
 
   subset_proj_pair_sptr->get_forward_projector_sptr()->forward_project(subset_forward_projection);
 
@@ -631,27 +605,24 @@ TestProjDataInfoSubsets::test_back_projection_is_consistent(
 void
 TestProjDataInfoSubsets::run_tests()
 {
-    cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
+  cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
 
-    // Step 1: Construct the test image
-    cerr << "\tConstructing test image...\n";
-    auto input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
-    auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
+  // Step 1: Construct the test image
+  cerr << "\tConstructing test image...\n";
+  auto input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
+  auto test_image_sptr = construct_test_image_data(*input_sino_sptr);
 
-    // Step 2: Generate forward projection from the test image
-    cerr << "\tGenerating forward projection of the test image...\n";
-    auto generated_sino_sptr = std::make_shared<ProjDataInMemory>(
-        input_sino_sptr->get_exam_info_sptr(),
-        input_sino_sptr->get_proj_data_info_sptr()
-    );
+  // Step 2: Generate forward projection from the test image
+  cerr << "\tGenerating forward projection of the test image...\n";
+  auto generated_sino_sptr
+      = std::make_shared<ProjDataInMemory>(input_sino_sptr->get_exam_info_sptr(), input_sino_sptr->get_proj_data_info_sptr());
 
-    fill_proj_data_with_forward_projection(generated_sino_sptr, test_image_sptr);
+  fill_proj_data_with_forward_projection(generated_sino_sptr, test_image_sptr);
 
-    // Step 3: Run tests using the generated forward projection
-    cerr << "\tRunning tests with the generated forward projection...\n";
-    run_tests(generated_sino_sptr, test_image_sptr);
+  // Step 3: Run tests using the generated forward projection
+  cerr << "\tRunning tests with the generated forward projection...\n";
+  run_tests(generated_sino_sptr, test_image_sptr);
 }
-
 
 END_NAMESPACE_STIR
 
@@ -660,7 +631,7 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char** argv)
 {
-    std::cerr << "SPECT Executable built and running successfully!" << std::endl;
+  std::cerr << "SPECT Executable built and running successfully!" << std::endl;
   if (argc > 2)
     {
       std::cerr << "\n\tUsage: " << argv[0] << " [projdata_filename]\n";

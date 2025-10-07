@@ -312,9 +312,9 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
 
   //.......geometrical and other derived parameters of projection structure...........
   prj.Nsli = this->proj_data_info_ptr->get_num_axial_poss(0); // number of slices
-  prj.lngcm = prj.Nbin * prj.szcm;                              // length in cm of the detection line
-  prj.Nbp = prj.Nbin * prj.Nsli;                                // number of bins for each projection angle (2D-projection)
-  prj.Nbt = prj.Nbp * prj.Nang;                                 // total number of bins considering all the projection angles
+  prj.lngcm = prj.Nbin * prj.szcm;                            // length in cm of the detection line
+  prj.Nbp = prj.Nbin * prj.Nsli;                              // number of bins for each projection angle (2D-projection)
+  prj.Nbt = prj.Nbp * prj.Nang;                               // total number of bins considering all the projection angles
   prj.Nbind2 = (float)prj.Nbin / (float)2.; // half of the number of bins in a detection line (integer or semi-integer)
   prj.lngcmd2 = prj.lngcm / (float)2.;      // half of the length of detection line (cm)
   prj.Nslid2 = (float)prj.Nsli / (float)2.; // half of the number of slices (integer or semi-integer)
@@ -342,7 +342,7 @@ ProjMatrixByBinSPECTUB::set_up(const shared_ptr<const ProjDataInfo>& proj_data_i
       {
         radius_all_views = proj_Data_Info_Cylindrical->get_ring_radii_for_all_views();
       }
-    else if (auto proj_data_info_subset_ptr = dynamic_cast<const ProjDataInfoSubsetByView *>(this->proj_data_info_ptr.get()))
+    else if (auto proj_data_info_subset_ptr = dynamic_cast<const ProjDataInfoSubsetByView*>(this->proj_data_info_ptr.get()))
       {
         if (auto proj_Data_Info_Cylindrical = dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(
                 proj_data_info_subset_ptr->get_original_proj_data_info_sptr().get()))

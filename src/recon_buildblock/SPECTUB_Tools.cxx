@@ -36,7 +36,6 @@ namespace SPECTUB
 #define abs(a) ((a) >= 0 ? (a) : (-a))
 #define SIGN(a) (a < -EPSILON ? -1 : (a > EPSILON ? 1 : 0))
 
-
 //=============================================================================
 //=== index_calc ==============================================================
 //=============================================================================
@@ -308,9 +307,9 @@ fill_ang(angle_type* ang, const SPECTUB::wmh_type& wmh, const float* Rrad)
 
       //... ratios calculation .......................................................
 
-      const float deg = wmh.prj.angles[i];                      
-      ang[i].cos = cos(deg * dg2rd);                      // cosinus of the angle
-      ang[i].sin = sin(deg * dg2rd);                      // sinus of the angle
+      const float deg = wmh.prj.angles[i];
+      ang[i].cos = cos(deg * dg2rd); // cosinus of the angle
+      ang[i].sin = sin(deg * dg2rd); // sinus of the angle
 
       //... first octave (0->45degrees) equivalent angle and its trigonometric ratios .......
 
