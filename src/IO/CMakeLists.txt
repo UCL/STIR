@@ -31,6 +31,7 @@ if (NOT MINI_STIR)
   InterfileHeaderSiemens.cxx
   InterfileDynamicDiscretisedDensityOutputFileFormat.cxx
   InterfileParametricDiscretisedDensityOutputFileFormat.cxx
+  MultiDynamicDiscretisedDensityInputFileFormat.cxx
   MultiDynamicDiscretisedDensityOutputFileFormat.cxx
   MultiParametricDiscretisedDensityOutputFileFormat.cxx
 
@@ -83,7 +84,7 @@ endif() # MINI_STIR
 
 include(stir_lib_target)
 
-target_link_libraries(IO PRIVATE fmt)
+target_link_libraries(IO)
 
 if (LLN_FOUND)
   target_include_directories(IO PUBLIC ${LLN_INCLUDE_DIRS})

@@ -59,9 +59,12 @@ macro (create_stir_involved_test source  libraries dependencies)
  if(BUILD_TESTING)
    get_filename_component(executable ${source} NAME_WE)
    add_executable(${executable} ${source} ${dependencies})
-   target_link_libraries(${executable} PUBLIC ${libraries} PRIVATE fmt)
+   target_link_libraries(${executable} PUBLIC ${libraries})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
    target_include_directories(${executable} PUBLIC ${Boost_INCLUDE_DIR})
+   if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
+     target_include_directories(${executable} PUBLIC ${FMT_INCLUDE_DIRS})
+   endif()
 
    add_dependencies(BUILD_TESTS ${executable})
   endif()

@@ -3,7 +3,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023 - 2024, University College London
+    Copyright (C) 2023 - 2025, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -62,6 +62,10 @@ class FullArrayConstIterator;
 numeric operations are defined. In addition, two types of iterators are
 defined, one which iterators through the outer index, and one which
 iterates through all elements of the array.
+
+The implementation is "recursive", e.g. a 3D array is a (1D) NumericVectorWithOffset of 2D arrays.
+Since STIR 6.3, Arrays are allocated using a single block of memory, such that
+is_contiguous() is \c true. However, calling Array::resize likely breaks this.
 
 Array inherits its numeric operators from NumericVectorWithOffset.
 In particular this means that operator+= etc. potentially grow
@@ -208,9 +212,10 @@ public:
     will be used. However, when growing any of the dimensions, a new Array
     will be allocated and the data copied.
 
-    If the array points to an existing block of data, resizing is therefore problematic.
-    When growing the array, the resized array will no longer point to the original block
-    of data.
+    If the array points to a shared block of data, growing might be non-intuitive:
+    the resized array will no longer point to the original block of data.
+
+    \warning In most cases, calling resize() will result in the array using non-contiguous memory.
   */
   inline virtual void resize(const IndexRange<num_dimensions>& range);
 
@@ -317,12 +322,23 @@ private:
   //! A pointer to the allocated chunk if the array is constructed that way, zero otherwise
   shared_ptr<elemT[]> _allocated_full_data_ptr;
 
-  //! change the array to a new range of indices, pointing to \c data_ptr
+  //! change the array to a new range of indices, copy data from \c data_ptr
   /*!
     \arg data_ptr should point to a contiguous block of correct size
 
-    The C-array \data_ptr will be accessed with the last dimension running fastest
+    The C-array \a data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
+  */
+  inline void init_with_copy(const IndexRange<num_dimensions>& range, elemT const* const data_ptr);
+  //! Set the array to a range of indices, and point to/copy from \c data_ptr
+  /*!
+    \arg data_ptr should point to a contiguous block of correct size
+
+    The C-array \a data_ptr will be accessed with the last dimension running fastest
+    ("row-major" order).
+
+    \warning This function should only be called from within a constructor. It will ignore any existing content
+    and therefore would cause memory leaks.
   */
   inline void init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data);
   // Make sure that we can access init() recursively
@@ -577,6 +593,11 @@ private:
   template <int num_dimensions2, class elemT2>
   friend class Array;
 
+  //! change vector with new index range and copy data from \c data_ptr
+  /*!
+    \arg data_ptr should start to a contiguous block of correct size
+  */
+  inline void init_with_copy(const IndexRange<1>& range, elemT const* const data_ptr);
   //! change vector with new index range and point to \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size

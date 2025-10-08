@@ -144,7 +144,7 @@ if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
 
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT APPLE)
     # work around https://gitlab.kitware.com/cmake/cmake/-/issues/26037
     set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX -latomic)
     message(STATUS "OpenMP Linker flags for Clang: ${OpenMP_EXE_LINKER_FLAGS}")
@@ -260,7 +260,7 @@ endif()
 # create an object library with all the "registries"
 # Warning: dependencies for object libraries are not transitive!
 add_library(stir_registries OBJECT ${STIR_REGISTRIES})
-target_link_libraries(stir_registries PRIVATE fmt)
+target_link_libraries(stir_registries)
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})

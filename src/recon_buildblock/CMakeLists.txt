@@ -147,7 +147,7 @@ endif() # MINI_STIR
 
 include(stir_lib_target)
 
-target_link_libraries(recon_buildblock PRIVATE fmt)
+target_link_libraries(recon_buildblock)
 
 if (STIR_MPI)
   target_include_directories(recon_buildblock ${MPI_CXX_INCLUDE_PATH})
