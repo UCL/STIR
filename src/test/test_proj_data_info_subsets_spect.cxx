@@ -69,7 +69,7 @@ class TestProjDataInfoSubsets : public RunTests
 {
 public:
   //! Constructor that can take some input data to run the test with
-  TestProjDataInfoSubsets(const std::string& sinogram_filename);
+  explicit TestProjDataInfoSubsets(const std::string& sinogram_filename);
 
   void run_tests() override;
   void run_tests(const std::shared_ptr<ProjData>& proj_data_sptr,
@@ -81,10 +81,6 @@ public:
                                              const shared_ptr<const ProjData>& template_sino_sptr,
                                              int num_subsets = 10);
   void test_forward_projection_is_consistent_with_unbalanced_subset(
-      const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
-      const shared_ptr<const ProjData>& template_sino_sptr,
-      int num_subsets = 10);
-  void test_forward_projection_is_consistent_with_reduced_segment_range(
       const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
       const shared_ptr<const ProjData>& template_sino_sptr,
       int num_subsets = 10);
@@ -232,8 +228,6 @@ TestProjDataInfoSubsets::run_tests(const std::shared_ptr<ProjData>& input_sino_s
                                             /*num_subsets=*/13);
 
       test_forward_projection_is_consistent_with_unbalanced_subset(test_image_sptr, input_sino_sptr);
-
-      test_forward_projection_is_consistent_with_reduced_segment_range(test_image_sptr, input_sino_sptr);
 
       test_back_projection_is_consistent(input_sino_sptr, test_image_sptr, /*num_subsets=*/10);
     }
@@ -442,57 +436,6 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_s
     }
 }
 
-void
-TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_reduced_segment_range(
-    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
-    const shared_ptr<const ProjData>& template_sino_sptr,
-    int num_subsets)
-{
-  cerr << "\tTesting Subset forward projection is consistent with reduced segment range" << endl;
-
-  if ((template_sino_sptr->get_min_segment_num() > 0) && (template_sino_sptr->get_max_segment_num() < 1))
-    {
-      cerr << "Error: Template provided doesn't have enough segments to conduct this test with "
-           << template_sino_sptr->get_num_segments() << " segments." << std::endl;
-      everything_ok = false;
-    }
-
-  // First we make a full forward projection with a reduced segment range
-  shared_ptr<ProjDataInfo> reduced_seg_range_pdi_sptr(template_sino_sptr->get_proj_data_info_sptr()->clone());
-
-  // Print the initial segment range
-  std::cerr << "Initial segment range: min_segment_num = " << reduced_seg_range_pdi_sptr->get_min_segment_num()
-            << ", max_segment_num = " << reduced_seg_range_pdi_sptr->get_max_segment_num() << std::endl;
-
-  // Attempt to reduce the segment range
-  reduced_seg_range_pdi_sptr->reduce_segment_range(-1, 1);
-
-  // Print the reduced segment range
-  std::cerr << "Reduced segment range: min_segment_num = " << reduced_seg_range_pdi_sptr->get_min_segment_num()
-            << ", max_segment_num = " << reduced_seg_range_pdi_sptr->get_max_segment_num() << std::endl;
-
-  auto full_forward_projection
-      = generate_full_forward_projection(input_image_sptr, reduced_seg_range_pdi_sptr, template_sino_sptr->get_exam_info_sptr());
-
-  for (int subset_n = 0; subset_n < num_subsets; ++subset_n)
-    {
-      auto subset_views
-          = _calc_regularly_sampled_views_for_subset(subset_n, num_subsets, full_forward_projection.get_num_views());
-
-      // Now we make a subset ProjData, but based on the full segment range
-      auto subset_template_projdata_uptr = template_sino_sptr->get_subset(subset_views);
-      // and independently reduce the segment range on the subset
-      shared_ptr<ProjDataInfo> subset_reduced_seg_range_pdi_sptr(
-          subset_template_projdata_uptr->get_proj_data_info_sptr()->clone());
-      subset_reduced_seg_range_pdi_sptr->reduce_segment_range(-1, 1);
-      ProjDataInMemory subset_forward_projection(subset_template_projdata_uptr->get_exam_info_sptr(),
-                                                 subset_reduced_seg_range_pdi_sptr);
-
-      cerr << "\tTesting reduced segment range on subset " << subset_n << endl;
-      test_forward_projection_for_one_subset(input_image_sptr, full_forward_projection, subset_forward_projection);
-    }
-}
-
 ProjDataInMemory
 TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
                                                           const shared_ptr<const ProjData>& template_projdata_sptr)
@@ -557,22 +500,19 @@ TestProjDataInfoSubsets::test_forward_projection_for_one_subset(
       // the corresponding view in the original data is at subset_views[i]
 
       // loop over all segments to check viewgram for all segments
-      for (int timing_pos_num = full_forward_projection.get_min_tof_pos_num();
-           timing_pos_num <= full_forward_projection.get_max_tof_pos_num();
-           ++timing_pos_num)
-        for (int segment_num = full_forward_projection.get_min_segment_num();
-             segment_num < full_forward_projection.get_max_segment_num();
-             ++segment_num)
-          {
-            if (!check_if_equal(full_forward_projection.get_viewgram(subset_views[i], segment_num, false, timing_pos_num),
-                                subset_forward_projection.get_viewgram(i, segment_num, false, timing_pos_num),
-                                "Are viewgrams equal?"))
-              {
-                cerr << "testing forward projection failed: viewgrams weren't equal in subset " << i << endl;
-                break;
-              }
-            // TODO also compare viewgram metadata
-          }
+      for (int segment_num = full_forward_projection.get_min_segment_num();
+           segment_num < full_forward_projection.get_max_segment_num();
+           ++segment_num)
+        {
+          if (!check_if_equal(full_forward_projection.get_viewgram(subset_views[i], segment_num, false),
+                              subset_forward_projection.get_viewgram(i, segment_num, false),
+                              "Are viewgrams equal?"))
+            {
+              cerr << "testing forward projection failed: viewgrams weren't equal in subset " << i << endl;
+              break;
+            }
+          // TODO also compare viewgram metadata
+        }
     }
 }
 

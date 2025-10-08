@@ -13,11 +13,6 @@
 // system libraries
 #include <stdlib.h>
 #include <math.h>
-#include <boost/math/special_functions/fpclassify.hpp>
-#include "stir/error.h"
-#include "stir/stream.h"
-#include <boost/format.hpp>
-#include <boost/math/constants/constants.hpp>
 
 using namespace std;
 
