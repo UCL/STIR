@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2025, University College London
+    Copyright (C) 2025, University of Milano-Bicocca 
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,10 +13,8 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Declaration of class stir::GibbsQuadraticPrior
-
-  This class implements a Gibbs prior with quadratic potential function
-  for regularization in image reconstruction.
+  \brief Declaration of class stir::GibbsQuadraticPrior, stir::CudaGibbsQuadraticPrior
+  * and the potential function stir::QuadraticPotential
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
@@ -35,13 +34,9 @@
 START_NAMESPACE_STIR
 
 /*!
+  \file GibbsQuadraticPrior.h
   \ingroup priors
-  \brief A Gibbs prior with Quadratic Potential for image regularization.
-
-  This class implements a Gibbs prior using a quadratic potential function,
-  which provides smooth regularization by penalizing differences between
-  neighboring pixels. The quadratic potential is the simplest and most
-  commonly used form of regularization in image reconstruction.
+  \brief   This file implements a The Quadratic Gibbs prior on both CPU and GPU.
 
   The prior energy is:
   \f[
@@ -59,10 +54,27 @@ START_NAMESPACE_STIR
   prior->set_penalisation_factor(0.01);
   prior->set_up(target_image);
   \endcode
+  
+  \par Parsing
+  These are the keywords that can be used in addition to the ones in GeneralPrior.
+  \verbatim
+  (Cuda) Gibbs Quadratic Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  gradient filename prefix:=
+  END (Cuda) Gibbs Quadratic Prior Parameters:=
+  \endverbatim
 
-
-  \see CudaGibbsQuadraticPrior for CUDA-accelerated version
-  \see GibbsQuadraticPrior for standard CPU version
+  \see QuadraticPrior for standard single core CPU version
 
 */
 
@@ -74,28 +86,28 @@ class QuadraticPotential
 {
 public:
 
-  //! CUDA device function for computing the potential value
+  //! Method for computing the potential value
   __host__ __device__ inline double
-  value(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const
+  value(const elemT& val_center, const elemT val_neigh, int z, int y, int x) const
   {
     const elemT diff = val_center - val_neigh;
     return static_cast<double>(diff * diff) / 4.0;
   }
-  //! CUDA device function for computing the first derivative with respect to first argument
+  //! Method for computing the first derivative with respect to val_center
   __host__ __device__ inline double
-  derivative_10(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
+  derivative_10(const elemT val_center, const elemT val_neigh, int z, int y, int x) const 
   {
     return static_cast<double>(val_center - val_neigh) / 2.0;
   }
-  //! CUDA device function for computing the second derivative with respect to first argument
+  //! Method for computing the second derivative with respect to val_center
   __host__ __device__ inline double
-  derivative_20(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
+  derivative_20(const elemT val_center, const elemT val_neigh, int z, int y, int x) const 
   {
     return static_cast<double>(0.5);
   }
-  //! CUDA device function for computing the mixed derivative
+  //! Method for computing the mixed second derivative
   __host__ __device__ inline double
-  derivative_11(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
+  derivative_11(const elemT val_center, const elemT val_neigh, int z, int y, int x) const 
   {
     return static_cast<double>(-0.5);
   }
@@ -105,7 +117,6 @@ public:
 template <typename elemT>
 class QuadraticPotential;
 
-// Device function implementations for CudaRelativeDifferencePotential
 template <typename elemT>
 class GibbsQuadraticPrior : public RegisteredParsingObject<GibbsQuadraticPrior<elemT>,
                                                             GeneralisedPrior<DiscretisedDensity<3, elemT>>,
@@ -119,7 +130,7 @@ private:
 
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "GibbsQuadraticPrior";
+  static constexpr const char* const registered_name = "Gibbs Quadratic Prior";
 
   GibbsQuadraticPrior();
   GibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
@@ -148,7 +159,7 @@ protected:
 
   public:
     //! Name which will be used when parsing a GeneralisedPrior object
-    static constexpr const char* const registered_name = "CudaGibbsQuadraticPrior";
+    static constexpr const char* const registered_name = "Cuda Gibbs Quadratic Prior";
 
     CudaGibbsQuadraticPrior();
     CudaGibbsQuadraticPrior(const bool only_2D, float penalisation_factor);

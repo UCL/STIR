@@ -2,17 +2,19 @@
 //
 /*
     Copyright (C) 2025, University College London
+    Copyright (C) 2025, University of Milano-Bicocca 
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
 
-    See STIR/LICENSE.txt for details.
+    See STIR/LICENSE.txt for details
 */
+
 /*!
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Instantiations of class stir::CudaGibbsRelativeDifferencePrior
+  \brief Implementation of class stir::CudaGibbsRelativeDifferencePrior
 
   \author Matteo Neel Colombo
   \author Kris Thielemans

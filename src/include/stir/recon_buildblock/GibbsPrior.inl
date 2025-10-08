@@ -1,7 +1,6 @@
-//
-//
 /*
-    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2025, University College London
+    Copyright (C) 2025, University of Milano-Bicocca 
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -11,10 +10,10 @@
 /*!
   \file
   \ingroup priors
-  \brief  implementation of the stir::QuadraticPrior class
+  \brief  Implementation of the stir::GibbsPrior class
 
   \author Kris Thielemans
-  \author Matteo Colombo
+  \author Matteo Neel Colombo
 
 */
 
@@ -170,7 +169,7 @@ GibbsPrior<elemT,PotentialT>::is_convex() const
   return true;
 }
 
-// initialise to 1/Euclidean distance
+// initialise weights to dx/Euclidean distance
 template <typename elemT, typename PotentialT>
 void
 GibbsPrior<elemT,PotentialT>::compute_default_weights(const CartesianCoordinate3D<float>& grid_spacing, bool only_2D)

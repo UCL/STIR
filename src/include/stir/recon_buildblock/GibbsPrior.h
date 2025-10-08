@@ -1,7 +1,6 @@
-//
-//
 /*
     Copyright (C) 2025, University College London
+    Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -11,10 +10,10 @@
 /*!
   \file
   \ingroup priors
-  \brief Declaration of class stir::GibbsPrior
+  \brief Declaration of the stir::GibbsPrior class
 
   \author Kris Thielemans
-  \author Matteo Colombo
+  \author Matteo Neel Colombo
 
 */
 
@@ -22,8 +21,7 @@
 /**
  * @file GibbsPrior.h
  * \ingroup priors
- * @brief Declaration of the GibbsPrior class for spatial regularization in tomographic reconstruction.
- * A class in the GeneralisedPrior hierarchy. This implements Gibbs prior. The prior is computed as follows:
+ * @brief A base class for Gibbs type priors in the GeneralisedPrior hierarchy. The prior is computed as follows:
  *   \f[
   f =  \sum_{r,dr} w_{r,dr} \phi(\lambda_r , \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
   \f]
@@ -44,30 +42,8 @@
  *  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to
   x-voxel_size divided by the Euclidean distance between the points. Custom weights can be set using the method set_weights, the general for of the weights is NxNxN with N odd.
  * \warning Currently only symmetric weights are supported (w_{i,j} = w_{j,i}). 
- * @author Kris Thielemans
- * @author Matteo Colombo
- */
 
-/*!
-  \par Parsing
-  These are the keywords that can be used in addition to the ones in GeneralPrior.
-  \verbatim
-  Gibbs Prior Parameters:=
-  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
-  only 2D:= 0
-  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-  ' value of only_2D is ignored
-  ; following example uses 2D 'nearest neighbour' penalty
-  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  ; use next parameter to specify an image with penalisation factors (a la Fessler)
-  ; see class documentation for more info
-  ; kappa filename:=
-  ; use next parameter to get gradient images at every subiteration
-  ; see class documentation
-  gradient filename prefix:=
-  END Gibbs Prior Parameters:=
-  \endverbatim
-*/
+ */
 
 #define __stir_recon_buildblock_GibbsPrior_H__
 
@@ -91,44 +67,43 @@ private:
 
 public:
 
-  /** @brief Default constructor. */
+  //! Default constructor.
   GibbsPrior();
 
-  /** @brief Constructor with 2D/3D option and penalization factor. */
+  //! Explicit Constructor with 2D/3D option and penalization factor.
   GibbsPrior(const bool only_2D, float penalization_factor);
 
-  /** @brief Returns true if the prior is convex. */
   bool is_convex() const override;
 
-  /** @brief Compute the value of the prior for the current image estimate. */
+  //! Compute the value of the prior for the current image estimate.
   double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
-  /** @brief Compute the gradient of the prior for the current image estimate. */
+  //! Compute the gradient of the prior for the current image estimate.
   void compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
                         const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
-  /** @brief Compute the dot product of the prior gradient and an input image. */
+  //! Compute the dot product of the prior gradient and an input image.
   double compute_gradient_times_input(const DiscretisedDensity<3, elemT>& input,
                                       const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
-  /** @brief Compute the Hessian the (coords) row of the Hessian of the prior.*/
+  //! Compute the Hessian row of the prior at (coords).
   void compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel,
                        const BasicCoordinate<3, int>& coords,
                        const DiscretisedDensity<3, elemT>& current_image_estimate) const override;
 
-  /** @brief Compute the diagonal of the Hessian matrix for the prior penalty. */
+  //! Compute the diagonal of the Hessian matrix.
   void compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diagonal,
                                 const DiscretisedDensity<3, elemT>& current_estimate) const override;
 
-  /** @brief Accumulate Hessian times input image into output. */
+  //! Accumulate Hessian times input image into output.
   void accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
                                       const DiscretisedDensity<3, elemT>& current_estimate,
                                       const DiscretisedDensity<3, elemT>& input) const override;
 
-  /** @brief Get the current weights array. */
+  //! Get the current weights array.
   const Array<3, float>& get_weights() const;
 
-  /** @brief Set the weights array for the prior. */
+  //! Set the weights array for the prior.
   virtual void set_weights(const Array<3, float>&);
 
   //! get current kappa image
@@ -138,10 +113,10 @@ public:
   */
   shared_ptr<const DiscretisedDensity<3, elemT>> get_kappa_sptr() const;
 
-  /** @brief Set the kappa image (spatially-varying penalty factors). */
+  //! Set the kappa image (spatially-varying penalty factors).
   virtual void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>&);
 
-  /** @brief Set up the prior for a target image. Must be called before use. */
+  //! Set up the prior for a target image. Must be called before use.
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
 protected:
@@ -171,10 +146,10 @@ protected:
   //! Gibbs Potential Function 
   potentialT potential;
 
-  /** @brief Compute default weights for the prior. */
+  //! Compute default weights for the prior.
   void compute_default_weights(const CartesianCoordinate3D<float>& grid_spacing, bool only_2D);
- 
-  //! @brief Check that the prior is ready to be used */
+
+  //! Check that the prior is ready to be used
   void check(DiscretisedDensity<3, elemT> const& current_image_estimate) const override;
 
   void set_defaults() override;

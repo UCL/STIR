@@ -1,18 +1,21 @@
 //
 //
 /*
+    Copyright (C) 2025, University of Milano-Bicocca 
     Copyright (C) 2025, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier:See STIR/LICENSE.txt for details.
+    SPDX-License-Identifier: Apache-2.0
+    
+    See STIR/LICENSE.txt for details.
 */
 /*!
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Implementation of class stir::CudaGibbsPrior
+  \brief Implementation of the stir::CudaGibbsPrior class
 
-  \author Matteo Colombo
+  \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
@@ -64,7 +67,7 @@ Value_Kernel(double* output,
   const int thread_id_y = blockIdx.y * blockDim.y + threadIdx.y;
   const int thread_id_z = blockIdx.z * blockDim.z + threadIdx.z;
 
-  //local index
+  //local linearized index inside the block
   int thread_in_block = threadIdx.z * blockDim.y * blockDim.x +
                         threadIdx.y * blockDim.x + 
                         threadIdx.x;
@@ -80,7 +83,7 @@ Value_Kernel(double* output,
                                  d_Image_min_indices.y + thread_id_y,
                                  d_Image_min_indices.z + thread_id_z };
 
-  // Get the index of the voxel (memory access is still 0-based)
+  // Global linearized index of the voxel (memory access is still 0-based)
   const int centerIndex = thread_id_z * d_Image_dim.y * d_Image_dim.x + 
                           thread_id_y * d_Image_dim.x + 
                           thread_id_x;
@@ -120,15 +123,19 @@ Value_Kernel(double* output,
 
           sum += current;
         }
+  // Each thread puts its partial sum in shared memory
   block_sum_shared[thread_in_block] = sum;
+  //Local sync on the threads in the block
   __syncthreads();
 
-  //block reduction in shared memory
+  //block pair-wise reduction in shared memory
   int block_threads = blockDim.x * blockDim.y * blockDim.z;
   blockReduction(block_sum_shared, thread_in_block, block_threads);
 
   // One thread per block performs final atomic add in double
   if (thread_in_block == 0)
+      //TODO atomicAddGeneric is defined in include/stircuda_utilities.cuh, we need it since for CUDA_ARCH__ < 600 
+      //we cannot perform atomicAdd on double. AtomicAddGeneric has not been tested for CUDA_ARCH__ < 600.
       atomicAddGeneric(output, block_sum_shared[0]);    
 }
 
@@ -147,19 +154,6 @@ Gradient_Kernel(elemT* gradient,
                 const int3 d_weight_min_indices,
                 const PotentialT potential)
 {
-  // extern __shared__ elemT shared[];
-
-  // int thread_in_block = threadIdx.z * blockDim.y * blockDim.x +
-  //                       threadIdx.y * blockDim.x + 
-  //                       threadIdx.x;
-
-
-
-  // for (int i = thread_in_block; i < 27; i += blockDim.x*blockDim.y*blockDim.z)
-  //     shared[i] = weights[i];
-
-  // __syncthreads();
-
   const int thread_id_x = blockIdx.x * blockDim.x + threadIdx.x;
   const int thread_id_y = blockIdx.y * blockDim.y + threadIdx.y;
   const int thread_id_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -171,7 +165,7 @@ Gradient_Kernel(elemT* gradient,
   const int3 Image_coord = {d_Image_min_indices.x + thread_id_x, 
                              d_Image_min_indices.y + thread_id_y,
                              d_Image_min_indices.z + thread_id_z};
-  // Get the index of the voxel (memory access is still 0-based)
+  // Global linearized index of the voxel (memory access is still 0-based)
   const int inputIndex = thread_id_z * d_Image_dim.y * d_Image_dim.x + 
                          thread_id_y * d_Image_dim.x +
                          thread_id_x;
@@ -185,7 +179,6 @@ Gradient_Kernel(elemT* gradient,
   const int max_dy = min(d_weight_max_indices.y, d_Image_max_indices.y - Image_coord.y);
   const int min_dx = max(d_weight_min_indices.x, d_Image_min_indices.x - Image_coord.x);
   const int max_dx = min(d_weight_max_indices.x, d_Image_max_indices.x - Image_coord.x);
-
   const int weights_size_y = d_weight_max_indices.y - d_weight_min_indices.y + 1;
   const int weights_size_x = d_weight_max_indices.x - d_weight_min_indices.x + 1;
 
@@ -206,13 +199,10 @@ Gradient_Kernel(elemT* gradient,
                                          (dx - d_weight_min_indices.x);
               //Neighbour voxel contribution
               const elemT val_neigh    = current_image[neighbourIndex];
-     
-              // elemT current            = weights[weightsIndex] *
-              //                            potential.derivative_10(val_center, val_neigh, Image_coord.z, Image_coord.y, Image_coord.x);
-              // elemT val_neigh = 5.0f;
+
               elemT current            = weights[weightsIndex] *
                                          potential.derivative_10(val_center, val_neigh, Image_coord.z, Image_coord.y, Image_coord.x);
-
+        
               if (do_kappa)  
                 current *= kappa[inputIndex] * kappa[neighbourIndex];
               
@@ -242,6 +232,7 @@ Gradient_dot_input_Kernel(double* output,
   const int thread_id_y = blockIdx.y * blockDim.y + threadIdx.y;
   const int thread_id_z = blockIdx.z * blockDim.z + threadIdx.z;
 
+  //local linearized index inside the block
   int thread_in_block = threadIdx.z * blockDim.y * blockDim.x +
                         threadIdx.y * blockDim.x + 
                         threadIdx.x;
@@ -250,7 +241,6 @@ Gradient_dot_input_Kernel(double* output,
   block_sum_shared[thread_in_block] = elemT(0);
 
   // Check if the thread is within the image dimensions
-  // Note: only image_min_z is 0-based indices
   if (thread_id_z >= d_Image_dim.z || thread_id_y >= d_Image_dim.y || thread_id_x >= d_Image_dim.x)
     return;
 
@@ -258,7 +248,7 @@ Gradient_dot_input_Kernel(double* output,
   const int3 Image_coord
       = { d_Image_min_indices.x + thread_id_x, d_Image_min_indices.y + thread_id_y, d_Image_min_indices.z + thread_id_z };
 
-  // Get the index of the voxel (memory access is still 0-based)
+  // Global linearized index of the voxel (memory access is still 0-based)
   const int inputIndex = thread_id_z * d_Image_dim.y * d_Image_dim.x + thread_id_y * d_Image_dim.x + thread_id_x;
   const elemT val_center = current_image[inputIndex];
 
@@ -298,14 +288,18 @@ Gradient_dot_input_Kernel(double* output,
 
           sum += current;
         }
+  // Each thread puts its partial sum in shared memory
   block_sum_shared[thread_in_block] = 2 * sum * input[inputIndex];
+  //Local sync on the threads in the block
   __syncthreads();
 
-  // Parallel reduction in shared memory
+  //block pair-wise reduction in shared memory
   int block_threads = blockDim.x * blockDim.y * blockDim.z;
   blockReduction(block_sum_shared, thread_in_block, block_threads);
 
   if (thread_in_block == 0)
+      //TODO atomicAddGeneric is defined in include/stircuda_utilities.cuh, we need it since for CUDA_ARCH__ < 600 
+      //we cannot perform atomicAdd on double. AtomicAddGeneric has not been tested for CUDA_ARCH__ < 600.
       atomicAddGeneric(output, block_sum_shared[0]);
 
 }
@@ -330,7 +324,6 @@ Hessian_diagonal_Kernel(elemT* Hessian_diag,
   const int thread_id_z = blockIdx.z * blockDim.z + threadIdx.z;
 
   // Check if the thread is within the image dimensions
-  // Note: only image_min_z is 0-based indices
   if (thread_id_z >= d_Image_dim.z || thread_id_y >= d_Image_dim.y || thread_id_x >= d_Image_dim.x)
     return;
 
@@ -339,7 +332,7 @@ Hessian_diagonal_Kernel(elemT* Hessian_diag,
                              d_Image_min_indices.y + thread_id_y,
                              d_Image_min_indices.z + thread_id_z };
 
-  // Get the index of the voxel (memory access is still 0-based)
+  // Global linearized index of the voxel (memory access is still 0-based)
   const int inputIndex = thread_id_z * d_Image_dim.y * d_Image_dim.x +
                          thread_id_y * d_Image_dim.x +
                          thread_id_x;
@@ -411,7 +404,8 @@ Hessian_Times_Input_Kernel(elemT* output,
   const int3 Image_coord = {d_Image_min_indices.x + thread_id_x, 
                              d_Image_min_indices.y + thread_id_y,
                              d_Image_min_indices.z + thread_id_z};
-  // Get the index of the voxel (memory access is still 0-based)
+
+  // Global linearized index of the voxel (memory access is still 0-based)
   const int inputIndex = thread_id_z * d_Image_dim.y * d_Image_dim.x + 
                          thread_id_y * d_Image_dim.x +
                          thread_id_x;
@@ -528,6 +522,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, ele
 
   checkCudaError("compute_value kernel"); 
 
+
   double prior_value;
   cudaMemcpy(&prior_value, d_scalar, sizeof(double), cudaMemcpyDeviceToHost);
 
@@ -571,7 +566,6 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>
                                             this->potential);
                 
   checkCudaError("compute_gradient kernel");
-
   cudaDeviceSynchronize();
   array_to_host(prior_gradient, d_output_data);
 
@@ -617,7 +611,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const Discretise
                                                 this->potential);
 
   checkCudaError("compute_gradient_times_input kernel");
-
+  cudaDeviceSynchronize();
   double result;
   cudaMemcpy(&result, d_scalar, sizeof(double), cudaMemcpyDeviceToHost);
 
@@ -706,6 +700,7 @@ CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDen
   
   checkCudaError("accumulate_Hessian_times_input kernel");
 
+
   array_to_host(output, d_output_data);
 }
 
@@ -720,6 +715,7 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
 
   
   // Fill CUDA int3 objects (This is needed because CartesianCoordinate3D cannot be used on GPU)
+  //This is not very elegant but I don't see a better solution for now
   d_Image_dim = make_int3(this->Image_dim.x(), this->Image_dim.y(), this->Image_dim.z());
   d_Image_max_indices = make_int3(this->Image_max_indices.x(), this->Image_max_indices.y(), this->Image_max_indices.z());
   d_Image_min_indices = make_int3(this->Image_min_indices.x(), this->Image_min_indices.y(), this->Image_min_indices.z());
@@ -769,6 +765,7 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
         cudaFree(d_weights_data);
       cudaMalloc(&d_weights_data, this->weights.size_all() * sizeof(float));
       array_to_device(d_weights_data, this->weights);
+      checkCudaError("CudaGibbsPrior: cudaMalloc for d_weights_data");
     }
   
   // Copy CPU kappa image to GPU

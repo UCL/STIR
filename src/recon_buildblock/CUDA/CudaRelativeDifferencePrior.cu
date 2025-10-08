@@ -44,7 +44,7 @@ computeCudaRelativeDifferencePriorGradientKernel(elemT* tmp_grad,
                                                  const float penalisation_factor,
                                                  const int z_dim,
                                                  const int y_dim,
-                                                 const int x_dim) goo
+                                                 const int x_dim)
 {
   // Get the voxel in x, y, z dimensions
   const int z = blockIdx.z * blockDim.z + threadIdx.z;

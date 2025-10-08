@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2025, University College London
+    Copyright (C) 2025, University of Milano-Bicocca 
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,10 +13,8 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Declaration of class stir::CudaGibbsRelativeDifferencePrior
-
-  This class implements a Gibbs prior with relative difference potential function
-  for regularization in image reconstruction.
+  \brief Declaration of class stir::CudaRelativeDifferencePrior, stir::CudaGibbsRelativeDifferencePrior and 
+  * the potential function stir::RelativeDifferencePotential
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
@@ -34,41 +33,70 @@
 #endif
 
 START_NAMESPACE_STIR
-
-/*!
+ 
+ /*!
+  \file GibbsRelativeDifferencePrior.h
   \ingroup priors
-  \brief A Gibbs prior with Relative Difference Potential for image regularization.
-
-  This class implements a Gibbs prior using a relative difference potential function,
-  which is particularly effective for preserving edges while smoothing noise in 
-  reconstructed images. The potential function normalizes differences by the sum
-  of neighboring pixel values, making it adaptive to local image intensity.
+  \brief
+  A class in the GeneralisedPrior hierarchy. This implements a Relative Difference prior.
 
   The prior energy is:
   \f[
-  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} V\left(\frac{f_r - f_{r+dr}}{f_r + f_{r+dr} + \gamma |f_r - f_{r+dr}| + \epsilon}\right)
+  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} V\left(\frac{\lambda_r - \lambda_{r+dr}}{\lambda_r + \lambda_{r+dr} + \gamma |\lambda_r - \lambda_{r+dr}| + \epsilon}\right)
   \f]
-  where:
-  - \f$f_r\f$ and \f$f_{r+dr}\f$ are pixel values at positions \f$r\f$ and \f$r+dr\f$
-  - \f$w_{dr}\f$ are distance-dependent weights
-  - \f$\kappa\f$ provides spatially-varying penalty weights (optional)
-  - \f$\gamma\f$ controls edge preservation (higher values = more edge preservation)
-  - \f$\epsilon\f$ prevents division by zero in uniform regions
 
-  \par Usage Example:
-  \code
-  auto prior = std::make_shared<GibbsRelativeDifferencePrior<float>>();
-  prior->set_penalisation_factor(0.01);
-  prior->set_up(target_image);
-  \endcode
+  where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
+  is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero. \f$\gamma\f$ is
+  a smoothing scalar term and the \f$\epsilon\f$ is a small non-negative value included to prevent division by zero.
+  Please note that the RDP is only well defined for non-negative voxel values.
+  For more details, see: <em> J. Nuyts, D. Beque, P. Dupont, and L. Mortelmans,
+  "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,"
+  vol. 49, no. 1, pp. 56-60, 2002. </em>
 
+  If \f$ \epsilon=0 \f$, we attempt to resolve 0/0 at \f$ \lambda_r = \lambda_{r+dr}=0 \f$ by using the limit.
+  Note that the Hessian explodes to infinity when both voxel values approach 0, and we currently return \c INFINITY.
+  Also, as the RDP is not differentiable at this point, we have chosen to return 0 for the gradient
+  (such that a zero background is not modified).
 
-  \see CudaGibbsRelativeDifferencePrior for CUDA-accelerated version
-  \see GibbsQuadraticPrior for standard CPU version
+  \warning the default value for \f$ \epsilon \f$ is zero, which can be problematic for gradient-based algorithms.
+
+  The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
+  Jeff Fessler's papers. It should have identical dimensions to the image for which the
+  penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
+  use 1 for all \f$\kappa\f$'s.
+
+  By default, a 3x3 or 3x3x3 neighbourhood is used where the weights are set to
+  x-voxel_size divided by the Euclidean distance between the points.
+
+  The prior computation excludes voxel-pairs where one voxel is outside the volume. This is
+  effectively the same as extending the volume by replicating the edges (which is different
+  from zero boundary conditions).
+
+\par Parsing
+  These are the keywords that can be used in addition to the ones in GeneralPrior.
+  \verbatim
+  (Cuda) Gibbs Relative Difference Prior Parameters:= 
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; gamma value :=
+  ; epsilon value :=
+  ; see class documentation for more info
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  gradient filename prefix:=
+  END (Cuda) Gibbs Relative Difference Prior Parameters:=
+  \endverbatim
+
+  \see RelativeDifferencePrior for standard single core CPU version
+
 */
 
-
-// Forward declaration for CudaRelativeDifferencePotential
 #ifndef IGNORESWIG
 template <typename elemT>
 class RelativeDifferencePotential
@@ -76,50 +104,55 @@ class RelativeDifferencePotential
 public:
   float gamma;
   float epsilon;
-  //! CUDA device function for computing the potential value
+  //! Method for computing the potential value
   __host__ __device__ inline double
-  value(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const
+  value(const elemT val_center, const elemT val_neigh, int z, int y, int x) const
   {
+    // Implemented formula:
+    // return 0.5 * (val_center -val_neigh)**2 / (val_center +val_neigh + gamma * |val_center - val_neigh| + epsilon); 
     const elemT diff = val_center - val_neigh;
-    const elemT add = val_center + val_neigh;
+    const elemT add  = val_center + val_neigh;
+    const elemT NUM  = 0.5 * (diff * diff);
+    const elemT DEN  = 1.0 / (add + gamma * fabs(diff) + epsilon);
+
+    return NUM * DEN;
+  }
+
+  //! Method for computing the first derivative with respect to val_center
+  __host__ __device__ inline double
+  derivative_10(const elemT val_center, const elemT val_neigh, int z, int y, int x) const
+  {   
+  // Implemented formula:
+  // return 0.5 * (val_center-val_neigh) * (val_center + 3*val_neigh + gamma * |val_center - val_neigh| + 2 * epsilon )  / ((val_center +val_neigh)+ gamma * |val_center - val_neigh| + epsilon)**2; 
+  const elemT diff   = val_center - val_neigh;
+  const elemT factor = val_center + val_neigh + gamma *fabs(diff) + epsilon;
+  const elemT NUM    = 0.5 * diff * (factor + 2 * val_neigh +  epsilon);
+  const elemT DEN    = 1.0/ (factor*factor);
   
-    return 0.5 * (diff * diff) / (add + gamma * fabs(diff) + epsilon);
+  return NUM * DEN;
   }
 
-  //! CUDA device function for computing the first derivative with respect to first argument
+  //! Method for computing the second derivative with respect to val_center
   __host__ __device__ inline double
-  derivative_10(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
+  derivative_20(const elemT val_center, const elemT val_neigh, int z, int y, int x) const 
   {
-  const elemT diff = val_center - val_neigh;
-  const elemT add = val_center + val_neigh;
-  // const elemT add_3 = val_center + 3 * val_neigh;
+    // Implemented formula:
+    // return   (2*val_center + epsilon)**2 / (val_center + val_neigh + gamma * |val_center - val_neigh| + epsilon)**3; 
+    const elemT NUM     =  2* val_neigh + epsilon;
+    const elemT DEN     = 1.0/(val_center + val_neigh + gamma * fabs(val_center - val_neigh) + epsilon);
 
-  const elemT diff_abs = fabs(diff);
-  const elemT A = add + gamma *diff_abs + epsilon;
-  const elemT den = 1.0/ (A*A);
-  
-  // original
-  // return 0.5 * (diff * (gamma * diff_abs + add_3 + 2 * epsilon)) / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));
-
-  return 0.5 * (diff * (A + 2 * val_neigh +  epsilon))*den;
-
+    return NUM*NUM * DEN*DEN*DEN;
   }
+  //! Method for computing the mixed second derivative
+  __host__ __device__ inline double
+  derivative_11(const elemT val_center, const elemT val_neigh, int z, int y, int x) const 
+  {
+    // Implemented formula:
+    // return   -(2*val_center + epsilon)*(2*val_neigh + epsilon)/ (val_center + val_neigh + gamma * |val_center - val_neigh| + epsilon)**3; 
+    const elemT NUM = -(2*val_center  + epsilon) * (2*val_neigh  + epsilon);
+    const elemT DEN = 1.0/(val_center + val_neigh + gamma * fabs(val_center - val_neigh) + epsilon);
 
-  //! CUDA device function for computing the second derivative with respect to first argument
-  __host__ __device__ inline double
-  derivative_20(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
-  {
-    // elemT NUM =  (2* val_neigh + epsilon);
-    // elemT DEN = (val_center + val_neigh + gamma * fabs(val_center - val_neigh) + epsilon);
-    // return NUM*NUM/(DEN*DEN*DEN);
-  return pow(2 * val_neigh + epsilon, 2) / pow(val_center + val_neigh + gamma * std::abs(val_center - val_neigh) + epsilon, 3);
-  }
-  //! CUDA device function for computing the mixed derivative
-  __host__ __device__ inline double
-  derivative_11(const elemT& val_center, const elemT& val_neigh, int z, int y, int x) const 
-  {
-  // For now, return 0 (not implemented)
-  return - ((2*val_center  + epsilon) * (2*val_neigh + epsilon)) / pow(val_center + val_neigh + gamma * std::abs(val_center - val_neigh) + epsilon, 3);
+    return  NUM * DEN*DEN*DEN;
   }
 };
 #endif // SWIG
@@ -127,7 +160,6 @@ public:
 template <typename elemT>
 class RelativeDifferencePotential;
 
-// Device function implementations for CudaRelativeDifferencePotential
 template <typename elemT>
 class GibbsRelativeDifferencePrior : public RegisteredParsingObject<GibbsRelativeDifferencePrior<elemT>,
                                                                     GeneralisedPrior<DiscretisedDensity<3, elemT>>,
@@ -141,7 +173,7 @@ private:
 
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "GibbsRelativeDifferencePrior";
+  static constexpr const char* const registered_name = "Gibbs Relative Difference Prior";
 
   GibbsRelativeDifferencePrior();
   GibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor,float gamma_v, float epsilon_v);
@@ -173,7 +205,7 @@ protected:
 
   public:
     //! Name which will be used when parsing a GeneralisedPrior object
-    static constexpr const char* const registered_name = "CudaGibbsRelativeDifferencePrior";
+    static constexpr const char* const registered_name = "Cuda Gibbs Relative Difference Prior";
 
     CudaGibbsRelativeDifferencePrior();
     CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor,float gamma_v, float epsilon_v);

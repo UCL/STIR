@@ -1,21 +1,19 @@
-//
-//
 /*
     Copyright (C) 2025, University College London
-    This file is part of STIR.
+    Copyright (C) 2025, University of Milano-Bicocca 
 
     SPDX-License-Identifier: Apache-2.0
 
-    See STIR/LICENSE.txt for details.
+    See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Declaration of class stir::CudaGibbsPrior
+  \brief Declaration of the stir::CudaGibbsPrior class
 
   \author Kris Thielemans
-  \author Matteo Colombo
+  \author Matteo Neel Colombo
 */
 
 #ifndef __stir_recon_buildblock_CUDA_CudaGibbsPrior_H__
@@ -34,33 +32,13 @@ START_NAMESPACE_STIR
   \ingroup priors
   \ingroup CUDA
   \brief
-  A CUDA-accelerated implementation of the Gibbs prior inheriting from GibbsPrior.
+  A base class with CUDA-accelerated implementation of the Gibbsprior class.
 
   This class provides CUDA-accelerated implementations of compute_value, compute_gradient, 
-  and accumulate_Hessian_times_input while inheriting all parameter parsing and 
-  CPU functionality from the base GibbsPrior class.
+  accumulate_Hessian_times_input, compute_Hessian_diagonal and compute_gradient_times_input while inheriting all  parsing and setting functionality from the base CPU GibbsPrior class.
+
+  Check the documentation of the GibbsPrior class for details on how the prior is defined and how to use it.
   
-  The potential function is provided via the template parameter PotentialFun, which should
-  provide device functions for value(), derivative_10(), derivative_11(), and derivative_20().
-
-  The prior is computed as follows:
-  \f[
-  f = \sum_{r,dr} w_{dr} \psi(\lambda_r, \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
-  \f]
-  with gradient
-  \f[
-  g_r = \sum_{dr} w_{dr} \psi'(\lambda_r, \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
-  \f]
-  where \f$\lambda\f$ is the image, \f$\psi\f$ is the potential function, \f$r\f$ and \f$dr\f$ are indices 
-  and the sum is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
-
-  The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
-  Jeff Fessler's papers. It should have identical dimensions to the image for which the
-  penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
-  use 1 for all \f$\kappa\f$'s.
-
-  All parsing functionality is inherited from GibbsPrior - see GibbsPrior documentation
-  for parameter keywords.
 */
 
 template <typename elemT, typename PotentialT>
@@ -74,24 +52,30 @@ protected:
   dim3 block_dim;
   dim3 grid_dim;
 
-  // Variable used for shared memory
+  // Variable used for shared memory operations
   int threads_per_block = block_dim.x * block_dim.y * block_dim.z;
   size_t shared_mem_bytes = threads_per_block * sizeof(elemT);
 
   elemT* d_image_data = nullptr;
+  //Currently stir:CartesianCoordinate3D<int> is not supported on GPU, we need a simple structure to store boundaries.
   int3 d_Image_dim;
   int3 d_Image_max_indices;
   int3 d_Image_min_indices;
   int3 d_weight_max_indices;
   int3 d_weight_min_indices;
 
+  // GPU pointers to weights and kappa data
   float* d_weights_data = nullptr;
   elemT* d_kappa_data = nullptr;
 
-  // Buffers for GPU outputs
+  // Buffers for GPU input/output to avoid reallocating memory on each call see usage in set_up() and ~CudaGibbsPrior()
+  
   mutable double* d_scalar = nullptr; 
+  //d_scalar is used for compute_value and compute_gradient_times_input as output variable
   mutable elemT* d_input_data = nullptr;
+  //d_input_data is used for storing input image for compute_gradient_times_input and accumulate_Hessian_times_input
   mutable elemT* d_output_data = nullptr;
+  //d_output_data is used for storing output image for compute_gradient, accumulate_Hessian_times_input and compute_Hessian_diagonal
 
 public:
 
@@ -99,11 +83,13 @@ public:
   CudaGibbsPrior(const bool only_2D, float penalization_factor);
   ~CudaGibbsPrior();
 
-  //! Override to set up CUDA resources and call parent set_up
+  //! Override CPU version to set up CUDA resources on GPU and call parent set_up
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
-  
+
+  //! Set the weights array for the prior on the GPU.
   void set_weights(const Array<3, float>& w) override;
-  
+
+  //! Set the kappa image (spatially-varying penalty factors) on the GPU.
   void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>& k) override;
 
   //! CUDA-accelerated value computation
@@ -112,12 +98,13 @@ public:
   //! CUDA-accelerated gradient computation
   void compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
                         const DiscretisedDensity<3, elemT>& current_image_estimate) override;
-  
+
+  //! CUDA-accelerated gradient dot input computation
   double compute_gradient_times_input(const DiscretisedDensity<3, elemT>& input,
                                     const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
+  //! CUDA-accelerated Hessian diagonal computation
   void compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diagonal, const DiscretisedDensity<3, elemT>& current_estimate) const override;
-
 
   //! CUDA-accelerated Hessian times input computation
   void accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
@@ -129,8 +116,8 @@ public:
 END_NAMESPACE_STIR
 
 #ifdef __CUDACC__
-// CUDA compiler sees everything
-#include "stir/recon_buildblock/CUDA/CudaGibbsPrior.cuh"
+  // CUDA compiler sees everything
+  #include "stir/recon_buildblock/CUDA/CudaGibbsPrior.cuh"
 #endif
 
 

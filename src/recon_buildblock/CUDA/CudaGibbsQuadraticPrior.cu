@@ -1,5 +1,8 @@
+//
+//
 /*
-    Copyright (C) 2024, University College London
+    Copyright (C) 2025, University College London
+    Copyright (C) 2025, University of Milano-Bicocca 
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -11,14 +14,15 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief implementation of the stir::CudaGibbsQuadraticPrior class
+  \brief Implementation of class stir::CudaGibbsQuadraticPrior
 
   \author Matteo Neel Colombo
-  \author Kris Thielsmann
+  \author Kris Thielemans
 */
 
+
 #include "stir/recon_buildblock/GibbsQuadraticPrior.h"
-#include "stir/BasicCoordinate.h"
+
 
 START_NAMESPACE_STIR
 
@@ -49,9 +53,6 @@ CudaGibbsQuadraticPrior<elemT>::initialise_keymap()
   this->parser.add_stop_key("END Cuda Gibbs Quadratic Prior Parameters");
 }
 
-// Explicit template instantiations
-template class QuadraticPotential<float>;
 template class CudaGibbsQuadraticPrior<float>;
-
 
 END_NAMESPACE_STIR
