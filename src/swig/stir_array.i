@@ -77,12 +77,28 @@
 
 %ignore stir::NumericVectorWithOffset::xapyb;
 %ignore stir::NumericVectorWithOffset::axpby;
+%ignore stir::NumericVectorWithOffset::NumericVectorWithOffset(NumericVectorWithOffset&&);
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+// note however that Python will implement them in terms of operator+, so the user doesn't know
+%ignore stir::NumericVectorWithOffset::operator+=;
+%ignore stir::NumericVectorWithOffset::operator-=;
+%ignore stir::NumericVectorWithOffset::operator*=;
+%ignore stir::NumericVectorWithOffset::operator/=;
+
 %include "stir/NumericVectorWithOffset.h"
 
 #ifdef SWIGPYTHON
 // ignore as we will add a version that returns a tuple instead
 %ignore stir::Array::shape() const;
 #endif
+
+%ignore stir::Array::Array(Array&&);
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+// note however that Python will implement them in terms of operator+, so the user doesn't know
+%ignore stir::Array::operator+=;
+%ignore stir::Array::operator-=;
+%ignore stir::Array::operator*=;
+%ignore stir::Array::operator/=;
 
 %include "stir/Array.h"
 %include "stir/ArrayFwd.h"

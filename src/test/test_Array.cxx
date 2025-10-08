@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2013, 2020, 2023, 2024 University College London
+    Copyright (C) 2013, 2020, 2023, 2024, 2025 University College London
 
     This file is part of STIR.
 
@@ -472,11 +472,36 @@ ArrayTests::run_tests()
       t2fp[3][2] = 2.2F;
 #endif
 
-      Array<2, float> t2 = t2fp + testfp;
-      check_if_equal(t2[3][2], 5.5F, "test operator +(Array2D)");
-      t2fp += testfp;
-      check_if_equal(t2fp[3][2], 5.5F, "test operator +=(Array2D)");
-      check_if_equal(t2, t2fp, "test comparing Array2D+= and +");
+      auto t2 = t2fp + testfp;
+      {
+        // numerical operations
+#if defined __GNUC__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Waddress" // disable gcc warning that the following will always be satisfied
+#endif
+        check(dynamic_cast<Array<2, float> const*>(&t2) != 0, "test operator +(Array2D) return correct type");
+#if defined __GNUC__
+#  pragma GCC diagnostic pop
+#endif
+        check_if_equal(t2[3][2], 5.5F, "test operator +(Array2D)");
+        t2fp += testfp;
+        check_if_equal(t2fp[3][2], 5.5F, "test operator +=(Array2D)");
+        check_if_equal(t2, t2fp, "test comparing Array2D+= and +");
+        check_if_zero(t2 - t2fp, "test Array2D-");
+        {
+          const auto tmp = t2 / 2;
+          check_if_equal(t2.sum() / 2, tmp.sum(), "test operator/(float)");
+          const auto tmp2 = tmp * 2;
+          check_if_equal(t2, tmp2, "test operator*(float)");
+        }
+        {
+          const auto tmp = t2 + 1.F;
+          const auto tmp2 = tmp * tmp;
+          check_if_equal(tmp[3][2] * tmp[3][2], tmp2[3][2], "test operator*(array)");
+          const auto tmp3 = tmp2 / tmp;
+          check_if_equal(tmp3, tmp, "test operator/(array)");
+        }
+      }
 
       {
         BasicCoordinate<2, int> c;
@@ -512,12 +537,6 @@ ArrayTests::run_tests()
       // test assignment
       t2fp = t2;
       check_if_equal(t2, t2fp, "test operator=(Array2D)");
-
-      {
-        Array<2, float> tmp;
-        tmp = t2 / 2;
-        check_if_equal(t2.sum() / 2, tmp.sum(), "test operator/(float)");
-      }
 
       {
         // copy constructor;
@@ -734,6 +753,7 @@ ArrayTests::run_tests()
       {
         Array<3, float>::full_iterator titer = test.begin_all();
         Array<3, float>::const_full_iterator ctiter = titer; // this should compile
+        check_if_equal(*ctiter, *titer, "test on full/const_full_iterator");
       }
     }
     // fill_from/copy_to
@@ -871,7 +891,14 @@ ArrayTests::run_tests()
     {
       Array<4, float> tmp(test4.get_index_range());
       Array<4, float> tmp2(test4 + 2);
+#if defined __GNUC__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
       tmp.axpby(2.F, test4, 3.3F, tmp2);
+#if defined __GNUC__
+#  pragma GCC diagnostic pop
+#endif
       const Array<4, float> by_hand = test4 * 2.F + (test4 + 2) * 3.3F;
       check_if_equal(tmp, by_hand, "test axpby (Array4D)");
     }
