@@ -307,16 +307,17 @@ public:
 
   void prior_grad_times_input()
   {
-    double result =this->prior_sptr->compute_gradient_times_input(*this->input_sptr, *this->image_sptr);
-    result += 2; // to avoid compiler warning about unused variable
+    // double result =this->prior_sptr->compute_gradient_times_input(*this->input_sptr, *this->image_sptr);
+    // result += 2; // to avoid compiler warning about unused variable
+    this->prior_sptr->compute_gradient_times_input(*this->input_sptr, *this->image_sptr);
   }
 
 
   void prior_value()
   {
-    auto v = this->prior_sptr->compute_value(*this->image_sptr);
-
-    v += 2; // to avoid compiler warning about unused variable
+    // auto v = this->prior_sptr->compute_value(*this->image_sptr);
+    // v += 2; // to avoid compiler warning about unused variable
+    this->prior_sptr->compute_value(*this->image_sptr);
   }
 
   void prior_hessian()

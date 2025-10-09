@@ -41,7 +41,7 @@
 #include <numeric>
 #include <algorithm>
 
-#include <nvToolsExt.h>
+
 
 START_NAMESPACE_STIR
 
