@@ -86,6 +86,7 @@ atomicAddGeneric(double* address, elemT val)
 #if __CUDA_ARCH__ >= 600
   return atomicAdd(address, dval);
 #else
+#  error Either ugrade your GPU to compute capability 6 or check the code at __FILE__, __LINE__
   // Use atomicCAS for double-precision atomicAdd on older architectures
   unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
   unsigned long long int old = *address_as_ull, assumed;
