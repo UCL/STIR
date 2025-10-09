@@ -30,6 +30,8 @@
 #endif
 
 #include "stir/Array.h"
+#include "stir/type_traits.h"
+#include "stir/assign.h"
 #include "stir/make_array.h"
 #include "stir/Coordinate2D.h"
 #include "stir/Coordinate3D.h"
@@ -55,7 +57,6 @@
 
 #include "stir/HighResWallClockTimer.h"
 
-#include <stdio.h>
 #include <fstream>
 #include <sstream>
 using std::ofstream;
@@ -65,6 +66,16 @@ using std::cerr;
 using std::endl;
 
 START_NAMESPACE_STIR
+
+// compile-time checks on type traits
+static_assert(!has_iterator_v<double>);
+static_assert(has_iterator_v<std::vector<int>>);
+static_assert(has_iterator_v<VectorWithOffset<int>>);
+static_assert(has_iterator_v<Array<3, int>>);
+static_assert(!has_full_iterator_v<std::vector<int>>);
+static_assert(has_full_iterator_v<Array<3, int>>);
+static_assert(has_iterator_and_no_full_iterator_v<std::vector<int>>);
+static_assert(!has_iterator_and_no_full_iterator_v<Array<3, int>>);
 
 namespace detail
 {
@@ -302,10 +313,14 @@ ArrayTests::run_tests()
 
     {
 
-      Array<1, int> testint(IndexRange<1>(5));
-      testint[0] = 2;
-      check_if_equal(testint.size(), size_t(5), "test size()");
-      check_if_equal(testint.size_all(), size_t(5), "test size_all()");
+      {
+        Array<1, int> testint(IndexRange<1>(5));
+        testint[0] = 2;
+        check_if_equal(testint.size(), size_t(5), "test size()");
+        check_if_equal(testint.size_all(), size_t(5), "test size_all()");
+        assign(testint, 4);
+        check_if_equal(testint[0], 4, "test assign");
+      }
 
       Array<1, float> test(IndexRange<1>(10));
       check_if_zero(test, "Array1D not initialised to 0");
@@ -457,6 +472,12 @@ ArrayTests::run_tests()
 #endif
       // test2.set_offsets(-1,-4);
       // check_if_equal( test2[2][0] , 23.3, "test indexing of Array2D");
+
+      // test for assign and fill
+      assign(test2, 1.F);
+      check_if_equal(*test2.begin_all(), 1.F, "test assign");
+      assign(test2, 4.F);
+      check_if_equal(*test2.begin_all(), 4.F, "test fill()");
     }
 
     {
