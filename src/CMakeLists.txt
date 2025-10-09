@@ -31,8 +31,6 @@ option(BUILD_SHARED_LIBS
 
 ### Settings for external libraries
 # Locate and include the CUDA Toolkit headers
-find_package(CUDAToolkit REQUIRED)
-include_directories(BEFORE SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
 
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
