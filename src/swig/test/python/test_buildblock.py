@@ -200,6 +200,62 @@ def test_FloatVoxelsOnCartesianGrid():
     # shouldn't change image constructed from array
     assert abs(image[ind]-1.4)<.001
 
+def test_FloatVoxelsOnCartesianGrid_numerics():
+    origin=FloatCartesianCoordinate3D(0,1,6)
+    gridspacing=FloatCartesianCoordinate3D(1,1,2)
+    minind=Int3BasicCoordinate(3)
+    maxind=Int3BasicCoordinate(9)
+    indrange=IndexRange3D(minind,maxind)
+    a = FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    b = FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    a.fill(2)
+    b.fill(3)
+    ind = ((3,4,5))
+    a[ind] = 5
+    # compare STIR operations (in float) with Python operations (in double), so need tolerance
+    c = a + b
+    assert math.isclose(c[ind], a[ind] + b[ind], rel_tol=1e-4)
+    c = a - b
+    assert math.isclose(c[ind], a[ind] - b[ind], rel_tol=1e-4)
+    c = a * b
+    assert math.isclose(c[ind], a[ind] * b[ind], rel_tol=1e-4)
+    c = a / b
+    assert math.isclose(c[ind], a[ind] / b[ind], rel_tol=1e-4)
+    c = a + 3
+    assert math.isclose(c[ind], a[ind] + 3, rel_tol=1e-4)
+    c = a - 3
+    assert math.isclose(c[ind], a[ind] - 3, rel_tol=1e-4)
+    c = a * 3
+    assert math.isclose(c[ind], a[ind] * 3, rel_tol=1e-4)
+    c = a / 3
+    assert math.isclose(c[ind], a[ind] / 3, rel_tol=1e-4)
+    # same, but now with += etc.
+    # Note: using a simple/stupid trick to create a copy of a by adding 0
+    c = a + 0
+    c += b
+    assert math.isclose(c[ind], a[ind] + b[ind], rel_tol=1e-4)
+    c = a + 0
+    c -= b
+    assert math.isclose(c[ind], a[ind] - b[ind], rel_tol=1e-4)
+    c = a + 0
+    c *= b
+    assert math.isclose(c[ind], a[ind] * b[ind], rel_tol=1e-4)
+    c = a + 0
+    c /= b
+    assert math.isclose(c[ind], a[ind] / b[ind], rel_tol=1e-4)
+    c = a + 0
+    c += 3
+    assert math.isclose(c[ind], a[ind] + 3, rel_tol=1e-4)
+    c = a + 0
+    c -= 3
+    assert math.isclose(c[ind], a[ind] - 3, rel_tol=1e-4)
+    c = a + 0
+    c *= 3
+    assert math.isclose(c[ind], a[ind] * 3, rel_tol=1e-4)
+    c = a + 0
+    c /= 3
+    assert math.isclose(c[ind], a[ind] / 3, rel_tol=1e-4)
+
 def test_zoom_image():
     # create test image
     origin=FloatCartesianCoordinate3D(3,1,6)
