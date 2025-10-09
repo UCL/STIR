@@ -26,7 +26,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
-#include "stir/cuda_utilities.h"
+#include "stir/cuda_utilities.cuh"
 #include <cuda_runtime.h>
 #include <numeric>
 
@@ -97,7 +97,7 @@ computeCudaRelativeDifferencePriorGradientKernel(elemT* tmp_grad,
               const elemT add = (image[inputIndex] + image[neighbourIndex]);
               const elemT add_3 = (image[inputIndex] + 3 * image[neighbourIndex]);
               double current = weights[weightsIndex] * (diff * (gamma * diff_abs + add_3 + 2 * epsilon))
-                               / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));
+                               / ((add + gamma * diff_abs + epsilon) * (add + gamma * diff_abs + epsilon));                       
               if (do_kappa)
                 {
                   current *= kappa[inputIndex] * kappa[neighbourIndex];

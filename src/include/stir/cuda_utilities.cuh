@@ -64,6 +64,55 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
     }
 }
 
+template <typename elemT>
+__device__ inline void
+blockReduction(elemT* shared_mem, int thread_in_block, int block_threads)
+{
+  // Parallel reduction in shared memory
+  for (int stride = block_threads / 2; stride > 0; stride /= 2)
+    {
+      if (thread_in_block < stride)
+        shared_mem[thread_in_block] += shared_mem[thread_in_block + stride];
+      __syncthreads();
+    }
+}
+
+// Generic, architecture-compatible atomicAdd for double and convertible types
+template <typename elemT>
+__device__ inline double
+atomicAddGeneric(double* address, elemT val)
+{
+  double dval = static_cast<double>(val);
+#if __CUDA_ARCH__ >= 600
+  return atomicAdd(address, dval);
+#else
+#  error Either ugrade your GPU to compute capability 6 or check the code at __FILE__, __LINE__
+  // Use atomicCAS for double-precision atomicAdd on older architectures
+  unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
+  unsigned long long int old = *address_as_ull, assumed;
+
+  do
+    {
+      assumed = old;
+      double updated = __longlong_as_double(assumed) + dval;
+      old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
+  } while (assumed != old);
+
+  return __longlong_as_double(old);
+#endif
+}
+
+inline void
+checkCudaError(const std::string& operation)
+{
+  cudaError_t cuda_error = cudaGetLastError();
+  if (cuda_error != cudaSuccess)
+    {
+      const char* err = cudaGetErrorString(cuda_error);
+      error(std::string("CudaGibbsPrior: CUDA error in ") + operation + ": " + err);
+    }
+}
+
 END_NAMESPACE_STIR
 
 #endif

@@ -141,7 +141,13 @@
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+#include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
 #include "stir/recon_buildblock/LogcoshPrior.h"
+
+#include "stir/recon_buildblock/GibbsPrior.h"  
+#include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
+#include "stir/recon_buildblock/GibbsQuadraticPrior.h"
+#include "stir/recon_buildblock/GibbsRelativeDifferencePrior.h"
 
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
