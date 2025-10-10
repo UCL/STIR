@@ -19,7 +19,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/WienerArrayFilter2D.h"
-
+#include <vector>
 #include <algorithm>
 
 using std::nth_element;

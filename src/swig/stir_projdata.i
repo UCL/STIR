@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2022, 2023 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2022, 2023, 2025 University College London
     Copyright (C) 2022 National Physical Laboratory
     This file is part of STIR.
 
@@ -132,6 +132,11 @@ stir::CartesianCoordinate3D<float>
 
 // ignore this to avoid problems with unique_ptr, and add it later
 %ignore stir::ProjData::get_subset;
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+%ignore stir::ProjData::operator+=;
+%ignore stir::ProjData::operator-=;
+%ignore stir::ProjData::operator*=;
+%ignore stir::ProjData::operator/=;
 %include "stir/ProjData.h"
 
 %newobject stir::ProjData::get_subset;
@@ -227,6 +232,12 @@ namespace stir {
 
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+// note however that Python will implement them in terms of operator+, so the user doesn't know
+%ignore stir::ProjDataInMemory::operator+=;
+%ignore stir::ProjDataInMemory::operator-=;
+%ignore stir::ProjDataInMemory::operator*=;
+%ignore stir::ProjDataInMemory::operator/=;
 %include "stir/ProjDataInMemory.h"
 
 namespace stir { 
