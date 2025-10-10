@@ -383,54 +383,54 @@ def test_ProjDataInMemory_numerics():
     projdatainfo = ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     a = ProjDataInMemory(ExamInfo(),projdatainfo)
     b = ProjDataInMemory(a)
-    bin = Bin(0,1,2,3)
-    bin.bin_value = 5
+    _bin = Bin(0,1,2,3)
+    _bin.bin_value = 5
     a.fill(2)
     b.fill(3)
-    a.set_bin_value(bin)
+    a.set_bin_value(_bin)
     # compare STIR operations (in float) with Python operations (in double), so need tolerance
     c = a + b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) + b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + b.get_bin_value(_bin), rel_tol=1e-4)
     c = a - b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) - b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - b.get_bin_value(_bin), rel_tol=1e-4)
     c = a * b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) * b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * b.get_bin_value(_bin), rel_tol=1e-4)
     c = a / b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) / b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / b.get_bin_value(_bin), rel_tol=1e-4)
     c = a + 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) + 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + 3, rel_tol=1e-4)
     c = a - 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) - 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - 3, rel_tol=1e-4)
     c = a * 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) * 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * 3, rel_tol=1e-4)
     c = a / 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) / 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / 3, rel_tol=1e-4)
     # same, but now with += etc.
     # Note: using a simple/stupid trick to create a copy of a by adding 0
     c = a + 0
     c += b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) + b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + b.get_bin_value(_bin), rel_tol=1e-4)
     c = a + 0
     c -= b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) - b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - b.get_bin_value(_bin), rel_tol=1e-4)
     c = a + 0
     c *= b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) * b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * b.get_bin_value(_bin), rel_tol=1e-4)
     c = a + 0
     c /= b
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) / b.get_bin_value(bin), rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / b.get_bin_value(_bin), rel_tol=1e-4)
     c = a + 0
     c += 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) + 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + 3, rel_tol=1e-4)
     c = a + 0
     c -= 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) - 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - 3, rel_tol=1e-4)
     c = a + 0
     c *= 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) * 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * 3, rel_tol=1e-4)
     c = a + 0
     c /= 3
-    assert math.isclose(c.get_bin_value(bin), a.get_bin_value(bin) / 3, rel_tol=1e-4)
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / 3, rel_tol=1e-4)
 
 def test_ProjData_from_to_Array3D():
     # define a projection with some dummy data (filled with segment no.)
