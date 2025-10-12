@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2022 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2022, 2025 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -28,6 +28,15 @@
 %ignore stir::VectorWithOffset::get_data_ptr();
 %ignore stir::VectorWithOffset::release_const_data_ptr() const;
 %ignore stir::VectorWithOffset::release_data_ptr();
+// ignore move constructor
+%ignore stir::VectorWithOffset::VectorWithOffset(VectorWithOffset&&);
+// ignore constructors from pointers
+%ignore stir::VectorWithOffset::VectorWithOffset(const int, T* const, T* const);
+%ignore stir::VectorWithOffset::VectorWithOffset(const int, const int, T* const, T* const);
+%ignore stir::VectorWithOffset::VectorWithOffset(const int, const T* const);
+%ignore stir::VectorWithOffset::VectorWithOffset(const int, const int, const T* const);
+%ignore stir::VectorWithOffset::VectorWithOffset(const int, const int, stir::shared_ptr);
+%ignore stir::VectorWithOffset::VectorWithOffset(const int, stir::shared_ptr);
 %include "stir/VectorWithOffset.h"
 
 #if defined(SWIGPYTHON)
@@ -77,12 +86,29 @@
 
 %ignore stir::NumericVectorWithOffset::xapyb;
 %ignore stir::NumericVectorWithOffset::axpby;
+%ignore stir::NumericVectorWithOffset::NumericVectorWithOffset(NumericVectorWithOffset&&);
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+// note however that Python will implement them in terms of operator+, so the user doesn't know
+%ignore stir::NumericVectorWithOffset::operator+=;
+%ignore stir::NumericVectorWithOffset::operator-=;
+%ignore stir::NumericVectorWithOffset::operator*=;
+%ignore stir::NumericVectorWithOffset::operator/=;
+
 %include "stir/NumericVectorWithOffset.h"
 
 #ifdef SWIGPYTHON
 // ignore as we will add a version that returns a tuple instead
 %ignore stir::Array::shape() const;
 #endif
+
+%ignore stir::Array::Array(Array&&);
+
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+// note however that Python will implement them in terms of operator+, so the user doesn't know
+%ignore stir::Array::operator+=;
+%ignore stir::Array::operator-=;
+%ignore stir::Array::operator*=;
+%ignore stir::Array::operator/=;
 
 %include "stir/Array.h"
 %include "stir/ArrayFwd.h"

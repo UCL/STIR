@@ -34,6 +34,7 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
+#include <type_traits>
 #include "stir/RunTests.h"
 
 using std::cerr;
@@ -59,12 +60,15 @@ VoxelsOnCartesianGridTests::run_tests()
 {
   cerr << "Tests for VoxelsOnCartesianGrid and the image hierarchy\n";
 
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo());
   CartesianCoordinate3D<float> origin(0, 1, 2);
   CartesianCoordinate3D<float> grid_spacing(3, 4, 5);
 
   IndexRange<3> range(CartesianCoordinate3D<int>(0, -15, -14), CartesianCoordinate3D<int>(4, 14, 15));
 
   Array<3, float> test1(range);
+  test1[1][12][5] = float(5.5);
+  test1[4][5][-5] = float(4.5);
 
   {
     cerr << "Tests with default constructor\n";
@@ -83,13 +87,84 @@ VoxelsOnCartesianGridTests::run_tests()
   {
     cerr << "Tests with 2nd constructor (array, origin, grid_spacing)\n";
 
-    VoxelsOnCartesianGrid<float> ob2(test1, origin, grid_spacing);
+    VoxelsOnCartesianGrid<float> ob2(exam_info_sptr, test1, origin, grid_spacing);
+
+    check_if_equal(ob2.get_grid_spacing(), grid_spacing, "test on grid_spacing");
+    check_if_equal(ob2.get_origin(), origin, "test on origin");
+    check_if_equal(ob2.sum(), test1.sum(), "test on sum");
+    test1[1][12][5] += float(5.5);
+    test1[4][5][-5] += float(4.5);
+    check_if_equal(ob2.sum(), test1.sum() - 10, "test on sum after modifying original array");
+  }
+  {
+    cerr << "Tests with constructor (exam_info, array, origin, grid_spacing)\n";
+
+    VoxelsOnCartesianGrid<float> ob2(exam_info_sptr, test1, origin, grid_spacing);
     test1[1][12][5] = float(5.5);
     test1[4][5][-5] = float(4.5);
 
     check_if_equal(ob2.get_grid_spacing(), grid_spacing, "test on grid_spacing");
     check_if_equal(ob2.get_origin(), origin, "test on origin");
     check_if_equal(test1.sum(), 10.F, "test on arrays");
+
+    cerr << "   numeric tests\n";
+    {
+      auto a{ ob2 };
+      auto b{ ob2 };
+      const auto ind = make_coordinate(2, 3, 4);
+      {
+        auto c = a + b;
+        static_assert(std::is_same_v<decltype(c), decltype(a)>);
+        check_if_equal(c[ind], a[ind] + b[ind], "test image + image");
+        c = a - b;
+        check_if_equal(c[ind], a[ind] - b[ind], "test image - image");
+        c = a * b;
+        check_if_equal(c[ind], a[ind] * b[ind], "test image * image");
+        c = a / b;
+        check_if_equal(c[ind], a[ind] / b[ind], "test image / image");
+      }
+      {
+        auto c = a + 3;
+        static_assert(std::is_same_v<decltype(c), decltype(a)>);
+        c = a - 3;
+        check_if_equal(c[ind], a[ind] - 3, "test image - float");
+        c = a * 3;
+        check_if_equal(c[ind], a[ind] * 3, "test image * float");
+        c = a / 3;
+        check_if_equal(c[ind], a[ind] / 3, "test image / float");
+      }
+      // same, but now with += etc.
+      {
+        auto c = a;
+        auto d{ c += b };
+        static_assert(std::is_same_v<decltype(d), decltype(a)>);
+        check(typeid(d) == typeid(a), "check return type of image + image");
+        c = a;
+        c -= b;
+        check_if_equal(c[ind], a[ind] - b[ind], "test image -= image");
+        c = a;
+        c *= b;
+        check_if_equal(c[ind], a[ind] * b[ind], "test image *= image");
+        c = a;
+        c /= b;
+        check_if_equal(c[ind], a[ind] / b[ind], "test image /= image");
+      }
+      {
+        auto c = a;
+        auto d{ c += 3 };
+        static_assert(std::is_same_v<decltype(d), decltype(a)>);
+        check_if_equal(c[ind], a[ind] + 3, "test image += float");
+        c = a;
+        c -= 3;
+        check_if_equal(c[ind], a[ind] - 3, "test image -= float");
+        c = a;
+        c *= 3;
+        check_if_equal(c[ind], a[ind] * 3, "test image *= float");
+        c = a;
+        c /= 3;
+        check_if_equal(c[ind], a[ind] / 3, "test image /* float");
+      }
+    }
   }
   {
 
@@ -188,7 +263,6 @@ VoxelsOnCartesianGridTests::run_tests()
 
     {
       // with different zooms
-      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo());
       CartesianCoordinate3D<float> zooms(1.1F, 1.2F, 1.3F);
       VoxelsOnCartesianGrid<float> ob6(
           exam_info_sptr, *proj_data_info_ptr, zooms, origin, CartesianCoordinate3D<int>(z_size, xy_size, xy_size));
