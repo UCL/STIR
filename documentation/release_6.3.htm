@@ -19,6 +19,7 @@
 
 
   <h3>New functionality</h3>
+  <h4>General</h4>
   <ul>
     <li>
       The analytic Spline Reconstruction Technique (SRT) algorithm has been added in 2 different versions: for PET
@@ -52,9 +53,6 @@
       <a href=https://github.com/UCL/STIR/pull/1503>PR #1503</a>
     </li>
     <li>
-      <tt>stir_timings</tt> has now an extra option to parse a par-file for a projector-pair.
-    </li>
-    <li>
       Added the ability to set a forward projector for mask projection in the <code>ScatterEstimation</code> class.<br>
       <a href=https://github.com/UCL/STIR/pull/1530>PR #1530</a>
     </li>
@@ -64,15 +62,32 @@
       <a href=https://github.com/UCL/STIR/pull/1519>PR #1519</a>
     </li>
     <li>
-      <code>LmToProjData</code>/<tt>lm_to_projdata</tt> now no longer requires a template projection data. If none is
+      <code>LmToProjData</code> class/<tt>lm_to_projdata</tt> utility now no longer requires a template projection data. If none is
       specified, it will use the proj_data_info from the input list-mode.<br>
       <b>Warning</b> for some scanners with TOF capabilities, this will result in very large projection data (possibly
       larger than the default from the vendor).<br>
       <a href=https://github.com/UCL/STIR/pull/1315>PR #1315</a>
     </li>
+  </ul>
+  <h4>Python</h4>
+  <ul>
     <li>
-      Added a Python script to convert e7tools generated Siemens Biograph Vision 600 sinograms to STIR compatible format.
+      "Container" classes such as <code>FloatVoxelsOnCartesianGrid</code>, <code>ProjDataInMemory</code>
+      and array-classes now have numerical operations properly defined, for instance
+      <code>a = b + c</code> and <code>a -= 3</code>. Note that <code>a = 1 + b</code> is not
+      yet available.<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+      </li>
+    <li>
+      Added a Python script to convert e7tools generated Siemens Biograph Vision 600 sinograms to STIR compatible format.<br>
       <a href=https://github.com/UCL/STIR/pull/1593>PR #1593</a>
+    </li>
+  </ul>
+
+  <h4>Utilities</h4>
+  <ul>
+    <li>
+      <tt>stir_timings</tt> has now an extra option to parse a par-file for a projector-pair.
     </li>
   </ul>
 
@@ -87,6 +102,14 @@
     <li>
       Default ECAT scanner configurations updated to use a negative intrinsic tilt.
     </li>
+    <li>
+      When computing the sensitivity images in <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code>,
+      we now avoid creating an extra <code>ProjDataInMemory</code> in most cases (there are still some corner
+      cases for TOF data when using non-TOF projector for the sensitivity, but then the memory overhead is small).
+      This enables LAFOV PET reconstructions with the "ray tracing" matrix (we use less memory, and we avoid running into a current
+      <code>ProjDataInMemory</code> <a href=https://github.com/UCL/STIR/issues/1505> limitation on the number of bins</a>).<br>
+      <a href=https://github.com/UCL/STIR/pull/1617>PR #1716</a>
+      </li>
       <li>
         Boost format was replaced by `std::format` for formatting strings. If C++20 or newer is
         not yet used, a work-around is in place by using the [{fmt} library](https://github.com/fmtlib/fmt/)
@@ -155,6 +178,12 @@
   <h3>Changed functionality</h3>
   <ul>
     <li>
+      In C++, "Container" classes such as <code>VoxelsOnCartesianGrid</code>, <code>ProjDataInMemory</code>
+      and array-classes now have numerical operations that return objects of the correct type.
+      (Previously, it was a base-class such as <code>NumericVectorWithOffset<Array<2, float>, float></code>).<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+    </li>
+    <li>
       Made 2 (deprecated) members of <code>ProjDataInfoBlocksOnCylindricalNoArcCorr</code> <code>private</code>
       and do some clean-up of which files to include.
       <br>
@@ -181,12 +210,12 @@
 
   <h3>Bug fixes</h3>
   <ul>
-    <li>Fixed minor incompatibility with gcc-14 and clang-18 buy adding an extra include file<br>
+    <li>Fixed minor incompatibility with gcc-14 and clang-18 by adding an extra include file.<br>
       <a href=https://github.com/UCL/STIR/pull/1552>PR #1552</a>
     </li>
   </ul>
 
-  <h3>Deprecations</h3>
+  <h3>New deprecations</h3>
   <ul>
     <li>
       <code>truncate_end_planes</code> will be removed in v7.0
@@ -197,7 +226,13 @@
 
 
   <h3>Test changes</h3>
-
+  <h4>Python tests</h4>
+  <ul>
+    <li>
+      Tests for numerical operations for the "container" classes were added in the same PR as the code.<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+    </li>
+  </ul>
 
   <h4>C++ tests</h4>
 
