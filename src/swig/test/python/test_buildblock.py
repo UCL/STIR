@@ -4,7 +4,7 @@
 #     py.test test_buildblock.py
 
 
-#    Copyright (C) 2013, 2023 University College London
+#    Copyright (C) 2013, 2023, 2025 University College London
 #    This file is part of STIR.
 #
 #    SPDX-License-Identifier: Apache-2.0
@@ -170,12 +170,32 @@ def test_Array3D():
     assert minindtest==minind
     assert maxindtest==maxind
     assert a3.shape()==(7,7,9)
+    # fill with scalar
     a3.fill(2)
     ind=Int3BasicCoordinate((4,5,6))
     assert a3[ind]==2
     a3[ind]=9
     assert a3[(4,5,6)]==9
     assert a3.find_max()==9
+
+    # test as_array()
+    np_arr = a3.as_array()
+    assert np_arr.shape == a3.shape()
+    assert np_arr[ind[1] - minind[1], ind[2] - minind[2], ind[3] - minind[3]] == a3[ind]
+    assert np_arr[0, 0, 0] == 2
+
+    a4 = FloatArray3D(indrange)
+    # test fill with iterator
+    a4.fill(np_arr.flat)
+    assert a4[ind]==9
+    assert a4[minind]==2
+    a4.fill(1)
+    assert a4[ind]==1
+    # test fill with numpy array
+    a4.fill(np_arr)
+    assert a4[ind]==9
+    assert a4[minind]==2
+    
 
 def test_FloatVoxelsOnCartesianGrid():
     origin=FloatCartesianCoordinate3D(0,1,6)
@@ -189,16 +209,35 @@ def test_FloatVoxelsOnCartesianGrid():
     image.fill(2)
     ind=Int3BasicCoordinate((4,4,4))
     assert image[ind]==2
+    image[ind] = 4
+    assert image[ind] == 4
     assert image[(5,3,4)]==2
     # construct from array
     a3=FloatArray3D(indrange)
     a3.fill(1.4);
-    image=FloatVoxelsOnCartesianGrid(a3, origin,gridspacing)
-    assert abs(image[ind]-1.4)<.001
+    image2=FloatVoxelsOnCartesianGrid(a3, origin,gridspacing)
+    assert abs(image2[ind]-1.4)<.001
     # change original array
     a3.fill(2)
     # shouldn't change image constructed from array
-    assert abs(image[ind]-1.4)<.001
+    assert abs(image2[ind]-1.4)<.001
+
+    # test as_array
+    np_arr = image.as_array()
+    assert np_arr.shape == image.shape()
+    assert np_arr[ind[1] - minind[1], ind[2] - minind[2], ind[3] - minind[3]] == image[ind]
+    assert np_arr[0, 0, 0] == 2
+    # test fill with iterator
+    image.fill(0)
+    image.fill(np_arr.flat)
+    assert image[ind]==4
+    assert image[minind]==2
+    image.fill(1)
+    assert image[ind]==1
+    # test fill with numpy array
+    image.fill(np_arr)
+    assert image[ind]==4
+    assert image[minind]==2
 
 def test_FloatVoxelsOnCartesianGrid_numerics():
     origin=FloatCartesianCoordinate3D(0,1,6)

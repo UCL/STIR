@@ -170,21 +170,72 @@ namespace stir
       return swigstir::tuple_from_coord(sizes);
     }
 
-    %feature("autodoc", "fill from a Python iterator, e.g. array.fill(numpyarray.flat)") fill;
+    %feature("autodoc", "fill from a Python scalar, numpy array or iterator, e.g. array.fill(numpyarray.flat)") fill;
     void fill(PyObject* const arg)
     {
       if (PyIter_Check(arg))
       {
 	swigstir::fill_Array_from_Python_iterator($self, arg);
       }
+      else if (PyArray_Check(arg))
+      {
+        auto np_arr = (PyArrayObject*)arg;
+        if (static_cast<size_t>(PyArray_SIZE(np_arr)) != $self->size_all())
+        {
+          throw std::runtime_error("Array.fill needs to be called with numpy array of correct size");
+        }
+        swigstir::fill_iterator_from_nparray<elemT>($self->begin_all(), (PyArrayObject*)arg);
+      }
       else
       {
 	char str[1000];
-	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar or an iterator or so, but is of type %s",
+	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar, numpy array or an iterator, but is of type %s",
 		arg->ob_type->tp_name);
 	throw std::invalid_argument(str);
-      } 
+      }
     }
+
+    %newobject as_array();
+    %feature("autodoc", "Create a new numpy array with same dimensions/data. Raises an error if the array is not rectangular.") as_array;
+    PyObject* as_array() const
+      {
+        int np_typenum = swigstir::get_np_typenum<elemT>();
+        const auto dtype = PyArray_DescrFromType(np_typenum);
+
+        stir::BasicCoordinate<num_dimensions,int> minind,maxind;
+        if (!$self->get_regular_range(minind, maxind))
+          throw std::range_error("as_array() called on irregular array");
+        stir::BasicCoordinate<num_dimensions, int> stir_sizes=maxind-minind+1;
+        npy_intp dims[num_dimensions];
+        for (int d=0; d<num_dimensions; ++d)
+          dims[d]= stir_sizes[d + 1];
+        auto np_array =
+          (PyArrayObject *)PyArray_SimpleNew(num_dimensions, dims, np_typenum);
+        auto stir_iter = self->begin_all();
+#if 1
+        auto iter = NpyIter_New(np_array, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, dtype);
+        if (iter==NULL) {
+          return NULL;
+        }
+        auto iternext = NpyIter_GetIterNext(iter, NULL);
+        auto dataptr = (elemT **) NpyIter_GetDataPtrArray(iter);
+        do {
+          **dataptr = *stir_iter;
+          ++stir_iter; }
+        while (iternext(iter));
+#else
+        // generic alternative, but doesn't compile and might be slower
+        auto iterator = PyObject_GetIter(np_array);
+	PyObject *item;
+	while (item = PyIter_Next(iterator)) 
+          {
+            *item = *stir_iter++; // this does not compile. not sure how to assign
+            Py_DECREF(item);
+          }
+#endif
+        return PyArray_Return(np_array);
+      }
+
   }
 #endif
 
