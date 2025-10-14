@@ -139,6 +139,7 @@ public:
   GibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
 
   void set_defaults() override;
+  bool is_convex() const override;
 
 protected:
 
@@ -168,6 +169,7 @@ protected:
     CudaGibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
     
     void set_defaults() override;
+    bool is_convex() const override;
 
   protected:
 

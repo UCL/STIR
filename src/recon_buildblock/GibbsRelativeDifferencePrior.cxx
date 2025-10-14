@@ -45,6 +45,13 @@ GibbsRelativeDifferencePrior<elemT>::set_defaults()
 }
 
 template <typename elemT>
+bool
+GibbsRelativeDifferencePrior<elemT>::is_convex() const
+{
+  return true;
+}
+
+template <typename elemT>
 void
 GibbsRelativeDifferencePrior<elemT>::initialise_keymap()
 {

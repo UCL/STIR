@@ -73,8 +73,6 @@ public:
   //! Explicit Constructor with 2D/3D option and penalization factor.
   GibbsPrior(const bool only_2D, float penalization_factor);
 
-  bool is_convex() const override;
-
   //! Compute the value of the prior for the current image estimate.
   double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 

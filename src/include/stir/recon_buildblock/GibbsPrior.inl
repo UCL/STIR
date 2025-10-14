@@ -162,13 +162,6 @@ GibbsPrior<elemT,PotentialT>::GibbsPrior(const bool only_2D_v, float penalisatio
   this->penalisation_factor = penalisation_factor_v;
 }
 
-template <typename elemT, typename PotentialT>
-bool
-GibbsPrior<elemT,PotentialT>::is_convex() const
-{
-  return true;
-}
-
 // initialise weights to dx/Euclidean distance
 template <typename elemT, typename PotentialT>
 void

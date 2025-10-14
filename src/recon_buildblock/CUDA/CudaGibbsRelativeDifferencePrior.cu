@@ -46,6 +46,13 @@ CudaGibbsRelativeDifferencePrior<elemT>::set_defaults()
 }
 
 template <typename elemT>
+bool
+CudaGibbsRelativeDifferencePrior<elemT>::is_convex() const
+{
+  return true;
+}
+
+template <typename elemT>
 void
 CudaGibbsRelativeDifferencePrior<elemT>::initialise_keymap()
 {

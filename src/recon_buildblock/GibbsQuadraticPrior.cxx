@@ -44,6 +44,13 @@ GibbsQuadraticPrior<elemT>::set_defaults()
 }
 
 template <typename elemT>
+bool
+GibbsQuadraticPrior<elemT>::is_convex() const
+{
+  return true;
+}
+
+template <typename elemT>
 void
 GibbsQuadraticPrior<elemT>::initialise_keymap()
 {

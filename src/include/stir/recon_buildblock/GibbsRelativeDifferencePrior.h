@@ -187,6 +187,7 @@ public:
   void  set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
 
   void set_defaults() override;
+  bool is_convex() const override;
 
 protected:
 
@@ -219,6 +220,7 @@ protected:
     void  set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
 
     void set_defaults() override;
+    bool is_convex() const override;
 
   protected:
     
