@@ -9,7 +9,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
-#       
+#
 # Author Kris Thielemans
 # Author Dimitra Kyriakopoulou
 
@@ -24,12 +24,11 @@ echo
 MPIRUN=""
 #
 # Parse option arguments (--)
-# Note that the -- is required to suppress interpretation of $1 as options 
+# Note that the -- is required to suppress interpretation of $1 as options
 # to expr
 #
 while test `expr -- "$1" : "--.*"` -gt 0
 do
-
   if test "$1" = "--mpicmd"
   then
     MPIRUN="$2"
@@ -47,8 +46,7 @@ do
   fi
 
   shift 1
-
-done 
+done
 
 if [ $# -eq 1 ]; then
   echo "Prepending $1 to your PATH for the duration of this script."
@@ -74,6 +72,7 @@ if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
 fi
+
 # need to repeat with zero-offset now as FBP doesn't support it
 zero_view_suffix=_force_zero_view_offset
 ./simulate_data_for_tests.sh --force_zero_view_offset --suffix $zero_view_suffix
@@ -81,6 +80,7 @@ if [ $? -ne 0 ]; then
   echo "Error running simulation with zero view offset"
   exit 1
 fi
+
 ## TOF data
 TOF_suffix=_TOF
 ./simulate_data_for_tests.sh --TOF --suffix "$TOF_suffix"
@@ -88,8 +88,9 @@ if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1
 fi
+
 ## SPECT data
-SPECT_suffix=_SPECT 
+SPECT_suffix=_SPECT
 ./simulate_data_for_tests.sh --SPECT --suffix "$SPECT_suffix"
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
@@ -105,26 +106,26 @@ list_ROI_values ${input_image}.roistats ${input_image} ${ROI} 0 > /dev/null 2>&1
 input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 
 # loop over reconstruction algorithms
-# warning: currently OSMAPOSL needs to be run before OSSPS as 
+# warning: currently OSMAPOSL needs to be run before OSSPS as
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
-for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do  
+for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
   echo "========== Testing `command -v ${recon}`"
   # Check if we have CUDA code and parallelproj.
   # If so, check for test files in CUDA/*
   if stir_list_registries |grep -i cuda > /dev/null
   then
-      if stir_list_registries |grep -i parallelproj > /dev/null
-      then
-          extra_par_files=`ls CUDA/${recon}_test_sim*.par 2> /dev/null`
-          if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
-              # The code runs inside Travis or GHA
-              if [ -n "$extra_par_files" ]; then
-                  echo "Not running ${extra_par_files} due to no CUDA run-time"
-                  extra_par_files=""
-              fi
-          fi
+    if stir_list_registries |grep -i parallelproj > /dev/null
+    then
+      extra_par_files=`ls CUDA/${recon}_test_sim*.par 2> /dev/null`
+      if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+        # The code runs inside Travis or GHA
+        if [ -n "$extra_par_files" ]; then
+          echo "Not running ${extra_par_files} due to no CUDA run-time"
+          extra_par_files=""
+        fi
       fi
+    fi
   fi
   for parfile in ${recon}_test_sim*.par ${extra_par_files}; do
     for dataSuffix in "" "$TOF_suffix"; do
@@ -138,40 +139,40 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
       elif expr "$recon" : GRD > /dev/null; then
         is_analytic=1
       elif expr "$recon" : DDSR > /dev/null; then
-        is_analytic=1		
+        is_analytic=1
       fi
       if [ $is_analytic = 1 ]; then
         if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
           echo "Skipping TOF as not yet supported for FBP, SRT, GRD and DDSR."
           break
         fi
-		  if expr "$recon" : SRT2DSPECT > /dev/null; then
-		    	suffix=$SPECT_suffix
-		    	export suffix
-                  elif expr "$recon" : DDSR2D > /dev/null; then
-		    	suffix=$SPECT_suffix
-		    	export suffix
-	      	  else   
-	          	suffix=$zero_view_suffix
-	                export suffix
-	                echo "Running precorrection"
-		    	correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
-		    	if [ $? -ne 0 ]; then
-	                echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
-		      		error_log_files="${error_log_files} my_correct_projdata_simulation.log"
-		      	break
-		  	fi
-	          fi
-      else
-          suffix="$dataSuffix"
+        if expr "$recon" : SRT2DSPECT > /dev/null; then
+          suffix=$SPECT_suffix
           export suffix
-          # we simulate 2 different scanners for non-TOF and TOF that sadly need different number of subsets
-          if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
-              num_subsets=12
-          else
-              num_subsets=14
+        elif expr "$recon" : DDSR2D > /dev/null; then
+          suffix=$SPECT_suffix
+          export suffix
+        else
+          suffix=$zero_view_suffix
+          export suffix
+          echo "Running precorrection"
+          correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
+          if [ $? -ne 0 ]; then
+            echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+            error_log_files="${error_log_files} my_correct_projdata_simulation.log"
+            break
           fi
-          export num_subsets
+        fi
+      else
+        suffix="$dataSuffix"
+        export suffix
+        # we simulate 2 different scanners for non-TOF and TOF that sadly need different number of subsets
+        if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
+          num_subsets=12
+        else
+          num_subsets=14
+        fi
+        export num_subsets
       fi
 
       # run actual reconstruction
@@ -179,9 +180,9 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
       logfile="my_`basename ${parfile}`${suffix}.log"
       ${MPIRUN} ${recon} ${parfile} > "$logfile" 2>&1
       if [ $? -ne 0 ]; then
-          echo "Error running reconstruction. CHECK RECONSTRUCTION LOG \"$logfile\""
-          error_log_files="${error_log_files} "$logfile""
-          break
+        echo "Error running reconstruction. CHECK RECONSTRUCTION LOG \"$logfile\""
+        error_log_files="${error_log_files} "$logfile""
+        break
       fi
 
       # find filename of (last) image from ${parfile}
@@ -189,18 +190,18 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
       # substitute env variables (e.g. to fill in suffix)
       output_filename=`eval echo "${output_filename}"`
       if [ ${is_analytic} -eq 0 ]; then
-          # iterative algorithm, so we need to append the num_subiterations
-          num_subiterations=`awk -F':='  '/number[ _]*of[ _]*subiterations/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
-          output_filename=${output_filename}_${num_subiterations}
+        # iterative algorithm, so we need to append the num_subiterations
+        num_subiterations=`awk -F':='  '/number[ _]*of[ _]*subiterations/ { value=$2;gsub(/[ \t]/, "", value); printf("%s", value) }' ${parfile}`
+        output_filename=${output_filename}_${num_subiterations}
       fi
       output_image=${output_filename}.hv
 
       # compute ROI value
       list_ROI_values ${output_image}.roistats ${output_image} ${ROI} 0  > ${output_image}.roistats.log 2>&1
       if [ $? -ne 0 ]; then
-          echo "Error running list_ROI_values. CHECK LOG ${output_image}.roistats.log"
-          error_log_files="${error_log_files} ${output_image}.roistats.log"
-          break
+        echo "Error running list_ROI_values. CHECK LOG ${output_image}.roistats.log"
+        error_log_files="${error_log_files} ${output_image}.roistats.log"
+        break
       fi
 
       # compare ROI value
@@ -210,10 +211,10 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
       echo "Output ROI mean: $output_ROI_mean"
       error_bigger_than_1percent=`echo $input_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
       if [ ${error_bigger_than_1percent} -eq 1 ]; then
-          echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG "$logfile""
-          error_log_files="${error_log_files} ${logfile}"
+        echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG "$logfile""
+        error_log_files="${error_log_files} ${logfile}"
       else
-          echo "This seems fine."
+        echo "This seems fine."
       fi
 
     done
@@ -222,11 +223,11 @@ done
 
 echo "============================================="
 if [ -z "${error_log_files}" ]; then
- echo "All tests OK!"
- echo "You can remove all output using \"rm -f my_*\""
- exit 0
+  echo "All tests OK!"
+  echo "You can remove all output using \"rm -f my_*\""
+  exit 0
 else
- echo "There were errors. Check ${error_log_files}"
- tail ${error_log_files}
- exit 1
+  echo "There were errors. Check ${error_log_files}"
+  tail ${error_log_files}
+  exit 1
 fi
