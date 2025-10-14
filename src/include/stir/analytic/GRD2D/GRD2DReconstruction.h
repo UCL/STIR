@@ -3,7 +3,7 @@
 #ifndef __stir_analytic_GRD2D_GRD2DReconstruction_H__
 #define __stir_analytic_GRD2D_GRD2DReconstruction_H__
 /*
-    Copyright (C) 2024, University College London
+    Copyright (C) 2025, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -26,6 +26,7 @@
 #include <string>
 #include "stir/shared_ptr.h"
 #include "stir/Array_complex_numbers.h"
+#include "stir/numerics/fftshift.h"
 
 
 START_NAMESPACE_STIR
@@ -107,9 +108,6 @@ public:
   virtual void initialise_keymap();
   virtual bool post_processing(); 
   bool post_processing_only_GRD2D_parameters();
-
-  template <typename T> void fftshift(Array< 1 , T >& a, int size);
-  template <typename T> void fftshift(Array< 2 , std::complex< T > >& a, int size);
 
 };
 
