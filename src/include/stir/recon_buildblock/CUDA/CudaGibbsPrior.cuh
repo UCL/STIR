@@ -320,7 +320,6 @@ CudaGibbsPrior_gradient_dot_input_kernel(double* output,
 /*!
  * Each thread computes one element of the Hessian diagonal.
  */
-templat
 template <class elemT, typename PotentialT>
 __global__ static void
 CudaGibbsPrior_Hessian_diagonal_kernel(elemT* Hessian_diag,
