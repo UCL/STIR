@@ -30,7 +30,6 @@ option(BUILD_SHARED_LIBS
        "Use shared libraries" OFF)
 
 ### Settings for external libraries
-# Locate and include the CUDA Toolkit headers
 
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
