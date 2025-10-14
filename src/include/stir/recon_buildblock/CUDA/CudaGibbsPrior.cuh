@@ -47,7 +47,11 @@ START_NAMESPACE_STIR
 
 // CUDA kernels for CudaGibbsPrior
 
-//! CUDA kernel that computes Gibbs prior value using block reduction
+//! CUDA kernel for Gibbs prior value calculation using the potential function value and block reduction
+/*!
+ * Each thread processes one voxel, computes local sum, then performs parallel reduction in shared memory.
+ * Result from each block is then atomically added to output. Requires CUDA compute capability ≥6.0 for double atomics.
+ */
 template <class elemT, typename PotentialT>
 __global__ static void
 CudaGibbsPrior_value_kernel(double* output,
@@ -135,12 +139,13 @@ CudaGibbsPrior_value_kernel(double* output,
 
   // One thread per block performs final atomic add in double
   if (thread_in_block == 0)
-      //TODO atomicAddGeneric is defined in include/stircuda_utilities.cuh, we need it since for CUDA_ARCH__ < 600 
-      //we cannot perform atomicAdd on double. AtomicAddGeneric has not been tested for CUDA_ARCH__ < 600.
       atomicAddGeneric(output, block_sum_shared[0]);    
 }
 
-//! CUDA kernel that computes Gibbs prior gradient by evaluating weighted potential between neighboring voxels, using block reduction
+//! CUDA kernel for Gibbs prior gradient calculation using the potential function first derivative.
+/*!
+ * Each thread processes one voxel, and computes one element of the gradient.
+ */
 template <class elemT, typename PotentialT>
 __global__ static void
 CudaGibbsPrior_gradient_kernel(elemT* gradient,
@@ -213,6 +218,11 @@ CudaGibbsPrior_gradient_kernel(elemT* gradient,
   gradient[inputIndex] = sum * 2.0 * penalisation_factor;
 }
 
+//! CUDA kernel for Gibbs prior, computes the dot product of the gradient with a given input image using the potential function first derivative.
+/*!
+ * Each thread computes one element of the gradient, then we perform the dot product in shared memory.
+ * Result from each block is then atomically added to output. Requires CUDA compute capability ≥6.0 for double atomics.
+ */
 template <class elemT, typename PotentialT>
 __global__ static void
 CudaGibbsPrior_gradient_dot_input_kernel(double* output,
@@ -306,6 +316,11 @@ CudaGibbsPrior_gradient_dot_input_kernel(double* output,
 
 }
 
+//! CUDA kernel for Gibbs prior, computes the Hessian diagonal using the potential function second derivative.
+/*!
+ * Each thread computes one element of the Hessian diagonal.
+ */
+templat
 template <class elemT, typename PotentialT>
 __global__ static void
 CudaGibbsPrior_Hessian_diagonal_kernel(elemT* Hessian_diag,
@@ -379,6 +394,10 @@ CudaGibbsPrior_Hessian_diagonal_kernel(elemT* Hessian_diag,
 
 }
 
+//! CUDA kernel for Gibbs prior, computes the Hessian times a given input image using the potential function second derivatives.
+/*!
+ * The output is image shaped and each element is computed by a given thread.
+ */
 template <class elemT, typename PotentialT>
 __global__ static void
 CudaGibbsPrior_Hessian_Times_Input_kernel(elemT* output,
