@@ -34,7 +34,7 @@
 #include "stir/Array.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/cuda_utilities.cuh"
+#include "stir/cuda_utilities.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include <cuda_runtime.h>
@@ -47,9 +47,10 @@ START_NAMESPACE_STIR
 
 // CUDA kernels for CudaGibbsPrior
 
+//! CUDA kernel that computes Gibbs prior value using block reduction
 template <class elemT, typename PotentialT>
 __global__ static void
-Value_Kernel(double* output,
+CudaGibbsPrior_value_kernel(double* output,
              const elemT* __restrict__ current_image,
              const float* __restrict__ weights,
              const elemT* __restrict__ kappa,
@@ -139,9 +140,10 @@ Value_Kernel(double* output,
       atomicAddGeneric(output, block_sum_shared[0]);    
 }
 
+//! CUDA kernel that computes Gibbs prior gradient by evaluating weighted potential between neighboring voxels, using block reduction
 template <class elemT, typename PotentialT>
 __global__ static void
-Gradient_Kernel(elemT* gradient,
+CudaGibbsPrior_gradient_kernel(elemT* gradient,
                 const elemT* __restrict__ current_image,
                 const float* __restrict__ weights,
                 const elemT* __restrict__ kappa,
@@ -213,7 +215,7 @@ Gradient_Kernel(elemT* gradient,
 
 template <class elemT, typename PotentialT>
 __global__ static void
-Gradient_dot_input_Kernel(double* output,
+CudaGibbsPrior_gradient_dot_input_kernel(double* output,
              const elemT* __restrict__ input,
              const elemT* __restrict__ current_image,
              const float* __restrict__ weights,
@@ -306,7 +308,7 @@ Gradient_dot_input_Kernel(double* output,
 
 template <class elemT, typename PotentialT>
 __global__ static void
-Hessian_diagonal_Kernel(elemT* Hessian_diag,
+CudaGibbsPrior_Hessian_diagonal_kernel(elemT* Hessian_diag,
                 const elemT* __restrict__ current_image,
                 const float* __restrict__ weights,
                 const elemT* __restrict__ kappa,
@@ -379,7 +381,7 @@ Hessian_diagonal_Kernel(elemT* Hessian_diag,
 
 template <class elemT, typename PotentialT>
 __global__ static void
-Hessian_Times_Input_Kernel(elemT* output,
+CudaGibbsPrior_Hessian_Times_Input_kernel(elemT* output,
                            const elemT* __restrict__ current_image,
                            const elemT* __restrict__ input,
                            const float* __restrict__ weights,
@@ -508,7 +510,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, ele
     error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
 
 
-  Value_Kernel<elemT, PotentialT> <<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar,
+  CudaGibbsPrior_value_kernel<elemT, PotentialT> <<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar,
                                                                               d_image_data,
                                                                               d_weights_data,
                                                                               do_kappa ? d_kappa_data : nullptr,
@@ -551,8 +553,8 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(d_kappa_data)))
     error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
-  
-  Gradient_Kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+
+  CudaGibbsPrior_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
                                             d_image_data,
                                             d_weights_data,
                                             do_kappa ? d_kappa_data : nullptr,
@@ -596,7 +598,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const Discretise
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
     error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
 
-  Gradient_dot_input_Kernel<elemT, PotentialT>
+  CudaGibbsPrior_gradient_dot_input_kernel<elemT, PotentialT>
   <<<grid_dim, block_dim, shared_mem_bytes>>> (d_scalar,
                                                 d_input_data,
                                                 d_image_data,
@@ -640,7 +642,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
     error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
 
-  Hessian_diagonal_Kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPrior_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
                                                                       d_image_data,
                                                                       d_weights_data,
                                                                       do_kappa ? d_kappa_data : nullptr,
@@ -683,7 +685,7 @@ CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDen
   if (do_kappa != (!is_null_ptr(d_kappa_data)))
     error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
 
-  Hessian_Times_Input_Kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPrior_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
                                                                         d_image_data,
                                                                         d_input_data,
                                                                         d_weights_data,
@@ -699,7 +701,6 @@ CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDen
 
   
   checkCudaError("accumulate_Hessian_times_input kernel");
-
 
   array_to_host(output, d_output_data);
 }

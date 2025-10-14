@@ -27,19 +27,13 @@
 #include "stir/recon_buildblock/GibbsPrior.h"
 #include "stir/RegisteredParsingObject.h"
 #include <cmath>
+#include "stir/cuda_utilities.h"
 
 #ifdef STIR_WITH_CUDA
 #   include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
 #endif
 
-#ifndef __CUDACC__
-  #ifndef __host__
-    #define __host__
-  #endif
-  #ifndef __device__
-    #define __device__
-  #endif
-#endif
+
 
 START_NAMESPACE_STIR
  

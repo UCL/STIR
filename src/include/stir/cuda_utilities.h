@@ -19,10 +19,21 @@
 */
 #include "stir/Array.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <vector>
 
 START_NAMESPACE_STIR
 
+#ifndef __CUDACC__
+  #ifndef __host__
+    #define __host__
+  #endif
+  #ifndef __device__
+    #define __device__
+  #endif
+#endif
+
+#ifdef __CUDACC__
 template <int num_dimensions, typename elemT>
 inline void
 array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
@@ -86,19 +97,19 @@ atomicAddGeneric(double* address, elemT val)
 #if __CUDA_ARCH__ >= 600
   return atomicAdd(address, dval);
 #else
-#  error Either ugrade your GPU to compute capability 6 or check the code at __FILE__, __LINE__
-  // Use atomicCAS for double-precision atomicAdd on older architectures
-  unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
-  unsigned long long int old = *address_as_ull, assumed;
+//TODO
+// # error ": Either upgrade your GPU to compute capability 6 or check the code at src/include/stir/cuda_utilities.cuh, 91-102";
+//   unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
+//   unsigned long long int old = *address_as_ull, assumed;
 
-  do
-    {
-      assumed = old;
-      double updated = __longlong_as_double(assumed) + dval;
-      old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
-  } while (assumed != old);
+//   do
+//     {
+//       assumed = old;
+//       double updated = __longlong_as_double(assumed) + dval;
+//       old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
+//   } while (assumed != old);
 
-  return __longlong_as_double(old);
+//   return __longlong_as_double(old);
 #endif
 }
 
@@ -112,7 +123,7 @@ checkCudaError(const std::string& operation)
       error(std::string("CudaGibbsPrior: CUDA error in ") + operation + ": " + err);
     }
 }
+#endif
 
 END_NAMESPACE_STIR
-
 #endif
