@@ -59,7 +59,7 @@ public:
   //! compute the dot product of the gradient of the log of the prior function at the \a current_estimate with \a input
   /*! Default implementation just call error(). This function needs to be overridden by the
       derived class.
-  /*! The gradient is already multiplied with the penalisation_factor.
+      The gradient is already multiplied with the penalisation_factor.
       \warning The derived class should return the dot product of the gradient with \a input.
       This function is expected to be more efficient than computing the gradient and then taking the dot product.
   */
@@ -79,7 +79,7 @@ public:
 
   //! This computes the diagonal of the Hessian of the log of the prior function at the \a current_estimate and stores it in \a Hessian_diagonal.
   /*! The Hessian diagonal is already multiplied with the penalisation_factor.
-  /*! Default implementation just call error(). This function needs to be overridden by the
+      Default implementation just call error(). This function needs to be overridden by the
       derived class.
       \warning The derived class should overwrite any data in \a Hessian_diagonal.
    */                         
