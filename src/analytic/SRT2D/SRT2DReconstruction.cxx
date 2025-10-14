@@ -32,6 +32,11 @@
 #include "stir/info.h"
 #include "stir/format.h"
 
+// Temporary: disable OpenMP in SRT2D to avoid sporadic CI failures with clang/OpenMP (see STIR#1626)
+#ifdef STIR_OPENMP
+#  undef STIR_OPENMP
+#endif
+
 #ifdef STIR_OPENMP
 #  include <omp.h>
 #endif
