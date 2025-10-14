@@ -481,38 +481,5 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   return Succeeded::yes;
 }
 
-template <typename T>
-void 
-GRD2DReconstruction::fftshift(Array< 1 , T >& a, int size)
-{
-	T temp=0; 
-	for(int i=0; i<size/2; i++){ 
-		temp = a[i]; 
-		a[i] = a[size/2+i];
-		a[size/2+i] = temp;
-	}
-}
-
-template <typename T>
-void 
-GRD2DReconstruction::fftshift(Array< 2 , std::complex< T > >& a, int size)
-{
-	std::complex<T> temp; 
-	for(int i=0; i<size; i++){ 
-		for(int j=0; j<size/2; j++){ 
-			temp = a[i][j]; 
-			a[i][j] = a[i][size/2+j];
-			a[i][size/2+j] = temp;
-		}
-	}
-	for(int i=0; i<size; i++){ 
-		for(int j=0; j<size/2; j++){ 
-			temp = a[j][i]; 
-			a[j][i] = a[size/2+j][i];
-			a[size/2+j][i] = temp;
-		}
-	}
-}
-
 
 END_NAMESPACE_STIR
