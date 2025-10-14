@@ -1,8 +1,11 @@
 DDSR2DParameters :=
 
-;SRT2DSPECT receives as input the forward projection of the attenuation image (attensino.hs) and the measured emission sinogram (sino.hs).
+; DDSR2D receives as input the measured SPECT emission sinogram (sino.hs)
+; and the attenuation image (attenuation_map.hv). The attenuation image
+; must match the target image grid (size/spacing/origin); segment 0 only.
+
 input file := sino.hs
-attenuation projection filename := attensino.hs
+attenuation projection filename := attensino.hv
 
 xy output image size (in pixels) := -1
 
