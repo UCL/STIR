@@ -9,6 +9,16 @@ attenuation projection filename := attensino.hv
 
 xy output image size (in pixels) := -1
 
+; noise filter: Hann/raised-cosine low-pass in the radial Fourier domain of each view.
+; Set 0<value≤1 to apply a taper with cutoff at value·Nyquist (e.g., 0.5 → keep r ≤ 0.5·rmax).
+; Values ≤0 disable (no taper).
+noise filter := 0
+
+; noise filter 2: hard (box) low-pass on the same radial Fourier spectrum, applied after “noise filter”.
+; Set 0<value≤0.5 to zero all bins with r > value·Nyquist (smaller → stronger smoothing).
+; Values ≤0 disable.
+noise filter 2 := 0
+
 ;post-filter type := Wiener
 ;Wiener Filter Parameters :=
 ;End Wiener Filter Parameters :=
