@@ -207,19 +207,17 @@ namespace stir {
 #endif
   }
 
-  // horrible repetition of above. should be solved with a macro or otherwise
-  // we need it as ProjDataInMemory has 2 fill() methods, and therefore SWIG doesn't use extended fill() from above
+  // almost repetition of ProjData above, but avoid creating additional 4D arrays
+  // we also need it as ProjDataInMemory has 2 fill() methods, and therefore SWIG doesn't use extended fill() from above
 %extend ProjDataInMemory
   {
 #ifdef SWIGPYTHON
-    %feature("autodoc", "fill from a Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
+    %feature("autodoc", "fill from a numpy.ndarray or Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
     void fill(PyObject* const arg)
     {
       if (PyIter_Check(arg))
       {
-        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
-	swigstir::fill_Array_from_Python_iterator(&array, arg);
-        fill_from(*$self, array.begin_all(), array.end_all());
+	swigstir::fill_iterator_from_Python_iterator<float>($self->begin(), $self->end(), arg);
       }
       else if (PyArray_Check(arg))
       {

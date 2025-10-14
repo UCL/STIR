@@ -471,7 +471,7 @@ def test_ProjDataInMemory_numerics():
     c /= 3
     assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / 3, rel_tol=1e-4)
 
-def test_ProjData_from_to_Array3D():
+def test_ProjData_from_to_Array():
     # define a projection with some dummy data (filled with segment no.)
     s=Scanner.get_scanner_from_name("ECAT 962")
     projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
@@ -485,11 +485,11 @@ def test_ProjData_from_to_Array3D():
     assert all([all([x==s for x in projdata.get_segment_by_sinogram(s).flat()])
                 for s in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1)])
 
-    # convert to Array3D and back again
-    array3D=projdata.to_array()
+    # convert to Array and back again
+    stir_array=projdata.to_array()
     new_projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
-    new_projdata.fill(array3D.flat())
-
+    # fill with iterator
+    new_projdata.fill(stir_array.flat())
     # assert every data point is equal
     assert all(a==b for a, b in zip(projdata.to_array().flat(),new_projdata.to_array().flat()))
 
