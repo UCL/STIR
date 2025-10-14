@@ -471,7 +471,7 @@ def test_ProjDataInMemory_numerics():
     c /= 3
     assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / 3, rel_tol=1e-4)
 
-def test_ProjData_from_to_Array():
+def test_ProjDataInMemory_from_to_Array():
     # define a projection with some dummy data (filled with segment no.)
     s=Scanner.get_scanner_from_name("ECAT 962")
     projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
@@ -491,7 +491,11 @@ def test_ProjData_from_to_Array():
     # fill with iterator
     new_projdata.fill(stir_array.flat())
     # assert every data point is equal
-    assert all(a==b for a, b in zip(projdata.to_array().flat(),new_projdata.to_array().flat()))
+    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
+    # fill with numpy array
+    new_projdata.fill(stir_array.as_array())
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
 
 def test_xapyb_and_sapyb():
     """

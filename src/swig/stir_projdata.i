@@ -159,7 +159,19 @@ namespace stir {
       return array;
     }
 
-      %feature("autodoc", "fill from a Python scalar, numpy array or iterator, e.g. array.fill(numpyarray.flat)") fill;
+    %newobject as_array();
+    %feature("autodoc", "Create a new numpy array with same dimensions as the return of to_array().") as_array;
+    PyObject* as_array() const
+      {
+        auto np_array = swigstir::create_nparray_for_proj_data(*$self);
+        // TODO avoid making an extra copy, but this way, there's less code
+        // and we don't depend on knowing internal details
+        const Array<4,float> stir_array = swigstir::projdata_to_4D(*$self);
+        swigstir::fill_nparray_from_iterator<float>(np_array, stir_array.begin_all());
+        return PyArray_Return(np_array);
+      }
+
+    %feature("autodoc", "fill from a Python scalar, numpy array or iterator, e.g. array.fill(numpyarray.flat)") fill;
     void fill(PyObject* const arg)
     {
       if (PyIter_Check(arg))
@@ -236,6 +248,15 @@ namespace stir {
 	throw std::invalid_argument(str);
       } 
     }
+
+    %newobject as_array();
+    %feature("autodoc", "Create a new numpy array with same dimensions as the return of to_array().") as_array;
+    PyObject* as_array() const
+      {
+        auto np_array = swigstir::create_nparray_for_proj_data(*$self);
+        swigstir::fill_nparray_from_iterator<float>(np_array, $self->begin());
+        return PyArray_Return(np_array);
+      }
 
 #elif defined(SWIGMATLAB)
     void fill(const mxArray *pm)

@@ -303,11 +303,42 @@
 
     }
 
-    // fill an array from a Python sequence
+    // fill a STIR array from a Python sequence
     template <int num_dimensions, typename elemT>
       void fill_Array_from_Python_iterator(stir::Array<num_dimensions, elemT> * array_ptr, PyObject* const arg)
     {
       fill_iterator_from_Python_iterator<elemT>(array_ptr->begin_all(), array_ptr->end_all(), arg);
+    }
+
+    template <typename elemT, typename IterT>
+      void fill_nparray_from_iterator(PyArrayObject * np, IterT cpp_iter)
+    {
+      if (!PyArray_EquivTypenums(PyArray_TYPE(np), get_np_typenum<elemT>()))
+        {
+          throw std::runtime_error("stir_object.fill needs to be called with numpy array of correct dtype");
+        }
+
+#if 1
+        auto iter = NpyIter_New(np, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
+        if (iter==NULL) {
+          return;
+        }
+        auto iternext = NpyIter_GetIterNext(iter, NULL);
+        auto dataptr = (elemT **) NpyIter_GetDataPtrArray(iter);
+        do {
+          **dataptr = *cpp_iter++;
+        }
+        while (iternext(iter));
+#else
+        // generic alternative, but doesn't compile and might be slower
+        auto iterator = PyObject_GetIter(np_array);
+	PyObject *item;
+	while (item = PyIter_Next(iterator))
+          {
+            *item = *cpp_iter++; // this does not compile. not sure how to assign
+            Py_DECREF(item);
+          }
+#endif
     }
 
     template <typename elemT, typename IterT>
@@ -751,13 +782,32 @@ namespace std {
     return new SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
   }
 
-
 #endif
-  static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
+
+  // helper function that allocates a stir::Array of appropriate size
+  static stir::BasicCoordinate<4, int> array_for_proj_data_size(const ProjData& proj_data)
   {
     const int num_non_tof_sinos = proj_data.get_num_non_tof_sinograms();
- Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),num_non_tof_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
-      return array;
+    return stir::make_coordinate(proj_data.get_num_tof_poss(),num_non_tof_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss());
+  }
+
+  static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
+  {
+    Array<4,float> array(IndexRange4D(array_for_proj_data_size(proj_data)));
+    return array;
+  }
+
+  // helper function that allocates a numpy.ndarray of appropriate size
+  static PyArrayObject* create_nparray_for_proj_data(const ProjData& proj_data)
+  {
+    const auto stir_sizes = swigstir::array_for_proj_data_size(proj_data);
+    constexpr int num_dimensions = 4;
+    npy_intp dims[num_dimensions];
+    for (int d=0; d<num_dimensions; ++d)
+      dims[d] = stir_sizes[d + 1];
+    auto np_array =
+          (PyArrayObject *)PyArray_SimpleNew(num_dimensions, dims, NPY_FLOAT);
+    return np_array;
   }
 
   // a function for  converting ProjData to a 4D array as that's what is easy to use
