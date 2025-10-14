@@ -7,6 +7,11 @@ xy output image size (in pixels) := -1
 z output image size (in pixels) := -1
 zoom := 1 
 
+; Radial low-pass (Fourier). 
+; 0<value<1 keeps all samples with radial frequency r ≤ value·r_max (e.g., 0.5 → keep r ≤ 0.5·r_max).
+; Values ≤0 or ≥1 disable the filter.
+noise filter := 0
+
 ;post-filter type := Wiener
 ;Wiener Filter Parameters :=
 ;End Wiener Filter Parameters :=
