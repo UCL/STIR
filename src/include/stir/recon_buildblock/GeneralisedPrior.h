@@ -56,6 +56,15 @@ public:
   */
   virtual void compute_gradient(DataT& prior_gradient, const DataT& current_estimate) = 0;
 
+  //! compute the dot product of the gradient of the log of the prior function at the \a current_estimate with \a input
+  /*! Default implementation just call error(). This function needs to be overridden by the
+      derived class.
+  /*! The gradient is already multiplied with the penalisation_factor.
+      \warning The derived class should return the dot product of the gradient with \a input.
+      This function is expected to be more efficient than computing the gradient and then taking the dot product.
+  */
+  virtual double compute_gradient_times_input(const DataT& input, const DataT& current_estimate);
+
   //! This computes a single row of the Hessian
   /*! Default implementation just call error(). This function needs to be overridden by the
       derived class.
@@ -64,11 +73,17 @@ public:
       Note that a row corresponds to an object of `DataT`.
       The method (as implemented in derived classes) should store the result in \c prior_Hessian_for_single_densel.
    */
-  virtual double compute_gradient_times_input(const DataT& input, const DataT& current_estimate);
-
   virtual void compute_Hessian(DataT& prior_Hessian_for_single_densel,
                                const BasicCoordinate<3, int>& coords,
                                const DataT& current_image_estimate) const;
+
+  //! This computes the diagonal of the Hessian of the log of the prior function at the \a current_estimate and stores it in \a Hessian_diagonal.
+  /*! The Hessian diagonal is already multiplied with the penalisation_factor.
+  /*! Default implementation just call error(). This function needs to be overridden by the
+      derived class.
+      \warning The derived class should overwrite any data in \a Hessian_diagonal.
+   */                         
+  virtual void compute_Hessian_diagonal(DataT& Hessian_diagonal, const DataT& current_estimate) const;
 
   //! This should compute the multiplication of the Hessian with a vector and add it to \a output
   /*! Default implementation just call error(). This function needs to be overridden by the
@@ -77,8 +92,6 @@ public:
       Instead, accumulate_Hessian_times_input() should be used. This method remains for backwards comparability.
        \warning The derived class should accumulate in \a output.
   */
-  virtual void compute_Hessian_diagonal(DataT& Hessian_diagonal, const DataT& current_estimate) const;
-
   virtual void add_multiplication_with_approximate_Hessian(DataT& output, const DataT& input) const;
 
   //! This should compute the multiplication of the Hessian with a vector and add it to \a output
