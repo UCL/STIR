@@ -1,4 +1,6 @@
 GRD2DParameters :=
+
+; PET sinograms (non-TOF), segment-0 direct, arc-corrected; pre-corrected for randoms, normalisation, attenuation and scatter.
 input file := sino_hof_no_noise.hs
 
 xy output image size (in pixels) := -1  
