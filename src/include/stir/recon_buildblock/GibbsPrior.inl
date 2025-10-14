@@ -30,7 +30,9 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <algorithm>
-#include <omp.h>
+#ifdef STIR_OPENMP
+  #include <omp.h>
+#endif
 using std::min;
 using std::max;
 
@@ -259,7 +261,14 @@ GibbsPrior<elemT,PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
   double result = 0.0;
-  #pragma omp parallel for collapse(3) reduction(+:result) 
+  #ifdef STIR_OPENMP
+    #if _OPENMP >= 201107 // OpenMP 3.1 or newer supports collapse(3)
+      #pragma omp parallel for collapse(3) reduction(+:result) 
+    #else // just parallelize the outermost loop
+      #pragma omp parallel for reduction(+:result) 
+    #endif
+  #endif
+    
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
@@ -311,7 +320,14 @@ GibbsPrior<elemT,PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& pri
     
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  #pragma omp parallel for collapse(3)
+  #ifdef STIR_OPENMP
+    #if _OPENMP >= 201107 // OpenMP 3.1 or newer supports collapse(3)
+      #pragma omp parallel for collapse(3)
+    #else // just parallelize the outermost loop
+      #pragma omp parallel for 
+    #endif
+  #endif
+
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
@@ -333,7 +349,7 @@ GibbsPrior<elemT,PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& pri
                   continue; 
                 const elemT val_neigh = current_image_estimate[z + dz][y + dy][x + dx];
                 double current = weights[dz][dy][dx]*
-                                 this->potential.derivative_10(val_center, val_neigh, z, y, x);
+                                this->potential.derivative_10(val_center, val_neigh, z, y, x);
                 if (do_kappa)                                         
                   current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
                 gradient += current;
@@ -360,10 +376,18 @@ GibbsPrior<elemT,PotentialT>::compute_gradient_times_input(const DiscretisedDens
   const bool do_kappa = !is_null_ptr(kappa_ptr);
   
   double result = 0.0;
-  #pragma omp parallel for collapse(3) reduction(+:result)
+  #ifdef STIR_OPENMP
+    #if _OPENMP >= 201107 // OpenMP 3.1 or newer supports collapse(3)
+      #pragma omp parallel for collapse(3) reduction(+:result) 
+    #else // just parallelize the outermost loop
+      #pragma omp parallel for reduction(+:result) 
+    #endif
+  #endif
+
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
+
       {
         const int min_dz = std::max(weight_min_indices.z(), Image_min_indices.z() - z);
         const int max_dz = std::min(weight_max_indices.z(), Image_max_indices.z() - z);
@@ -382,14 +406,14 @@ GibbsPrior<elemT,PotentialT>::compute_gradient_times_input(const DiscretisedDens
                   continue; 
                 const elemT val_neigh = current_image_estimate[z + dz][y + dy][x + dx];
                 double current = weights[dz][dy][dx]*
-                                 this->potential.derivative_10(val_center, val_neigh, z, y, x);
+                                this->potential.derivative_10(val_center, val_neigh, z, y, x);
                 if (do_kappa)                                         
                   current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
                 gradient += current;
               }
         result += 2 * gradient * input[z][y][x];
       }
-  return result * this->penalisation_factor;
+return result * this->penalisation_factor;
 }
 
 template <typename elemT, typename PotentialT>
@@ -482,7 +506,14 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, ele
 
   const bool do_kappa = !is_null_ptr(kappa_ptr);
 
-  #pragma omp parallel for collapse(3)
+  #ifdef STIR_OPENMP
+    #if _OPENMP >= 201107 // OpenMP 3.1 or newer supports collapse(3)
+      #pragma omp parallel for collapse(3)
+    #else // just parallelize the outermost loop
+      #pragma omp parallel for 
+    #endif
+  #endif
+
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
@@ -504,14 +535,14 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, ele
                   continue; 
                 const elemT val_neigh = current_image_estimate[z + dz][y + dy][x + dx];
                 double current = weights[dz][dy][dx]*
-                                 this->potential.derivative_20(val_center, val_neigh, z, y, x);
+                                this->potential.derivative_20(val_center, val_neigh, z, y, x);
                 if (do_kappa)                                         
                   current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z + dz][y + dy][x + dx];
                 Hessian_diag_element += current;
               }
         Hessian_diagonal[z][y][x] = 2 * static_cast<elemT>(Hessian_diag_element * this->penalisation_factor);
       }
-}
+  }
 
 template <typename elemT, typename PotentialT>
 void
@@ -532,8 +563,15 @@ GibbsPrior<elemT,PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<
 
   this->check(input);
   const bool do_kappa = !is_null_ptr(kappa_ptr);
+  
+  #ifdef STIR_OPENMP
+    #if _OPENMP >= 201107 // OpenMP 3.1 or newer supports collapse(3)
+      #pragma omp parallel for collapse(3)
+    #else // just parallelize the outermost loop
+      #pragma omp parallel for 
+    #endif
+  #endif
 
-  #pragma omp parallel for collapse(3)
   for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
     for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
       for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
