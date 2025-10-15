@@ -14,7 +14,7 @@
   \ingroup priors
   \ingroup CUDA
   \brief Declaration of class stir::GibbsQuadraticPrior, stir::CudaGibbsQuadraticPrior
-  * and the potential function stir::QuadraticPotential
+  and the potential function stir::QuadraticPotential
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
@@ -23,67 +23,31 @@
 #ifndef __stir_recon_buildblock_GibbsQuadraticPrior_H__
 #define __stir_recon_buildblock_GibbsQuadraticPrior_H__
 
-
-#include "stir/recon_buildblock/GibbsPrior.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/cuda_utilities.h"
-
+#include "stir/recon_buildblock/GibbsPrior.h"
 #ifdef STIR_WITH_CUDA
 #   include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
 #endif
 
-
-
 START_NAMESPACE_STIR
 
-/*!
-  \file GibbsQuadraticPrior.h
-  \ingroup priors
-  \brief   This file implements a The Quadratic Gibbs prior on both CPU and GPU.
+#ifndef IGNORESWIG
 
+
+/*!
+  \ingroup priors
+  \brief Quadratic potential function for Gibbs priors
+  
   The prior energy is:
   \f[
-  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} V\left(f_r - f_{r+dr}\right)
+  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} \frac{1}{2}(f_r - f_{r+dr})^2
   \f]
   where:
   - \f$f_r\f$ and \f$f_{r+dr}\f$ are pixel values at positions \f$r\f$ and \f$r+dr\f$
   - \f$w_{dr}\f$ are distance-dependent weights
   - \f$\kappa\f$ provides spatially-varying penalty weights (optional)
-  - \f$V(x) = \frac{1}{2}x^2\f$ is the quadratic potential function
-
-    \par Usage Example:
-  \code
-  auto prior = std::make_shared<GibbsQuadraticPrior<float>>();
-  prior->set_penalisation_factor(0.01);
-  prior->set_up(target_image);
-  \endcode
-  
-  \par Parsing
-  These are the keywords that can be used in addition to the ones in GeneralPrior.
-  \verbatim
-  (Cuda) Gibbs Quadratic Prior Parameters:=
-  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
-  only 2D:= 0
-  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-  ' value of only_2D is ignored
-  ; following example uses 2D 'nearest neighbour' penalty
-  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  ; use next parameter to specify an image with penalisation factors (a la Fessler)
-  ; see class documentation for more info
-  ; kappa filename:=
-  ; use next parameter to get gradient images at every subiteration
-  ; see class documentation
-  gradient filename prefix:=
-  END (Cuda) Gibbs Quadratic Prior Parameters:=
-  \endverbatim
-
-  \see QuadraticPrior for standard single core CPU version
-
 */
-
-
-
-#ifndef IGNORESWIG
 template <typename elemT>
 class QuadraticPotential
 {
@@ -120,6 +84,27 @@ public:
 template <typename elemT>
 class QuadraticPotential;
 
+/*!
+  \ingroup priors
+  \brief CPU Implementation of the  Quadratic Gibbs prior
+
+  \par Parsing
+  These are the keywords that can be used in addition to the ones in GibbsPrior.
+  \verbatim
+  Gibbs Quadratic Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  gradient filename prefix:=
+  END Gibbs Quadratic Prior Parameters:=
+  \endverbatim
+*/
 template <typename elemT>
 class GibbsQuadraticPrior : public RegisteredParsingObject<GibbsQuadraticPrior<elemT>,
                                                             GeneralisedPrior<DiscretisedDensity<3, elemT>>,
@@ -150,6 +135,27 @@ protected:
 
 
 #ifdef STIR_WITH_CUDA
+  /*!
+    \ingroup priors
+    \brief GPU Implementation of the  Quadratic Gibbs prior
+
+    \par Parsing
+    These are the keywords that can be used in addition to the ones in GibbsPrior.
+    \verbatim
+    Cuda Gibbs Quadratic Prior Parameters:=
+    ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
+    only 2D:= 0
+    ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+    ' value of only_2D is ignored
+    ; following example uses 2D 'nearest neighbour' penalty
+    ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+    ; use next parameter to specify an image with penalisation factors (a la Fessler)
+    ; kappa filename:=
+    ; use next parameter to get gradient images at every subiteration
+    gradient filename prefix:=
+    END Cuda Gibbs Quadratic Prior Parameters:=
+    \endverbatim
+  */
   template <typename elemT>
   class CudaGibbsQuadraticPrior : public RegisteredParsingObject<CudaGibbsQuadraticPrior<elemT>,
                                                                   GeneralisedPrior<DiscretisedDensity<3, elemT>>,

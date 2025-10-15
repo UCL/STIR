@@ -14,7 +14,7 @@
   \ingroup priors
   \ingroup CUDA
   \brief Declaration of class stir::CudaRelativeDifferencePrior, stir::CudaGibbsRelativeDifferencePrior and 
-  * the potential function stir::RelativeDifferencePotential
+  the potential function stir::RelativeDifferencePotential
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
@@ -36,71 +36,32 @@
 
 
 START_NAMESPACE_STIR
+
+#ifndef IGNORESWIG
  
- /*!
-  \file GibbsRelativeDifferencePrior.h
+
+/*!
   \ingroup priors
-  \brief
-  A class in the GeneralisedPrior hierarchy. This implements a Relative Difference prior.
+  \brief Implementation of the Relative Difference prior potential
 
   The prior energy is:
   \f[
-  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} V\left(\frac{\lambda_r - \lambda_{r+dr}}{\lambda_r + \lambda_{r+dr} + \gamma |\lambda_r - \lambda_{r+dr}| + \epsilon}\right)
+  \sum_{r,dr} \kappa_{r} \kappa_{r+dr} w_{dr} \frac{(\lambda_r - \lambda_{r+dr})^2}{2(\lambda_r + \lambda_{r+dr} + \gamma |\lambda_r - \lambda_{r+dr}| + \epsilon)}
   \f]
 
-  where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
-  is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero. \f$\gamma\f$ is
-  a smoothing scalar term and the \f$\epsilon\f$ is a small non-negative value included to prevent division by zero.
-  Please note that the RDP is only well defined for non-negative voxel values.
-  For more details, see: <em> J. Nuyts, D. Beque, P. Dupont, and L. Mortelmans,
-  "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,"
-  vol. 49, no. 1, pp. 56-60, 2002. </em>
+  Where:
+  - \f$\lambda_r\f$ and \f$\lambda_{r+dr}\f$ are pixel values at positions \f$r\f$ and \f$r+dr\f$
+  - \f$\gamma\f$ is a smoothing parameter for the prior
+  - \f$\epsilon\f$ prevents division by zero (default is 0)
+  - \f$w_{dr}\f$ are distance-dependent weights
+  - \f$\kappa\f$ provides spatially-varying penalty weights (optional)
 
-  If \f$ \epsilon=0 \f$, we attempt to resolve 0/0 at \f$ \lambda_r = \lambda_{r+dr}=0 \f$ by using the limit.
-  Note that the Hessian explodes to infinity when both voxel values approach 0, and we currently return \c INFINITY.
-  Also, as the RDP is not differentiable at this point, we have chosen to return 0 for the gradient
-  (such that a zero background is not modified).
-
-  \warning the default value for \f$ \epsilon \f$ is zero, which can be problematic for gradient-based algorithms.
-
-  The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
-  Jeff Fessler's papers. It should have identical dimensions to the image for which the
-  penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
-  use 1 for all \f$\kappa\f$'s.
-
-  By default, a 3x3 or 3x3x3 neighbourhood is used where the weights are set to
-  x-voxel_size divided by the Euclidean distance between the points.
-
-  The prior computation excludes voxel-pairs where one voxel is outside the volume. This is
-  effectively the same as extending the volume by replicating the edges (which is different
-  from zero boundary conditions).
-
-\par Parsing
-  These are the keywords that can be used in addition to the ones in GeneralPrior.
-  \verbatim
-  (Cuda) Gibbs Relative Difference Prior Parameters:= 
-  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
-  only 2D:= 0
-  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-  ' value of only_2D is ignored
-  ; following example uses 2D 'nearest neighbour' penalty
-  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  ; gamma value :=
-  ; epsilon value :=
-  ; see class documentation for more info
-  ; use next parameter to specify an image with penalisation factors (a la Fessler)
-  ; kappa filename:=
-  ; use next parameter to get gradient images at every subiteration
-  ; see class documentation
-  gradient filename prefix:=
-  END (Cuda) Gibbs Relative Difference Prior Parameters:=
-  \endverbatim
-
-  \see RelativeDifferencePrior for standard single core CPU version
-
+  \warning Only well-defined for non-negative voxel values. With \f$\epsilon=0\f$, 
+  gradient algorithms may have issues near zero values, as the Hessian becomes singular.
+  
+  \see Nuyts et al., "A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori 
+  Reconstruction in Emission Tomography," IEEE TNS, vol. 49(1), pp. 56-60, 2002.
 */
-
-#ifndef IGNORESWIG
 template <typename elemT>
 class RelativeDifferencePotential
 {
@@ -163,6 +124,26 @@ public:
 template <typename elemT>
 class RelativeDifferencePotential;
 
+/*!
+  \ingroup priors
+  \brief CPU Implementation of the Relative Difference prior  
+  \par Parsing
+  These are the keywords that can be used in addition to the ones in GibbsPrior:
+  \verbatim
+  Gibbs Relative Difference Prior Parameters:= 
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; gamma value :=
+  ; epsilon value :=
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  gradient filename prefix:=
+  END Gibbs Relative Difference Prior Parameters:=
+  \endverbatim
+*/
 template <typename elemT>
 class GibbsRelativeDifferencePrior : public RegisteredParsingObject<GibbsRelativeDifferencePrior<elemT>,
                                                                     GeneralisedPrior<DiscretisedDensity<3, elemT>>,
@@ -196,6 +177,26 @@ protected:
 };
 
 #ifdef STIR_WITH_CUDA
+  /*!
+  \ingroup priors
+  \brief GPU Implementation of the Relative Difference prior  
+  \par Parsing
+  These are the keywords that can be used in addition to the ones in CudaGibbsPrior:
+  \verbatim
+  Cuda Gibbs Relative Difference Prior Parameters:= 
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; gamma value :=
+  ; epsilon value :=
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  gradient filename prefix:=
+  END Cuda Gibbs Relative Difference Prior Parameters:=
+  \endverbatim
+  */
   template <typename elemT>
   class CudaGibbsRelativeDifferencePrior : public RegisteredParsingObject<CudaGibbsRelativeDifferencePrior<elemT>,
                                                                           GeneralisedPrior<DiscretisedDensity<3, elemT>>,
