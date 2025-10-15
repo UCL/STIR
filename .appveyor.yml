@@ -68,6 +68,8 @@ test_script:
   - cd ..\src
   - "set PYTHONPATH=C:\\projects\\stir\\install\\python"
   - python -m pytest .
+  - cd ../examples/python
+  - python recon_demo_gradient.py
   - conda deactivate
 
 on_finish:
