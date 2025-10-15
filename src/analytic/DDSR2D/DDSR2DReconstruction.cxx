@@ -198,8 +198,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	
 	// Some constants 
 	const int sp = sino.get_num_tangential_poss(), sth = sino.get_num_views(); 
-	float dp = 2.0/(sp-1); 
-	int p_cutoff = 0; 
+	float dp = 2.0/(sp-1); // dp := normalised detector spacing along tangential axis
+	int p_cutoff = 0; // p_cutoff := frequency-domain low-pass cutoff (from noise_filter)
 	if(noise_filter <= 0) { 
 		p_cutoff = 0; 
 	} else { 
@@ -207,7 +207,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		p_cutoff = floor(floor(sp/2.0)*noise_filter); 
 		std::cout << "p_cutoff = " << 2*p_cutoff << " of " << sp << std::endl; 
 	}
-  int q_cutoff = 0; 
+  int q_cutoff = 0; // q_cutoff := secondary frequency-domain cutoff (from noise_filter2)
 //float noise_filter2=-1;
   if(noise_filter2 <= 0) { 
 		q_cutoff = 0; 
@@ -217,8 +217,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		std::cout << "q_cutoff = " << 2*q_cutoff << " of " << sp << std::endl; 
 	}
  
-	Array<1, std::complex<float> > W(sp), temp2(sp); 
-	Array<1, float> g(sp); 
+	Array<1, std::complex<float> > W(sp), temp2(sp); // W := cosine taper window in frequency; temp2 := temp spectrum buffer
+	Array<1, float> g(sp); // g := projection samples at current view
 	W.fill(0); 
 	for(int ip=sp/2-p_cutoff; ip<sp/2; ip++) { //fftshift
 		W[ip+sp/2] = 1/2.0*(1 + cos(1.0*M_PI*(ip+1-floor(sp/2))/p_cutoff));
@@ -229,11 +229,11 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	
 	
 	// Generate partitions 
-	std::vector<float> pn(sp,0.0f);
-  std::vector<float> thn(sth,0.0f);
-  std::vector<float> xn(sp,0.0f);
-  std::vector<float> yn(sp,0.0f);
-	for(int ith=0; ith<sth; ith++) thn[ith] = ith*2.0*M_PI/sth; 
+	std::vector<float> pn(sp,0.0f); // thn := view angles grid (radians)
+  std::vector<float> thn(sth,0.0f); // pn := normalised detector coordinate grid
+  std::vector<float> xn(sp,0.0f); // xn := normalised image x-grid
+  std::vector<float> yn(sp,0.0f); // yn := normalised image y-grid
+	for(int ith=0; ith<sth; ith++) thn[ith] = ith*2.0*M_PI/sth;
 	for(int ip=0; ip<sp; ip++) pn[ip] = -1.0+2.0*ip/(sp-1);
 	for(int ix=0; ix<sp; ix++) xn[ix] = -1.0+2.0*ix/(sp-1);
 	for(int iy=0; iy<sp; iy++) yn[iy] = -1.0+2.0*iy/(sp-1);
@@ -244,33 +244,33 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	// Assume z output size is consistent with attenuation 
 	
 	//const int min_tang = sino.get_min_tangential_pos_num(); 
-	const int min_xy = atten.get_min_x(); 
-	const int min_xy_img = image.get_min_x(); 
+	const int min_xy = atten.get_min_x(); // min_xy := min index of atten/image grid in x (assumed square)
+	const int min_xy_img = image.get_min_x(); // min_xy_img := min index of output image grid in x
 	
 	// pad to the next power of 2 for FFT
-	const int pad = pow(2,ceil(log2(2*sp))); 
+	const int pad = pow(2,ceil(log2(2*sp))); // pad := FFT length (next power of two for 2*sp)
 	std::cout << "Tangential poss is " << sp << ", FFT length is " << pad << std::endl; 
 	
 	//float A_hlb[sp], hc[sp], hs[sp], h1[sp], h2[sp], m[sp];
-	std::vector<float> A_hlb(sp,0.0f);
-  std::vector<float> hc(sp,0.0f);
-  std::vector<float> hs(sp,0.0f);
-  std::vector<float> h1(sp,0.0f);
-  std::vector<float> h2(sp,0.0f);
-  std::vector<float> m(sp,0.0f);
-  Array<1,std::complex<float> > temp(pad), K_fft(pad); 
+	std::vector<float> A_hlb(sp,0.0f); // A_hlb := Hilbert transform of A (imag part of spectrum)
+  std::vector<float> hc(sp,0.0f); // hc := cos(A_hlb) per ray
+  std::vector<float> hs(sp,0.0f); // hs := sin(A_hlb) per ray
+  std::vector<float> h1(sp,0.0f); // h1 := exp(A)*g*cos(A_hlb)
+  std::vector<float> h2(sp,0.0f); // h2 := exp(A)*g*sin(A_hlb)
+  std::vector<float> m(sp,0.0f); // m := attenuation-compensated combination
+  Array<1,std::complex<float> > temp(pad), K_fft(pad); // temp := complex FFT buffer; K_fft := Hilbert kernel (1,2,...,2,1)
 	K_fft[0] = 1.0; K_fft[pad/2] = 1.0; 
 	for(int ip=1; ip<pad/2; ip++) K_fft[ip] = 2.0;
 	
 	//float expDbtM[sp][sp], M[sp][sp], s, p; 
-	float s, p; 
-  std::vector<std::vector<float>> expDbtM(sp, std::vector<float>(sp,0.0f)); 
-  std::vector<std::vector<float>> M(sp, std::vector<float>(sp,0.0f)); 
+	float s, p; // s := radial coordinate; p := tangential coordinate (in rotated frame)
+  std::vector<std::vector<float>> expDbtM(sp, std::vector<float>(sp,0.0f)); // expDbtM := exp(dbt)*m buffer over path index s and detector p
+  std::vector<std::vector<float>> M(sp, std::vector<float>(sp,0.0f)); // M := d/dp[exp(dbt)*m] (finite differences)
 	//float dbt[sp][sp], A[sp], x, y, f1, f2, as[sp][sp]; 
-  float x, y, f1, f2;  
-  std::vector<std::vector<float>> dbt(sp, std::vector<float>(sp,0.0f));  
-  std::vector<std::vector<float>> as(sp, std::vector<float>(sp,0.0f));
-  std::vector<float> A(sp);
+  float x, y, f1, f2;  // x,y := rotated image coords; f1,f2 := bilinear weights
+  std::vector<std::vector<float>> dbt(sp, std::vector<float>(sp,0.0f));  // dbt := path integral of attenuation along s (per p)
+  std::vector<std::vector<float>> as(sp, std::vector<float>(sp,0.0f)); // as := sampled attenuation along path; intermediate for dbt
+  std::vector<float> A(sp); // A := 0.5*dbt at s=0 (per p)
 	int i, j; 
 	
 	for(int iz=proj_data_ptr->get_min_axial_pos_num(0); iz<=proj_data_ptr->get_max_axial_pos_num(0)-1; iz++) {
