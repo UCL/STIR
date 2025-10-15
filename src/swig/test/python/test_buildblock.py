@@ -21,6 +21,7 @@ except ImportError:
         raise ImportError('Tests require pytest or py<1.4')
 
 from stir import *
+import stir
 import stirextra
 import math
 
@@ -471,11 +472,24 @@ def test_ProjDataInMemory_numerics():
     c /= 3
     assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / 3, rel_tol=1e-4)
 
+def helper_ProjDataInMemory_from_to_Array(projdata, new_projdata):
+    # convert to Array and back again
+    stir_array=projdata.to_array()
+    # fill with iterator
+    new_projdata.fill(stir_array.flat())
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
+    # fill with numpy array
+    new_projdata.fill(stir_array.as_array())
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
+
 def test_ProjDataInMemory_from_to_Array():
     # define a projection with some dummy data (filled with segment no.)
-    s=Scanner.get_scanner_from_name("ECAT 962")
-    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
-    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    s = stir.Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo = stir.ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    examinfo = stir.ExamInfo()
+    projdata = stir.ProjDataInMemory(ExamInfo(),projdatainfo)
     for seg_idx in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1):
         segment=projdata.get_empty_segment_by_sinogram(seg_idx)
         segment.fill(seg_idx)
@@ -485,17 +499,16 @@ def test_ProjDataInMemory_from_to_Array():
     assert all([all([x==s for x in projdata.get_segment_by_sinogram(s).flat()])
                 for s in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1)])
 
-    # convert to Array and back again
-    stir_array=projdata.to_array()
-    new_projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
-    # fill with iterator
-    new_projdata.fill(stir_array.flat())
-    # assert every data point is equal
-    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
-    # fill with numpy array
-    new_projdata.fill(stir_array.as_array())
-    # assert every data point is equal
-    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
+    # test in memory
+    new_projdata = stir.ProjDataInMemory(ExamInfo(),projdatainfo)
+    helper_ProjDataInMemory_from_to_Array(projdata, new_projdata)
+    # test on file
+    projdata.write_to_file("test_projdata.hs")
+    inout = stir.ios.trunc|stir.ios.ios_base_in|stir.ios.out;
+    new_projdata = stir.ProjDataInterfile(examinfo, projdatainfo, "test_projdata.hs", inout)
+    helper_ProjDataInMemory_from_to_Array(projdata, new_projdata)
+    helper_ProjDataInMemory_from_to_Array(new_projdata, projdata)
+    helper_ProjDataInMemory_from_to_Array(new_projdata, new_projdata)
 
 def test_xapyb_and_sapyb():
     """
