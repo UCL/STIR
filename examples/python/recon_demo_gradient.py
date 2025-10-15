@@ -7,12 +7,6 @@ import os
 # go to directory with input files
 os.chdir('../recon_demo')
 
-# define a function due to current limitation on Swig. " multiply_images(a,b)"
-def multiply_images(a, b):
-    a.xapyb(a,b,a.get_empty_copy(),a)
-    return a
-
-
 # %%
 # initialise reconstruction object
 # we will do this here via a .par file
@@ -62,7 +56,7 @@ plt.show()
 
 # The followin is just the first iteration you need to create a for
 # loop to run all the iterations and subsets
-EMupdate = multiply_images(target,gradient)
+EMupdate = target*gradient
 # extract to python for plotting
 npimage = stirextra.to_numpy(EMupdate)
 plt.plot(npimage[10, 30, :])
