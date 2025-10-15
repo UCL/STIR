@@ -12,9 +12,14 @@
 */
 /*!
   \file
-  \ingroup analytic
+  \ingroup GRD2D
 
   \brief declares the stir::GRD2DReconstruction class
+
+  \details
+  GRD2D maps each PET view into Fourier space, interpolates non-uniform samples to a Cartesian
+  grid using a Kaiser–Bessel kernel, then applies an inverse 2D FFT and resamples to the output image. A radial
+  low-pass noise filter can suppress high-frequency noise. 
 
   \author Dimitra Kyriakopoulou
 
