@@ -335,7 +335,26 @@ Implementation of the 2D Filtered Back Projection algorithm
 \ingroup reconstructors
 Implementation of the 3D Reprojection Filtered Back Projection algorithm
 */
-
+/*! 
+\defgroup SRT2D SRT2D
+\ingroup reconstructors
+Implementation of the 2D PET Spline Reconstruction Technique algorithm. 
+*/
+/*! 
+\defgroup SRT2DSPECT SRT2DSPECT
+\ingroup reconstructors
+Implementation of the 2D SPECT Spline Reconstruction Technique algorithm. 
+*/
+/*! 
+\defgroup GRD2D GRD2D
+\ingroup reconstructors
+Implementation of the 2D PET GRiDding algorithm. 
+*/
+/*! 
+\defgroup DDSR2D DDSR2D
+\ingroup reconstructors
+Implementation of the 2D Direct Differentiation SPECT Reconstruction algorithm. 
+*/
 /*!
 \defgroup modelling Kinetic modelling building blocks
 \ingroup STIR_library
