@@ -119,9 +119,4 @@ GeneralisedPrior<TargetT>::check(TargetT const& current_estimate) const
     error("The prior should already be set-up, but it's not.");
 }
 
-#ifdef _MSC_VER
-// prevent warning message on instantiation of abstract class
-#  pragma warning(disable : 4661)
-#endif
-
 END_NAMESPACE_STIR

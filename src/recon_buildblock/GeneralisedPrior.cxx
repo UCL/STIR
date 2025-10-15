@@ -26,7 +26,14 @@
 
 START_NAMESPACE_STIR
 
+#ifdef _MSC_VER
+// prevent warning message on instantiation of abstract class
+#  pragma warning(disable : 4661)
+#endif
+
+
 template class GeneralisedPrior<DiscretisedDensity<3, float>>;
 template class GeneralisedPrior<ParametricVoxelsOnCartesianGrid>;
+
 
 END_NAMESPACE_STIR
