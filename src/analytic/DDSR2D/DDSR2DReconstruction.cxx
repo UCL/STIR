@@ -21,10 +21,6 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/ArcCorrection.h"
-#include "stir/SSRB.h"
-#include "stir/ProjDataInMemory.h"
 #include "stir/Bin.h"
 #include "stir/round.h"
 #include "stir/display.h"
@@ -63,9 +59,7 @@ DDSR2DReconstruction::
 set_defaults()
 {
   base_type::set_defaults();
-  display_level=0; // no display
-  num_segments_to_combine = -1;
- 
+  display_level=0; // no display 
   
   attenuation_map_filename = ""; 
   noise_filter = -1;
@@ -79,7 +73,6 @@ DDSR2DReconstruction::initialise_keymap()
 
   parser.add_start_key("DDSR2DParameters");
   parser.add_stop_key("End");
-  parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("Display level",&display_level);
 
   parser.add_key("attenuation map file",&attenuation_map_filename);
@@ -98,7 +91,6 @@ ask_parameters()
   noise_filter = ask_num("noise filter (-1 to disable)",0,1,-1);
   noise_filter2 = ask_num("noise filter 2 (-1 to disable)",0,1,-1); 
 
-  num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
   display_level = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: filtered viewgrams) ? ", 0,2,0);
 
 #if 0
@@ -137,29 +129,6 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
 	// TODO improve this, drop "stir/IO/read_from_file.h" if possible
 	atten_data_ptr= read_from_file<DiscretisedDensity<3,float> >(attenuation_map_filename);
 	
-  if (num_segments_to_combine>=0 && num_segments_to_combine%2==0)
-    error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
-
-    if (num_segments_to_combine==-1)
-    {
-      const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_cyl_sptr =
-	dynamic_pointer_cast<const ProjDataInfoCylindrical>(proj_data_ptr->get_proj_data_info_sptr());
-
-      if (is_null_ptr(proj_data_info_cyl_sptr))
-        num_segments_to_combine = 1; //cannot SSRB non-cylindrical data yet
-      else
-	{
-	  if (proj_data_info_cyl_sptr->get_min_ring_difference(0) !=
-	      proj_data_info_cyl_sptr->get_max_ring_difference(0)
-	      ||
-	      proj_data_info_cyl_sptr->get_num_segments()==1)
-	    num_segments_to_combine = 1;
-	  else
-	    num_segments_to_combine = 3;
-	}
-    }
-
-
   return Succeeded::yes;
 }
 
@@ -185,13 +154,12 @@ DDSR2DReconstruction::
 DDSR2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,  
 			const shared_ptr<DiscretisedDensity<3,float> >& atten_data_ptr_v,
 			const double noise_filter_v,  
-			const double noise_filter2_v, 
-		    const int num_segments_to_combine_v
+			const double noise_filter2_v		    
 )
 {
   set_defaults();
 
-  num_segments_to_combine = num_segments_to_combine_v;
+  
   proj_data_ptr = proj_data_ptr_v;
   atten_data_ptr = atten_data_ptr_v; 
   noise_filter = noise_filter_v; 
@@ -206,30 +174,6 @@ DDSR2DReconstruction::
 actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 {
 
-  // perform SSRB
- /* if (num_segments_to_combine>1)
-    {  
-      const ProjDataInfoCylindrical& proj_data_info_cyl =
-	dynamic_cast<const ProjDataInfoCylindrical&>
-	(*proj_data_ptr->get_proj_data_info_sptr());
-
-      //  full_log << "SSRB combining " << num_segments_to_combine 
-      //           << " segments in input file to a new segment 0\n" << std::endl; 
-
-      shared_ptr<ProjDataInfo> 
-	ssrb_info_sptr(SSRB(proj_data_info_cyl, 
-			    num_segments_to_combine,
-			    1, 0,
-			    (num_segments_to_combine-1)/2 ));
-      shared_ptr<ProjData> 
-	proj_data_to_DDSR_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
-      SSRB(*proj_data_to_DDSR_ptr, *proj_data_ptr);
-      proj_data_ptr = proj_data_to_DDSR_ptr;
-    }
-  else
-    {
-      // just use the proj_data_ptr we have already
-    }*/
 
   // check if segment 0 has direct sinograms
   {
@@ -241,41 +185,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       }
   }
 
-  /* // unused warning
-  float tangential_sampling;
-  // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
-  // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
-  shared_ptr<ProjDataInfo> arc_corrected_proj_data_info_sptr;
-
-  // arc-correction if necessary
-  ArcCorrection arc_correction;
-  bool do_arc_correction = false;
-  if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
-      (proj_data_ptr->get_proj_data_info_sptr())))
-    {
-      // it's already arc-corrected
-      arc_corrected_proj_data_info_sptr =
-	proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
-      tangential_sampling =
-	dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
-	(*proj_data_ptr->get_proj_data_info_sptr()).get_tangential_sampling();  
-    }
-  else
-    {
-      // TODO arc-correct to voxel_size
-      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) ==
-	  Succeeded::no)
-	return Succeeded::no;
-      do_arc_correction = true;
-      // TODO full_log
-      warning("DDSR2D will arc-correct data first");
-      arc_corrected_proj_data_info_sptr =
-	arc_correction.get_arc_corrected_proj_data_info_sptr();
-      tangential_sampling =
-	arc_correction.get_arc_corrected_proj_data_info().get_tangential_sampling();  
-    }
-  //ProjDataInterfile ramp_filtered_proj_data(arc_corrected_proj_data_info_sptr,"ramp_filtered");
-*/
   
   VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
