@@ -16,6 +16,12 @@
  
   \brief declares the stir::DDSR2DReconstruction class
 
+  \details
+  DDSR2D reconstructs a 2D activity image from parallel-beam SPECT data with attenuation.
+  It forms exponentially weighted projections, applies Hilbert transforms along the detector
+  axis, differentiates with respect to the tangential coordinate, and integrates over angle
+  (backprojection). Two optional frequency-domain cut-offs control smoothing.
+
   \author Dimitra Kyriakopoulou
 
 */
