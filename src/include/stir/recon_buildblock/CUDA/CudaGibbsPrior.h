@@ -22,7 +22,9 @@
 #include "stir/recon_buildblock/GibbsPrior.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
+#ifdef STIR_WITH_CUDA
 #include <cuda_runtime.h>
+#endif
 #include "stir/shared_ptr.h"
 #include <string>
 

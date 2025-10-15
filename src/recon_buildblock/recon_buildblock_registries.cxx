@@ -149,6 +149,8 @@ static ProjectorByBinPairUsingNiftyPET::RegisterIt gpu_pair;
 
 #ifdef STIR_WITH_CUDA
 static CudaRelativeDifferencePrior<float>::RegisterIt gpu_rdp;
+static CudaGibbsQuadraticPrior<float>::RegisterIt gpu_gibbs_quadratic;
+static CudaGibbsRelativeDifferencePrior<float>::RegisterIt gpu_gibbs_relative_difference;
 #endif
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
