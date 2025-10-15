@@ -68,7 +68,9 @@ test_script:
   - cd ..\src
   - "set PYTHONPATH=C:\\projects\\stir\\install\\python"
   - python -m pytest .
-  - cd ../examples/python
+  - echo "Running Python examples"
+  - cd ..\examples\python
+  - echo "... recon_demo_gradient"
   - python recon_demo_gradient.py
   - conda deactivate
 
