@@ -118,12 +118,15 @@ public:
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
 protected:
-  //! Image and weight boundary indices for efficient and safe neighborhood looping.
-  CartesianCoordinate3D<int> Image_dim;
-  CartesianCoordinate3D<int> Image_max_indices;
-  CartesianCoordinate3D<int> Image_min_indices;
-  CartesianCoordinate3D<int> weight_max_indices;
-  CartesianCoordinate3D<int> weight_min_indices;
+
+  //! @name Image and weight boundary indices
+  //! @{
+  CartesianCoordinate3D<int> image_dim;          //!< Image dimensions
+  CartesianCoordinate3D<int> image_max_indices;  //!< Maximum image indices
+  CartesianCoordinate3D<int> image_min_indices;  //!< Minimum image indices
+  CartesianCoordinate3D<int> weight_max_indices; //!< Maximum weight indices
+  CartesianCoordinate3D<int> weight_min_indices; //!< Minimum weight indices
+  //! @}
 
   //! The weights for the neighbourhood 
   Array<3, float> weights;

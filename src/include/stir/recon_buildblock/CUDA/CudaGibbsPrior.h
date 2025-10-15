@@ -58,9 +58,9 @@ protected:
 
   elemT* d_image_data = nullptr;
   //Currently stir:CartesianCoordinate3D<int> is not supported on GPU, we need a simple structure to store boundaries.
-  int3 d_Image_dim;
-  int3 d_Image_max_indices;
-  int3 d_Image_min_indices;
+  int3 d_image_dim;
+  int3 d_image_max_indices;
+  int3 d_image_min_indices;
   int3 d_weight_max_indices;
   int3 d_weight_min_indices;
 

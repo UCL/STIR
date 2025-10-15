@@ -114,11 +114,11 @@ GibbsPrior<elemT,potentialT>::set_up(shared_ptr<const DiscretisedDensity<3, elem
     compute_default_weights(target_cast.get_voxel_size(), this->only_2D);
     
   auto sizes = target_cast.get_lengths();
-  Image_dim = {sizes[1], sizes[2], sizes[3]};
+  image_dim = {sizes[1], sizes[2], sizes[3]};
 
   // Set the boundary of the image
-  Image_min_indices = target_cast.get_min_indices();
-  Image_max_indices = target_cast.get_max_indices();
+  image_min_indices = target_cast.get_min_indices();
+  image_max_indices = target_cast.get_max_indices();
 
   this->_already_set_up = true;
   return Succeeded::yes;
@@ -261,22 +261,22 @@ GibbsPrior<elemT,PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& 
   double result = 0.0;
   #ifdef STIR_OPENMP
     #if _OPENMP >= 201107 // OpenMP 3.1 or newer supports collapse(3)
-      #pragma omp parallel for collapse(3) reduction(+:result) 
+      #pragma omp parallel for collapse(3) reduction(+:result)  
     #else // just parallelize the outermost loop
       #pragma omp parallel for reduction(+:result) 
     #endif
   #endif
     
-  for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
-    for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
-      for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
+  for (int z = image_min_indices.z(); z <= image_max_indices.z(); ++z)
+    for (int y = image_min_indices.y(); y <= image_max_indices.y(); ++y)
+      for (int x = image_min_indices.x(); x <= image_max_indices.x(); ++x)
       {
-        const int min_dz = std::max(weight_min_indices.z(), Image_min_indices.z() - z);
-        const int max_dz = std::min(weight_max_indices.z(), Image_max_indices.z() - z);
-        const int min_dy = std::max(weight_min_indices.y(), Image_min_indices.y() - y);
-        const int max_dy = std::min(weight_max_indices.y(), Image_max_indices.y() - y);
-        const int min_dx = std::max(weight_min_indices.x(), Image_min_indices.x() - x);
-        const int max_dx = std::min(weight_max_indices.x(), Image_max_indices.x() - x);
+        const int min_dz = std::max(weight_min_indices.z(), image_min_indices.z() - z);
+        const int max_dz = std::min(weight_max_indices.z(), image_max_indices.z() - z);
+        const int min_dy = std::max(weight_min_indices.y(), image_min_indices.y() - y);
+        const int max_dy = std::min(weight_max_indices.y(), image_max_indices.y() - y);
+        const int min_dx = std::max(weight_min_indices.x(), image_min_indices.x() - x);
+        const int max_dx = std::min(weight_max_indices.x(), image_max_indices.x() - x);
 
         const elemT val_center = current_image_estimate[z][y][x];
         
@@ -326,16 +326,16 @@ GibbsPrior<elemT,PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& pri
     #endif
   #endif
 
-  for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
-    for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
-      for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
+  for (int z = image_min_indices.z(); z <= image_max_indices.z(); ++z)
+    for (int y = image_min_indices.y(); y <= image_max_indices.y(); ++y)
+      for (int x = image_min_indices.x(); x <= image_max_indices.x(); ++x)
       {
-        const int min_dz = std::max(weight_min_indices.z(), Image_min_indices.z() - z);
-        const int max_dz = std::min(weight_max_indices.z(), Image_max_indices.z() - z);
-        const int min_dy = std::max(weight_min_indices.y(), Image_min_indices.y() - y);
-        const int max_dy = std::min(weight_max_indices.y(), Image_max_indices.y() - y);
-        const int min_dx = std::max(weight_min_indices.x(), Image_min_indices.x() - x);
-        const int max_dx = std::min(weight_max_indices.x(), Image_max_indices.x() - x);
+        const int min_dz = std::max(weight_min_indices.z(), image_min_indices.z() - z);
+        const int max_dz = std::min(weight_max_indices.z(), image_max_indices.z() - z);
+        const int min_dy = std::max(weight_min_indices.y(), image_min_indices.y() - y);
+        const int max_dy = std::min(weight_max_indices.y(), image_max_indices.y() - y);
+        const int min_dx = std::max(weight_min_indices.x(), image_min_indices.x() - x);
+        const int max_dx = std::min(weight_max_indices.x(), image_max_indices.x() - x);
         const elemT val_center = current_image_estimate[z][y][x];
 
         double gradient = 0.;
@@ -382,17 +382,17 @@ GibbsPrior<elemT,PotentialT>::compute_gradient_times_input(const DiscretisedDens
     #endif
   #endif
 
-  for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
-    for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
-      for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
+  for (int z = image_min_indices.z(); z <= image_max_indices.z(); ++z)
+    for (int y = image_min_indices.y(); y <= image_max_indices.y(); ++y)
+      for (int x = image_min_indices.x(); x <= image_max_indices.x(); ++x)
 
       {
-        const int min_dz = std::max(weight_min_indices.z(), Image_min_indices.z() - z);
-        const int max_dz = std::min(weight_max_indices.z(), Image_max_indices.z() - z);
-        const int min_dy = std::max(weight_min_indices.y(), Image_min_indices.y() - y);
-        const int max_dy = std::min(weight_max_indices.y(), Image_max_indices.y() - y);
-        const int min_dx = std::max(weight_min_indices.x(), Image_min_indices.x() - x);
-        const int max_dx = std::min(weight_max_indices.x(), Image_max_indices.x() - x);
+        const int min_dz = std::max(weight_min_indices.z(), image_min_indices.z() - z);
+        const int max_dz = std::min(weight_max_indices.z(), image_max_indices.z() - z);
+        const int min_dy = std::max(weight_min_indices.y(), image_min_indices.y() - y);
+        const int max_dy = std::min(weight_max_indices.y(), image_max_indices.y() - y);
+        const int min_dx = std::max(weight_min_indices.x(), image_min_indices.x() - x);
+        const int max_dx = std::min(weight_max_indices.x(), image_max_indices.x() - x);
         const elemT val_center = current_image_estimate[z][y][x];
 
         double gradient = 0.0;
@@ -443,12 +443,12 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prio
 
   const elemT val_center = current_image_estimate[z][y][x];
 
-  const int min_dz = std::max(weight_min_indices.z(), Image_min_indices.z() - z);
-  const int max_dz = std::min(weight_max_indices.z(), Image_max_indices.z() - z);
-  const int min_dy = std::max(weight_min_indices.y(), Image_min_indices.y() - y);
-  const int max_dy = std::min(weight_max_indices.y(), Image_max_indices.y() - y);
-  const int min_dx = std::max(weight_min_indices.x(), Image_min_indices.x() - x);
-  const int max_dx = std::min(weight_max_indices.x(), Image_max_indices.x() - x);
+  const int min_dz = std::max(weight_min_indices.z(), image_min_indices.z() - z);
+  const int max_dz = std::min(weight_max_indices.z(), image_max_indices.z() - z);
+  const int min_dy = std::max(weight_min_indices.y(), image_min_indices.y() - y);
+  const int max_dy = std::min(weight_max_indices.y(), image_max_indices.y() - y);
+  const int min_dx = std::max(weight_min_indices.x(), image_min_indices.x() - x);
+  const int max_dx = std::min(weight_max_indices.x(), image_max_indices.x() - x);
   for (int dz = min_dz; dz <= max_dz; ++dz)
     for (int dy = min_dy; dy <= max_dy; ++dy)
       for (int dx = min_dx; dx <= max_dx; ++dx)
@@ -512,16 +512,16 @@ GibbsPrior<elemT,PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, ele
     #endif
   #endif
 
-  for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
-    for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
-      for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
+  for (int z = image_min_indices.z(); z <= image_max_indices.z(); ++z)
+    for (int y = image_min_indices.y(); y <= image_max_indices.y(); ++y)
+      for (int x = image_min_indices.x(); x <= image_max_indices.x(); ++x)
       {
-        const int min_dz = std::max(weight_min_indices.z(), Image_min_indices.z() - z);
-        const int max_dz = std::min(weight_max_indices.z(), Image_max_indices.z() - z);
-        const int min_dy = std::max(weight_min_indices.y(), Image_min_indices.y() - y);
-        const int max_dy = std::min(weight_max_indices.y(), Image_max_indices.y() - y);
-        const int min_dx = std::max(weight_min_indices.x(), Image_min_indices.x() - x);
-        const int max_dx = std::min(weight_max_indices.x(), Image_max_indices.x() - x);
+        const int min_dz = std::max(weight_min_indices.z(), image_min_indices.z() - z);
+        const int max_dz = std::min(weight_max_indices.z(), image_max_indices.z() - z);
+        const int min_dy = std::max(weight_min_indices.y(), image_min_indices.y() - y);
+        const int max_dy = std::min(weight_max_indices.y(), image_max_indices.y() - y);
+        const int min_dx = std::max(weight_min_indices.x(), image_min_indices.x() - x);
+        const int max_dx = std::min(weight_max_indices.x(), image_max_indices.x() - x);
         const elemT val_center = current_image_estimate[z][y][x];
 
         double Hessian_diag_element = 0.;
@@ -570,16 +570,16 @@ GibbsPrior<elemT,PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<
     #endif
   #endif
 
-  for (int z = Image_min_indices.z(); z <= Image_max_indices.z(); ++z)
-    for (int y = Image_min_indices.y(); y <= Image_max_indices.y(); ++y)
-      for (int x = Image_min_indices.x(); x <= Image_max_indices.x(); ++x)
+  for (int z = image_min_indices.z(); z <= image_max_indices.z(); ++z)
+    for (int y = image_min_indices.y(); y <= image_max_indices.y(); ++y)
+      for (int x = image_min_indices.x(); x <= image_max_indices.x(); ++x)
       {
-        const int min_dz = std::max(weight_min_indices.z(), Image_min_indices.z() - z);
-        const int max_dz = std::min(weight_max_indices.z(), Image_max_indices.z() - z);
-        const int min_dy = std::max(weight_min_indices.y(), Image_min_indices.y() - y);
-        const int max_dy = std::min(weight_max_indices.y(), Image_max_indices.y() - y);
-        const int min_dx = std::max(weight_min_indices.x(), Image_min_indices.x() - x);
-        const int max_dx = std::min(weight_max_indices.x(), Image_max_indices.x() - x);
+        const int min_dz = std::max(weight_min_indices.z(), image_min_indices.z() - z);
+        const int max_dz = std::min(weight_max_indices.z(), image_max_indices.z() - z);
+        const int min_dy = std::max(weight_min_indices.y(), image_min_indices.y() - y);
+        const int max_dy = std::min(weight_max_indices.y(), image_max_indices.y() - y);
+        const int min_dx = std::max(weight_min_indices.x(), image_min_indices.x() - x);
+        const int max_dx = std::min(weight_max_indices.x(), image_max_indices.x() - x);
 
         const elemT val_center   = current_image_estimate[z][y][x];
         const elemT input_center = input[z][y][x];

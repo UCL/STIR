@@ -533,9 +533,9 @@ CudaGibbsPrior<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, ele
                                                                               d_weights_data,
                                                                               do_kappa ? d_kappa_data : nullptr,
                                                                               do_kappa,
-                                                                              d_Image_dim,
-                                                                              d_Image_max_indices,
-                                                                              d_Image_min_indices,
+                                                                              d_image_dim,
+                                                                              d_image_max_indices,
+                                                                              d_image_min_indices,
                                                                               d_weight_max_indices,
                                                                               d_weight_min_indices,
                                                                               this->potential);
@@ -578,9 +578,9 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>
                                             do_kappa ? d_kappa_data : nullptr,
                                             do_kappa,
                                             this->penalisation_factor,
-                                            d_Image_dim,
-                                            d_Image_max_indices,
-                                            d_Image_min_indices,
+                                            d_image_dim,
+                                            d_image_max_indices,
+                                            d_image_min_indices,
                                             d_weight_max_indices,
                                             d_weight_min_indices,
                                             this->potential);
@@ -623,9 +623,9 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const Discretise
                                                 d_weights_data,
                                                 do_kappa ? d_kappa_data : nullptr,
                                                 do_kappa,
-                                                d_Image_dim,
-                                                d_Image_max_indices,
-                                                d_Image_min_indices,
+                                                d_image_dim,
+                                                d_image_max_indices,
+                                                d_image_min_indices,
                                                 d_weight_max_indices,
                                                 d_weight_min_indices,
                                                 this->potential);
@@ -666,9 +666,9 @@ CudaGibbsPrior<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3
                                                                       do_kappa ? d_kappa_data : nullptr,
                                                                       do_kappa,
                                                                       this->penalisation_factor,
-                                                                      d_Image_dim,
-                                                                      d_Image_max_indices,
-                                                                      d_Image_min_indices,
+                                                                      d_image_dim,
+                                                                      d_image_max_indices,
+                                                                      d_image_min_indices,
                                                                       d_weight_max_indices,
                                                                       d_weight_min_indices,
                                                                       this->potential);
@@ -710,9 +710,9 @@ CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDen
                                                                         do_kappa ? d_kappa_data : nullptr,
                                                                         do_kappa,
                                                                         this->penalisation_factor,
-                                                                        d_Image_dim,
-                                                                        d_Image_max_indices,
-                                                                        d_Image_min_indices,
+                                                                        d_image_dim,
+                                                                        d_image_max_indices,
+                                                                        d_image_min_indices,
                                                                         d_weight_max_indices,
                                                                         d_weight_min_indices,
                                                                         this->potential);
@@ -735,9 +735,9 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
   
   // Fill CUDA int3 objects (This is needed because CartesianCoordinate3D cannot be used on GPU)
   //This is not very elegant but I don't see a better solution for now
-  d_Image_dim = make_int3(this->Image_dim.x(), this->Image_dim.y(), this->Image_dim.z());
-  d_Image_max_indices = make_int3(this->Image_max_indices.x(), this->Image_max_indices.y(), this->Image_max_indices.z());
-  d_Image_min_indices = make_int3(this->Image_min_indices.x(), this->Image_min_indices.y(), this->Image_min_indices.z());
+  d_image_dim = make_int3(this->image_dim.x(), this->image_dim.y(), this->image_dim.z());
+  d_image_max_indices = make_int3(this->image_max_indices.x(), this->image_max_indices.y(), this->image_max_indices.z());
+  d_image_min_indices = make_int3(this->image_min_indices.x(), this->image_min_indices.y(), this->image_min_indices.z());
   d_weight_max_indices = make_int3(this->weight_max_indices.x(), this->weight_max_indices.y(), this->weight_max_indices.z());
   d_weight_min_indices = make_int3(this->weight_min_indices.x(), this->weight_min_indices.y(), this->weight_min_indices.z());
   
@@ -746,9 +746,9 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
   block_dim.y = 8;
   block_dim.z = 1;
 
-  grid_dim.x = (d_Image_dim.x + block_dim.x - 1) / block_dim.x;
-  grid_dim.y = (d_Image_dim.y + block_dim.y - 1) / block_dim.y;
-  grid_dim.z = (d_Image_dim.z + block_dim.z - 1) / block_dim.z;
+  grid_dim.x = (d_image_dim.x + block_dim.x - 1) / block_dim.x;
+  grid_dim.y = (d_image_dim.y + block_dim.y - 1) / block_dim.y;
+  grid_dim.z = (d_image_dim.z + block_dim.z - 1) / block_dim.z;
 
   //Variable used for shared memory to compute block reduction sums
   threads_per_block = block_dim.x * block_dim.y * block_dim.z;
