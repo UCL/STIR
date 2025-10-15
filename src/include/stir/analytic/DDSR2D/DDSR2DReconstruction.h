@@ -63,9 +63,7 @@ public:
   DDSR2DReconstruction(const shared_ptr<ProjData>&, 
                       const shared_ptr<DiscretisedDensity<3,float> >&, 
 			  const double noise_filter=-1., 
-        const double noise_filter2=-1.,
-			      const int num_segments_to_combine=-1
-		      );
+        const double noise_filter2=-1.);
   
   virtual std::string method_info() const;
 
@@ -80,13 +78,7 @@ public:
   double noise_filter; 
   //! Ramp filter: Alpha value
   double noise_filter2; 
-    //! number of segments to combine (with SSRB) before starting 2D reconstruction
-  /*! if -1, a value is chosen depending on the axial compression.
-      If there is no axial compression, num_segments_to_combine is
-      effectively set to 3, otherwise it is set to 1.
-      \see SSRB
-  */
-  int num_segments_to_combine;
+
   //! potentially display data
   /*! allowed values: \c display_level=0 (no display), 1 (only final image), 
       2 (filtered-viewgrams). Defaults to 0.
