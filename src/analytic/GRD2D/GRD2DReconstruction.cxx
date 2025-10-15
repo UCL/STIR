@@ -293,42 +293,42 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	
 	//float M_PIf = M_PI; 
 	const int sp = sino.get_num_tangential_poss(), sth = sino.get_num_views(); 
-	float dp = 2.0/sp, dth = M_PI/sth;
+	float dp = 2.0/sp, dth = M_PI/sth;  // dp := normalised detector spacing in p; dth := view angle step
 	
 	// pad to the next power of 2 for FFT
-	const int sp1 = 2*pow(2,ceil(log2(sp))); 
+	const int sp1 = 2*pow(2,ceil(log2(sp)));  // sp1 := zero-padded FFT length in p (2×next power of two ≥ sp)
 	
-	const float alpha = alpha_gridding; //1.0; 
-	const float beta = 1.0*sp1/sp; 
-	const float K = kappa_gridding; // 4.0f; //; % min=4 max=6
+	const float alpha = alpha_gridding; // alpha := Kaiser–Bessel window width parameter (≈1..2)
+	const float beta = 1.0*sp1/sp; // beta := oversampling factor in p (FFT grid scaling sp1/sp)
+	const float K = kappa_gridding; // K := kernel support (grid radius in k-space, typical 4..8)
 	
 	// gridding
-	std::vector<float> pn1(sp1);
-	std::vector<float> thn(sth);
-	std::vector<float> xn(sp);
-	std::vector<float> yn(sp);
+	std::vector<float> pn1(sp1); // pn1 := normalized frequency coordinate per FFT bin along p (length sp1, zero-padded)
+	std::vector<float> thn(sth); // thn := view-angle grid (radians)
+	std::vector<float> xn(sp); // xn  := normalised image x-grid in [-1,1]
+	std::vector<float> yn(sp); // yn  := normalised image y-grid in [-1,1]
 	for(int ith=0; ith<sth; ith++) thn[ith]=ith*M_PI/sth; 
 	for(int ip=0; ip<sp1; ip++) pn1[ip]=-sp/4.0+ip*(sp/2.0)/(sp1-1);
 	for(int ix=0; ix<sp; ix++) xn[ix]=-1.0+2.0*ix/(sp-1); 
 	for(int iy=0; iy<sp; iy++) yn[iy]=-1.0+2.0*iy/(sp-1); 
 		
 	
-	const int min_tang = sino.get_min_tangential_pos_num(); 
-	const int min_xy = image.get_min_x(); 
+	const int min_tang = sino.get_min_tangential_pos_num(); // min_tang := min tangential bin index in sinogram storage
+	const int min_xy = image.get_min_x(); // min_xy := min output image x-index (assumed square grid)
 	
 	
-	IndexRange2D span(sino.get_num_views(),sp1); 
-	Array< 2, std::complex<float> > P(span);
-	Array< 1, float > s(sp1);
-	Array< 1, std::complex<float> > a;
-	IndexRange2D span2(sp1,sp1); 
-	Array< 2, std::complex<float> > ff(span2);
-	std::complex<float> f1, f2; 
-	int l1a, l1b, l2a, l2b; 
+	IndexRange2D span(sino.get_num_views(),sp1); // span := (views × sp1) index range for polar frequency slices
+	Array< 2, std::complex<float> > P(span); // P := per-view 1D-FFT spectra mapped into polar frequency bins
+	Array< 1, float > s(sp1); // s := zero-padded projection buffer (real, length sp1)
+	Array< 1, std::complex<float> > a; // a := packed half-spectrum from real-FFT (fourier_1d_for_real_data)
+	IndexRange2D span2(sp1,sp1); // span2 := Cartesian k-space grid size (sp1×sp1)
+	Array< 2, std::complex<float> > ff(span2); // ff := Cartesian Fourier accumulator (post-gridding)
+	std::complex<float> f1, f2; // f1,f2 := temporaries for complex math
+	int l1a, l1b, l2a, l2b; // l1*,l2* := k-space index bounds for kernel support rectangles
 
 
 	
-	int p_cutoff;  
+	int p_cutoff; // p_cutoff := symmetric radial frequency taper (derived from noise_filter; 0 disables)
 	if(noise_filter <= 0) { 
 		p_cutoff = 0; 
 	} else { 
@@ -339,12 +339,12 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
  
 
 	
-	float ar = alpha*sp*dp/2.0f;
-	float u = K/(2.0f*beta*sp*dp); 
+	float ar = alpha*sp*dp/2.0f; // ar := real-space KB parameter (window width scaling)
+	float u = K/(2.0f*beta*sp*dp); // u  := half-support of KB kernel in k-space (per axis)
 	
 	
-  std::vector<std::vector<float>> PGx(sth, std::vector<float>(sp1)); 
-  std::vector<std::vector<float>> PGy(sth, std::vector<float>(sp1));
+  std::vector<std::vector<float>> PGx(sth, std::vector<float>(sp1)); // PGx := Cartesian Fourier-plane x-coordinate (normalized) for each (view, p) polar sample
+  std::vector<std::vector<float>> PGy(sth, std::vector<float>(sp1)); // PGy := Cartesian Fourier-plane y-coordinate (normalized) for each (view, p) polar sample
 	for(int ith=0; ith<sth; ith++){ 
 		for(int ip=0; ip<sp1; ip++){ 
 			PGx[ith][ip] = pn1[ip]*cos(thn[ith]); 
@@ -381,7 +381,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	}
 	
 	ff.fill(0); 
-	const float sp1dp = sp1*dp;
+	const float sp1dp = sp1*dp; // sp1dp := scale factor between normalised frequency units and FFT grid indices (used when mapping k <-> array index)
 	for(int ith=0; ith<sth; ith++){ 
 		for(int ip=0; ip<sp1; ip++){ 
 			l1a = ceil((-u+PGx[ith][ip])*sp1dp); 
@@ -418,7 +418,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	// gridding
 	int spf = 2*floor(sp/2); // make dimensions even
 	//float img[spf][spf]; 
-  std::vector<std::vector<float>> img(spf, std::vector<float>(spf));
+  std::vector<std::vector<float>> img(spf, std::vector<float>(spf)); // img := temporary reconstructed slice on spf×spf grid
 	for(int ix=-spf/2; ix<=spf/2-1; ix++){ 
 		for(int iy=-spf/2; iy<=spf/2-1; iy++){ 
 			img[ix+spf/2][iy+spf/2] = std::real(ff[ix+sp1/2][iy+sp1/2]/
@@ -432,12 +432,12 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		if(iz==0) 
 			std::cerr << "Image dimension mismatch, tangential positions " << sp << ", xy output " << image.get_x_size() << "\n Interpolating..." << std::endl; 
 		int sx = image.get_x_size(); 
-		int sy = sx; 
-  	std::vector<float> xn1(sx);
-    std::vector<float> yn1(sy);
-		float dx1 = 2./(sx-1), dy1 = 2./(sy-1); 
-		float dx = 2./(sp-1), dy = 2./(sp-1); 
-		float val; 
+		int sy = sx; // sx,sy := output image size (assumed square)
+  	std::vector<float> xn1(sx); 
+    std::vector<float> yn1(sy); // xn1,yn1 := normalised target grids
+		float dx1 = 2./(sx-1), dy1 = 2./(sy-1);  // dx1,dy1 := target grid steps
+		float dx = 2./(sp-1), dy = 2./(sp-1); // dx,dy  := source grid steps
+		float val; // val := interpolated sample
 
 		for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
 		for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
