@@ -34,95 +34,96 @@ START_NAMESPACE_STIR
 #endif
 
 #ifdef __CUDACC__
-template <int num_dimensions, typename elemT>
-inline void
-array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
-{
-  if (stir_array.is_contiguous())
-    {
-      info("array_to_device contiguous", 100);
-      cudaMemcpy(dev_data, stir_array.get_const_full_data_ptr(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
-      stir_array.release_const_full_data_ptr();
-    }
-  else
-    {
-      info("array_to_device non-contiguous", 100);
-      // Allocate host memory to get contiguous vector, copy array to it and copy from device to host
-      std::vector<elemT> tmp_data(stir_array.size_all());
-      std::copy(stir_array.begin_all(), stir_array.end_all(), tmp_data.begin());
-      cudaMemcpy(dev_data, tmp_data.data(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
-    }
-}
+  template <int num_dimensions, typename elemT>
+  inline void
+  array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
+  {
+    if (stir_array.is_contiguous())
+      {
+        info("array_to_device contiguous", 100);
+        cudaMemcpy(dev_data, stir_array.get_const_full_data_ptr(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
+        stir_array.release_const_full_data_ptr();
+      }
+    else
+      {
+        info("array_to_device non-contiguous", 100);
+        // Allocate host memory to get contiguous vector, copy array to it and copy from device to host
+        std::vector<elemT> tmp_data(stir_array.size_all());
+        std::copy(stir_array.begin_all(), stir_array.end_all(), tmp_data.begin());
+        cudaMemcpy(dev_data, tmp_data.data(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
+      }
+  }
 
-template <int num_dimensions, typename elemT>
-inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
-{
-  if (stir_array.is_contiguous())
-    {
-      info("array_to_host contiguous", 100);
-      cudaMemcpy(stir_array.get_full_data_ptr(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
-      stir_array.release_full_data_ptr();
-    }
-  else
-    {
-      info("array_to_host non-contiguous", 100);
-      // Allocate host memory for the result and copy from device to host
-      std::vector<elemT> tmp_data(stir_array.size_all());
-      cudaMemcpy(tmp_data.data(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
-      // Copy the data to the stir_array
-      std::copy(tmp_data.begin(), tmp_data.end(), stir_array.begin_all());
-    }
-}
+  template <int num_dimensions, typename elemT>
+  inline void
+  array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
+  {
+    if (stir_array.is_contiguous())
+      {
+        info("array_to_host contiguous", 100);
+        cudaMemcpy(stir_array.get_full_data_ptr(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
+        stir_array.release_full_data_ptr();
+      }
+    else
+      {
+        info("array_to_host non-contiguous", 100);
+        // Allocate host memory for the result and copy from device to host
+        std::vector<elemT> tmp_data(stir_array.size_all());
+        cudaMemcpy(tmp_data.data(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
+        // Copy the data to the stir_array
+        std::copy(tmp_data.begin(), tmp_data.end(), stir_array.begin_all());
+      }
+  }
 
-template <typename elemT>
-__device__ inline void
-blockReduction(elemT* shared_mem, int thread_in_block, int block_threads)
-{
-  // Parallel reduction in shared memory
-  for (int stride = block_threads / 2; stride > 0; stride /= 2)
-    {
-      if (thread_in_block < stride)
-        shared_mem[thread_in_block] += shared_mem[thread_in_block + stride];
-      __syncthreads();
-    }
-}
+  //! \brief Performs a parallel reduction sum on shared memory within a CUDA thread block, final value stored in shared_mem[0].
+  template <typename elemT>
+  __device__ inline void
+  blockReduction(elemT* shared_mem, int thread_in_block, int block_threads)
+  {
+    for (int stride = block_threads / 2; stride > 0; stride /= 2)
+      {
+        if (thread_in_block < stride)
+          shared_mem[thread_in_block] += shared_mem[thread_in_block + stride];
+        __syncthreads();
+      }
+  }
 
-// Generic, architecture-compatible atomicAdd for double and convertible types
-template <typename elemT>
-__device__ inline double
-atomicAddGeneric(double* address, elemT val)
-{
-  double dval = static_cast<double>(val);
-#if __CUDA_ARCH__ >= 600
-  return atomicAdd(address, dval);
-#else
-//TODO
-// # error ": Either upgrade your GPU to compute capability 6 or check the code at src/include/stir/cuda_utilities.cuh, 91-102";
-//   unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
-//   unsigned long long int old = *address_as_ull, assumed;
+  //! \brief Provides atomic addition for double values with fallback for pre-Pascal GPU architectures.
+  template <typename elemT>
+  __device__ inline double
+  atomicAddGeneric(double* address, elemT val)
+  {
+    double dval = static_cast<double>(val);
+  #if __CUDA_ARCH__ >= 600
+    return atomicAdd(address, dval);
+  #else
+  //TODO
+  // # error ": Either upgrade your GPU to compute capability 6 or check the code at src/include/stir/cuda_utilities.cuh, 91-102";
+  //   unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
+  //   unsigned long long int old = *address_as_ull, assumed;
 
-//   do
-//     {
-//       assumed = old;
-//       double updated = __longlong_as_double(assumed) + dval;
-//       old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
-//   } while (assumed != old);
+  //   do
+  //     {
+  //       assumed = old;
+  //       double updated = __longlong_as_double(assumed) + dval;
+  //       old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
+  //   } while (assumed != old);
 
-//   return __longlong_as_double(old);
-#endif
-}
+  //   return __longlong_as_double(old);
+  #endif
+  }
 
-inline void
-checkCudaError(const std::string& operation)
-{
-  cudaError_t cuda_error = cudaGetLastError();
-  if (cuda_error != cudaSuccess)
-    {
-      const char* err = cudaGetErrorString(cuda_error);
-      error(std::string("CudaGibbsPrior: CUDA error in ") + operation + ": " + err);
-    }
-}
+  //! \brief Utility function to check for CUDA errors and report them with context information.
+  inline void
+  checkCudaError(const std::string& operation)
+  {
+    cudaError_t cuda_error = cudaGetLastError();
+    if (cuda_error != cudaSuccess)
+      {
+        const char* err = cudaGetErrorString(cuda_error);
+        error(std::string("CudaGibbsPrior: CUDA error in ") + operation + ": " + err);
+      }
+  }
 #endif
 
 END_NAMESPACE_STIR
