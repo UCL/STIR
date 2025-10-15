@@ -1,7 +1,8 @@
 //
 //
 /*
-    Copyright (C) 2025, University College London
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2019 -2025, University College London
     Copyright (C) 2025, University of Milano-Bicocca 
     This file is part of STIR.
 
@@ -16,8 +17,11 @@
   \brief Declaration of class stir::CudaRelativeDifferencePrior, stir::CudaGibbsRelativeDifferencePrior and 
   the potential function stir::RelativeDifferencePotential
 
-  \author Matteo Neel Colombo
   \author Kris Thielemans
+  \author Matteo Neel Colombo
+  \author Imraj Singh
+  \author Sanida Mustafovic
+  \author Robert Twyman
 */
 
 #ifndef __stir_recon_buildblock_GibbsRelativeDifferencePrior_H__

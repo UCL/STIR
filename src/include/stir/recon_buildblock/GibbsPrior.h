@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2025, University College London
     Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
@@ -14,6 +15,7 @@
 
   \author Kris Thielemans
   \author Matteo Neel Colombo
+  \author Sanida Mustafovic
 
 */
 
