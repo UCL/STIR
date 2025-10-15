@@ -10,9 +10,14 @@
 */
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2D
 
   \brief declares the stir::SRT2DReconstruction class
+
+  \details
+  SRT2D models each PET projection (per angle) with natural cubic splines along the tangential
+  coordinate, then performs the required angular integration on these spline representations to
+  form the image. The implementation exploits geometric symmetries.
 
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
