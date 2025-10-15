@@ -16,7 +16,7 @@ recon.set_num_subsets(2)
 num_subiterations = 4
 # set filenames to save subset sensitivities (for illustration purposes)
 poissonobj = recon.get_objective_function()
-poissonobj.set_subsensitivity_filenames('sens_subset%d.hv')
+poissonobj.set_subsensitivity_filenames('sens_subset{}.hv')
 poissonobj.set_recompute_sensitivity(True)
 
 
