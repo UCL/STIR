@@ -430,7 +430,9 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	if(image.get_x_size() != sp || zoom != 1) { 
 		// perform bilinear interpolation 
 		if(iz==0) 
-			std::cerr << "Image dimension mismatch, tangential positions " << sp << ", xy output " << image.get_x_size() << "\n Interpolating..." << std::endl; 
+			info(boost::format("Image dimension mismatch: tangential positions %1%, xy output %2% — interpolating...")
+                  % sp % image.get_x_size());
+
 		int sx = image.get_x_size(); 
 		int sy = sx; // sx,sy := output image size (assumed square)
   	std::vector<float> xn1(sx); 
