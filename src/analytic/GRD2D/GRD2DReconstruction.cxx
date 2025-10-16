@@ -243,7 +243,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
     if(fabs(tan_theta ) > 1.E-4)
       {
-	warning("GRD2D: segment 0 has non-zero tan(theta) %g", tan_theta);
+	warning("GRD2D: segment 0 has non-zero tan(theta) " + std::to_string(tan_theta));
 	return Succeeded::no;
       }
   }
