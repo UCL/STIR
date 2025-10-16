@@ -126,7 +126,7 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
 	if (noise_filter2 > 1)
      error(boost::format("Noise filter 2 has to be between 0 and 1 but is %g") % noise_filter2);    
 	
-	// TODO improve this, drop "stir/IO/read_from_file.h" if possible
+	// TODO improve this, drop "stir/IO/read_from_file.h" if possible 
 	atten_data_ptr= read_from_file<DiscretisedDensity<3,float> >(attenuation_map_filename);
 	
   return Succeeded::yes;
