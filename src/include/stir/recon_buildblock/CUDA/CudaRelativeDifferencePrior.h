@@ -83,12 +83,6 @@ protected:
   float* d_kappa_data = 0;
 };
 
-
-
-#ifdef SWIG
-} // namespace stir
-#else
 END_NAMESPACE_STIR
-#endif
 
 #endif // __stir_recon_buildblock_CudaRelativeDifferencePrior_h__
