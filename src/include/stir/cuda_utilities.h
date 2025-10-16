@@ -99,17 +99,17 @@ START_NAMESPACE_STIR
   #else
   //TODO
   // # error ": Either upgrade your GPU to compute capability 6 or check the code at src/include/stir/cuda_utilities.cuh, 91-102";
-  //   unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
-  //   unsigned long long int old = *address_as_ull, assumed;
+    unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
+    unsigned long long int old = *address_as_ull, assumed;
 
-  //   do
-  //     {
-  //       assumed = old;
-  //       double updated = __longlong_as_double(assumed) + dval;
-  //       old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
-  //   } while (assumed != old);
+    do
+      {
+        assumed = old;
+        double updated = __longlong_as_double(assumed) + dval;
+        old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
+    } while (assumed != old);
 
-  //   return __longlong_as_double(old);
+    return __longlong_as_double(old);
   #endif
   }
 

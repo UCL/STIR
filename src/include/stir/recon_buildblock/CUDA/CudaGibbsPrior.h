@@ -22,7 +22,9 @@
 #include "stir/recon_buildblock/GibbsPrior.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
-#include <cuda_runtime.h>
+#ifdef __CUDACC__
+  #include <cuda_runtime.h>
+#endif
 #include "stir/shared_ptr.h"
 #include <string>
 
@@ -49,6 +51,7 @@ private:
 
 protected:
   //GPU block and grid dimensions 
+  #ifdef __CUDACC__
   dim3 block_dim;
   dim3 grid_dim;
 
@@ -63,6 +66,7 @@ protected:
   int3 d_image_min_indices;
   int3 d_weight_max_indices;
   int3 d_weight_min_indices;
+  #endif
 
   // GPU pointers to weights and kappa data
   float* d_weights_data = nullptr;
