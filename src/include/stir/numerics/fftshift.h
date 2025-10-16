@@ -41,7 +41,6 @@ inline void fftshift(Array<1, T>& a, int size)
 template <typename T>
 inline void fftshift(Array<2, std::complex<T> >& a, int size)
 {
-  std::complex<T> temp;
   // swap left/right halves across all rows
   for (int i = 0; i < size; ++i) 
     for (int j = 0; j < size/2; ++j) 
@@ -52,10 +51,7 @@ inline void fftshift(Array<2, std::complex<T> >& a, int size)
   for (int i = 0; i < size; ++i) 
     for (int j = 0; j < size/2; ++j) 
       std::swap(a[j][i], a[size/2 + j][i]);
-      temp = a[j][i];
-      a[j][i] = a[size/2 + j][i];
-      a[size/2 + j][i] = temp;
-    
+   
 }
 
 END_NAMESPACE_STIR
