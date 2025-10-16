@@ -135,10 +135,6 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
       const auto& att =
           dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*atten_data_ptr);   // attenuation image grid
 
-      // Same grid (sizes, voxel sizes, origin, orientation). Also compares z-size.
-      if (!tgt.has_same_characteristics(att))
-        error("DDSR2D: target and attenuation images must have identical grid characteristics.");
-
       // z-size relation used by the  by the current implementation:
      // each sinogram plane iz produces two identical output slices (indices 2*iz and 2*iz+1),
      // hence nz_img must equal 2 × (# axial sinogram planes).
