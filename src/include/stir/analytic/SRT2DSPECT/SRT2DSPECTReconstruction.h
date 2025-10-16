@@ -12,9 +12,14 @@
 */
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2DSPECT
 
   \brief declares the stir::SRT2DSPECTReconstruction class
+
+  \details
+   SRT2DSPECT models each projection with cubic splines along the detector (tangential) axis and explicitly 
+   accounts for attenuation: it applies exponential weighting and a Hilbert-transform term to the spline representation,
+   then accumulates over the projection angles to form the image.
 
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
