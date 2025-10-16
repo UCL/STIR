@@ -25,6 +25,7 @@
 
 #include "stir/Array.h"
 #include <complex>
+#include <utility>  // for std::swap
 
 START_NAMESPACE_STIR
 
@@ -32,12 +33,8 @@ START_NAMESPACE_STIR
 template <typename T>
 inline void fftshift(Array<1, T>& a, int size)
 {
-  T temp = 0;
-  for (int i = 0; i < size/2; ++i) {
-    temp = a[i];
-    a[i] = a[size/2 + i];
-    a[size/2 + i] = temp;
-  }
+  for (int i = 0; i < size/2; ++i) 
+    std::swap(a[i], a[size/2 + i]);
 }
 
 //! \brief In-place 2D fftshift: quadrant swap (left-right, then top-bottom). Accepts complex arrays.
@@ -46,21 +43,19 @@ inline void fftshift(Array<2, std::complex<T> >& a, int size)
 {
   std::complex<T> temp;
   // swap left/right halves across all rows
-  for (int i = 0; i < size; ++i) {
-    for (int j = 0; j < size/2; ++j) {
-      temp = a[i][j];
-      a[i][j] = a[i][size/2 + j];
-      a[i][size/2 + j] = temp;
-    }
-  }
+  for (int i = 0; i < size; ++i) 
+    for (int j = 0; j < size/2; ++j) 
+      std::swap(a[i][j], a[i][size/2 + j]);  
+
+  
   // swap top/bottom halves across all columns
-  for (int i = 0; i < size; ++i) {
-    for (int j = 0; j < size/2; ++j) {
+  for (int i = 0; i < size; ++i) 
+    for (int j = 0; j < size/2; ++j) 
+      std::swap(a[j][i], a[size/2 + j][i]);
       temp = a[j][i];
       a[j][i] = a[size/2 + j][i];
       a[size/2 + j][i] = temp;
-    }
-  }
+    
 }
 
 END_NAMESPACE_STIR
