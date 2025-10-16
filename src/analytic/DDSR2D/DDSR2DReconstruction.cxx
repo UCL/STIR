@@ -128,6 +128,29 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
 	
 	// TODO improve this, drop "stir/IO/read_from_file.h" if possible
 	atten_data_ptr= read_from_file<DiscretisedDensity<3,float> >(attenuation_map_filename);
+    {
+      // --- fail-fast consistency checks ---
+      const auto& tgt =
+          dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*target_data_sptr); // output image grid
+      const auto& att =
+          dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*atten_data_ptr);   // attenuation image grid
+
+      // Same grid (sizes, voxel sizes, origin, orientation). Also compares z-size.
+      if (!tgt.has_same_characteristics(att))
+        error("DDSR2D: target and attenuation images must have identical grid characteristics.");
+
+      // z-size relation used by the  by the current implementation:
+     // each sinogram plane iz produces two identical output slices (indices 2*iz and 2*iz+1),
+     // hence nz_img must equal 2 × (# axial sinogram planes).
+      const int nz_img  = tgt.get_z_size();                     // nz_img := # z-slices in output image
+      const int nz_sino = proj_data_ptr->get_num_axial_poss(0); // nz_sino := # axial sinogram planes (segment 0)
+
+      if (nz_img != 2 * nz_sino)
+        error(boost::format("DDSR2D: expected output (and attenuation) z-size = 2 x #axial sinogram planes (got %1% vs 2x%2%)")
+            % nz_img % nz_sino);
+
+    }
+
 	
   return Succeeded::yes;
 }
@@ -205,7 +228,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	} else { 
 		noise_filter = noise_filter > 1 ? 1 : noise_filter; 
 		p_cutoff = floor(floor(sp/2.0)*noise_filter); 
-		std::cout << "p_cutoff = " << 2*p_cutoff << " of " << sp << std::endl; 
 	}
   int q_cutoff = 0; // q_cutoff := secondary frequency-domain cutoff (from noise_filter2)
 //float noise_filter2=-1;
@@ -214,7 +236,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	} else { 
 		noise_filter2 = noise_filter2 > .5 ? .5 : noise_filter2; 
 		q_cutoff = floor(floor(sp/2.0)*noise_filter2); 
-		std::cout << "q_cutoff = " << 2*q_cutoff << " of " << sp << std::endl; 
 	}
  
 	Array<1, std::complex<float> > W(sp), temp2(sp); // W := cosine taper window in frequency; temp2 := temp spectrum buffer
@@ -346,7 +367,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		temp.fill(0); // this has to be vastly improved 
 		for(int ip=0; ip<sp; ip++) temp[ip] = A[ip]; 
 		fourier_1d(temp,1);
-		temp=temp*K_fft; 
+		temp *= K_fft; 
 		inverse_fourier_1d(temp); 
 		for(int ip=0; ip<sp; ip++) A_hlb[ip] = -std::imag(temp[ip]); 
 		
@@ -368,14 +389,14 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		temp.fill(0); 
 		for(int ip=0; ip<sp; ip++) temp[ip] = h1[ip]; 
 		fourier_1d(temp,1);
-		temp=temp*K_fft; 
+		temp *= K_fft; 
 		inverse_fourier_1d(temp); 
 		for(int ip=0; ip<sp; ip++) h1[ip] = -std::imag(temp[ip]); 
 		
 		temp.fill(0); 
 		for(int ip=0; ip<sp; ip++) temp[ip] = h2[ip]; 
 		fourier_1d(temp,1);
-		temp=temp*K_fft; 
+		temp *= K_fft; 
 		inverse_fourier_1d(temp); 
 		for(int ip=0; ip<sp; ip++) h2[ip] = -std::imag(temp[ip]); 
 		
