@@ -77,7 +77,14 @@
       <code>a = b + c</code> and <code>a -= 3</code>. Note that <code>a = 1 + b</code> is not
       yet available.<br>
       <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
-      </li>
+    </li>
+    <li>
+      The above "container" classes now have an extra member `as_array()` which returns a numpy <code>ndarray</code>. This
+      is equivalent to `stirextra.to_numpy()` which will become deprecated later. In addition, the
+      <code>fill()</code> method now directly accepts an <code>ndarray</code>, avoiding the need to go via an iterator.
+      These additions also make it easier to prt SIRF python code to STIR.<br>
+      <a href=https://github.com/UCL/STIR/pull/1632>PR #1632</a>
+    </li>
     <li>
       Added a Python script to convert e7tools generated Siemens Biograph Vision 600 sinograms to STIR compatible format.<br>
       <a href=https://github.com/UCL/STIR/pull/1593>PR #1593</a>
