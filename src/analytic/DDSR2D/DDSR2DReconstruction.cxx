@@ -128,25 +128,6 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
 	
 	// TODO improve this, drop "stir/IO/read_from_file.h" if possible
 	atten_data_ptr= read_from_file<DiscretisedDensity<3,float> >(attenuation_map_filename);
-    {
-      // --- fail-fast consistency checks ---
-      const auto& tgt =
-          dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*target_data_sptr); // output image grid
-      const auto& att =
-          dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*atten_data_ptr);   // attenuation image grid
-
-      // z-size relation used by the  by the current implementation:
-     // each sinogram plane iz produces two identical output slices (indices 2*iz and 2*iz+1),
-     // hence nz_img must equal 2 × (# axial sinogram planes).
-      const int nz_img  = tgt.get_z_size();                     // nz_img := # z-slices in output image
-      const int nz_sino = proj_data_ptr->get_num_axial_poss(0); // nz_sino := # axial sinogram planes (segment 0)
-
-      if (nz_img != 2 * nz_sino)
-        error(boost::format("DDSR2D: expected output (and attenuation) z-size = 2 x #axial sinogram planes (got %1% vs 2x%2%)")
-            % nz_img % nz_sino);
-
-    }
-
 	
   return Succeeded::yes;
 }
