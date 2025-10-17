@@ -111,6 +111,7 @@ jobs:
           compiler: gcc
           # compiler_version: 11
           cuda_version: "0"
+          # openmp=OFF as ON needs special stuff for Apple gcc which KT doesn't feel like getting into...
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Debug"
@@ -118,9 +119,18 @@ jobs:
           ITK: "OFF"
         - os: macOS-latest
           compiler: clang
-          compiler_version: 16
+          compiler_version: 18
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Release"
+          ROOT: "OFF"
+          ITK: "OFF"
+        - os: macOS-latest
+          compiler: clang
+          compiler_version: 21
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           parallelproj: "OFF"
           BUILD_TYPE: "Release"
           ROOT: "OFF"
@@ -191,7 +201,8 @@ jobs:
                 HOMEBREW_PREFIX=/usr/local
               fi
               LLVMDIR=$HOMEBREW_PREFIX/opt/llvm@${{ matrix.compiler_version }}
-              LDFLAGS="-L${LLVMDIR}/lib/c++ -Wl,-rpath,${LLVMDIR}/lib/c++"
+              # https://github.com/llvm/llvm-project/issues/94292#issuecomment-2149335628 says to remove this flag
+              # LDFLAGS="-L${LLVMDIR}/lib/c++ -Wl,-rpath,${LLVMDIR}/lib/c++"
               export SDKROOT=$(xcrun --show-sdk-path)
               echo SDKROOT="$SDKROOT"
               # make available to jobs below
@@ -230,7 +241,7 @@ jobs:
                   sudo apt install $CXX
               fi
               # other dependencies
-              sudo apt install libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev
+              sudo apt install libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev ninja-build
               if test "${{matrix.ITK}}XX" == "ONXX"; then
                 sudo apt install libinsighttoolkit5-dev
               fi
@@ -239,7 +250,16 @@ jobs:
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
-              brew install boost swig python nlohmann-json
+              if ! command -v ninja > /dev/null; then
+                  brew install ninja
+              fi
+              if ! command -v python3 > /dev/null; then
+                  brew install python
+              fi
+              if ! command -v swig > /dev/null; then
+                  brew install swig
+              fi
+              brew install boost nlohmann-json
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (windows*)
@@ -350,7 +370,7 @@ jobs:
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
           mkdir build
           cd build
-          cmake -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
+          cmake -G Ninja -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
           # report disk space
           case ${{matrix.os}} in
             (ubuntu* | macOS*)
@@ -375,7 +395,7 @@ jobs:
       run: |
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
-          cmake --build . -j 2 --config ${BUILD_TYPE}} --target install
+          cmake --build . --config ${BUILD_TYPE}} --target install
 
     - name: ctest
       shell: bash
@@ -519,5 +539,7 @@ jobs:
               ;;
             (*)
               python -m pytest .
+              cd ../examples/python
+              python recon_demo_gradient.py
               ;;
           esac
