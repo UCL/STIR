@@ -4,7 +4,7 @@
 #     py.test test_buildblock.py
 
 
-#    Copyright (C) 2013, 2023 University College London
+#    Copyright (C) 2013, 2023, 2025 University College London
 #    This file is part of STIR.
 #
 #    SPDX-License-Identifier: Apache-2.0
@@ -21,7 +21,9 @@ except ImportError:
         raise ImportError('Tests require pytest or py<1.4')
 
 from stir import *
+import stir
 import stirextra
+import math
 
 def test_Vector():
     dv=FloatVector(3)
@@ -100,6 +102,57 @@ def test_Array2D():
     #a2[4]=a1
     #print 'now the entry in the 2D array has to be modified to 66 as well:', a2[Int2BasicCoordinate((4,5))]
 
+def test_Array2D_numerics():
+    a = FloatArray2D(IndexRange2D(Int2BasicCoordinate((3,3)), Int2BasicCoordinate((9,9))))
+    b = FloatArray2D(a.get_index_range())
+    a.fill(2)
+    b.fill(3)
+    ind = ((4,5))
+    a[ind] = 5
+    # compare STIR operations (in float) with Python operations (in double), so need tolerance
+    c = a + b
+    assert math.isclose(c[ind], a[ind] + b[ind], rel_tol=1e-4)
+    c = a - b
+    assert math.isclose(c[ind], a[ind] - b[ind], rel_tol=1e-4)
+    c = a * b
+    assert math.isclose(c[ind], a[ind] * b[ind], rel_tol=1e-4)
+    c = a / b
+    assert math.isclose(c[ind], a[ind] / b[ind], rel_tol=1e-4)
+    c = a + 3
+    assert math.isclose(c[ind], a[ind] + 3, rel_tol=1e-4)
+    c = a - 3
+    assert math.isclose(c[ind], a[ind] - 3, rel_tol=1e-4)
+    c = a * 3
+    assert math.isclose(c[ind], a[ind] * 3, rel_tol=1e-4)
+    c = a / 3
+    assert math.isclose(c[ind], a[ind] / 3, rel_tol=1e-4)
+    # same, but now with += etc.
+    # Note: using a simple/stupid trick to create a copy of a by adding 0
+    c = a + 0
+    c += b
+    assert math.isclose(c[ind], a[ind] + b[ind], rel_tol=1e-4)
+    c = a + 0
+    c -= b
+    assert math.isclose(c[ind], a[ind] - b[ind], rel_tol=1e-4)
+    c = a + 0
+    c *= b
+    assert math.isclose(c[ind], a[ind] * b[ind], rel_tol=1e-4)
+    c = a + 0
+    c /= b
+    assert math.isclose(c[ind], a[ind] / b[ind], rel_tol=1e-4)
+    c = a + 0
+    c += 3
+    assert math.isclose(c[ind], a[ind] + 3, rel_tol=1e-4)
+    c = a + 0
+    c -= 3
+    assert math.isclose(c[ind], a[ind] - 3, rel_tol=1e-4)
+    c = a + 0
+    c *= 3
+    assert math.isclose(c[ind], a[ind] * 3, rel_tol=1e-4)
+    c = a + 0
+    c /= 3
+    assert math.isclose(c[ind], a[ind] / 3, rel_tol=1e-4)
+    
 def test_Array2Diterator():
     a2=FloatArray2D(IndexRange2D(Int2BasicCoordinate((3,3)), Int2BasicCoordinate((9,9))))
     a2.fill(2);
@@ -118,12 +171,32 @@ def test_Array3D():
     assert minindtest==minind
     assert maxindtest==maxind
     assert a3.shape()==(7,7,9)
+    # fill with scalar
     a3.fill(2)
     ind=Int3BasicCoordinate((4,5,6))
     assert a3[ind]==2
     a3[ind]=9
     assert a3[(4,5,6)]==9
     assert a3.find_max()==9
+
+    # test as_array()
+    np_arr = a3.as_array()
+    assert np_arr.shape == a3.shape()
+    assert np_arr[ind[1] - minind[1], ind[2] - minind[2], ind[3] - minind[3]] == a3[ind]
+    assert np_arr[0, 0, 0] == 2
+
+    a4 = FloatArray3D(indrange)
+    # test fill with iterator
+    a4.fill(np_arr.flat)
+    assert a4[ind]==9
+    assert a4[minind]==2
+    a4.fill(1)
+    assert a4[ind]==1
+    # test fill with numpy array
+    a4.fill(np_arr)
+    assert a4[ind]==9
+    assert a4[minind]==2
+    
 
 def test_FloatVoxelsOnCartesianGrid():
     origin=FloatCartesianCoordinate3D(0,1,6)
@@ -137,16 +210,91 @@ def test_FloatVoxelsOnCartesianGrid():
     image.fill(2)
     ind=Int3BasicCoordinate((4,4,4))
     assert image[ind]==2
+    image[ind] = 4
+    assert image[ind] == 4
     assert image[(5,3,4)]==2
     # construct from array
     a3=FloatArray3D(indrange)
     a3.fill(1.4);
-    image=FloatVoxelsOnCartesianGrid(a3, origin,gridspacing)
-    assert abs(image[ind]-1.4)<.001
+    image2=FloatVoxelsOnCartesianGrid(a3, origin,gridspacing)
+    assert abs(image2[ind]-1.4)<.001
     # change original array
     a3.fill(2)
     # shouldn't change image constructed from array
-    assert abs(image[ind]-1.4)<.001
+    assert abs(image2[ind]-1.4)<.001
+
+    # test as_array
+    np_arr = image.as_array()
+    assert np_arr.shape == image.shape()
+    assert np_arr[ind[1] - minind[1], ind[2] - minind[2], ind[3] - minind[3]] == image[ind]
+    assert np_arr[0, 0, 0] == 2
+    # test fill with iterator
+    image.fill(0)
+    image.fill(np_arr.flat)
+    assert image[ind]==4
+    assert image[minind]==2
+    image.fill(1)
+    assert image[ind]==1
+    # test fill with numpy array
+    image.fill(np_arr)
+    assert image[ind]==4
+    assert image[minind]==2
+
+def test_FloatVoxelsOnCartesianGrid_numerics():
+    origin=FloatCartesianCoordinate3D(0,1,6)
+    gridspacing=FloatCartesianCoordinate3D(1,1,2)
+    minind=Int3BasicCoordinate(3)
+    maxind=Int3BasicCoordinate(9)
+    indrange=IndexRange3D(minind,maxind)
+    a = FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    b = FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    a.fill(2)
+    b.fill(3)
+    ind = ((3,4,5))
+    a[ind] = 5
+    # compare STIR operations (in float) with Python operations (in double), so need tolerance
+    c = a + b
+    assert math.isclose(c[ind], a[ind] + b[ind], rel_tol=1e-4)
+    c = a - b
+    assert math.isclose(c[ind], a[ind] - b[ind], rel_tol=1e-4)
+    c = a * b
+    assert math.isclose(c[ind], a[ind] * b[ind], rel_tol=1e-4)
+    c = a / b
+    assert math.isclose(c[ind], a[ind] / b[ind], rel_tol=1e-4)
+    c = a + 3
+    assert math.isclose(c[ind], a[ind] + 3, rel_tol=1e-4)
+    c = a - 3
+    assert math.isclose(c[ind], a[ind] - 3, rel_tol=1e-4)
+    c = a * 3
+    assert math.isclose(c[ind], a[ind] * 3, rel_tol=1e-4)
+    c = a / 3
+    assert math.isclose(c[ind], a[ind] / 3, rel_tol=1e-4)
+    # same, but now with += etc.
+    # Note: using a simple/stupid trick to create a copy of a by adding 0
+    c = a + 0
+    c += b
+    assert math.isclose(c[ind], a[ind] + b[ind], rel_tol=1e-4)
+    c = a + 0
+    c -= b
+    assert math.isclose(c[ind], a[ind] - b[ind], rel_tol=1e-4)
+    c = a + 0
+    c *= b
+    assert math.isclose(c[ind], a[ind] * b[ind], rel_tol=1e-4)
+    c = a + 0
+    c /= b
+    assert math.isclose(c[ind], a[ind] / b[ind], rel_tol=1e-4)
+    c = a + 0
+    c += 3
+    assert math.isclose(c[ind], a[ind] + 3, rel_tol=1e-4)
+    c = a + 0
+    c -= 3
+    assert math.isclose(c[ind], a[ind] - 3, rel_tol=1e-4)
+    c = a + 0
+    c *= 3
+    assert math.isclose(c[ind], a[ind] * 3, rel_tol=1e-4)
+    c = a + 0
+    c /= 3
+    assert math.isclose(c[ind], a[ind] / 3, rel_tol=1e-4)
 
 def test_zoom_image():
     # create test image
@@ -269,12 +417,79 @@ def test_ProjDataInfo():
     #assert sinogram.get_proj_data_info() == projdatainfo
     assert sinogram.get_proj_data_info().parameter_info() == projdatainfo.parameter_info()
 
+def test_ProjDataInMemory_numerics():
+    # define a projection with some dummy data
+    s = Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo = ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    a = ProjDataInMemory(ExamInfo(),projdatainfo)
+    b = ProjDataInMemory(a)
+    _bin = Bin(0,1,2,3)
+    _bin.bin_value = 5
+    a.fill(2)
+    b.fill(3)
+    a.set_bin_value(_bin)
+    # compare STIR operations (in float) with Python operations (in double), so need tolerance
+    c = a + b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a - b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a * b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a / b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a + 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + 3, rel_tol=1e-4)
+    c = a - 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - 3, rel_tol=1e-4)
+    c = a * 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * 3, rel_tol=1e-4)
+    c = a / 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / 3, rel_tol=1e-4)
+    # same, but now with += etc.
+    # Note: using a simple/stupid trick to create a copy of a by adding 0
+    c = a + 0
+    c += b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a + 0
+    c -= b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a + 0
+    c *= b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a + 0
+    c /= b
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / b.get_bin_value(_bin), rel_tol=1e-4)
+    c = a + 0
+    c += 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) + 3, rel_tol=1e-4)
+    c = a + 0
+    c -= 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) - 3, rel_tol=1e-4)
+    c = a + 0
+    c *= 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) * 3, rel_tol=1e-4)
+    c = a + 0
+    c /= 3
+    assert math.isclose(c.get_bin_value(_bin), a.get_bin_value(_bin) / 3, rel_tol=1e-4)
 
-def test_ProjData_from_to_Array3D():
+def helper_ProjDataInMemory_from_to_Array(projdata, new_projdata):
+    # convert to Array and back again
+    stir_array=projdata.to_array()
+    # fill with iterator
+    new_projdata.fill(stir_array.flat())
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
+    # fill with numpy array
+    new_projdata.fill(stir_array.as_array())
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(), new_projdata.as_array().flat))
+
+def test_ProjDataInMemory_from_to_Array():
     # define a projection with some dummy data (filled with segment no.)
-    s=Scanner.get_scanner_from_name("ECAT 962")
-    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
-    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    s = stir.Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo = stir.ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    examinfo = stir.ExamInfo()
+    projdata = stir.ProjDataInMemory(ExamInfo(),projdatainfo)
     for seg_idx in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1):
         segment=projdata.get_empty_segment_by_sinogram(seg_idx)
         segment.fill(seg_idx)
@@ -284,13 +499,16 @@ def test_ProjData_from_to_Array3D():
     assert all([all([x==s for x in projdata.get_segment_by_sinogram(s).flat()])
                 for s in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1)])
 
-    # convert to Array3D and back again
-    array3D=projdata.to_array()
-    new_projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
-    new_projdata.fill(array3D.flat())
-
-    # assert every data point is equal
-    assert all(a==b for a, b in zip(projdata.to_array().flat(),new_projdata.to_array().flat()))
+    # test in memory
+    new_projdata = stir.ProjDataInMemory(ExamInfo(),projdatainfo)
+    helper_ProjDataInMemory_from_to_Array(projdata, new_projdata)
+    # test on file
+    projdata.write_to_file("test_projdata.hs")
+    inout = stir.ios.trunc|stir.ios.ios_base_in|stir.ios.out;
+    new_projdata = stir.ProjDataInterfile(examinfo, projdatainfo, "test_projdata.hs", inout)
+    helper_ProjDataInMemory_from_to_Array(projdata, new_projdata)
+    helper_ProjDataInMemory_from_to_Array(new_projdata, projdata)
+    helper_ProjDataInMemory_from_to_Array(new_projdata, new_projdata)
 
 def test_xapyb_and_sapyb():
     """

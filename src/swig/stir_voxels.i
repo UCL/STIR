@@ -24,6 +24,12 @@
 %include "stir/DiscretisedDensity.h"
 %include "stir/DiscretisedDensityOnCartesianGrid.h"
 
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+// note however that Python will implement them in terms of operator+, so the user doesn't know
+%ignore stir::VoxelsOnCartesianGrid::operator+=;
+%ignore stir::VoxelsOnCartesianGrid::operator-=;
+%ignore stir::VoxelsOnCartesianGrid::operator*=;
+%ignore stir::VoxelsOnCartesianGrid::operator/=;
 %include "stir/VoxelsOnCartesianGrid.h"
 
 %extend stir::VoxelsOnCartesianGrid {

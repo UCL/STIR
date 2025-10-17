@@ -1,6 +1,7 @@
 
 /*
-    Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2025, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -19,12 +20,11 @@
   \author Kris Thielemans
 
 */
-#include "stir/VectorWithOffset.h"
-#include "stir/Array.h"
-#include "stir/BasicCoordinate.h"
-#include <vector>
+#include "stir/type_traits.h"
+#include <typeinfo>
 
 START_NAMESPACE_STIR
+
 /*! \ingroup buildblock
   \name templated functions for assigning values
 
@@ -44,46 +44,31 @@ START_NAMESPACE_STIR
 */
 //@{
 
+// generic implementation, used whenever there is no specialisation
+// Note that std::enable_if_t without 2nd argument defaults to `void` (if the first argument is true, of course)
 template <class T, class T2>
-inline void
+std::enable_if_t<!has_iterator_v<T>>
 assign(T& x, const T2& y)
 {
   x = y;
 }
 
+// implementation when the first argument has a (STIR) full iterator, e.g. Array
 template <class T, class T2>
-inline void
-assign(std::vector<T>& v, const T2& y)
+std::enable_if_t<has_full_iterator_v<T>>
+assign(T& v, const T2& y)
 {
-  for (typename std::vector<T>::iterator iter = v.begin(); iter != v.end(); ++iter)
+  for (auto iter = v.begin_all(); iter != v.end_all(); ++iter)
     assign(*iter, y);
 }
 
-template <int num_dimensions, class T, class T2>
-inline void
-assign(BasicCoordinate<num_dimensions, T>& v, const T2& y)
-{
-  for (typename BasicCoordinate<num_dimensions, T>::iterator iter = v.begin(); iter != v.end(); ++iter)
-    assign(*iter, y);
-}
-
+// implementation for normal iterators
 template <class T, class T2>
-inline void
-assign(VectorWithOffset<T>& v, const T2& y)
+std::enable_if_t<has_iterator_and_no_full_iterator<T>::value>
+assign(T& v, const T2& y)
 {
-  for (typename VectorWithOffset<T>::iterator iter = v.begin(); iter != v.end(); ++iter)
-    assign(*iter, y);
-}
-
-// Even though we have VectorWithOffset above, we still seem to need a version for Arrays as well
-// for when calling assign(vector<array<1,float> >, 0).
-// We're not sure why...
-template <int num_dimensions, class T, class T2>
-inline void
-assign(Array<num_dimensions, T>& v, const T2& y)
-{
-  for (typename Array<num_dimensions, T>::full_iterator iter = v.begin_all(); iter != v.end_all(); ++iter)
-    assign(*iter, y);
+  for (auto& i : v)
+    assign(i, y);
 }
 
 // a few common cases given explictly here such that we don't get conversion warnings all the time.
