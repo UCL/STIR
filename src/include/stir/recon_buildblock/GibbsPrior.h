@@ -34,21 +34,22 @@
  * where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
    is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
  * The \f$\phi\f$ function is the potential function, which is provided via the template parameter PotentialFun.
- * The potential function needs to be symmetric (\phi(x,y) = \phi(y,x)). Currently the potential function is      implemented in the header of the derived classes (check GibbsQuadraticPrior.h or GibbsRelativeDifferencePrior.h to see examples).
-  The potential function should provide methods for value(), derivative_10(), derivative_11(), and derivative_20().
+ * The potential function needs to be symmetric (\phi(x,y) = \phi(y,x)). Currently the potential function is      implemented in
+ the header of the derived classes (check GibbsQuadraticPrior.h or GibbsRelativeDifferencePrior.h to see examples). The potential
+ function should provide methods for value(), derivative_10(), derivative_11(), and derivative_20().
  *
  * The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
   use 1 for all \f$\kappa\f$'s.
  *  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to
-  x-voxel_size divided by the Euclidean distance between the points. Custom weights can be set using the method set_weights, the general for of the weights is NxNxN with N odd.
- * \warning Currently only symmetric weights are supported (w_{i,j} = w_{j,i}). 
+  x-voxel_size divided by the Euclidean distance between the points. Custom weights can be set using the method set_weights, the
+ general for of the weights is NxNxN with N odd.
+ * \warning Currently only symmetric weights are supported (w_{i,j} = w_{j,i}).
 
  */
 
 #define __stir_recon_buildblock_GibbsPrior_H__
-
 
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -60,15 +61,12 @@
 START_NAMESPACE_STIR
 
 template <typename elemT, typename potentialT>
-class GibbsPrior :
-  public GeneralisedPrior<DiscretisedDensity<3, elemT>>
+class GibbsPrior : public GeneralisedPrior<DiscretisedDensity<3, elemT>>
 {
 private:
-  typedef GeneralisedPrior<DiscretisedDensity<3, elemT>>
-      base_type;
+  typedef GeneralisedPrior<DiscretisedDensity<3, elemT>> base_type;
 
 public:
-
   //! Default constructor.
   GibbsPrior();
 
@@ -120,7 +118,6 @@ public:
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
 protected:
-
   //! @name Image and weight boundary indices
   //! @{
   CartesianCoordinate3D<int> image_dim;          //!< Image dimensions
@@ -130,7 +127,7 @@ protected:
   CartesianCoordinate3D<int> weight_min_indices; //!< Minimum weight indices
   //! @}
 
-  //! The weights for the neighbourhood 
+  //! The weights for the neighbourhood
   Array<3, float> weights;
 
   //! can be set during parsing to restrict the weights to the 2D case
@@ -146,7 +143,7 @@ protected:
   //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
   std::string kappa_filename;
 
-  //! Gibbs Potential Function 
+  //! Gibbs Potential Function
   potentialT potential;
 
   //! Compute default weights for the prior.
@@ -158,7 +155,7 @@ protected:
   void set_defaults() override;
   void initialise_keymap() override;
   bool post_processing() override;
-  
+
   //! The kappa image (spatially-varying penalty factors).
   shared_ptr<const DiscretisedDensity<3, elemT>> kappa_ptr;
 };

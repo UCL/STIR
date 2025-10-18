@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2025, University College London
-    Copyright (C) 2025, University of Milano-Bicocca 
+    Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -33,8 +33,8 @@ GibbsQuadraticPrior<elemT>::GibbsQuadraticPrior()
 
 template <typename elemT>
 GibbsQuadraticPrior<elemT>::GibbsQuadraticPrior(const bool only_2D, float penalisation_factor)
-  : base_type(only_2D, penalisation_factor) {}
-
+    : base_type(only_2D, penalisation_factor)
+{}
 
 template <typename elemT>
 void

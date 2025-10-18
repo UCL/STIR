@@ -67,7 +67,7 @@ GeneralisedPrior<TargetT>::set_up(shared_ptr<const TargetT> const&)
 }
 
 template <typename TargetT>
-double 
+double
 GeneralisedPrior<TargetT>::compute_gradient_times_input(const TargetT& input, const TargetT& current_estimate)
 {
   error("GeneralisedPrior:\n  compute_gradient_times_input is not implemented by your prior.");
@@ -87,7 +87,7 @@ GeneralisedPrior<TargetT>::compute_Hessian(TargetT& output,
 }
 
 template <typename TargetT>
-void 
+void
 GeneralisedPrior<TargetT>::compute_Hessian_diagonal(TargetT& Hessian_diagonal, const TargetT& current_estimate) const
 {
   error("GeneralisedPrior:\n  compute_Hessian_diagonal is not implemented by your prior.");

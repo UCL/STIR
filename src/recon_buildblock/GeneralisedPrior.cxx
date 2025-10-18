@@ -31,9 +31,7 @@ START_NAMESPACE_STIR
 #  pragma warning(disable : 4661)
 #endif
 
-
 template class GeneralisedPrior<DiscretisedDensity<3, float>>;
 template class GeneralisedPrior<ParametricVoxelsOnCartesianGrid>;
-
 
 END_NAMESPACE_STIR

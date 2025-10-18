@@ -77,12 +77,13 @@ public:
                                const BasicCoordinate<3, int>& coords,
                                const DataT& current_image_estimate) const;
 
-  //! This computes the diagonal of the Hessian of the log of the prior function at the \a current_estimate and stores it in \a Hessian_diagonal.
+  //! This computes the diagonal of the Hessian of the log of the prior function at the \a current_estimate and stores it in \a
+  //! Hessian_diagonal.
   /*! The Hessian diagonal is already multiplied with the penalisation_factor.
       Default implementation just call error(). This function needs to be overridden by the
       derived class.
       \warning The derived class should overwrite any data in \a Hessian_diagonal.
-   */                         
+   */
   virtual void compute_Hessian_diagonal(DataT& Hessian_diagonal, const DataT& current_estimate) const;
 
   //! This should compute the multiplication of the Hessian with a vector and add it to \a output

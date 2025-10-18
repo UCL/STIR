@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2025, University College London
-    Copyright (C) 2025, University of Milano-Bicocca 
+    Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -32,8 +32,15 @@ GibbsRelativeDifferencePrior<elemT>::GibbsRelativeDifferencePrior()
 }
 
 template <typename elemT>
-GibbsRelativeDifferencePrior<elemT>::GibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v)
-  : base_type(only_2D, penalisation_factor)  {this->potential.gamma = gamma_v; this->potential.epsilon = epsilon_v;}
+GibbsRelativeDifferencePrior<elemT>::GibbsRelativeDifferencePrior(const bool only_2D,
+                                                                  float penalisation_factor,
+                                                                  float gamma_v,
+                                                                  float epsilon_v)
+    : base_type(only_2D, penalisation_factor)
+{
+  this->potential.gamma = gamma_v;
+  this->potential.epsilon = epsilon_v;
+}
 
 template <typename elemT>
 void
@@ -61,7 +68,6 @@ GibbsRelativeDifferencePrior<elemT>::initialise_keymap()
   this->parser.add_key("epsilon value", &this->potential.epsilon);
   this->parser.add_stop_key("END Gibbs Relative Difference Prior Parameters");
 }
-
 
 template class GibbsRelativeDifferencePrior<float>;
 
