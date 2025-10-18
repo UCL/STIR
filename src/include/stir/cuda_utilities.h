@@ -19,10 +19,21 @@
 */
 #include "stir/Array.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <vector>
 
 START_NAMESPACE_STIR
 
+#ifndef __CUDACC__
+#  ifndef __host__
+#    define __host__
+#  endif
+#  ifndef __device__
+#    define __device__
+#  endif
+#endif
+
+#ifdef __CUDACC__
 template <int num_dimensions, typename elemT>
 inline void
 array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
@@ -64,6 +75,57 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
     }
 }
 
-END_NAMESPACE_STIR
+//! \brief Performs a parallel reduction sum on shared memory within a CUDA thread block, final value stored in shared_mem[0].
+template <typename elemT>
+__device__ inline void
+blockReduction(elemT* shared_mem, int thread_in_block, int block_threads)
+{
+  for (int stride = block_threads / 2; stride > 0; stride /= 2)
+    {
+      if (thread_in_block < stride)
+        shared_mem[thread_in_block] += shared_mem[thread_in_block + stride];
+      __syncthreads();
+    }
+}
 
+//! \brief Provides atomic addition for double values with fallback for pre-Pascal GPU architectures.
+template <typename elemT>
+__device__ inline double
+atomicAddGeneric(double* address, elemT val)
+{
+  double dval = static_cast<double>(val);
+#  if __CUDA_ARCH__ >= 600
+  return atomicAdd(address, dval);
+#  else
+  // TODO
+  //  # error ": Either upgrade your GPU to compute capability 6 or check the code at src/include/stir/cuda_utilities.cuh,
+  //  91-102";
+  unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
+  unsigned long long int old = *address_as_ull, assumed;
+
+  do
+    {
+      assumed = old;
+      double updated = __longlong_as_double(assumed) + dval;
+      old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
+  } while (assumed != old);
+
+  return __longlong_as_double(old);
+#  endif
+}
+
+//! \brief Utility function to check for CUDA errors and report them with context information.
+inline void
+checkCudaError(const std::string& operation)
+{
+  cudaError_t cuda_error = cudaGetLastError();
+  if (cuda_error != cudaSuccess)
+    {
+      const char* err = cudaGetErrorString(cuda_error);
+      error(std::string("CudaGibbsPrior: CUDA error in ") + operation + ": " + err);
+    }
+}
+#endif
+
+END_NAMESPACE_STIR
 #endif
