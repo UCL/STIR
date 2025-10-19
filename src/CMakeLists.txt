@@ -69,8 +69,7 @@ endif()
 
 #### Swig related
 option(BUILD_SWIG_PYTHON
-       "Use SWIG to generate python bindings for STIR (experimental)" OFF
-       )
+       "Use SWIG to generate python bindings for STIR (experimental)" OFF)
 
 option(BUILD_SWIG_OCTAVE
        "Use SWIG to generate octave bindings for STIR (experimental)" OFF)
