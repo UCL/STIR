@@ -1,7 +1,8 @@
 /*
-    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2025, University College London
     Copyright (C) 2025, University of Milano-Bicocca
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -13,42 +14,13 @@
   \ingroup priors
   \brief Declaration of the stir::GibbsPrior class
 
-  \author Kris Thielemans
   \author Matteo Neel Colombo
+  \author Kris Thielemans
   \author Sanida Mustafovic
 
 */
 
 #ifndef __stir_recon_buildblock_GibbsPrior_H__
-/**
- * @file GibbsPrior.h
- * \ingroup priors
- * @brief A base class for Gibbs type priors in the GeneralisedPrior hierarchy. The prior is computed as follows:
- *   \f[
-  f =  \sum_{r,dr} w_{r,dr} \phi(\lambda_r , \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
-  \f]
- * with gradient given by:
-  \f[
-  g_r = 2 *  \sum_{dr} w_{r,dr} \phi'(\lambda_r , \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
-  \f]
- * where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
-   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
- * The \f$\phi\f$ function is the potential function, which is provided via the template parameter PotentialFun.
- * The potential function needs to be symmetric (\phi(x,y) = \phi(y,x)). Currently the potential function is      implemented in
- the header of the derived classes (check GibbsQuadraticPrior.h or GibbsRelativeDifferencePrior.h to see examples). The potential
- function should provide methods for value(), derivative_10(), derivative_11(), and derivative_20().
- *
- * The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
-  Jeff Fessler's papers. It should have identical dimensions to the image for which the
-  penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
-  use 1 for all \f$\kappa\f$'s.
- *  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to
-  x-voxel_size divided by the Euclidean distance between the points. Custom weights can be set using the method set_weights, the
- general for of the weights is NxNxN with N odd.
- * \warning Currently only symmetric weights are supported (w_{i,j} = w_{j,i}).
-
- */
-
 #define __stir_recon_buildblock_GibbsPrior_H__
 
 #include "stir/recon_buildblock/GeneralisedPrior.h"
@@ -60,6 +32,67 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup priors
+  \brief A base class for Gibbs type priors in the GeneralisedPrior hierarchy
+
+  The prior is computed as follows:
+  \f[
+  f = \sum_{r,dr} w_{r,dr} \phi(\lambda_r , \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+  \f]
+
+  with gradient given by:
+  \f[
+  g_r = 2 * \sum_{dr} w_{r,dr} \phi'(\lambda_r , \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+  \f]
+
+  where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
+  is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
+
+  The \f$\phi\f$ function is the potential function, which is provided via the template
+  parameter PotentialFun. The potential function needs to be symmetric (\phi(x,y) = \phi(y,x)).
+  Currently the potential function is implemented in the header of the derived classes
+  (check GibbsQuadraticPrior.h or GibbsRelativeDifferencePrior.h to see examples).
+  \par Potential Function Requirements
+  The potential function class (PotentialT) must implement the following methods:
+  
+  - \c value(elemT val_center, elemT val_neigh, int z, int y, int x) - Returns the value of the potential function for the two voxel values
+  - \c derivative_10(elemT val_center, elemT val_neigh, int z, int y, int x) - First derivative with respect to the center voxel
+  - \c derivative_11(elemT val_center, elemT val_neigh, int z, int y, int x) - Second mixed derivative
+  - \c derivative_20(elemT val_center, elemT val_neigh, int z, int y, int x) - Second derivative with respect to the center voxel
+  - \c static bool is_convex() - Returns whether the potential function is convex
+  - \c void initialise_keymap(KeyParser& parser) - Sets up parsing for any potential-specific parameters
+
+  These methods should be declared with \c __host__ \c __device__ qualifiers,
+  except for \c is_convex() and \c initialise_keymap() which are only used on the host.
+  The coordinate parameters (z, y, x) may be used by the potential function for position-dependent behavior.
+  Even if the potential has no parameters to parse, the \c initialise_keymap method must be implemented
+  (possibly with an empty body).
+  
+  The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
+  Jeff Fessler's papers. It should have identical dimensions to the image for which the
+  penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
+  use 1 for all \f$\kappa\f$'s.
+
+  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to
+  x-voxel_size divided by the Euclidean distance between the points. Custom weights can be set
+  using the method set_weights, the general form of the weights is NxNxN with N odd.
+
+  \warning Currently only symmetric weights are supported (w_{i,j} = w_{j,i}).
+
+  \par Parsing
+  These are the keywords that can be used in all priors derived from GibbsPrior:
+  \verbatim
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  gradient filename prefix:=
+  \endverbatim
+*/
 template <typename elemT, typename potentialT>
 class GibbsPrior : public GeneralisedPrior<DiscretisedDensity<3, elemT>>
 {
@@ -121,7 +154,7 @@ public:
   virtual std::string get_parsing_name() const = 0;
 
   //! Return whether the prior is convex or not
-  bool is_convex() const override; 
+  bool is_convex() const override;
 
 protected:
   //! @name Image and weight boundary indices

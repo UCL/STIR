@@ -1,7 +1,6 @@
 //
 //
 /*
-    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2019 -2025, University College London
     Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
@@ -17,10 +16,9 @@
   \brief Declaration of class stir::CudaRelativeDifferencePrior, stir::CudaGibbsRelativeDifferencePrior and
   the potential function stir::RelativeDifferencePotential
 
-  \author Kris Thielemans
   \author Matteo Neel Colombo
+  \author Kris Thielemans
   \author Imraj Singh
-  \author Sanida Mustafovic
   \author Robert Twyman
 */
 
@@ -51,8 +49,8 @@ START_NAMESPACE_STIR
 
   Where:
   - \f$\lambda_r\f$ and \f$\lambda_{r+dr}\f$ are pixel values at positions \f$r\f$ and \f$r+dr\f$
-  - \f$\gamma\f$ is a smoothing parameter for the prior
-  - \f$\epsilon\f$ prevents division by zero (default is 0)
+  - \f$\gamma\f$ is a smoothing parameter for the prior (default: 2.0)
+  - \f$\epsilon\f$ prevents division by zero (default: 1e-7)
   - \f$w_{dr}\f$ are distance-dependent weights
   - \f$\kappa\f$ provides spatially-varying penalty weights (optional)
 
@@ -118,11 +116,7 @@ public:
   }
 
   //! method to indicate whether the the prior defined by this potential is convex
-  static inline bool 
-  is_convex()
-  {
-    return true; 
-  }
+  static inline bool is_convex() { return true; }
 
   //! Method for setting up parsing additional parameters
   void initialise_keymap(KeyParser& parser)
@@ -138,22 +132,16 @@ class RelativeDifferencePotential;
 
 /*!
   \ingroup priors
-  \brief CPU Implementation of the Relative Difference prior
+  \brief Multithreaded CPU Implementation of the Relative Difference prior
   \par Parsing
   These are the keywords that can be used in addition to the ones in GibbsPrior:
+
   \verbatim
   Gibbs Relative Difference Prior Parameters:=
-  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
-  only 2D:= 0
-  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; keywords from GibbsPrior
   ; gamma value :=
   ; epsilon value :=
-  ; use next parameter to specify an image with penalisation factors (a la Fessler)
-  ; kappa filename:=
-  ; use next parameter to get gradient images at every subiteration
-  gradient filename prefix:=
-  END Gibbs Relative Difference Prior Parameters:=
+  ENDGibbs Relative Difference Prior Parameters:=
   \endverbatim
 */
 template <typename elemT>
@@ -171,7 +159,7 @@ public:
   GibbsRelativeDifferencePrior();
   GibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
-  static constexpr const char* registered_name = "Gibbs Relative Difference Prior"; 
+  static constexpr const char* registered_name = "Gibbs Relative Difference Prior";
   float get_gamma() const { return this->potential.gamma; }
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
@@ -183,24 +171,17 @@ public:
 
 #ifdef STIR_WITH_CUDA
 /*!
-\ingroup priors
-\brief GPU Implementation of the Relative Difference prior
-\par Parsing
-These are the keywords that can be used in addition to the ones in CudaGibbsPrior:
-\verbatim
-Cuda Gibbs Relative Difference Prior Parameters:=
-; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
-only 2D:= 0
-; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-; gamma value :=
-; epsilon value :=
-; use next parameter to specify an image with penalisation factors (a la Fessler)
-; kappa filename:=
-; use next parameter to get gradient images at every subiteration
-gradient filename prefix:=
-END Cuda Gibbs Relative Difference Prior Parameters:=
-\endverbatim
+  \ingroup priors
+  \brief GPU Implementation of the Relative Difference prior
+  \par Parsing
+  These are the keywords that can be used in addition to the ones in CudaGibbsPrior:
+  \verbatim
+  Cuda Gibbs Relative Difference Prior Parameters:=
+  ; keywords from GibbsPrior
+  ; gamma value :=
+  ; epsilon value :=
+  END Cuda Gibbs Relative Difference Prior Parameters:=
+  \endverbatim
 */
 template <typename elemT>
 class CudaGibbsRelativeDifferencePrior : public RegisteredParsingObject<CudaGibbsRelativeDifferencePrior<elemT>,
@@ -214,8 +195,8 @@ private:
       base_type;
 
 public:
-CudaGibbsRelativeDifferencePrior();
-CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
+  CudaGibbsRelativeDifferencePrior();
+  CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
   static constexpr const char* registered_name = "Cuda Gibbs Relative Difference Prior";
   float get_gamma() const { return this->potential.gamma; }

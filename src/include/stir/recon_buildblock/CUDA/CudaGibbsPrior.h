@@ -30,19 +30,22 @@
 START_NAMESPACE_STIR
 
 /*!
-\ingroup priors
-\ingroup CUDA
-\brief
-A base class with CUDA-accelerated implementation of the Gibbsprior class.
+  \ingroup priors
+  \ingroup CUDA
+  \brief
+  A base class with CUDA-accelerated implementation of the Gibbsprior class.
 
-This class provides CUDA-accelerated implementations of compute_value, compute_gradient,
-accumulate_Hessian_times_input, compute_Hessian_diagonal and compute_gradient_times_input while inheriting all  parsing and
-setting functionality from the base CPU GibbsPrior class.
+  This class provides CUDA-accelerated implementations of compute_value, compute_gradient,
+  accumulate_Hessian_times_input, compute_Hessian_diagonal and compute_gradient_times_input while inheriting all  parsing and
+  setting functionality from the base CPU GibbsPrior class.
 
-Check the documentation of the GibbsPrior class for details on how the prior is defined and how to use it.
+  Check the documentation of the GibbsPrior class for details on how the prior is defined and how to use it.
+
+  \par Parsing
+  Parsing keywords are the same as for the GibbsPrior class.
+  See the documentation of the GibbsPrior class for the list of keywords that can be used.
 
 */
-
 template <typename elemT, typename PotentialT>
 class CudaGibbsPrior : public GibbsPrior<elemT, PotentialT>
 {

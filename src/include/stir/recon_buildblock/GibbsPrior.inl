@@ -1,6 +1,10 @@
+//
+//
 /*
     Copyright (C) 2025, University College London
     Copyright (C) 2025, University of Milano-Bicocca
+    Copyright (C) 2000- 2005, Hammersmith Imanet Ltd
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -12,9 +16,10 @@
   \ingroup priors
   \brief  Implementation of the stir::GibbsPrior class
 
-  \author Kris Thielemans
   \author Matteo Neel Colombo
-
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author Robert Twyman
 */
 
 #include "stir/recon_buildblock/GibbsPrior.h"
@@ -153,7 +158,7 @@ GibbsPrior<elemT, potentialT>::set_defaults()
 }
 
 template <typename elemT, typename potentialT>
-bool 
+bool
 GibbsPrior<elemT, potentialT>::is_convex() const
 {
   return potentialT::is_convex();

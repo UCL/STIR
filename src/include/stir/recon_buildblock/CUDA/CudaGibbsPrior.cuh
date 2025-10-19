@@ -290,8 +290,6 @@ CudaGibbsPrior_gradient_dot_input_kernel(double* output,
   blockReduction(block_sum_shared, thread_in_block, block_threads);
 
   if (thread_in_block == 0)
-    // TODO atomicAddGeneric is defined in include/stircuda_utilities.cuh, we need it since for CUDA_ARCH__ < 600
-    // we cannot perform atomicAdd on double. AtomicAddGeneric has not been tested for CUDA_ARCH__ < 600.
     atomicAddGeneric(output, block_sum_shared[0]);
 }
 

@@ -73,11 +73,7 @@ public:
     return static_cast<double>(-0.5);
   }
   //! method to indicate whether the the prior defined by this potential is convex
-  static inline bool 
-  is_convex()
-  {
-    return true; 
-  }
+  static inline bool is_convex() { return true; }
   //! Method for setting up parsing additional parameters
   void initialise_keymap(KeyParser& parser)
   {
@@ -91,7 +87,7 @@ class QuadraticPotential;
 
 /*!
   \ingroup priors
-  \brief CPU Implementation of the  Quadratic Gibbs prior
+  \brief Multithreaded CPU Implementation of the  Quadratic Gibbs prior
 
   \par Parsing
   These are the keywords that can be used in addition to the ones in GibbsPrior.
@@ -132,16 +128,7 @@ public:
   These are the keywords that can be used in addition to the ones in GibbsPrior.
   \verbatim
   Cuda Gibbs Quadratic Prior Parameters:=
-  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
-  only 2D:= 0
-  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-  ' value of only_2D is ignored
-  ; following example uses 2D 'nearest neighbour' penalty
-  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  ; use next parameter to specify an image with penalisation factors (a la Fessler)
-  ; kappa filename:=
-  ; use next parameter to get gradient images at every subiteration
-  gradient filename prefix:=
+  ; keywords from GibbsPrior
   END Cuda Gibbs Quadratic Prior Parameters:=
   \endverbatim
 */
