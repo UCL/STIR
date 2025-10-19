@@ -97,16 +97,7 @@ class QuadraticPotential;
   These are the keywords that can be used in addition to the ones in GibbsPrior.
   \verbatim
   Gibbs Quadratic Prior Parameters:=
-  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D
-  only 2D:= 0
-  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
-  ' value of only_2D is ignored
-  ; following example uses 2D 'nearest neighbour' penalty
-  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  ; use next parameter to specify an image with penalisation factors (a la Fessler)
-  ; kappa filename:=
-  ; use next parameter to get gradient images at every subiteration
-  gradient filename prefix:=
+  ; keywords from GibbsPrior
   END Gibbs Quadratic Prior Parameters:=
   \endverbatim
 */
