@@ -44,13 +44,6 @@ GibbsQuadraticPrior<elemT>::set_defaults()
 }
 
 template <typename elemT>
-bool
-GibbsQuadraticPrior<elemT>::is_convex() const
-{
-  return true;
-}
-
-template <typename elemT>
 std::string
 GibbsQuadraticPrior<elemT>::get_parsing_name() const
 {

@@ -152,6 +152,13 @@ GibbsPrior<elemT, potentialT>::set_defaults()
   this->_already_set_up = false;
 }
 
+template <typename elemT, typename potentialT>
+bool 
+GibbsPrior<elemT, potentialT>::is_convex() const
+{
+  return potentialT::is_convex();
+}
+
 template <typename elemT, typename PotentialT>
 GibbsPrior<elemT, PotentialT>::GibbsPrior()
 {

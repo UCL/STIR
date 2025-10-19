@@ -72,6 +72,12 @@ public:
   {
     return static_cast<double>(-0.5);
   }
+  //! method to indicate whether the the prior defined by this potential is convex
+  static inline bool 
+  is_convex()
+  {
+    return true; 
+  }
   //! Method for setting up parsing additional parameters
   void initialise_keymap(KeyParser& parser)
   {
@@ -123,7 +129,6 @@ public:
   GibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
 
   void set_defaults() override;
-  bool is_convex() const override;
   std::string get_parsing_name() const override;
 };
 
@@ -168,7 +173,6 @@ public:
   CudaGibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
 
   void set_defaults() override;
-  bool is_convex() const override;
   std::string get_parsing_name() const override;
 };
 #endif

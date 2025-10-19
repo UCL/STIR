@@ -46,20 +46,12 @@ CudaGibbsRelativeDifferencePrior<elemT>::set_defaults()
 }
 
 template <typename elemT>
-bool
-CudaGibbsRelativeDifferencePrior<elemT>::is_convex() const
-{
-  return true;
-}
-
-template <typename elemT>
 std::string 
 CudaGibbsRelativeDifferencePrior<elemT>::get_parsing_name() const
 {
   return registered_name;
 }
 
-// 
 template class CudaGibbsRelativeDifferencePrior<float>;
 
 END_NAMESPACE_STIR

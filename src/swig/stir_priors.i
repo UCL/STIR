@@ -60,7 +60,7 @@
   stir::GibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >);
 %shared_ptr(stir::GibbsRelativeDifferencePrior<elemT>);
 
-#ifdef __CUDACC__
+#ifdef STIR_WITH_CUDA
   %shared_ptr(stir::RegisteredParsingObject< stir::CudaRelativeDifferencePrior<elemT>,
           stir::GeneralisedPrior<TargetT >,
           stir::RelativeDifferencePrior<elemT> >);
@@ -153,7 +153,7 @@ stir::GeneralisedPrior<TargetT >,
 stir::GibbsPrior<elemT, stir::RelativeDifferencePotential<elemT>> >;
 %template (GibbsRelativeDifferencePrior3DFloat) stir::GibbsRelativeDifferencePrior<elemT>;
 
-#ifdef __CUDACC__
+#ifdef STIR_WITH_CUDA
   %template (RPCudaRelativeDifferencePrior3DFloat)
     stir::RegisteredParsingObject< stir::CudaRelativeDifferencePrior<elemT>,
       stir::GeneralisedPrior<TargetT >,

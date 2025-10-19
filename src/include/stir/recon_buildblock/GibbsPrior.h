@@ -120,6 +120,9 @@ public:
   //! Getter method to retrieve the parsing name, must be implemented in derived classes
   virtual std::string get_parsing_name() const = 0;
 
+  //! Return whether the prior is convex or not
+  bool is_convex() const override; 
+
 protected:
   //! @name Image and weight boundary indices
   //! @{

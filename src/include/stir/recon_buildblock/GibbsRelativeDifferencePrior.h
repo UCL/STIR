@@ -116,6 +116,14 @@ public:
 
     return NUM * DEN * DEN * DEN;
   }
+
+  //! method to indicate whether the the prior defined by this potential is convex
+  static inline bool 
+  is_convex()
+  {
+    return true; 
+  }
+
   //! Method for setting up parsing additional parameters
   void initialise_keymap(KeyParser& parser)
   {
@@ -170,7 +178,6 @@ public:
   void set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
 
   void set_defaults() override;
-  bool is_convex() const override;
   std::string get_parsing_name() const override;
 };
 
@@ -217,7 +224,6 @@ CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, 
   void set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
 
   void set_defaults() override;
-  bool is_convex() const override;
   std::string get_parsing_name() const override;
 };
 #endif

@@ -52,13 +52,6 @@ GibbsRelativeDifferencePrior<elemT>::set_defaults()
 }
 
 template <typename elemT>
-bool
-GibbsRelativeDifferencePrior<elemT>::is_convex() const
-{
-  return true;
-}
-
-template <typename elemT>
 std::string 
 GibbsRelativeDifferencePrior<elemT>::get_parsing_name() const
 {
