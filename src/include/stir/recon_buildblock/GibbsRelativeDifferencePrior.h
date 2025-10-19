@@ -125,10 +125,11 @@ public:
     parser.add_key("epsilon value", &this->epsilon);
   }
 };
-#endif // SWIG
 
+#else // IGNORESWIG
 template <typename elemT>
 class RelativeDifferencePotential;
+#endif // SWIG
 
 /*!
   \ingroup priors

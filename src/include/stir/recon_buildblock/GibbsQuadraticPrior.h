@@ -32,6 +32,7 @@
 
 START_NAMESPACE_STIR
 
+
 #ifndef IGNORESWIG
 
 /*!
@@ -80,10 +81,11 @@ public:
     // No parameters needed for quadratic potential
   }
 };
-#endif // SWIG
 
+#else // IGNORESWIG
 template <typename elemT>
 class QuadraticPotential;
+#endif // SWIG
 
 /*!
   \ingroup priors
