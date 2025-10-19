@@ -52,12 +52,10 @@ CudaGibbsQuadraticPrior<elemT>::is_convex() const
 }
 
 template <typename elemT>
-void
-CudaGibbsQuadraticPrior<elemT>::initialise_keymap()
+std::string 
+CudaGibbsQuadraticPrior<elemT>::get_parsing_name() const
 {
-  this->parser.add_start_key("Cuda Gibbs Quadratic Prior Parameters");
-  base_type::initialise_keymap();
-  this->parser.add_stop_key("END Cuda Gibbs Quadratic Prior Parameters");
+  return registered_name;
 }
 
 template class CudaGibbsQuadraticPrior<float>;

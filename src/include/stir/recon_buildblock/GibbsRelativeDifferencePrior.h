@@ -116,6 +116,12 @@ public:
 
     return NUM * DEN * DEN * DEN;
   }
+  //! Method for setting up parsing additional parameters
+  void initialise_keymap(KeyParser& parser)
+  {
+    parser.add_key("gamma value", &this->gamma);
+    parser.add_key("epsilon value", &this->epsilon);
+  }
 };
 #endif // SWIG
 
@@ -154,12 +160,10 @@ private:
       base_type;
 
 public:
-  //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "Gibbs Relative Difference Prior";
-
   GibbsRelativeDifferencePrior();
   GibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
+  static constexpr const char* registered_name = "Gibbs Relative Difference Prior"; 
   float get_gamma() const { return this->potential.gamma; }
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
@@ -167,9 +171,7 @@ public:
 
   void set_defaults() override;
   bool is_convex() const override;
-
-protected:
-  void initialise_keymap() override;
+  std::string get_parsing_name() const override;
 };
 
 #ifdef STIR_WITH_CUDA
@@ -205,12 +207,10 @@ private:
       base_type;
 
 public:
-  //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "Cuda Gibbs Relative Difference Prior";
+CudaGibbsRelativeDifferencePrior();
+CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
-  CudaGibbsRelativeDifferencePrior();
-  CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
-
+  static constexpr const char* registered_name = "Cuda Gibbs Relative Difference Prior";
   float get_gamma() const { return this->potential.gamma; }
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
@@ -218,9 +218,7 @@ public:
 
   void set_defaults() override;
   bool is_convex() const override;
-
-protected:
-  void initialise_keymap() override;
+  std::string get_parsing_name() const override;
 };
 #endif
 

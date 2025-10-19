@@ -59,14 +59,10 @@ GibbsRelativeDifferencePrior<elemT>::is_convex() const
 }
 
 template <typename elemT>
-void
-GibbsRelativeDifferencePrior<elemT>::initialise_keymap()
+std::string 
+GibbsRelativeDifferencePrior<elemT>::get_parsing_name() const
 {
-  this->parser.add_start_key("Gibbs Relative Difference Prior Parameters");
-  base_type::initialise_keymap();
-  this->parser.add_key("gamma value", &this->potential.gamma);
-  this->parser.add_key("epsilon value", &this->potential.epsilon);
-  this->parser.add_stop_key("END Gibbs Relative Difference Prior Parameters");
+  return registered_name;
 }
 
 template class GibbsRelativeDifferencePrior<float>;

@@ -72,6 +72,11 @@ public:
   {
     return static_cast<double>(-0.5);
   }
+  //! Method for setting up parsing additional parameters
+  void initialise_keymap(KeyParser& parser)
+  {
+    // No parameters needed for quadratic potential
+  }
 };
 #endif // SWIG
 
@@ -119,9 +124,7 @@ public:
 
   void set_defaults() override;
   bool is_convex() const override;
-
-protected:
-  void initialise_keymap() override;
+  std::string get_parsing_name() const override;
 };
 
 #ifdef STIR_WITH_CUDA
@@ -166,9 +169,7 @@ public:
 
   void set_defaults() override;
   bool is_convex() const override;
-
-protected:
-  void initialise_keymap() override;
+  std::string get_parsing_name() const override;
 };
 #endif
 

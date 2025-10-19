@@ -117,6 +117,9 @@ public:
   //! Set up the prior for a target image. Must be called before use.
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
+  //! Getter method to retrieve the parsing name, must be implemented in derived classes
+  virtual std::string get_parsing_name() const = 0;
+
 protected:
   //! @name Image and weight boundary indices
   //! @{

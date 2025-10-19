@@ -51,12 +51,10 @@ GibbsQuadraticPrior<elemT>::is_convex() const
 }
 
 template <typename elemT>
-void
-GibbsQuadraticPrior<elemT>::initialise_keymap()
+std::string
+GibbsQuadraticPrior<elemT>::get_parsing_name() const
 {
-  this->parser.add_start_key("Gibbs Quadratic Prior Parameters");
-  base_type::initialise_keymap();
-  this->parser.add_stop_key("END Gibbs Quadratic Prior Parameters");
+  return registered_name;
 }
 
 // Explicit template instantiations

@@ -41,10 +41,13 @@ void
 GibbsPrior<elemT, potentialT>::initialise_keymap()
 {
   base_type::initialise_keymap();
+  this->parser.add_start_key(this->get_parsing_name());
   this->parser.add_key("only 2D", &only_2D);
   this->parser.add_key("kappa filename", &kappa_filename);
   this->parser.add_key("weights", &weights);
   this->parser.add_key("gradient filename prefix", &gradient_filename_prefix);
+  this->potential.initialise_keymap(this->parser);
+  this->parser.add_stop_key("END " + this->get_parsing_name());
 }
 
 template <typename elemT, typename potentialT>
