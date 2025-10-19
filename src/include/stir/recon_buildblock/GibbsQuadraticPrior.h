@@ -76,7 +76,7 @@ public:
   //! method to indicate whether the the prior defined by this potential is convex
   static inline bool is_convex() { return true; }
   //! Method for setting up parsing additional parameters
-  void initialise_keymap(KeyParser& parser)
+  void initialise_keymap(KeyParser& parser) const
   {
     // No parameters needed for quadratic potential
   }

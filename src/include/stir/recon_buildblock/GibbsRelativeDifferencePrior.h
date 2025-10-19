@@ -119,7 +119,7 @@ public:
   static inline bool is_convex() { return true; }
 
   //! Method for setting up parsing additional parameters
-  void initialise_keymap(KeyParser& parser)
+  void initialise_keymap(KeyParser& parser) const
   {
     parser.add_key("gamma value", &this->gamma);
     parser.add_key("epsilon value", &this->epsilon);
