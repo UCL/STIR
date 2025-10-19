@@ -128,6 +128,18 @@
         <a href=https://github.com/UCL/STIR/pull/1591>PR #1591</a> and <a href=https://github.com/UCL/STIR/pull/1605>PR #1605</a>
       </li>
   </ul>
+  <h4>Changes to examples</h4>
+  <ul>
+    <li>
+      Python example <code>plot_sinogram_profiles.py</code> has been renamed to <code>plot_projdata_profiles.py</code>
+      and generalised to work with TOF dimensions etc. A small <code>pytest</code> has been added as well.<br>
+      <a href=https://github.com/UCL/STIR/pull/1370>PR #1370</a>
+    </li>
+    <li>
+      Python example <code>ProjDataVisualisation.py</code> now has a vmax slider.<br>
+      <a href=https://github.com/UCL/STIR/pull/1568>PR #1568</a>
+    </li>
+  </ul>
 
   <h3>Bug fixes</h3>
   <ul>
@@ -143,13 +155,14 @@
       your threshold values. Expected scatter tail-fitting scale factors should now be restored to ~1-1.5 (depending on
       the amount of multiple and out-of-FOV scatter).
       See <a href="https://github.com/UCL/STIR/issues/1532">Issue #1532</a> for more detail. Fixed by using averaging
-      functionality of SSRB instead of adding segments for attenuation correction factors.
+      functionality of SSRB instead of adding segments for attenuation correction factors.<br>
       <a href=https://github.com/UCL/STIR/pull/1531>PR #1531</a>
     </li>
     <li>
       Fixed a bug in the distributed LM computation code (introduced in 6.1) that neglected to accumulate outputs when
-      not build with OpenMP.
-      See <a href="https://github.com/UCL/STIR/pull/1566"">PR #1566</a>" . </li>
+      not built with OpenMP.<br>
+      See <a href="https://github.com/UCL/STIR/pull/1566">PR #1566</a>.
+    </li>
   </ul>
 
   <h3>Build system</h3>
@@ -227,10 +240,12 @@
     <li>
       <code>truncate_end_planes</code> will be removed in v7.0
     </li>
+    <li>
+      legacy compatibility with version 3, 4 and 5 will be removed in v7.0.
+      CMake options <tt>STIR_PROJECTORS_AS_V3</tt>, <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> and
+      <tt>STIR_ROOT_ROTATION_AS_V4</tt> will therefore be removed.
+    </li>
   </ul>
-
-  <h3>Other code changes</h3>
-
 
   <h3>Test changes</h3>
   <h4>Python tests</h4>
@@ -246,17 +261,6 @@
 
   <h4>recon_test_pack</h4>
 
-  <h3>Changes to examples</h3>
-  <uk>
-    <li>
-      Python example <code>plot_sinogram_profiles.py</code> has been renamed to <code>plot_projdata_profiles.py</code>
-      and generalised to work with TOF dimensions etc. A small <code>pytest</code> has been added as well.<br>
-      <a href=https://github.com/UCL/STIR/pull/1370>PR #1370</a>
-    </li>
-    <li>
-      Python example <code>ProjDataVisualisation.py</code> now has a vmax slider.<br>
-      <a href=https://github.com/UCL/STIR/pull/1568>PR #1568</a>
-      </ul>
 
 </body>
 
