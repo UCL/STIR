@@ -56,7 +56,7 @@ template <typename elemT>
 std::string
 CudaGibbsRelativeDifferencePenalty<elemT>::get_parsing_name() const
 {
-  return registered_name;
+  return this->get_registered_name();
 }
 
 template class CudaGibbsRelativeDifferencePenalty<float>;

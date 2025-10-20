@@ -55,7 +55,7 @@ template <typename elemT>
 std::string
 GibbsRelativeDifferencePenalty<elemT>::get_parsing_name() const
 {
-  return registered_name;
+  return this->get_registered_name();
 }
 
 template class GibbsRelativeDifferencePenalty<float>;
