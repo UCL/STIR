@@ -90,8 +90,6 @@ if [ "$generate_images" -eq 1 ]; then
   generate_image  generate_uniform_cylinder.par
   echo "===  make attenuation image"
   generate_image  generate_atten_cylinder.par
-echo "===  make attenuation image for SPECT: to make up for the fliprl of SPECTUB"
-generate_image generate_atten_cylinder_SPECT.par
 fi
 
 # Function to comment out the specific line in a given file and write to a new file
@@ -110,8 +108,8 @@ uniform_output_file="my_uniform_cylinder_SPECT.hv"
 comment_out_line "$uniform_input_file" "$uniform_output_file"
 
 # Paths to the input and output files for attenuation image
-atten_input_file="my_atten_image_SPECT.hv"
-atten_output_file="my_atten_image_SPECT_modified.hv"   
+atten_input_file="my_atten_image.hv"
+atten_output_file="my_atten_image_SPECT.hv"   
 
 # Comment out the specific line in the attenuation image file
 comment_out_line "$atten_input_file" "$atten_output_file"
@@ -178,7 +176,7 @@ fi
 : ${background_value:=10}
 if [ "$SPECT" -eq 1 ]; then
   # create SPECT sinograms
-  ./simulate_data.sh "my_uniform_cylinder_SPECT.hv" "my_atten_image_SPECT_modified.hv" "SPECT_test_Interfile_header.hs" "${background_value}" "${suffix}"
+  ./simulate_data.sh "my_uniform_cylinder_SPECT.hv" "my_atten_image_SPECT.hv" "SPECT_test_Interfile_header.hs" "${background_value}" "${suffix}"
   if [ $? -ne 0 ]; then
     echo "Error running SPECT simulation"
        exit 1
