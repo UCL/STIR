@@ -109,7 +109,7 @@ comment_out_line "$uniform_input_file" "$uniform_output_file"
 
 # Paths to the input and output files for attenuation image
 atten_input_file="my_atten_image.hv"
-atten_output_file="my_atten_image_SPECT.hv"   
+atten_output_file="my_atten_image_SPECT.hv"
 
 # Comment out the specific line in the attenuation image file
 comment_out_line "$atten_input_file" "$atten_output_file"
