@@ -119,14 +119,14 @@ public:
   static inline bool is_convex() { return true; }
 
   //! Method for setting up parsing additional parameters
-  void initialise_keymap(KeyParser& parser) 
+  void initialise_keymap(KeyParser& parser)
   {
     parser.add_key("gamma value", &this->gamma);
     parser.add_key("epsilon value", &this->epsilon);
   }
 };
 
-#else // IGNORESWIG
+#else  // IGNORESWIG
 template <typename elemT>
 class RelativeDifferencePotential;
 #endif // SWIG
@@ -147,8 +147,8 @@ class RelativeDifferencePotential;
 */
 template <typename elemT>
 class GibbsRelativeDifferencePenalty : public RegisteredParsingObject<GibbsRelativeDifferencePenalty<elemT>,
-                                                                    GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                                    GibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
+                                                                      GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                                                      GibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
 {
 private:
   typedef RegisteredParsingObject<GibbsRelativeDifferencePenalty<elemT>,
@@ -185,9 +185,10 @@ public:
   \endverbatim
 */
 template <typename elemT>
-class CudaGibbsRelativeDifferencePenalty : public RegisteredParsingObject<CudaGibbsRelativeDifferencePenalty<elemT>,
-                                                                        GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                                        CudaGibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
+class CudaGibbsRelativeDifferencePenalty
+    : public RegisteredParsingObject<CudaGibbsRelativeDifferencePenalty<elemT>,
+                                     GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                     CudaGibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
 {
 private:
   typedef RegisteredParsingObject<CudaGibbsRelativeDifferencePenalty<elemT>,

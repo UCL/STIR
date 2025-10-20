@@ -32,7 +32,6 @@
 
 START_NAMESPACE_STIR
 
-
 #ifndef IGNORESWIG
 
 /*!
@@ -82,7 +81,7 @@ public:
   }
 };
 
-#else // IGNORESWIG
+#else  // IGNORESWIG
 template <typename elemT>
 class QuadraticPotential;
 #endif // SWIG
@@ -101,8 +100,8 @@ class QuadraticPotential;
 */
 template <typename elemT>
 class GibbsQuadraticPenalty : public RegisteredParsingObject<GibbsQuadraticPenalty<elemT>,
-                                                           GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                           GibbsPenalty<elemT, QuadraticPotential<elemT>>>
+                                                             GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                                             GibbsPenalty<elemT, QuadraticPotential<elemT>>>
 {
 private:
   typedef RegisteredParsingObject<GibbsQuadraticPenalty<elemT>,
@@ -136,8 +135,8 @@ public:
 */
 template <typename elemT>
 class CudaGibbsQuadraticPenalty : public RegisteredParsingObject<CudaGibbsQuadraticPenalty<elemT>,
-                                                               GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                               CudaGibbsPenalty<elemT, QuadraticPotential<elemT>>>
+                                                                 GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                                                 CudaGibbsPenalty<elemT, QuadraticPotential<elemT>>>
 {
 private:
   typedef RegisteredParsingObject<CudaGibbsQuadraticPenalty<elemT>,

@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2025, University College London
-    Copyright (C) 2025, University of Milano-Bicocca 
+    Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -20,9 +20,7 @@
   \author Kris Thielemans
 */
 
-
 #include "stir/recon_buildblock/GibbsQuadraticPenalty.h"
-
 
 START_NAMESPACE_STIR
 
@@ -35,7 +33,8 @@ CudaGibbsQuadraticPenalty<elemT>::CudaGibbsQuadraticPenalty()
 
 template <typename elemT>
 CudaGibbsQuadraticPenalty<elemT>::CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor)
-  : base_type(only_2D, penalisation_factor) {}
+    : base_type(only_2D, penalisation_factor)
+{}
 
 template <typename elemT>
 void
@@ -45,7 +44,7 @@ CudaGibbsQuadraticPenalty<elemT>::set_defaults()
 }
 
 template <typename elemT>
-std::string 
+std::string
 CudaGibbsQuadraticPenalty<elemT>::get_parsing_name() const
 {
   return registered_name;

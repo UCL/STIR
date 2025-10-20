@@ -317,7 +317,7 @@ GibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT
 template <typename elemT, typename PotentialT>
 void
 GibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
-                                                const DiscretisedDensity<3, elemT>& current_image_estimate)
+                                                  const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   // Preliminary Checks
   assert(prior_gradient.has_same_characteristics(current_image_estimate));
@@ -372,7 +372,7 @@ GibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& 
 template <typename elemT, typename PotentialT>
 double
 GibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const DiscretisedDensity<3, elemT>& input,
-                                                            const DiscretisedDensity<3, elemT>& current_image_estimate)
+                                                              const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   // Preliminary Checks
   assert(input.has_same_characteristics(current_image_estimate));
@@ -429,8 +429,8 @@ GibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const DiscretisedD
 template <typename elemT, typename PotentialT>
 void
 GibbsPenalty<elemT, PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel,
-                                               const BasicCoordinate<3, int>& coords,
-                                               const DiscretisedDensity<3, elemT>& current_image_estimate) const
+                                                 const BasicCoordinate<3, int>& coords,
+                                                 const DiscretisedDensity<3, elemT>& current_image_estimate) const
 {
   assert(prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
   this->check(current_image_estimate);
@@ -496,7 +496,7 @@ GibbsPenalty<elemT, PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& p
 template <typename elemT, typename PotentialT>
 void
 GibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diagonal,
-                                                        const DiscretisedDensity<3, elemT>& current_image_estimate) const
+                                                          const DiscretisedDensity<3, elemT>& current_image_estimate) const
 {
   // Preliminary Checks
   assert(Hessian_diagonal.has_same_characteristics(current_image_estimate));
@@ -551,8 +551,8 @@ GibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, 
 template <typename elemT, typename PotentialT>
 void
 GibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
-                                                              const DiscretisedDensity<3, elemT>& current_image_estimate,
-                                                              const DiscretisedDensity<3, elemT>& input) const
+                                                                const DiscretisedDensity<3, elemT>& current_image_estimate,
+                                                                const DiscretisedDensity<3, elemT>& input) const
 {
   // Preliminary Checks
   assert(output.has_same_characteristics(current_image_estimate));

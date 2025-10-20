@@ -48,7 +48,7 @@
 #  ifdef STIR_WITH_CUDA
 #    include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
 #  endif
-//#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+// #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #endif
 #include "stir/recon_buildblock/distributable_main.h"
 #include "stir/warning.h"
@@ -127,14 +127,15 @@ public:
   // basic methods
   Timings(const std::string& image_filename, const std::string& template_proj_data_filename)
   {
-    if (!image_filename.empty()){
-      this->image_sptr = read_from_file<VoxelsOnCartesianGrid<float>>(image_filename);
-      this->input_sptr.reset(this->image_sptr->clone());
-      this->input_sptr->fill(1.F);
-      this->output_sptr.reset(this->image_sptr->clone());
-      this->output_sptr->fill(0.F);
-      // std::cout<<"image set"<<std::endl;
-    }
+    if (!image_filename.empty())
+      {
+        this->image_sptr = read_from_file<VoxelsOnCartesianGrid<float>>(image_filename);
+        this->input_sptr.reset(this->image_sptr->clone());
+        this->input_sptr->fill(1.F);
+        this->output_sptr.reset(this->image_sptr->clone());
+        this->output_sptr->fill(0.F);
+        // std::cout<<"image set"<<std::endl;
+      }
 
     if (!template_proj_data_filename.empty())
       this->template_proj_data_sptr = ProjData::read_from_file(template_proj_data_filename);
@@ -149,10 +150,7 @@ public:
 
   //! Test function that could be used to see if reported timings are correct
   /*! CPU time should be close to zero, wall-clock time close to 1123ms */
-  void sleep()
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1123));
-  }
+  void sleep() { std::this_thread::sleep_for(std::chrono::milliseconds(1123)); }
 
   template <class T>
   static void copy_add(T& t)
@@ -174,24 +172,15 @@ public:
     delete im;
   }
 
-  void copy_add_image()
-  {
-    copy_add(*this->image_sptr);
-  }
+  void copy_add_image() { copy_add(*this->image_sptr); }
 
-  void copy_mult_image()
-  {
-    copy_mult(*this->image_sptr);
-  }
+  void copy_mult_image() { copy_mult(*this->image_sptr); }
 
-  void copy_std_vector()
-  {
-    std::copy(this->v1.begin(), this->v1.end(), this->v2.begin());
-  }
+  void copy_std_vector() { std::copy(this->v1.begin(), this->v1.end(), this->v2.begin()); }
   double inner_product(const DiscretisedDensity<3, float>& a, const DiscretisedDensity<3, float>& b)
   {
-      assert(a.has_same_characteristics(b));
-      return std::inner_product(a.begin_all(), a.end_all(), b.begin_all(), 0.0);
+    assert(a.has_same_characteristics(b));
+    return std::inner_product(a.begin_all(), a.end_all(), b.begin_all(), 0.0);
   }
   void create_std_vector()
   {
@@ -212,10 +201,7 @@ public:
                          /* initialise*/ true);
   }
   //! call ProjDataInMemory::fill(ProjDataInMemory&)
-  void copy_only_proj_data_mem_to_mem()
-  {
-    this->mem_proj_data_sptr2->fill(*this->mem_proj_data_sptr);
-  }
+  void copy_only_proj_data_mem_to_mem() { this->mem_proj_data_sptr2->fill(*this->mem_proj_data_sptr); }
 
   //! copy from output_proj_data_sptr to new Interfile file
   void copy_proj_data_file_to_file()
@@ -253,15 +239,9 @@ public:
     tmp.fill(*this->mem_proj_data_sptr);
   }
 
-  void copy_add_proj_data_mem()
-  {
-    copy_add(*this->mem_proj_data_sptr);
-  }
+  void copy_add_proj_data_mem() { copy_add(*this->mem_proj_data_sptr); }
 
-  void copy_mult_proj_data_mem()
-  {
-    copy_mult(*this->mem_proj_data_sptr);
-  }
+  void copy_mult_proj_data_mem() { copy_mult(*this->mem_proj_data_sptr); }
 
   void projector_setup()
   {
@@ -286,10 +266,7 @@ public:
   }
 
 #ifndef MINI_STIR
-  void obj_func_set_up()
-  {
-    this->objective_function_sptr->set_up(this->image_sptr);
-  }
+  void obj_func_set_up() { this->objective_function_sptr->set_up(this->image_sptr); }
 
   void obj_func_grad_no_sens()
   {
@@ -298,12 +275,7 @@ public:
     delete im;
   }
 
-  void prior_grad()
-  {
-
-    this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
-
-  }
+  void prior_grad() { this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr); }
 
   void prior_grad_times_input()
   {
@@ -311,7 +283,6 @@ public:
     // result += 2; // to avoid compiler warning about unused variable
     this->prior_sptr->compute_gradient_times_input(*this->input_sptr, *this->image_sptr);
   }
-
 
   void prior_value()
   {
@@ -325,7 +296,6 @@ public:
 
     BasicCoordinate<3, int> cord = make_coordinate(0, 0, 0);
     this->prior_sptr->compute_Hessian(*this->output_sptr, cord, *this->image_sptr);
-
   }
 
   void prior_hessian_times_input()
@@ -333,10 +303,7 @@ public:
     this->prior_sptr->accumulate_Hessian_times_input(*this->output_sptr, *this->image_sptr, *this->input_sptr);
   }
 
-    void prior_hessian_diag()
-  {
-    this->prior_sptr->compute_Hessian_diagonal(*this->output_sptr, *this->image_sptr);
-  }
+  void prior_hessian_diag() { this->prior_sptr->compute_Hessian_diagonal(*this->output_sptr, *this->image_sptr); }
 #endif
 };
 
@@ -426,137 +393,135 @@ Timings::run_all(const unsigned runs)
   if (!skip_priors)
     {
       {
-        std::cout<< std::endl;
-        std::string name, value_str, grad_str,grad_times_input_str, hessian_str;
+        std::cout << std::endl;
+        std::string name, value_str, grad_str, grad_times_input_str, hessian_str;
         std::ostringstream oss;
-        std::cout<< "CPU Timings: "<< std::endl;
-        double res = 0; 
-        std::cout<< std::endl;
-        
-        //GibbsRDP
+        std::cout << "CPU Timings: " << std::endl;
+        double res = 0;
+        std::cout << std::endl;
+
+        // GibbsRDP
 
         this->prior_sptr = std::make_shared<GibbsRelativeDifferencePenalty<float>>(false, 1.F, 2.F, 1e-7F);
         this->prior_sptr->set_up(this->image_sptr);
         name = this->prior_sptr->get_registered_name();
 
-        oss.str("");    
+        oss.str("");
         oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         value_str = oss.str();
 
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient "<< "(sum = " << res << ") ";
+        oss << name << " gradient " << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
-        prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+        prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input "<< "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
-        this->run_it(&Timings::prior_grad, grad_str , runs * 10);
-        this->run_it(&Timings::prior_hessian_times_input, hessian_str , runs * 10);
+        this->run_it(&Timings::prior_grad, grad_str, runs * 10);
+        this->run_it(&Timings::prior_hessian_times_input, hessian_str, runs * 10);
         this->prior_sptr = nullptr;
 
-        //Original RDP
-        std::cout<< std::endl;
+        // Original RDP
+        std::cout << std::endl;
         this->prior_sptr = std::make_shared<RelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
         this->prior_sptr->set_up(this->image_sptr);
         name = this->prior_sptr->get_registered_name();
 
-        oss.str("");    
+        oss.str("");
         oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         value_str = oss.str();
 
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient "<< "(sum = " << res << ") ";
+        oss << name << " gradient " << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
-        prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+        prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input "<< "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
-        this->run_it(&Timings::prior_grad, grad_str , runs * 10);
-        this->run_it(&Timings::prior_hessian_times_input, hessian_str , runs * 10);
+        this->run_it(&Timings::prior_grad, grad_str, runs * 10);
+        this->run_it(&Timings::prior_hessian_times_input, hessian_str, runs * 10);
         this->prior_sptr = nullptr;
-
       }
 #  ifdef STIR_WITH_CUDA
       {
-        std::string name, value_str, grad_str,grad_times_input_str,hessian_str;
+        std::string name, value_str, grad_str, grad_times_input_str, hessian_str;
         std::ostringstream oss;
-        std::cout<< std::endl;
-        std::cout<< std::endl;
-        std::cout<< "GPU Timings: "<< std::endl;
-        double res = 0; 
-        std::cout<< std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << "GPU Timings: " << std::endl;
+        double res = 0;
+        std::cout << std::endl;
 
-        //GibbsRdp
+        // GibbsRdp
         this->prior_sptr = std::make_shared<CudaGibbsRelativeDifferencePenalty<float>>(false, 1.F, 2.F, 1e-7F);
         this->prior_sptr->set_up(this->image_sptr);
         name = this->prior_sptr->get_registered_name();
 
-        oss.str("");    
+        oss.str("");
         oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         value_str = oss.str();
 
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient "<< "(sum = " << res << ") ";
+        oss << name << " gradient " << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
-        prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+        prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input "<< "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
-        this->run_it(&Timings::prior_grad, grad_str , runs * 10);
-        this->run_it(&Timings::prior_hessian_times_input, hessian_str , runs * 10);
+        this->run_it(&Timings::prior_grad, grad_str, runs * 10);
+        this->run_it(&Timings::prior_hessian_times_input, hessian_str, runs * 10);
         this->prior_sptr = nullptr;
 
-        //Original RDP
-        std::cout<< std::endl;
+        // Original RDP
+        std::cout << std::endl;
         this->prior_sptr = std::make_shared<CudaRelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
         this->prior_sptr->set_up(this->image_sptr);
         name = this->prior_sptr->get_registered_name();
 
-        oss.str("");    
+        oss.str("");
         oss << name << " value (" << this->prior_sptr->compute_value(*this->image_sptr) << ")";
         value_str = oss.str();
 
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient "<< "(sum = " << res << ") ";
+        oss << name << " gradient " << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
-        prior_sptr->accumulate_Hessian_times_input(*output_sptr,*image_sptr,*input_sptr);
+        prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input "<< "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
-        this->run_it(&Timings::prior_grad, grad_str , runs * 10);
-        this->run_it(&Timings::prior_hessian_times_input, hessian_str , runs * 10);
+        this->run_it(&Timings::prior_grad, grad_str, runs * 10);
+        this->run_it(&Timings::prior_hessian_times_input, hessian_str, runs * 10);
         this->prior_sptr = nullptr;
-
       }
-      #  endif
+#  endif
     }
 #endif
 }

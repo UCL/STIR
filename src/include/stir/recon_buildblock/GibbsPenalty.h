@@ -55,8 +55,9 @@ START_NAMESPACE_STIR
   (check GibbsQuadraticPrior.h or GibbsRelativeDifferencePrior.h to see examples).
   \par Potential Function Requirements
   The potential function class (PotentialT) must implement the following methods:
-  
-  - \c value(elemT val_center, elemT val_neigh, int z, int y, int x) - Returns the value of the potential function for the two voxel values
+
+  - \c value(elemT val_center, elemT val_neigh, int z, int y, int x) - Returns the value of the potential function for the two
+  voxel values
   - \c derivative_10(elemT val_center, elemT val_neigh, int z, int y, int x) - First derivative with respect to the center voxel
   - \c derivative_11(elemT val_center, elemT val_neigh, int z, int y, int x) - Second mixed derivative
   - \c derivative_20(elemT val_center, elemT val_neigh, int z, int y, int x) - Second derivative with respect to the center voxel
@@ -68,7 +69,7 @@ START_NAMESPACE_STIR
   The coordinate parameters (z, y, x) may be used by the potential function for position-dependent behavior.
   Even if the potential has no parameters to parse, the \c initialise_keymap method must be implemented
   (possibly with an empty body).
-  
+
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
   penalty is computed. If \f$\kappa\f$ is not set, this class will effectively
