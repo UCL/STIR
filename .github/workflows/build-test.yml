@@ -547,3 +547,10 @@ jobs:
               python recon_demo_gradient.py
               ;;
           esac
+          # Workaround for clang 21/libc++ + vendored fmt: ensure ::malloc/::free are declared
+          # Only on macOS jobs.
+          case ${{matrix.os}} in
+            (macOS*)
+              export CXXFLAGS="${CXXFLAGS} -include stdlib.h"
+              ;;
+          esac
