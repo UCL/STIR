@@ -371,6 +371,14 @@ jobs:
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
+          # Workaround for clang 21/libc++ + vendored fmt: ensure ::malloc/::free are declared
+          # Only on macOS jobs.
+          case ${{matrix.os}} in
+            (macOS*)
+              export CXXFLAGS="${CXXFLAGS} -include stdlib.h"
+              ;;
+          esac
+          
           mkdir build
           cd build
           cmake -G Ninja -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
