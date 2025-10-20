@@ -42,6 +42,13 @@
 START_NAMESPACE_STIR
 
 template <typename elemT, typename potentialT>
+std::string
+GibbsPenalty<elemT, potentialT>::get_parsing_name() const
+{
+  return this->get_registered_name() + " Parameters";
+}
+
+template <typename elemT, typename potentialT>
 void
 GibbsPenalty<elemT, potentialT>::initialise_keymap()
 {

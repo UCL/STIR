@@ -20,7 +20,6 @@
 */
 
 #include "stir/recon_buildblock/GibbsRelativeDifferencePenalty.h"
-#include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
@@ -49,13 +48,6 @@ GibbsRelativeDifferencePenalty<elemT>::set_defaults()
   base_type::set_defaults();
   this->potential.gamma = 2;
   this->potential.epsilon = 1e-7F;
-}
-
-template <typename elemT>
-std::string
-GibbsRelativeDifferencePenalty<elemT>::get_parsing_name() const
-{
-  return this->get_registered_name();
 }
 
 template class GibbsRelativeDifferencePenalty<float>;

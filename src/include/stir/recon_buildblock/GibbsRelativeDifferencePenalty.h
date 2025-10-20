@@ -167,7 +167,6 @@ public:
   void set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
 
   void set_defaults() override;
-  std::string get_parsing_name() const override;
 };
 
 #ifdef STIR_WITH_CUDA
@@ -207,7 +206,6 @@ public:
   void set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
 
   void set_defaults() override;
-  std::string get_parsing_name() const override;
 };
 #endif
 

@@ -151,8 +151,9 @@ public:
   //! Set up the prior for a target image. Must be called before use.
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
 
-  //! Getter method to retrieve the parsing name, must be implemented in derived classes
-  virtual std::string get_parsing_name() const = 0;
+  //! Getter method to retrieve the parsing name
+  /*! Default implementation just uses get_registered_name(), and appends " Parameters". */
+  virtual std::string get_parsing_name() const;
 
   //! Return whether the prior is convex or not
   bool is_convex() const override;

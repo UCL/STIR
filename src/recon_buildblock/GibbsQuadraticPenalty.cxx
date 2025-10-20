@@ -20,7 +20,6 @@
 */
 
 #include "stir/recon_buildblock/GibbsQuadraticPenalty.h"
-#include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
@@ -41,13 +40,6 @@ void
 GibbsQuadraticPenalty<elemT>::set_defaults()
 {
   base_type::set_defaults();
-}
-
-template <typename elemT>
-std::string
-GibbsQuadraticPenalty<elemT>::get_parsing_name() const
-{
-  return this->get_registered_name();
 }
 
 // Explicit template instantiations

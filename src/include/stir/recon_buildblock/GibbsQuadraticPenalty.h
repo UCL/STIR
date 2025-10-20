@@ -117,7 +117,6 @@ public:
   GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
 
   void set_defaults() override;
-  std::string get_parsing_name() const override;
 };
 
 #ifdef STIR_WITH_CUDA
@@ -152,7 +151,6 @@ public:
   CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
 
   void set_defaults() override;
-  std::string get_parsing_name() const override;
 };
 #endif
 
