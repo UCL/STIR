@@ -44,7 +44,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 6.2}}
+ Version 6.3}}
 \end{center}
 
 \end{spacing}
@@ -130,7 +130,7 @@ Although we attempt to keep all documentation up-to-date, we
 recommend to read documentation in the following order:
 \begin{itemize}
 \item general overview documents, such as this User's Guide
-\item the \url{http://stir.sourceforge.net/wiki}{STIR Wiki}
+\item the \url{https://github.com/UCL/STIR/wiki/}{STIR Wiki}
 \item 
 online generated documentation (produced by doxygen). This is 
 produced from comments and (partly) code in the source files.
@@ -156,7 +156,7 @@ conda activate stirenv
 # deactivate the environment
 conda deactivate
 \end{verbatim}
-See \url{https://stir.sourceforge.net/wiki/index.php/Installing_STIR_with_conda}{our Wiki page} for
+See \url{https://github.com/UCL/STIR/wiki/Installing-STIR-with-conda}{our Wiki page} for
 more detail, including on how to get a development version.
 
 \subsection{SIRF distributions}
@@ -169,7 +169,7 @@ see \url{https://github.com/SyneRBI/SIRF-SuperBuild/blob/master/VirtualBox/docum
 \section{
 Installation from source}
 This section describes how to install STIR. It is complemented by information on the
-\url{http://stir.sourceforge.net/wiki}{STIR Wiki} with information for specific systems etc.
+\url{http://github.com/UCL/STIR/wiki}{STIR Wiki} with information for specific systems etc.
 
 Note that as opposed to using the instructions below, you can also
 the \url{https://github.com/SyneRBI/SIRF-SuperBuild/blob/master/README.md}{SIRF-Superbuild}
@@ -181,11 +181,7 @@ and \texttt{STIR\_BUILD\_SWIG\_PYTHON=ON}.
 \subsection{
 Installing source files}
 
-Download the source at the \textit{STIR} site: 
-\begin{center}
-\url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
-\end{center}
-or from \url{https://github.com/UCL/STIR/releases}{github.com/UCL/STIR/releases}.\\
+Download the source from \url{https://github.com/UCL/STIR/releases}{github.com/UCL/STIR/releases}.\\
 Alternatively, if you are feeling adventurous, you can get the most-recent
 developer version (no guarantees!) of STIR from
 \url{https://github.com/UCL/STIR}{https://github.com/UCL/STIR}.\\
@@ -254,7 +250,7 @@ download from the \url{https://www.hdfgroup.org/downloads/hdf5/}{HDF5 group down
 
 \subsubsection{
 Enabling ROOT support\label{sec:installROOT}}
-STIR can read CERN ROOT files from GATE (see section \ref{sec:ROOTIO}). Check the \url{https://root.cern/install/}{installation instructions for ROOT}.
+STIR can read CERN ROOT files from GATE for PET data (see section \ref{sec:ROOTIO}). Check the \url{https://root.cern/install/}{installation instructions for ROOT}.
 
 \subsubsection{
 Enabling ITK support\label{sec:installITK}}
@@ -264,8 +260,8 @@ STIR can use \url{http://www.itk.org}{ITK}, a large open source library.  Specif
 
 \subsection{
 Building}
-Since version 2.2, \textit{STIR} contains files to build STIR using the platform-independent
-\url{"http://www.cmake.org"}{CMake}. This is now the only option to build STIR as
+\textit{STIR} contains files to build STIR using the platform-independent
+\url{"http://www.cmake.org"}{CMake}. This is the only option to build STIR as
 it is easier for configuration and finding system dependencies.
 \subsubsection{
 Using CMake}
@@ -390,8 +386,8 @@ provides normally a default in a system location, but you could set it for insta
 \texttt{./install} to put the files inside your build directory.
 \item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
 a particular version of the C++ standard (if it supports it). It is set 
-to \texttt{11} since STIR 5.0. Other possible allowed values are
-\texttt{14}, \texttt{17} and \textit{20}. More recent version have not yet been tested.
+to \texttt{17} since STIR 6.2. Other possible allowed values are
+\texttt{20} and \textit{23}. More recent version have not yet been tested.
 \end{itemize}
 
 When building the Python code, and you have multiple versions of Python installed,
@@ -418,7 +414,7 @@ The lln library does not compile on Mac OS.
 
 If you want to use the X windows display routines,  CMake
 should work out-of-the-box if you have suitable libraries installed, see the wiki
-for required packages.
+for required packages. However, these will be removed soon.
 
 { \subsubsubsubsection{X development libraries}
 }
@@ -2174,6 +2170,15 @@ FBP3DRP defaults to using the ``pure'' Colsher filter. \\
 \textbf{Warning:} the current version of the interpolating backprojector, 
 the default backprojector used by FBP3DRP, has a central artefact 
 on some systems (including Sparc and 64-bit AMD and Intel processors).
+
+\subsubsection{
+Spline Reconstruction Technique (SRT2D and SRT2DSPECT)}
+
+Since STIR 6.3, SRT has been added. This is an alternative analytic reconstruction method.
+For SPECT, it has the notable advantage that attenuation can be taken into account correctly,
+i.e., it implements the inverse of the attenuation (2D) Radon transform.
+The version in STIR implements the algorithm from [Fok2006]. A full description is currently
+under review [Kyr2025].
 
 \subsection{
 Scatter Estimation and simulation}
@@ -5636,7 +5641,7 @@ variable), see section \ref{sec:UsingCMake}.
 \subsubsection{
 X Windows display}
 \label{sec:displayX}
-\textbf{Warning} This functionality is deprecated and will be removed in a next version.
+\textbf{Warning} This functionality is deprecated and will be removed in STIR v7.0.
 
 This provides a (very basic) way of displaying bitmaps when using 
 X windows. This works by creating a new window where some of 
@@ -5871,6 +5876,9 @@ New York}.
 reconstruction using ordered subsets of projection data. \textit{IEEE 
 Trans. Med. Imaging}, MI-13: 601-609.
 
+{[}Fok2006] Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
+single photon emission computed tomography and its numerical implementation." \textit{Journal of the Royal Society Interface} 3.6 (2006).
+
 {[}Fus13]  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans, \textbf{ (2013)} Integration of advanced 3D SPECT modeling into the open-source STIR framework, \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676.
 
 {[}Fus14] Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Domenec Ros, Kris Thielemans, \textbf{(2014)}  Evaluation of the novel 3D SPECT Modelling Algorithm in the STIR Reconstruction Framework: Simple vs. full attenuation correction, \textit{proc. IEEE MIC 2013}, Seoul, Korea.
@@ -5892,6 +5900,9 @@ Klein, G. J., B. W. Reutter, and R. H. Huesman \textbf{(1996)}, Non-rigid summin
 Science Symposium Conference Record},
 vol. 2, pp. 1339-1342, 
 \url{http://dx.doi.org/10.1109/NSSMIC.1996.591692}{doi 10.1109/NSSMIC.1996.591692}
+
+[Kyr2025]
+Kyriakopoulou, D., A. Fokas, K. Thielemans \textbf{2025}, submitted to \textt{Inverse Problems}.
 
 {[}Lab97] Labbe C, Ashburner J, Koepp M, Spinks T, Richardson M 
 and Cunningham V \textbf{(1997)} Accurate PET quantification using 

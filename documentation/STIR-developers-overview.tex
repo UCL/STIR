@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 6.2}}
+\textbf{\textit{version 6.3}}
 
 \end{center}
 
@@ -316,7 +316,9 @@ avoid including \textit{.h} files for 'supporting' classes as much
 as possible. Instead, we only declare the classes needed, e.g. \textit{class 
 Bin;} instead of \textit{\#include ``stir/Bin.h''.}
 
-
+Include files should not contain statements like \texttt{using namespace std;} or
+\texttt{using std::cos;} (exceptions for the latter are by intention in texttt{shared\_ptr.h}
+and texttt{format.h}).
 
 \subsection{
 Class definitions}
@@ -390,6 +392,12 @@ when setting \texttt{CMAKE\_BUILD\_TYPE} to \texttt{Debug}),
 such that a production version of the programs 
 is not slowed down. If an assertion is false, the program aborts 
 with info on the file and line number where the assertion failed.
+
+\subsection{Diagnostics}
+Many function use the \textit{info()} function, which will write to
+\texttt{stdout}. It has a verbosity argument, such that more frequent
+diagnostic messages can be disabled, see \textit{Verbosity::set\_verbosity}.
+Setting the level to 0 suprresses all diagnostics output. This is a global setting.
 
 \subsection{C++ conventions}
 STIR uses C++-17 and is compatible with C++-20 to the best of our knowledge.
@@ -626,7 +634,7 @@ private:
 STIR 6.2 introduced first versions of some CUDA code. The include file
 \texttt{cuda\_utilities.h} contains some helpers classes to copy
 arrays to/from the device. This is still work-in-progress as objects
-cannot remain on the device.
+need to be copied to be used by the rest of STIR.
 
 \section{
 Overview of classes}
@@ -760,7 +768,10 @@ extended to accommodate different file formats.
 
 Currently missing is support for fan-beam data.
 
-List-mode data is supported as well. See the \textit{Listmode} base-class and its hierarchy.
+\subsection{
+List-mode data}
+
+This is supported as well for both PET and SPECT. See the \textit{Listmode} base-class and its hierarchy.
 
 \subsection{
 Data (or image) processor hierarchy}
@@ -980,6 +991,9 @@ As an example, projection operations are implemented via a pointer to a
 \texttt{ProjectorByBinPair}, which in itself is a small
 class hierarchy using either a \texttt{ProjMatrixByBin} object, 
 or a \texttt{ForwardProjectorByBin} and \texttt{BackProjectorByBin} pair.
+
+Note that classes exist for Poisson log-likelihood for both (histogrammed)
+projection data and list-mode data.
 
 Often, one includes a penalty (or prior) in the objective function
 (see doxygen documentation for the class \texttt{GeneralisedPrior}).
