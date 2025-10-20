@@ -142,7 +142,7 @@ DDSR2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
   //std::cerr<<parameter_info() << std::endl;
-  info(boost::format("%1%") % parameter_info());
+  info(parameter_info());
 }
 
 DDSR2DReconstruction::DDSR2DReconstruction()
