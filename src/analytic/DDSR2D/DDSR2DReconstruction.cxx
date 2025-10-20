@@ -28,13 +28,16 @@
 #include "stir/IO/interfile.h"
 #include "stir/info.h"
 
+
 #include "stir/Sinogram.h" 
 #include "stir/Viewgram.h"
 #include <complex> 
 #include <math.h>
 #include "stir/numerics/fourier.h"
 #include "stir/IO/read_from_file.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
+#include "stir/error.h"
+#include "stir/warning.h"
 
 #ifdef STIR_OPENMP
 #include <omp.h>
@@ -118,13 +121,13 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
     return Succeeded::no;
 
 	if (attenuation_map_filename.length() == 0) 
-     error(boost::format("You need to specify an attenuation map file"));
+     error("You need to specify an attenuation map file");
 
 	if (noise_filter > 1)
-     error("Noise filter has to be between 0 and 1 but is " + to_string(noise_filter));
+	 error(stir::format("Noise filter has to be between 0 and 1 but is {}", noise_filter));
 
 	if (noise_filter2 > 1)
-     error(boost::format("Noise filter 2 has to be between 0 and 1 but is %g") % noise_filter2);    
+	 error(format("Noise filter 2 has to be between 0 and 1 but is {}", noise_filter2));
 	
 	// TODO improve this, drop "stir/IO/read_from_file.h" if possible 
 	atten_data_ptr= read_from_file<DiscretisedDensity<3,float> >(attenuation_map_filename);
