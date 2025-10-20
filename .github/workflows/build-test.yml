@@ -253,14 +253,18 @@ jobs:
               if ! command -v ninja > /dev/null; then
                   brew install ninja
               fi
-              if ! command -v python3 > /dev/null; then
-                  brew install python
-              fi
               if ! command -v swig > /dev/null; then
                   brew install swig
               fi
               brew install boost nlohmann-json
-              PYTHON_EXECUTABLE=$(which python3)
+              # Temp fix to 3.13 due to https://github.com/UCL/STIR/issues/1638
+              #if ! command -v python3 > /dev/null; then
+              #    brew install python
+              #fi
+              brew install python@3.13
+              brew ls python@3.13
+              PYTHON_EXECUTABLE=$(find /opt/homebrew/Cellar/python@3.13 -type f -name python3.13)
+              #PYTHON_EXECUTABLE=$(which python3)
               ;;
             (windows*)
               # this compiles the whole thing so takes ages

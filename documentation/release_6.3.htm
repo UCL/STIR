@@ -19,6 +19,7 @@
 
 
   <h3>New functionality</h3>
+  <h4>General</h4>
   <ul>
     <li>
       The analytic Spline Reconstruction Technique (SRT) algorithm has been added in 2 different versions: for PET
@@ -52,9 +53,6 @@
       <a href=https://github.com/UCL/STIR/pull/1503>PR #1503</a>
     </li>
     <li>
-      <tt>stir_timings</tt> has now an extra option to parse a par-file for a projector-pair.
-    </li>
-    <li>
       Added the ability to set a forward projector for mask projection in the <code>ScatterEstimation</code> class.<br>
       <a href=https://github.com/UCL/STIR/pull/1530>PR #1530</a>
     </li>
@@ -64,15 +62,39 @@
       <a href=https://github.com/UCL/STIR/pull/1519>PR #1519</a>
     </li>
     <li>
-      <code>LmToProjData</code>/<tt>lm_to_projdata</tt> now no longer requires a template projection data. If none is
+      <code>LmToProjData</code> class/<tt>lm_to_projdata</tt> utility now no longer requires a template projection data. If none is
       specified, it will use the proj_data_info from the input list-mode.<br>
       <b>Warning</b> for some scanners with TOF capabilities, this will result in very large projection data (possibly
       larger than the default from the vendor).<br>
       <a href=https://github.com/UCL/STIR/pull/1315>PR #1315</a>
     </li>
+  </ul>
+  <h4>Python</h4>
+  <ul>
     <li>
-      Added a Python script to convert e7tools generated Siemens Biograph Vision 600 sinograms to STIR compatible format.
+      "Container" classes such as <code>FloatVoxelsOnCartesianGrid</code>, <code>ProjDataInMemory</code>
+      and array-classes now have numerical operations properly defined, for instance
+      <code>a = b + c</code> and <code>a -= 3</code>. Note that <code>a = 1 + b</code> is not
+      yet available.<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+    </li>
+    <li>
+      The above "container" classes now have an extra member `as_array()` which returns a numpy <code>ndarray</code>. This
+      is equivalent to `stirextra.to_numpy()` which will become deprecated later. In addition, the
+      <code>fill()</code> method now directly accepts an <code>ndarray</code>, avoiding the need to go via an iterator.
+      These additions also make it easier to prt SIRF python code to STIR.<br>
+      <a href=https://github.com/UCL/STIR/pull/1632>PR #1632</a>
+    </li>
+    <li>
+      Added a Python script to convert e7tools generated Siemens Biograph Vision 600 sinograms to STIR compatible format.<br>
       <a href=https://github.com/UCL/STIR/pull/1593>PR #1593</a>
+    </li>
+  </ul>
+
+  <h4>Utilities</h4>
+  <ul>
+    <li>
+      <tt>stir_timings</tt> has now an extra option to parse a par-file for a projector-pair.
     </li>
   </ul>
 
@@ -87,6 +109,14 @@
     <li>
       Default ECAT scanner configurations updated to use a negative intrinsic tilt.
     </li>
+    <li>
+      When computing the sensitivity images in <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code>,
+      we now avoid creating an extra <code>ProjDataInMemory</code> in most cases (there are still some corner
+      cases for TOF data when using non-TOF projector for the sensitivity, but then the memory overhead is small).
+      This enables LAFOV PET reconstructions with the "ray tracing" matrix (we use less memory, and we avoid running into a current
+      <code>ProjDataInMemory</code> <a href=https://github.com/UCL/STIR/issues/1505> limitation on the number of bins</a>).<br>
+      <a href=https://github.com/UCL/STIR/pull/1617>PR #1716</a>
+      </li>
       <li>
         Boost format was replaced by `std::format` for formatting strings. If C++20 or newer is
         not yet used, a work-around is in place by using the [{fmt} library](https://github.com/fmtlib/fmt/)
@@ -97,6 +127,18 @@
         <br>
         <a href=https://github.com/UCL/STIR/pull/1591>PR #1591</a> and <a href=https://github.com/UCL/STIR/pull/1605>PR #1605</a>
       </li>
+  </ul>
+  <h4>Changes to examples</h4>
+  <ul>
+    <li>
+      Python example <code>plot_sinogram_profiles.py</code> has been renamed to <code>plot_projdata_profiles.py</code>
+      and generalised to work with TOF dimensions etc. A small <code>pytest</code> has been added as well.<br>
+      <a href=https://github.com/UCL/STIR/pull/1370>PR #1370</a>
+    </li>
+    <li>
+      Python example <code>ProjDataVisualisation.py</code> now has a vmax slider.<br>
+      <a href=https://github.com/UCL/STIR/pull/1568>PR #1568</a>
+    </li>
   </ul>
 
   <h3>Bug fixes</h3>
@@ -113,13 +155,14 @@
       your threshold values. Expected scatter tail-fitting scale factors should now be restored to ~1-1.5 (depending on
       the amount of multiple and out-of-FOV scatter).
       See <a href="https://github.com/UCL/STIR/issues/1532">Issue #1532</a> for more detail. Fixed by using averaging
-      functionality of SSRB instead of adding segments for attenuation correction factors.
+      functionality of SSRB instead of adding segments for attenuation correction factors.<br>
       <a href=https://github.com/UCL/STIR/pull/1531>PR #1531</a>
     </li>
     <li>
       Fixed a bug in the distributed LM computation code (introduced in 6.1) that neglected to accumulate outputs when
-      not build with OpenMP.
-      See <a href="https://github.com/UCL/STIR/pull/1566"">PR #1566</a>" . </li>
+      not built with OpenMP.<br>
+      See <a href="https://github.com/UCL/STIR/pull/1566">PR #1566</a>.
+    </li>
   </ul>
 
   <h3>Build system</h3>
@@ -155,6 +198,12 @@
   <h3>Changed functionality</h3>
   <ul>
     <li>
+      In C++, "Container" classes such as <code>VoxelsOnCartesianGrid</code>, <code>ProjDataInMemory</code>
+      and array-classes now have numerical operations that return objects of the correct type.
+      (Previously, it was a base-class such as <code>NumericVectorWithOffset<Array<2, float>, float></code>).<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+    </li>
+    <li>
       Made 2 (deprecated) members of <code>ProjDataInfoBlocksOnCylindricalNoArcCorr</code> <code>private</code>
       and do some clean-up of which files to include.
       <br>
@@ -181,40 +230,37 @@
 
   <h3>Bug fixes</h3>
   <ul>
-    <li>Fixed minor incompatibility with gcc-14 and clang-18 buy adding an extra include file<br>
+    <li>Fixed minor incompatibility with gcc-14 and clang-18 by adding an extra include file.<br>
       <a href=https://github.com/UCL/STIR/pull/1552>PR #1552</a>
     </li>
   </ul>
 
-  <h3>Deprecations</h3>
+  <h3>New deprecations</h3>
   <ul>
     <li>
       <code>truncate_end_planes</code> will be removed in v7.0
     </li>
+    <li>
+      legacy compatibility with version 3, 4 and 5 will be removed in v7.0.
+      CMake options <tt>STIR_PROJECTORS_AS_V3</tt>, <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> and
+      <tt>STIR_ROOT_ROTATION_AS_V4</tt> will therefore be removed.
+    </li>
   </ul>
 
-  <h3>Other code changes</h3>
-
-
   <h3>Test changes</h3>
-
+  <h4>Python tests</h4>
+  <ul>
+    <li>
+      Tests for numerical operations for the "container" classes were added in the same PR as the code.<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+    </li>
+  </ul>
 
   <h4>C++ tests</h4>
 
 
   <h4>recon_test_pack</h4>
 
-  <h3>Changes to examples</h3>
-  <uk>
-    <li>
-      Python example <code>plot_sinogram_profiles.py</code> has been renamed to <code>plot_projdata_profiles.py</code>
-      and generalised to work with TOF dimensions etc. A small <code>pytest</code> has been added as well.<br>
-      <a href=https://github.com/UCL/STIR/pull/1370>PR #1370</a>
-    </li>
-    <li>
-      Python example <code>ProjDataVisualisation.py</code> now has a vmax slider.<br>
-      <a href=https://github.com/UCL/STIR/pull/1568>PR #1568</a>
-      </ul>
 
 </body>
 

@@ -864,8 +864,6 @@ Array<1, elemT>::get_regular_range(BasicCoordinate<1, int>& min, BasicCoordinate
   return range.get_regular_range(min, max);
 }
 
-#ifndef STIR_USE_BOOST
-
 /* KT 31/01/2000 I had to add these functions here, although they are
 in NumericVectorWithOffset already.
 Reason: we allow addition (and similar operations) of tensors of
@@ -945,8 +943,6 @@ Array<1, elemT>::operator/(const elemT a) const
   Array<1, elemT> retval(*this);
   return (retval /= a);
 };
-
-#endif // boost
 
 template <typename elemT>
 const elemT&
