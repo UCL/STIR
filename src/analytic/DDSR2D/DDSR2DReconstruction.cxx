@@ -127,7 +127,7 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
 	 error(stir::format("Noise filter has to be between 0 and 1 but is {}", noise_filter));
 
 	if (noise_filter2 > 1)
-	 error(format("Noise filter 2 has to be between 0 and 1 but is {}", noise_filter2));
+	 error(stir::format("Noise filter 2 has to be between 0 and 1 but is {}", noise_filter2));
 	
 	// TODO improve this, drop "stir/IO/read_from_file.h" if possible 
 	atten_data_ptr= read_from_file<DiscretisedDensity<3,float> >(attenuation_map_filename);
@@ -183,7 +183,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
     if(fabs(tan_theta ) > 1.E-4)
       {
-	warning("DDSR2D: segment 0 has non-zero tan(theta) %g", tan_theta);
+	warning(stir::format("DDSR2D: segment 0 has non-zero tan(theta) {}", tan_theta));	  
 	return Succeeded::no;
       }
   }
@@ -440,7 +440,14 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 if(image.get_x_size() != sp) { 
 		// perform bilinear interpolation 
 		if(iz==0) 
-			std::cerr << "Image dimension mismatch, tangential positions " << sp << ", xy output " << image.get_x_size() << "\n Interpolating..." << std::endl; 
+	        if (image.get_x_size() != sp) {
+             if (iz==0)
+              info(stir::format(
+               "Image dimension mismatch: tangential positions {}, xy output {} — interpolating...",
+               sp, image.get_x_size()));
+              …
+            }
+
 		int sx = image.get_x_size(); 
 		int sy = sx; 
 		//float xn1[sx], yn1[sy]; 
