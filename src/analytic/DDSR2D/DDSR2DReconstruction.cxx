@@ -121,7 +121,7 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
      error(boost::format("You need to specify an attenuation map file"));
 
 	if (noise_filter > 1)
-     error(boost::format("Noise filter has to be between 0 and 1 but is %g") % noise_filter);    
+     error("Noise filter has to be between 0 and 1 but is " + to_string(noise_filter));
 
 	if (noise_filter2 > 1)
      error(boost::format("Noise filter 2 has to be between 0 and 1 but is %g") % noise_filter2);    
