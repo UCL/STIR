@@ -42,8 +42,8 @@
 #  include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #  include "stir/recon_buildblock/QuadraticPrior.h"
 
-#  include "stir/recon_buildblock/GibbsQuadraticPrior.h"
-#  include "stir/recon_buildblock/GibbsRelativeDifferencePrior.h"
+#  include "stir/recon_buildblock/GibbsQuadraticPenalty.h"
+#  include "stir/recon_buildblock/GibbsRelativeDifferencePenalty.h"
 
 #  ifdef STIR_WITH_CUDA
 #    include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
@@ -435,7 +435,7 @@ Timings::run_all(const unsigned runs)
         
         //GibbsRDP
 
-        this->prior_sptr = std::make_shared<GibbsRelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
+        this->prior_sptr = std::make_shared<GibbsRelativeDifferencePenalty<float>>(false, 1.F, 2.F, 1e-7F);
         this->prior_sptr->set_up(this->image_sptr);
         name = this->prior_sptr->get_registered_name();
 
@@ -501,7 +501,7 @@ Timings::run_all(const unsigned runs)
         std::cout<< std::endl;
 
         //GibbsRdp
-        this->prior_sptr = std::make_shared<CudaGibbsRelativeDifferencePrior<float>>(false, 1.F, 2.F, 1e-7F);
+        this->prior_sptr = std::make_shared<CudaGibbsRelativeDifferencePenalty<float>>(false, 1.F, 2.F, 1e-7F);
         this->prior_sptr->set_up(this->image_sptr);
         name = this->prior_sptr->get_registered_name();
 

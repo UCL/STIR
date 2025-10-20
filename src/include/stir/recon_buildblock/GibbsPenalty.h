@@ -12,7 +12,7 @@
 /*!
   \file
   \ingroup priors
-  \brief Declaration of the stir::GibbsPrior class
+  \brief Declaration of the stir::GibbsPenalty class
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
@@ -20,8 +20,8 @@
 
 */
 
-#ifndef __stir_recon_buildblock_GibbsPrior_H__
-#define __stir_recon_buildblock_GibbsPrior_H__
+#ifndef __stir_recon_buildblock_GibbsPenalty_H__
+#define __stir_recon_buildblock_GibbsPenalty_H__
 
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup priors
-  \brief A base class for Gibbs type priors in the GeneralisedPrior hierarchy
+  \brief A base class for Gibbs type penalties in the GeneralisedPrior hierarchy
 
   The prior is computed as follows:
   \f[
@@ -94,17 +94,17 @@ START_NAMESPACE_STIR
   \endverbatim
 */
 template <typename elemT, typename potentialT>
-class GibbsPrior : public GeneralisedPrior<DiscretisedDensity<3, elemT>>
+class GibbsPenalty : public GeneralisedPrior<DiscretisedDensity<3, elemT>>
 {
 private:
   typedef GeneralisedPrior<DiscretisedDensity<3, elemT>> base_type;
 
 public:
   //! Default constructor.
-  GibbsPrior();
+  GibbsPenalty();
 
   //! Explicit Constructor with 2D/3D option and penalization factor.
-  GibbsPrior(const bool only_2D, float penalization_factor);
+  GibbsPenalty(const bool only_2D, float penalization_factor);
 
   //! Compute the value of the prior for the current image estimate.
   double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate) override;
@@ -201,6 +201,6 @@ protected:
 
 END_NAMESPACE_STIR
 
-#include "stir/recon_buildblock/GibbsPrior.inl"
+#include "stir/recon_buildblock/GibbsPenalty.inl"
 
 #endif

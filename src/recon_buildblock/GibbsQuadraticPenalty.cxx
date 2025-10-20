@@ -13,44 +13,44 @@
 /*!
   \file
   \ingroup priors
-  \brief Implementation of class stir::GibbsQuadraticPrior
+  \brief Implementation of class stir::GibbsQuadraticPenalty
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
-#include "stir/recon_buildblock/GibbsQuadraticPrior.h"
+#include "stir/recon_buildblock/GibbsQuadraticPenalty.h"
 #include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
 // Implementation of constructors
 template <typename elemT>
-GibbsQuadraticPrior<elemT>::GibbsQuadraticPrior()
+GibbsQuadraticPenalty<elemT>::GibbsQuadraticPenalty()
 {
   set_defaults();
 }
 
 template <typename elemT>
-GibbsQuadraticPrior<elemT>::GibbsQuadraticPrior(const bool only_2D, float penalisation_factor)
+GibbsQuadraticPenalty<elemT>::GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor)
     : base_type(only_2D, penalisation_factor)
 {}
 
 template <typename elemT>
 void
-GibbsQuadraticPrior<elemT>::set_defaults()
+GibbsQuadraticPenalty<elemT>::set_defaults()
 {
   base_type::set_defaults();
 }
 
 template <typename elemT>
 std::string
-GibbsQuadraticPrior<elemT>::get_parsing_name() const
+GibbsQuadraticPenalty<elemT>::get_parsing_name() const
 {
   return registered_name;
 }
 
 // Explicit template instantiations
-template class GibbsQuadraticPrior<float>;
+template class GibbsQuadraticPenalty<float>;
 
 END_NAMESPACE_STIR

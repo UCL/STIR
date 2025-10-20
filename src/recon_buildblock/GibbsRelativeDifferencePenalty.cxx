@@ -13,29 +13,29 @@
 /*!
   \file
   \ingroup priors
-  \brief Implementation of class stir::GibbsRelativeDifferencePrior
+  \brief Implementation of class stir::GibbsRelativeDifferencePenalty
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
-#include "stir/recon_buildblock/GibbsRelativeDifferencePrior.h"
+#include "stir/recon_buildblock/GibbsRelativeDifferencePenalty.h"
 #include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
 // Implementation of constructors
 template <typename elemT>
-GibbsRelativeDifferencePrior<elemT>::GibbsRelativeDifferencePrior()
+GibbsRelativeDifferencePenalty<elemT>::GibbsRelativeDifferencePenalty()
 {
   set_defaults();
 }
 
 template <typename elemT>
-GibbsRelativeDifferencePrior<elemT>::GibbsRelativeDifferencePrior(const bool only_2D,
-                                                                  float penalisation_factor,
-                                                                  float gamma_v,
-                                                                  float epsilon_v)
+GibbsRelativeDifferencePenalty<elemT>::GibbsRelativeDifferencePenalty(const bool only_2D,
+                                                                      float penalisation_factor,
+                                                                      float gamma_v,
+                                                                      float epsilon_v)
     : base_type(only_2D, penalisation_factor)
 {
   this->potential.gamma = gamma_v;
@@ -44,7 +44,7 @@ GibbsRelativeDifferencePrior<elemT>::GibbsRelativeDifferencePrior(const bool onl
 
 template <typename elemT>
 void
-GibbsRelativeDifferencePrior<elemT>::set_defaults()
+GibbsRelativeDifferencePenalty<elemT>::set_defaults()
 {
   base_type::set_defaults();
   this->potential.gamma = 2;
@@ -52,12 +52,12 @@ GibbsRelativeDifferencePrior<elemT>::set_defaults()
 }
 
 template <typename elemT>
-std::string 
-GibbsRelativeDifferencePrior<elemT>::get_parsing_name() const
+std::string
+GibbsRelativeDifferencePenalty<elemT>::get_parsing_name() const
 {
   return registered_name;
 }
 
-template class GibbsRelativeDifferencePrior<float>;
+template class GibbsRelativeDifferencePenalty<float>;
 
 END_NAMESPACE_STIR

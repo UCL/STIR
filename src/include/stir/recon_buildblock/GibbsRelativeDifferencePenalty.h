@@ -13,7 +13,7 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Declaration of class stir::CudaRelativeDifferencePrior, stir::CudaGibbsRelativeDifferencePrior and
+  \brief Declaration of class stir::CudaRelativeDifferencePenalty, stir::CudaGibbsRelativeDifferencePenalty and
   the potential function stir::RelativeDifferencePotential
 
   \author Matteo Neel Colombo
@@ -22,16 +22,16 @@
   \author Robert Twyman
 */
 
-#ifndef __stir_recon_buildblock_GibbsRelativeDifferencePrior_H__
-#define __stir_recon_buildblock_GibbsRelativeDifferencePrior_H__
+#ifndef __stir_recon_buildblock_GibbsRelativeDifferencePenalty_H__
+#define __stir_recon_buildblock_GibbsRelativeDifferencePenalty_H__
 
-#include "stir/recon_buildblock/GibbsPrior.h"
+#include "stir/recon_buildblock/GibbsPenalty.h"
 #include "stir/RegisteredParsingObject.h"
 #include <cmath>
 #include "stir/cuda_utilities.h"
 
 #ifdef STIR_WITH_CUDA
-#  include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
+#  include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.h"
 #endif
 
 START_NAMESPACE_STIR
@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup priors
-  \brief Implementation of the Relative Difference prior potential
+  \brief Implementation of the Relative Difference penalty potential
 
   The prior energy is:
   \f[
@@ -119,7 +119,7 @@ public:
   static inline bool is_convex() { return true; }
 
   //! Method for setting up parsing additional parameters
-  void initialise_keymap(KeyParser& parser) const
+  void initialise_keymap(KeyParser& parser) 
   {
     parser.add_key("gamma value", &this->gamma);
     parser.add_key("epsilon value", &this->epsilon);
@@ -133,34 +133,34 @@ class RelativeDifferencePotential;
 
 /*!
   \ingroup priors
-  \brief Multithreaded CPU Implementation of the Relative Difference prior
+  \brief Multithreaded CPU Implementation of the Relative Difference penalty
   \par Parsing
-  These are the keywords that can be used in addition to the ones in GibbsPrior:
+  These are the keywords that can be used in addition to the ones in GibbsPenalty:
 
   \verbatim
-  Gibbs Relative Difference Prior Parameters:=
-  ; keywords from GibbsPrior
+  Gibbs Relative Difference Penalty Parameters:=
+  ; keywords from GibbsPenalty
   ; gamma value :=
   ; epsilon value :=
-  ENDGibbs Relative Difference Prior Parameters:=
+  END Gibbs Relative Difference Penalty Parameters:=
   \endverbatim
 */
 template <typename elemT>
-class GibbsRelativeDifferencePrior : public RegisteredParsingObject<GibbsRelativeDifferencePrior<elemT>,
+class GibbsRelativeDifferencePenalty : public RegisteredParsingObject<GibbsRelativeDifferencePenalty<elemT>,
                                                                     GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                                    GibbsPrior<elemT, RelativeDifferencePotential<elemT>>>
+                                                                    GibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
 {
 private:
-  typedef RegisteredParsingObject<GibbsRelativeDifferencePrior<elemT>,
+  typedef RegisteredParsingObject<GibbsRelativeDifferencePenalty<elemT>,
                                   GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                  GibbsPrior<elemT, RelativeDifferencePotential<elemT>>>
+                                  GibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
       base_type;
 
 public:
-  GibbsRelativeDifferencePrior();
-  GibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
+  GibbsRelativeDifferencePenalty();
+  GibbsRelativeDifferencePenalty(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
-  static constexpr const char* registered_name = "Gibbs Relative Difference Prior";
+  static constexpr const char* registered_name = "Gibbs Relative Difference Penalty";
   float get_gamma() const { return this->potential.gamma; }
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
@@ -173,33 +173,33 @@ public:
 #ifdef STIR_WITH_CUDA
 /*!
   \ingroup priors
-  \brief GPU Implementation of the Relative Difference prior
+  \brief GPU Implementation of the Relative Difference penalty
   \par Parsing
-  These are the keywords that can be used in addition to the ones in CudaGibbsPrior:
+  These are the keywords that can be used in addition to the ones in CudaGibbsPenalty:
   \verbatim
-  Cuda Gibbs Relative Difference Prior Parameters:=
-  ; keywords from GibbsPrior
+  Cuda Gibbs Relative Difference Penalty Parameters:=
+  ; keywords from GibbsPenalty
   ; gamma value :=
   ; epsilon value :=
-  END Cuda Gibbs Relative Difference Prior Parameters:=
+  END Cuda Gibbs Relative Difference Penalty Parameters:=
   \endverbatim
 */
 template <typename elemT>
-class CudaGibbsRelativeDifferencePrior : public RegisteredParsingObject<CudaGibbsRelativeDifferencePrior<elemT>,
+class CudaGibbsRelativeDifferencePenalty : public RegisteredParsingObject<CudaGibbsRelativeDifferencePenalty<elemT>,
                                                                         GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                                        CudaGibbsPrior<elemT, RelativeDifferencePotential<elemT>>>
+                                                                        CudaGibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
 {
 private:
-  typedef RegisteredParsingObject<CudaGibbsRelativeDifferencePrior<elemT>,
+  typedef RegisteredParsingObject<CudaGibbsRelativeDifferencePenalty<elemT>,
                                   GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                  CudaGibbsPrior<elemT, RelativeDifferencePotential<elemT>>>
+                                  CudaGibbsPenalty<elemT, RelativeDifferencePotential<elemT>>>
       base_type;
 
 public:
-  CudaGibbsRelativeDifferencePrior();
-  CudaGibbsRelativeDifferencePrior(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
+  CudaGibbsRelativeDifferencePenalty();
+  CudaGibbsRelativeDifferencePenalty(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
-  static constexpr const char* registered_name = "Cuda Gibbs Relative Difference Prior";
+  static constexpr const char* registered_name = "Cuda Gibbs Relative Difference Penalty";
   float get_gamma() const { return this->potential.gamma; }
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }

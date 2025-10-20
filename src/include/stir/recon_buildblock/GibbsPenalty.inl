@@ -14,7 +14,7 @@
 /*!
   \file
   \ingroup priors
-  \brief  Implementation of the stir::GibbsPrior class
+  \brief  Implementation of the stir::GibbsPenalty class
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
@@ -22,7 +22,7 @@
   \author Robert Twyman
 */
 
-#include "stir/recon_buildblock/GibbsPrior.h"
+#include "stir/recon_buildblock/GibbsPenalty.h"
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
 
 template <typename elemT, typename potentialT>
 void
-GibbsPrior<elemT, potentialT>::initialise_keymap()
+GibbsPenalty<elemT, potentialT>::initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key(this->get_parsing_name());
@@ -57,7 +57,7 @@ GibbsPrior<elemT, potentialT>::initialise_keymap()
 
 template <typename elemT, typename potentialT>
 bool
-GibbsPrior<elemT, potentialT>::post_processing()
+GibbsPenalty<elemT, potentialT>::post_processing()
 {
   if (base_type::post_processing() == true)
     return true;
@@ -110,7 +110,7 @@ GibbsPrior<elemT, potentialT>::post_processing()
 
 template <typename elemT, typename potentialT>
 Succeeded
-GibbsPrior<elemT, potentialT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr)
+GibbsPenalty<elemT, potentialT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr)
 {
   if (base_type::set_up(target_sptr) == Succeeded::no)
     return Succeeded::no;
@@ -134,7 +134,7 @@ GibbsPrior<elemT, potentialT>::set_up(shared_ptr<const DiscretisedDensity<3, ele
 
 template <typename elemT, typename potentialT>
 void
-GibbsPrior<elemT, potentialT>::check(DiscretisedDensity<3, elemT> const& current_image_estimate) const
+GibbsPenalty<elemT, potentialT>::check(DiscretisedDensity<3, elemT> const& current_image_estimate) const
 {
   // Do base-class check
   base_type::check(current_image_estimate);
@@ -148,7 +148,7 @@ GibbsPrior<elemT, potentialT>::check(DiscretisedDensity<3, elemT> const& current
 
 template <typename elemT, typename potentialT>
 void
-GibbsPrior<elemT, potentialT>::set_defaults()
+GibbsPenalty<elemT, potentialT>::set_defaults()
 {
   base_type::set_defaults();
   this->only_2D = false;
@@ -159,19 +159,19 @@ GibbsPrior<elemT, potentialT>::set_defaults()
 
 template <typename elemT, typename potentialT>
 bool
-GibbsPrior<elemT, potentialT>::is_convex() const
+GibbsPenalty<elemT, potentialT>::is_convex() const
 {
   return potentialT::is_convex();
 }
 
 template <typename elemT, typename PotentialT>
-GibbsPrior<elemT, PotentialT>::GibbsPrior()
+GibbsPenalty<elemT, PotentialT>::GibbsPenalty()
 {
   set_defaults();
 }
 
 template <typename elemT, typename PotentialT>
-GibbsPrior<elemT, PotentialT>::GibbsPrior(const bool only_2D_v, float penalisation_factor_v)
+GibbsPenalty<elemT, PotentialT>::GibbsPenalty(const bool only_2D_v, float penalisation_factor_v)
     : only_2D(only_2D_v)
 {
   this->penalisation_factor = penalisation_factor_v;
@@ -180,7 +180,7 @@ GibbsPrior<elemT, PotentialT>::GibbsPrior(const bool only_2D_v, float penalisati
 // initialise weights to dx/Euclidean distance
 template <typename elemT, typename PotentialT>
 void
-GibbsPrior<elemT, PotentialT>::compute_default_weights(const CartesianCoordinate3D<float>& grid_spacing, bool only_2D)
+GibbsPenalty<elemT, PotentialT>::compute_default_weights(const CartesianCoordinate3D<float>& grid_spacing, bool only_2D)
 {
   int min_dz, max_dz;
   if (only_2D)
@@ -219,7 +219,7 @@ GibbsPrior<elemT, PotentialT>::compute_default_weights(const CartesianCoordinate
 //! get penalty weights for the neigbourhood
 template <typename elemT, typename PotentialT>
 const Array<3, float>&
-GibbsPrior<elemT, PotentialT>::get_weights() const
+GibbsPenalty<elemT, PotentialT>::get_weights() const
 {
   return this->weights;
 }
@@ -227,7 +227,7 @@ GibbsPrior<elemT, PotentialT>::get_weights() const
 //! set penalty weights for the neigbourhood
 template <typename elemT, typename PotentialT>
 void
-GibbsPrior<elemT, PotentialT>::set_weights(const Array<3, float>& w)
+GibbsPenalty<elemT, PotentialT>::set_weights(const Array<3, float>& w)
 {
   this->weights = w;
 
@@ -247,7 +247,7 @@ GibbsPrior<elemT, PotentialT>::set_weights(const Array<3, float>& w)
 */
 template <typename elemT, typename PotentialT>
 shared_ptr<const DiscretisedDensity<3, elemT>>
-GibbsPrior<elemT, PotentialT>::get_kappa_sptr() const
+GibbsPenalty<elemT, PotentialT>::get_kappa_sptr() const
 {
   return this->kappa_ptr;
 }
@@ -255,19 +255,19 @@ GibbsPrior<elemT, PotentialT>::get_kappa_sptr() const
 //! set kappa image
 template <typename elemT, typename PotentialT>
 void
-GibbsPrior<elemT, PotentialT>::set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>& k)
+GibbsPenalty<elemT, PotentialT>::set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>& k)
 {
   this->kappa_ptr = k;
 }
 
 template <typename elemT, typename PotentialT>
 double
-GibbsPrior<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
+GibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   // Preliminary Checks
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("GibbsPrior: set_up has not been called");
+    error("GibbsPenalty: set_up has not been called");
   if (this->penalisation_factor == 0)
     return 0.;
 
@@ -316,14 +316,14 @@ GibbsPrior<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>&
 
 template <typename elemT, typename PotentialT>
 void
-GibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
+GibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
                                                 const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   // Preliminary Checks
   assert(prior_gradient.has_same_characteristics(current_image_estimate));
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("GibbsPrior: set_up has not been called");
+    error("GibbsPenalty: set_up has not been called");
   if (this->penalisation_factor == 0)
     {
       prior_gradient.fill(0);
@@ -371,14 +371,14 @@ GibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& pr
 
 template <typename elemT, typename PotentialT>
 double
-GibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const DiscretisedDensity<3, elemT>& input,
+GibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const DiscretisedDensity<3, elemT>& input,
                                                             const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   // Preliminary Checks
   assert(input.has_same_characteristics(current_image_estimate));
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("GibbsPrior: set_up has not been called");
+    error("GibbsPenalty: set_up has not been called");
   if (this->penalisation_factor == 0)
     {
       return 0.0;
@@ -428,14 +428,14 @@ GibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const DiscretisedDen
 
 template <typename elemT, typename PotentialT>
 void
-GibbsPrior<elemT, PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel,
+GibbsPenalty<elemT, PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel,
                                                const BasicCoordinate<3, int>& coords,
                                                const DiscretisedDensity<3, elemT>& current_image_estimate) const
 {
   assert(prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("GibbsPrior: set_up has not been called");
+    error("GibbsPenalty: set_up has not been called");
   prior_Hessian_for_single_densel.fill(0);
   if (this->penalisation_factor == 0)
     {
@@ -495,14 +495,14 @@ GibbsPrior<elemT, PotentialT>::compute_Hessian(DiscretisedDensity<3, elemT>& pri
 
 template <typename elemT, typename PotentialT>
 void
-GibbsPrior<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diagonal,
+GibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diagonal,
                                                         const DiscretisedDensity<3, elemT>& current_image_estimate) const
 {
   // Preliminary Checks
   assert(Hessian_diagonal.has_same_characteristics(current_image_estimate));
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("GibbsPrior: set_up has not been called");
+    error("GibbsPenalty: set_up has not been called");
   if (this->penalisation_factor == 0)
     {
       Hessian_diagonal.fill(0);
@@ -550,7 +550,7 @@ GibbsPrior<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, el
 
 template <typename elemT, typename PotentialT>
 void
-GibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
+GibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
                                                               const DiscretisedDensity<3, elemT>& current_image_estimate,
                                                               const DiscretisedDensity<3, elemT>& input) const
 {
@@ -559,7 +559,7 @@ GibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity
   assert(input.has_same_characteristics(current_image_estimate));
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("GibbsPrior: set_up has not been called");
+    error("GibbsPenalty: set_up has not been called");
   if (this->penalisation_factor == 0)
     {
       return;

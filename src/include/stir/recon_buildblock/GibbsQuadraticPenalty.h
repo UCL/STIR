@@ -13,21 +13,21 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Declaration of class stir::GibbsQuadraticPrior, stir::CudaGibbsQuadraticPrior
+  \brief Declaration of class stir::GibbsQuadraticPenalty, stir::CudaGibbsQuadraticPenalty
   and the potential function stir::QuadraticPotential
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
-#ifndef __stir_recon_buildblock_GibbsQuadraticPrior_H__
-#define __stir_recon_buildblock_GibbsQuadraticPrior_H__
+#ifndef __stir_recon_buildblock_GibbsQuadraticPenalty_H__
+#define __stir_recon_buildblock_GibbsQuadraticPenalty_H__
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/cuda_utilities.h"
-#include "stir/recon_buildblock/GibbsPrior.h"
+#include "stir/recon_buildblock/GibbsPenalty.h"
 #ifdef STIR_WITH_CUDA
-#  include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
+#  include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.h"
 #endif
 
 START_NAMESPACE_STIR
@@ -37,7 +37,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup priors
-  \brief Quadratic potential function for Gibbs priors
+  \brief Implementation of the Quadratic penalty potential
 
   The prior energy is:
   \f[
@@ -76,7 +76,7 @@ public:
   //! method to indicate whether the the prior defined by this potential is convex
   static inline bool is_convex() { return true; }
   //! Method for setting up parsing additional parameters
-  void initialise_keymap(KeyParser& parser) const
+  void initialise_keymap(KeyParser& parser)
   {
     // No parameters needed for quadratic potential
   }
@@ -94,28 +94,28 @@ class QuadraticPotential;
   \par Parsing
   These are the keywords that can be used in addition to the ones in GibbsPrior.
   \verbatim
-  Gibbs Quadratic Prior Parameters:=
+  Gibbs Quadratic Penalty Parameters:=
   ; keywords from GibbsPrior
-  END Gibbs Quadratic Prior Parameters:=
+  END Gibbs Quadratic Penalty Parameters:=
   \endverbatim
 */
 template <typename elemT>
-class GibbsQuadraticPrior : public RegisteredParsingObject<GibbsQuadraticPrior<elemT>,
+class GibbsQuadraticPenalty : public RegisteredParsingObject<GibbsQuadraticPenalty<elemT>,
                                                            GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                           GibbsPrior<elemT, QuadraticPotential<elemT>>>
+                                                           GibbsPenalty<elemT, QuadraticPotential<elemT>>>
 {
 private:
-  typedef RegisteredParsingObject<GibbsQuadraticPrior<elemT>,
+  typedef RegisteredParsingObject<GibbsQuadraticPenalty<elemT>,
                                   GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                  GibbsPrior<elemT, QuadraticPotential<elemT>>>
+                                  GibbsPenalty<elemT, QuadraticPotential<elemT>>>
       base_type;
 
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "Gibbs Quadratic Prior";
+  static constexpr const char* const registered_name = "Gibbs Quadratic Penalty";
 
-  GibbsQuadraticPrior();
-  GibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
+  GibbsQuadraticPenalty();
+  GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
 
   void set_defaults() override;
   std::string get_parsing_name() const override;
@@ -135,22 +135,22 @@ public:
   \endverbatim
 */
 template <typename elemT>
-class CudaGibbsQuadraticPrior : public RegisteredParsingObject<CudaGibbsQuadraticPrior<elemT>,
+class CudaGibbsQuadraticPenalty : public RegisteredParsingObject<CudaGibbsQuadraticPenalty<elemT>,
                                                                GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                               CudaGibbsPrior<elemT, QuadraticPotential<elemT>>>
+                                                               CudaGibbsPenalty<elemT, QuadraticPotential<elemT>>>
 {
 private:
-  typedef RegisteredParsingObject<CudaGibbsQuadraticPrior<elemT>,
+  typedef RegisteredParsingObject<CudaGibbsQuadraticPenalty<elemT>,
                                   GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                  CudaGibbsPrior<elemT, QuadraticPotential<elemT>>>
+                                  CudaGibbsPenalty<elemT, QuadraticPotential<elemT>>>
       base_type;
 
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "Cuda Gibbs Quadratic Prior";
+  static constexpr const char* const registered_name = "Cuda Gibbs Quadratic Penalty";
 
-  CudaGibbsQuadraticPrior();
-  CudaGibbsQuadraticPrior(const bool only_2D, float penalisation_factor);
+  CudaGibbsQuadraticPenalty();
+  CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
 
   void set_defaults() override;
   std::string get_parsing_name() const override;

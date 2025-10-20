@@ -10,16 +10,16 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Declaration of the stir::CudaGibbsPrior class
+  \brief Declaration of the stir::CudaGibbsPenalty class
 
   \author Kris Thielemans
   \author Matteo Neel Colombo
 */
 
-#ifndef __stir_recon_buildblock_CUDA_CudaGibbsPrior_H__
-#define __stir_recon_buildblock_CUDA_CudaGibbsPrior_H__
+#ifndef __stir_recon_buildblock_CUDA_CudaGibbsPenalty_H__
+#define __stir_recon_buildblock_CUDA_CudaGibbsPenalty_H__
 
-#include "stir/recon_buildblock/GibbsPrior.h"
+#include "stir/recon_buildblock/GibbsPenalty.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include <cuda_runtime.h>
@@ -33,24 +33,24 @@ START_NAMESPACE_STIR
   \ingroup priors
   \ingroup CUDA
   \brief
-  A base class with CUDA-accelerated implementation of the Gibbsprior class.
+  A base class with CUDA-accelerated implementation of the GibbsPenalty class.
 
   This class provides CUDA-accelerated implementations of compute_value, compute_gradient,
   accumulate_Hessian_times_input, compute_Hessian_diagonal and compute_gradient_times_input while inheriting all  parsing and
-  setting functionality from the base CPU GibbsPrior class.
+  setting functionality from the base CPU GibbsPenalty class.
 
-  Check the documentation of the GibbsPrior class for details on how the prior is defined and how to use it.
+  Check the documentation of the GibbsPenalty class for details on how the prior is defined and how to use it.
 
   \par Parsing
-  Parsing keywords are the same as for the GibbsPrior class.
-  See the documentation of the GibbsPrior class for the list of keywords that can be used.
+  Parsing keywords are the same as for the GibbsPenalty class.
+  See the documentation of the GibbsPenalty class for the list of keywords that can be used.
 
 */
 template <typename elemT, typename PotentialT>
-class CudaGibbsPrior : public GibbsPrior<elemT, PotentialT>
+class CudaGibbsPenalty : public GibbsPenalty<elemT, PotentialT>
 {
 private:
-  typedef GibbsPrior<elemT, PotentialT> base_type;
+  typedef GibbsPenalty<elemT, PotentialT> base_type;
 
 protected:
   // GPU block and grid dimensions
@@ -74,8 +74,7 @@ protected:
   float* d_weights_data = nullptr;
   elemT* d_kappa_data = nullptr;
 
-  // Buffers for GPU input/output to avoid reallocating memory on each call see usage in set_up() and ~CudaGibbsPrior()
-
+  // Buffers for GPU input/output to avoid reallocating memory on each call see usage in set_up() and ~CudaGibbsPenalty()
   mutable double* d_scalar = nullptr;
   // d_scalar is used for compute_value and compute_gradient_times_input as output variable
   mutable elemT* d_input_data = nullptr;
@@ -85,9 +84,9 @@ protected:
   // compute_Hessian_diagonal
 
 public:
-  CudaGibbsPrior();
-  CudaGibbsPrior(const bool only_2D, float penalization_factor);
-  ~CudaGibbsPrior();
+  CudaGibbsPenalty();
+  CudaGibbsPenalty(const bool only_2D, float penalization_factor);
+  ~CudaGibbsPenalty();
 
   //! Override CPU version to set up CUDA resources on GPU and call parent set_up
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
@@ -123,7 +122,7 @@ END_NAMESPACE_STIR
 
 #ifdef __CUDACC__
 // CUDA compiler sees everything
-#  include "stir/recon_buildblock/CUDA/CudaGibbsPrior.cuh"
+#  include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.cuh"
 #endif
 
-#endif // __stir_recon_buildblock_CUDA_CudaGibbsPrior_H__
+#endif // __stir_recon_buildblock_CUDA_CudaGibbsPenalty_H__

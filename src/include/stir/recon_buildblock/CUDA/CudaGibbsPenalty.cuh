@@ -13,16 +13,16 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Implementation of the stir::CudaGibbsPrior class
+  \brief Implementation of the stir::CudaGibbsPenalty class
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
-#ifndef __stir_recon_buildblock_CUDA_CudaGibbsPrior_CUH__
-#define __stir_recon_buildblock_CUDA_CudaGibbsPrior_CUH__
+#ifndef __stir_recon_buildblock_CUDA_CudaGibbsPenalty_CUH__
+#define __stir_recon_buildblock_CUDA_CudaGibbsPenalty_CUH__
 
-#include "stir/recon_buildblock/CUDA/CudaGibbsPrior.h"
+#include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.h"
 
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -43,16 +43,16 @@
 
 START_NAMESPACE_STIR
 
-// CUDA kernels for CudaGibbsPrior
+// CUDA kernels for CudaGibbsPenalty
 
-//! CUDA kernel for Gibbs prior value calculation using the potential function value and block reduction
+//! CUDA kernel for Gibbs penalty value calculation using the potential function value and block reduction
 /*!
  * Each thread processes one voxel, computes local sum, then performs parallel reduction in shared memory.
  * Result from each block is then atomically added to output. Requires CUDA compute capability ≥6.0 for double atomics.
  */
 template <class elemT, typename PotentialT>
 __global__ static void
-CudaGibbsPrior_value_kernel(double* output,
+CudaGibbsPenalty_value_kernel(double* output,
                             const elemT* __restrict__ current_image,
                             const float* __restrict__ weights,
                             const elemT* __restrict__ kappa,
@@ -133,13 +133,13 @@ CudaGibbsPrior_value_kernel(double* output,
     atomicAddGeneric(output, block_sum_shared[0]);
 }
 
-//! CUDA kernel for Gibbs prior gradient calculation using the potential function first derivative.
+//! CUDA kernel for Gibbs penalty gradient calculation using the potential function first derivative.
 /*!
  * Each thread processes one voxel, and computes one element of the gradient.
  */
 template <class elemT, typename PotentialT>
 __global__ static void
-CudaGibbsPrior_gradient_kernel(elemT* gradient,
+CudaGibbsPenalty_gradient_kernel(elemT* gradient,
                                const elemT* __restrict__ current_image,
                                const float* __restrict__ weights,
                                const elemT* __restrict__ kappa,
@@ -204,7 +204,7 @@ CudaGibbsPrior_gradient_kernel(elemT* gradient,
   gradient[inputIndex] = sum * 2.0 * penalisation_factor;
 }
 
-//! CUDA kernel for Gibbs prior, computes the dot product of the gradient with a given input image using the potential function
+//! CUDA kernel for Gibbs penalty, computes the dot product of the gradient with a given input image using the potential function
 //! first derivative.
 /*!
  * Each thread computes one element of the gradient, then we perform the dot product in shared memory.
@@ -212,7 +212,7 @@ CudaGibbsPrior_gradient_kernel(elemT* gradient,
  */
 template <class elemT, typename PotentialT>
 __global__ static void
-CudaGibbsPrior_gradient_dot_input_kernel(double* output,
+CudaGibbsPenalty_gradient_dot_input_kernel(double* output,
                                          const elemT* __restrict__ input,
                                          const elemT* __restrict__ current_image,
                                          const float* __restrict__ weights,
@@ -293,13 +293,13 @@ CudaGibbsPrior_gradient_dot_input_kernel(double* output,
     atomicAddGeneric(output, block_sum_shared[0]);
 }
 
-//! CUDA kernel for Gibbs prior, computes the Hessian diagonal using the potential function second derivative.
+//! CUDA kernel for Gibbs penalty, computes the Hessian diagonal using the potential function second derivative.
 /*!
  * Each thread computes one element of the Hessian diagonal.
  */
 template <class elemT, typename PotentialT>
 __global__ static void
-CudaGibbsPrior_Hessian_diagonal_kernel(elemT* Hessian_diag,
+CudaGibbsPenalty_Hessian_diagonal_kernel(elemT* Hessian_diag,
                                        const elemT* __restrict__ current_image,
                                        const float* __restrict__ weights,
                                        const elemT* __restrict__ kappa,
@@ -363,13 +363,13 @@ CudaGibbsPrior_Hessian_diagonal_kernel(elemT* Hessian_diag,
   Hessian_diag[inputIndex] = sum * 2.0 * penalisation_factor;
 }
 
-//! CUDA kernel for Gibbs prior, computes the Hessian times a given input image using the potential function second derivatives.
+//! CUDA kernel for Gibbs penalty, computes the Hessian times a given input image using the potential function second derivatives.
 /*!
  * The output is image shaped and each element is computed by a given thread.
  */
 template <class elemT, typename PotentialT>
 __global__ static void
-CudaGibbsPrior_Hessian_Times_Input_kernel(elemT* output,
+CudaGibbsPenalty_Hessian_Times_Input_kernel(elemT* output,
                                           const elemT* __restrict__ current_image,
                                           const elemT* __restrict__ input,
                                           const float* __restrict__ weights,
@@ -443,21 +443,21 @@ CudaGibbsPrior_Hessian_Times_Input_kernel(elemT* output,
 }
 
 template <typename elemT, typename PotentialT>
-CudaGibbsPrior<elemT, PotentialT>::CudaGibbsPrior()
+CudaGibbsPenalty<elemT, PotentialT>::CudaGibbsPenalty()
     : base_type(), // Call parent constructor
       d_weights_data(nullptr),
       d_kappa_data(nullptr)
 {}
 
 template <typename elemT, typename PotentialT>
-CudaGibbsPrior<elemT, PotentialT>::CudaGibbsPrior(const bool only_2D, float penalization_factor)
+CudaGibbsPenalty<elemT, PotentialT>::CudaGibbsPenalty(const bool only_2D, float penalization_factor)
     : base_type(only_2D, penalization_factor), // Call parent constructor
       d_weights_data(nullptr),
       d_kappa_data(nullptr)
 {}
 
 template <typename elemT, typename PotentialT>
-CudaGibbsPrior<elemT, PotentialT>::~CudaGibbsPrior()
+CudaGibbsPenalty<elemT, PotentialT>::~CudaGibbsPenalty()
 {
   if (d_weights_data)
     cudaFree(d_weights_data);
@@ -475,23 +475,23 @@ CudaGibbsPrior<elemT, PotentialT>::~CudaGibbsPrior()
 
 template <typename elemT, typename PotentialT>
 double
-CudaGibbsPrior<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
+CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
 
   if (this->penalisation_factor == 0)
     return 0.;
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("CudaGibbsPrior: set_up has not been called");
+    error("CudaGibbsPenalty: set_up has not been called");
 
   cudaMemset(d_scalar, 0, sizeof(double));
   array_to_device(d_image_data, current_image_estimate);
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(d_kappa_data)))
-    error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
+    error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPrior_value_kernel<elemT, PotentialT><<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar,
+  CudaGibbsPenalty_value_kernel<elemT, PotentialT><<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar,
                                                                                             d_image_data,
                                                                                             d_weights_data,
                                                                                             do_kappa ? d_kappa_data : nullptr,
@@ -513,7 +513,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, ele
 
 template <typename elemT, typename PotentialT>
 void
-CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
+CudaGibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
                                                     const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   assert(prior_gradient.has_same_characteristics(current_image_estimate));
@@ -526,15 +526,15 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>
   this->check(current_image_estimate);
 
   if (this->_already_set_up == false)
-    error("CudaGibbsPrior: set_up has not been called");
+    error("CudaGibbsPenalty: set_up has not been called");
 
   array_to_device(d_image_data, current_image_estimate);
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(d_kappa_data)))
-    error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
+    error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPrior_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
                                                                              d_image_data,
                                                                              d_weights_data,
                                                                              do_kappa ? d_kappa_data : nullptr,
@@ -559,13 +559,13 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elemT>
 
 template <typename elemT, typename PotentialT>
 double
-CudaGibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const DiscretisedDensity<3, elemT>& input,
-                                                                const DiscretisedDensity<3, elemT>& current_image_estimate)
+CudaGibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const DiscretisedDensity<3, elemT>& input,
+                                                                 const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
   // Preliminary Checks
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("CudaGibbsPrior: set_up has not been called");
+    error("CudaGibbsPenalty: set_up has not been called");
   if (this->penalisation_factor == 0)
     return 0.;
 
@@ -576,9 +576,9 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const Discretise
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
-    error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
+    error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPrior_gradient_dot_input_kernel<elemT, PotentialT>
+  CudaGibbsPenalty_gradient_dot_input_kernel<elemT, PotentialT>
       <<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar,
                                                   d_input_data,
                                                   d_image_data,
@@ -602,7 +602,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_gradient_times_input(const Discretise
 
 template <typename elemT, typename PotentialT>
 void
-CudaGibbsPrior<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diag,
+CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diag,
                                                             const DiscretisedDensity<3, elemT>& current_image_estimate) const
 {
   assert(Hessian_diag.has_same_characteristics(current_image_estimate));
@@ -613,16 +613,16 @@ CudaGibbsPrior<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3
     }
   this->check(current_image_estimate);
   if (this->_already_set_up == false)
-    error("CudaGibbsPrior: set_up has not been called");
+    error("CudaGibbsPenalty: set_up has not been called");
 
   // Copy data from host to device
   array_to_device(d_image_data, current_image_estimate);
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
-    error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
+    error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPrior_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
                                                                                      d_image_data,
                                                                                      d_weights_data,
                                                                                      do_kappa ? d_kappa_data : nullptr,
@@ -642,7 +642,7 @@ CudaGibbsPrior<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity<3
 
 template <typename elemT, typename PotentialT>
 void
-CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
+CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
                                                                   const DiscretisedDensity<3, elemT>& current_image_estimate,
                                                                   const DiscretisedDensity<3, elemT>& input) const
 {
@@ -654,7 +654,7 @@ CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDen
   this->check(current_image_estimate);
 
   if (this->_already_set_up == false)
-    error("CudaGibbsPrior: set_up has not been called");
+    error("CudaGibbsPenalty: set_up has not been called");
 
   // Copy data from host to device
   array_to_device(d_image_data, current_image_estimate);
@@ -663,9 +663,9 @@ CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDen
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(d_kappa_data)))
-    error("CudaGibbsPrior internal error: inconsistent CPU and device kappa");
+    error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPrior_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
                                                                                         d_image_data,
                                                                                         d_input_data,
                                                                                         d_weights_data,
@@ -686,7 +686,7 @@ CudaGibbsPrior<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedDen
 
 template <typename elemT, typename PotentialT>
 Succeeded
-CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr)
+CudaGibbsPenalty<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr)
 {
 
   if (base_type::set_up(target_sptr) == Succeeded::no)
@@ -718,24 +718,24 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
   if (d_image_data)
     cudaFree(d_image_data);
   cudaMalloc(&d_image_data, target_sptr->size_all() * sizeof(elemT));
-  checkCudaError("CudaGibbsPrior: cudaMalloc for d_image_data");
+  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_image_data");
 
   // Pre-allocate GPU memory for input data
   if (d_input_data)
     cudaFree(d_input_data);
   cudaMalloc(&d_input_data, target_sptr->size_all() * sizeof(elemT));
-  checkCudaError("CudaGibbsPrior: cudaMalloc for d_input_data");
+  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_input_data");
 
   // Pre-allocate GPU memory for outputs
   if (d_scalar)
     cudaFree(d_scalar);
   cudaMalloc(&d_scalar, sizeof(double));
-  checkCudaError("CudaGibbsPrior: cudaMalloc for d_scalar");
+  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_scalar");
 
   if (d_output_data)
     cudaFree(d_output_data);
   cudaMalloc(&d_output_data, target_sptr->size_all() * sizeof(elemT));
-  checkCudaError("CudaGibbsPrior: cudaMalloc for d_output_data");
+  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_output_data");
 
   // Copy CPU weights to GPU (weights should already be set up by parent)
   if (this->weights.get_length() > 0)
@@ -744,7 +744,7 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
         cudaFree(d_weights_data);
       cudaMalloc(&d_weights_data, this->weights.size_all() * sizeof(float));
       array_to_device(d_weights_data, this->weights);
-      checkCudaError("CudaGibbsPrior: cudaMalloc for d_weights_data");
+      checkCudaError("CudaGibbsPenalty: cudaMalloc for d_weights_data");
     }
 
   // Copy CPU kappa image to GPU
@@ -756,7 +756,7 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
   if (do_kappa)
     {
       if (!kappa_ptr->has_same_characteristics(*target_sptr))
-        error("CudaGibbsPrior: kappa image does not have the same index range as the reconstructed image");
+        error("CudaGibbsPenalty: kappa image does not have the same index range as the reconstructed image");
       cudaMalloc(&d_kappa_data, kappa_ptr->size_all() * sizeof(elemT));
       array_to_device(d_kappa_data, *kappa_ptr);
     }
@@ -767,7 +767,7 @@ CudaGibbsPrior<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<3,
 
 template <typename elemT, typename PotentialT>
 void
-CudaGibbsPrior<elemT, PotentialT>::set_weights(const Array<3, float>& w)
+CudaGibbsPenalty<elemT, PotentialT>::set_weights(const Array<3, float>& w)
 {
   base_type::set_weights(w);
   if (d_weights_data)
@@ -778,7 +778,7 @@ CudaGibbsPrior<elemT, PotentialT>::set_weights(const Array<3, float>& w)
 
 template <typename elemT, typename PotentialT>
 void
-CudaGibbsPrior<elemT, PotentialT>::set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>& k)
+CudaGibbsPenalty<elemT, PotentialT>::set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>& k)
 {
   base_type::set_kappa_sptr(k);
   if (d_kappa_data)
@@ -794,4 +794,4 @@ CudaGibbsPrior<elemT, PotentialT>::set_kappa_sptr(const shared_ptr<const Discret
 
 END_NAMESPACE_STIR
 
-#endif // __stir_recon_buildblock_CUDA_CudaGibbsPrior_CUH__
+#endif // __stir_recon_buildblock_CUDA_CudaGibbsPenalty_CUH__

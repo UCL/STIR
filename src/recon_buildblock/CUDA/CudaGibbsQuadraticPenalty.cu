@@ -14,43 +14,43 @@
   \file
   \ingroup priors
   \ingroup CUDA
-  \brief Implementation of class stir::CudaGibbsQuadraticPrior
+  \brief Implementation of class stir::CudaGibbsQuadraticPenalty
 
   \author Matteo Neel Colombo
   \author Kris Thielemans
 */
 
 
-#include "stir/recon_buildblock/GibbsQuadraticPrior.h"
+#include "stir/recon_buildblock/GibbsQuadraticPenalty.h"
 
 
 START_NAMESPACE_STIR
 
 // Implementation of constructors
 template <typename elemT>
-CudaGibbsQuadraticPrior<elemT>::CudaGibbsQuadraticPrior()
+CudaGibbsQuadraticPenalty<elemT>::CudaGibbsQuadraticPenalty()
 {
   set_defaults();
 }
 
 template <typename elemT>
-CudaGibbsQuadraticPrior<elemT>::CudaGibbsQuadraticPrior(const bool only_2D, float penalisation_factor)
+CudaGibbsQuadraticPenalty<elemT>::CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor)
   : base_type(only_2D, penalisation_factor) {}
 
 template <typename elemT>
 void
-CudaGibbsQuadraticPrior<elemT>::set_defaults()
+CudaGibbsQuadraticPenalty<elemT>::set_defaults()
 {
   base_type::set_defaults();
 }
 
 template <typename elemT>
 std::string 
-CudaGibbsQuadraticPrior<elemT>::get_parsing_name() const
+CudaGibbsQuadraticPenalty<elemT>::get_parsing_name() const
 {
   return registered_name;
 }
 
-template class CudaGibbsQuadraticPrior<float>;
+template class CudaGibbsQuadraticPenalty<float>;
 
 END_NAMESPACE_STIR
