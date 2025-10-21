@@ -440,8 +440,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 if(image.get_x_size() != sp) { 
 		// perform bilinear interpolation 
 		if(iz==0) 
-	        if (image.get_x_size() != sp) {
-             if (iz==0)
               info(stir::format(
                "Image dimension mismatch: tangential positions {}, xy output {} — interpolating...",
                sp, image.get_x_size()));
