@@ -28,27 +28,13 @@ START_NAMESPACE_STIR
 template <typename elemT>
 CudaGibbsQuadraticPenalty<elemT>::CudaGibbsQuadraticPenalty()
 {
-  set_defaults();
+  this->set_defaults();
 }
 
 template <typename elemT>
 CudaGibbsQuadraticPenalty<elemT>::CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor)
     : base_type(only_2D, penalisation_factor)
 {}
-
-template <typename elemT>
-void
-CudaGibbsQuadraticPenalty<elemT>::set_defaults()
-{
-  base_type::set_defaults();
-}
-
-template <typename elemT>
-std::string
-CudaGibbsQuadraticPenalty<elemT>::get_parsing_name() const
-{
-  return this->get_registered_name();
-}
 
 template class CudaGibbsQuadraticPenalty<float>;
 

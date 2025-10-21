@@ -72,12 +72,18 @@ public:
   {
     return static_cast<double>(-0.5);
   }
+
   //! method to indicate whether the the prior defined by this potential is convex
   static inline bool is_convex() { return true; }
   //! Method for setting up parsing additional parameters
   void initialise_keymap(KeyParser& parser)
   {
-    // No parameters needed for quadratic potential
+    // No additional parameters needed for quadratic potential
+  }
+  //! Set default values for potential-specific parameters
+  void set_defaults()
+  {
+    // No additional parameters for quadratic potential
   }
 };
 
@@ -115,8 +121,6 @@ public:
 
   GibbsQuadraticPenalty();
   GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
-
-  void set_defaults() override;
 };
 
 #ifdef STIR_WITH_CUDA
@@ -149,8 +153,6 @@ public:
 
   CudaGibbsQuadraticPenalty();
   CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
-
-  void set_defaults() override;
 };
 #endif
 

@@ -29,7 +29,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 CudaGibbsRelativeDifferencePenalty<elemT>::CudaGibbsRelativeDifferencePenalty()
 {
-  set_defaults();
+  this->set_defaults();
 }
 
 template <typename elemT>
@@ -41,22 +41,6 @@ CudaGibbsRelativeDifferencePenalty<elemT>::CudaGibbsRelativeDifferencePenalty(co
 {
   this->potential.gamma = gamma_v;
   this->potential.epsilon = epsilon_v;
-}
-
-template <typename elemT>
-void
-CudaGibbsRelativeDifferencePenalty<elemT>::set_defaults()
-{
-  base_type::set_defaults();
-  this->potential.gamma = 2;
-  this->potential.epsilon = 1e-7F;
-}
-
-template <typename elemT>
-std::string
-CudaGibbsRelativeDifferencePenalty<elemT>::get_parsing_name() const
-{
-  return this->get_registered_name();
 }
 
 template class CudaGibbsRelativeDifferencePenalty<float>;

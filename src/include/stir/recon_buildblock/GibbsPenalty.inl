@@ -162,6 +162,7 @@ GibbsPenalty<elemT, potentialT>::set_defaults()
   this->kappa_ptr.reset();
   this->weights.recycle();
   this->_already_set_up = false;
+  this->potential.set_defaults();
 }
 
 template <typename elemT, typename potentialT>

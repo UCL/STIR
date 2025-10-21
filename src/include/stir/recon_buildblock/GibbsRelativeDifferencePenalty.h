@@ -124,6 +124,13 @@ public:
     parser.add_key("gamma value", &this->gamma);
     parser.add_key("epsilon value", &this->epsilon);
   }
+
+  //! Set default values for potential-specific parameters
+  void set_defaults()
+  {
+    this->gamma = 2;
+    this->epsilon = 1e-7;
+  }
 };
 
 #else  // IGNORESWIG
@@ -165,8 +172,6 @@ public:
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
   void set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
-
-  void set_defaults() override;
 };
 
 #ifdef STIR_WITH_CUDA
@@ -204,8 +209,6 @@ public:
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
   void set_epsilon(float epsilon_v) { this->potential.epsilon = epsilon_v; }
-
-  void set_defaults() override;
 };
 #endif
 

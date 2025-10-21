@@ -27,7 +27,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 GibbsRelativeDifferencePenalty<elemT>::GibbsRelativeDifferencePenalty()
 {
-  set_defaults();
+  this->set_defaults();
 }
 
 template <typename elemT>
@@ -39,15 +39,6 @@ GibbsRelativeDifferencePenalty<elemT>::GibbsRelativeDifferencePenalty(const bool
 {
   this->potential.gamma = gamma_v;
   this->potential.epsilon = epsilon_v;
-}
-
-template <typename elemT>
-void
-GibbsRelativeDifferencePenalty<elemT>::set_defaults()
-{
-  base_type::set_defaults();
-  this->potential.gamma = 2;
-  this->potential.epsilon = 1e-7F;
 }
 
 template class GibbsRelativeDifferencePenalty<float>;

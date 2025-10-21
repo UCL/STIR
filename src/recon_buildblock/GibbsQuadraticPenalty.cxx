@@ -27,20 +27,13 @@ START_NAMESPACE_STIR
 template <typename elemT>
 GibbsQuadraticPenalty<elemT>::GibbsQuadraticPenalty()
 {
-  set_defaults();
+  this->set_defaults();
 }
 
 template <typename elemT>
 GibbsQuadraticPenalty<elemT>::GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor)
     : base_type(only_2D, penalisation_factor)
 {}
-
-template <typename elemT>
-void
-GibbsQuadraticPenalty<elemT>::set_defaults()
-{
-  base_type::set_defaults();
-}
 
 // Explicit template instantiations
 template class GibbsQuadraticPenalty<float>;
