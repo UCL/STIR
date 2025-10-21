@@ -19,30 +19,30 @@
 
 #include "stir/analytic/DDSR2D/DDSR2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+//#include "stir/RelatedViewgrams.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/Bin.h"
-#include "stir/round.h"
+//#include "stir/round.h"
 #include "stir/display.h"
-#include <algorithm>
-#include "stir/IO/interfile.h"
+//#include <algorithm>
+//#include "stir/IO/interfile.h"
 #include "stir/info.h"
 
 
 #include "stir/Sinogram.h" 
-#include "stir/Viewgram.h"
+//#include "stir/Viewgram.h"
 #include <complex> 
-#include <math.h>
+//#include <math.h>
 #include "stir/numerics/fourier.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/format.h"
 #include "stir/error.h"
 #include "stir/warning.h"
 
-#ifdef STIR_OPENMP
-#include <omp.h>
-#endif
-#include "stir/num_threads.h"
+//#ifdef STIR_OPENMP
+//#include <omp.h>
+//#endif
+//#include "stir/num_threads.h"
 
 #include <vector>
 #include <iostream>
