@@ -728,6 +728,8 @@ namespace std {
 %{
   namespace swigstir {
 #ifdef SWIGPYTHON
+
+#if SWIG_VERSION < 0x040000
   template<typename OutIterator, 
 	   typename ValueType = typename std::iterator_traits<OutIterator>::value_type,
     typename FromOper = swig::from_oper<ValueType> >
@@ -781,6 +783,18 @@ namespace std {
   {
     return new SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
   }
+
+#else
+
+  template<typename OutIter>
+  inline swig::SwigPyIterator*
+  make_forward_iterator(const OutIter& current, const OutIter& begin,const OutIter& end, PyObject *seq = 0)
+  {
+    return new swig::SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
+  }
+
+#endif // SWIG pre 4.0
+
 
 #endif
 
