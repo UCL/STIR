@@ -5,7 +5,7 @@
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
-    See STIR/LICENSE.txt for details
+    See STIR/LICENSE.txt for details 
 */
 /*!
   \file
