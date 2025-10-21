@@ -443,7 +443,7 @@ if(image.get_x_size() != sp) {
               info(stir::format(
                "Image dimension mismatch: tangential positions {}, xy output {} — interpolating...",
                sp, image.get_x_size()));
-            }
+            
 
 		int sx = image.get_x_size(); 
 		int sy = sx; 
