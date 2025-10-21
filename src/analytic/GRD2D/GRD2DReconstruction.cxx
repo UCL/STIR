@@ -19,22 +19,26 @@
   
 #include "stir/analytic/GRD2D/GRD2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/ArcCorrection.h"
-#include "stir/SSRB.h"
-#include "stir/ProjDataInMemory.h"
+//#include "stir/RelatedViewgrams.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/ProjDataInfoCylindrical.h"
+
+//kept for future work, i.e. for the commented out SSRB and arc-correction
+//#include "stir/ProjDataInfoCylindricalArcCorr.h"
+//#include "stir/ArcCorrection.h"
+//#include "stir/SSRB.h"
+//#include "stir/ProjDataInMemory.h"
+
 #include "stir/Bin.h"
-#include "stir/round.h"
+//#include "stir/round.h"
 #include "stir/display.h"
-#include <algorithm>
-#include "stir/IO/interfile.h"
+//#include <algorithm>
+//#include "stir/IO/interfile.h"
 
 #include "stir/Sinogram.h" 
-#include "stir/Viewgram.h"
+//#include "stir/Viewgram.h"
 #include <complex> 
-#include <math.h>
+//#include <math.h>
 #include "stir/numerics/fourier.h"
 #include <boost/math/special_functions/bessel.hpp> 
 #include "stir/info.h"
@@ -42,10 +46,11 @@
 #include "stir/error.h"
 #include "stir/warning.h"
 
-#ifdef STIR_OPENMP
-#include <omp.h>
-#endif
-#include "stir/num_threads.h"
+//kept for future work
+//#ifdef STIR_OPENMP
+//#include <omp.h>
+//#endif
+//#include "stir/num_threads.h"
 
 #include <vector>
 #include <iostream>
