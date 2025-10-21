@@ -150,7 +150,10 @@ public:
 
   //! Test function that could be used to see if reported timings are correct
   /*! CPU time should be close to zero, wall-clock time close to 1123ms */
-  void sleep() { std::this_thread::sleep_for(std::chrono::milliseconds(1123)); }
+  void sleep()
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1123));
+  }
 
   template <class T>
   static void copy_add(T& t)
@@ -172,11 +175,20 @@ public:
     delete im;
   }
 
-  void copy_add_image() { copy_add(*this->image_sptr); }
+  void copy_add_image()
+  {
+    copy_add(*this->image_sptr);
+  }
 
-  void copy_mult_image() { copy_mult(*this->image_sptr); }
+  void copy_mult_image()
+  {
+    copy_mult(*this->image_sptr);
+  }
 
-  void copy_std_vector() { std::copy(this->v1.begin(), this->v1.end(), this->v2.begin()); }
+  void copy_std_vector()
+  {
+    std::copy(this->v1.begin(), this->v1.end(), this->v2.begin());
+  }
   double inner_product(const DiscretisedDensity<3, float>& a, const DiscretisedDensity<3, float>& b)
   {
     assert(a.has_same_characteristics(b));
@@ -201,7 +213,10 @@ public:
                          /* initialise*/ true);
   }
   //! call ProjDataInMemory::fill(ProjDataInMemory&)
-  void copy_only_proj_data_mem_to_mem() { this->mem_proj_data_sptr2->fill(*this->mem_proj_data_sptr); }
+  void copy_only_proj_data_mem_to_mem()
+  {
+    this->mem_proj_data_sptr2->fill(*this->mem_proj_data_sptr);
+  }
 
   //! copy from output_proj_data_sptr to new Interfile file
   void copy_proj_data_file_to_file()
@@ -239,9 +254,15 @@ public:
     tmp.fill(*this->mem_proj_data_sptr);
   }
 
-  void copy_add_proj_data_mem() { copy_add(*this->mem_proj_data_sptr); }
+  void copy_add_proj_data_mem()
+  {
+    copy_add(*this->mem_proj_data_sptr);
+  }
 
-  void copy_mult_proj_data_mem() { copy_mult(*this->mem_proj_data_sptr); }
+  void copy_mult_proj_data_mem()
+  {
+    copy_mult(*this->mem_proj_data_sptr);
+  }
 
   void projector_setup()
   {
@@ -266,7 +287,10 @@ public:
   }
 
 #ifndef MINI_STIR
-  void obj_func_set_up() { this->objective_function_sptr->set_up(this->image_sptr); }
+  void obj_func_set_up()
+  {
+    this->objective_function_sptr->set_up(this->image_sptr);
+  }
 
   void obj_func_grad_no_sens()
   {
@@ -275,7 +299,10 @@ public:
     delete im;
   }
 
-  void prior_grad() { this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr); }
+  void prior_grad()
+  {
+    this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
+  }
 
   void prior_grad_times_input()
   {
@@ -303,7 +330,10 @@ public:
     this->prior_sptr->accumulate_Hessian_times_input(*this->output_sptr, *this->image_sptr, *this->input_sptr);
   }
 
-  void prior_hessian_diag() { this->prior_sptr->compute_Hessian_diagonal(*this->output_sptr, *this->image_sptr); }
+  void prior_hessian_diag()
+  {
+    this->prior_sptr->compute_Hessian_diagonal(*this->output_sptr, *this->image_sptr);
+  }
 #endif
 };
 
@@ -413,14 +443,16 @@ Timings::run_all(const unsigned runs)
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient " << "(sum = " << res << ") ";
+        oss << name << " gradient "
+            << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
         prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input "
+            << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
@@ -441,14 +473,16 @@ Timings::run_all(const unsigned runs)
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient " << "(sum = " << res << ") ";
+        oss << name << " gradient "
+            << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
         prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input "
+            << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
@@ -478,14 +512,16 @@ Timings::run_all(const unsigned runs)
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient " << "(sum = " << res << ") ";
+        oss << name << " gradient "
+            << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
         prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input "
+            << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
@@ -506,14 +542,16 @@ Timings::run_all(const unsigned runs)
         oss.str("");
         this->prior_sptr->compute_gradient(*this->output_sptr, *this->image_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
-        oss << name << " gradient " << "(sum = " << res << ") ";
+        oss << name << " gradient "
+            << "(sum = " << res << ") ";
         grad_str = oss.str();
 
         oss.str("");
         prior_sptr->accumulate_Hessian_times_input(*output_sptr, *image_sptr, *input_sptr);
         res = std::accumulate(this->output_sptr->begin_all(), this->output_sptr->end_all(), 0.F);
         this->output_sptr->fill(0.F);
-        oss << name << " Hessian_times_input " << "(sum = " << res << ") ";
+        oss << name << " Hessian_times_input "
+            << "(sum = " << res << ") ";
         hessian_str = oss.str();
 
         this->run_it(&Timings::prior_value, value_str, runs * 10);
