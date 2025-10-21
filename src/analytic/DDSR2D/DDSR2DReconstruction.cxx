@@ -19,30 +19,27 @@
 
 #include "stir/analytic/DDSR2D/DDSR2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/RelatedViewgrams.h"
-//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/Bin.h"
-//#include "stir/round.h"
+#include "stir/round.h"
 #include "stir/display.h"
-//#include <algorithm>
-//#include "stir/IO/interfile.h"
+#include <algorithm>
+#include "stir/IO/interfile.h"
 #include "stir/info.h"
 
-
 #include "stir/Sinogram.h" 
-//#include "stir/Viewgram.h"
+#include "stir/Viewgram.h"
 #include <complex> 
-//#include <math.h>
+#include <math.h>
 #include "stir/numerics/fourier.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/format.h"
-#include "stir/error.h"
-#include "stir/warning.h"
+#include <boost/format.hpp>
 
-//#ifdef STIR_OPENMP
-//#include <omp.h>
-//#endif
-//#include "stir/num_threads.h"
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
+#include "stir/num_threads.h"
 
 #include <vector>
 #include <iostream>
@@ -121,13 +118,13 @@ set_up(shared_ptr <DDSR2DReconstruction::TargetT > const& target_data_sptr)
     return Succeeded::no;
 
 	if (attenuation_map_filename.length() == 0) 
-     error("You need to specify an attenuation map file");
+     error(boost::format("You need to specify an attenuation map file"));
 
 	if (noise_filter > 1)
-	 error(stir::format("Noise filter has to be between 0 and 1 but is {}", noise_filter));
+     error(boost::format("Noise filter has to be between 0 and 1 but is %g") % noise_filter);    
 
 	if (noise_filter2 > 1)
-	 error(stir::format("Noise filter 2 has to be between 0 and 1 but is {}", noise_filter2));
+     error(boost::format("Noise filter 2 has to be between 0 and 1 but is %g") % noise_filter2);    
 	
 	// TODO improve this, drop "stir/IO/read_from_file.h" if possible 
 	atten_data_ptr= read_from_file<DiscretisedDensity<3,float> >(attenuation_map_filename);
@@ -145,7 +142,7 @@ DDSR2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
   //std::cerr<<parameter_info() << std::endl;
-  info(parameter_info());
+  info(boost::format("%1%") % parameter_info());
 }
 
 DDSR2DReconstruction::DDSR2DReconstruction()
@@ -183,7 +180,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
     if(fabs(tan_theta ) > 1.E-4)
       {
-	warning(stir::format("DDSR2D: segment 0 has non-zero tan(theta) {}", tan_theta));	  
+	warning("DDSR2D: segment 0 has non-zero tan(theta) %g", tan_theta);
 	return Succeeded::no;
       }
   }
@@ -440,11 +437,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 if(image.get_x_size() != sp) { 
 		// perform bilinear interpolation 
 		if(iz==0) 
-              info(stir::format(
-               "Image dimension mismatch: tangential positions {}, xy output {} — interpolating...",
-               sp, image.get_x_size()));
-            
-
+			std::cerr << "Image dimension mismatch, tangential positions " << sp << ", xy output " << image.get_x_size() << "\n Interpolating..." << std::endl; 
 		int sx = image.get_x_size(); 
 		int sy = sx; 
 		//float xn1[sx], yn1[sy]; 
