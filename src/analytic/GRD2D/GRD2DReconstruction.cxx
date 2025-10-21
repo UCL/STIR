@@ -19,31 +19,38 @@
   
 #include "stir/analytic/GRD2D/GRD2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/ArcCorrection.h"
-#include "stir/SSRB.h"
-#include "stir/ProjDataInMemory.h"
+//#include "stir/RelatedViewgrams.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/ProjDataInfoCylindrical.h"
+
+//kept for future work, i.e. for the commented out SSRB and arc-correction
+//#include "stir/ProjDataInfoCylindricalArcCorr.h"
+//#include "stir/ArcCorrection.h"
+//#include "stir/SSRB.h"
+//#include "stir/ProjDataInMemory.h"
+
 #include "stir/Bin.h"
-#include "stir/round.h"
+//#include "stir/round.h"
 #include "stir/display.h"
-#include <algorithm>
-#include "stir/IO/interfile.h"
+//#include <algorithm>
+//#include "stir/IO/interfile.h"
 
 #include "stir/Sinogram.h" 
-#include "stir/Viewgram.h"
+//#include "stir/Viewgram.h"
 #include <complex> 
-#include <math.h>
+//#include <math.h>
 #include "stir/numerics/fourier.h"
 #include <boost/math/special_functions/bessel.hpp> 
 #include "stir/info.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
+#include "stir/error.h"
+#include "stir/warning.h"
 
-#ifdef STIR_OPENMP
-#include <omp.h>
-#endif
-#include "stir/num_threads.h"
+//kept for future work
+//#ifdef STIR_OPENMP
+//#include <omp.h>
+//#endif
+//#include "stir/num_threads.h"
 
 #include <vector>
 #include <iostream>
@@ -127,20 +134,20 @@ set_up(shared_ptr <GRD2DReconstruction::TargetT > const& target_data_sptr)
     return Succeeded::no;
 
   if (noise_filter > 1)
-     error(boost::format("Noise filter has to be between 0 and 1 but is %g") % noise_filter);
+	 error(stir::format("Noise filter has to be between 0 and 1 but is {}", noise_filter));
   //  {
   //    warning("Noise filter has to be between 0 and 1 but is %g\n", noise_filter);
   //    return true;
   //  }
     
-  if (alpha_gridding < 1 || alpha_gridding > 2)
-		error(boost::format("Alpha for gridding has to be between 1 and 2 but is %g") % alpha_gridding);    
+  if (alpha_gridding < 1 || alpha_gridding > 2) 
+	    error(stir::format("Alpha for gridding has to be between 1 and 2 but is {}", alpha_gridding));
     
   if (kappa_gridding < 2 || kappa_gridding > 8)
-		 error(boost::format("Kappa for gridding has to be between 2 and 8 but is %g") % kappa_gridding);
+	     error(stir::format("Kappa for gridding has to be between 2 and 8 but is {}", kappa_gridding));
   
 if (num_segments_to_combine>=0 && num_segments_to_combine%2==0)
-    error(boost::format("num_segments_to_combine has to be odd (or -1), but is %d") % num_segments_to_combine);
+    error(stir::format("num_segments_to_combine has to be odd (or -1), but is {}", num_segments_to_combine));
 
 
     if (num_segments_to_combine==-1)
@@ -177,7 +184,7 @@ GRD2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
   //std::cerr<<parameter_info() << std::endl;
-  info(boost::format("%1%") % parameter_info());
+  info(parameter_info());
 }
 
 GRD2DReconstruction::GRD2DReconstruction()
@@ -243,7 +250,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
     if(fabs(tan_theta ) > 1.E-4)
       {
-	warning("GRD2D: segment 0 has non-zero tan(theta) " + std::to_string(tan_theta));
+	warning(stir::format("GRD2D: segment 0 has non-zero tan(theta) {}", tan_theta));
 	return Succeeded::no;
       }
   }
@@ -430,8 +437,9 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	if(image.get_x_size() != sp || zoom != 1) { 
 		// perform bilinear interpolation 
 		if(iz==0) 
-			info(boost::format("Image dimension mismatch: tangential positions %1%, xy output %2% — interpolating...")
-                  % sp % image.get_x_size());
+		    info(stir::format("Image dimension mismatch: tangential positions {}, xy output {} — interpolating...",
+                  sp, image.get_x_size()));
+
 
 		int sx = image.get_x_size(); 
 		int sy = sx; // sx,sy := output image size (assumed square)
