@@ -22,6 +22,8 @@
   axis, differentiates with respect to the tangential coordinate, and integrates over angle
   (backprojection). Two optional frequency-domain cut-offs control smoothing.
 
+  The STIR implementation of this algorithm is described in Chapter 6 of Dimitra Kyriakopoulou's doctoral thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at: https://discovery.ucl.ac.uk/id/eprint/10202525/
+  
   \author Dimitra Kyriakopoulou
 
 */
