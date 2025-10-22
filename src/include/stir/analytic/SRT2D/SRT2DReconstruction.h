@@ -43,6 +43,8 @@ class ProjData;
 single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006):
 45-54.
 
+  The STIR implementation of this algorithm is described in Chapter 5 of Dimitra Kyriakopoulou's doctoral thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at: https://discovery.ucl.ac.uk/id/eprint/10202525/
+
   STIR implementations: Initial version June 2012, 1st updated version (4-point symmetry included) November 2012, 2nd updated
 version (8-point symmetry included) July 2013, 3rd updated version 2014-2016, 4th updated version 2023-2024
 
