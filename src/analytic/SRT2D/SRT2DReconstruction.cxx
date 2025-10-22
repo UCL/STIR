@@ -18,17 +18,16 @@
 
 #include "stir/analytic/SRT2D/SRT2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+//#include "stir/RelatedViewgrams.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ArcCorrection.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Bin.h"
-#include "stir/round.h"
-#include "stir/display.h"
-#include <algorithm>
-#include "stir/IO/interfile.h"
+//#include "stir/round.h"
+//#include "stir/display.h"
+//#include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include "stir/format.h"
 
