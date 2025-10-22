@@ -122,7 +122,7 @@ public:
   */
   explicit SRT2DSPECTReconstruction(const std::string& parameter_filename);
 
-  SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const int num_segments_to_combine = -1);
+  SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v);
 
   virtual std::string method_info() const;
 
@@ -139,7 +139,6 @@ protected: // make parameters protected such that doc shows always up in doxygen
       effectively set to 3, otherwise it is set to 1.
       \see SSRB
   */
-  int num_segments_to_combine;
   std::string attenuation_projection_filename;
   float thres_restr_bound;
   std::vector<double> thres_restr_bound_vector;
