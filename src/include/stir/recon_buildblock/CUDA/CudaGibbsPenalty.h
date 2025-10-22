@@ -19,10 +19,21 @@
 #ifndef __stir_recon_buildblock_CUDA_CudaGibbsPenalty_H__
 #define __stir_recon_buildblock_CUDA_CudaGibbsPenalty_H__
 
-#include "stir/recon_buildblock/GibbsPenalty.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
-#include <cuda_runtime.h>
+
+#ifndef __CUDACC__
+struct dim3
+{
+  unsigned int x = 1, y = 1, z = 1;
+};
+struct int3
+{
+  int x = 0, y = 0, z = 0;
+};
+#else
+#  include <cuda_runtime.h>
+#endif
 
 #include "stir/shared_ptr.h"
 #include <string>
