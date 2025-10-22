@@ -26,12 +26,12 @@
 */
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
-#include "stir/recon_buildblock/BackProjectorByBin.h"
+//#include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/RegisteredParsingObject.h"
 #include <string>
 #include "stir/shared_ptr.h"
-#include "stir/Array_complex_numbers.h"
-#include "stir/numerics/fftshift.h"
+//#include "stir/Array_complex_numbers.h"
+//#include "stir/numerics/fftshift.h"
 
 
 START_NAMESPACE_STIR
