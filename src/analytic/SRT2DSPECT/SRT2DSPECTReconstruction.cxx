@@ -21,22 +21,23 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 //#include "stir/ProjDataInfoCylindricalArcCorr.h"
 //#include "stir/SSRB.h"
-#include "stir/ProjDataInMemory.h"
+//#include "stir/ProjDataInMemory.h"
 #include "stir/Array.h"
 #include <vector>
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
 #include "stir/Bin.h"
-#include "stir/round.h"
-#include "stir/display.h"
-#include <algorithm>
-#include "stir/IO/interfile.h"
+//#include "stir/round.h"
+//#include "stir/display.h"
+//#include <algorithm>
+//#include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include "stir/format.h"
+#include "stir/ProjData.h"   // for ProjData::read_from_file
 
-#include "stir/SegmentByView.h"
+//#include "stir/SegmentByView.h"
 //#include "stir/ArcCorrection.h"
-#include "stir/shared_ptr.h"
+//#include "stir/shared_ptr.h"
 
 /*#ifdef STIR_OPENMP
 #  include <omp.h>
@@ -47,9 +48,11 @@
 #  define M_PI 3.14159265358979323846
 #endif
 
+/*
 #ifdef STIR_OPENMP
 #  include "stir/num_threads.h"
 #endif
+*/
 
 #include "stir/Coordinate3D.h"
 
@@ -117,12 +120,10 @@ SRT2DSPECTReconstruction::SRT2DSPECTReconstruction()
   set_defaults();
 }
 
-SRT2DSPECTReconstruction::SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
-                                                   const int num_segments_to_combine_v)
+SRT2DSPECTReconstruction::SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v)
 {
   set_defaults();
   proj_data_ptr = proj_data_ptr_v;
-  num_segments_to_combine = num_segments_to_combine_v;
 }
 
 Succeeded
