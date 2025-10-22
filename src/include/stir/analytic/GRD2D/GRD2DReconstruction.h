@@ -21,6 +21,8 @@
   grid using a Kaiser–Bessel kernel, then applies an inverse 2D FFT and resamples to the output image. A radial
   low-pass noise filter can suppress high-frequency noise. 
 
+  The STIR implementation of this algorithm is described in Chapter 5 of Dimitra Kyriakopoulou's doctoral thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at: https://discovery.ucl.ac.uk/id/eprint/10202525/
+  
   \author Dimitra Kyriakopoulou
 
 */
