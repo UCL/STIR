@@ -40,6 +40,7 @@
 #include <complex> 
 //#include <math.h>
 #include "stir/numerics/fourier.h"
+#include "stir/numerics/fftshift.h"
 #include <boost/math/special_functions/bessel.hpp> 
 #include "stir/info.h"
 #include "stir/format.h"
