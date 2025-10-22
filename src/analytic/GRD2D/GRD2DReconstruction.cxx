@@ -75,7 +75,7 @@ set_defaults()
 
   display_level=0; // no display
   num_segments_to_combine = -1;
-	zoom = 1; 
+  //zoom = 1; 
   noise_filter = -1; 
   alpha_gridding = 1; 
   kappa_gridding = 4; 
@@ -90,7 +90,7 @@ GRD2DReconstruction::initialise_keymap()
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("Display level",&display_level);
-	parser.add_key("zoom", &zoom);
+  //parser.add_key("zoom", &zoom);
   parser.add_key("noise filter",&noise_filter);
   parser.add_key("alpha for gridding",&alpha_gridding);
   parser.add_key("kappa for gridding",&kappa_gridding);
@@ -207,7 +207,7 @@ GRD2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
   noise_filter = noise_filter_v; 
   alpha_gridding = alpha_gridding_v; 
   kappa_gridding = kappa_gridding_v; 
-  zoom = zoom_v;
+  //zoom = zoom_v;
   num_segments_to_combine = num_segments_to_combine_v;
   proj_data_ptr = proj_data_ptr_v;
   // have to check here because we're not parsing
@@ -442,16 +442,37 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
                   sp, image.get_x_size()));
 
 
-		int sx = image.get_x_size(); 
-		int sy = sx; // sx,sy := output image size (assumed square)
-  	std::vector<float> xn1(sx); 
-    std::vector<float> yn1(sy); // xn1,yn1 := normalised target grids
-		float dx1 = 2./(sx-1), dy1 = 2./(sy-1);  // dx1,dy1 := target grid steps
-		float dx = 2./(sp-1), dy = 2./(sp-1); // dx,dy  := source grid steps
+		//int sx = image.get_x_size(); 
+		//int sy = sx; // sx,sy := output image size (assumed square)
+  	    //std::vector<float> xn1(sx); 
+        //std::vector<float> yn1(sy); // xn1,yn1 := normalised target grids
+		//float dx1 = 2./(sx-1), dy1 = 2./(sy-1);  // dx1,dy1 := target grid steps
+		//float dx = 2./(sp-1), dy = 2./(sp-1); // dx,dy  := source grid steps
+		const int sx = image.get_x_size();
+        const int sy = image.get_y_size();
+        std::vector<float> xn1(sx), yn1(sy);
+        // mm -> normalised by detector half-FOV (requires arc-corrected data)
+        auto ac_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(
+                     proj_data_ptr->get_proj_data_info_sptr());
+        if (!ac_sptr)
+           error("GRD2D: need arc-corrected proj data (ProjDataInfoCylindricalArcCorr).");
+        const float ts   = ac_sptr->get_tangential_sampling();
+        const float Rmax = 0.5f * ts * (sp - 1);
+       for (int ix = 0; ix < sx; ++ix) {
+          // get x_mm at voxel center; use suitable STIR helper to get physical coords
+        const float x_mm = image.get_physical_coordinates_for_indices(ix + image.get_min_x(),
+                                                                      image.get_min_y(), iz).x();
+        xn1[ix] = x_mm / Rmax;
+    }
+    for (int iy = 0; iy < sy; ++iy) {
+        const float y_mm = image.get_physical_coordinates_for_indices(image.get_min_x(),
+                                                                      iy + image.get_min_y(), iz).y();
+        yn1[iy] = y_mm / Rmax;
+    }
 		float val; // val := interpolated sample
 
-		for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
-		for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
+		//for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
+		//for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
 
 		for(int ix=1; ix<sx-1; ix++) { 
 			for(int iy=1; iy<sy-1; iy++) { 
@@ -468,7 +489,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 					float yb = img[y0+1][x0]*tx + img[y0+1][x0+1]*(1.-tx); 
 					val = ya*ty + yb*(1.-ty); 
 				}
-				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)/zoom*2.832;  
+				//image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)/zoom*2.832; 
+				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)/zoom*2.832;
 			}
 		}
  
