@@ -19,8 +19,8 @@
 
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/SSRB.h"
+//#include "stir/ProjDataInfoCylindricalArcCorr.h"
+//#include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Array.h"
 #include <vector>
@@ -35,7 +35,7 @@
 #include "stir/format.h"
 
 #include "stir/SegmentByView.h"
-#include "stir/ArcCorrection.h"
+//#include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
 
 /*#ifdef STIR_OPENMP
@@ -62,7 +62,7 @@ SRT2DSPECTReconstruction::set_defaults()
 {
   base_type::set_defaults();
   attenuation_projection_filename = "";
-  num_segments_to_combine = -1;
+  //num_segments_to_combine = -1;
 }
 
 void
@@ -72,7 +72,7 @@ SRT2DSPECTReconstruction::initialise_keymap()
 
   parser.add_start_key("SRT2DSPECTParameters");
   parser.add_stop_key("End");
-  parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
+  //parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("attenuation projection filename", &attenuation_projection_filename);
 }
 
@@ -80,7 +80,7 @@ void
 SRT2DSPECTReconstruction::ask_parameters()
 {
   base_type::ask_parameters();
-  num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)", -1, 101, -1);
+  //num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)", -1, 101, -1);
   attenuation_projection_filename = ask_string("attenuation projection filename");
 }
 
@@ -96,26 +96,6 @@ SRT2DSPECTReconstruction::set_up(shared_ptr<SRT2DSPECTReconstruction::TargetT> c
   if (base_type::set_up(target_data_sptr) == Succeeded::no)
     return Succeeded::no;
   atten_data_ptr = ProjData::read_from_file(attenuation_projection_filename);
-
-  if (num_segments_to_combine >= 0 && num_segments_to_combine % 2 == 0)
-    error(format("num_segments_to_combine has to be odd (or -1), but is {}", num_segments_to_combine));
-
-  if (num_segments_to_combine == -1)
-    {
-      const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_cyl_sptr
-          = dynamic_pointer_cast<const ProjDataInfoCylindrical>(proj_data_ptr->get_proj_data_info_sptr());
-
-      if (is_null_ptr(proj_data_info_cyl_sptr))
-        num_segments_to_combine = 1; // cannot SSRB non-cylindrical data yet
-      else
-        {
-          if (proj_data_info_cyl_sptr->get_min_ring_difference(0) != proj_data_info_cyl_sptr->get_max_ring_difference(0)
-              || proj_data_info_cyl_sptr->get_num_segments() == 1)
-            num_segments_to_combine = 1;
-          else
-            num_segments_to_combine = 3;
-        }
-    }
 
   return Succeeded::yes;
 }
@@ -149,41 +129,21 @@ Succeeded
 SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const& density_ptr)
 {
 
-  // perform SSRB
-  if (num_segments_to_combine > 1)
-    {
-      const ProjDataInfoCylindrical& proj_data_info_cyl
-          = dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_ptr->get_proj_data_info_sptr());
-
-      //  full_log << "SSRB combining " << num_segments_to_combine
-      //           << " segments in input file to a new segment 0\n" << std::endl;
-
-      shared_ptr<ProjDataInfo> ssrb_info_sptr(
-          SSRB(proj_data_info_cyl, num_segments_to_combine, 1, 0, (num_segments_to_combine - 1) / 2));
-      shared_ptr<ProjData> proj_data_to_SRT_ptr(new ProjDataInMemory(proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
-      SSRB(*proj_data_to_SRT_ptr, *proj_data_ptr);
-      proj_data_ptr = proj_data_to_SRT_ptr;
-    }
-  else
-    {
-      // just use the proj_data_ptr we have already
-    }
-
   // check if segment 0 has direct sinograms
-  {
-    const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0, 0, 0, 0));
-    if (fabs(tan_theta) > 1.E-4)
-      {
-        warning("SRT2DSPECT: segment 0 has non-zero tan(theta) %g", tan_theta);
-        return Succeeded::no;
-      }
-  }
+  //{
+  //  const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0, 0, 0, 0));
+  //  if (fabs(tan_theta) > 1.E-4)
+   //   {
+   //     warning("SRT2DSPECT: segment 0 has non-zero tan(theta) %g", tan_theta);
+    //    return Succeeded::no;
+    //  }
+ // }
 
-  auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr());
-  if (!pdi_sptr)
-    {
-      error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
-    }
+//  auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr());
+//  if (!pdi_sptr)
+//    {
+ //     error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
+ //   }
 
   VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
   density_ptr->fill(0);
@@ -336,8 +296,8 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   /*#ifdef STIR_OPENMP
   #  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux,
   rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx,
-  fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \ shared(view, view_atten, do_arc_correction,
-  arc_correction, p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2) #  pragma omp for
+  fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \ shared(view, view_atten, 
+  p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2) #  pragma omp for
   schedule(dynamic) nowait #endif */
   for (ith = 0; ith < sth; ith++)
     {
