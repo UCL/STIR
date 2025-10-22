@@ -25,23 +25,24 @@
   \author Kris Thielemans
 */
 
-#include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/ArcCorrection.h"
-#include "stir/SSRB.h"
-#include "stir/ProjDataInMemory.h"
-#include "stir/Array.h"
+//#include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
+//#include "stir/VoxelsOnCartesianGrid.h"
+//#include "stir/ProjDataInfoCylindricalArcCorr.h"
+//#include "stir/ArcCorrection.h"
+//#include "stir/SSRB.h"
+//#include "stir/ProjDataInMemory.h"
+//#include "stir/Array.h"
+
 #include <vector>
-#include "stir/Sinogram.h"
-#include "stir/Viewgram.h"
-#include <cmath>
-#include "stir/Bin.h"
-#include "stir/round.h"
-#include "stir/display.h"
-#include <algorithm>
-#include "stir/IO/interfile.h"
-#include "stir/info.h"
+//#include "stir/Sinogram.h"
+//#include "stir/Viewgram.h"
+//#include <cmath>
+//#include "stir/Bin.h"
+//#include "stir/round.h"
+//#include "stir/display.h"
+//#include <algorithm>
+//#include "stir/IO/interfile.h"
+//#include "stir/info.h"
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/RegisteredParsingObject.h"
@@ -58,9 +59,11 @@ class ProjData;
 /*! \ingroup SRT2DSPECT
  \brief Reconstruction class for 2D Spline Reconstruction Technique
 
-  The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
+The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
 single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006):
 45-54.
+
+The STIR implementation of this algorithm is described in Chapter 5 of Dimitra Kyriakopoulou's doctoral thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at: https://discovery.ucl.ac.uk/id/eprint/10202525/
 
   STIR implementations: initial version 2014-2016, 1st updated version 2023-2024
 
