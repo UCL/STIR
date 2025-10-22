@@ -52,6 +52,11 @@ else()
    message(WARNING "CMAKE_CXX_COMPILER_ID is not set. We are therefore not able to set some options.")
 endif()
 
+IF(MSVC)
+   # On Windows, when using ninja to build with CL, we add the following explicitly
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+ENDIF()
+
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
 set(VERSION_MINOR   3)
