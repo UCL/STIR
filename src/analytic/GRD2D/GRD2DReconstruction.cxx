@@ -6,7 +6,7 @@
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
-*/
+*/ 
 /*!
   \file
   \ingroup GRD2D
@@ -435,6 +435,16 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		}
 	}
 
+    // --- Physical helpers (tangential sampling, voxel size [mm]) and FOV radius
+    const auto& cyl_info =
+        dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_ptr->get_proj_data_info_sptr());
+    tangential_sampling = cyl_info.get_tangential_sampling();
+    const float Rmax = 0.5f * (sp - 1) * tangential_sampling; // same as SRT fix
+    const auto vox = image.get_voxel_size();  // [z,y,x]
+    const float vx = vox[3];
+    const float vy = vox[2];
+
+		
 	if(image.get_x_size() != sp || zoom != 1) { 
 		// perform bilinear interpolation 
 		if(iz==0) 
@@ -446,13 +456,17 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		int sy = sx; // sx,sy := output image size (assumed square)
   	std::vector<float> xn1(sx); 
     std::vector<float> yn1(sy); // xn1,yn1 := normalised target grids
-		float dx1 = 2./(sx-1), dy1 = 2./(sy-1);  // dx1,dy1 := target grid steps
+		//float dx1 = 2./(sx-1), dy1 = 2./(sy-1);  // dx1,dy1 := target grid steps
+		const float cx = 0.5f*(sx-1), cy = 0.5f*(sy-1); // pixel-centre coords
 		float dx = 2./(sp-1), dy = 2./(sp-1); // dx,dy  := source grid steps
 		float val; // val := interpolated sample
 
-		for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
-		for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
-
+		//for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
+		//for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
+        // map output pixel centres -> mm -> normalised by Rmax (SRT-style change)
+        for (int ix=0; ix<sx; ++ix) { const float x_mm = (ix - cx) * vx; xn1[ix] = x_mm / Rmax; }
+        for (int iy=0; iy<sy; ++iy) { const float y_mm = (iy - cy) * vy; yn1[iy] = y_mm / Rmax; }
+		
 		for(int ix=1; ix<sx-1; ix++) { 
 			for(int iy=1; iy<sy-1; iy++) { 
 				if(pow(xn1[ix],2)+pow(yn1[iy],2)>1) 
@@ -472,6 +486,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 			}
 		}
  
+	/*
 	} else { 	
 		for(int ix=1; ix<=sp-1; ix++) { 
 				for(int iy=1; iy<=sp-1; iy++) { 
@@ -482,7 +497,21 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 						}
 			}
 	}
-
+	*/
+    } else {
+        const float cx2 = 0.5f*(sp-1), cy2 = 0.5f*(sp-1);
+       for (int ix=1; ix<=sp-1; ++ix) {
+            for (int iy=1; iy<=sp-1; ++iy) {
+                const float x_mm = (ix - cx2) * vx;
+                const float y_mm = (iy - cy2) * vy;
+                if (x_mm*x_mm + y_mm*y_mm > Rmax*Rmax)
+                    image[iz][ix+min_xy][iy+min_xy] = 0;
+                else
+                    image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*2.832;
+            }
+        }
+    }
+		
 	}
 	
 		
