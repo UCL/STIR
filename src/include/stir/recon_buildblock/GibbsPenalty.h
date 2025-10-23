@@ -161,11 +161,9 @@ public:
 protected:
   //! @name Image and weight boundary indices
   //! @{
-  CartesianCoordinate3D<int> image_dim;          //!< Image dimensions
-  CartesianCoordinate3D<int> image_max_indices;  //!< Maximum image indices
-  CartesianCoordinate3D<int> image_min_indices;  //!< Minimum image indices
-  CartesianCoordinate3D<int> weight_max_indices; //!< Maximum weight indices
-  CartesianCoordinate3D<int> weight_min_indices; //!< Minimum weight indices
+  CartesianCoordinate3D<int> image_dim;         //!< Image dimensions
+  CartesianCoordinate3D<int> image_max_indices; //!< Maximum image indices
+  CartesianCoordinate3D<int> image_min_indices; //!< Minimum image indices
   //! @}
 
   //! The weights for the neighbourhood

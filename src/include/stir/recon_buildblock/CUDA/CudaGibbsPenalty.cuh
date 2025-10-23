@@ -698,8 +698,8 @@ CudaGibbsPenalty<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<
   d_image_dim = make_int3(this->image_dim.x(), this->image_dim.y(), this->image_dim.z());
   d_image_max_indices = make_int3(this->image_max_indices.x(), this->image_max_indices.y(), this->image_max_indices.z());
   d_image_min_indices = make_int3(this->image_min_indices.x(), this->image_min_indices.y(), this->image_min_indices.z());
-  d_weight_max_indices = make_int3(this->weight_max_indices.x(), this->weight_max_indices.y(), this->weight_max_indices.z());
-  d_weight_min_indices = make_int3(this->weight_min_indices.x(), this->weight_min_indices.y(), this->weight_min_indices.z());
+  d_weight_max_indices = make_int3(this->weights.get_max_index(), this->weights[0].get_max_index(), this->weights[0][0].get_max_index());
+  d_weight_min_indices = make_int3(this->weights.get_min_index(), this->weights[0].get_min_index(), this->weights[0][0].get_min_index());
 
   // Set the thread block and grid dimensions
   block_dim.x = 8;
