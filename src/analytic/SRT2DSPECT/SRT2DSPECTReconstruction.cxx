@@ -19,25 +19,14 @@
 
 #include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/ProjDataInfoCylindricalArcCorr.h"
-//#include "stir/SSRB.h"
-//#include "stir/ProjDataInMemory.h"
 #include "stir/Array.h"
 #include <vector>
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
 #include "stir/Bin.h"
-//#include "stir/round.h"
-//#include "stir/display.h"
-//#include <algorithm>
-//#include "stir/IO/interfile.h"
 #include "stir/info.h"
 #include "stir/format.h"
 #include "stir/ProjData.h"   // for ProjData::read_from_file
-
-//#include "stir/SegmentByView.h"
-//#include "stir/ArcCorrection.h"
-//#include "stir/shared_ptr.h"
 
 /*#ifdef STIR_OPENMP
 #  include <omp.h>
