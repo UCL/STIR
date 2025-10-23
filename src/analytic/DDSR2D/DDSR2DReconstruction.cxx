@@ -19,20 +19,13 @@
 
 #include "stir/analytic/DDSR2D/DDSR2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/RelatedViewgrams.h"
-//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/Bin.h"
-//#include "stir/round.h"
 #include "stir/display.h"
-//#include <algorithm>
-//#include "stir/IO/interfile.h"
 #include "stir/info.h"
 
 
 #include "stir/Sinogram.h" 
-//#include "stir/Viewgram.h"
 #include <complex> 
-//#include <math.h>
 #include "stir/numerics/fourier.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/format.h"
