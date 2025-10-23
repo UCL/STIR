@@ -75,7 +75,7 @@ public:
 		      const double noise_filter=-1.,
 			  const double alpha_gridding=1.,
 			  const double kappa_gridding=4.,
-			  const double zoom=1.,
+			  //const double zoom=1.,
 		      const int num_segments_to_combine=-1
 		      );
   
@@ -94,7 +94,7 @@ public:
   // noise filter 
   double noise_filter;
 	// ! zoom 
-	double zoom;
+	//double zoom;
   //! number of segments to combine (with SSRB) before starting 2D reconstruction
   /*! if -1, a value is chosen depending on the axial compression.
       If there is no axial compression, num_segments_to_combine is
