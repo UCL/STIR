@@ -436,13 +436,12 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	}
 
     // --- Physical helpers (tangential sampling, voxel size [mm]) and FOV radius
-    const auto& cyl_info =
-        dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_ptr->get_proj_data_info_sptr());
-    tangential_sampling = cyl_info.get_tangential_sampling();
-    const float Rmax = 0.5f * (sp - 1) * tangential_sampling; // same as SRT fix
-    const auto vox = image.get_voxel_size();  // [z,y,x]
+    const auto vox = image.get_voxel_size();      // [z,y,x]
     const float vx = vox[3];
     const float vy = vox[2];
+    const int   sx_im = image.get_x_size();
+    const int   sy_im = image.get_y_size();
+    const float Rmax  = 0.5f * std::min((sx_im - 1) * vx, (sy_im - 1) * vy);
 
 		
 	if(image.get_x_size() != sp || zoom != 1) { 
@@ -488,7 +487,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
  
 	/*
 	} else { 	
-		for(int ix=1; ix<=sp-1; ix++) { 
+		for(int ix=1; ix<=sp-1; ix++) {  
 				for(int iy=1; iy<=sp-1; iy++) { 
 					if(pow(xn[ix],2)+pow(yn[iy],2)>1) 
 						image[iz][ix+min_xy][iy+min_xy] = 0; 
