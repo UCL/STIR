@@ -249,7 +249,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   // check if segment 0 has direct sinograms
   {
     const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
-    if(fabs(tan_theta ) > 1.E-4)
+    if(std::fabs(tan_theta ) > 1.E-4)
       {
 	warning(stir::format("GRD2D: segment 0 has non-zero tan(theta) {}", tan_theta));
 	return Succeeded::no;
@@ -408,7 +408,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 				for(int l2=l2a; l2<=l2b; l2++){ 
 					float T2 = l2/sp1dp-PGy[ith][ip];
 					ff[l1+sp1/2][l2+sp1/2] = ff[l1+sp1/2][l2+sp1/2] + 
-						fabs(ip-sp1/2.0f)*wKB1*((float)boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T2/u,2))))/(2.0f*u)*P[ith][ip];
+						std::fabs(ip-sp1/2.0f)*wKB1*((float)boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T2/u,2))))/(2.0f*u)*P[ith][ip];
 				}
 			}
 		}
