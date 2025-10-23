@@ -75,7 +75,7 @@ set_defaults()
 
   display_level=0; // no display
   num_segments_to_combine = -1;
-  //zoom = 1; 
+	zoom = 1; 
   noise_filter = -1; 
   alpha_gridding = 1; 
   kappa_gridding = 4; 
@@ -90,7 +90,7 @@ GRD2DReconstruction::initialise_keymap()
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("Display level",&display_level);
-  //parser.add_key("zoom", &zoom);
+	parser.add_key("zoom", &zoom);
   parser.add_key("noise filter",&noise_filter);
   parser.add_key("alpha for gridding",&alpha_gridding);
   parser.add_key("kappa for gridding",&kappa_gridding);
@@ -198,7 +198,7 @@ GRD2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
 			const double noise_filter_v, 
 			const double alpha_gridding_v, 
 			const double kappa_gridding_v, 
-			//const double zoom_v,
+			const double zoom_v,
 		    const int num_segments_to_combine_v
 )
 {
@@ -207,7 +207,7 @@ GRD2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
   noise_filter = noise_filter_v; 
   alpha_gridding = alpha_gridding_v; 
   kappa_gridding = kappa_gridding_v; 
-  //zoom = zoom_v;
+  zoom = zoom_v;
   num_segments_to_combine = num_segments_to_combine_v;
   proj_data_ptr = proj_data_ptr_v;
   // have to check here because we're not parsing
@@ -435,7 +435,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		}
 	}
 
-	if(image.get_x_size() != sp) { 
+	if(image.get_x_size() != sp || zoom != 1) { 
 		// perform bilinear interpolation 
 		if(iz==0) 
 		    info(stir::format("Image dimension mismatch: tangential positions {}, xy output {} — interpolating...",
@@ -450,8 +450,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		float dx = 2./(sp-1), dy = 2./(sp-1); // dx,dy  := source grid steps
 		float val; // val := interpolated sample
 
-		for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/(sp+1) + ix*sx/(sp+1)*dx1; 
-		for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/(sp+1) + iy*sy/(sp+1)*dy1; 
+		for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
+		for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
 
 		for(int ix=1; ix<sx-1; ix++) { 
 			for(int iy=1; iy<sy-1; iy++) { 
@@ -468,7 +468,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 					float yb = img[y0+1][x0]*tx + img[y0+1][x0+1]*(1.-tx); 
 					val = ya*ty + yb*(1.-ty); 
 				}
-				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)*2.832;  
+				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)/zoom*2.832;  
 			}
 		}
  
