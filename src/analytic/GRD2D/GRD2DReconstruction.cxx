@@ -481,7 +481,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 					float yb = img[y0+1][x0]*tx + img[y0+1][x0+1]*(1.-tx); 
 					val = ya*ty + yb*(1.-ty); 
 				}
-				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)*8.890;// TODO write 8.890 as 4.445*zoom 
+				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)*8.890*2.022;// TODO write 8.890 as 4.445*zoom 
 			}
 		}
  
@@ -506,7 +506,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
                 if (x_mm*x_mm + y_mm*y_mm > Rmax*Rmax)
                     image[iz][ix+min_xy][iy+min_xy] = 0;
                 else
-                    image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*8.890;//TODO write 8.890 as 4.445*zoom
+                    image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*8.890*2.022;//TODO write 8.890 as 4.445*zoom
             }
         }
     }
