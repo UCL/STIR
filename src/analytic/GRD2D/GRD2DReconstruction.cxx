@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2025 University College London
-
+      
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -408,7 +408,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 				for(int l2=l2a; l2<=l2b; l2++){ 
 					float T2 = l2/sp1dp-PGy[ith][ip];
 					ff[l1+sp1/2][l2+sp1/2] = ff[l1+sp1/2][l2+sp1/2] + 
-						abs(ip-sp1/2.0f)*wKB1*((float)boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T2/u,2))))/(2.0f*u)*P[ith][ip];
+						fabs(ip-sp1/2.0f)*wKB1*((float)boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T2/u,2))))/(2.0f*u)*P[ith][ip];
 				}
 			}
 		}
