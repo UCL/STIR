@@ -94,23 +94,29 @@ __device__ inline double
 atomicAddGeneric(double* address, elemT val)
 {
   double dval = static_cast<double>(val);
-#  if __CUDA_ARCH__ >= 600
-  return atomicAdd(address, dval);
+#  if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 600
+  return atomicAdd(address, static_cast<double>(val));
 #  else
-  // TODO
-  //  # error ": Either upgrade your GPU to compute capability 6 or check the code at src/include/stir/cuda_utilities.cuh,
-  //  91-102";
-  unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
-  unsigned long long int old = *address_as_ull, assumed;
-
-  do
+  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0 && blockIdx.x == 0 && blockIdx.y == 0 && blockIdx.z == 0)
     {
-      assumed = old;
-      double updated = __longlong_as_double(assumed) + dval;
-      old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
-  } while (assumed != old);
+      printf("CudaGibbsPenalty: atomicAdd(double) unsupported on this GPU. "
+             "Upgrade to compute capability >= 6.0 or check code at "
+             "sources/STIR/src/include/stir/cuda_utilities.h:108.\n");
+      asm volatile("trap;");
+    }
+  return 0.0; // never reached
+              // Emulate atomicAdd for double precision on pre-Pascal architectures
+              // unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);
+              // unsigned long long int old = *address_as_ull, assumed;
 
-  return __longlong_as_double(old);
+  // do
+  //   {
+  //     assumed = old;
+  //     double updated = __longlong_as_double(assumed) + dval;
+  //     old = atomicCAS(address_as_ull, assumed, __double_as_longlong(updated));
+  // } while (assumed != old);
+
+  // return __longlong_as_double(old);
 #  endif
 }
 
