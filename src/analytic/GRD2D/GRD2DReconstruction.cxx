@@ -194,9 +194,6 @@ GRD2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
   kappa_gridding = kappa_gridding_v; 
   num_segments_to_combine = num_segments_to_combine_v;
   proj_data_ptr = proj_data_ptr_v;
-  // have to check here because we're not parsing
- /* if (post_processing_only_GRD2D_parameters() == true)
-    error("GRD2D: Wrong parameter values. Aborting\n");*/
 }
 
 Succeeded 
@@ -462,7 +459,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 					float yb = img[y0+1][x0]*tx + img[y0+1][x0+1]*(1.-tx); 
 					val = ya*ty + yb*(1.-ty); 
 				}
-				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)*17.97558;// Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
+				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)*17.97558;// 17.97558: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
 			}
 		}
 
@@ -475,7 +472,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
                 if (x_mm*x_mm + y_mm*y_mm > Rmax*Rmax)
                     image[iz][ix+min_xy][iy+min_xy] = 0;
                 else
-                    image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*8.890*2.022;// Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
+                    image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*17.97558;// 17.97558: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
             }
         }
     }
