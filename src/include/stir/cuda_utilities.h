@@ -93,7 +93,6 @@ template <typename elemT>
 __device__ inline double
 atomicAddGeneric(double* address, elemT val)
 {
-  double dval = static_cast<double>(val);
 #  if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 600
   return atomicAdd(address, static_cast<double>(val));
 #  else

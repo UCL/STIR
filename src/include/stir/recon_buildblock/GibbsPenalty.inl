@@ -45,7 +45,7 @@ template <typename elemT, typename potentialT>
 std::string
 GibbsPenalty<elemT, potentialT>::get_parsing_name() const
 {
-  return this->get_registered_name() + " Parameters";
+  return this->get_registered_name() + " Penalty Parameters";
 }
 
 template <typename elemT, typename potentialT>

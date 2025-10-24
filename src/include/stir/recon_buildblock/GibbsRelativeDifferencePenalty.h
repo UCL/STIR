@@ -167,7 +167,7 @@ public:
   GibbsRelativeDifferencePenalty();
   GibbsRelativeDifferencePenalty(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
-  static constexpr const char* registered_name = "Gibbs Relative Difference Penalty";
+  static constexpr const char* registered_name = "Gibbs Relative Difference";
   float get_gamma() const { return this->potential.gamma; }
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }
@@ -204,7 +204,7 @@ public:
   CudaGibbsRelativeDifferencePenalty();
   CudaGibbsRelativeDifferencePenalty(const bool only_2D, float penalisation_factor, float gamma_v, float epsilon_v);
 
-  static constexpr const char* registered_name = "Cuda Gibbs Relative Difference Penalty";
+  static constexpr const char* registered_name = "Cuda Gibbs Relative Difference";
   float get_gamma() const { return this->potential.gamma; }
   float get_epsilon() const { return this->potential.epsilon; }
   void set_gamma(float gamma_v) { this->potential.gamma = gamma_v; }

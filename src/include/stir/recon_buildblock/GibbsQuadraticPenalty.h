@@ -117,7 +117,7 @@ private:
 
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "Gibbs Quadratic Penalty";
+  static constexpr const char* const registered_name = "Gibbs Quadratic";
 
   GibbsQuadraticPenalty();
   GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
@@ -149,7 +149,7 @@ private:
 
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
-  static constexpr const char* const registered_name = "Cuda Gibbs Quadratic Penalty";
+  static constexpr const char* const registered_name = "Cuda Gibbs Quadratic";
 
   CudaGibbsQuadraticPenalty();
   CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
