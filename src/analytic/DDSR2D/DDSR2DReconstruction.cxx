@@ -137,7 +137,6 @@ DDSR2DReconstruction::
 DDSR2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
-  //std::cerr<<parameter_info() << std::endl;
   info(parameter_info());
 }
 
@@ -160,9 +159,6 @@ DDSR2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
   atten_data_ptr = atten_data_ptr_v; 
   noise_filter = noise_filter_v; 
   noise_filter2 = noise_filter2_v; 
-  // have to check here because we're not parsing
-//  if (post_processing_only_DDSR2D_parameters() == true)
-//    error("DDSR2D: Wrong parameter values. Aborting\n");
 } 
 
 Succeeded 
@@ -203,7 +199,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		p_cutoff = floor(floor(sp/2.0)*noise_filter); 
 	}
   int q_cutoff = 0; // q_cutoff := secondary frequency-domain cutoff (from noise_filter2)
-//float noise_filter2=-1;
   if(noise_filter2 <= 0) { 
 		q_cutoff = 0; 
 	} else { 
@@ -439,9 +434,8 @@ if(image.get_x_size() != sp) {
             
 
 		int sx = image.get_x_size(); 
-		int sy = sx; 
-		//float xn1[sx], yn1[sy]; 
-  std::vector<float> xn1(sx,0.0f), yn1(sy,0.0f);
+		int sy = sx;  
+        std::vector<float> xn1(sx,0.0f), yn1(sy,0.0f);
 		float dx = 2./(sp-1), dy = 2./(sp-1); 
 		float val; 
 
@@ -463,8 +457,8 @@ if(image.get_x_size() != sp) {
 					float yb = img[y0+1][x0]*tx + img[y0+1][x0+1]*(1.-tx); 
 					val = ya*ty + yb*(1.-ty); 
 				}
-				image[2*iz][ix+min_xy_img][sy-1-iy+min_xy_img] = val/sp/sp*3.362; 
-				image[2*iz+1][ix+min_xy_img][sy-1-iy+min_xy_img] = val/sp/sp*3.362; 
+				image[2*iz][ix+min_xy_img][sy-1-iy+min_xy_img] = val/sp/sp*3.362; // 3.362: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
+				image[2*iz+1][ix+min_xy_img][sy-1-iy+min_xy_img] = val/sp/sp*3.362; // 3.362: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
 			} 
 		}
 
@@ -474,8 +468,8 @@ if(image.get_x_size() != sp) {
 					if(pow(xn[ix],2)+pow(yn[iy],2)>1) 
 						image[iz][ix+min_xy_img][sp-1-iy+min_xy_img] = 0; 
 					else
-						image[2*iz][ix+min_xy_img][sp-1-iy+min_xy_img] = img[iy][ix]/sp/sp*3.362;   
-						image[2*iz+1][ix+min_xy_img][sp-1-iy+min_xy_img] = img[iy][ix]/sp/sp*3.362; 
+						image[2*iz][ix+min_xy_img][sp-1-iy+min_xy_img] = img[iy][ix]/sp/sp*3.362; // 3.362: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.  
+						image[2*iz+1][ix+min_xy_img][sp-1-iy+min_xy_img] = img[iy][ix]/sp/sp*3.362; // 3.362: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure. 
 				}
 			}
 	}	
