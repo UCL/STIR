@@ -19,8 +19,6 @@
   
 #include "stir/analytic/GRD2D/GRD2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/RelatedViewgrams.h"
-//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/ProjDataInfoCylindrical.h"
 
 //kept for future work, i.e. for the commented out SSRB and arc-correction
@@ -30,15 +28,10 @@
 //#include "stir/ProjDataInMemory.h"
 
 #include "stir/Bin.h"
-//#include "stir/round.h"
 #include "stir/display.h"
-//#include <algorithm>
-//#include "stir/IO/interfile.h"
 
 #include "stir/Sinogram.h" 
-//#include "stir/Viewgram.h"
 #include <complex> 
-//#include <math.h>
 #include "stir/numerics/fourier.h"
 #include "stir/numerics/fftshift.h"
 #include <boost/math/special_functions/bessel.hpp> 
@@ -75,7 +68,6 @@ set_defaults()
 
   display_level=0; // no display
   num_segments_to_combine = -1;
-	//zoom = 1; 
   noise_filter = -1; 
   alpha_gridding = 1; 
   kappa_gridding = 4; 
@@ -90,7 +82,6 @@ GRD2DReconstruction::initialise_keymap()
   parser.add_stop_key("End");
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("Display level",&display_level);
-	//parser.add_key("zoom", &zoom);
   parser.add_key("noise filter",&noise_filter);
   parser.add_key("alpha for gridding",&alpha_gridding);
   parser.add_key("kappa for gridding",&kappa_gridding);
@@ -136,10 +127,6 @@ set_up(shared_ptr <GRD2DReconstruction::TargetT > const& target_data_sptr)
 
   if (noise_filter > 1)
 	 error(stir::format("Noise filter has to be between 0 and 1 but is {}", noise_filter));
-  //  {
-  //    warning("Noise filter has to be between 0 and 1 but is %g\n", noise_filter);
-  //    return true;
-  //  }
     
   if (alpha_gridding < 1 || alpha_gridding > 2) 
 	    error(stir::format("Alpha for gridding has to be between 1 and 2 but is {}", alpha_gridding));
@@ -184,7 +171,6 @@ GRD2DReconstruction::
 GRD2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
-  //std::cerr<<parameter_info() << std::endl;
   info(parameter_info());
 }
 
@@ -198,7 +184,6 @@ GRD2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
 			const double noise_filter_v, 
 			const double alpha_gridding_v, 
 			const double kappa_gridding_v, 
-			//const double zoom_v,
 		    const int num_segments_to_combine_v
 )
 {
@@ -207,7 +192,6 @@ GRD2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
   noise_filter = noise_filter_v; 
   alpha_gridding = alpha_gridding_v; 
   kappa_gridding = kappa_gridding_v; 
-  //zoom = zoom_v;
   num_segments_to_combine = num_segments_to_combine_v;
   proj_data_ptr = proj_data_ptr_v;
   // have to check here because we're not parsing
@@ -249,7 +233,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   // check if segment 0 has direct sinograms
   {
     const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0,0,0,0));
-    if(std::fabs(tan_theta ) > 1.E-4)
+    if(fabs(tan_theta ) > 1.E-4)
       {
 	warning(stir::format("GRD2D: segment 0 has non-zero tan(theta) {}", tan_theta));
 	return Succeeded::no;
@@ -299,7 +283,6 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   
 	Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0,0); 
 	
-	//float M_PIf = M_PI; 
 	const int sp = sino.get_num_tangential_poss(), sth = sino.get_num_views(); 
 	float dp = 2.0/sp, dth = M_PI/sth;  // dp := normalised detector spacing in p; dth := view angle step
 	
@@ -408,7 +391,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 				for(int l2=l2a; l2<=l2b; l2++){ 
 					float T2 = l2/sp1dp-PGy[ith][ip];
 					ff[l1+sp1/2][l2+sp1/2] = ff[l1+sp1/2][l2+sp1/2] + 
-						std::fabs(ip-sp1/2.0f)*wKB1*((float)boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T2/u,2))))/(2.0f*u)*P[ith][ip];
+						fabs(ip-sp1/2.0f)*wKB1*((float)boost::math::cyl_bessel_i(0.0f,2*M_PI*ar*u*sqrt(1-pow(T2/u,2))))/(2.0f*u)*P[ith][ip];
 				}
 			}
 		}
@@ -453,15 +436,13 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
 		int sx = image.get_x_size(); 
 		int sy = sx; // sx,sy := output image size (assumed square)
-  	std::vector<float> xn1(sx); 
-    std::vector<float> yn1(sy); // xn1,yn1 := normalised target grids
-		//float dx1 = 2./(sx-1), dy1 = 2./(sy-1);  // dx1,dy1 := target grid steps
+  	    std::vector<float> xn1(sx); 
+        std::vector<float> yn1(sy); // xn1,yn1 := normalised target grids
 		const float cx = 0.5f*(sx-1), cy = 0.5f*(sy-1); // pixel-centre coords
 		float dx = 2./(sp-1), dy = 2./(sp-1); // dx,dy  := source grid steps
 		float val; // val := interpolated sample
 
-		//for(int ix=0; ix<sx; ix++) xn1[ix] = -1.0*sx/((sp+1)*zoom) + ix*sx/((sp+1)*zoom)*dx1; 
-		//for(int iy=0; iy<sy; iy++) yn1[iy] = -1.0*sy/((sp+1)*zoom) + iy*sy/((sp+1)*zoom)*dy1; 
+
         // map output pixel centres -> mm -> normalised by Rmax (SRT-style change)
         for (int ix=0; ix<sx; ++ix) { const float x_mm = (ix - cx) * vx; xn1[ix] = x_mm / Rmax; }
         for (int iy=0; iy<sy; ++iy) { const float y_mm = (iy - cy) * vy; yn1[iy] = y_mm / Rmax; }
@@ -481,22 +462,10 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 					float yb = img[y0+1][x0]*tx + img[y0+1][x0+1]*(1.-tx); 
 					val = ya*ty + yb*(1.-ty); 
 				}
-				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)*8.890*2.022;// TODO write 8.890 as 4.445*zoom 
+				image[iz][sx-1+1-ix+min_xy][sy-iy+min_xy] = val*pow(1.*sp/sp1,2.)*17.97558;// Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
 			}
 		}
- 
-	/*
-	} else { 	
-		for(int ix=1; ix<=sp-1; ix++) {  
-				for(int iy=1; iy<=sp-1; iy++) { 
-					if(pow(xn[ix],2)+pow(yn[iy],2)>1) 
-						image[iz][ix+min_xy][iy+min_xy] = 0; 
-					else
-						image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*2.832;  
-						}
-			}
-	}
-	*/
+
     } else {
         const float cx2 = 0.5f*(sp-1), cy2 = 0.5f*(sp-1);
        for (int ix=1; ix<=sp-1; ++ix) {
@@ -506,7 +475,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
                 if (x_mm*x_mm + y_mm*y_mm > Rmax*Rmax)
                     image[iz][ix+min_xy][iy+min_xy] = 0;
                 else
-                    image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*8.890*2.022;//TODO write 8.890 as 4.445*zoom
+                    image[iz][sp-1+1-ix+min_xy][sp-iy+min_xy] = img[iy][ix]*sp/sp1*8.890*2.022;// Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
             }
         }
     }
