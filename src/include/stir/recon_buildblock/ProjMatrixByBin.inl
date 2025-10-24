@@ -121,18 +121,14 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
   const CartesianCoordinate3D<float> point1 = lor2.p1();
   const CartesianCoordinate3D<float> point2 = lor2.p2();
 
-  // The direction can be from 1 -> 2 depending on the bin sign.
-  // const CartesianCoordinate3D<float> middle = (point1 + point2) * 0.5f;
-  // const CartesianCoordinate3D<float> diff = point2 - middle;
-  
-  // Project to mean z plane
+  // Project LOR to mean z-plane for maintaining the concentric-circle model for TOF bins.
   float mean_z = (point1.z() + point2.z()) * 0.5f;
-  
+  // Create new points with mean z-coordinates
   CartesianCoordinate3D<float> npoint1 = point1;
   CartesianCoordinate3D<float> npoint2 = point2;
   npoint1.z() = mean_z;
   npoint2.z() = mean_z;
-  
+
   const CartesianCoordinate3D<float> middle = (npoint1 + npoint2) * 0.5f;
   const CartesianCoordinate3D<float> diff = npoint2 - middle;
   const CartesianCoordinate3D<float> diff_unit_vector(diff / static_cast<float>(norm(diff)));
