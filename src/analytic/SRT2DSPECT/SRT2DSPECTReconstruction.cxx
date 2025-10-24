@@ -118,23 +118,6 @@ SRT2DSPECTReconstruction::SRT2DSPECTReconstruction(const shared_ptr<ProjData>& p
 Succeeded
 SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const& density_ptr)
 {
-
-  // check if segment 0 has direct sinograms
-  //{
-  //  const float tan_theta = proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(0, 0, 0, 0));
-  //  if (fabs(tan_theta) > 1.E-4)
-   //   {
-   //     warning("SRT2DSPECT: segment 0 has non-zero tan(theta) %g", tan_theta);
-    //    return Succeeded::no;
-    //  }
- // }
-
-//  auto pdi_sptr = dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr());
-//  if (!pdi_sptr)
-//    {
- //     error("SPECT data should correspond to ProjDataInfoCylindricalArcCorr");
- //   }
-
   VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
   density_ptr->fill(0);
   Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0, 0);
@@ -498,7 +481,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   #endif*/
                   {
                     image[ia][image_min_x + sx - ix1 - 1][image_min_y + ix2]
-                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth) * 6.23;
+                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth) * 6.23; // 6.23: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
                   }
                 }
             }
