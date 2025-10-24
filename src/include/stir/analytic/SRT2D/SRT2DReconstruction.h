@@ -10,9 +10,14 @@
 */
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2D
 
   \brief declares the stir::SRT2DReconstruction class
+
+  \details
+  SRT2D models each PET projection (per angle) with natural cubic splines along the tangential
+  coordinate, then performs the required angular integration on these spline representations to
+  form the image. The implementation exploits geometric symmetries.
 
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
@@ -37,6 +42,8 @@ class ProjData;
   The reference for the implemented PET algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
 single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006):
 45-54.
+
+  The STIR implementation of this algorithm is described in Chapter 5 of Dimitra Kyriakopoulou's doctoral thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at: https://discovery.ucl.ac.uk/id/eprint/10202525/
 
   STIR implementations: Initial version June 2012, 1st updated version (4-point symmetry included) November 2012, 2nd updated
 version (8-point symmetry included) July 2013, 3rd updated version 2014-2016, 4th updated version 2023-2024
