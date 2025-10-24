@@ -129,7 +129,7 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
   CartesianCoordinate3D<float> npoint2 = point2;
   npoint1.z() = mean_z;
   npoint2.z() = mean_z;
-  
+
   // The direction can be from 1 -> 2 depending on the bin sign.
   const CartesianCoordinate3D<float> middle = (npoint1 + npoint2) * 0.5f;
   const CartesianCoordinate3D<float> diff = npoint2 - middle;
