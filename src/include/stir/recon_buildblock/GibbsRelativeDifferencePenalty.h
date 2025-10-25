@@ -147,8 +147,9 @@ class RelativeDifferencePotential;
   \verbatim
   Gibbs Relative Difference Penalty Parameters:=
   ; keywords from GibbsPenalty
-  ; gamma value :=
-  ; epsilon value :=
+  ; default values are below
+  ; gamma value := 2
+  ; epsilon value := 1e-7
   END Gibbs Relative Difference Penalty Parameters:=
   \endverbatim
 */
@@ -188,8 +189,9 @@ public:
   \verbatim
   Cuda Gibbs Relative Difference Penalty Parameters:=
   ; keywords from GibbsPenalty
-  ; gamma value :=
-  ; epsilon value :=
+  ; default values are indicated below
+  ; gamma value := 2
+  ; epsilon value := 1e-7
   END Cuda Gibbs Relative Difference Penalty Parameters:=
   \endverbatim
 */
