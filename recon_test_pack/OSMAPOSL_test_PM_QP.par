@@ -27,7 +27,7 @@ prior type := Gibbs Quadratic
   penalisation factor := 0.5
   ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
   only 2D:= 0
-  END Cuda Gibbs Quadratic Penalty Parameters:=
+  END Gibbs Quadratic Penalty Parameters:=
 
 end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
