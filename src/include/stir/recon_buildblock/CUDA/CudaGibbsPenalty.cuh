@@ -46,6 +46,8 @@ START_NAMESPACE_STIR
 
 //! CUDA kernel for Gibbs penalty value calculation using the potential function value and block reduction
 /*!
+ * \ingroup CUDA
+ * \ingroup priors
  * Each thread processes one voxel, computes local sum, then performs parallel reduction in shared memory.
  * Result from each block is then atomically added to output. Requires CUDA compute capability ≥6.0 for double atomics.
  */
@@ -206,6 +208,8 @@ CudaGibbsPenalty_gradient_kernel(elemT* gradient,
 //! CUDA kernel for Gibbs penalty, computes the dot product of the gradient with a given input image using the potential function
 //! first derivative.
 /*!
+ * \ingroup CUDA
+ * \ingroup priors
  * Each thread computes one element of the gradient, then we perform the dot product in shared memory.
  * Result from each block is then atomically added to output. Requires CUDA compute capability ≥6.0 for double atomics.
  */
@@ -294,6 +298,8 @@ CudaGibbsPenalty_gradient_dot_input_kernel(double* output,
 
 //! CUDA kernel for Gibbs penalty, computes the Hessian diagonal using the potential function second derivative.
 /*!
+ * \ingroup CUDA
+ * \ingroup priors
  * Each thread computes one element of the Hessian diagonal.
  */
 template <class elemT, typename PotentialT>
@@ -364,6 +370,8 @@ CudaGibbsPenalty_Hessian_diagonal_kernel(elemT* Hessian_diag,
 
 //! CUDA kernel for Gibbs penalty, computes the Hessian times a given input image using the potential function second derivatives.
 /*!
+ * \ingroup CUDA
+ * \ingroup priors
  * The output is image shaped and each element is computed by a given thread.
  */
 template <class elemT, typename PotentialT>
