@@ -21,19 +21,8 @@
 
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
-
-#ifndef __CUDACC__
-struct dim3
-{
-  unsigned int x = 1, y = 1, z = 1;
-};
-struct int3
-{
-  int x = 0, y = 0, z = 0;
-};
-#else
-#  include <cuda_runtime.h>
-#endif
+#include "stir/cuda_utilities.h"
+#include "stir/recon_buildblock/GibbsPenalty.h"
 
 #include "stir/shared_ptr.h"
 #include <string>
@@ -66,20 +55,20 @@ private:
 protected:
   // GPU block and grid dimensions
 
-  dim3 block_dim;
-  dim3 grid_dim;
+  cuda_dim3 block_dim;
+  cuda_dim3 grid_dim;
 
-  // Variable used for shared memory operations
-  int threads_per_block = block_dim.x * block_dim.y * block_dim.z;
-  size_t shared_mem_bytes = threads_per_block * sizeof(elemT);
+  // Variables used for shared memory operations
+  int threads_per_block;
+  size_t shared_mem_bytes;
 
   elemT* d_image_data = nullptr;
   // Currently stir:CartesianCoordinate3D<int> is not supported on GPU, we need a simple structure to store boundaries.
-  int3 d_image_dim;
-  int3 d_image_max_indices;
-  int3 d_image_min_indices;
-  int3 d_weight_max_indices;
-  int3 d_weight_min_indices;
+  cuda_int3 d_image_dim;
+  cuda_int3 d_image_max_indices;
+  cuda_int3 d_image_min_indices;
+  cuda_int3 d_weight_max_indices;
+  cuda_int3 d_weight_min_indices;
 
   // GPU pointers to weights and kappa data
   float* d_weights_data = nullptr;

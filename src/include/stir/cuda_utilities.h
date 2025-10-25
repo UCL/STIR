@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2024, University College London
+    Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -16,6 +17,7 @@
   \brief some utilities for STIR and CUDA
 
   \author Kris Thielemans
+  \author Matteo Neel Colombo
 */
 #include "stir/Array.h"
 #include "stir/info.h"
@@ -31,6 +33,21 @@ START_NAMESPACE_STIR
 #  ifndef __device__
 #    define __device__
 #  endif
+#endif
+
+#ifndef __CUDACC__
+struct cuda_dim3
+{
+  unsigned int x = 1, y = 1, z = 1;
+};
+struct cuda_int3
+{
+  int x = 0, y = 0, z = 0;
+};
+#else
+#  include <cuda_runtime.h>
+typedef dim3 cuda_dim3;
+typedef int3 cuda_int3;
 #endif
 
 #ifdef __CUDACC__

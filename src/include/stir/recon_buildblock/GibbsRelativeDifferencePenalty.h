@@ -28,7 +28,6 @@
 #include "stir/recon_buildblock/GibbsPenalty.h"
 #include "stir/RegisteredParsingObject.h"
 #include <cmath>
-#include "stir/cuda_utilities.h"
 
 #ifdef STIR_WITH_CUDA
 #  include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.h"

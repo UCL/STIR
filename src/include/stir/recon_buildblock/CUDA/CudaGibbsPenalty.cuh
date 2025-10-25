@@ -34,7 +34,6 @@
 #include "stir/Array.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/cuda_utilities.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include <cuda_runtime.h>

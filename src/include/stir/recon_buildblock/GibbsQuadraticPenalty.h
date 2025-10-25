@@ -24,7 +24,6 @@
 #define __stir_recon_buildblock_GibbsQuadraticPenalty_H__
 
 #include "stir/RegisteredParsingObject.h"
-#include "stir/cuda_utilities.h"
 #include "stir/recon_buildblock/GibbsPenalty.h"
 #ifdef STIR_WITH_CUDA
 #  include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.h"
