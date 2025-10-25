@@ -134,7 +134,7 @@ endif()
 if (STIR_WITH_CUDA)
   list(APPEND ${dir_LIB_SOURCES}
 		CUDA/CudaRelativeDifferencePrior.cu
-		CUDA/CudaGibbsPriors_instantiations.cu
+		CUDA/CudaGibbsPenaltiesInstantiations.cu
   )
 endif()
 
