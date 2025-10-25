@@ -180,14 +180,18 @@ public:
   bool get_recompute_sensitivity() const;
 
   //! get filename to read (or write) the total sensitivity
-  /*! will be a zero string if not set */
+  /*! will be a zero-length string if not set */
   std::string get_sensitivity_filename() const;
   //! get filename pattern to read (or write) the subset sensitivities
-  /*! will be a zero string if not set.
+  /*! will be a zero-length string if not set.
   Could be e.g. "subsens_%d.hv"
   fmt::format is used with the pattern
  */
   std::string get_subsensitivity_filenames() const;
+
+  //!  Return the filename for a particular subset
+  /*! \sa get_subsensitivity_filenames() */
+  std::string get_subsensitivity_filename(const int subset_num) const;
 
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.

@@ -31,10 +31,17 @@ environment:
 init:
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
+cache:
+  - '%LOCALAPPDATA%\ccache'
+
 install:
   - git submodule update --init --recursive
 
 build_script:
+  - set vcvars="C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+  - if not exist %vcvars% set vcvars="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+  - call %vcvars%
+  - cl
   # find boost on Appveyor. Version depends on VM
   - for /D %%d in (C:\Libraries\boost_*) do set BOOST_ROOT=%%d
   - echo Using Boost %BOOST_ROOT%
@@ -44,18 +51,24 @@ build_script:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
   # install parallelproj and Python stuff
   # don't do numpy here due to https://github.com/conda-forge/numpy-feedstock/issues/350
-  - conda create --name stirbuild -c conda-forge  -yq libparallelproj swig pytest
+  - conda create --name stirbuild -c conda-forge  -yq libparallelproj swig pytest ccache ninja cmake
   - CALL conda.bat activate stirbuild
   - python --version
   - pip install numpy matplotlib
   # basic test if numpy works
   - python -c "import numpy"
+  # get ccache stats
+  - ccache -s
   - mkdir build
   - mkdir install
   - cd build
-  - cmake.exe .. -A x64 -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DPython_EXECUTABLE=%CONDA_PREFIX%\python.exe -DCMAKE_PREFIX_PATH:PATH="%CONDA_PREFIX%"
-  - cmake.exe --build . --config %CONFIGURATION%
-  - cmake.exe --build . --target install --config %CONFIGURATION%
+  - cmake .. -GNinja -DCMAKE_C_COMPILER="cl.exe" -DCMAKE_CXX_COMPILER="cl.exe" -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DPython_EXECUTABLE=%CONDA_PREFIX%\python.exe -DCMAKE_PREFIX_PATH:PATH="%CONDA_PREFIX%"
+  - cmake --build . --config %CONFIGURATION%
+  #- cmake --build . --target install --config %CONFIGURATION%
+  # the above works, but possibly calling ninja directly is faster
+  - ninja install
+  # get ccache stats
+  - ccache -s
   - conda deactivate
 
 test_script:
@@ -68,6 +81,10 @@ test_script:
   - cd ..\src
   - "set PYTHONPATH=C:\\projects\\stir\\install\\python"
   - python -m pytest .
+  - echo "Running Python examples"
+  - cd ..\examples\python
+  - rem Disabled as fails, probably because of plotting
+  - rem python recon_demo_gradient.py
   - conda deactivate
 
 on_finish:
