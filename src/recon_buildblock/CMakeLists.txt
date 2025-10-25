@@ -82,9 +82,6 @@ if (NOT MINI_STIR)
         QuadraticPrior.cxx
         RelativeDifferencePrior.cxx
 
-	    GibbsQuadraticPenalty.cxx
-		GibbsRelativeDifferencePenalty.cxx
-
 	LogcoshPrior.cxx
 	FilterRootPrior.cxx
 	GeneralisedObjectiveFunction.cxx
@@ -136,10 +133,8 @@ endif()
 
 if (STIR_WITH_CUDA)
   list(APPEND ${dir_LIB_SOURCES}
-    CUDA/CudaRelativeDifferencePrior.cu
-
-	CUDA/CudaGibbsRelativeDifferencePenalty.cu
-	CUDA/CudaGibbsQuadraticPenalty.cu
+		CUDA/CudaRelativeDifferencePrior.cu
+		CUDA/CudaGibbsPriors_instantiations.cu
   )
 endif()
 

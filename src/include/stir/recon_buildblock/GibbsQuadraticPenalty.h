@@ -119,8 +119,10 @@ public:
   //! Name which will be used when parsing a GeneralisedPrior object
   static constexpr const char* const registered_name = "Gibbs Quadratic";
 
-  GibbsQuadraticPenalty();
-  GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
+  GibbsQuadraticPenalty() { this->set_defaults(); }
+  GibbsQuadraticPenalty(const bool only_2D, float penalisation_factor)
+      : base_type(only_2D, penalisation_factor)
+  {}
 };
 
 #ifdef STIR_WITH_CUDA
@@ -151,8 +153,10 @@ public:
   //! Name which will be used when parsing a GeneralisedPrior object
   static constexpr const char* const registered_name = "Cuda Gibbs Quadratic";
 
-  CudaGibbsQuadraticPenalty();
-  CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor);
+  CudaGibbsQuadraticPenalty() { this->set_defaults(); }
+  CudaGibbsQuadraticPenalty(const bool only_2D, float penalisation_factor)
+      : base_type(only_2D, penalisation_factor)
+  {}
 };
 #endif
 
