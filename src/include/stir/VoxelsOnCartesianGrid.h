@@ -44,12 +44,10 @@ class PixelsOnCartesianGrid;
 template <class elemT>
 class VoxelsOnCartesianGrid : public DiscretisedDensityOnCartesianGrid<3, elemT>
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
- public:
-#else
-private:
+public:
 #endif
   typedef VoxelsOnCartesianGrid<elemT> self_type;
   typedef DiscretisedDensityOnCartesianGrid<3, elemT> base_type;

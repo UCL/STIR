@@ -39,9 +39,8 @@ class ProjDataInfo;
 template <typename elemT>
 class RelatedViewgrams
 {
-private:
-#ifdef SWIG
-public:
+#ifdef STIR_COMPILING_SWIG_WRAPPER
+public: // SWIG needs this typedef to be public
 #endif
   typedef RelatedViewgrams<elemT> self_type;
 
