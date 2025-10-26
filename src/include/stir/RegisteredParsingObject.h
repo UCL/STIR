@@ -79,7 +79,7 @@ class RegisteredParsingObject : public Parent
 public:
   // import constructors from Parent
   // Note: disabled for older SWIG as that generates an error before 4.2, and a warning for 4.2
-#if !defined(IGNORESWIG) || (SWIG_VERSION >= 0x040300)
+#if !defined(SWIG) || (SWIG_VERSION >= 0x040300)
   using Parent::Parent;
 #endif
 

@@ -36,7 +36,7 @@
 
 START_NAMESPACE_STIR
 
-#ifndef IGNORESWIG
+#ifndef SWIG // let SWIG ignore all this
 
 /*!
   \ingroup priors
