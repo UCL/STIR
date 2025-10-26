@@ -76,12 +76,10 @@ called, which initialises new elements first to 0.
 template <int num_dimensions, typename elemT>
 class Array : public NumericVectorWithOffset<Array<num_dimensions - 1, elemT>, elemT>
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
- public:
-#else
-private:
+public:
 #endif
   typedef Array<num_dimensions, elemT> self;
   typedef NumericVectorWithOffset<Array<num_dimensions - 1, elemT>, elemT> base_type;
@@ -443,12 +441,10 @@ private:
 template <class elemT>
 class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
- public:
-#else
-private:
+public:
 #endif
   typedef NumericVectorWithOffset<elemT, elemT> base_type;
   typedef Array<1, elemT> self;

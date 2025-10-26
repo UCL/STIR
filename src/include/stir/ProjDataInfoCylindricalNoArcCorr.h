@@ -83,9 +83,9 @@ class ProjDataInfoCylindricalNoArcCorr : public ProjDataInfoCylindrical
 {
 private:
   typedef ProjDataInfoCylindrical base_type;
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef ProjDataInfoCylindricalNoArcCorr self_type;
 

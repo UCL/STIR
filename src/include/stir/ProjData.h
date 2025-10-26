@@ -102,8 +102,8 @@ class ProjDataInMemory;
 */
 class ProjData : public ExamData
 {
-#ifdef SWIG
- public: // SWIG needs self_type exposed
+#ifdef STIR_COMPILING_SWIG_WRAPPER
+public: // SWIG needs self_type exposed
 #endif
   typedef ProjData self_type;
 
