@@ -33,11 +33,17 @@ init:
 
 cache:
   - '%LOCALAPPDATA%\ccache'
+  - testcache
 
 install:
   - git submodule update --init --recursive
 
 build_script:
+  - ccache -p
+  - echo %LOCALAPPDATA%
+  - dir %LOCALAPPDATA%\ccache
+  - mkdir testcache
+  - echo "bla" > testcache/somefile
   - set vcvars="C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
   - if not exist %vcvars% set vcvars="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
   - call %vcvars%
@@ -62,11 +68,11 @@ build_script:
   - mkdir build
   - mkdir install
   - cd build
-  - cmake .. -GNinja -DCMAKE_C_COMPILER="cl.exe" -DCMAKE_CXX_COMPILER="cl.exe" -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DPython_EXECUTABLE=%CONDA_PREFIX%\python.exe -DCMAKE_PREFIX_PATH:PATH="%CONDA_PREFIX%"
-  - cmake --build . --config %CONFIGURATION%
+  #- cmake .. -GNinja -DCMAKE_C_COMPILER="cl.exe" -DCMAKE_CXX_COMPILER="cl.exe" -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% -DSTIR_OPENMP:BOOL=ON -DBUILD_DOCUMENTATION:BOOL=OFF -DBUILD_SWIG_PYTHON:BOOL=ON -DPython_EXECUTABLE=%CONDA_PREFIX%\python.exe -DCMAKE_PREFIX_PATH:PATH="%CONDA_PREFIX%"
+  # - cmake --build . --config %CONFIGURATION%
   #- cmake --build . --target install --config %CONFIGURATION%
   # the above works, but possibly calling ninja directly is faster
-  - ninja install
+  # - ninja install
   # get ccache stats
   - ccache -s
   - conda deactivate
@@ -75,12 +81,12 @@ test_script:
   - cd C:\projects\stir\build
   - CALL conda.bat activate stirbuild
   - python --version
-  - ctest --output-on-failure  -C %CONFIGURATION%
+  # - ctest --output-on-failure  -C %CONFIGURATION%
   - cd ..\recon_test_pack
-  - run_tests --nointbp "C:\projects\stir\install\bin\"
+  # - run_tests --nointbp "C:\projects\stir\install\bin\"
   - cd ..\src
   - "set PYTHONPATH=C:\\projects\\stir\\install\\python"
-  - python -m pytest .
+  # - python -m pytest .
   - echo "Running Python examples"
   - cd ..\examples\python
   - rem Disabled as fails, probably because of plotting
