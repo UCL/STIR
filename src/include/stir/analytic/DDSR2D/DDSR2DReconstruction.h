@@ -3,6 +3,7 @@
 #ifndef __stir_analytic_DDSR2D_DDSR2DReconstruction_H__
 #define __stir_analytic_DDSR2D_DDSR2DReconstruction_H__
 /*
+    Copyright (C) 2024-2025, Dimitra Kyriakopoulou
     Copyright (C) 2025, University College London
     This file is part of STIR.
 
