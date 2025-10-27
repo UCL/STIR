@@ -47,6 +47,13 @@
       <a href=https://github.com/UCL/STIR/pull/1291>PR #1291</a>
     </li>
     <li>
+      The priors code has been refactored to provide two common, parallelized base classes for CPU and GPU implementations (<code>GibbsPenalty</code> and <code>CudaGibbsPenalty</code>).<br>
+      On CPU, we introduce <code>GibbsQuadraticPenalty</code> and <code>GibbsRelativeDifferencePenalty</code>, which inherit from the parallelized <code>GibbsPenalty</code> base class (now parallelized using OpenMP).<br>
+      GPU implementations are also provided as <code>CudaGibbsQuadraticPenalty</code> and <code>CudaGibbsRelativeDifferencePenalty</code>.<br>
+      Currently, the new Gibbs penalties are still missing the paraboloidal surrogates related method implementations. They provide two new methods: <code>compute_gradient_times_input</code> and <code>compute_Hessian_diagonal</code>.<br>
+      <a href="https://github.com/UCL/STIR/pull/1629">PR #1629</a>
+    </li>
+    <li>
       Data from GE Discovery MI systems in RDF9 should now be readable. TOF information on these scanners has also been
       added.
       However, projection data is currently still always returned as non-TOF (but list-mode data is read as TOF).<br>
@@ -245,7 +252,7 @@
     </li>
   </ul>
 
-  <h3>New deprecations</h3>
+  <h3>New Deprecations and renames</h3>
   <ul>
     <li>
       <code>truncate_end_planes</code> will be removed in v7.0
@@ -254,6 +261,11 @@
       legacy compatibility with version 3, 4 and 5 will be removed in v7.0.
       CMake options <tt>STIR_PROJECTORS_AS_V3</tt>, <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> and
       <tt>STIR_ROOT_ROTATION_AS_V4</tt> will therefore be removed.
+    </li>
+    <li>
+      Starting from v7.0, <code>GeneralizedPrior</code> will be renamed to <code>GeneralizedPenalty</code>.<br>
+      <code>QuadraticPrior</code>, <code>RelativeDifferencePrior</code>, and <code>LogcoshPrior</code> will be removed in favor of the new <code>GibbsPenalty</code> framework.
+      <a href=https://github.com/UCL/STIR/issues/1426>Issue #1426</a>
     </li>
   </ul>
 
