@@ -362,7 +362,7 @@ GeneralisedObjectiveFunction<TargetT>::accumulate_Hessian_times_input(TargetT& o
   if (!this->prior_is_zero())
     {
       shared_ptr<TargetT> prior_output_sptr(output.get_empty_copy());
-      this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, input);
+      this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, input);
 
       // output -= *prior_output_sptr;
       auto prior_output_iter = prior_output_sptr->begin_all_const();
@@ -376,10 +376,6 @@ GeneralisedObjectiveFunction<TargetT>::accumulate_Hessian_times_input(TargetT& o
         }
     }
 
-  if (!this->prior_is_zero())
-    {
-      this->prior_sptr->accumulate_Hessian_times_input(output, current_image_estimate, input);
-    }
   return Succeeded::yes;
 }
 
