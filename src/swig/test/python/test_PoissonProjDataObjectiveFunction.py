@@ -1,4 +1,4 @@
-# Test file for STIR buildblock py.test
+# Test file for STIR objective functions
 # Use as follows:
 # on command line
 #     pytest test_PoissonProjDataObjectiveFunction.py
@@ -67,43 +67,42 @@ class TestSTIRObjectiveFunction(unittest.TestCase):
         """check if value is loglik - prior"""
         beta = self.prior.get_penalisation_factor()
         x = self.image
-        ov = self.obj_fun.compute_value(x)
-        pv = self.prior.compute_value(x)
+        obj_v = self.obj_fun.compute_value(x)
+        prior_v = self.prior.compute_value(x)
         self.prior.set_penalisation_factor(0)
-        lv = self.obj_fun.compute_value(x)
-        assert np.allclose(ov, lv - pv)
+        loglik_v = self.obj_fun.compute_value(x)
+        assert np.allclose(obj_v, loglik_v - prior_v)
         self.prior.set_penalisation_factor(beta)
 
     def test_gradient_with_prior(self):
-        """check if gradient is loglik - prior"""
+        """check if gradient is the same as loglik - prior"""
         beta = self.prior.get_penalisation_factor()
         x = self.image
-        og = x.get_empty_copy()
-        pg = x.get_empty_copy()
-        lg = x.get_empty_copy()
-        self.obj_fun.compute_gradient(og, x)
-        self.prior.compute_gradient(pg, x)
+        obj_g = x.get_empty_copy()
+        prior_g = x.get_empty_copy()
+        loglik_g = x.get_empty_copy()
+        self.obj_fun.compute_gradient(obj_g, x)
+        self.prior.compute_gradient(prior_g, x)
         self.prior.set_penalisation_factor(0)
-        self.obj_fun.compute_gradient(lg, x)
-        assert norm(og - (lg - pg)) <= norm(og) * 1e-3
+        self.obj_fun.compute_gradient(loglik_g, x)
+        assert norm(obj_g - (loglik_g - prior_g)) <= norm(obj_g) * 1e-3
         self.prior.set_penalisation_factor(beta)
 
     def test_Hessian_with_prior(self, eps=1e-2):
-        """check if Hessian is loglik - prior"""
+        """check if Hessian is the same as loglik - prior"""
         beta = self.prior.get_penalisation_factor()
         x = self.image
         dx = x.clone()
         dx *= eps
         dx += eps / 2
-        y = x + dx
-        og = x.get_empty_copy()
-        pg = x.get_empty_copy()
-        lg = x.get_empty_copy()
-        self.obj_fun.accumulate_sub_Hessian_times_input(og, x, dx, 0)
-        self.prior.accumulate_Hessian_times_input(pg, x, dx)
+        obj_Hdx = x.get_empty_copy()
+        prior_Hdx = x.get_empty_copy()
+        loglik_Hdx = x.get_empty_copy()
+        self.obj_fun.accumulate_sub_Hessian_times_input(obj_Hdx, x, dx, 0)
+        self.prior.accumulate_Hessian_times_input(prior_Hdx, x, dx)
         self.prior.set_penalisation_factor(0)
-        self.obj_fun.accumulate_sub_Hessian_times_input(lg, x, dx, 0)
-        assert norm(og - (lg - pg)) <= norm(og) * 1e-3
+        self.obj_fun.accumulate_sub_Hessian_times_input(loglik_Hdx, x, dx, 0)
+        assert norm(obj_Hdx - (loglik_Hdx - prior_Hdx)) <= norm(obj_Hdx) * 1e-3
         self.prior.set_penalisation_factor(beta)
 
     def test_Hessian(self, subset=0, eps=5e-4):
