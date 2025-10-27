@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2018-2019, University College London
+    Copyright (C) 2018-2019, 2025, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -44,6 +44,13 @@ class PixelsOnCartesianGrid;
 template <class elemT>
 class VoxelsOnCartesianGrid : public DiscretisedDensityOnCartesianGrid<3, elemT>
 {
+#ifdef STIR_COMPILING_SWIG_WRAPPER
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+public:
+#endif
+  typedef VoxelsOnCartesianGrid<elemT> self_type;
+  typedef DiscretisedDensityOnCartesianGrid<3, elemT> base_type;
 
 public:
 #if 0
@@ -191,6 +198,92 @@ static VoxelsOnCartesianGrid ask_parameters();
   BasicCoordinate<3, int> get_min_indices() const;
   BasicCoordinate<3, int> get_max_indices() const;
 
+  //@}
+
+  //! \name Numerical operations
+  //@{
+  // tedious reimplementation to fix return types. This could be avoided by using boost::operators.
+  // However, reimplementing them explicitly helps SWIG.
+  inline self_type& operator+=(const self_type& x)
+  {
+    base_type::operator+=(x);
+    return *this;
+  }
+  inline self_type& operator-=(const self_type& x)
+  {
+    base_type::operator-=(x);
+    return *this;
+  }
+  inline self_type& operator*=(const self_type& x)
+  {
+    base_type::operator*=(x);
+    return *this;
+  }
+  inline self_type& operator/=(const self_type& x)
+  {
+    base_type::operator/=(x);
+    return *this;
+  }
+  inline self_type& operator+=(const elemT x)
+  {
+    base_type::operator+=(x);
+    return *this;
+  }
+  inline self_type& operator-=(const elemT x)
+  {
+    base_type::operator-=(x);
+    return *this;
+  }
+  inline self_type& operator*=(const elemT x)
+  {
+    base_type::operator*=(x);
+    return *this;
+  }
+  inline self_type& operator/=(const elemT x)
+  {
+    base_type::operator/=(x);
+    return *this;
+  }
+  inline self_type operator+(const self_type& x) const
+  {
+    self_type c(*this);
+    return c += x;
+  }
+  inline self_type operator+(const elemT x) const
+  {
+    self_type c(*this);
+    return c += x;
+  }
+  inline self_type operator-(const self_type& x) const
+  {
+    self_type c(*this);
+    return c -= x;
+  }
+  inline self_type operator-(const elemT x) const
+  {
+    self_type c(*this);
+    return c -= x;
+  }
+  inline self_type operator*(const self_type& x) const
+  {
+    self_type c(*this);
+    return c *= x;
+  }
+  inline self_type operator*(const elemT x) const
+  {
+    self_type c(*this);
+    return c *= x;
+  }
+  inline self_type operator/(const self_type& x) const
+  {
+    self_type c(*this);
+    return c /= x;
+  }
+  inline self_type operator/(const elemT x) const
+  {
+    self_type c(*this);
+    return c /= x;
+  }
   //@}
 
 private:

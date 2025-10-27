@@ -39,6 +39,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
+#include "stir/recon_buildblock/QuadraticPrior.h"
 //#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/distributable_main.h"
 #include "stir/IO/read_from_file.h"
@@ -344,6 +345,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests()
   {
     shared_ptr<target_type> density_sptr;
     construct_input_data(density_sptr, /*TOF_or_not=*/false);
+    this->run_tests_for_objective_function(*this->objective_function_sptr, *density_sptr);
+    std::cerr << "   with prior\n";
+    auto qp_sptr = std::make_shared<QuadraticPrior<float>>(true, 10000.F); // TODO find elemT from target_type
+    check(qp_sptr->set_up(density_sptr) == Succeeded::yes, "prior set_up");
+    this->objective_function_sptr->set_prior_sptr(std::dynamic_pointer_cast<GeneralisedPrior<target_type>>(qp_sptr));
     this->run_tests_for_objective_function(*this->objective_function_sptr, *density_sptr);
   }
   if (this->proj_data_filename == 0)

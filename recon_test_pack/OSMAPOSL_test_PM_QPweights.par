@@ -20,11 +20,11 @@ projector pair type := Matrix
   End Ray tracing matrix parameters :=
   End Projector Pair Using Matrix Parameters :=
 
-prior type := quadratic
-  Quadratic Prior Parameters:=
+prior type := Gibbs Quadratic
+  Gibbs Quadratic Penalty Parameters:=
   penalisation factor := .9
   weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  END Quadratic Prior Parameters:=
+  END Gibbs Quadratic Penalty Parameters:=
 
 
 end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=

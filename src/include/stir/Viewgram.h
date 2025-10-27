@@ -47,17 +47,12 @@ START_NAMESPACE_STIR
 template <typename elemT>
 class Viewgram : public Array<2, elemT>
 {
-private:
   typedef Array<2, elemT> base_type;
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs the next typedef to be public
 public:
 #endif
   typedef Viewgram<elemT> self_type;
-#ifdef SWIG
-  // SWIG needs a default constructor
-  inline Viewgram() {}
-#endif
 
 public:
   //! Construct from proj_data_info pointer and indices. Data are set to 0.

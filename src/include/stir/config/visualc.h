@@ -51,4 +51,9 @@
 #  define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #endif
 
+#ifndef WIN32
+// MSVC defines _WIN32 and usually WIN32, but not always. Let's be sure.
+#  define WIN32
+#endif
+
 #endif
