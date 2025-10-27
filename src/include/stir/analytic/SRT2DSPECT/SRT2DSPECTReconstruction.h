@@ -59,7 +59,7 @@ class ProjData;
 /*! \ingroup SRT2DSPECT
  \brief Reconstruction class for 2D Spline Reconstruction Technique
 
-  The algorithm, its references, and comments on its implementation are described in Chapter 6 of Dimitra Kyriakopoulou's doctoral thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at: https://discovery.ucl.ac.uk/id/eprint/10202525/
+  The algorithm, its reference, and comments on its implementation are described in Chapter 6 of Dimitra Kyriakopoulou's doctoral thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at: https://discovery.ucl.ac.uk/id/eprint/10202525/
 
   STIR implementations: initial version 2014-2016, 1st updated version 2023-2024
 
