@@ -526,7 +526,12 @@ jobs:
     - name: remove recon_test_pack
       shell: bash
       run: |
-          rm -rf ${GITHUB_WORKSPACE}/recon_test_pack
+          cd ${GITHUB_WORKSPACE}/recon_test_pack
+          # keep a few files for pytest
+          mkdir ../tmp
+          cp test_image_5.*v Utahscat600k_ca_seg4.*s ../tmp
+          rm -rf *
+          mv ../tmp/* .
 
     - name: Python
       shell: bash
