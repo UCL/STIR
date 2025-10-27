@@ -50,7 +50,7 @@
       The priors code has been refactored to provide two common, parallelized base classes for CPU and GPU implementations (<code>GibbsPenalty</code> and <code>CudaGibbsPenalty</code>).<br>
       On CPU, we introduce <code>GibbsQuadraticPenalty</code> and <code>GibbsRelativeDifferencePenalty</code>, which inherit from the parallelized <code>GibbsPenalty</code> base class (now parallelized using OpenMP).<br>
       GPU implementations are also provided as <code>CudaGibbsQuadraticPenalty</code> and <code>CudaGibbsRelativeDifferencePenalty</code>.<br>
-      Currently, the new Gibbs penalties are still missing the paraboloidal surrogates related method implementations. They provide two new methods: <code>compute_gradient_times_input</code> and <code>compute_Hessian_diagonalt</code>.<br>
+      Currently, the new Gibbs penalties are still missing the paraboloidal surrogates related method implementations. They provide two new methods: <code>compute_gradient_times_input</code> and <code>compute_Hessian_diagonal</code>.<br>
       <a href="https://github.com/UCL/STIR/pull/1629">PR #1629</a>
     </li>
     <li>
