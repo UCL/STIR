@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2021-2022, Commonwealth Scientific and Industrial Research Organisation
-    Copyright (C) 2021-2022, University College London
+    Copyright (C) 2021-2022, 2025 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -11,8 +11,9 @@
   \file
   \ingroup test
   \ingroup projdata
-  \brief Test program for subsetting stir::ProjDataInfo via stir::ProjDataInfoSubsetByView
+  \brief Test program for subsetting stir::ProjDataInfo via stir::ProjDataInfoSubsetByView for SPECT data
   \author Ashley Gillman
+  \author Sam D Porter
   \author Kris Thielemans
 */
 
@@ -63,13 +64,14 @@ _calc_regularly_sampled_views_for_subset(int subset_n, int num_subsets, int num_
 
 /*!
   \ingroup test
-  \brief Test class for subsets in ProjDataInfo
+  \ingroup projdata
+  \brief Test class for subsets in ProjDataInfo for SPECT data
 */
-class TestProjDataInfoSubsets : public RunTests
+class TestProjDataInfoSubsetsSPECTUB : public RunTests
 {
 public:
   //! Constructor that can take some input data to run the test with
-  explicit TestProjDataInfoSubsets(const std::string& sinogram_filename);
+  explicit TestProjDataInfoSubsetsSPECTUB(const std::string& sinogram_filename);
 
   void run_tests() override;
   void run_tests(const std::shared_ptr<ProjData>& proj_data_sptr,
@@ -115,7 +117,7 @@ protected:
                                               ProjData& subset_forward_projection);
 };
 
-TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string& sinogram_filename)
+TestProjDataInfoSubsetsSPECTUB::TestProjDataInfoSubsetsSPECTUB(const std::string& sinogram_filename)
     : _sinogram_filename(sinogram_filename)
 {
   if (_sinogram_filename.empty())
@@ -125,7 +127,7 @@ TestProjDataInfoSubsets::TestProjDataInfoSubsets(const std::string& sinogram_fil
 }
 
 shared_ptr<VoxelsOnCartesianGrid<float>>
-TestProjDataInfoSubsets::construct_test_image_data(const ProjData& template_projdata)
+TestProjDataInfoSubsetsSPECTUB::construct_test_image_data(const ProjData& template_projdata)
 {
   cerr << "\tGenerating default image of Ellipsoid" << endl;
 
@@ -166,8 +168,9 @@ TestProjDataInfoSubsets::construct_test_image_data(const ProjData& template_proj
 }
 
 shared_ptr<ProjectorByBinPairUsingProjMatrixByBin>
-TestProjDataInfoSubsets::construct_projector_pair(const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
-                                                  const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr)
+TestProjDataInfoSubsetsSPECTUB::construct_projector_pair(
+    const shared_ptr<const ProjDataInfo>& template_projdatainfo_sptr,
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr)
 {
   cerr << "\tSetting up projector pair with ProjMatrixByBinSPECTUB" << endl;
 
@@ -189,7 +192,7 @@ TestProjDataInfoSubsets::construct_projector_pair(const shared_ptr<const ProjDat
 }
 
 void
-TestProjDataInfoSubsets::fill_proj_data_with_forward_projection(
+TestProjDataInfoSubsetsSPECTUB::fill_proj_data_with_forward_projection(
     const std::shared_ptr<ProjData>& proj_data_sptr, const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr)
 {
   cerr << "\tFilling ProjData with forward projection" << endl;
@@ -201,8 +204,8 @@ TestProjDataInfoSubsets::fill_proj_data_with_forward_projection(
 }
 
 void
-TestProjDataInfoSubsets::run_tests(const std::shared_ptr<ProjData>& input_sino_sptr,
-                                   const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr)
+TestProjDataInfoSubsetsSPECTUB::run_tests(const std::shared_ptr<ProjData>& input_sino_sptr,
+                                          const std::shared_ptr<const VoxelsOnCartesianGrid<float>>& test_image_sptr)
 {
   try
     {
@@ -243,10 +246,10 @@ TestProjDataInfoSubsets::run_tests(const std::shared_ptr<ProjData>& input_sino_s
 }
 
 void
-TestProjDataInfoSubsets::check_viewgrams(const ProjData& proj_data,
-                                         const ProjData& subset_proj_data,
-                                         const std::vector<int>& subset_views,
-                                         const std::string& str)
+TestProjDataInfoSubsetsSPECTUB::check_viewgrams(const ProjData& proj_data,
+                                                const ProjData& subset_proj_data,
+                                                const std::vector<int>& subset_views,
+                                                const std::string& str)
 {
   // Loop over views in the subset data and compare them against the original "full" data
   for (std::size_t i = 0; i < subset_views.size(); ++i)
@@ -270,7 +273,7 @@ TestProjDataInfoSubsets::check_viewgrams(const ProjData& proj_data,
 }
 
 void
-TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
+TestProjDataInfoSubsetsSPECTUB::test_split(const ProjData& proj_data)
 {
   cerr << "\tTesting ability to split a ProjData into consistent subsets" << endl;
   int num_subsets = 4;
@@ -342,7 +345,7 @@ TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
     }
 }
 
-// void TestProjDataInfoSubsets::
+// void TestProjDataInfoSubsetsSPECTUB::
 // test_split_and_combine(const ProjData &proj_data, int num_subsets)
 // {
 //     StandardSubsetter subsetter = StandardSubsetter(proj_data.get_proj_data_info_sptr(), num_subsets);
@@ -366,7 +369,7 @@ TestProjDataInfoSubsets::test_split(const ProjData& proj_data)
 // }
 
 void
-TestProjDataInfoSubsets::test_forward_projection_is_consistent(
+TestProjDataInfoSubsetsSPECTUB::test_forward_projection_is_consistent(
     const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
     const shared_ptr<const ProjData>& template_sino_sptr,
     int num_subsets)
@@ -387,7 +390,7 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent(
 }
 
 void
-TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_subset(
+TestProjDataInfoSubsetsSPECTUB::test_forward_projection_is_consistent_with_unbalanced_subset(
     const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
     const shared_ptr<const ProjData>& template_sino_sptr,
     int num_subsets)
@@ -437,17 +440,19 @@ TestProjDataInfoSubsets::test_forward_projection_is_consistent_with_unbalanced_s
 }
 
 ProjDataInMemory
-TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
-                                                          const shared_ptr<const ProjData>& template_projdata_sptr)
+TestProjDataInfoSubsetsSPECTUB::generate_full_forward_projection(
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
+    const shared_ptr<const ProjData>& template_projdata_sptr)
 {
   return generate_full_forward_projection(
       input_image_sptr, template_projdata_sptr->get_proj_data_info_sptr(), template_projdata_sptr->get_exam_info_sptr());
 }
 
 ProjDataInMemory
-TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
-                                                          const shared_ptr<const ProjDataInfo>& template_projdata_info_sptr,
-                                                          const shared_ptr<const ExamInfo>& template_examinfo_sptr)
+TestProjDataInfoSubsetsSPECTUB::generate_full_forward_projection(
+    const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
+    const shared_ptr<const ProjDataInfo>& template_projdata_info_sptr,
+    const shared_ptr<const ExamInfo>& template_examinfo_sptr)
 {
   check(input_image_sptr->find_max() > 0, "forward projection test run with empty image");
 
@@ -463,8 +468,8 @@ TestProjDataInfoSubsets::generate_full_forward_projection(const shared_ptr<const
 }
 
 shared_ptr<VoxelsOnCartesianGrid<float>>
-TestProjDataInfoSubsets::generate_full_back_projection(const shared_ptr<const ProjData>& input_sino_sptr,
-                                                       const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr)
+TestProjDataInfoSubsetsSPECTUB::generate_full_back_projection(
+    const shared_ptr<const ProjData>& input_sino_sptr, const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr)
 {
   auto back_projector_sptr
       = construct_projector_pair(input_sino_sptr->get_proj_data_info_sptr(), template_image_sptr)->get_back_projector_sptr();
@@ -478,7 +483,7 @@ TestProjDataInfoSubsets::generate_full_back_projection(const shared_ptr<const Pr
 }
 
 void
-TestProjDataInfoSubsets::test_forward_projection_for_one_subset(
+TestProjDataInfoSubsetsSPECTUB::test_forward_projection_for_one_subset(
     const shared_ptr<const VoxelsOnCartesianGrid<float>>& input_image_sptr,
     const ProjDataInMemory& full_forward_projection,
     ProjData& subset_forward_projection)
@@ -517,7 +522,7 @@ TestProjDataInfoSubsets::test_forward_projection_for_one_subset(
 }
 
 void
-TestProjDataInfoSubsets::test_back_projection_is_consistent(
+TestProjDataInfoSubsetsSPECTUB::test_back_projection_is_consistent(
     const shared_ptr<const ProjData>& input_sino_sptr,
     const shared_ptr<const VoxelsOnCartesianGrid<float>>& template_image_sptr,
     int num_subsets)
@@ -543,7 +548,7 @@ TestProjDataInfoSubsets::test_back_projection_is_consistent(
 }
 
 void
-TestProjDataInfoSubsets::run_tests()
+TestProjDataInfoSubsetsSPECTUB::run_tests()
 {
   cerr << "-------- Testing ProjDataInfoSubsetByView --------\n";
 
@@ -571,7 +576,6 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char** argv)
 {
-  std::cerr << "SPECT Executable built and running successfully!" << std::endl;
   if (argc > 2)
     {
       std::cerr << "\n\tUsage: " << argv[0] << " [projdata_filename]\n";
@@ -581,7 +585,7 @@ main(int argc, char** argv)
   set_default_num_threads();
   Verbosity::set(0);
 
-  TestProjDataInfoSubsets test(argc > 1 ? argv[1] : "");
+  TestProjDataInfoSubsetsSPECTUB test(argc > 1 ? argv[1] : "");
   test.run_tests();
 
   return test.main_return_value();
