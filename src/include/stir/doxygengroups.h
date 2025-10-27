@@ -333,7 +333,7 @@ Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorit
 /*!
 \defgroup analyticreconstructors Analytic reconstructors
 \ingroup reconstructors
-Analytic (direct, closed-form) reconstruction methods. 
+Analytic (direct, closed-form) reconstruction methods.
 */
 /*!
 \defgroup FBP2D FBP2D
@@ -345,25 +345,25 @@ Implementation of the 2D Filtered Back Projection algorithm.
 \ingroup analyticreconstructors
 Implementation of the 3D Reprojection Filtered Back Projection algorithm.
 */
-/*! 
+/*!
 \defgroup SRT2D SRT2D
 \ingroup analyticreconstructors
-Implementation of the 2D PET Spline Reconstruction Technique algorithm. 
+Implementation of the 2D PET Spline Reconstruction Technique algorithm.
 */
-/*! 
+/*!
 \defgroup SRT2DSPECT SRT2DSPECT
 \ingroup analyticreconstructors
-Implementation of the 2D SPECT Spline Reconstruction Technique algorithm. 
+Implementation of the 2D SPECT Spline Reconstruction Technique algorithm.
 */
-/*! 
+/*!
 \defgroup GRD2D GRD2D
 \ingroup analyticreconstructors
-Implementation of the 2D PET GRiDding algorithm. 
+Implementation of the 2D PET GRiDding algorithm.
 */
-/*! 
+/*!
 \defgroup DDSR2D DDSR2D
 \ingroup analyticreconstructors
-Implementation of the 2D Direct Differentiation SPECT Reconstruction algorithm. 
+Implementation of the 2D Direct Differentiation SPECT Reconstruction algorithm.
 */
 /*!
 \defgroup modelling Kinetic modelling building blocks

@@ -19,21 +19,17 @@
 #include "stir/analytic/GRD2D/GRD2DReconstruction.h"
 #include "stir/Succeeded.h"
 #ifndef PARALLEL
-#define Main  main
+#  define Main main
 #else
-#define Main  master_main
+#  define Main master_main
 #endif
 
 USING_NAMESPACE_STIR
-    
-int Main(int argc, char **argv)
+
+int
+Main(int argc, char** argv)
 {
-    GRD2DReconstruction 
-      reconstruction_object(argc>1?argv[1]:"");
+  GRD2DReconstruction reconstruction_object(argc > 1 ? argv[1] : "");
 
-
-  return reconstruction_object.reconstruct() == Succeeded::yes ?
-           EXIT_SUCCESS : EXIT_FAILURE;
-} 
-  
-
+  return reconstruction_object.reconstruct() == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+}

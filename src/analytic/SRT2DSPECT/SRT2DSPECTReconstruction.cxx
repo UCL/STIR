@@ -26,7 +26,7 @@
 #include "stir/Bin.h"
 #include "stir/info.h"
 #include "stir/format.h"
-#include "stir/ProjData.h"   // for ProjData::read_from_file
+#include "stir/ProjData.h" // for ProjData::read_from_file
 
 /*#ifdef STIR_OPENMP
 #  include <omp.h>
@@ -54,7 +54,7 @@ SRT2DSPECTReconstruction::set_defaults()
 {
   base_type::set_defaults();
   attenuation_projection_filename = "";
-  //num_segments_to_combine = -1;
+  // num_segments_to_combine = -1;
 }
 
 void
@@ -64,7 +64,7 @@ SRT2DSPECTReconstruction::initialise_keymap()
 
   parser.add_start_key("SRT2DSPECTParameters");
   parser.add_stop_key("End");
-  //parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
+  // parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("attenuation projection filename", &attenuation_projection_filename);
 }
 
@@ -72,7 +72,7 @@ void
 SRT2DSPECTReconstruction::ask_parameters()
 {
   base_type::ask_parameters();
-  //num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)", -1, 101, -1);
+  // num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)", -1, 101, -1);
   attenuation_projection_filename = ask_string("attenuation projection filename");
 }
 
@@ -269,7 +269,7 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   /*#ifdef STIR_OPENMP
   #  pragma omp parallel firstprivate(f, ddf, f_cache, ddf_cache, f1_cache, ddf1_cache, hilb, fcpe, fspe, fc, fs, ddfc, ddfs, aux,
   rho, lg, tau, a, b, tau1, tau2, w, rho1, rho2, lg1_cache, lg2_cache, f_node, h, fcme_fin, fsme_fin, fcpe_fin, fspe_fin, gx,
-  fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \ shared(view, view_atten, 
+  fc_fin, fs_fin, hc_fin, hs_fin, dh1, dh2, Ft1, Ft2, F, I, rx1, rx2) \ shared(view, view_atten,
   p, th, x1, x2, image, proj_data_ptr, atten_data_ptr, rx1x2th) private(ith, ia, ip, ix1, ix2) #  pragma omp for
   schedule(dynamic) nowait #endif */
   for (ith = 0; ith < sth; ith++)
@@ -481,7 +481,10 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
                   #endif*/
                   {
                     image[ia][image_min_x + sx - ix1 - 1][image_min_y + ix2]
-                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth) * 6.23; // 6.23: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image structure.
+                        += 1.0 / (4.0 * M_PI) * (rx1 * sin(th[ith]) - rx2 * cos(th[ith])) * (2.0 * M_PI / sth)
+                           * 6.23; // 6.23: Global empirical scaling factor applied so that the algorithm’s ROI mean matches that
+                                   // of FBP2D; this uniformly rescales intensities and doesn’t alter relative contrast or image
+                                   // structure.
                   }
                 }
             }
