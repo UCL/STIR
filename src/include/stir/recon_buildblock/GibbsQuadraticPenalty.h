@@ -32,8 +32,6 @@
 
 START_NAMESPACE_STIR
 
-#ifndef SWIG // let SWIG ignore all this
-
 /*!
   \ingroup priors
   \brief Implementation of the Quadratic penalty potential
@@ -86,11 +84,6 @@ public:
     // No additional parameters for quadratic potential
   }
 };
-
-#else  // IGNORESWIG
-template <typename elemT>
-class QuadraticPotential;
-#endif // SWIG
 
 /*!
   \ingroup priors
