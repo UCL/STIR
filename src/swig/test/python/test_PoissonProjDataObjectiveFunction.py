@@ -52,7 +52,7 @@ class TestSTIRObjectiveFunction(unittest.TestCase):
         obj_fun.set_additive_proj_data_sptr(
             acquired_data * 0 + np.mean(acquired_data.as_array())
         )
-        prior = stir.GibbsQuadraticPrior3DFloat()
+        prior = stir.GibbsQuadraticPenalty3DFloat()
         prior.set_penalisation_factor(10)
         obj_fun.set_prior_sptr(prior)
         obj_fun.set_up(image)
