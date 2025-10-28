@@ -48,8 +48,6 @@
 
 START_NAMESPACE_STIR
 
-const char* const SRT2DSPECTReconstruction::registered_name = "SRT2DSPECT";
-
 void
 SRT2DSPECTReconstruction::set_defaults()
 {

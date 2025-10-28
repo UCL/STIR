@@ -54,8 +54,8 @@ class GRD2DReconstruction
       base_type;
 
 public:
-  //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char* const registered_name;
+  //! Name which will be used when parsing a reconstruction object
+  static constexpr const char* const registered_name = "GRD2D";
 
   //! Default constructor (calls set_defaults())
   GRD2DReconstruction();

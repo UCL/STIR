@@ -50,8 +50,6 @@
 
 START_NAMESPACE_STIR
 
-const char* const SRT2DReconstruction::registered_name = "SRT2D";
-
 void
 SRT2DReconstruction::set_defaults()
 {

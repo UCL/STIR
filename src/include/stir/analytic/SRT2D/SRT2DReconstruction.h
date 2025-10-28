@@ -85,8 +85,8 @@ private:
   typedef DiscretisedDensity<3, float> TargetT;
 
 public:
-  //! Name which will be used when parsing a SRT2DReconstruction object
-  static const char* const registered_name;
+  //! Name which will be used when parsing a reconstruction object
+  static constexpr const char* const registered_name = "SRT2D";
 
   //! Default constructor (calls set_defaults())
   SRT2DReconstruction();

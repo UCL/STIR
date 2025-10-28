@@ -56,8 +56,6 @@
 
 START_NAMESPACE_STIR
 
-const char* const GRD2DReconstruction::registered_name = "GRD2D";
-
 void
 GRD2DReconstruction::set_defaults()
 {

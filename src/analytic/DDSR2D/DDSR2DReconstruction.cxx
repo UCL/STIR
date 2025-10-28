@@ -46,8 +46,6 @@
 
 START_NAMESPACE_STIR
 
-const char* const DDSR2DReconstruction::registered_name = "DDSR2D";
-
 void
 DDSR2DReconstruction::set_defaults()
 {

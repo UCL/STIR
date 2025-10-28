@@ -53,7 +53,8 @@ class DDSR2DReconstruction
       base_type;
 
 public:
-  static const char* const registered_name;
+  //! Name which will be used when parsing a reconstruction object
+  static constexpr const char* const registered_name = "DDSR2D";
 
   //! Default constructor (calls set_defaults())
   DDSR2DReconstruction();
