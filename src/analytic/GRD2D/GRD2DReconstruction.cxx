@@ -222,7 +222,7 @@ GRD2DReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>>
   }
 
   // unused warning
-  float tangential_sampling;
+  // float tangential_sampling;
   // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
   // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
   shared_ptr<const ProjDataInfo> arc_corrected_proj_data_info_sptr;

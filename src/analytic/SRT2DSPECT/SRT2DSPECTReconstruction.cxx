@@ -141,7 +141,6 @@ SRT2DSPECTReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, fl
   int i, j, k1, k2;
   int ith, ia, ip, ix1, ix2; // extra
   float aux, a, b, f_node;
-  float x; // extra
 
   const int image_min_x = image.get_min_x();
   const int image_min_y = image.get_min_y();
