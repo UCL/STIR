@@ -3,7 +3,7 @@
 #ifndef __stir_analytic_GRD2D_GRD2DReconstruction_H__
 #define __stir_analytic_GRD2D_GRD2DReconstruction_H__
 /*
-    Copyright (C) 2024-2025, Dimitra Kyriakopoulou
+    Copyright (C) 2014-2016, 2023-2025, Dimitra Kyriakopoulou
     Copyright (C) 2025, University College London
     This file is part of STIR.
 
