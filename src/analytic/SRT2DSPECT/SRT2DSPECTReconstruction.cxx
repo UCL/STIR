@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2014-2016, 2023-2024, Dimitra Kyriakopoulou
     Copyright (C) 2024 University College London
 
     This file is part of STIR.

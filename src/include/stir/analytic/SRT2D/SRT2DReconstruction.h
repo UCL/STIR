@@ -1,7 +1,7 @@
 #ifndef __stir_analytic_SRT2D_SRT2DReconstruction_H__
 #define __stir_analytic_SRT2D_SRT2DReconstruction_H__
 /*
-    Copyright (C) 2024-2025, Dimitra Kyriakopoulou
+    Copyright (C) 2012-2016, 2023-2024, Dimitra Kyriakopoulou
     Copyright (C) 2024, University College London
     This file is part of STIR.
 

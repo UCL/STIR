@@ -3,6 +3,7 @@
 #ifndef __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 #define __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 /*
+    Copyright (C) 2014-2016, 2023-2024, Dimitra Kyriakopoulou
     Copyright (C) 2024, University College London
     This file is part of STIR.
 
@@ -25,29 +26,11 @@
   \author Kris Thielemans
 */
 
-//#include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
-//#include "stir/VoxelsOnCartesianGrid.h"
-//#include "stir/ProjDataInfoCylindricalArcCorr.h"
-//#include "stir/ArcCorrection.h"
-//#include "stir/SSRB.h"
-//#include "stir/ProjDataInMemory.h"
-//#include "stir/Array.h"
-
-#include <vector>
-//#include "stir/Sinogram.h"
-//#include "stir/Viewgram.h"
-//#include <cmath>
-//#include "stir/Bin.h"
-//#include "stir/round.h"
-//#include "stir/display.h"
-//#include <algorithm>
-//#include "stir/IO/interfile.h"
-//#include "stir/info.h"
-
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/RegisteredParsingObject.h"
-#include <string>
 #include "stir/shared_ptr.h"
+#include <string>
+#include <vector>
 
 START_NAMESPACE_STIR
 
