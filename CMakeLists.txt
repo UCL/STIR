@@ -52,6 +52,11 @@ else()
    message(WARNING "CMAKE_CXX_COMPILER_ID is not set. We are therefore not able to set some options.")
 endif()
 
+IF(MSVC)
+   # On Windows, when using ninja to build with CL, we add the following explicitly
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+ENDIF()
+
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
 set(VERSION_MINOR   3)
@@ -217,7 +222,9 @@ if(NOT DISABLE_STIR_CUDA)
       if("${CMAKE_VERSION}" VERSION_LESS "3.23")
         message(FATAL_ERROR "CMake 3.23 or newer is required to use CMAKE_CUDA_ARCHITECTURES set to 'all'. Upgrade your CMake or set DISABLE_STIR_CUDA to ON.")
       else()
-        set(CMAKE_CUDA_ARCHITECTURES "all")
+        if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+          set(CMAKE_CUDA_ARCHITECTURES "all")
+        endif()
       endif()
       message(STATUS "STIR CUDA support enabled. Using CUDA version ${CUDAToolkit_VERSION}.")
       set(STIR_WITH_CUDA ON)
