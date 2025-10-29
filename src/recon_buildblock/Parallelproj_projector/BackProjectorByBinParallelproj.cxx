@@ -63,6 +63,7 @@ BackProjectorByBinParallelproj::initialise_keymap()
   parser.add_start_key("Back Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Back Projector Using Parallelproj Parameters");
   parser.add_key("verbosity", &_cuda_verbosity);
+  parser.add_key("restrict to cylindrical FOV", &_restrict_to_cylindrical_FOV);
   parser.add_key("num_gpu_chunks", &_num_gpu_chunks);
 }
 
@@ -71,6 +72,19 @@ BackProjectorByBinParallelproj::set_defaults()
 {
   _cuda_verbosity = true;
   _num_gpu_chunks = 1;
+  _restrict_to_cylindrical_FOV = true;
+}
+
+bool
+BackProjectorByBinParallelproj::get_restrict_to_cylindrical_FOV() const
+{
+  return this->_restrict_to_cylindrical_FOV;
+}
+
+void
+BackProjectorByBinParallelproj::set_restrict_to_cylindrical_FOV(bool val)
+{
+  this->_restrict_to_cylindrical_FOV = val;
 }
 
 void
@@ -289,15 +303,12 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
       std::copy(image_vec.begin(), image_vec.end(), density.begin_all());
     }
 
-  // After the back projection, we enforce a truncation outside of the FOV.
-  // This is because the parallelproj projector seems to have some trouble at the edges and this
-  // could cause some voxel values to spiral out of control.
-  // if (_use_truncation)
-  {
-    const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
-    const float image_radius = _helper->voxsize[2] * _helper->imgdim[2] / 2;
-    truncate_rim(density, static_cast<int>(std::max((image_radius - radius) / _helper->voxsize[2], 0.F)));
-  }
+  if (this->_restrict_to_cylindrical_FOV)
+    {
+      const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
+      const float image_radius = _helper->voxsize[2] * _helper->imgdim[2] / 2;
+      truncate_rim(density, static_cast<int>(std::max((image_radius - radius) / _helper->voxsize[2], 0.F)));
+    }
 }
 
 void
