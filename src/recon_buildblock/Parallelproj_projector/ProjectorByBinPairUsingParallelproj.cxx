@@ -3,10 +3,10 @@
   \ingroup Parallelproj
 
   \brief non-inline implementations for stir::ProjectorByBinPairUsingParallelproj
-  
+
   \author Richard Brown
   \author Kris Thielemans
-    
+
 */
 /*
     Copyright (C) 2019, 2021 University College London
@@ -17,7 +17,6 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/ForwardProjectorByBinParallelproj.h"
 #include "stir/recon_buildblock/Parallelproj_projector/BackProjectorByBinParallelproj.h"
@@ -26,22 +25,17 @@
 
 START_NAMESPACE_STIR
 
+const char* const ProjectorByBinPairUsingParallelproj::registered_name = "Parallelproj";
 
-const char * const 
-ProjectorByBinPairUsingParallelproj::registered_name =
-  "Parallelproj";
-
-
-void 
+void
 ProjectorByBinPairUsingParallelproj::initialise_keymap()
 {
   base_type::initialise_keymap();
   parser.add_start_key("Projector Pair Using Parallelproj Parameters");
   parser.add_stop_key("End Projector Pair Using Parallelproj Parameters");
-  parser.add_key("verbosity",&_verbosity);
+  parser.add_key("verbosity", &_verbosity);
   parser.add_key("restrict to cylindrical FOV", &_restrict_to_cylindrical_FOV);
 }
-
 
 void
 ProjectorByBinPairUsingParallelproj::set_defaults()
@@ -55,15 +49,14 @@ ProjectorByBinPairUsingParallelproj::set_defaults()
 bool
 ProjectorByBinPairUsingParallelproj::post_processing()
 {
-    this->set_verbosity(this->_verbosity);
+  this->set_verbosity(this->_verbosity);
 
   if (base_type::post_processing())
     return true;
   return false;
 }
 
-ProjectorByBinPairUsingParallelproj::
-ProjectorByBinPairUsingParallelproj()
+ProjectorByBinPairUsingParallelproj::ProjectorByBinPairUsingParallelproj()
 {
   this->forward_projector_sptr.reset(new ForwardProjectorByBinParallelproj);
   this->back_projector_sptr.reset(new BackProjectorByBinParallelproj);
@@ -71,32 +64,33 @@ ProjectorByBinPairUsingParallelproj()
 }
 
 bool
-ProjectorByBinPairUsingParallelproj::
-get_restrict_to_cylindrical_FOV() const
+ProjectorByBinPairUsingParallelproj::get_restrict_to_cylindrical_FOV() const
 {
   return this->_restrict_to_cylindrical_FOV;
 }
 
 void
-ProjectorByBinPairUsingParallelproj::
-set_restrict_to_cylindrical_FOV(bool val)
+ProjectorByBinPairUsingParallelproj::set_restrict_to_cylindrical_FOV(bool val)
 {
   this->_already_set_up = this->_already_set_up && (this->_restrict_to_cylindrical_FOV == val);
   this->_restrict_to_cylindrical_FOV = val;
 }
 
-Succeeded
-ProjectorByBinPairUsingParallelproj::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<const DiscretisedDensity<3,float> >& image_info_sptr)
+BackProjectorByBinParallelproj*
+BackProjectorByBinParallelproj::clone() const
 {
-  auto fwd_prj_downcast_sptr =
-    dynamic_pointer_cast<ForwardProjectorByBinParallelproj>(this->forward_projector_sptr);
+  return new BackProjectorByBinParallelproj(*this);
+}
+
+Succeeded
+ProjectorByBinPairUsingParallelproj::set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                            const shared_ptr<const DiscretisedDensity<3, float>>& image_info_sptr)
+{
+  auto fwd_prj_downcast_sptr = dynamic_pointer_cast<ForwardProjectorByBinParallelproj>(this->forward_projector_sptr);
   if (!fwd_prj_downcast_sptr)
     error("internal error: forward projector should be ParallelProj");
 
-  auto bck_prj_downcast_sptr =
-    dynamic_pointer_cast<BackProjectorByBinParallelproj>(this->back_projector_sptr);
+  auto bck_prj_downcast_sptr = dynamic_pointer_cast<BackProjectorByBinParallelproj>(this->back_projector_sptr);
   if (!bck_prj_downcast_sptr)
     error("internal error: back projector should be ParallelProj");
 
@@ -115,20 +109,20 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
   return Succeeded::yes;
 }
 
-void ProjectorByBinPairUsingParallelproj::set_verbosity(const bool verbosity)
+void
+ProjectorByBinPairUsingParallelproj::set_verbosity(const bool verbosity)
 {
-    _verbosity = verbosity;
+  _verbosity = verbosity;
 
-    shared_ptr<ForwardProjectorByBinParallelproj> fwd_prj_downcast_sptr =
-            dynamic_pointer_cast<ForwardProjectorByBinParallelproj>(this->forward_projector_sptr);
-    if (fwd_prj_downcast_sptr)
-        fwd_prj_downcast_sptr->set_verbosity(_verbosity);
+  shared_ptr<ForwardProjectorByBinParallelproj> fwd_prj_downcast_sptr
+      = dynamic_pointer_cast<ForwardProjectorByBinParallelproj>(this->forward_projector_sptr);
+  if (fwd_prj_downcast_sptr)
+    fwd_prj_downcast_sptr->set_verbosity(_verbosity);
 
-    shared_ptr<BackProjectorByBinParallelproj> bck_prj_downcast_sptr =
-            dynamic_pointer_cast<BackProjectorByBinParallelproj>(this->back_projector_sptr);
-    if (bck_prj_downcast_sptr)
-        bck_prj_downcast_sptr->set_verbosity(_verbosity);
+  shared_ptr<BackProjectorByBinParallelproj> bck_prj_downcast_sptr
+      = dynamic_pointer_cast<BackProjectorByBinParallelproj>(this->back_projector_sptr);
+  if (bck_prj_downcast_sptr)
+    bck_prj_downcast_sptr->set_verbosity(_verbosity);
 }
-
 
 END_NAMESPACE_STIR

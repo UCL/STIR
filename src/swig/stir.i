@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2022 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2023 University College London
     Copyright (C) 2022 National Physical Laboratory
     Copyright (C) 2022 Positrigo
     This file is part of STIR.
@@ -30,16 +30,20 @@
 #include <cstdio> // for size_t
 #include <sstream>
 #include <iterator>
+
 #ifdef SWIGOCTAVE
 // TODO terrible work-around to avoid conflict between stir::error and Octave error
 // they are in conflict with eachother because we need "using namespace stir" below (swig bug)
 #define __stir_error_H__
 #endif
 
+#include "stir/stream.h" // to get access to stream output for STIR types for ADD_REPR etc
 #include "stir/num_threads.h"
 
  #include "stir/find_STIR_config.h"
  #include "stir/Succeeded.h"
+ #include "stir/NumericType.h"
+ #include "stir/NumericInfo.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
  #include "stir/Bin.h"
@@ -60,19 +64,28 @@
  #include "stir/ProjDataInMemory.h"
  #include "stir/copy_fill.h"
  #include "stir/ProjDataInterfile.h"
+#include "stir/format.h"
+
+ #include "stir/Radionuclide.h"
+ #include "stir/RadionuclideDB.h"
 
  #include "stir/DataSymmetriesForViewSegmentNumbers.h"
  #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
  #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
  #include "stir/recon_buildblock/TrivialBinNormalisation.h"
- #include "stir/listmode/LmToProjData.h"
+ #include "stir/listmode/ListRecord.h"
+ #include "stir/listmode/ListEvent.h"
+ #include "stir/listmode/CListRecord.h"
  #include "stir/listmode/ListModeData.h"
+ #include "stir/listmode/CListModeData.h"
+ #include "stir/listmode/LmToProjData.h"
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
+#include "stir/IndexRange4D.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -111,6 +124,8 @@
 #include "stir/HUToMuImageProcessor.h"
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.h"
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
@@ -124,10 +139,19 @@
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
+#include "stir/recon_buildblock/ProjMatrixByBinPinholeSPECTUB.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+
 #include "stir/recon_buildblock/LogcoshPrior.h"
+#include "stir/recon_buildblock/GibbsPenalty.h"
+#include "stir/recon_buildblock/GibbsQuadraticPenalty.h"
+#include "stir/recon_buildblock/GibbsRelativeDifferencePenalty.h"
+#ifdef STIR_WITH_CUDA
+#include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.h"
+#endif
 
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
@@ -149,8 +173,10 @@
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
 
+#include "stir/SSRB.h"
+#include "stir/inverse_SSRB.h"
+
 #include <boost/iterator/reverse_iterator.hpp>
-#include <boost/format.hpp>
 #include <stdexcept>
 
    // TODO need this (bug in swig)
@@ -164,6 +190,11 @@
    // helper code below. It is used to convert a Python object to a float.
    SWIGINTERN int
    SWIG_AsVal_double (PyObject * obj, double *val);
+   // TODO THIS NEEDS TO BE THE SAME as numpy.i
+   // We need it here because we need to include arrayobject in the preamble for swigstir functions
+   #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+   #include <numpy/arrayobject.h>
+   #include <numpy/ndarraytypes.h>
 #endif
 
    // local helper functions for conversions etc. These are not "exposed" to the target language 
@@ -217,10 +248,27 @@
 	return p;
       }
 
-    // fill an array from a Python sequence
-    // (could be trivially modified to just write to a C++ iterator)
-    template <int num_dimensions, typename elemT>
-      void fill_Array_from_Python_iterator(stir::Array<num_dimensions, elemT> * array_ptr, PyObject* const arg)
+    template <typename elemT>
+      int get_np_typenum()
+      {
+          const stir::NumericType type_id = stir::NumericInfo<elemT>().type_id();
+          switch (type_id.id)
+            {
+            case stir::NumericType::SCHAR: return NPY_BYTE;
+            case stir::NumericType::UCHAR: return NPY_UBYTE;
+            case stir::NumericType::SHORT: return NPY_SHORT;
+            case stir::NumericType::USHORT: return NPY_USHORT;
+            case stir::NumericType::LONG: return NPY_LONG;
+            case stir::NumericType::ULONG: return NPY_ULONG;
+            case stir::NumericType::FLOAT: return NPY_FLOAT;
+            case stir::NumericType::DOUBLE: return NPY_DOUBLE;
+            default: throw std::runtime_error("Unknown dtype of STIR array");
+            }
+      }
+
+    // fill an iterator from a Python sequence
+    template <typename elemT, typename IterT>
+      void fill_iterator_from_Python_iterator(IterT cpp_iter, IterT cpp_iter_end, PyObject* const arg)
     {
       if (!PyIter_Check(arg))
 	throw std::runtime_error("STIR-Python internal error: fill_Array_from_Python_iterators called but input is not an iterator");
@@ -229,15 +277,14 @@
 	PyObject *iterator = PyObject_GetIter(arg);
 	
 	PyObject *item;
-	typename stir::Array<num_dimensions, elemT>::full_iterator array_iter = array_ptr->begin_all();
-	while ((item = PyIter_Next(iterator)) && array_iter != array_ptr->end_all()) 
+	while ((item = PyIter_Next(iterator)) && (cpp_iter != cpp_iter_end))
         {
 	  double val;
 	  // TODO currently hard-wired as double which might imply extra conversions
 	  int ecode = SWIG_AsVal_double(item, &val);
 	  if (SWIG_IsOK(ecode)) 
 	  {
-	    *array_iter++ = static_cast<elemT>(val);
+	    *cpp_iter++ = static_cast<elemT>(val);
 	  }
 	  else
 	  {
@@ -250,8 +297,7 @@
 	  }
 	  Py_DECREF(item);
 	}
-
-	if (PyIter_Next(iterator) != NULL || array_iter != array_ptr->end_all())
+	if (PyIter_Next(iterator) != NULL || cpp_iter != cpp_iter_end)
         {
 	  throw std::runtime_error("fill() called with incorrect range of iterators, array needs to have the same number of elements");
 	}
@@ -265,21 +311,54 @@
 
     }
 
-#if 0
-    
-    // TODO  does not work yet.
-    // it doesn't compile as includes are in init section, which follows after this in the wrapper
-    // Even if it did compile, it might not work anyway as I haven't tested it.
-    template <typename IterT>
-      void fill_nparray_from_iterator(PyObject * np, IterT iterator)
+    // fill a STIR array from a Python sequence
+    template <int num_dimensions, typename elemT>
+      void fill_Array_from_Python_iterator(stir::Array<num_dimensions, elemT> * array_ptr, PyObject* const arg)
     {
+      fill_iterator_from_Python_iterator<elemT>(array_ptr->begin_all(), array_ptr->end_all(), arg);
+    }
+
+    template <typename elemT, typename IterT>
+      void fill_nparray_from_iterator(PyArrayObject * np, IterT cpp_iter)
+    {
+      if (!PyArray_EquivTypenums(PyArray_TYPE(np), get_np_typenum<elemT>()))
+        {
+          throw std::runtime_error("stir_object.fill needs to be called with numpy array of correct dtype");
+        }
+
+#if 1
+        auto iter = NpyIter_New(np, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
+        if (iter==NULL) {
+          return;
+        }
+        auto iternext = NpyIter_GetIterNext(iter, NULL);
+        auto dataptr = (elemT **) NpyIter_GetDataPtrArray(iter);
+        do {
+          **dataptr = *cpp_iter++;
+        }
+        while (iternext(iter));
+#else
+        // generic alternative, but doesn't compile and might be slower
+        auto iterator = PyObject_GetIter(np_array);
+	PyObject *item;
+	while (item = PyIter_Next(iterator))
+          {
+            *item = *cpp_iter++; // this does not compile. not sure how to assign
+            Py_DECREF(item);
+          }
+#endif
+    }
+
+    template <typename elemT, typename IterT>
+      void fill_iterator_from_nparray(IterT iterator, PyArrayObject * np)
+    {
+      if (!PyArray_EquivTypenums(PyArray_TYPE(np), get_np_typenum<elemT>()))
+        {
+          throw std::runtime_error("stir_object.fill needs to be called with numpy array of correct dtype");
+        }
+      
       // This code is more or less a copy of the "simple iterator example" (!) in the Numpy doc
-      // see e.g. http://students.mimuw.edu.pl/~pbechler/numpy_doc/reference/c-api.iterator.html
-      typedef float elemT;
-    NpyIter* iter;
-    NpyIter_IterNextFunc *iternext;
-    char** dataptr;
-    npy_intp* strideptr,* innersizeptr;
+      // see e.g. https://numpy.org/doc/stable/reference/c-api/iterator.html
 
     /* Handle zero-sized arrays specially */
     if (PyArray_SIZE(np) == 0) {
@@ -301,10 +380,17 @@
      *   casting NPY_NO_CASTING
      *     - No casting is required for this operation.
      */
-    iter = NpyIter_New(np, NPY_ITER_WRITEONLY|
+#if 0
+    // code for simpler loop, but it is likely slower
+    auto iter = NpyIter_New(np, NPY_ITER_READONLY,
+                        NPY_KEEPORDER, NPY_NO_CASTING,
+                        NULL);
+#else
+    auto iter = NpyIter_New(np, NPY_ITER_READONLY|
                              NPY_ITER_EXTERNAL_LOOP,
                         NPY_KEEPORDER, NPY_NO_CASTING,
                         NULL);
+#endif
     if (iter == NULL) {
       throw std::runtime_error("Error creating numpy iterator");
     }
@@ -313,37 +399,44 @@
      * The iternext function gets stored in a local variable
      * so it can be called repeatedly in an efficient manner.
      */
-    iternext = NpyIter_GetIterNext(iter, NULL);
+    auto iternext = NpyIter_GetIterNext(iter, NULL);
     if (iternext == NULL) {
         NpyIter_Deallocate(iter);
 	throw std::runtime_error("Error creating numpy iterator function");
     }
+#if 0
+    // code for simpler loop, but it is likely slower
+    auto dataptr = (elemT **) NpyIter_GetDataPtrArray(iter);
+    do {
+      *iterator++ = **dataptr;
+      /* Increment the iterator to the next inner loop */
+    } while(iternext(iter));
+#else
     /* The location of the data pointer which the iterator may update */
-    dataptr = NpyIter_GetDataPtrArray(iter);
+    auto dataptr = NpyIter_GetDataPtrArray(iter);
     /* The location of the stride which the iterator may update */
-    strideptr = NpyIter_GetInnerStrideArray(iter);
+    auto strideptr = NpyIter_GetInnerStrideArray(iter);
     /* The location of the inner loop size which the iterator may update */
-    innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
+    auto innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
 
     /* The iteration loop */
     do {
         /* Get the inner loop data/stride/count values */
-        char* data = *dataptr;
+        auto data = *dataptr;
         npy_intp stride = *strideptr;
         npy_intp count = *innersizeptr;
 
         /* This is a typical inner loop for NPY_ITER_EXTERNAL_LOOP */
         while (count--) {
-	  *(reinterpret_cast<elemT *>(data)) = static_cast<elemT>(*iterator++);
-            data += stride;
+	  *iterator++ = *(reinterpret_cast<elemT *>(data));
+          data += stride;
         }
-
         /* Increment the iterator to the next inner loop */
     } while(iternext(iter));
+#endif
 
     NpyIter_Deallocate(iter);
     }
-#endif
 
 #elif defined(SWIGMATLAB)
      // convert stir::Array to matlab (currently always converting to double)
@@ -398,7 +491,7 @@
        }
        if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
        {
-         throw std::runtime_error(boost::str(boost::format("number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d") % 
+         throw std::runtime_error(format("number of dimensions in matlab array is incorrect for constructing a stir array of dimension {}", 
                                              num_dimensions)); 
        }
        if (do_resize)
@@ -491,8 +584,8 @@
        }
        if (matlab_num_dims != static_cast<mwSize>(1))
        {
-         throw std::runtime_error(boost::str(boost::format("number of dimensions %d of matlab array is incorrect for constructing a stir coordinate of dimension %d (expecting a column vector)") % 
-                                             matlab_num_dims % num_dimensions)); 
+         throw std::runtime_error(format("number of dimensions {} of matlab array is incorrect for constructing a stir coordinate of dimension {} (expecting a column vector)", 
+                                             matlab_num_dims , num_dimensions)); 
        }
        if (m_sizes[0]!=static_cast<mwSize>(num_dimensions))
        {
@@ -563,9 +656,21 @@
 %newobject *::get_empty_copy;
 %newobject *::read_from_file;
 
+// SWIG complains "Warning 503: Can't wrap 'stir::swap' unless renamed to a valid identifier."
+// But it's probably dangerous to expose swap anyway, so let's ignore it.
+%ignore **::swap;
+%ignore stir::swap;
 %ignore *::ask_parameters;
 %ignore *::create_shared_clone;
 %ignore *::read_from_stream;
+%ignore *::get_data_ptr;
+%ignore *::get_const_data_ptr;
+%ignore *::release_data_ptr;
+%ignore *::release_const_data_ptr;
+%ignore *::get_full_data_ptr;
+%ignore *::get_const_full_data_ptr;
+%ignore *::release_full_data_ptr;
+%ignore *::release_const_full_data_ptr;
 
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
@@ -631,6 +736,8 @@ namespace std {
 %{
   namespace swigstir {
 #ifdef SWIGPYTHON
+
+#if SWIG_VERSION < 0x040000
   template<typename OutIterator, 
 	   typename ValueType = typename std::iterator_traits<OutIterator>::value_type,
     typename FromOper = swig::from_oper<ValueType> >
@@ -685,29 +792,128 @@ namespace std {
     return new SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
   }
 
+#else
+
+  template<typename OutIter>
+  inline swig::SwigPyIterator*
+  make_forward_iterator(const OutIter& current, const OutIter& begin,const OutIter& end, PyObject *seq = 0)
+  {
+    return new swig::SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
+  }
+
+#endif // SWIG pre 4.0
+
 
 #endif
-  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+
+  // helper function that allocates a stir::Array of appropriate size
+  static stir::BasicCoordinate<4, int> array_for_proj_data_size(const ProjData& proj_data)
+  {
+    const int num_non_tof_sinos = proj_data.get_num_non_tof_sinograms();
+    return stir::make_coordinate(proj_data.get_num_tof_poss(),num_non_tof_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss());
+  }
+
+  static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
+  {
+    Array<4,float> array(IndexRange4D(array_for_proj_data_size(proj_data)));
+    return array;
+  }
+
+  // helper function that allocates a numpy.ndarray of appropriate size
+  static PyArrayObject* create_nparray_for_proj_data(const ProjData& proj_data)
+  {
+    const auto stir_sizes = swigstir::array_for_proj_data_size(proj_data);
+    constexpr int num_dimensions = 4;
+    npy_intp dims[num_dimensions];
+    for (int d=0; d<num_dimensions; ++d)
+      dims[d] = stir_sizes[d + 1];
+    auto np_array =
+          (PyArrayObject *)PyArray_SimpleNew(num_dimensions, dims, NPY_FLOAT);
+    return np_array;
+  }
+
+  // a function for  converting ProjData to a 4D array as that's what is easy to use
+  static Array<4,float> projdata_to_4D(const ProjData& proj_data)
+  {
+
+      Array<4,float> array = create_array_for_proj_data(proj_data);
+      Array<4,float>::full_iterator array_iter = array.begin_all();
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
+      //        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //        std::advance(array_iter, segment.size_all());
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_segment_by_sinogram(-s);
+      //            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //            std::advance(array_iter, segment.size_all());
+      //          }
+      //      }
+      proj_data.copy_to(array_iter);
+      return array;
+  }
+
+  // inverse of the above function
+  void fill_proj_data_from_4D(ProjData& proj_data, const Array<4,float>& array)
   {
       //    int num_sinos=proj_data.get_num_axial_poss(0);
       //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
       //      {
       //        num_sinos += 2*proj_data.get_num_axial_poss(s);
       //      }
-      int num_sinos = proj_data.get_num_sinograms();
-
-      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
-      return array;
+      //    if (array.size() != static_cast<std::size_t>(num_sinos)||
+      //        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) ||
+      //        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
+      //      {
+      //        throw std::runtime_error("Incorrect size for filling this projection data");
+      //      }
+      Array<4,float>::const_full_iterator array_iter = array.begin_all();
+      //
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
+      //        // cannot use std::copy sadly as needs end-iterator for range
+      //        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //             seg_iter != segment.end_all();
+      //             /*empty*/)
+      //          *seg_iter++ = *array_iter++;
+      //        proj_data.set_segment(segment);
+      //
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_empty_segment_by_sinogram(-s);
+      //            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //                 seg_iter != segment.end_all();
+      //                 /*empty*/)
+      //              *seg_iter++ = *array_iter++;
+      //            proj_data.set_segment(segment);
+      //          }
+      //      }
+      proj_data.fill_from(array_iter);
   }
 
-  // a function for  converting ProjData to a 3D array as that's what is easy to use
-  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
-  {
-      Array<3,float> array = create_array_for_proj_data(proj_data);
-      Array<3,float>::full_iterator array_iter = array.begin_all();
-      copy_to(proj_data, array_iter);
-      return array;
-  }
+//  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+//  {
+//      //    int num_sinos=proj_data.get_num_axial_poss(0);
+//      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+//      //      {
+//      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+//      //      }
+//      int num_sinos = proj_data.get_num_sinograms();
+
+//      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+//      return array;
+//  }
+
+//  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
+//  {
+//      Array<3,float> array = create_array_for_proj_data(proj_data);
+//      Array<3,float>::full_iterator array_iter = array.begin_all();
+//      copy_to(proj_data, array_iter);
+//      return array;
+//  }
+
   
  } // end of namespace
 
@@ -821,6 +1027,7 @@ namespace std {
  // Macros for adding __repr_()_ for Python and disp() for MATLAB
 
  // example usage: ADD_REPR(stir::ImagingModality, %arg($self->get_name()));
+ // second argument piped to stream, so could be a std::string, but also another type
 %define ADD_REPR(classname, defrepr)
 %extend classname
 {
@@ -831,18 +1038,20 @@ namespace std {
 #if defined(SWIGPYTHON)
     std::string __repr__()
     {
-      std::string repr = "<classname::";
-      repr += defrepr;
-      repr += ">";
-      return repr;
+      std::stringstream s;
+      s << "<classname::";
+      s << (defrepr);
+      s << ">";
+      return s.str();
     }
 #endif
 #if defined(SWIGMATLAB)
     void disp()
     {
-      std::string repr = "<" + "classname::";
-      repr += defrepr;
-      repr += ">";
+      std::stringstream s;
+      s << "<classname::";
+      s << (defrepr);
+      s << ">";
       mexPrintf(repr.c_str());
     }
 #endif
@@ -894,9 +1103,6 @@ namespace std {
 %shared_ptr(stir::ParsingObject);
 
 %shared_ptr(stir::Verbosity);
-%shared_ptr(stir::LORAs2Points<float>);
-%shared_ptr(stir::LOR<float>);
-%shared_ptr(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>);
 
 //  William S Fulton trick for passing templates (with commas) through macro arguments
 // (already defined in swgmacros.swg)
@@ -931,22 +1137,22 @@ namespace std {
  /* Parse the header files to generate wrappers */
 //%include "stir/shared_ptr.h"
 %include "stir/Succeeded.h"
+ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
+
 %include "stir/NumericType.h"
 %include "stir/ByteOrder.h"
-%include "stir/DetectionPosition.h"
 
 %include "stir_coordinates.i"
-%include "stir/LORCoordinates.h"
-
-%template(FloatLOR) stir::LOR<float>;
-%template(FloatLORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
+%include "stir_LOR.i"
 
 %include "stir_array.i"
 %include "stir_exam.i"
 
 %shared_ptr(stir::DataSymmetriesForViewSegmentNumbers);
-%include "stir_projdata.i"
+%include "stir_projdata_coords.i"
 %include "stir/DataSymmetriesForViewSegmentNumbers.h"
+%include "stir_projdata.i"
+%include "stir_listmode.i"
 
 %include "stir_voxels.i"
 %include "stir_voxels_IO.i"
@@ -955,7 +1161,6 @@ namespace std {
 %include "stir/zoom.h"
 
 %include "stir/Verbosity.h"
-
 
 // shapes
 %include "stir_shapes.i"
@@ -980,10 +1185,6 @@ namespace std {
 %include "stir/multiply_crystal_factors.h"
 %include "stir/decay_correction_factor.h"
 
-%rename (set_template_proj_data_info) *::set_template_proj_data_info_sptr;
-%shared_ptr(stir::LmToProjData);
-%include "stir/listmode/LmToProjData.h"
-
 %shared_ptr(stir::ScatterSimulation);
 %shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
   stir::ScatterSimulation, stir::ScatterSimulation>);
@@ -1002,20 +1203,14 @@ namespace std {
 %shared_ptr(stir::CreateTailMaskFromACFs);
 %include "stir/scatter/CreateTailMaskFromACFs.h"
 
-%shared_ptr(stir::ListModeData);
-%include "stir/listmode/ListModeData.h"
-
-%extend stir::ListModeData {
-  static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)
-    {
-      using namespace stir;
-      shared_ptr<ListModeData> ret(read_from_file<ListModeData>(filename));
-      return ret;
-    }
-}
-
 %shared_ptr(stir::FanProjData);
 %shared_ptr(stir::GeoData3D);
+%ignore operator<<;
+%ignore operator>>;
+%ignore stir::DetPairData::operator()(const int a, const int b) const;
+%ignore stir::DetPairData3D::operator()(const int a, const int b) const;
+%ignore stir::FanProjData::operator()(const int, const int, const int, const int) const;
+%ignore stir::GeoData3D::operator()(const int, const int, const int, const int) const;
 %include "stir/ML_norm.h"
 
 %shared_ptr(stir::InvertAxis);

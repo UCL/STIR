@@ -22,7 +22,6 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "stir/error.h"
-#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -33,7 +32,7 @@ START_NAMESPACE_STIR
 
     \return The actual filename being used (which might be different if no extension was specified).
 
-    \par warning 
+    \par warning
 
     The output file format class used is not for \c DataT but actually for
     \c DataT::hierarchy_base_type. This is necessary such that this function can
@@ -43,17 +42,14 @@ START_NAMESPACE_STIR
     Sadly, this requires that the DataT::hierarchy_base_type typedef exists.
  */
 template <class DataT>
-inline 
-std::string
-    write_to_file(const std::string& filename, const DataT& data)
+inline std::string
+write_to_file(const std::string& filename, const DataT& data)
 {
   std::string filename_used(filename);
 
-  if (OutputFileFormat<typename DataT::hierarchy_base_type>::default_sptr()->
-      write_to_file(filename_used, data)
-      != Succeeded::yes)
+  if (OutputFileFormat<typename DataT::hierarchy_base_type>::default_sptr()->write_to_file(filename_used, data) != Succeeded::yes)
     {
-      error(boost::format("Error writing data to file '%1%'") % filename);
+      error("Error writing data to file '" + filename + "'");
     }
   return filename_used;
 }

@@ -23,13 +23,10 @@
 
 #include <iostream>
 
-#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-#endif
 
 START_NAMESPACE_STIR
-
 
 /*!
   \brief Test class for ImagingModality
@@ -39,7 +36,7 @@ START_NAMESPACE_STIR
 class ImagingModalityTests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
 
 void
@@ -64,12 +61,12 @@ ImagingModalityTests::run_tests()
   }
 }
 
-
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main()
+int
+main()
 {
   ImagingModalityTests tests;
   tests.run_tests();

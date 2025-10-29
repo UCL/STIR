@@ -1,0 +1,440 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Summary of changes in STIR release 6.0</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 6.0</h1>
+
+    <p>This version is 99% backwards compatible with STIR 5.x for the user (see below).
+      Developers might need to make code changes as 
+      detailed below. Note though that the <strong>locations of installed files have changed</strong>.
+      Developers of other software that uses STIR via CMake will therefore need to adapt (see below).
+    </p>
+    <h2>Overall summary</h2>
+    <p>
+      This release is a major upgrade adding Time of Flight (TOF) capabilities to STIR.
+    </p>
+
+
+    <p>This version has a major code-cleanup related to removing old compiler work-arounds,
+      consistent use of <code>override</code> and white-space enforcement.
+    </p>
+
+    <p>Overall code management and assistance was Kris Thielemans (UCL and ASC). Other main contributors
+      include: Nikos Efthimiou (UCL, University of Hull, UPenn, MGH) for the TOF framework and list-mode
+      reconstruction, Elise Emond (UCL) for adapting TOF framework for projection-data,
+      Palak  Wadhwa (University of Leeds) for adaptations and testing on GE Signa PET/MR data,
+      Robert Twyman for extending projector symmetries to TOF and formalising ROOT-based testing,
+      Nicole Jurjew (UCL) for adaptations and testing on Siemens Vision 600 data.
+      Non-TOF contributors include Daniel Deidda (NPL) and Markus Jehl (Positrigo).
+    </p>
+
+    <h2>Patch release info</h2>
+    <ul>
+      <li>
+        6.0.0 released 07/02/2024<br>
+        <a href="https://github.com/UCL/STIR/milestone/4">GitHub Milestone 6.0</a>
+      </li>
+      <!--
+      <li> 4.0.1 released 28/04/2020
+        <ul>
+          <li><a href=https://github.com/UCL/STIR/pull/513>PR 513</a>  (suppress warnings with clang)</li>
+          </ul>
+          -->
+    </ul>
+
+    <h2> Summary for end users (also to be read by developers)</h2>
+
+    <h3>Changes breaking backwards compatibility from a user-perspective</h3>
+    <h4>General</h4>
+    <ul>
+      <li>
+        When parsing Interfile headers for projection data and the <tt>originating system</tt>
+        is not recognised, the previous version of STIR tried to guess the scanner based on the
+        number of views or rings. This was using very old scanners though, and could lead to
+        confusion. These guesses have now been removed.
+      </li>
+      <li>
+        (deprecated) support for the GE VOLPET format (an old format used by the GE Advance and Discover LS
+        sinograms when using "break-pointing") has been removed.
+      </li>
+      <li>
+       (deprecated) support for the AVW format via the (very old) AnalyzeAVW commercial library has been removed.
+      </li>
+      <li>
+        Most installed files are now in versioned directories. The following shows the new and old locations
+        relative to <code>CMAKE_INSTALL_PREFIX</code>, where <tt>V.v</tt> indicates the major.minor version number, e.g. <tt>6.0</tt>:
+        <ul>
+          <li>documentation (including <tt>examples</tt> as subfolder): <tt>share/doc/STIR-V.v</tt> (was <tt>share/doc/stir-V.v</tt>)</li>
+          <li>JSON files with radionuclide database: <tt>share/STIR-V.v/config</tt> (was <tt>share/stir/config</tt>)</li>
+        </ul>
+        Developers also need to check the new location to use for <code>STIR_DIR</code> documented below.
+      </li>
+      <li>
+        <code>ProjDataInfo::ask_parameters()</code> and therefore <code>create_projdata_template</code>
+        has changed:
+        <ol>
+          <li>If the scanner definition in STIR has TOF capabilities, it will ask for the TOF mashing factor.</li>
+          <li>The default for arc-correction has changed to <i>N</i>, i.e. <code>false</code>.</li>
+          <li>Default value for span is now 11 for Siemens and 2 for GE scanners.</li>
+          <li>The span=0 case (i.e. span-3 for segment 0, span=1 for oblique ones, previously erroneously
+            by STIR used for the GE Advance) is now removed. GE uses span=2.<br>
+            (Reading a "span=0" case is still supported)</li>
+        </ol>
+      </li>
+      <li>
+        Projection-data related classes have accessors with an optional <code>make_num_tangential_poss_odd</code> argument
+        (defaulting to <code>false</code>), which made the returned argument a different size.
+        This has been deprecated since version 5.0. Setting this argument to <code>true</code> will now raise an error.
+      </li>
+    </ul>
+
+    <h4>Python (and MATLAB)</h4>
+    <ul>
+      <li>renamed <code>FloatLOR</code> to <code>LOR</code>, and same for derived classes.</li>
+    </ul>
+
+    <h3>New functionality</h3>
+    <h4>TOF related</h4>
+    <ul>
+      <li>
+        <p>
+        The TOF addition is mostly transparent, i.e. normally no changes are required
+        to the reconstruction code etc. When using Interfile or ROOT files, certain new keywords
+        are required, see <a href="https://github.com/UCL/STIR/blob/master/examples/samples/PET_TOF_Interfile_header_Signa_PETMR.hs">examples/samples/PET_TOF_Interfile_header_Signa_PETMR.hs</a>
+        and <a href="https://github.com/UCL/STIR/blob/master/examples/samples/root_header.hroot">examples/samples/root_header.hroot</a>.
+        See also the updated STIR_glossary.
+        <br>
+        Please cite the following papers:
+        </p>
+        <ul>
+          <li>
+            Efthimiou, N., Emond, E., Wadhwa, P., Cawthorne, C., Tsoumpas, C., Thielemans, K., 2019.
+        <cite>Implementation and validation of time-of-flight PET image reconstruction module for listmode and sinogram projection data in the STIR library.</cite>
+        Phys Med Biol 64, 035004. <a href="https://doi.org/10.1088/1361-6560/aaf9b9">DOI: 10.1088/1361-6560/aaf9b9</a>.
+          </li>
+          <li>
+            Wadhwa, P., Thielemans, K., Efthimiou, N., Wangerin, K., Keat, N., Emond, E., Deller, T., Bertolli, O., Deidda, D., Delso, G., Tohme, M., Jansen, F., Gunn, R.N., Hallett, W., Tsoumpas, C., 2021.
+            <cite>PET image reconstruction using physical and mathematical modelling for time of flight PET-MR scanners in the STIR library.</cite>
+            Methods, Methods on simulation in biomedicine 185, 110–119. <a href="https://doi.org/10.1016/j.ymeth.2020.01.005">DOI: 10.1016/j.ymeth.2020.01.005</a>
+          </li>
+        </ul>
+        <p>
+          See also the (enormous) <a href="https://github.com/UCL/STIR/pull/304">PR #304</a>.
+        </p>
+        <p>
+          <b>Limitations</b><br>
+        </p>
+        <ul>
+          <li>
+            Currently on the <code>matrix</code> based projectors support TOF.
+            Note that the implementation is generic but slow: a non-TOF row
+            is computed and then multiplied with the TOF kernel.
+            This is somewhat alleviated by the use of caching. However, as not all
+            symmetries are supported yet, caching of the projection matrix
+            needs <b>substantially more memory</b> than in the non-TOF situation.
+          </li>
+          <li>
+            We do not have TOF scatter simulation/estimation yet.
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h4>non-TOF related</h4>
+    <ul>
+      <li>
+        Interfile headers now use use the following keywords:
+          <pre>
+            number of radionuclides := 1
+            radionuclide name[1] := ...
+            radionuclide halflife (sec)[1] := ...
+            radionuclide branching factor[1] := ...
+          </pre>
+          Previous versions of STIR used <tt>isotope name</tt>. This is still recognised
+          if <tt>radionuclide name[1]</tt> is not present. Note that
+          neither versions are confirming to the (very old) Interfile 4.0 proposal.
+      </li>
+      <li>
+        Radionuclide information is read from Interfile, Siemens and GE HDF5 headers.
+        If the radionuclide name is recognised to the STIR database, its values for half-life etc
+        are used, as opposed to what was recorded in the file (if anything).
+      </li>
+      <li>
+        <tt>list_lm_events</tt> now has an additional option <tt>--event-bin</tt> which lists the bin
+        assigned for the event (according to the "native" projection data, i.e. without any mashing).<br>
+        In addition, the <tt>--event-LOR</tt> option now also works for SPECT (it was disabled by accident).
+      </li>
+      <li>
+        <tt>stir_list_registries</tt> is a new utility that list possible values of various
+        registries, which can be useful to know what to use in a <tt>.par</tt> file.
+      </li>
+      <li>
+        The radionuclide database now has a datasource entry with the radionuclide decay table (<a href="http://www.lnhb.fr/accueil/donnees-nucleaires/donnees-nucleaires-tableau/">lnHB</a> ). This makes it traceable to standardised measures of branching ratios, half lives etc. The change is backward compatible and old format is still supported. However we encourage to use the new one, see  <a href="https://github.com/UCL/STIR/blob/rel_6.0.0/src/config/radionuclide_info.json">src/config/radionuclide_info.json</a>.
+      </li>
+    </ul>
+
+    <h4>Python (and MATLAB)</h4>
+    <ul>
+      <li> exposed <code>ProjMatrixByBinPinholeSPECTUB</code><br>
+        <a href="https://github.com/UCL/STIR/pull/1366">PR #1366</a>
+      </li>
+      <li><a href="https://github.com/UCL/STIR/pull/1288">PR #1288</a>
+        <ul>
+          <li>
+            exposed <code>ListRecord</code> etc, such that loops over list-mode data can
+            now be performed in Python (although this will be somewhat slow).
+            See <a href="https://github.com/UCL/STIR/blob/master/examples/python/listmode_loop_demo.py">examples/python/listmode_loop_demo.py</a>.
+          </li>
+          <li>
+            added <code>LORAs2Points</code>,<code>LORInCylinderCoordinates</code>,
+            <code>LORInAxialAndSinogramCoordinates</code> and <code>PointOnCylinder</code>.
+            <br>
+            <b>Warning</b>: renamed <code>FloatLOR</code> to <code>LOR</code>, and same for
+            derived classes.
+          </li>
+        </ul>
+      </li>
+      <li>
+        add <code>DetectionPositionPair.__repr__</code>  for printing and
+        change order of text in <code>DetectionPosition.__repr__</code> to
+        fit with constructor to avoid confusion.<br>
+        <a href="https://github.com/UCL/STIR/pull/1316">PR #1316</a>
+      </li>
+    </ul>
+
+
+
+
+    <h3>Changed functionality</h3>
+    <ul>
+      <li>
+        We now always check (in <code>ProjDataInfo*NoArcCorr</code>) if number of tangential positions in the projection data exceeds the maximum number
+        of non arc-corrected bins set for the scanner. If it is, an error is raised. You might therefore have to adapt your interfile header.
+      </li>
+      <li>
+        Interfile header changes:
+        <ul>
+          <li>
+            Write <tt>STIR6.0</tt> as Interfile key <tt>version</tt> to denote TOF changes.
+            This is currently ignored for parsing though.
+          </li>
+          <li>
+            (PET) The <tt>effective central bin size (cm)</tt> keyword for projection data is now only used for arc-corrected data.
+            It is no longer written to the header for non-arccorrected data.
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>Build system</h3>
+    <ul>
+      <li>CMake version 3.14 is now required.</li>
+      <li>
+        C++-14 is now required.<br>
+        In fact, it is possible that C++-11 still works. If you really need it,
+        you can try to modify the main <tt>CMakeLists.txt</tt> accordingly.
+      </li>
+      <li><code>STIR_CONFIG_DIR</code> is no longer a CMake cached variable, such that
+        it automatically moves along with <code>CMAKE_INSTALL_PREFIX</code>.
+        However, if you are upgrading an existing STIR build, you might have
+        to delete the cached variable, or it will point to the old location.
+      </li>
+    </ul>
+
+    <h3>Bug fixes</h3>
+    <ul>
+      <li>
+        Interfile parsing no longer gets confused by the use of <tt>:</tt> in a keyword (e.g., used by Siemens
+        for dates).
+        <br>
+        <a href=https://github.com/UCL/STIR/pull/1267>PR #1267</a>
+      </li>
+    </ul>
+
+    <h3>Known problems</h3>
+    <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</p>
+
+    <h3>Documentation changes</h3>
+    <ul>
+      <li>
+        Added (some) documentation on TOF features
+      </li>
+      <li>
+        Added <tt>examples/C++/using_installed_STIR</tt> to illustrate how to use STIR
+        as a "library".
+      </li>
+      <li>
+        Renamed <tt>examples/C++/src</tt> to <tt>examples/C++/using_STIR_LOCAL</tt>.
+      </li>
+    </ul>
+
+    <h2>New deprecations for future versions</h2>
+    <ul>
+      <li>
+        CMake option <code>STIR_USE_BOOST_SHARED_PTR</code> will be removed. It probably no longer
+        works anyway. Therefore <code>stir::shared_ptr</code> will always be <code>std::shared_ptr</code>.
+      </li>
+      <li>Direct X-windows display (corresponding to the CMake option `GRAPHICS=X`) will be removed. It is
+        very outdated and sometimes doesn't work.
+      </li>
+      <li>
+        remaining files for ECAT6 support will be removed.
+      </li>
+    </ul>
+
+    <H2>What's new for developers (aside from what should be obvious
+      from the above):</H2>
+
+    <h3>White-space and style enforcement</h3>
+    <ul>
+      <li>We now use <tt>clang-format</tt> to enforce C++-style, including white-space settings, line-breaks
+        etc. This uses the <tt>.clang-format</tt> file in the root directory of STIR. Developers should
+        configure their editor encordingly, and ideally use <tt>pre-commit</tt>. It also has
+        consequences for existing branches as you might experience more conflicts than usual
+        during a merge. More detail is in
+        <a href="https://github.com/UCL/STIR/blob/master/documentation/devel/README.md">documentation/devel/README.md</a>.<br>
+        <a href="https://github.com/UCL/STIR/pull/1368">PR #1368</a>.
+      </li>
+    </ul>
+
+    <h3>Backward incompatibities</h3>
+    <ul>
+      <li>
+        <code>ListModeData</code> now has a <code>shared_ptr&lt;const ProjDataInfo&gt; proj_data_info_sptr</code>
+        <code>protected</code> member, and the <code>scanner_sptr</code> member has been removed.<br>
+        <b>Warning:</b> If your derived class had its own <code>proj_data_info_sptr</code>, it should be removed.
+      </li>
+      <li>
+        <code>virtual ListModeData::get_scanner_ptr()</code> is replaced by <code>ListModeData::get_scanner()</code>.
+      </li>
+      <li>
+        <code>ProjDataInfo*NoArcCorr::get_bin_for_det_pair</code> is now private.
+        Use <code>get_bin_for_det_pos_pair</code> instead.
+      </li>
+      <li>
+        The <code>GeneralisedObjectiveFunction</code> hierarchy now has a <code>already_set_up</code>
+        member variable that needs to be set to <code>false</code> by <code>set_*</code>
+        functions and checked by callers.
+      </li>
+     <li>
+       (deprecated) members/functions have been removed
+       <ul>
+         <li>
+           <code>BinNormalisation::undo</code> and <code>apply</code> members that
+           take explicit time arguments
+         </li>
+         <li>
+           <code>extend_sinogram_in_views</code>, <code>extend_segment_in_views</code>
+           and <code>interpolate_axial_position</code>
+         </li>
+       </ul>
+     </li>
+      <li>As mentioned above, installation locations are now versioned. New locations that
+        could affect developers that use STIR as an external project:
+        <ul>
+          <li>include files: <tt>include/STIR-V.v</tt> (was <tt>include</tt>). This should be transparant
+          if you use <code>find_package(STIR)</code>.</li>
+          <li>CMake exported <tt>STIRConfig.cmake</tt> etc: <tt>lib/cmake/STIR-V.v</tt> (was <tt>share/lib</tt>).<br>
+            <strong>The CMake variable <tt>STIR_DIR</tt> should now be set to  <tt>&lt;STIR_CMAKE_INSTALL_PREFIX&gt;/lib/cmake/STIR-V.v</tt></strong>.
+            However, this new location increases chances that <code>find_package</code> finds STIR as it follows conventions better.
+            For instance, STIR can now by found by <code>find_package</code>
+            when setting <code>CMAKE_PREFIX_PATH</code> to what was used for <code>CMAKE_INSTALL_PREFIX</code> when
+            installing STIR (indicated as <tt>STIR_CMAKE_INSTALL_PREFIX</tt> above). Moreover, if you use the same
+            <code>CMAKE_INSTALL_PREFIX</code> for your project as for STIR, you shouldn't need to set <code>STIR_DIR</code> nor <code>CMAKE_PREFIX_PATH</code>.
+          </li>
+        </ul>
+    </ul>
+
+    <h3>New functionality</h3>
+
+    <h4>TOF related</h4>
+    <ul>
+      <li><code>Scanner</code> now allows storing TOF information. This is currently not yet done for all
+        TOF-capable scanners though. Contributions welcome!
+      </li>
+      <li>
+        All projection-data related classes and their members now have a TOF bin index and related information.
+        At present, old-style accessors are in an awkward format such as
+        <pre>
+          auto sino = proj_data.get_sinogram(ax_pos_num, segment_num, false, timing_pos_num);
+        </pre>
+        These are deprecated since version 5.2 and should be replaced by
+        <pre>
+          const SinogramIndices sinogram_idxs{ax_pos_num, segment_num, timing_pos_num};
+          auto sino = proj_data.get_sinogram(sinogram_idxs);
+        </pre>
+      </li>
+      <li>
+        List-mode data for TOF-capable scanners need to pass the relevant information through appropriately of course.
+      </li>
+    </ul>
+    
+    <h4>Non-TOF related</h4>
+    <ul>
+      <li>
+        Projectors now have a <code>clone()</code> member, currently returning a bare pointer (like other STIR classes).
+      </li>
+      <li>
+        <code>Bin</code> can now be output to stream as text.
+      </li>
+      <li>
+        Added <code>RunTests::check_if_equal</code> for <code>Bin</code>.
+      </li>
+      <li>
+        <code>KeyParser</code> has a new facility to add an alias to a keyword. This can be used to rename a keyword
+        for instance while remaining backwards compatible. By default, a warning will be written, but this can be disabled.
+      </li>
+    </ul>
+
+    <h3>Changed functionality</h3>
+
+    <h4>TOF related</h4>
+    <ul>
+      <li>
+        <code>ProjDataInfoCylindricalNoArcCorr::get_all_det_pos_pairs_for_bin</code> is in most places intended to return
+        the physical locations. However, a `DetectionPositionPair` also contains (unmashed) TOF bin information.
+        This will be further complicated once energy windows are supported. The
+        method therefore has an extra boolean argument <code>ignore_non_spatial_dimensions</code>, which defaults to
+        <code>true</code>.
+      </li>
+      <li>
+        <code>multiply_crystal_factors</code> is essentially a non-TOF calculation. When given TOF projection data,
+        it will  "spread" the non-TOF result equally over all TOF bins. This is also appropriate for
+        <code>randoms_from_singles</code>.
+      </li>
+    </ul>
+
+    <h3>Code clean-up</h3>
+    <ul>
+      <li>
+        Clean-up of various work-arounds such as
+        <code>STIR_NO_NAMESPACES</code>, <code>STIR_NO_MUTABLE</code>, <code>BOOST_NO_TEMPLATE_SPECIALIZATION</code>,
+        <code>BOOST_NO_STRINGSTREAM</code> and various items specifically for VC 6.0.
+      </li>
+      <li>
+        Consistently use <code>override</code> in derived classes, via <tt>clang-tidy --modernize-use-override</tt>.
+      </li>
+    </ul>
+
+    <h3>Test changes</h3>
+    <h4>recon_test_pack changes</h4>
+    <ul>
+      <li>
+        additional tests for TOF, expansion of some existing tests for TOF
+      </li>
+      <li>
+        updated version number and added some clarification to the README.txt
+      </li>
+    </ul>
+
+    <h4>C++ tests</h4>
+    <ul>
+      <li>
+        additional tests for TOF, expansion of some existing tests for TOF
+      </li>
+    </ul>
+</body>
+
+</html>

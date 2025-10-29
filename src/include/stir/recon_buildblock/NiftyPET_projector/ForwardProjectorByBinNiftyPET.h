@@ -50,70 +50,71 @@ Current limitations:
  - Projects all of the data in one go
  - Only debugged for span 11.
 */
-class ForwardProjectorByBinNiftyPET:
-  public RegisteredParsingObject<ForwardProjectorByBinNiftyPET,
-                                 ForwardProjectorByBin>
-{ 
+class ForwardProjectorByBinNiftyPET : public RegisteredParsingObject<ForwardProjectorByBinNiftyPET, ForwardProjectorByBin>
+{
 public:
   //! Name which will be used when parsing a ForwardProjectorByBin object
-  static const char * const registered_name;
+  static const char* const registered_name;
 
   //! Default constructor calls reset_timers()
-  //inline
-    ForwardProjectorByBinNiftyPET();
+  // inline
+  ForwardProjectorByBinNiftyPET();
 
-    /// Constructor
-    virtual ~ForwardProjectorByBinNiftyPET();
+  /// Constructor
+  virtual ~ForwardProjectorByBinNiftyPET();
 
-    /// Keymap
-    virtual void initialise_keymap();
+  /// Keymap
+  virtual void initialise_keymap();
 
   //! Stores all necessary geometric info
- /*! 
-  If necessary, set_up() can be called more than once.
+  /*!
+   If necessary, set_up() can be called more than once.
 
-  Derived classes can assume that forward_project()  will be called
-  with input corresponding to the arguments of the last call to set_up().
+   Derived classes can assume that forward_project()  will be called
+   with input corresponding to the arguments of the last call to set_up().
 
-  \warning there is currently no check on this.
-  \warning Derived classes have to call set_up from the base class.
-  */
-virtual void set_up(
-    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    );
+   \warning there is currently no check on this.
+   \warning Derived classes have to call set_up from the base class.
+   */
+  virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+                      const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
+  );
 
   //! Symmetries not used, so returns TrivialDataSymmetriesForBins.
-  virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const;
 
-    /// Set input
-    virtual void set_input(const DiscretisedDensity<3,float>&);
+  /// Set input
+  virtual void set_input(const DiscretisedDensity<3, float>&);
 
-    /// Set verbosity
-    void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
+  /// Set verbosity
+  void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
-    /// Set use truncation - truncate before forward
-    /// projection and after back projection
-    void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
+  /// Set use truncation - truncate before forward
+  /// projection and after back projection
+  void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
 protected:
   //! This virtual function has to be implemented by the derived class.
-  virtual void actual_forward_project(RelatedViewgrams<float>&, 
-		  const DiscretisedDensity<3,float>&,
-		  const int min_axial_pos_num, const int max_axial_pos_num,
-		  const int min_tangential_pos_num, const int max_tangential_pos_num);
+  virtual void actual_forward_project(RelatedViewgrams<float>&,
+                                      const DiscretisedDensity<3, float>&,
+                                      const int min_axial_pos_num,
+                                      const int max_axial_pos_num,
+                                      const int min_tangential_pos_num,
+                                      const int max_tangential_pos_num);
 
   virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
-          const int min_axial_pos_num, const int max_axial_pos_num,
-          const int min_tangential_pos_num, const int max_tangential_pos_num);
+                                      const int min_axial_pos_num,
+                                      const int max_axial_pos_num,
+                                      const int min_tangential_pos_num,
+                                      const int max_tangential_pos_num);
 
 private:
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
-    shared_ptr<ProjDataInMemory> _projected_data_sptr;
-    NiftyPETHelper _helper;
-    int _cuda_device;
-    bool _cuda_verbosity;
-    bool _use_truncation;
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
+  shared_ptr<ProjDataInMemory> _projected_data_sptr;
+  NiftyPETHelper _helper;
+  int _cuda_device;
+  bool _cuda_verbosity;
+  bool _use_truncation;
 };
 
 END_NAMESPACE_STIR

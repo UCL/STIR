@@ -24,7 +24,6 @@
 #ifndef __stir_LINE_H__
 #define __stir_LINE_H__
 
-
 #include "stir/common.h"
 
 #include <string>
@@ -39,28 +38,27 @@ START_NAMESPACE_STIR
 class Line : public std::string
 {
 
-public :
-        Line() : std::string()
-	{}
+public:
+  Line()
+      : std::string()
+  {}
 
-	Line& operator=(const char* ch);
+  Line& operator=(const char* ch);
 
-	std::string get_keyword();
-	int get_index();
-	int get_param(std::vector<int>& v);
-	// KT 29/10/98 new
-	int get_param(std::vector<double>& v);
-	int get_param(std::vector<std::string>& v);
-	int get_param(std::string& s);
-	int get_param(int& i);
-	// KT 01/08/98 new
-	int get_param(unsigned long& i);
-	// KT 01/08/98 new
-	int get_param(double& i);
+  std::string get_keyword();
+  int get_index();
+  int get_param(std::vector<int>& v);
+  // KT 29/10/98 new
+  int get_param(std::vector<double>& v);
+  int get_param(std::vector<std::string>& v);
+  int get_param(std::string& s);
+  int get_param(int& i);
+  // KT 01/08/98 new
+  int get_param(unsigned long& i);
+  // KT 01/08/98 new
+  int get_param(double& i);
 };
 
 END_NAMESPACE_STIR
 
 #endif
-
-

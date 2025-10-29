@@ -48,7 +48,7 @@ except:
     print("Enabling interactive-mode for plotting failed. Continuing.")
 
 s = recon.set_up(target)
-if (s == stir.Succeeded(stir.Succeeded.yes)):
+if (s.succeeded()):
     pylab.figure()
     for iter in range(1,num_subiterations+1):
         print('\n--------------------- Subiteration ', iter)

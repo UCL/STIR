@@ -32,11 +32,16 @@
 
 %shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT >);
 %shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
 	    stir::GeneralisedObjectiveFunction<TargetT >,
 	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
+%shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT >,
+	    stir::GeneralisedObjectiveFunction<TargetT >,
+	    stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT > >);
 
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT >);
 
 %shared_ptr(stir::SqrtHessianRowSum<TargetT >);
 
@@ -48,6 +53,8 @@
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+%include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
+%include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.h"
 %include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 
@@ -57,6 +64,7 @@
 %template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<TargetT >;
 //%template () stir::GeneralisedObjectiveFunction<TargetT >;
 %template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >;
+%template (PoissonLogLikelihoodWithLinearModelForMeanAndListModeData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT >;
 
 // TODO do we really need this name?
 // Without it we don't see the parsing functions in python...
@@ -65,14 +73,19 @@
   stir::GeneralisedObjectiveFunction<TargetT >,
   stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >;
 
+%template(RPPoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin3DFloat)  stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT >,
+  stir::GeneralisedObjectiveFunction<TargetT >,
+  stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT > >;
+
 %template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
+%template (PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT >;
 
 %inline %{
   template <class T>
     stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<T> *
     ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData(stir::GeneralisedObjectiveFunction<T> *b) {
     return dynamic_cast<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<T>*>(b);
-}
+  }
 %}
 
 %template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;

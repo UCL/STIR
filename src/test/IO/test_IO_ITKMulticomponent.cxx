@@ -35,57 +35,62 @@ START_NAMESPACE_STIR
 class IOTests_ITKMulticomponent : public RunTests
 {
 public:
-    explicit IOTests_ITKMulticomponent(const std::string &multi) :
-        _multi(multi) {}
+  explicit IOTests_ITKMulticomponent(const std::string& multi)
+      : _multi(multi)
+  {}
 
-    void run_tests();
+  void run_tests() override;
 
 protected:
-
-    std::string _multi;
+  std::string _multi;
 };
-void IOTests_ITKMulticomponent::run_tests()
+void
+IOTests_ITKMulticomponent::run_tests()
 {
-    typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > VoxelsCoords;
+  typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float>> VoxelsCoords;
 
-    // Read the files
-    std::cerr << "\nReading: " << _multi << "\n";
+  // Read the files
+  std::cerr << "\nReading: " << _multi << "\n";
 
-    try {
-        shared_ptr<VoxelsCoords> voxels_coords(read_from_file<VoxelsCoords>(_multi));
+  try
+    {
+      shared_ptr<VoxelsCoords> voxels_coords(read_from_file<VoxelsCoords>(_multi));
 
-        check(!is_null_ptr(voxels_coords), "failed reading %s");
+      check(!is_null_ptr(voxels_coords), "failed reading %s");
 
-        // Check sizes
-        check_if_equal<size_t>(voxels_coords->size(),                  64);
-        check_if_equal<size_t>(voxels_coords->at(0).size(),            62);
-        check_if_equal<size_t>(voxels_coords->at(0).at(0).size(),      63);
-        check_if_equal<size_t>(voxels_coords->at(0).at(0).at(0).size(), 3);
+      // Check sizes
+      check_if_equal<size_t>(voxels_coords->size(), 64);
+      check_if_equal<size_t>(voxels_coords->at(0).size(), 62);
+      check_if_equal<size_t>(voxels_coords->at(0).at(0).size(), 63);
+      check_if_equal<size_t>(voxels_coords->at(0).at(0).at(0).size(), 3);
 
-        // Check voxel sizes
-        check_if_equal<float>(voxels_coords->get_voxel_size()[1], 4.0625F);
-        check_if_equal<float>(voxels_coords->get_voxel_size()[2], 4.0625F);
-        check_if_equal<float>(voxels_coords->get_voxel_size()[3], 4.0625F);
-
-    } catch(...) {
-        everything_ok = false;
+      // Check voxel sizes
+      check_if_equal<float>(voxels_coords->get_voxel_size()[1], 4.0625F);
+      check_if_equal<float>(voxels_coords->get_voxel_size()[2], 4.0625F);
+      check_if_equal<float>(voxels_coords->get_voxel_size()[3], 4.0625F);
+    }
+  catch (...)
+    {
+      everything_ok = false;
     }
 }
 
-END_NAMESPACE_STD
+END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
-    if (argc != 2) {
-        std::cerr << "Usage : " << argv[0] << " filename\n";
-        return EXIT_FAILURE;
+  if (argc != 2)
+    {
+      std::cerr << "Usage : " << argv[0] << " filename\n";
+      return EXIT_FAILURE;
     }
 
-    IOTests_ITKMulticomponent tests(argv[1]);
+  IOTests_ITKMulticomponent tests(argv[1]);
 
-    tests.run_tests();
+  tests.run_tests();
 
-    return tests.main_return_value();
+  return tests.main_return_value();
 }

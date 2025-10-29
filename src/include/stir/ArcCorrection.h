@@ -19,7 +19,6 @@
 #ifndef __stir_ArcCorrection_H__
 #define __stir_ArcCorrection_H__
 
-
 #include "stir/ProjDataInfo.h"
 #include "stir/Array.h"
 #include "stir/shared_ptr.h"
@@ -29,17 +28,22 @@ START_NAMESPACE_STIR
 class Succeeded;
 class ProjDataInfoCylindricalArcCorr;
 class ProjDataInfoCylindricalNoArcCorr;
-template <class elemT> class Sinogram;
-template <class elemT> class Viewgram;
-template <class elemT> class RelatedViewgrams;
-template <class elemT> class SegmentBySinogram;
-template <class elemT> class SegmentByView;
+template <class elemT>
+class Sinogram;
+template <class elemT>
+class Viewgram;
+template <class elemT>
+class RelatedViewgrams;
+template <class elemT>
+class SegmentBySinogram;
+template <class elemT>
+class SegmentByView;
 class ProjData;
-/*! 
-  \ingroup projdata  
+/*!
+  \ingroup projdata
   \brief A class to arc-correct projection data
 
-  Arc-correction is a common name for converting the non-uniform tangential 
+  Arc-correction is a common name for converting the non-uniform tangential
   sampling from a cylindrical PET scanner to a uniform one. (GE terminology is
   'geometric correction').
 
@@ -47,7 +51,7 @@ class ProjData;
 
   For given non-arccorrected data, the data will be first multiplied by the bin-sizes,
   then interpolated to the desired uniform sampling using overlap_interpolate,
-  and then divided by the new sampling. This ensures that the normalisation 
+  and then divided by the new sampling. This ensures that the normalisation
   is preserved. Also, uniform data will result in uniform output.
 
   \warning You <strong>have</strong> to call one of the set_up() functions
@@ -66,65 +70,58 @@ public:
   */
   //@{
   //! Most general version
-  Succeeded 
-    set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, 
-	   const int num_arccorrected_tangential_poss, const float bin_size);
+  Succeeded set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                   const int num_arccorrected_tangential_poss,
+                   const float bin_size);
 
   //! Using default bin-size of the scanner
   /*! If the default bin-size is 0, the tangential size of the central bin
       (i.e.  <code>Bin(0,0,0,0)</code>) of the
       non-arccorrected data will be used.
   */
-  Succeeded 
-    set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, 
-	   const int num_arccorrected_tangential_poss);
+  Succeeded set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const int num_arccorrected_tangential_poss);
   //! Using default bin-size of the scanner and covering the FOV
   /*! If the default bin-size is 0, the tangential size of the central bin
       (i.e.  <code>Bin(0,0,0,0)</code>) of the
       non-arccorrected data will be used.
 
       \c num_arccorrected_bins is chosen such that the new (radial) FOV
-      is slightly larger than the one covered by the original data.      
+      is slightly larger than the one covered by the original data.
   */
-  Succeeded
-    set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
+  Succeeded set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
   //@}
 
   /*! \name functions returning a ProjDataInfoCylindricalArcCorr
       object describing to the arc-corrected data.
   */
   //@{
-  const ProjDataInfoCylindricalArcCorr& 
-    get_arc_corrected_proj_data_info() const;
+  const ProjDataInfoCylindricalArcCorr& get_arc_corrected_proj_data_info() const;
   //! Returning a shared_ptr to the object
   /*! \todo return a shared_ptr<ProjDataInfoCylindricalArcCorr>
       after switching to boost::shared_ptr.
   */
-  shared_ptr<const ProjDataInfo> 
-    get_arc_corrected_proj_data_info_sptr() const;
+  shared_ptr<const ProjDataInfo> get_arc_corrected_proj_data_info_sptr() const;
   //@}
 
   /*! \name functions returning a ProjDataInfoCylindricalArcCorr
       object describing to the arc-corrected data.
   */
   //@{
-  const ProjDataInfoCylindricalNoArcCorr& 
-    get_not_arc_corrected_proj_data_info() const;
+  const ProjDataInfoCylindricalNoArcCorr& get_not_arc_corrected_proj_data_info() const;
   //! Returning a shared_ptr to the object
   /*! \todo return a shared_ptr<ProjDataInfoCylindricalNoArcCorr>
       after switching to boost::shared_ptr.
   */
-  shared_ptr<const ProjDataInfo> 
-    get_not_arc_corrected_proj_data_info_sptr() const;
+  shared_ptr<const ProjDataInfo> get_not_arc_corrected_proj_data_info_sptr() const;
   //@}
 
   //! \name functions to do the arc-correction
   /*! Almost all these functions come in pairs (the exception being the
-      function that arc-corrects a whole ProjData). 
+      function that arc-corrects a whole ProjData).
       The 1 argument version returns
       the arc-corrected data. In the 2 argument version, the first argument
-      will be filled with the arc-corrected data. 
-      \warning In the 2 argument version, the output argument has to 
+      will be filled with the arc-corrected data.
+      \warning In the 2 argument version, the output argument has to
       have a projection data info corresponding to the one returned by
       get_arc_corrected_proj_data_info(). This is (only) checked
       using assert().
@@ -146,14 +143,13 @@ public:
 private:
   shared_ptr<const ProjDataInfo> _noarc_corr_proj_data_info_sptr;
   shared_ptr<const ProjDataInfo> _arc_corr_proj_data_info_sptr;
-  Array<1,float> _arccorr_coords;
-  Array<1,float> _noarccorr_coords;
-  Array<1,float> _noarccorr_bin_sizes;
+  Array<1, float> _arccorr_coords;
+  Array<1, float> _noarccorr_coords;
+  Array<1, float> _noarccorr_bin_sizes;
   float tangential_sampling;
 
-  void do_arc_correction(Array<1,float>& out, const Array<1,float>& in) const;
+  void do_arc_correction(Array<1, float>& out, const Array<1, float>& in) const;
 };
 
 END_NAMESPACE_STIR
 #endif
-

@@ -25,9 +25,8 @@
 #include <fstream>
 #include <string>
 
-
 #ifndef HAVE_LLN_MATRIX
-#error HAVE_LLN_MATRIX not defined: you need the lln ecat library.
+#  error HAVE_LLN_MATRIX not defined: you need the lln ecat library.
 #endif
 
 #include "stir/IO/stir_ecat7.h"
@@ -40,27 +39,19 @@ START_NAMESPACE_ECAT7
     \preliminary
 
 */
-class ECAT7DynamicDiscretisedDensityInputFileFormat :
-public InputFileFormat<DynamicDiscretisedDensity >
+class ECAT7DynamicDiscretisedDensityInputFileFormat : public InputFileFormat<DynamicDiscretisedDensity>
 {
- public:
-  virtual const std::string
-    get_name() const
-  {  return "ECAT7"; }
+public:
+  virtual const std::string get_name() const { return "ECAT7"; }
 
- protected:
-  virtual 
-    bool 
-    actual_can_read(const FileSignature& signature,
-		    std::istream& input) const;
+protected:
+  virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const;
 
   //! This always fails
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const;
+  virtual unique_ptr<data_type> read_from_file(std::istream& input) const;
 
   //! read data given a filename
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const;
+  virtual unique_ptr<data_type> read_from_file(const std::string& filename) const;
 };
 
 END_NAMESPACE_ECAT

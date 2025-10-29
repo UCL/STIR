@@ -13,9 +13,9 @@
 #define __stir_min_positive_element_h_
 
 /*!
-  \file 
+  \file
   \ingroup buildblock
- 
+
   \brief Declares the stir::min_positive_element() function
 
   \author Kris Thielemans
@@ -32,27 +32,28 @@ START_NAMESPACE_STIR
    \param start start of the sequence. Usually object.begin().
    \param end end of the sequence in iterator sense (so actually one beyond
      the last element). Usually object.end().
-   \return an iterator that points to the element in the sequence which 
+   \return an iterator that points to the element in the sequence which
      has the smallest (strictly) positive value. If no (strictly) positive
      element is found, or if the sequence is empty, the \a end argument
      is returned.
 
    The iterator type has to satisfy the requirements of a forward iterator,
    and its value_type has to be comparable using &lt; and &lt;=.
-*/ 
+*/
 template <typename ForwardIter_t>
-ForwardIter_t 
+ForwardIter_t
 min_positive_element(ForwardIter_t start, ForwardIter_t end)
 {
   // go and look for the first (strictly) positive number
-  while (start != end && *start <= 0) 
+  while (start != end && *start <= 0)
     ++start;
-  if (start==end) return end;
+  if (start == end)
+    return end;
 
   // now look through the rest for a smaller positive number
   ForwardIter_t result = start;
   while (++start != end)
-    if(!(*start<=0) && *start<*result)
+    if (!(*start <= 0) && *start < *result)
       result = start;
 
   return result;

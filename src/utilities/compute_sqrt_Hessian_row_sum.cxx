@@ -38,23 +38,25 @@
 #include <iostream>
 
 START_NAMESPACE_STIR
-static void print_usage_and_exit()
+static void
+print_usage_and_exit()
 {
-  std::cerr<<"\nThis executable computes the square root of the Hessian row sum of the objective function."
-             "\n\nUsage: compute_sqrt_Hessian_row_sum compute_sqrt_Hessian_row_sum.par"
-             "\n\n       (The example parameter file can be found in the samples folder.)" << std::endl;
+  std::cerr << "\nThis executable computes the square root of the Hessian row sum of the objective function."
+               "\n\nUsage: compute_sqrt_Hessian_row_sum compute_sqrt_Hessian_row_sum.par"
+               "\n\n       (The example parameter file can be found in the samples folder.)"
+            << std::endl;
   exit(EXIT_FAILURE);
 }
 
 END_NAMESPACE_STIR
 USING_NAMESPACE_STIR
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
-  if (argc!=2)
+  if (argc != 2)
     print_usage_and_exit();
 
-  SqrtHessianRowSum<DiscretisedDensity<3,float>> SqrtHessianRowSumObject(argv[1]);
+  SqrtHessianRowSum<DiscretisedDensity<3, float>> SqrtHessianRowSumObject(argv[1]);
   SqrtHessianRowSumObject.set_up();
   SqrtHessianRowSumObject.process_data();
   return EXIT_SUCCESS;

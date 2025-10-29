@@ -10,22 +10,14 @@
 #  Copyright (C) 2013, 2020, 2021 University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
 #
 
-echo This script should work with STIR version 5.0. If you have
+echo This script should work with STIR version 5.2. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo

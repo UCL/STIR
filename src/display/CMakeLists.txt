@@ -45,8 +45,8 @@ include(stir_lib_target)
 
 if( "${GRAPHICS}" STREQUAL "X")
 	find_package(Curses REQUIRED)
-	INCLUDE_DIRECTORIES(${X11_INCLUDE_DIR} ${CURSES_INCLUDE_DIR})
-	target_link_libraries(${dir} ${X11_LIBRARIES} ${CURSES_LIBRARY})
+	target_include_directories(${dir} PRIVATE ${X11_INCLUDE_DIR} ${CURSES_INCLUDE_DIR})
+	target_link_libraries(${dir} PUBLIC ${X11_LIBRARIES} ${CURSES_LIBRARY})
 endif()
 
-target_link_libraries(${dir} buildblock)
+target_link_libraries(${dir} PUBLIC buildblock)

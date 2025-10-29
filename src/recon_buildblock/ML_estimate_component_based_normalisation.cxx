@@ -28,7 +28,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/ProjData.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include <fstream>
 #include <string>
 #include <algorithm>
@@ -36,9 +36,16 @@
 START_NAMESPACE_STIR
 
 void
-ML_estimate_component_based_normalisation(const std::string& out_filename_prefix, const ProjData& measured_data,
-                                          const ProjData& model_data, int num_eff_iterations, int num_iterations, bool do_geo,
-                                          bool do_block, bool do_symmetry_per_block, bool do_KL, bool do_display)
+ML_estimate_component_based_normalisation(const std::string& out_filename_prefix,
+                                          const ProjData& measured_data,
+                                          const ProjData& model_data,
+                                          int num_eff_iterations,
+                                          int num_iterations,
+                                          bool do_geo,
+                                          bool do_block,
+                                          bool do_symmetry_per_block,
+                                          bool do_KL,
+                                          bool do_display)
 {
 
   const int num_transaxial_blocks = measured_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_transaxial_blocks();
@@ -82,10 +89,14 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
   DetectorEfficiencies data_fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
   DetectorEfficiencies efficiencies(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
 
-  GeoData3D measured_geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit / 2,
-                              num_physical_rings, num_physical_detectors_per_ring); // inputes have to be modified
-  GeoData3D norm_geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit / 2,
-                          num_physical_rings, num_physical_detectors_per_ring); // inputes have to be modified
+  GeoData3D measured_geo_data(num_physical_axial_crystals_per_basic_unit,
+                              num_physical_transaxial_crystals_per_basic_unit / 2,
+                              num_physical_rings,
+                              num_physical_detectors_per_ring); // inputes have to be modified
+  GeoData3D norm_geo_data(num_physical_axial_crystals_per_basic_unit,
+                          num_physical_transaxial_crystals_per_basic_unit / 2,
+                          num_physical_rings,
+                          num_physical_detectors_per_ring); // inputes have to be modified
 
   BlockData3D measured_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
   BlockData3D norm_block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
@@ -179,7 +190,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
                   std::cerr << "model*norm min " << fan_data.find_min() << " ,max " << fan_data.find_max() << std::endl;
                   if (do_display)
                     display(fan_data, "model_times_norm");
-                  info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
+                  info(format("KL {}", KL(measured_fan_data, fan_data, threshold_for_KL)));
                   // now restore for further iterations
                   fan_data = model_fan_data;
                   apply_geo_norm(fan_data, norm_geo_data);
@@ -228,7 +239,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
         if (do_KL)
           {
             apply_geo_norm(fan_data, norm_geo_data);
-            info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
+            info(format("KL {}", KL(measured_fan_data, fan_data, threshold_for_KL)));
           }
         if (do_display)
           {
@@ -263,7 +274,7 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
           if (do_KL)
             {
               apply_block_norm(fan_data, norm_block_data);
-              info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
+              info(format("KL {}", KL(measured_fan_data, fan_data, threshold_for_KL)));
             }
           if (do_display)
             {
@@ -278,15 +289,17 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
         if (do_KL)
           {
             DetectorEfficiencies fan_sums(IndexRange2D(num_physical_rings, num_physical_detectors_per_ring));
-            GeoData3D geo_data(num_physical_axial_crystals_per_basic_unit, num_physical_transaxial_crystals_per_basic_unit / 2,
-                               num_physical_rings, num_physical_detectors_per_ring); // inputes have to be modified
+            GeoData3D geo_data(num_physical_axial_crystals_per_basic_unit,
+                               num_physical_transaxial_crystals_per_basic_unit / 2,
+                               num_physical_rings,
+                               num_physical_detectors_per_ring); // inputes have to be modified
             BlockData3D block_data(num_axial_blocks, num_transaxial_blocks, num_axial_blocks - 1, num_transaxial_blocks - 1);
 
             make_fan_sum_data(fan_sums, fan_data);
             make_geo_data(geo_data, fan_data);
             make_block_data(block_data, measured_fan_data);
 
-            info(boost::format("KL on fans: %1%, %2") % KL(measured_fan_data, fan_data, 0) % KL(measured_geo_data, geo_data, 0));
+            info(format("KL on fans: {}, {}", KL(measured_fan_data, fan_data, 0), KL(measured_geo_data, geo_data, 0)));
           }
       }
   }

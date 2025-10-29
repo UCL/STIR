@@ -2,16 +2,16 @@
  Copyright (C) 2006 - 2007, Hammersmith Imanet Ltd
  Copyright (C) 2010 - 2013, King's College London
  This file is part of STIR.
- 
+
  SPDX-License-Identifier: Apache-2.0
- 
+
  See STIR/LICENSE.txt for details
  */
 /*!
  \file
  \ingroup ImageProcessor
  \brief Implementations for class stir::MaximalImageFilter3D
- 
+
  \author Charalampos Tsoumpas
  \author Kris Thielemans
 
@@ -21,11 +21,10 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DiscretisedDensity.h"
 
-
 START_NAMESPACE_STIR
 
 template <typename elemT>
-MaximalImageFilter3D<elemT>:: MaximalImageFilter3D(const CartesianCoordinate3D<int>& mask_radius)
+MaximalImageFilter3D<elemT>::MaximalImageFilter3D(const CartesianCoordinate3D<int>& mask_radius)
 {
   mask_radius_x = mask_radius.x();
   mask_radius_y = mask_radius.y();
@@ -33,20 +32,18 @@ MaximalImageFilter3D<elemT>:: MaximalImageFilter3D(const CartesianCoordinate3D<i
 }
 
 template <typename elemT>
-MaximalImageFilter3D<elemT>:: MaximalImageFilter3D()
+MaximalImageFilter3D<elemT>::MaximalImageFilter3D()
 {
   set_defaults();
 }
 
 template <typename elemT>
 Succeeded
-MaximalImageFilter3D<elemT>::virtual_set_up (const DiscretisedDensity<3,elemT>& density)
+MaximalImageFilter3D<elemT>::virtual_set_up(const DiscretisedDensity<3, elemT>& density)
 {
   /*   if (consistency_check(density) == Succeeded::no)
        return Succeeded::no;*/
-  maximal_filter = 
-    MaximalArrayFilter3D<elemT>(Coordinate3D<int>
-                                (mask_radius_z, mask_radius_y, mask_radius_x));
+  maximal_filter = MaximalArrayFilter3D<elemT>(Coordinate3D<int>(mask_radius_z, mask_radius_y, mask_radius_x));
 
   return Succeeded::yes;
 }
@@ -55,16 +52,17 @@ template <typename elemT>
 void
 MaximalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density) const
 {
-  //assert(consistency_check(density) == Succeeded::yes);
-  maximal_filter(density);   
+  // assert(consistency_check(density) == Succeeded::yes);
+  maximal_filter(density);
 }
 
 template <typename elemT>
 void
-MaximalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
+MaximalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density,
+                                           const DiscretisedDensity<3, elemT>& in_density) const
 {
-  //assert(consistency_check(in_density) == Succeeded::yes);
-  maximal_filter(out_density,in_density);   
+  // assert(consistency_check(in_density) == Succeeded::yes);
+  maximal_filter(out_density, in_density);
 }
 
 template <typename elemT>
@@ -79,7 +77,7 @@ MaximalImageFilter3D<elemT>::set_defaults()
 }
 
 template <typename elemT>
-void 
+void
 MaximalImageFilter3D<elemT>::initialise_keymap()
 {
   base_type::initialise_keymap();
@@ -91,16 +89,13 @@ MaximalImageFilter3D<elemT>::initialise_keymap()
 }
 
 template <>
-const char * const 
-MaximalImageFilter3D<float>::registered_name =
-  "Maximal";
+const char* const MaximalImageFilter3D<float>::registered_name = "Maximal";
 
-
-#  ifdef _MSC_VER
-// prevent warning message on reinstantiation, 
+#ifdef _MSC_VER
+// prevent warning message on reinstantiation,
 // note that we get a linking error if we don't have the explicit instantiation below
-#  pragma warning(disable:4660)
-#  endif
+#  pragma warning(disable : 4660)
+#endif
 
 template class MaximalImageFilter3D<float>;
 

@@ -17,7 +17,7 @@
 
   \author Kris Thielemans
   \author C. Ross Schmidtlein (added stir::Box3D Shape class)
-  
+
 */
 
 #include "stir/Shape/Ellipsoid.h"

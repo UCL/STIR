@@ -44,7 +44,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 5.1}}
+ Version 6.3}}
 \end{center}
 
 \end{spacing}
@@ -53,7 +53,7 @@
 
 \noindent 
 K. Thielemans \\
-{\it \small Hammersmith Imanet Ltd; Algorithms and Software Consulting Ltd; University College London}\\
+{\it \small University College London; Algorithms and Software Consulting Ltd (formerly Hammersmith Imanet Ltd}\\
 Ch. Tsoumpas\\ 
 {\it \small Hammersmith Imanet Ltd; Imperial College London; King's College London}\\
 D. Sauge, C. Labb\'e, C. Morel \\
@@ -130,7 +130,7 @@ Although we attempt to keep all documentation up-to-date, we
 recommend to read documentation in the following order:
 \begin{itemize}
 \item general overview documents, such as this User's Guide
-\item the \url{http://stir.sourceforge.net/wiki}{STIR Wiki}
+\item the \url{https://github.com/UCL/STIR/wiki/}{STIR Wiki}
 \item 
 online generated documentation (produced by doxygen). This is 
 produced from comments and (partly) code in the source files.
@@ -142,46 +142,69 @@ web-site on how to search these.
 Any comments on documentation, and especially contributions are 
 always welcome. Please use the stir-users mailing list.
 
+\section{Installing STIR via a pre-built version }
+\subsection{
+Installing via conda}
+The easiest way is to use \texttt{conda} (or one of its derivatives such as \texttt{mamba}):
+\begin{verbatim}
+conda config --add channels conda-forge
+conda create -n stirenv  stir  matplotlib
+conda activate stirenv
+
+# use STIR executable or python
+
+# deactivate the environment
+conda deactivate
+\end{verbatim}
+See \url{https://github.com/UCL/STIR/wiki/Installing-STIR-with-conda}{our Wiki page} for
+more detail, including on how to get a development version.
+
+\subsection{SIRF distributions}
+CCP SyneRBI distributes SIRF with its dependencies, including STIR,
+see \url{https://www.ccpsynerbi.ac.uk/downloads/}{its download page} for
+a Virtual Machine, docker etc. However, only the STIR libraries are included in
+these distributions. You can easily install ``full'' STIR on the Virtual Machine though,
+see \url{https://github.com/SyneRBI/SIRF-SuperBuild/blob/master/VirtualBox/documentation/README.md}{its documentation}.
+
 \section{
-Installation}
+Installation from source}
 This section describes how to install STIR. It is complemented by information on the
-\url{http://stir.sourceforge.net/wiki}{STIR Wiki} with information for specific systems etc.
+\url{http://github.com/UCL/STIR/wiki}{STIR Wiki} with information for specific systems etc.
+
+Note that as opposed to using the instructions below, you can also
+the \url{https://github.com/SyneRBI/SIRF-SuperBuild/blob/master/README.md}{SIRF-Superbuild}
+of \url{https://www.ccpsynerbi.ac.uk/}{SyneRBI} to build STIR with CMake. This will take care of all dependencies.
+Note that you will need to use advanced CMake variables \texttt{STIR\_BUILD\_EXECUTABLES=ON}
+and \texttt{STIR\_BUILD\_SWIG\_PYTHON=ON}.
+
 
 \subsection{
 Installing source files}
 
-Download the source at the \textit{STIR} site: 
-\begin{center}
-\url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
-\end{center}
-or from \url{https://github.com/UCL/STIR/releases}{github.com/UCL/STIR/releases}.\\
+Download the source from \url{https://github.com/UCL/STIR/releases}{github.com/UCL/STIR/releases}.\\
 Alternatively, if you are feeling adventurous, you can get the most-recent
-developer version (no guarantees!) of STIR from\\
+developer version (no guarantees!) of STIR from
 \url{https://github.com/UCL/STIR}{https://github.com/UCL/STIR}.\\
-Download the source files in the zip format. You can then use unzip from \\
-\url{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
-Extract using
-\cmdline{unzip -a file.zip}
-
-
-The \texttt{-a} option makes sure that files are extracted using the 
-end-of-line convention appropriate for your system. Note that 
-other programs that can handle zip files (such as WinZip) should 
-work as well, although you might have problems with the EOL convention.
-
 
 Note that you can put the distribution in any location (it does 
 not have to be your home directory).
 
 
-The result is a \textbf{STIR} directory and subdirectories, described 
-in the annex section.
+After unpacking, you should have a \textbf{STIR} directory (subdirectories are described 
+in the doxygen documentation).
 
 \subsection{
 Installing external software}
 STIR relies on some external software and a few external libraries which enable certain functionality. 
 On most systems, you should be able to get these using your package manager. 
 Please check the Wiki for most up-to-date information.
+
+\subsubsection{
+C++ Compiler}
+
+In order to compile and run the \textit{STIR} programs, you will need a compiler
+and associated tools such as \texttt{CMake}. These days, any compiler should work. We would love 
+to hear from any attempts where there are failures.
 
 \subsubsection{BOOST}
 The only required external library is the well-respected \textit{boost} library. If it
@@ -195,29 +218,19 @@ where to find the \texttt{boost/} directory with all the include files
 \subsubsection{JSON}
 The \texttt{HUToMu} and \texttt{Radionuclide} database functionality parse a file in JSON format. We use the
 \url{https://github.com/nlohmann/json}{nlohman\_json} library for this. Installation
-instructions for this library are available on its github page.
+instructions for this library are available on its github page or you can get it via \texttt{conda}.
+Without it, we only support a few basic radionuclides.
 
 \subsubsection{
-C++ Compiler}
+Enabling ECAT 7 support\label{sec:ECAT67support}}
+{\em ECAT7 support is no longer tested.}
 
-In order to compile and run the \textit{STIR} programs, you will need a compiler
-and associated tools. These days, any compiler should work. See the 
-\url{http://sourceforge.net/stir}{STIR Wiki} for more
-specific information of which compilers we have tried.
-We would love 
-to hear from any attempts of using another compiler. 
-
-\subsubsection{
-Enabling ECAT 7 support}
-\label{sec:ECAT67support}
 Older CTI (Siemens) scanners use a file format called ECAT\texttrademark{}.
 At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library (called LLN in
 the rest of this document).\footnote{\textit{STIR} versions 1.? came with
 specific files for ECAT6 support without the need for the LLN library. 
 However, due to license restrictions this is now no longer the case.} 
-The library might still be available on  
-\url{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
-It is also available for GATE users.
+The library could be  available on  the OpenGATE website.
 
 You have to download that library and issue 'make --f Makefile.unix' 
 (or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
@@ -235,10 +248,20 @@ by the GE Signa PET/MR and some PET/CT scanners (depending on their software ver
 For most operating systems this can be done via your package manager which we highly recommend. You could also
 download from the \url{https://www.hdfgroup.org/downloads/hdf5/}{HDF5 group download page}.
 
+\subsubsection{
+Enabling ROOT support\label{sec:installROOT}}
+STIR can read CERN ROOT files from GATE for PET data (see section \ref{sec:ROOTIO}). Check the \url{https://root.cern/install/}{installation instructions for ROOT}.
+
+\subsubsection{
+Enabling ITK support\label{sec:installITK}}
+STIR can use \url{http://www.itk.org}{ITK}, a large open source library.  Specifying this
+ enables NRRD, MetaIO and Nifti IO, and DICOM reading.
+ Use your package manager, including conda or pip, or check the \url{https://itk.org/download/}{installation instructions for ITK}.
+
 \subsection{
 Building}
-Since version 2.2, \textit{STIR} contains files to build STIR using the platform-independent
-\url{"http://www.cmake.org"}{CMake}. This is now the only to build STIR as
+\textit{STIR} contains files to build STIR using the platform-independent
+\url{"http://www.cmake.org"}{CMake}. This is the only option to build STIR as
 it is easier for configuration and finding system dependencies.
 \subsubsection{
 Using CMake}
@@ -309,10 +332,6 @@ STIR dramatically.}
 % ROW 
 {\raggedright \textit{STIR\_OPENMP}} & 
 {\raggedright Toggles between ON, OFF. Enable threaded processing using OPENMP.
-\footnote{Since version 2.0, \textit{STIR} contains preliminary code for running \texttt{FBP2D} in threaded mode
-(contribution by Tobias Beisel, Univ. of Paderborn). You need a compiler that 
-supports \texttt{OPENMP}. Note however, that this code doesn't presently result 
-in a decent speed-up of \texttt{FBP2D}.}
 See section \ref{sec:RunningWithOPENMP} for information on how to run programs using OPENMP.
 } \\
 \hline
@@ -347,14 +366,11 @@ You can also (optionally) specify locations of some external libraries for addit
 capabilities of STIR. 
 \begin{itemize}
 \item LLN files for ECAT support via \texttt{LLN\_INCLUDE\_DIRS} and \texttt{LLN\_LIBRARIES}.
-\item AVW\texttrademark{} (a commercial library\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.})
-via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.\\
-\textit{AVW support has not been tested since about 2010.}
-\item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
- enables NRRD, MetaIO and Nifti IO.
+See section \ref{sec:ECAT67support}.
+\item ITK\_DIR, use IO from ITK, see section \ref{sec:installITK}.
 \item CERN ROOT files used by GEANT and GATE via \texttt{ROOT\_DIR}.
   If this is not set, we will try to get it from the \texttt{ROOTSYS} environment (or CMake) variable.
+  See \ref{sec:installROOT}.
 \item GE RDF\texttrademark{} 9 support via \texttt{HDF5\_ROOT} and related variables (requires the HDF5 library).
 \end{itemize}
 
@@ -370,15 +386,16 @@ provides normally a default in a system location, but you could set it for insta
 \texttt{./install} to put the files inside your build directory.
 \item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
 a particular version of the C++ standard (if it supports it). It is set 
-to \texttt{11} since STIR 5.0. Other possible allowed values are
-\texttt{14} and \texttt{17}. More recent version have not yet been tested.
+to \texttt{17} since STIR 6.2. Other possible allowed values are
+\texttt{20} and \textit{23}. More recent version have not yet been tested.
 \end{itemize}
 
 When building the Python code, and you have multiple versions of Python installed,
 it is often necessary to specify the correct Python executable that you want, together with
-the libraries. You can use the \texttt{PYTHON\_EXECUTABLE} variable for this. If you
-specify the full path to the actual executable, this should be sufficient. If not, set
-\texttt{PYTHON\_LIBRARY} as well.
+the libraries. You can use the \texttt{Python\_EXECUTABLE} variable for this. If you
+specify the full path to the actual executable, this should be sufficient.
+\footnote{If you are using CMake 3.13 or older, use \texttt{PYTHON\_EXECUTABLE}.
+In this case, you might have to set \texttt{PYTHON\_LIBRARY} as well.}
 
 There are various other variables that can be set, some of which are only visible if you toggled
 the display of \texttt{Advanced} variables on. They should only be set by advanced users, or if a package
@@ -397,7 +414,7 @@ The lln library does not compile on Mac OS.
 
 If you want to use the X windows display routines,  CMake
 should work out-of-the-box if you have suitable libraries installed, see the wiki
-for required packages.
+for required packages. However, these will be removed soon.
 
 { \subsubsubsubsection{X development libraries}
 }
@@ -423,7 +440,8 @@ display, you could try 8bit mode anyway.
 
 { \subsubsubsection{Cygwin on Windows}
 }
-\textit{Cygwin support has not been tested since about 2018 but likely still works. Instructions below might be out-of-date though.}
+\textit{Cygwin support has not been tested since about 2018 but likely still works. Instructions below are likely out-of-date though.
+We highly recommend to use WSL instead.}
 
 If you are using Windows but would like 
 to have nearly everything that Linux/Unix has to offer, Cygwin could help. Check out http://cygwin.com.
@@ -689,13 +707,6 @@ Siemens PET/CT and PET/MR scanners use a file format that is based on the mentio
 proposed Interfile standard but with some variations. We read this since STIR 4.0,
 but do not write it.
 
-\subsubsection{VOLPET sinograms}
-
-The GE VOLPET sinogram format for the GE Advance was supported for reading, but 
-only for data files with a single data set, maximum ring 
-difference 11 and contain 281 bins * 256 segments * 336 views.
-This has not been tested in a long time so will be removed in a future version.
-
 \subsubsection{RDF9 data}
 See section \ref{sec:RDFsupport} for enabling support for data from GE scanners
 that use the GE RDF format. We currently support uncompressed listmode,
@@ -718,11 +729,6 @@ is currently ignored.
 For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
 
 \textbf{Warning} ECAT7 support is no longer tested.
-
-\subsubsection{Image IO using the AVW library}
-\textit{AVW support has not been tested since about 2010.}
-
-See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 
 \subsubsection{Image IO using the ITK library \label{sec:ITKIO}}
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
@@ -1082,17 +1088,18 @@ The \textit{STIR} implementation of SSRB is a generalisation that applies
 the same idea while still allowing preserving some of the obliqueness. 
 For instance, for a dataset with 9 segments, \textbf{SSRB} can produce 
 a new dataset with only 3 segments. This essentially increases 
-the axial compression (or \textit{span} in CTI terminology), see the 
+the axial compression (or \textit{span} in CTI/Siemens terminology), see the 
 \textit{STIR} Glossary on axial compression. In addition, \textbf{SSRB} can 
 introduce extra \textit{mashing} (see the \textit{STIR} Glossary) of the data, 
-i.e. add views together.
+i.e. add views and/or TOF bins together.
 
 
 \textit{Usage:}
 
 \cmdline{SSRB output\_filename input\_projdata\_name {\textbackslash} \\
 num\_segments\_to\_combine [num\_views\_to\_combine {\textbackslash}\\
-{[}do\_normalisation [max\_in\_segment\_num\_to\_process ]]]}
+{[}do\_normalisation [max\_in\_segment\_num\_to\_process {\textbackslash}\\
+{[}num\_tof\_bins\_to\_combine ]]]]}
 or
 \cmdline{SSRB --template template\_filename output\_filename input\_projdata\_name [do\_normalisation]}
 
@@ -1106,8 +1113,8 @@ data to combine.
 the result is normalised, i.e. divided by \textit{num\_segments\_to\_combine*num\_views\_to\_combine}. 
 This is appropriate for rebinning data where normalisation has 
 already been applied, but inappropriate otherwise.
-
-\item[template\_filename] inicated by the \textit{--template} flag, 
+\item[num\_tof\_bins\_to\_combine] defaults to 1, so TOF bins are not combined.
+\item[template\_filename] indicated by the \textit{--template} flag, 
 is the sinogram type that the \textit{input\_projdata\_name} will 
 be mapped to. This allows for the effective use of 
 \textit{num\_segments\_to\_combine} to be an even number, 
@@ -1454,9 +1461,13 @@ from pre-corrected projection data.
 \item[subset sensitivity filenames]
 This should be used instead of \textit{sensitivity filename} when using subset
 sensitivities. It should provide a pattern \'{a} la \texttt{printf}\footnote{In fact,
-\texttt{boost::format} is used, so the pattern can be more flexible.} to allow
+\texttt{fmt::format} is used, so the pattern can be more flexible.} to allow
 constructing different filenames for each subset.
 
+\item[use time-of-flight sensitivities]
+Defaults to 0, i.e. off. By default, the sensitivity calculation will be non-TOF. However,
+this fails when using a TOF proj-data, as used by Siemens for the Vision 600 etc. In this case,
+you will need to set this parameter to 1.
 
 \item[Projector pair type]
 Specifies the back/forward projector pair to be used in the reconstruction. 
@@ -2159,6 +2170,15 @@ FBP3DRP defaults to using the ``pure'' Colsher filter. \\
 \textbf{Warning:} the current version of the interpolating backprojector, 
 the default backprojector used by FBP3DRP, has a central artefact 
 on some systems (including Sparc and 64-bit AMD and Intel processors).
+
+\subsubsection{
+Spline Reconstruction Technique (SRT2D and SRT2DSPECT)}
+
+Since STIR 6.3, SRT has been added. This is an alternative analytic reconstruction method.
+For SPECT, it has the notable advantage that attenuation can be taken into account correctly,
+i.e., it implements the inverse of the attenuation (2D) Radon transform.
+The version in STIR implements the algorithm from [Fok2006]. A full description is currently
+under review [Kyr2025].
 
 \subsection{
 Scatter Estimation and simulation}
@@ -2863,6 +2883,9 @@ and the STIR version. Run without arguments to get usage information.
 (Equivalent functions in C++/Python are \texttt{get\_STIR\_config\_dir},
 \texttt{get\_STIR\_doc\_dir} and \texttt{get\_STIR\_examples\_dir}).
 
+\textbf{stir\_list\_registries} is a utility that list possible values of various
+registries, which can be useful to know what to use in a <tt>.par<tt> file.
+
 \subsubsection{
 Displaying and performing operations on data}
 
@@ -3376,27 +3399,6 @@ wrong thing.
 }
 Allows copying header info between ECAT7 files. Check doxygen, or run without 
 parameters for usage info.
-
-{ \subsubsubsection{conv\_AVW}
-}
-\label{sec:convAVW}
-\textit{AVW support has not been tested since about 2010.}
-
-If you have the \textit{AVW}\texttrademark  library
-\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.
-} installed on your system, the build process should have built \texttt{utilities/conv\_AVW},
-see also \ref{sec:UsingCMake}.
-This utility allows to use the \textit{AVW} library to read an image, and then write it out
-using \textit{STIR} as Interfile.\\
-\textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
-on the file format. For instance, it reads \textit{ECAT7} files using a z-flip compared
-to \textit{STIR}.
-
-It normally should be run as follows:
-\cmdline{conv\_AVW [ --flip\_z ] imagefile}
-
-It will require access to a run-time license for \textit{AVW}.
 
 { \subsubsubsection{conv\_GATE\_projdata\_to\_interfile}
 }
@@ -4450,6 +4452,12 @@ This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2
   END Relative Difference Prior Parameters:=
   \end{verbatim}
 
+  Note that if you have the \em{CUDA} drivers (and toolkit when building), setting
+  \begin{verbatim}
+  prior type := Cuda Relative Difference Prior
+  \end{verbatim}
+  will enable a \em{CUDA} implementation (with some restrictions). Other parameter
+  settings are identical.
 
 { \subsubsubsection{Logcosh} \label{sec:priors:Logcosh}
 }
@@ -5633,7 +5641,7 @@ variable), see section \ref{sec:UsingCMake}.
 \subsubsection{
 X Windows display}
 \label{sec:displayX}
-\textbf{Warning} This functionality is deprecated and will be removed in a next version.
+\textbf{Warning} This functionality is deprecated and will be removed in STIR v7.0.
 
 This provides a (very basic) way of displaying bitmaps when using 
 X windows. This works by creating a new window where some of 
@@ -5723,25 +5731,28 @@ See the doxygen documentation for an overview of the directory tree with brief d
 \label{sec:ExternalProjectC++}}
 STIR exports its CMake settings. Therefore, an external project can do
 \begin{verbatim}
-find_package(STIR 5.1 CONFIG)
+find_package(STIR 6.0 REQUIRED CONFIG)
 add_library(my_lib file1.cxx file2.cxx)
 # my_lib uses STIR functionality
-target_link_libraries(my_lib ${STIR_LIBRARIES})
+target_link_libraries(my_lib PUBLIC ${STIR_LIBRARIES})
 add_executable(my_exe my_exe.cxx ${STIR_REGISTRIES})
-target_link_libraries(my_exe my_lib)
+target_link_libraries(my_exe PUBLIC my_lib))
 \end{verbatim}
 In addition, if your CMake is older than 3.12, you need to add
 \begin{verbatim}
 include_directories("${STIR_INCLUDE_DIRS}")
 \end{verbatim}
-to your CMake file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
-For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
+to your CMakeLists.txt file to get the source code files listed in \texttt{STIR\_REGISTRIES} to compile.
+(For more recent CMake, this should not be necessary (as \texttt{STIR\_REGISTRIES} is set to
 a list of compiled files).
+
+A fully working example is provided in the \texttt{examples/C++} folder, see also the
+\url{https://github.com/UCL/STIR/tree/master/examples/C\%2B\%2B/using_installed_STIR}{using\_installed\_STIR folder on GitHub}.
 
 Note that if CMake did not find the STIR files, you can point it to where they are installed.
 For example, if you installed STIR with
 \texttt{CMAKE\_INSTALL\_PREFIX=\$HOME/install}, set
-\texttt{STIR\_DIR=\$HOME/install/lib/cmake}.
+\texttt{CMAKE\_PREFIX\_PATH=\$HOME/install} or \texttt{STIR\_DIR=\$HOME/install/lib/cmake/STIR-6.0}.
 \footnote{This uses CMake Config mode for \texttt{find\_package}. There is no need for a \texttt{FindSTIR.cmake}}
 
 \section{
@@ -5749,20 +5760,9 @@ Future developments and Support}
 
 The \textit{STIR} library, in its current state, possesses many capabilities. 
 The developers, however, look forward to still further increases 
-in the flexibility and power of the software. Some of the developments 
-being discussed are:
-
-\begin{itemize}
-\item
-expanded library of polymorphic classes (e.g. image grids, and 
-ordered subsets)
-\item
-additional scanners, also for SPECT
-\item
-additional data formats support, without conversion to Interfile.
-\item
-point-spread function reconstruction
-\end{itemize}
+in the flexibility and power of the software.
+Please check the \url{https://github.com/UCL/STIR/milestones}{GitHub milestones}
+for some information.
 
 
 While support for the library is on a voluntary basis, users 
@@ -5771,34 +5771,11 @@ mailing lists (see the `Mailing Lists' section of the \textit{STIR} website
 \url{http://stir.sourceforge.net/ }{http://stir.sourceforge.net}) 
 where they can follow developments of the software and obtain 
 helpful information from other users. Questions will ONLY be 
-answered (if at all) when directed to the mailing list.
+answered (if at all) when creating a \url{https://github.com/UCL/STIR/issues}{GitHub issue} (preferred) or
+when directed to the mailing list.
 
 Commercial support is available from \url{http://asc.uk.com}{Algorithms and
 Software Consulting Ltd}.
-
-Below, we list of some of the features that might make it into the next releases. 
-However, which feature is actually finalised/implemented depends 
-on the needs of the developers. If you want one of these features 
-and are willing to help, let us know.
-\begin{itemize}
-\item
-More automatic testing programs
-\item
-More algorithms: potentially ART,  
-OSCB [Ben99b] 
-\item
-More projectors
-\item
-More priors
-\item
-Extending the parallelisation of OSMAPOSL and OSSPS to FBP3DRP etc, or using OPEMMP
-\item
-Compatibility of the interpolating backprojector with recent 
-processors.
-\item
-More kinetic models: Spectral Analysis, Logan Plot
-\end{itemize}
-
 
 
 
@@ -5899,6 +5876,9 @@ New York}.
 reconstruction using ordered subsets of projection data. \textit{IEEE 
 Trans. Med. Imaging}, MI-13: 601-609.
 
+{[}Fok2006] Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
+single photon emission computed tomography and its numerical implementation." \textit{Journal of the Royal Society Interface} 3.6 (2006).
+
 {[}Fus13]  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans, \textbf{ (2013)} Integration of advanced 3D SPECT modeling into the open-source STIR framework, \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676.
 
 {[}Fus14] Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Domenec Ros, Kris Thielemans, \textbf{(2014)}  Evaluation of the novel 3D SPECT Modelling Algorithm in the STIR Reconstruction Framework: Simple vs. full attenuation correction, \textit{proc. IEEE MIC 2013}, Seoul, Korea.
@@ -5920,6 +5900,9 @@ Klein, G. J., B. W. Reutter, and R. H. Huesman \textbf{(1996)}, Non-rigid summin
 Science Symposium Conference Record},
 vol. 2, pp. 1339-1342, 
 \url{http://dx.doi.org/10.1109/NSSMIC.1996.591692}{doi 10.1109/NSSMIC.1996.591692}
+
+[Kyr2025]
+Kyriakopoulou, D., A. Fokas, K. Thielemans \textbf{2025}, submitted to \textt{Inverse Problems}.
 
 {[}Lab97] Labbe C, Ashburner J, Koepp M, Spinks T, Richardson M 
 and Cunningham V \textbf{(1997)} Accurate PET quantification using 

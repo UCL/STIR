@@ -26,59 +26,62 @@
 START_NAMESPACE_STIR
 
 Timer::Timer()
-{  
+{
   running = false;
   previous_total_value = 0.;
-  
 }
 
 Timer::~Timer()
 {}
 
-void Timer::start(bool do_reset)
-{ 
+void
+Timer::start(bool do_reset)
+{
   if (!running)
-  {
-    if (do_reset)
-      reset();
-    running = true;
-    previous_value = get_current_value();
-  }
+    {
+      if (do_reset)
+        reset();
+      running = true;
+      previous_value = get_current_value();
+    }
   else if (do_reset)
     error("Timer::start called requesting reset, but the timer is running");
 }
 
-void Timer::stop()
-{ 
+void
+Timer::stop()
+{
   if (running)
-  {
-    previous_total_value += get_current_value() - previous_value;
-    running = false;
-  }
+    {
+      previous_total_value += get_current_value() - previous_value;
+      running = false;
+    }
 }
 
 #ifdef OLDDESIGN
-void Timer::restart() 
-{ 
+void
+Timer::restart()
+{
   previous_total_value = 0.;
   running = false;
   start();
 }
 #endif
 
-void Timer::reset() 
-{ 
+void
+Timer::reset()
+{
   assert(running == false);
   previous_total_value = 0.;
 }
 
-double Timer::value() const
-{ 
-  double tmp = previous_total_value;  
+double
+Timer::value() const
+{
+  double tmp = previous_total_value;
   if (running)
     tmp += get_current_value() - previous_value;
   return tmp;
 }
-
 
 END_NAMESPACE_STIR

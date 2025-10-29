@@ -1,7 +1,3 @@
-//
-//
-
-
 #ifndef _BackProjectorByBinUsingProjMatrixByBin_
 #define _BackProjectorByBinUsingProjMatrixByBin_
 
@@ -35,69 +31,62 @@
 //#include "stir/RelatedViewgrams.h"
 
 class Viewgrams;
-template <typename elemT> class RelatedViewgrams;
+template <typename elemT>
+class RelatedViewgrams;
 class ProjDataInfoCylindricalArcCorr;
-
 
 START_NAMESPACE_STIR
 
 /*!
-  \brief This implements the BackProjectorByBin interface, given any 
+  \brief This implements the BackProjectorByBin interface, given any
 ProjMatrixByBin object
-    
+
   */
-class BackProjectorByBinUsingProjMatrixByBin: 
-  public RegisteredParsingObject<BackProjectorByBinUsingProjMatrixByBin,
-                                 BackProjectorByBin>
-{ 
+class BackProjectorByBinUsingProjMatrixByBin
+    : public RegisteredParsingObject<BackProjectorByBinUsingProjMatrixByBin, BackProjectorByBin>
+{
 public:
-    //! Name which will be used when parsing a BackProjectorByBin object
-  static const char * const registered_name; 
+  //! Name which will be used when parsing a BackProjectorByBin object
+  static const char* const registered_name;
 
   BackProjectorByBinUsingProjMatrixByBin();
 
-  BackProjectorByBinUsingProjMatrixByBin (  
-    const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr);
+  BackProjectorByBinUsingProjMatrixByBin(const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr);
 
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
-  */
-  virtual void set_up(		 
-    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
-    );
-	 
-  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+   */
+  void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+              const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
+              ) override;
 
+  const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override;
 
-  virtual void actual_back_project(DiscretisedDensity<3,float>& image,
-                                   const RelatedViewgrams<float>&,
-		                   const int min_axial_pos_num, const int max_axial_pos_num,
-		                   const int min_tangential_pos_num, const int max_tangential_pos_num);
+  void actual_back_project(DiscretisedDensity<3, float>& image,
+                           const RelatedViewgrams<float>&,
+                           const int min_axial_pos_num,
+                           const int max_axial_pos_num,
+                           const int min_tangential_pos_num,
+                           const int max_tangential_pos_num) override;
 
+  shared_ptr<ProjMatrixByBin>& get_proj_matrix_sptr() { return proj_matrix_ptr; }
 
-  shared_ptr<ProjMatrixByBin> &
-    get_proj_matrix_sptr(){ return proj_matrix_ptr ;} 
-  
-  
+  BackProjectorByBinUsingProjMatrixByBin* clone() const override;
+
 protected:
-
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
 
+  // currently not exposed, but leaving this ine for the future
+  void actual_back_project(DiscretisedDensity<3, float>& image, const Bin& bin);
+
 private:
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
-
-
- 
 
 END_NAMESPACE_STIR
 
 //#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.inl"
 
 #endif
-
-

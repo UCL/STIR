@@ -2,8 +2,8 @@
 //
 
 /*!
-  \file 
- 
+  \file
+
   \brief A simple program to test the stir::DetectionPosition class
 
   \author Kris Thielemans
@@ -32,20 +32,19 @@ START_NAMESPACE_STIR
 class DetectionPosition_Tests : public RunTests
 {
 public:
-  void run_tests();
+  void run_tests() override;
 };
-
 
 void
 DetectionPosition_Tests::run_tests()
 {
   cerr << "Testing DetectionPosition classes" << endl
-       <<"  (There should be only informative messages here starting with 'Testing')" << endl;
+       << "  (There should be only informative messages here starting with 'Testing')" << endl;
 
-  DetectionPosition<> pos012(0,1,2);
-  DetectionPosition<> pos013(0,1,3);
-  DetectionPosition<> pos023(0,2,3);
-  DetectionPosition<> pos103(1,0,3);  
+  DetectionPosition<> pos012(0, 1, 2);
+  DetectionPosition<> pos013(0, 1, 3);
+  DetectionPosition<> pos023(0, 2, 3);
+  DetectionPosition<> pos103(1, 0, 3);
 
   check(pos012 != pos013, "012 != 013");
   check(pos012 == pos012, "012 == 012");
@@ -58,15 +57,12 @@ DetectionPosition_Tests::run_tests()
 
 END_NAMESPACE_STIR
 
-
-
 USING_NAMESPACE_STIR
 
-
-int main()
+int
+main()
 {
   DetectionPosition_Tests tests;
   tests.run_tests();
   return tests.main_return_value();
-
 }

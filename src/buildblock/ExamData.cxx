@@ -15,20 +15,16 @@
 */
 #include "stir/ExamData.h"
 
-
 #include <iostream>
 START_NAMESPACE_STIR
 
-ExamData::
-ExamData():
-    exam_info_sptr(new ExamInfo())
+ExamData::ExamData()
+    : exam_info_sptr(new ExamInfo())
 {}
 
-
-ExamData::ExamData(const shared_ptr<const ExamInfo> &_this_exam) :
-    exam_info_sptr(_this_exam)
+ExamData::ExamData(const shared_ptr<const ExamInfo>& _this_exam)
+    : exam_info_sptr(_this_exam)
 {}
-
 
 ExamData::~ExamData()
 {}
@@ -40,9 +36,9 @@ ExamData::set_exam_info(ExamInfo const& new_exam_info)
 }
 
 void
-ExamData::set_exam_info_sptr(shared_ptr<const ExamInfo>  new_exam_info_sptr)
+ExamData::set_exam_info_sptr(shared_ptr<const ExamInfo> new_exam_info_sptr)
 {
-  this->exam_info_sptr=new_exam_info_sptr;
+  this->exam_info_sptr = new_exam_info_sptr;
 }
 
 const ExamInfo&

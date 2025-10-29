@@ -37,90 +37,89 @@ START_NAMESPACE_STIR
   \par Requirements
     \c This needs access to the IRX libraries.
   */
-class InputStreamWithRecordsFromUPENN: public RegisteredObject< InputStreamWithRecordsFromUPENN >
+class InputStreamWithRecordsFromUPENN : public RegisteredObject<InputStreamWithRecordsFromUPENN>
 {
 public:
-    typedef std::vector<long long int>::size_type SavedPosition;
+  typedef std::vector<long long int>::size_type SavedPosition;
 
-    InputStreamWithRecordsFromUPENN();
+  InputStreamWithRecordsFromUPENN();
 
-    unsigned long int get_total_number_of_events(CListRecordPENN& record);
+  unsigned long int get_total_number_of_events(CListRecordPENN& record);
 
-    virtual inline Succeeded
-    create_output_file(const std::string ofilename) = 0;
+  virtual inline Succeeded create_output_file(const std::string ofilename) = 0;
 
-    virtual ~InputStreamWithRecordsFromUPENN() {}
-    //! Must be called before calling for the first event.
-    virtual Succeeded set_up();
+  virtual ~InputStreamWithRecordsFromUPENN() {}
+  //! Must be called before calling for the first event.
+  virtual Succeeded set_up();
 
-    virtual
-    Succeeded get_next_record(CListRecordPENN& record) = 0;
+  virtual Succeeded get_next_record(CListRecordPENN& record) = 0;
 
-    //! go back to starting position
-    virtual Succeeded reset() = 0;
+  //! go back to starting position
+  virtual Succeeded reset() = 0;
 
-    virtual SavedPosition save_get_position() = 0;
+  virtual SavedPosition save_get_position() = 0;
 
-    virtual
-    Succeeded set_get_position(const SavedPosition&) = 0;
+  virtual Succeeded set_get_position(const SavedPosition&) = 0;
 
-    inline
-    std::vector<std::streampos> get_saved_get_positions() const;
+  inline std::vector<std::streampos> get_saved_get_positions() const;
 
-    inline
-    void set_saved_get_positions(const std::vector<std::streampos>& );
+  inline void set_saved_get_positions(const std::vector<std::streampos>&);
 
-    inline
-    std::streambuf& get_stream(){/*return &this->inputList;*/}
+  inline std::streambuf& get_stream()
+  { /*return &this->inputList;*/
+  }
 
-//    virtual const PET::ListFileHeader* get_file_header() const = 0;
+  //    virtual const PET::ListFileHeader* get_file_header() const = 0;
 
-    virtual void set_current_record() = 0;
+  virtual void set_current_record() = 0;
 
-
-    virtual void set_new_record(const bool& d,
-                               const short int& _dt,
-                               const unsigned short int& _xa, const unsigned short int& _xb,
-                               const unsigned short int& _za, const unsigned short int& _zb,
-                               const unsigned short int& _ea, const unsigned short int& _eb) = 0;
+  virtual void set_new_record(const bool& d,
+                              const short int& _dt,
+                              const unsigned short int& _xa,
+                              const unsigned short int& _xb,
+                              const unsigned short int& _za,
+                              const unsigned short int& _zb,
+                              const unsigned short int& _ea,
+                              const unsigned short int& _eb)
+      = 0;
 
 protected:
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
-    std::string filename;
-    std::streampos starting_stream_position;
-    std::vector<std::streampos> saved_get_positions;
+  std::string filename;
+  std::streampos starting_stream_position;
+  std::vector<std::streampos> saved_get_positions;
 
-    //    uint8_t current_record[8];
-    const uint8_t* current_record;
+  //    uint8_t current_record[8];
+  const uint8_t* current_record;
 
-    int eventSize = 0;
+  int eventSize = 0;
 
-    int low_energy_window = 0;
-    int up_energy_window = 1000;
+  int low_energy_window = 0;
+  int up_energy_window = 1000;
 
-    int timeout = 0;
-    //! Total number of events
-    long unsigned int N;
-    //! Stop after a predefined number of records, regardless of their type.
-    long unsigned int abrupt_counter;
-    //! This is a flag about a low lever function that replicates a listmode file preserving
-    //! control records that are skipped in normal operations.
-    bool has_output = false;
-    //! This is a lower counter to abruptly stop the listmode file.
-    bool abrupt_stop;
-    //! Minimum energy channel
-    int minE_chan;
-    //! Maximum energy channel
-    int maxE_chan;
-    //! In some processes it might be better to filter prompts and delayeds
-    //! early.
-    bool keep_prompt;
-    //! In some processes it might be better to filter prompts and delayeds
-    //! early.
-    bool keep_delayed;
+  int timeout = 0;
+  //! Total number of events
+  long unsigned int N;
+  //! Stop after a predefined number of records, regardless of their type.
+  long unsigned int abrupt_counter;
+  //! This is a flag about a low lever function that replicates a listmode file preserving
+  //! control records that are skipped in normal operations.
+  bool has_output = false;
+  //! This is a lower counter to abruptly stop the listmode file.
+  bool abrupt_stop;
+  //! Minimum energy channel
+  int minE_chan;
+  //! Maximum energy channel
+  int maxE_chan;
+  //! In some processes it might be better to filter prompts and delayeds
+  //! early.
+  bool keep_prompt;
+  //! In some processes it might be better to filter prompts and delayeds
+  //! early.
+  bool keep_delayed;
 };
 
 END_NAMESPACE_STIR

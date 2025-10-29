@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2022 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2022, 2023, 2025 University College London
     Copyright (C) 2022 National Physical Laboratory
     This file is part of STIR.
 
@@ -36,13 +36,6 @@
 
 %newobject stir::Scanner::get_scanner_from_name;
 %include "stir/Scanner.h"
-
-%attributeref(stir::Bin, int, segment_num);
-%attributeref(stir::Bin, int, axial_pos_num);
-%attributeref(stir::Bin, int, view_num);
-%attributeref(stir::Bin, int, tangential_pos_num);
-%attribute(stir::Bin, float, bin_value, get_bin_value, set_bin_value);
-%include "stir/Bin.h"
 
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
@@ -106,6 +99,8 @@ stir::CartesianCoordinate3D<float>
 }
 }
 
+%nodefaultctor stir::Viewgram;
+%nodefaultctor stir::Sinogram;
 %include "stir/Viewgram.h"
 %include "stir/RelatedViewgrams.h"
 %include "stir/Sinogram.h"
@@ -139,6 +134,11 @@ stir::CartesianCoordinate3D<float>
 
 // ignore this to avoid problems with unique_ptr, and add it later
 %ignore stir::ProjData::get_subset;
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+%ignore stir::ProjData::operator+=;
+%ignore stir::ProjData::operator-=;
+%ignore stir::ProjData::operator*=;
+%ignore stir::ProjData::operator/=;
 %include "stir/ProjData.h"
 
 %newobject stir::ProjData::get_subset;
@@ -153,63 +153,94 @@ namespace stir {
     }
 
 #ifdef SWIGPYTHON
-    %feature("autodoc", "create a stir 3D Array from the projection data (internal)") to_array;
+    %feature("autodoc", "create a stir 4D Array from the projection data. (Not to be confused with as_array() which returns a numpy.ndarray)") to_array;
     %newobject to_array;
-    Array<3,float> to_array()
+    Array<4,float> to_array()
     { 
-      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      Array<4,float> array = swigstir::projdata_to_4D(*$self);
       return array;
     }
 
-    %feature("autodoc", "fill from a Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
+    %newobject as_array();
+    %feature("autodoc", "Create a new numpy array with same dimensions as the return of to_array().") as_array;
+    PyObject* as_array() const
+      {
+        auto np_array = swigstir::create_nparray_for_proj_data(*$self);
+        // TODO avoid making an extra copy, but this way, there's less code
+        // and we don't depend on knowing internal details
+        const Array<4,float> stir_array = swigstir::projdata_to_4D(*$self);
+        swigstir::fill_nparray_from_iterator<float>(np_array, stir_array.begin_all());
+        return PyArray_Return(np_array);
+      }
+
+    %feature("autodoc", "fill from a Python scalar, numpy array or iterator, e.g. array.fill(numpyarray.flat)") fill;
     void fill(PyObject* const arg)
     {
       if (PyIter_Check(arg))
       {
         // TODO avoid need for copy to Array
-        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
 	swigstir::fill_Array_from_Python_iterator(&array, arg);
+        fill_from(*$self, array.begin_all(), array.end_all());
+      }
+      else if (PyArray_Check(arg))
+      {
+        auto np_arr = (PyArrayObject*)arg;
+        if (static_cast<size_t>(PyArray_SIZE(np_arr)) != $self->size_all())
+        {
+          throw std::runtime_error("Array.fill needs to be called with numpy array of correct size");
+        }
+        // TODO avoid need for copy to Array
+        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
+	swigstir::fill_iterator_from_nparray<float>(array.begin_all(), np_arr);
         fill_from(*$self, array.begin_all(), array.end_all());
       }
       else
       {
 	char str[1000];
-	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar or an iterator or so, but is of type %s",
+	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar, numpy array or an iterator, but is of type %s",
 		arg->ob_type->tp_name);
 	throw std::invalid_argument(str);
-      } 
+      }
     }
 
 #elif defined(SWIGMATLAB)
     %newobject to_matlab;
     mxArray * to_matlab()
     { 
-      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      Array<4,float> array = swigstir::projdata_to_4D(*$self);
       return swigstir::Array_to_matlab(array); 
     }
 
     void fill(const mxArray *pm)
     { 
-      Array<3,float> array;
+      Array<4,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
       fill_from(*$self, array.begin_all(), array.end_all());
     }
 #endif
   }
 
-  // horrible repetition of above. should be solved with a macro or otherwise
-  // we need it as ProjDataInMemory has 2 fill() methods, and therefore SWIG doesn't use extended fill() from above
+  // almost repetition of ProjData above, but avoid creating additional 4D arrays
+  // we also need it as ProjDataInMemory has 2 fill() methods, and therefore SWIG doesn't use extended fill() from above
 %extend ProjDataInMemory
   {
 #ifdef SWIGPYTHON
-    %feature("autodoc", "fill from a Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
+    %feature("autodoc", "fill from a numpy.ndarray or Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
     void fill(PyObject* const arg)
     {
       if (PyIter_Check(arg))
       {
-        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
-	swigstir::fill_Array_from_Python_iterator(&array, arg);
-        fill_from(*$self, array.begin_all(), array.end_all());
+	swigstir::fill_iterator_from_Python_iterator<float>($self->begin(), $self->end(), arg);
+      }
+      else if (PyArray_Check(arg))
+      {
+        auto np_arr = (PyArrayObject*)arg;
+        if (static_cast<size_t>(PyArray_SIZE(np_arr)) != $self->size_all())
+        {
+          throw std::runtime_error("Array.fill needs to be called with numpy array of correct size");
+        }
+	swigstir::fill_iterator_from_nparray<float>($self->begin(), np_arr);
       }
       else
       {
@@ -220,10 +251,19 @@ namespace stir {
       } 
     }
 
+    %newobject as_array();
+    %feature("autodoc", "Create a new numpy array with same dimensions as the return of to_array().") as_array;
+    PyObject* as_array() const
+      {
+        auto np_array = swigstir::create_nparray_for_proj_data(*$self);
+        swigstir::fill_nparray_from_iterator<float>(np_array, $self->begin());
+        return PyArray_Return(np_array);
+      }
+
 #elif defined(SWIGMATLAB)
     void fill(const mxArray *pm)
     { 
-      Array<3,float> array;
+      Array<4,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
       fill_from(*$self, array.begin_all(), array.end_all());
     }
@@ -234,10 +274,17 @@ namespace stir {
 
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
+// need to ignore the following due to https://github.com/swig/swig/issues/2634
+// note however that Python will implement them in terms of operator+, so the user doesn't know
+%ignore stir::ProjDataInMemory::operator+=;
+%ignore stir::ProjDataInMemory::operator-=;
+%ignore stir::ProjDataInMemory::operator*=;
+%ignore stir::ProjDataInMemory::operator/=;
 %include "stir/ProjDataInMemory.h"
 
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
+  %template(FloatRelatedViewgrams) RelatedViewgrams<float>;
   %template(FloatSinogram) Sinogram<float>;
   // TODO don't want to give a name
   %template(FloatSegment) Segment<float>;
@@ -248,3 +295,14 @@ namespace stir {
   //%template(SharedProjData) boost::shared_ptr<ProjData>;
 
 }
+
+
+%include "stir/SSRB.h"
+%include "stir/inverse_SSRB.h"
+
+%newobject stir::SSRB; /*(const stir::ProjDataInfo& in_proj_data_info,
+                   const int num_segments_to_combine,
+                   const int num_views_to_combine = 1,
+                   const int num_tangential_poss_to_trim = 0,
+                   const int max_in_segment_num_to_process = -1,
+                   const int num_tof_bins_to_combine = 1);*/

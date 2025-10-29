@@ -63,14 +63,23 @@ else()
 endif()
 
 ## find external packages
+# Note that we generally need find_package even for those that are only
+# PRIVATE dependencies (such as ITK, parallelproj etc). This is because
+# otherwise their targets (such as parallelproj::parallelproj_c) don't exist,
+# and the user will get CMake errors.
+# See https://github.com/UCL/STIR/issues/1535
+
 # we use a trick by Matt McCormick (kitware)
 # to set ITK_DIR etc first before calling find_package
 # to make sure we pick the same version of the external library
+
 if (STIR_FIND_QUIETLY)
   SET(STIR_FIND_TYPE "QUIET")
 else()
   SET(STIR_FIND_TYPE "REQUIRED")
 endif()
+
+find_package(Boost @Boost_VERSION_STRING@ REQUIRED)
 
 if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
@@ -79,7 +88,6 @@ if (@ITK_FOUND@)
   if(NOT ITK_FOUND)
     SET(STIR_FOUND OFF)
   endif()
-  include(${ITK_USE_FILE})
   set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 
@@ -91,10 +99,9 @@ if (@HDF5_FOUND@)
     # We try to work-around this by first looking for both C and CXX, and then only for CXX.
     # Note that this only solves the problem if in the "client" code,
     # find_package(STIR) is called BEFORE find_package(HDF5)
-    find_package(HDF5 @HDF5_VERSION@ QUIET COMPONENTS C CXX)
+    find_package(HDF5 @HDF5_VERSION_FOR_CONFIG@ QUIET COMPONENTS C CXX)
   endif()
-  find_package(HDF5 @HDF5_VERSION@ REQUIRED COMPONENTS CXX )
-  include_directories(${HDF5_INCLUDE_DIRS})
+  find_package(HDF5 @HDF5_VERSION_FOR_CONFIG@ REQUIRED COMPONENTS CXX )
 
   set(STIR_BUILT_WITH_HDF5 TRUE)
 endif()
@@ -102,9 +109,6 @@ endif()
 if (@LLN_FOUND@)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support in STIR enabled.")
-  # need to add this as stir_ecat7.h etc rely on it
-  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
-  include_directories("@LLN_INCLUDE_DIRS@")
   set(STIR_BUILT_WITH_LLN_MATRIX TRUE)
 endif()
 
@@ -113,19 +117,6 @@ if (@CERN_ROOT_FOUND@)
   find_package(CERN_ROOT @CERN_ROOT_VERSION@ REQUIRED ${STIR_FIND_TYPE})
   message(STATUS "CERN ROOT support in STIR enabled.")
   set(STIR_BUILT_WITH_CERN_ROOT TRUE)
-endif()
-
-if (@AVW_FOUND@)
-  set(AVW_ROOT_DIR @AVW_ROOT_DIR@)
-  find_package(AVW ${STIR_FIND_TYPE})
-  if(NOT AVW_FOUND)
-    SET(STIR_FOUND OFF)
-  endif()
-  message(STATUS "AVW support in STIR enabled.")
-  # need to add this as registries rely on it
-  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
-  include_directories(${AVW_INCLUDE_DIRS})
-  set(STIR_BUILT_WITH_AVW TRUE)
 endif()
 
 # Following lines are currently not necessary but would need to be enabled
@@ -156,6 +147,12 @@ if(@STIR_WITH_NiftyPET_PROJECTOR@)
   set(STIR_WITH_NiftyPET_PROJECTOR TRUE)
 endif()
 
+if(@STIR_WITH_CUDA@)
+  find_package(CUDAToolkit REQUIRED)
+  enable_language(CUDA)
+  set(STIR_WITH_CUDA TRUE)
+endif()
+
 if(@STIR_WITH_Parallelproj_PROJECTOR@)
   find_package(parallelproj REQUIRED CONFIG)
   set(STIR_WITH_Parallelproj_PROJECTOR TRUE)
@@ -171,3 +168,6 @@ if(STIR_WITH_EXPERIMENTAL)
 else()
   remove_definitions(-DSTIR_WITH_EXPERIMENTAL)
 endif()
+
+# This version of STIR comes with TOF capabilities
+set(STIR_TOF 1)

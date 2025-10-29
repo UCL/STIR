@@ -26,21 +26,17 @@
 
 START_NAMESPACE_STIR
 
-
-template<class T>
+template <class T>
 struct logical_and_not
-	{
-     inline bool operator()(const T& x, const T& y) const
-	 { return x && !y; }
-    };
+{
+  inline bool operator()(const T& x, const T& y) const { return x && !y; }
+};
 
-
-template<class T>
+template <class T>
 struct logical_and
-	{
-     inline bool operator()(const T& x, const T& y) const
-	 { return x || y; }
-    };
+{
+  inline bool operator()(const T& x, const T& y) const { return x || y; }
+};
 
 /*! \ingroup Shape
     \brief A class that allows combining several shapes using logical operations
@@ -48,15 +44,14 @@ struct logical_and
     \todo Parsing cannot work yet because of template (can be solved by explicit instantiation)
 
 */
-template<class operation=logical_and<bool> >
-class CombinedShape3D : 
-   public RegisteredParsingObject<CombinedShape3D, Shape3D, Shape3D>
+template <class operation = logical_and<bool>>
+class CombinedShape3D : public RegisteredParsingObject<CombinedShape3D, Shape3D, Shape3D>
 {
 public:
   // Name which will be used when parsing a Shape3D object
-  //static const char * const registered_name; 
+  // static const char * const registered_name;
 
-  inline CombinedShape3D( shared_ptr<Shape3D> object1_v, shared_ptr<Shape3D> object2_v);
+  inline CombinedShape3D(shared_ptr<Shape3D> object1_v, shared_ptr<Shape3D> object2_v);
   inline bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
   inline void translate(const CartesianCoordinate3D<float>& direction);
   inline void scale(const CartesianCoordinate3D<float>& scale3D);
@@ -65,9 +60,7 @@ public:
 private:
   shared_ptr<Shape3D> object1_ptr;
   shared_ptr<Shape3D> object2_ptr;
-
 };
-
 
 END_NAMESPACE_STIR
 

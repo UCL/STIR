@@ -13,13 +13,20 @@ set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
+set(buildblock_simple_tests
+        test_Array.cxx
+        test_VectorWithOffset.cxx
+        )
+      
+if (NOT MINI_STIR)
+
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs.cxx
         test_warp_image.cxx
 	test_DynamicDiscretisedDensity.cxx
 	test_ScatterSimulation.cxx
         test_ML_norm.cxx
-	test_proj_data_info_subsets.cxx
+	test_proj_data_info_subsets_pet.cxx
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -35,18 +42,18 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	IO/test_IO_ITKMulticomponent.cxx
 	test_linear_regression.cxx
 	test_stir_math.cxx
+	test_time_of_flight.cxx
+	test_proj_data_info_subsets_spect.cxx
         # the next 2 are interactive, so we don't add a test for it, but only compile them
 	test_display.cxx
 	test_interpolate.cxx
 )
 
-set(buildblock_simple_tests
-        test_Array.cxx
+list (APPEND buildblock_simple_tests
         test_ArrayFilter.cxx
         test_SeparableMetzArrayFilter.cxx
         test_SeparableGaussianArrayFilter.cxx
         test_NestedIterator.cxx
-        test_VectorWithOffset.cxx
         test_convert_array.cxx
 	test_IndexRange.cxx
 	test_coordinates.cxx
@@ -70,10 +77,20 @@ set(buildblock_simple_tests
         test_interpolate_projdata.cxx
 )
 
+endif() # MINI_STIR
+
 include(stir_test_exe_targets)
 
+if (MINI_STIR)
+
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO;recon_buildblock;Shape_buildblock" "")
+  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;IO;recon_buildblock;" "")
+endforeach()
+
+else()
+
+foreach(source ${buildblock_simple_tests})
+  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO;recon_buildblock;Shape_buildblock;scatter_buildblock" "")
 endforeach()
 #
 
@@ -81,6 +98,11 @@ endforeach()
 ### i.e. those that need command line arguments
 
 if (BUILD_TESTING)
+
+# Add test for test_proj_data_info_subsets_spect with arguments
+ADD_TEST(NAME test_proj_data_info_subsets_spect
+			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_proj_data_info_subsets_spect ${CMAKE_SOURCE_DIR}/examples/samples/SPECT_Interfile_header.hs)
+add_STIR_CONFIG_DIR(test_proj_data_info_subsets_spect)
 
 ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in
@@ -94,6 +116,9 @@ ADD_TEST(NAME test_stir_math
    COMMAND test_stir_math $<TARGET_FILE:stir_math>
 )
 set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
+
+ADD_TEST(NAME test_time_of_flight COMMAND test_time_of_flight)
+
 # Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
 endif()
 
@@ -147,4 +172,7 @@ ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
+
 endif(BUILD_TESTING)
+
+endif() # MINI_STIR

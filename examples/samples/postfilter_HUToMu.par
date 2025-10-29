@@ -10,7 +10,7 @@ PostFiltering parameters :=
 ; This file is installed in your <install_prefix>/share folder
 ; (use `stir_config --config-dir` to find its location)
 
-Postfilter type := Chained
+Postfilter type := Chained Data Processor
   Chained Data Processor Parameters:=
 
   Data Processor to apply first:= HUToMu

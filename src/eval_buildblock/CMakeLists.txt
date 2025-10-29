@@ -15,6 +15,6 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(eval_buildblock buildblock )
+target_link_libraries(eval_buildblock PUBLIC buildblock )
 
 

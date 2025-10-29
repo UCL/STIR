@@ -33,49 +33,40 @@ START_NAMESPACE_STIR
 */
 class FileSignature
 {
- public:
-
+public:
   //! read signature
-  /*! The signature will be read from the current point in the stream. The seekg pointer 
+  /*! The signature will be read from the current point in the stream. The seekg pointer
     will be advanced by max 1024.
   */
-  explicit FileSignature(std::istream& input)
-    {
-      this->_read_signature(input);
-    }
+  explicit FileSignature(std::istream& input) { this->_read_signature(input); }
   //! open file and read signature
   explicit FileSignature(const std::string& filename)
-    {
-      std::ifstream input;
-      open_read_binary(input, filename);
-      this->_read_signature(input);
-    }
+  {
+    std::ifstream input;
+    open_read_binary(input, filename);
+    this->_read_signature(input);
+  }
 
   //! get access to the signature
   /*! Data is only valid up to size() (currently max 1024) */
-  const char * get_signature() const
-    {
-      return this->_signature;
-    }
+  const char* get_signature() const { return this->_signature; }
 
   //! return size of valid signature read from the file
-  std::size_t size() const
-    {
-      return this->_size;
-    }
- private:
+  std::size_t size() const { return this->_size; }
+
+private:
   static const std::size_t _max_signature_size = 1024U;
   char _signature[_max_signature_size];
   std::size_t _size;
 
   void _read_signature(std::istream& input)
-    {
-      // first initialise to zero, just in case the whole buffer isn't set
-      std::fill(this->_signature, this->_signature + this->_max_signature_size, '\0');
-      input.read(this->_signature, this->_max_signature_size);
-      this->_signature[this->_max_signature_size-1]='\0';
-      this->_size = static_cast<std::size_t>(input.gcount());
-    }
+  {
+    // first initialise to zero, just in case the whole buffer isn't set
+    std::fill(this->_signature, this->_signature + this->_max_signature_size, '\0');
+    input.read(this->_signature, this->_max_signature_size);
+    this->_signature[this->_max_signature_size - 1] = '\0';
+    this->_size = static_cast<std::size_t>(input.gcount());
+  }
 };
 
 END_NAMESPACE_STIR

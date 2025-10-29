@@ -11,10 +11,14 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
+option(MINI_STIR
+       "Create a mini version of STIR with only basic functionality (for testing only)" OFF)
+mark_as_advanced(MINI_STIR)
+     
 option(STIR_MPI 
        "Compile with MPI" OFF)
 option(STIR_OPENMP 
-       "Compile with OpenMP" OFF)
+       "Compile with OpenMP" ON)
 
 option(BUILD_TESTING 
        "Build test programs" ON)
@@ -30,7 +34,6 @@ option(BUILD_SHARED_LIBS
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support enabled.")
-  include_directories(${LLN_INCLUDE_DIRS})
 else()
   message(STATUS "ECAT support disabled.")
 endif()
@@ -49,31 +52,12 @@ else()
 	message(STATUS "UPENN libs support disabled.")
 endif()
 
-if (AVW_FOUND)
-  set(HAVE_AVW ON)
-  message(STATUS "AVW library IO added.")
-  include_directories(${AVW_INCLUDE_DIRS})
-else()
-  message(STATUS "AVW IO library not used.")
-endif()
-
-if (RDF_FOUND)
-  set(HAVE_RDF ON)
-  message(STATUS "GE RDF support enabled.")
-  include_directories(${RDF_INCLUDE_DIRS})
-
-else()
-  message(STATUS "RDF support disabled.")
-endif()
-
 if ((NOT DISABLE_HDF5) AND HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
-  include_directories(${HDF5_INCLUDE_DIRS})
 else()
   message(STATUS "HDF5 support disabled.")
 endif()
-
 
 if ((NOT DISABLE_ITK) AND ITK_FOUND) 
   message(STATUS "ITK libraries added.")
@@ -138,7 +122,6 @@ endif()
 
 if (STIR_MPI)
   find_package(MPI REQUIRED)
-  include_directories(${MPI_CXX_INCLUDE_PATH})  
   # we add MPI_CXX_COMPILE_FLAGS for all files
   add_definitions(${MPI_CXX_COMPILE_FLAGS} -DMPICH_IGNORE_CXX_SEEK)
   # However, currently we decide to add  MPI_CXX_LINK_FLAGS only to those programs that need it,
@@ -154,13 +137,12 @@ if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
 
-  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.9.0") 
-    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT APPLE)
+    # work around https://gitlab.kitware.com/cmake/cmake/-/issues/26037
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX -latomic)
+    message(STATUS "OpenMP Linker flags for Clang: ${OpenMP_EXE_LINKER_FLAGS}")
   else()
-    message(WARNING "Your CMake version is old. OpenMP linking flags  might be incorrect.")
-    # need to explicitly set this. Definitely for gcc, hopefully also for other systems.
-    # See https://gitlab.kitware.com/cmake/cmake/issues/15392
-    set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
   endif()
 endif()
 
@@ -180,15 +162,9 @@ check_function_exists(getopt HAVE_SYSTEM_GETOPT)
 # we have to do this ourselves.
 # Finally, we need to cope with the case where a user passes -std=cxx11 by hand to CMAKE_CXX_FLAGS.
 set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX_FLAGS})
-if (CMAKE_VERSION VERSION_LESS 3.8)
-  if (CMAKE_CXX_STANDARD)
-    set(CMAKE_REQUIRED_DEFINITIONS -std=cxx${CMAKE_CXX_STANDARD} ${CMAKE_REQUIRED_DEFINITIONS})
-  endif()
-else()
-  # set policy 0067 to let try_compile honor CMAKE_CXX_STANDARD etc
-  # Note: need to set this before including CheckCXXSymbolExists
-  cmake_policy(SET CMP0067 NEW)
-endif()
+# set policy 0067 to let try_compile honor CMAKE_CXX_STANDARD etc
+# Note: need to set this before including CheckCXXSymbolExists
+cmake_policy(SET CMP0067 NEW)
 #set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
 #set(CMAKE_REQUIRED_QUIET FALSE)
 # Finally, do the checks!
@@ -216,13 +192,18 @@ check_cxx_source_compiles("
        HAVE_STD_SHARED_PTR
         )
 
-if(HAVE_STD_SHARED_PTR)
-    option(STIR_USE_BOOST_SHARED_PTR "Use boost::shared_ptr as opposed to std::shared_ptr (not recommended)" OFF)
-    mark_as_advanced(STIR_USE_BOOST_SHARED_PTR)
-else()
-    set(STIR_USE_BOOST_SHARED_PTR ON)
+# Byte order
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+    # Use CMake to find byte order of target system.
+    # We create some variables that are then used in config.h.in
+    if (CMAKE_CXX_BYTE_ORDER STREQUAL "BIG_ENDIAN")
+        set(BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a big_endian system")
+    elseif (CMAKE_CXX_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
+        set(LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE TRUE)
+        message(STATUS "CMake detected a little_endian system")
+    endif()
 endif()
-
 
 #### Create stir/config.h
 
@@ -237,11 +218,11 @@ configure_file(
   "${CONF_INCLUDE_DIR}/stir/config.h"
   )
 # add it to the install target
-install(FILES "${CONF_INCLUDE_DIR}/stir/config.h" DESTINATION include/stir)
+install(FILES "${CONF_INCLUDE_DIR}/stir/config.h" DESTINATION "${STIR_INCLUDE_INSTALL_DIR}/stir")
 
 #### install include files
 set (INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/include")
-install(DIRECTORY "${INCLUDE_DIR}/" DESTINATION include)
+install(DIRECTORY "${INCLUDE_DIR}/" DESTINATION "${STIR_INCLUDE_INSTALL_DIR}")
 
 #### find header files for re-use in stir_exe_targets.cmake and doxygen target
 include(FindAllHeaderFiles)
@@ -272,6 +253,7 @@ endif()
 # create an object library with all the "registries"
 # Warning: dependencies for object libraries are not transitive!
 add_library(stir_registries OBJECT ${STIR_REGISTRIES})
+target_link_libraries(stir_registries)
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})

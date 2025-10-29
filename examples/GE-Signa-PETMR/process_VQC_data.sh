@@ -37,7 +37,7 @@ datadir=`cd "$datadir";pwd`
 mkdir output
 cd output
 
-listmode="$datadir"/LST/LST_30501_PET_Scan_for_VQC_Verification/LIST0000uncompressed.BLF
+listmode="$datadir"/LST/LST_30501_PET_Scan_for_VQC_Verification/LIST0000.BLF
 
 # make a frame definition file with 1 frame for all the data
 create_fdef_from_listmode.sh frames.fdef "$listmode"

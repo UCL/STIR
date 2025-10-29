@@ -17,7 +17,8 @@
 # Note that various files were apparently not in git before 2003 (rel_1_10) (they were in CVS).
 # Also, some files did not have correct authorship.
 # The output therefore needs manual ordering (see below)
-git fame -wMC  --excl '\.(eps|root|ahv|hv|v|hs|s|scan|l|hdr|rtf|gz|if|pdf|safir|options|png|cls|sty)$|external_helpers|crystal_map|collimator.*txt|Doxyfile.in|LICENSE.txt|LICENSES' \
+git config --local blame.ignoreRevsFile .git-blame-ignore-revs
+git fame -wMC  --excl '\.(eps|root|ahv|hv|v|hs|s|scan|l|hdr|rtf|gz|if|pdf|safir|options|png|cls|sty|git.*|mailmap)$|external_helpers|crystal_map|collimator.*txt|Doxyfile.in|LICENSE.txt|LICENSES' "$@" \
   | tee git-fame-output.txt
 exit
 
@@ -37,7 +38,7 @@ exit
 | Darren Hague           |      50    
 
 # Also, SPECTUB files were checked in by KT, but actually written by Carles Falcon.
-# Finally PinholeSPECTUB is attributed (mostly to Carles), but git fame doesn't count his loc for some reason.
+# Finally PinholeSPECTUB is now attributed correctly (mostly to Carles)
 # Just before release 5.1, we have the following loc
     $ wc -l *SPECTUB*x
   1346 PinholeSPECTUB_Tools.cxx
@@ -48,12 +49,12 @@ exit
    989 SPECTUB_Weight3d.cxx
 
 Roughly leading to
-| Carles Falcon          |      3000
+| Carles Falcon          |      3500
 | Berta Marti-Fuster     |      1000
     
 Summary for corrections to output:
 | Author                 |    loc
-| Carles Falcon          |   3000
+| Carles Falcon          |   3500
 | Berta Marti-Fuster     |   1000
 | Claire Labbe           |   1000
 | Mustapha Sadki         |    400

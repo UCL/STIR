@@ -19,7 +19,7 @@
 #include "stir/ProjDataInfoSubsetByView.h"
 #include "stir/Bin.h"
 #include "stir/Array.h"
-#include <boost/format.hpp>
+#include "stir/format.h"
 #include "stir/error.h"
 
 START_NAMESPACE_STIR
@@ -29,8 +29,11 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
     : ProjDataInfo(full_proj_data_info_sptr->get_scanner_sptr(),
                    VectorWithOffset<int>(full_proj_data_info_sptr->get_min_segment_num(),
                                          full_proj_data_info_sptr->get_max_segment_num()), // filled in below
-                   views.size(), full_proj_data_info_sptr->get_num_tangential_poss()),
-      org_proj_data_info_sptr(full_proj_data_info_sptr->clone()), view_to_org_view_num(views),
+                   views.size(),
+                   full_proj_data_info_sptr->get_num_tangential_poss(),
+                   full_proj_data_info_sptr->get_tof_mash_factor()),
+      org_proj_data_info_sptr(full_proj_data_info_sptr->clone()),
+      view_to_org_view_num(views),
       org_view_to_view_num(full_proj_data_info_sptr->get_num_views(), -100) // initialise with crazy value
 {
   // Check subset isn't empty
@@ -47,7 +50,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
       // Check all views within range
       if (0 > this_view || this_view >= num_views)
         {
-          error(boost::format("ProjDataInfoSubsetByView: views[%d]=%s out of range (%d).") % i % this_view % num_views);
+          error(format("ProjDataInfoSubsetByView: views[{}]={} out of range ({}).", i, this_view, num_views));
         }
 
       // Check all views are unique in this subset
@@ -56,7 +59,7 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
           auto prev_view = views[j];
           if (this_view == prev_view)
             {
-              error(boost::format("ProjDataInfoSubsetByView: repeated view: views[%d]=views[%s]=%s") % i % j % this_view);
+              error(format("ProjDataInfoSubsetByView: repeated view: views[{}]=views[{}]={}", i, j, this_view));
             }
         }
     }
@@ -69,7 +72,8 @@ ProjDataInfoSubsetByView::ProjDataInfoSubsetByView(const shared_ptr<const ProjDa
 
   // currently need to copy information across due to bad hierarchy design
   for (int segment_num = full_proj_data_info_sptr->get_min_segment_num();
-       segment_num <= full_proj_data_info_sptr->get_max_segment_num(); ++segment_num)
+       segment_num <= full_proj_data_info_sptr->get_max_segment_num();
+       ++segment_num)
     {
       this->set_min_axial_pos_num(full_proj_data_info_sptr->get_min_axial_pos_num(segment_num), segment_num);
       this->set_max_axial_pos_num(full_proj_data_info_sptr->get_max_axial_pos_num(segment_num), segment_num);
@@ -222,9 +226,9 @@ ProjDataInfoSubsetByView::get_sampling_in_s(const Bin& bin) const
 }
 
 Bin
-ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor) const
+ProjDataInfoSubsetByView::get_bin(const LOR<float>& lor, const double delta_time) const
 {
-  return get_bin_from_original(this->org_proj_data_info_sptr->get_bin(lor));
+  return get_bin_from_original(this->org_proj_data_info_sptr->get_bin(lor, delta_time));
 }
 
 bool

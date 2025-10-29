@@ -19,13 +19,16 @@
 
 START_NAMESPACE_STIR
 
-bool CListRecordROOT::is_time() const
-{ return true; }
+bool
+CListRecordROOT::is_time() const
+{
+  return true;
+}
 
-bool CListRecordROOT::is_event() const
-{ return true; }
-
-bool CListRecordROOT::is_full_event() const
-{ return true; }
+bool
+CListRecordROOT::is_event() const
+{
+  return true;
+}
 
 END_NAMESPACE_STIR

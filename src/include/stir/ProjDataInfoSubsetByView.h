@@ -54,7 +54,7 @@ public:
   bool contains_full_data() const;
 
   //! Get the view numbers of the original ProjDataInfo
-  std::vector<int> get_original_view_nums() const;
+  std::vector<int> get_original_view_nums() const override;
 
   //! Get the Bin of the original ProjDataInfo corresponding to a Bin for this subset
   Bin get_original_bin(const Bin& bin) const;
@@ -159,7 +159,7 @@ public:
   //! Find the bin in the projection data that 'contains' an LOR
   /*! Forwards ProjDataInfo::get_bin
    */
-  Bin get_bin(const LOR<float>&) const override;
+  Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 
   //! Check if \c *this contains \c proj
   /*!

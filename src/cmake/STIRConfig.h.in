@@ -52,6 +52,10 @@ namespace stir {
 
 #include "boost/config.hpp"
 
+// 2 variables set via CMake
+#cmakedefine BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE
+#cmakedefine LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE
+
 #cmakedefine HAVE_ECAT
 #ifdef HAVE_ECAT
 #define HAVE_LLN_MATRIX
@@ -61,10 +65,6 @@ namespace stir {
 
 #cmakedefine HAVE_UPENN
 
-#cmakedefine HAVE_AVW
-
-#cmakedefine HAVE_RDF
-
 #cmakedefine HAVE_HDF5
 
 #cmakedefine HAVE_ITK
@@ -72,6 +72,8 @@ namespace stir {
 #cmakedefine HAVE_JSON
 
 #cmakedefine STIR_WITH_NiftyPET_PROJECTOR
+
+#cmakedefine STIR_WITH_CUDA
 
 #cmakedefine STIR_WITH_Parallelproj_PROJECTOR
 #cmakedefine parallelproj_built_with_CUDA
@@ -96,4 +98,12 @@ namespace stir {
 #cmakedefine STIR_PROJECTORS_AS_V3
 #cmakedefine STIR_ROOT_ROTATION_AS_V4
 #cmakedefine STIR_LEGACY_IGNORE_VIEW_OFFSET
+
+#define STIR_TOF 1
+/*! \def STIR_TOF
+  \brief Defined if TOF capabilities are enabled.
+*/
+
+#cmakedefine MINI_STIR
+
 #endif //  __stir_config__H__

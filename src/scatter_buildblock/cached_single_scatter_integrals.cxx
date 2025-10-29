@@ -3,7 +3,7 @@
   Copyright (C) 2013 University College London
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0 
+  SPDX-License-Identifier: Apache-2.0
   See STIR/LICENSE.txt for details
 */
 /*!
@@ -11,7 +11,7 @@
   \ingroup scatter
   \brief Implementations of functions defined in stir::ScatterEstimationByBin
 
-  Functions calculate the integral along LOR in an image (attenuation or emission). 
+  Functions calculate the integral along LOR in an image (attenuation or emission).
   (from scatter point to detector coordinate).
 
   \author Charalampos Tsoumpas
@@ -19,7 +19,7 @@
   \author Kris Thielemans
 */
 #include "stir/scatter/ScatterSimulation.h"
-#include "stir/IndexRange.h" 
+#include "stir/IndexRange.h"
 #include "stir/Coordinate2D.h"
 
 START_NAMESPACE_STIR
@@ -27,47 +27,40 @@ START_NAMESPACE_STIR
 const float cache_init_value = -1234567.89E10F; // an arbitrary value that should never occur
 
 void
-ScatterSimulation::
-remove_cache_for_integrals_over_attenuation()
+ScatterSimulation::remove_cache_for_integrals_over_attenuation()
 {
   this->cached_attenuation_integral_scattpoint_det.recycle();
 }
 
 void
-ScatterSimulation::
-remove_cache_for_integrals_over_activity()
+ScatterSimulation::remove_cache_for_integrals_over_activity()
 {
   this->cached_activity_integral_scattpoint_det.recycle();
 }
 
-
 void
-ScatterSimulation::
-initialise_cache_for_scattpoint_det_integrals_over_attenuation()
+ScatterSimulation::initialise_cache_for_scattpoint_det_integrals_over_attenuation()
 {
   if (!this->use_cache)
     return;
 
-  const IndexRange<2> range (Coordinate2D<int> (0,0), 
-                             Coordinate2D<int> (static_cast<int>(this->scatt_points_vector.size()-1),
-                                                this->total_detectors-1));
+  const IndexRange<2> range(Coordinate2D<int>(0, 0),
+                            Coordinate2D<int>(static_cast<int>(this->scatt_points_vector.size() - 1), this->total_detectors - 1));
   if (this->cached_attenuation_integral_scattpoint_det.get_index_range() == range)
-    return;  // keep cache if correct size
+    return; // keep cache if correct size
 
   this->cached_attenuation_integral_scattpoint_det.resize(range);
   this->cached_attenuation_integral_scattpoint_det.fill(cache_init_value);
 }
 
 void
-ScatterSimulation::
-initialise_cache_for_scattpoint_det_integrals_over_activity()
+ScatterSimulation::initialise_cache_for_scattpoint_det_integrals_over_activity()
 {
   if (!this->use_cache)
     return;
 
-  const IndexRange<2> range (Coordinate2D<int> (0,0), 
-                             Coordinate2D<int> (static_cast<int>(this->scatt_points_vector.size()-1),
-                                                this->total_detectors-1));
+  const IndexRange<2> range(Coordinate2D<int>(0, 0),
+                            Coordinate2D<int>(static_cast<int>(this->scatt_points_vector.size() - 1), this->total_detectors - 1));
 
   if (this->cached_activity_integral_scattpoint_det.get_index_range() == range)
     return; // keep cache if correct size
@@ -76,15 +69,11 @@ initialise_cache_for_scattpoint_det_integrals_over_activity()
   this->cached_activity_integral_scattpoint_det.fill(cache_init_value);
 }
 
-float 
-ScatterSimulation::
-cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num, 
-                                                           const unsigned det_num)
-{                
-  float * location_in_cache = 
-    this->use_cache
-    ? &cached_activity_integral_scattpoint_det[scatter_point_num][det_num]
-    : 0;
+float
+ScatterSimulation::cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num,
+                                                                              const unsigned det_num)
+{
+  float* location_in_cache = this->use_cache ? &cached_activity_integral_scattpoint_det[scatter_point_num][det_num] : 0;
 
   /* OPENMP note:
      We use atomic read/write to get at the cache. This should ensure validity.
@@ -96,100 +85,90 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
   if (this->use_cache)
     {
 #if defined(STIR_OPENMP)
-# if _OPENMP >=201012
-#  pragma omp atomic read
-# else
-#  pragma omp critical(STIRSCATTERESTIMATIONCACHE)
+#  if _OPENMP >= 201012
+#    pragma omp atomic read
+#  else
+#    pragma omp critical(STIRSCATTERESTIMATIONCACHE)
       {
-# endif
+#  endif
 #endif
-	value = *location_in_cache;
-#if defined(STIR_OPENMP) && (_OPENMP <201012)
-      }
-#endif
+      value = *location_in_cache;
+#if defined(STIR_OPENMP) && (_OPENMP < 201012)
     }
-
-  if (this->use_cache && value!=cache_init_value)
-    {
-      return value;
-    }
-  else
-    {
-      const float result =
-        integral_over_activity_image_between_scattpoint_det
-        (scatt_points_vector[scatter_point_num].coord,
-         detection_points_vector[det_num]
-         );
-      if (this->use_cache)
-#ifdef STIR_OPENMP
-# if _OPENMP >=201012
-#  pragma omp atomic write
-# else
-#  pragma omp critical(STIRSCATTERESTIMATIONCACHE)
-        {
-# endif
 #endif
-        *location_in_cache=result;
-#if defined(STIR_OPENMP) && (_OPENMP <201012)
-        }
-#endif
-      return result;
-    }
 }
 
-float 
-ScatterSimulation::
-cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num, 
-                                                                  const unsigned det_num)
+if (this->use_cache && value != cache_init_value)
+  {
+    return value;
+  }
+else
+  {
+    const float result = integral_over_activity_image_between_scattpoint_det(scatt_points_vector[scatter_point_num].coord,
+                                                                             detection_points_vector[det_num]);
+    if (this->use_cache)
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201012
+#    pragma omp atomic write
+#  else
+#    pragma omp critical(STIRSCATTERESTIMATIONCACHE)
+        {
+#  endif
+#endif
+      *location_in_cache = result;
+#if defined(STIR_OPENMP) && (_OPENMP < 201012)
+  }
+#endif
+return result;
+}
+}
+
+float
+ScatterSimulation::cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num,
+                                                                                     const unsigned det_num)
 {
-  float * location_in_cache = 
-    this->use_cache
-    ? &cached_attenuation_integral_scattpoint_det[scatter_point_num][det_num]
-    : 0;
+  float* location_in_cache = this->use_cache ? &cached_attenuation_integral_scattpoint_det[scatter_point_num][det_num] : 0;
 
   float value;
   if (this->use_cache)
     {
 #if defined(STIR_OPENMP)
-# if _OPENMP >=201012
-#  pragma omp atomic read
-# else
-#  pragma omp critical(STIRSCATTERESTIMATIONREADCACHEATTENINT)
+#  if _OPENMP >= 201012
+#    pragma omp atomic read
+#  else
+#    pragma omp critical(STIRSCATTERESTIMATIONREADCACHEATTENINT)
       {
-# endif
+#  endif
 #endif
-	value = *location_in_cache;
-#if defined(STIR_OPENMP) && (_OPENMP <201012)
-      }
-#endif
+      value = *location_in_cache;
+#if defined(STIR_OPENMP) && (_OPENMP < 201012)
     }
-
-  if (this->use_cache && value!=cache_init_value)
-    {
-      return *location_in_cache;
-    }
-  else
-    {
-      const float result =
-        exp_integral_over_attenuation_image_between_scattpoint_det
-        (scatt_points_vector[scatter_point_num].coord,
-         detection_points_vector[det_num]
-         );
-      if (this->use_cache)
-#ifdef STIR_OPENMP
-# if _OPENMP >=201012
-#  pragma omp atomic write
-# else
-#  pragma omp critical(STIRSCATTERESTIMATIONREADCACHEATTENINT)
-        {
-# endif
 #endif
-        *location_in_cache=result;
-#if defined(STIR_OPENMP) && (_OPENMP <201012)
-        }
-#endif
-      return result;
-    }
 }
-        
+
+if (this->use_cache && value != cache_init_value)
+  {
+    return *location_in_cache;
+  }
+else
+  {
+    const float result = exp_integral_over_attenuation_image_between_scattpoint_det(scatt_points_vector[scatter_point_num].coord,
+                                                                                    detection_points_vector[det_num]);
+    if (this->use_cache)
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 201012
+#    pragma omp atomic write
+#  else
+#    pragma omp critical(STIRSCATTERESTIMATIONREADCACHEATTENINT)
+        {
+#  endif
+#endif
+      *location_in_cache = result;
+#if defined(STIR_OPENMP) && (_OPENMP < 201012)
+  }
+#endif
+return result;
+}
+}
+
 END_NAMESPACE_STIR

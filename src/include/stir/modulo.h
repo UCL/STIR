@@ -4,8 +4,8 @@
 #define __stir_modulo_H__
 
 /*!
-  \file 
-  \ingroup buildblock 
+  \file
+  \ingroup buildblock
   \brief defines stir::modulo() and related functions
 
   \author Kris Thielemans
@@ -31,14 +31,14 @@ START_NAMESPACE_STIR
 //@{
 
 //! Like std::fmod() but with guaranteed nonnegative result
-/*! 
-    std::fmod(a,b) return a number of the same sign as \a a. This is often 
+/*!
+    std::fmod(a,b) return a number of the same sign as \a a. This is often
     inconvenient as the result of this is that the range of std::fmod(a,b) is
     from \a -fabs(b) to \a +fabs(b).
 
     In contrast, modulo(a,b) always returns a nonnegative result. To be precise:
 
-    \c modulo(a,b) returns the value \c a-i*b, for the integer \c i 
+    \c modulo(a,b) returns the value \c a-i*b, for the integer \c i
     such  that, if \c b is nonzero, the result is greater or equal to 0 and
     less than the magnitude of \c b.
 
@@ -48,102 +48,96 @@ START_NAMESPACE_STIR
    give you float which is (a tiny bit) larger than fabs(b).
 
 */
-inline
-double
+inline double
 modulo(const double a, const double b)
 {
-  const double res = fmod(a,b);
-  return res<0 ? res + fabs(b) : res;
+  const double res = fmod(a, b);
+  return res < 0 ? res + fabs(b) : res;
 }
 
 //! modulo for floats
-/*!  
+/*!
   \see modulo(double,double)
   The reason for this function is that rounding from double to float
   might make the result of the calculation with doubles larger than b.
 
   \warning Because of C++ promotion of floats to doubles, it is
   very easy to call the modulo(double,double) version inadvertently.
-  So, you should probably not rely too much on the result being less than 
+  So, you should probably not rely too much on the result being less than
   \a b.
 */
-inline
-float
+inline float
 modulo(const float a, const float b)
 {
-  float res = 
-    static_cast<float>(modulo(static_cast<double>(a),static_cast<double>(b)));
-  assert(res>=0);
-  const float abs_b = b>=0 ? b : -b;
-  if (res>=abs_b) res -= abs_b;
-  assert(res>=0);
+  float res = static_cast<float>(modulo(static_cast<double>(a), static_cast<double>(b)));
+  assert(res >= 0);
+  const float abs_b = b >= 0 ? b : -b;
+  if (res >= abs_b)
+    res -= abs_b;
+  assert(res >= 0);
   return res;
 }
 
 //! Like the normal modulus operator (%) but with guaranteed nonnegative result
-/*! 
+/*!
    Result will be larger than or equal to 0, and (strictly) smaller than
    \a abs(b).
 */
-inline
-int
+inline int
 modulo(const int a, const int b)
 {
-  const int res = a%b;
-  const int res2 = res<0 ? res + (b>=0 ? b : -b) : res;
-  assert(res2>=0);
-  assert(res2<(b>=0?b:-b));
+  const int res = a % b;
+  const int res2 = res < 0 ? res + (b >= 0 ? b : -b) : res;
+  assert(res2 >= 0);
+  assert(res2 < (b >= 0 ? b : -b));
   return res2;
 }
 
 //! Performs the modulus operation on each element of the coordinates
-/*! 
+/*!
    \return A BasicCoordinate such that for all <tt>d</tt>
      \code result[d] = modulo(a[d], b[d] \endcode
 */
 template <int num_dimensions, typename T>
-inline
-BasicCoordinate<num_dimensions, T>
+inline BasicCoordinate<num_dimensions, T>
 modulo(const BasicCoordinate<num_dimensions, T>& a, const BasicCoordinate<num_dimensions, T>& b)
 {
   BasicCoordinate<num_dimensions, T> result;
-  for (int d=1; d<=num_dimensions; ++d)
+  for (int d = 1; d <= num_dimensions; ++d)
     result[d] = modulo(a[d], b[d]);
   return result;
 }
 
 //! A function to convert an angle from one range to another
-/*! 
-    This is mainly useful for converting results from e.g. std::atan2 to 
+/*!
+    This is mainly useful for converting results from e.g. std::atan2 to
     a range \f$[0,2\pi)\f$.
 */
 template <typename FloatOrDouble>
-inline 
-FloatOrDouble
+inline FloatOrDouble
 from_min_pi_plus_pi_to_0_2pi(const FloatOrDouble phi)
 {
-  static const FloatOrDouble two_pi =static_cast<FloatOrDouble>(2*_PI);
-  assert(phi>= -two_pi);
-  assert(phi< two_pi);
-  if (phi>=0)
+  static const FloatOrDouble two_pi = static_cast<FloatOrDouble>(2 * _PI);
+  assert(phi >= -two_pi);
+  assert(phi < two_pi);
+  if (phi >= 0)
     return phi;
-  FloatOrDouble res = phi+two_pi;
+  FloatOrDouble res = phi + two_pi;
   // due to floating point finite precision, the following check is needed...
-  if (res>=two_pi)
-      res -= two_pi;
-  assert(res>=0);
-  assert(res<two_pi);
+  if (res >= two_pi)
+    res -= two_pi;
+  assert(res >= 0);
+  assert(res < two_pi);
   return res;
 }
 
 //! Convert angle to standard range
 /*! Identical to <tt>modulo(phi, static_cast<FloatOrDouble>(2*_PI))</tt> */
 template <typename FloatOrDouble>
-inline 
-FloatOrDouble
+inline FloatOrDouble
 to_0_2pi(const FloatOrDouble phi)
 {
-  return modulo(phi, static_cast<FloatOrDouble>(2*_PI));
+  return modulo(phi, static_cast<FloatOrDouble>(2 * _PI));
 }
 
 //@}

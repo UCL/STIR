@@ -75,7 +75,7 @@ echo "Estimating scatter (be patient). Log saved in output/scatter.log"
 # filename-prefix for additive sino (i.e. "precorrected" sum of scatter and randoms)
 total_additive_prefix=output/total_additive
 num_scat_iters=3
-scatter_pardir=${pardir}/../samples/scatter_estimation_par_files
+scatter_pardir=${pardir}/scatter_estimation_par_files
 # you might have to change this for a different scanner than the mMR
 scatter_recon_num_subiterations=21
 scatter_recon_num_subsets=21

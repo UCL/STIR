@@ -1,10 +1,10 @@
 //
 //
 /*!
-  \file 
+  \file
   \ingroup evaluation
 
-  \brief Declaration of various function that computes ROI values 
+  \brief Declaration of various function that computes ROI values
 
   \author Kris Thielemans
 */
@@ -24,72 +24,62 @@
 
 START_NAMESPACE_STIR
 
-template <typename coordT> class CartesianCoordinate2D;
-template <typename coordT> class CartesianCoordinate3D;
-template <typename elemT> class VectorWithOffset;
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <typename coordT>
+class CartesianCoordinate2D;
+template <typename coordT>
+class CartesianCoordinate3D;
+template <typename elemT>
+class VectorWithOffset;
+template <int num_dimensions, typename elemT>
+class DiscretisedDensity;
 class Shape3D;
 
 /*! \ingroup evaluation
     \name Functions to compute ROI values
-    
+
     Shapes can be first discretised using Shape3D::construct_volume or a Shape3D parsed.
     This can make fuzzy boundaries (when the \a num_samples argument is not (1,1,1), or when DiscretisedShape3D
-    needs zooming). Mean and stddev are computed using weighted versions, taking this smoothness 
+    needs zooming). Mean and stddev are computed using weighted versions, taking this smoothness
     into account, while ROI_min and max are ignore those weights.
 */
 //@{
 
 // TODO doc
 
-void
-compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values, 
-			     const DiscretisedDensity<3,float>& image, 
-                             const Shape3D& shape,
-                             const CartesianCoordinate3D<int>& num_samples);
+void compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
+                                  const DiscretisedDensity<3, float>& image,
+                                  const Shape3D& shape,
+                                  const CartesianCoordinate3D<int>& num_samples);
 
-void
-compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
-                             const DiscretisedDensity<3,float>& image,
-                             const DiscretisedDensity<3,float>& discretised_shape);
+void compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
+                                  const DiscretisedDensity<3, float>& image,
+                                  const DiscretisedDensity<3, float>& discretised_shape);
 
+ROIValues compute_total_ROI_values(const VectorWithOffset<ROIValues>& values);
 
-ROIValues
-compute_total_ROI_values(const VectorWithOffset<ROIValues>& values);
+ROIValues compute_total_ROI_values(const DiscretisedDensity<3, float>& image,
+                                   const Shape3D& shape,
+                                   const CartesianCoordinate3D<int>& num_samples);
 
-ROIValues
-compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
-                         const Shape3D& shape, 
-                         const CartesianCoordinate3D<int>& num_samples
-			 );
+ROIValues compute_total_ROI_values(const DiscretisedDensity<3, float>& image,
+                                   const DiscretisedDensity<3, float>& discretised_shape);
 
-ROIValues
-compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
-                         const DiscretisedDensity<3,float>& discretised_shape);
+// function that calculate the
+void compute_plane_range_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
+                                              const DiscretisedDensity<3, float>& image,
+                                              const CartesianCoordinate2D<int>& plane_range,
+                                              const Shape3D& shape,
+                                              const CartesianCoordinate3D<int>& num_samples);
 
-// function that calculate the 
-void
-compute_plane_range_ROI_values_per_plane(VectorWithOffset<ROIValues>& values, 
-			     const DiscretisedDensity<3,float>& image,
-			     const CartesianCoordinate2D<int>& plane_range,
-                             const Shape3D& shape,
-                             const CartesianCoordinate3D<int>& num_samples);
+float compute_CR_hot(ROIValues& val1, ROIValues& val2);
+float compute_CR_cold(ROIValues& val1, ROIValues& val2);
+float compute_uniformity(ROIValues& val);
 
-float
-compute_CR_hot(ROIValues& val1, ROIValues& val2);
-float
-compute_CR_cold(ROIValues& val1, ROIValues& val2);
-float
-compute_uniformity(ROIValues& val);
+VectorWithOffset<float> compute_CR_hot_per_plane(VectorWithOffset<ROIValues>& val1, VectorWithOffset<ROIValues>& val2);
 
-VectorWithOffset<float>
-compute_CR_hot_per_plane(VectorWithOffset<ROIValues>& val1,VectorWithOffset<ROIValues>& val2);
+VectorWithOffset<float> compute_CR_cold_per_plane(VectorWithOffset<ROIValues>& val1, VectorWithOffset<ROIValues>& val2);
 
-VectorWithOffset<float>
-compute_CR_cold_per_plane(VectorWithOffset<ROIValues>& val1,VectorWithOffset<ROIValues>& val2);
-
-VectorWithOffset<float>
-compute_uniformity_per_plane(VectorWithOffset<ROIValues>& val);
+VectorWithOffset<float> compute_uniformity_per_plane(VectorWithOffset<ROIValues>& val);
 
 // end of doxygen group
 //@}

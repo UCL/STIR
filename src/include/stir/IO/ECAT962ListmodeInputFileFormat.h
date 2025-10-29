@@ -26,9 +26,8 @@
 #include "stir/utilities.h"
 #include <string>
 
-
 #ifndef HAVE_LLN_MATRIX
-#error HAVE_LLN_MATRIX not define: you need the lln ecat library.
+#  error HAVE_LLN_MATRIX not define: you need the lln ecat library.
 #endif
 
 #include "stir/IO/stir_ecat7.h"
@@ -40,32 +39,24 @@ START_NAMESPACE_ECAT7
 /*! \ingroup ECAT
   \ingroup listmode
 */
-class ECAT962ListmodeInputFileFormat :
-public InputFileFormat<ListModeData >
+class ECAT962ListmodeInputFileFormat : public InputFileFormat<ListModeData>
 {
- public:
-  virtual const std::string
-    get_name() const
-  {  return "ECAT962"; }
+public:
+  virtual const std::string get_name() const { return "ECAT962"; }
 
-  virtual bool
-    can_read(const FileSignature& signature,
-	     std::istream& input) const
+  virtual bool can_read(const FileSignature& signature, std::istream& input) const
   {
     return this->actual_can_read(signature, input);
   }
-  virtual bool 
-    can_read(const FileSignature& signature,
-	     const std::string&  listmode_filename_prefix) const
+  virtual bool can_read(const FileSignature& signature, const std::string& listmode_filename_prefix) const
   {
     const std::string singles_filename = listmode_filename_prefix + "_1.sgl";
     std::ifstream singles_file(singles_filename.c_str(), std::ios::binary);
     char buffer[sizeof(Main_header)];
     Main_header singles_main_header;
-    singles_file.read(buffer,
-                      sizeof(singles_main_header));
+    singles_file.read(buffer, sizeof(singles_main_header));
     if (!singles_file)
-        return false;
+      return false;
     unmap_main_header(buffer, &singles_main_header);
     shared_ptr<Scanner> scanner_sptr;
     ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
@@ -75,14 +66,10 @@ public InputFileFormat<ListModeData >
     return true;
   }
 
- protected:
-  virtual 
-    bool 
-    actual_can_read(const FileSignature& signature,
-		    std::istream& input) const
+protected:
+  virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const
   {
-    warning("can_read for ECAT962 listmode data with istream not implemented %s:%d. Sorry",
-	  __FILE__, __LINE__);
+    warning("can_read for ECAT962 listmode data with istream not implemented %s:%d. Sorry", __FILE__, __LINE__);
     return false;
 
     if (strncmp(signature.get_signature(), "MATRIX", 6) != 0)
@@ -92,20 +79,17 @@ public InputFileFormat<ListModeData >
     // return (is_ECAT7_image_file(filename))
     return true;
   }
- public:
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
+
+public:
+  virtual unique_ptr<data_type> read_from_file(std::istream& input) const
   {
     // cannot do this as need both .sgl and .lm
-    error("read_from_file for ECAT962 listmode data with istream not implemented %s:%d. Sorry",
-	  __FILE__, __LINE__);
-    return
-      unique_ptr<data_type>();
+    error("read_from_file for ECAT962 listmode data with istream not implemented %s:%d. Sorry", __FILE__, __LINE__);
+    return unique_ptr<data_type>();
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
-  {	
-    return unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT962>(filename)); 
+  virtual unique_ptr<data_type> read_from_file(const std::string& filename) const
+  {
+    return unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT962>(filename));
   }
 };
 

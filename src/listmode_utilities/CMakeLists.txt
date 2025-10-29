@@ -35,8 +35,8 @@ if (HAVE_ECAT)
 endif()
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
-  list(APPEND ${dir_EXE_SOURCES} conv_NiftyPET_stir)
-  list(APPEND ${dir_EXE_SOURCES} lm_to_projdata_NiftyPET)
+  list(APPEND ${dir_EXE_SOURCES} conv_NiftyPET_stir.cxx)
+  list(APPEND ${dir_EXE_SOURCES} lm_to_projdata_NiftyPET.cxx)
 endif()
 
 

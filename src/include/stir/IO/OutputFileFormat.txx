@@ -12,10 +12,10 @@
 /*!
   \file
   \ingroup IO
-  
-  \brief  implementation of the stir::OutputFileFormat class 
+
+  \brief  implementation of the stir::OutputFileFormat class
   \author Kris Thielemans
-      
+
 */
 
 #include "stir/IO/OutputFileFormat.h"
@@ -25,33 +25,27 @@
 START_NAMESPACE_STIR
 
 template <typename DataT>
-ASCIIlist_type
-OutputFileFormat<DataT>::number_format_values;
+ASCIIlist_type OutputFileFormat<DataT>::number_format_values;
 
 template <typename DataT>
-ASCIIlist_type
-OutputFileFormat<DataT>::byte_order_values;
+ASCIIlist_type OutputFileFormat<DataT>::byte_order_values;
 
 template <typename DataT>
-shared_ptr<OutputFileFormat<DataT> >
-OutputFileFormat<DataT>::
-default_sptr()
+shared_ptr<OutputFileFormat<DataT>>
+OutputFileFormat<DataT>::default_sptr()
 {
   return OutputFileFormat<DataT>::_default_sptr;
 }
 
 template <typename DataT>
-OutputFileFormat<DataT>::
-OutputFileFormat(const NumericType& type,
-		 const ByteOrder& byte_order)
-  : type_of_numbers(type), file_byte_order(byte_order)
-{ 
-}
+OutputFileFormat<DataT>::OutputFileFormat(const NumericType& type, const ByteOrder& byte_order)
+    : type_of_numbers(type),
+      file_byte_order(byte_order)
+{}
 
 template <typename DataT>
-void 
-OutputFileFormat<DataT>::
-set_defaults()
+void
+OutputFileFormat<DataT>::set_defaults()
 {
   file_byte_order = ByteOrder::native;
   type_of_numbers = NumericType::FLOAT;
@@ -61,99 +55,85 @@ set_defaults()
 }
 
 template <typename DataT>
-void 
-OutputFileFormat<DataT>::
-initialise_keymap()
+void
+OutputFileFormat<DataT>::initialise_keymap()
 {
 
-  if (number_format_values.size()==0)
-  {
-    number_format_values.push_back("bit");
-    number_format_values.push_back("ascii");
-    number_format_values.push_back("signed integer");
-    number_format_values.push_back("unsigned integer");
-    number_format_values.push_back("float");
+  if (number_format_values.size() == 0)
+    {
+      number_format_values.push_back("bit");
+      number_format_values.push_back("ascii");
+      number_format_values.push_back("signed integer");
+      number_format_values.push_back("unsigned integer");
+      number_format_values.push_back("float");
 
-    assert(byte_order_values.size()==0);
-    byte_order_values.push_back("LITTLEENDIAN");
-    byte_order_values.push_back("BIGENDIAN");
-  }
-  this->parser.add_key("byte order",
-		 &byte_order_index,
-		 &byte_order_values);
-  this->parser.add_key("number format",
-		 &number_format_index,
-		 &number_format_values);
-  this->parser.add_key("number of bytes per pixel",
-		 &bytes_per_pixel);
-  this->parser.add_key("scale_to_write_data",
-		 &scale_to_write_data);
+      assert(byte_order_values.size() == 0);
+      byte_order_values.push_back("LITTLEENDIAN");
+      byte_order_values.push_back("BIGENDIAN");
+    }
+  this->parser.add_key("byte order", &byte_order_index, &byte_order_values);
+  this->parser.add_key("number format", &number_format_index, &number_format_values);
+  this->parser.add_key("number of bytes per pixel", &bytes_per_pixel);
+  this->parser.add_key("scale_to_write_data", &scale_to_write_data);
 }
 
 template <typename DataT>
-void 
-OutputFileFormat<DataT>::
-set_key_values()
+void
+OutputFileFormat<DataT>::set_key_values()
 {
-  byte_order_index =
-    file_byte_order == ByteOrder::little_endian ?
-      0 : 1;
+  byte_order_index = file_byte_order == ByteOrder::little_endian ? 0 : 1;
 
-  std::string number_format; 
+  std::string number_format;
   std::size_t bytes_per_pixel_in_size_t;
-  type_of_numbers.get_Interfile_info(number_format, 
-                                     bytes_per_pixel_in_size_t);
+  type_of_numbers.get_Interfile_info(number_format, bytes_per_pixel_in_size_t);
   bytes_per_pixel = static_cast<int>(bytes_per_pixel_in_size_t);
-  number_format_index =
-     this->parser.find_in_ASCIIlist(number_format, number_format_values);
-
+  number_format_index = this->parser.find_in_ASCIIlist(number_format, number_format_values);
 }
 
 template <typename DataT>
 bool
-OutputFileFormat<DataT>::
-post_processing()
+OutputFileFormat<DataT>::post_processing()
 {
-  if (number_format_index<0 ||
-      static_cast<ASCIIlist_type::size_type>(number_format_index)>=
-        number_format_values.size())
-  {
-    warning("OutputFileFormat parser internal error: "
-            "'number_format_index' out of range\n");
-    return true;
-  }
+  if (number_format_index < 0 || static_cast<ASCIIlist_type::size_type>(number_format_index) >= number_format_values.size())
+    {
+      warning("OutputFileFormat parser internal error: "
+              "'number_format_index' out of range\n");
+      return true;
+    }
   // check if bytes_per_pixel is set if the data type is not 'bit'
-  if (number_format_index!=0 && bytes_per_pixel<=0)
-  {
-    warning("OutputFileFormat parser: "
-            "'number_of_bytes_per_pixel' should be > 0\n");
-    return true;
-  }
+  if (number_format_index != 0 && bytes_per_pixel <= 0)
+    {
+      warning("OutputFileFormat parser: "
+              "'number_of_bytes_per_pixel' should be > 0\n");
+      return true;
+    }
 
-  type_of_numbers = NumericType(number_format_values[number_format_index], 
-                                bytes_per_pixel);
+  type_of_numbers = NumericType(number_format_values[number_format_index], bytes_per_pixel);
 
   if (type_of_numbers == NumericType::UNKNOWN_TYPE)
-  {
-    warning("OutputFileFormat parser: "
-        "unrecognised data type. Check either "
-        "'number_of_bytes_per_pixel' or 'number format'\n");
-    return true;
-  }
+    {
+      warning("OutputFileFormat parser: "
+              "unrecognised data type. Check either "
+              "'number_of_bytes_per_pixel' or 'number format'\n");
+      return true;
+    }
 
-  switch(byte_order_index)
-  {
+  switch (byte_order_index)
+    {
     case -1:
-	file_byte_order = ByteOrder::native; break;
+      file_byte_order = ByteOrder::native;
+      break;
     case 0:
-	file_byte_order = ByteOrder::little_endian; break;
+      file_byte_order = ByteOrder::little_endian;
+      break;
     case 1:
-	file_byte_order = ByteOrder::big_endian; break;
+      file_byte_order = ByteOrder::big_endian;
+      break;
     default:
-        warning("OutputFileFormat parser internal error: "
-                "'byte_order_index' out of range\n");
-        return true;
-  }
+      warning("OutputFileFormat parser internal error: "
+              "'byte_order_index' out of range\n");
+      return true;
+    }
 
   set_byte_order(file_byte_order, true);
   set_type_of_numbers(type_of_numbers, true);
@@ -162,69 +142,68 @@ post_processing()
 }
 
 template <typename DataT>
-NumericType 
-OutputFileFormat<DataT>::
-get_type_of_numbers() const
-{ return type_of_numbers; }
+NumericType
+OutputFileFormat<DataT>::get_type_of_numbers() const
+{
+  return type_of_numbers;
+}
 
 template <typename DataT>
-ByteOrder 
-OutputFileFormat<DataT>::
-get_byte_order()
-{ return file_byte_order; }
-
-template <typename DataT>
-float
-OutputFileFormat<DataT>::
-get_scale_to_write_data() const
-{ return scale_to_write_data; }
-
-template <typename DataT>
-NumericType 
-OutputFileFormat<DataT>::
-set_type_of_numbers(const NumericType& new_type, const bool warn)
-{ return type_of_numbers =  new_type; }
-
-template <typename DataT>
-ByteOrder 
-OutputFileFormat<DataT>::
-set_byte_order(const ByteOrder& new_byte_order, const bool warn)
-{ return file_byte_order = new_byte_order; }
+ByteOrder
+OutputFileFormat<DataT>::get_byte_order()
+{
+  return file_byte_order;
+}
 
 template <typename DataT>
 float
-OutputFileFormat<DataT>::
-set_scale_to_write_data(const float new_scale_to_write_data, const bool warn)
-{ return scale_to_write_data = new_scale_to_write_data; }
+OutputFileFormat<DataT>::get_scale_to_write_data() const
+{
+  return scale_to_write_data;
+}
+
+template <typename DataT>
+NumericType
+OutputFileFormat<DataT>::set_type_of_numbers(const NumericType& new_type, const bool warn)
+{
+  return type_of_numbers = new_type;
+}
+
+template <typename DataT>
+ByteOrder
+OutputFileFormat<DataT>::set_byte_order(const ByteOrder& new_byte_order, const bool warn)
+{
+  return file_byte_order = new_byte_order;
+}
+
+template <typename DataT>
+float
+OutputFileFormat<DataT>::set_scale_to_write_data(const float new_scale_to_write_data, const bool warn)
+{
+  return scale_to_write_data = new_scale_to_write_data;
+}
 
 template <typename DataT>
 void
-OutputFileFormat<DataT>::
-set_byte_order_and_type_of_numbers(ByteOrder& new_byte_order, NumericType& new_type, const bool warn)
+OutputFileFormat<DataT>::set_byte_order_and_type_of_numbers(ByteOrder& new_byte_order, NumericType& new_type, const bool warn)
 {
   new_byte_order = set_byte_order(new_byte_order, warn);
   new_type = set_type_of_numbers(new_type, warn);
 }
 
 template <typename DataT>
-Succeeded  
-OutputFileFormat<DataT>::
-write_to_file(std::string& filename, 
-	      const DataT& density) const
+Succeeded
+OutputFileFormat<DataT>::write_to_file(std::string& filename, const DataT& density) const
 {
   return actual_write_to_file(filename, density);
 }
 
 template <typename DataT>
-Succeeded  
-OutputFileFormat<DataT>::
-write_to_file(const std::string& filename, 
-	      const DataT& density) const
+Succeeded
+OutputFileFormat<DataT>::write_to_file(const std::string& filename, const DataT& density) const
 {
   std::string filename_to_use = filename;
-  return 
-    write_to_file(filename_to_use, density);
+  return write_to_file(filename_to_use, density);
 };
 
 END_NAMESPACE_STIR
-

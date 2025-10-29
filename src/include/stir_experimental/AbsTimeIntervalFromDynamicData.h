@@ -30,7 +30,7 @@ class Succeeded;
 
   The dynamic scan can be either a sinogram of an image. It is read via DynamicProjData or
   DynamicDiscretisedDensity.
-  
+
   \par Example .par file
   \verbatim
     ; example keyword in some .par file
@@ -44,38 +44,34 @@ class Succeeded;
 
 */
 class AbsTimeIntervalFromDynamicData
-: public RegisteredParsingObject<AbsTimeIntervalFromDynamicData,
-				 AbsTimeInterval,
-				 AbsTimeInterval>
+    : public RegisteredParsingObject<AbsTimeIntervalFromDynamicData, AbsTimeInterval, AbsTimeInterval>
 {
 
 public:
-  //! Name which will be used when parsing a AbsTimeInterval object 
-  static const char * const registered_name; 
+  //! Name which will be used when parsing a AbsTimeInterval object
+  static const char* const registered_name;
 
-  virtual ~AbsTimeIntervalFromDynamicData() {}
+  ~AbsTimeIntervalFromDynamicData() override {}
   //! default constructor gives ill-defined values
   AbsTimeIntervalFromDynamicData();
   //! read info from file
   /*! will call error() if something goes wrong */
-  AbsTimeIntervalFromDynamicData(const std::string& filename, 
+  AbsTimeIntervalFromDynamicData(const std::string& filename,
                                  const unsigned int start_time_frame_num,
                                  const unsigned int end_time_frame_num);
-  
- private:
-  std::string _filename; 
-  //TimeFrameDefinitions _time_frame_defs;
+
+private:
+  std::string _filename;
+  // TimeFrameDefinitions _time_frame_defs;
   double _scan_start_time_in_secs_since_1970; // start of scan, not the time-interval
   unsigned int _start_time_frame_num;
   unsigned int _end_time_frame_num;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
   Succeeded set_times();
-
 };
 
 END_NAMESPACE_STIR

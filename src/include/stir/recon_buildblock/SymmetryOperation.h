@@ -24,15 +24,14 @@
 
 #include "stir/common.h"
 
-
 START_NAMESPACE_STIR
 
-template <int num_dimensions, class coordT> class BasicCoordinate;
+template <int num_dimensions, class coordT>
+class BasicCoordinate;
 class ViewSegmentNumbers;
 class ProjMatrixElemsForOneBin;
 class ProjMatrixElemsForOneDensel;
 class Bin;
-
 
 /*!
   \ingroup buildblock
@@ -40,8 +39,8 @@ class Bin;
   data coordinates
 
   This class is mainly (only?) useful for ProjMatrix classes and their
-  'users'. Together with DataSymmetriesForBins, it provides the basic 
-  way to be able to write generic code without knowing which 
+  'users'. Together with DataSymmetriesForBins, it provides the basic
+  way to be able to write generic code without knowing which
   particular symmetries the data have.
 
   Ideally, there would be no reference here to ProjMatrixElemsForOneBin,
@@ -49,7 +48,7 @@ class Bin;
   will allow the compiler to inline the symmetry operations, resulting
   in a dramatic speed-up.
 
-  Price to pay (aside from some tedious repetition in the derived classes): 
+  Price to pay (aside from some tedious repetition in the derived classes):
   the need for a
   SymmetryOperation::transform_proj_matrix_elems_for_one_bin member,
   and hence knowledge of the ProjMatrixElemsForOneBin class
@@ -63,30 +62,20 @@ class SymmetryOperation
 {
 public:
   virtual inline ~SymmetryOperation() {}
-  virtual inline bool is_trivial() const { return false;}
-  virtual void 
-    transform_bin_coordinates(Bin&) const = 0;
-  virtual void 
-    transform_view_segment_indices(ViewSegmentNumbers&) const = 0;
-  virtual void
-    transform_image_coordinates(BasicCoordinate<3,int>&) const = 0;
+  virtual inline bool is_trivial() const { return false; }
+  virtual void transform_bin_coordinates(Bin&) const = 0;
+  virtual void transform_view_segment_indices(ViewSegmentNumbers&) const = 0;
+  virtual void transform_image_coordinates(BasicCoordinate<3, int>&) const = 0;
 #if 0
   // would be useful at some point
   virtual void 
     transform_incremental_image_coordinates(BasicCoordinate<3,int>&) const = 0;
 #endif
 
-  virtual void 
-    transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const;
+  virtual void transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const;
 
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const;
-
+  virtual void transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel&) const;
 };
-
-
 
 /*!
   \ingroup symmetries
@@ -96,22 +85,14 @@ public:
 class TrivialSymmetryOperation : public SymmetryOperation
 {
 public:
-  inline bool is_trivial() const { return true;}
-  inline void 
-    transform_bin_coordinates(Bin& b) const {}
-  inline void 
-    transform_view_segment_indices(ViewSegmentNumbers& n) const {}
-  inline void
-    transform_image_coordinates(BasicCoordinate<3,int>& c) const {}
-  inline void 
-    transform_proj_matrix_elems_for_one_bin(
-       ProjMatrixElemsForOneBin& lor) const {}
+  inline bool is_trivial() const override { return true; }
+  inline void transform_bin_coordinates(Bin& b) const override {}
+  inline void transform_view_segment_indices(ViewSegmentNumbers& n) const override {}
+  inline void transform_image_coordinates(BasicCoordinate<3, int>& c) const override {}
+  inline void transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const override {}
 
-  virtual void 
-    transform_proj_matrix_elems_for_one_densel(
-      ProjMatrixElemsForOneDensel&) const {}
+  void transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel&) const override {}
 };
-
 
 END_NAMESPACE_STIR
 

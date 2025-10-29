@@ -16,9 +16,9 @@ The scripts don't do proper error handling. If they suddenly stop without diagno
 and look for a log file.
 
 The scripts need template files from this directory. By default
-they assume they are located in `~/devel/STIR/examples/Siemens-mMR`.
-If that is not the case, you can set the pardir variable as above, or
-by doing for instance
+they assume they are located in the `Siemens-mMR` directory of the STIR
+examples folder, as obtained by `stir_config --examples-dir`.
+This can be overridden by doing for instance
 
 ```sh
 pardir=~/STIR/examples/Siemens-mMR

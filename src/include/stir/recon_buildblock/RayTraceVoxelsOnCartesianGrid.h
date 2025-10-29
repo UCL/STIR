@@ -24,10 +24,11 @@
 START_NAMESPACE_STIR
 
 class ProjMatrixElemsForOneBin;
-template <typename elemT> class CartesianCoordinate3D;
+template <typename elemT>
+class CartesianCoordinate3D;
 
 /*! \ingroup recon_buildblock
-  
+
   \brief RayTraceVoxelsOnCartesianGrid finds the Length of Intersections (LOIs)
   of an LOR with a grid of voxels and appends them to
   the ProjMatrixElemsForOneBin object.
@@ -40,7 +41,7 @@ template <typename elemT> class CartesianCoordinate3D;
 
   start_point and end_point have to be given in 'voxel grid
   units' (i.e. voxels are spaced 1 unit apart). The centre
-  of the voxels are assumed to be at integer coordinates 
+  of the voxels are assumed to be at integer coordinates
   (e.g. (0,0,0) is the centre of a voxel).
 
   For the start voxel, the intersection length of the LOR with the
@@ -52,7 +53,7 @@ template <typename elemT> class CartesianCoordinate3D;
 
   RayTraceVoxelsOnCartesianGrid is based on Siddon's algorithm.
 
-  Siddon's algorithm works by looking at intersections of the 
+  Siddon's algorithm works by looking at intersections of the
   'intra-voxel' planes with the LOR.
 
   The LORs is parametrised as
@@ -65,11 +66,10 @@ template <typename elemT> class CartesianCoordinate3D;
   as this determines which plane the LOR intersects at this point.
 
 */
-void 
-RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor, 
-                              const CartesianCoordinate3D<float>& start_point, 
-                              const CartesianCoordinate3D<float>& end_point, 
-                              const CartesianCoordinate3D<float>& voxel_size,
-                              const float normalisation_constant = 1.F);
+void RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
+                                   const CartesianCoordinate3D<float>& start_point,
+                                   const CartesianCoordinate3D<float>& end_point,
+                                   const CartesianCoordinate3D<float>& voxel_size,
+                                   const float normalisation_constant = 1.F);
 
 END_NAMESPACE_STIR

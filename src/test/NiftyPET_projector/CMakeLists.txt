@@ -14,7 +14,7 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
-	test_ProjectorNiftyPET_adjoint
+	test_ProjectorNiftyPET_adjoint.cxx
 )
 
 ADD_TEST(test_ProjectorNiftyPET_adjoint

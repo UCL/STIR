@@ -31,7 +31,7 @@ START_NAMESPACE_STIR
 /*! \ingroup buildblock
 
   The arguments are the same as if you would call printf(). The error message is written to stderr,
-  preceeded by "ERROR:", a std::string is constructed with the error message, and 
+  preceeded by "ERROR:", a std::string is constructed with the error message, and
   <code>throw</code> is called with the string as argument.
 
   Note that because we throw an exception, the caller can catch it. Prior to STIR 2.1, this was
@@ -46,9 +46,7 @@ START_NAMESPACE_STIR
 
   \deprecated (use 1 argument version instead)
 */
-void
-error(const char *const s, ...);
-
+void error(const char* const s, ...);
 
 //! Use this function for writing error messages and throwing an exception
 /*! \ingroup buildblock
@@ -61,11 +59,11 @@ error(const char *const s, ...);
 
   \todo At a later stage, it will also write to a log-file.
 
-  \c boost::format is useful in this context.
+  \c stir::format is useful in this context.
 
   \par Example
   \code
-  error(boost::format("Incorrect number of subsets: %d") % num_subsets);
+  error(format("Incorrect number of subsets: {}", num_subsets));
 
   error("This does not work");
   \endcode
@@ -76,9 +74,7 @@ inline void
 error(const STRING& string)
 {
   std::stringstream sstr;
-  sstr << "\nERROR: "
-	    << string
-	    << std::endl;
+  sstr << "\nERROR: " << string << std::endl;
   writeText(sstr.str().c_str(), ERROR_CHANNEL);
   throw std::runtime_error(sstr.str());
 }
