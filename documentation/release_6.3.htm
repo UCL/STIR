@@ -22,21 +22,38 @@
   <h4>General</h4>
   <ul>
     <li>
-      The analytic Spline Reconstruction Technique (SRT) algorithm has been added in 2 different versions: for PET
-      (inverting the 2D Radon transform) and for SPECT (inverting the 2D attenuated Radon transform). The latter
-      allows quantitatively correct analytic reconstruction of SPECT data (after scatter correction).
-
-      The reference for the implemented algorithms is:<br>
-      Fokas, A. S., A. Iserles, and V. Marinakis.
-      <cite>Reconstruction algorithm for single photon emission computed tomography and its numerical
-        implementation.</cite>
-      Journal of the Royal Society Interface* 3.6 (2006): 45-54.
+      Several 2D analytic reconstruction algorithms were added for PET (i.e. inverting the 2D Radon transform)
+      and parallel beam SPECT (inverting the 2D attenuated Radon transform). The latter
+      allow quantitatively correct analytic reconstruction of SPECT data (after scatter correction).
+      <ul>
+        <li>
+          The Spline Reconstruction Technique (SRT) algorithm has been added in 2 different versions:
+          <code>SRT2D</code> for PET and <code>SRT2DSPECT</code> for SPECT.
+          The reference for the implemented algorithms is:<br>
+          Fokas, A. S., A. Iserles, and V. Marinakis.
+          <cite>Reconstruction algorithm for single photon emission computed tomography and its numerical
+            implementation.</cite>
+          Journal of the Royal Society Interface* 3.6 (2006): 45-54.
+        </li>
+        <li>
+          <code>GRD2D</code> for PET is a direct Fourier method using regridding with Kaiser-Bessel functions.
+        </li>
+        <li>
+          <code>DDSR2D</code> for parallel beam SPECT uses Hilbert transforms in projection space.
+        </li>
+      </ul>
+      The reference for the implementation of these algorithms is:<br>
+      Dimitra Kyriakopoulou, <cite>Analytical and Numerical Aspects of Tomography</cite>,
+      PhD thesis, University College London (UCL), 2024,<br>
+      Available at:
+      <a href=https://discovery.ucl.ac.uk/id/eprint/10202525/>discovery.ucl.ac.uk/id/eprint/10202525/</a>.
       <br>
-      The reference for the implementation is:<br>
-      Dimitra Kyriakopoulou, <cite>Analytical and Numerical Aspects of Tomography</cite>, UCL PhD thesis, (not yet
-      publically accessible)
+      <a href=https://github.com/UCL/STIR/pull/1420>PR #1420</a> and <a href=https://github.com/UCL/STIR/pull/1595>PR #1595</a>.
+    </li>
+    <li>
+      Wiener and Gamma filters were added.
       <br>
-      <a href=https://github.com/UCL/STIR/pull/1420>PR #1420</a>
+      <a href=https://github.com/UCL/STIR/pull/1420>PR #1420</a>.
     </li>
     <li>
       <code>ScatterSimulation</code> can now downsample the scanner transaxially (crystals per ring) for
@@ -208,7 +225,7 @@
     </li>
     <li>
       <code>Array::resize</code> and <code>Array::grow</code> argument <code>initialise_with_0</code> usage
-      fixed</code>.
+      fixed.
     </li>
   </ul>
 

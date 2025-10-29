@@ -3,6 +3,7 @@
 #ifndef __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 #define __stir_analytic_SRT2DSPECT_SRT2DSPECTReconstruction_H__
 /*
+    Copyright (C) 2014-2016, 2023-2024, Dimitra Kyriakopoulou
     Copyright (C) 2024, University College London
     This file is part of STIR.
 
@@ -12,36 +13,24 @@
 */
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2DSPECT
 
   \brief declares the stir::SRT2DSPECTReconstruction class
+
+  \details
+   SRT2DSPECT models each projection with cubic splines along the detector (tangential) axis and explicitly
+   accounts for attenuation: it applies exponential weighting and a Hilbert-transform term to the spline representation,
+   then accumulates over the projection angles to form the image.
 
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans
 */
 
-#include "stir/analytic/SRT2DSPECT/SRT2DSPECTReconstruction.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/ArcCorrection.h"
-#include "stir/SSRB.h"
-#include "stir/ProjDataInMemory.h"
-#include "stir/Array.h"
-#include <vector>
-#include "stir/Sinogram.h"
-#include "stir/Viewgram.h"
-#include <cmath>
-#include "stir/Bin.h"
-#include "stir/round.h"
-#include "stir/display.h"
-#include <algorithm>
-#include "stir/IO/interfile.h"
-#include "stir/info.h"
-
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/RegisteredParsingObject.h"
-#include <string>
 #include "stir/shared_ptr.h"
+#include <string>
+#include <vector>
 
 START_NAMESPACE_STIR
 
@@ -53,9 +42,10 @@ class ProjData;
 /*! \ingroup SRT2DSPECT
  \brief Reconstruction class for 2D Spline Reconstruction Technique
 
-  The reference for the implemented SPECT algorithm is: Fokas, A. S., A. Iserles, and V. Marinakis. "Reconstruction algorithm for
-single photon emission computed tomography and its numerical implementation." *Journal of the Royal Society Interface* 3.6 (2006):
-45-54.
+  The algorithm, its reference, and comments on its implementation are described in Chapter 6 of Dimitra Kyriakopoulou's doctoral
+thesis, “Analytical and Numerical Aspects of Tomography”, University College London (UCL), 2024, supervised by Professor
+Athanassios S. Fokas (Cambridge) and Professor Kris Thielemans (UCL). Available at:
+https://discovery.ucl.ac.uk/id/eprint/10202525/
 
   STIR implementations: initial version 2014-2016, 1st updated version 2023-2024
 
@@ -103,8 +93,8 @@ private:
   typedef DiscretisedDensity<3, float> TargetT;
 
 public:
-  //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char* const registered_name;
+  //! Name which will be used when parsing a reconstruction object
+  static constexpr const char* const registered_name = "SRT2DSPECT";
 
   //! Default constructor (calls set_defaults())
   SRT2DSPECTReconstruction();
@@ -114,7 +104,7 @@ public:
   */
   explicit SRT2DSPECTReconstruction(const std::string& parameter_filename);
 
-  SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, const int num_segments_to_combine = -1);
+  SRT2DSPECTReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v);
 
   virtual std::string method_info() const;
 
@@ -131,7 +121,6 @@ protected: // make parameters protected such that doc shows always up in doxygen
       effectively set to 3, otherwise it is set to 1.
       \see SSRB
   */
-  int num_segments_to_combine;
   std::string attenuation_projection_filename;
   float thres_restr_bound;
   std::vector<double> thres_restr_bound_vector;
