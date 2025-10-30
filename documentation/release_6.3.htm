@@ -81,12 +81,12 @@
       <a href=https://github.com/UCL/STIR/pull/1530>PR #1530</a>
     </li>
     <li>
-      Duration in sinogram interfile/exam_info obtained from <code>LmToProjData</code>/<tt>lm_to_projdata</tt> has the
+      Duration in sinogram interfile/exam_info obtained from <code>LmToProjData</code>/<code>lm_to_projdata</code> has the
       correct value if we unlist all the events. This is not true for ROOT files<br>
       <a href=https://github.com/UCL/STIR/pull/1519>PR #1519</a>
     </li>
     <li>
-      <code>LmToProjData</code> class/<tt>lm_to_projdata</tt> utility now no longer requires a template projection data. If none is
+      <code>LmToProjData</code> class/<code>lm_to_projdata</code> utility now no longer requires a template projection data. If none is
       specified, it will use the proj_data_info from the input list-mode.<br>
       <b>Warning</b> for some scanners with TOF capabilities, this will result in very large projection data (possibly
       larger than the default from the vendor).<br>
@@ -123,7 +123,7 @@
   <h4>Utilities</h4>
   <ul>
     <li>
-      <tt>stir_timings</tt> has now an extra option to parse a par-file for a projector-pair.
+      <code>stir_timings</code> has now an extra option to parse a par-file for a projector-pair.
     </li>
   </ul>
 
@@ -148,7 +148,7 @@
       </li>
       <li>
         Boost format was replaced by `std::format` for formatting strings. If C++20 or newer is
-        not yet used, a work-around is in place by using the [{fmt} library](https://github.com/fmtlib/fmt/)
+        not yet used, a work-around is in place by using the <a href=https://github.com/fmtlib/fmt/>{fmt} library</a>
         (included as as a git submodule).
         Import <code>stir/format.h</code> and then use the <code>format()</code> function to create strings containing various variables. If the format string is not known at compile time,
         use <code>runtime_format()</code> instead.<br>
@@ -205,14 +205,17 @@
       <a href=https://github.com/UCL/STIR/pull/1552>PR #1552</a>
     </li>
     <li>Use OpenMP by default</li>
-    <li>Introduce advanced variable <tt>MINI_STIR</tt> defaulting to <tt>OFF</tt> for developers.
+    <li>Introduce advanced variable <code>MINI_STIR</code> defaulting to <code>OFF</code> for developers.
       This will build a heavily reduced version of STIR which can speed up development time.<br>
       <a href=https://github.com/UCL/STIR/pull/1584>PR #1584</a>
     </li>
   </ul>
 
   <h3>Known problems</h3>
-  <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</p>
+  <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.<br>
+    An important bug is for the "ray tracing matrix" projector for TOF PET. Oblique
+    segments currently have problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.
+  </p>
 
 
   <H2>What is new for developers (aside from what should be obvious from the above):</H2>
@@ -234,7 +237,7 @@
     <li>
       In C++, "Container" classes such as <code>VoxelsOnCartesianGrid</code>, <code>ProjDataInMemory</code>
       and array-classes now have numerical operations that return objects of the correct type.
-      (Previously, it was a base-class such as <code>NumericVectorWithOffset<Array<2, float>, float></code>).<br>
+      (Previously, it was a base-class such as <code>NumericVectorWithOffset&lt;Array&lt;2, float&gt;, float&gt;</code>).<br>
       <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
     </li>
     <li>
@@ -250,7 +253,7 @@
     </li>
     <li>
       As <code>stir::Array</code> template arguments might change in the future,
-      it is now recommended to include <tt>stir/ArrayFwd.h</tt> when using forward
+      it is now recommended to include <code>stir/ArrayFwd.h</code> when using forward
       declaration and use the <code>ArrayType</code> template-alias in places where
       a rectangular array that might live on a GPU is intended.<br>
       <a href=https://github.com/UCL/STIR/pull/1589>PR #1589</a>
@@ -281,8 +284,8 @@
     </li>
     <li>
       legacy compatibility with version 3, 4 and 5 will be removed in v7.0.
-      CMake options <tt>STIR_PROJECTORS_AS_V3</tt>, <tt>STIR_LEGACY_IGNORE_VIEW_OFFSET</tt> and
-      <tt>STIR_ROOT_ROTATION_AS_V4</tt> will therefore be removed.
+      CMake options <code>STIR_PROJECTORS_AS_V3</code>, <code>STIR_LEGACY_IGNORE_VIEW_OFFSET</code> and
+      <code>STIR_ROOT_ROTATION_AS_V4</code> will therefore be removed.
     </li>
     <li>
       Starting from v7.0, <code>GeneralizedPrior</code> will be renamed to <code>GeneralizedPenalty</code>.<br>
