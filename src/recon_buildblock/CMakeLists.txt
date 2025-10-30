@@ -156,7 +156,7 @@ endif()
 if (NOT MINI_STIR)
   # TODO what to do with IO?
   # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
-  target_link_libraries(recon_buildblock PUBLIC modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
+  target_link_libraries(recon_buildblock PUBLIC spatial_transformation_buildblock )
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
 	target_link_libraries(recon_buildblock PRIVATE NiftyPET::petprj)
@@ -166,7 +166,7 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
 endif()
 
 else()
-  target_link_libraries(recon_buildblock PUBLIC numerics_buildblock data_buildblock buildblock)
+  target_link_libraries(recon_buildblock PUBLIC ${STIR_BUILDBLOCK_LIB})
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)

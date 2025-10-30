@@ -41,12 +41,11 @@ else()
         message(FATAL_ERROR "GRAPHICS has to be X, PGM or None")
 endif()
 
-include(stir_lib_target)
+target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
+set(TARGET ${STIR_BUILDBLOCK_LIB})
 
 if( "${GRAPHICS}" STREQUAL "X")
 	find_package(Curses REQUIRED)
-	target_include_directories(${dir} PRIVATE ${X11_INCLUDE_DIR} ${CURSES_INCLUDE_DIR})
-	target_link_libraries(${dir} PUBLIC ${X11_LIBRARIES} ${CURSES_LIBRARY})
+	target_include_directories(${TARGET} PRIVATE ${X11_INCLUDE_DIR} ${CURSES_INCLUDE_DIR})
+	target_link_libraries(${TARGET} PUBLIC ${X11_LIBRARIES} ${CURSES_LIBRARY})
 endif()
-
-target_link_libraries(${dir} PUBLIC buildblock)
