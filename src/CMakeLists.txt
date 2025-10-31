@@ -208,6 +208,9 @@ endif()
 #### Define name for the main library
 
 set(STIR_BUILDBLOCK_LIB stir_buildblock)
+# use different names for the same library, in case we want to split them up again
+set(STIR_RECON_BUILDBLOCK_LIB stir_buildblock)
+set (STIR_SPATIAL_TRANSFORMATION_BUIDBLOCK_LIB stir_buildblock)
 
 #### Create stir/config.h
 

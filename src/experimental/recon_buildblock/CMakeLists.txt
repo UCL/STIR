@@ -22,7 +22,7 @@ set(${dir_LIB_SOURCES}
 include(stir_lib_target)
 
 
-target_link_libraries(local_recon_buildblock PUBLIC recon_buildblock)
+target_link_libraries(${dir} PUBLIC ${STIR_RECON_BUILDBLOCK_LIB})
 
 
 

@@ -13,7 +13,7 @@ set(${dir_LIB_SOURCES}
 #$(dir)_REGISTRY_SOURCES:= 
 
 include(stir_lib_target)
-target_link_libraries(analytic_FBP2D PUBLIC recon_buildblock)
+target_link_libraries(analytic_FBP2D PUBLIC ${STIR_RECON_BUILDBLOCK_LIB})
 
 set (dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
