@@ -55,11 +55,11 @@ endif()
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
-include(stir_lib_target)
+target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
 
-target_link_libraries(listmode_buildblock PUBLIC data_buildblock)
+set(TARGET ${STIR_BUILDBLOCK_LIB})
 
 if (HAVE_HDF5)
   # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
-  target_include_directories(listmode_buildblock PRIVATE ${HDF5_INCLUDE_DIRS})
+  target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
 endif()

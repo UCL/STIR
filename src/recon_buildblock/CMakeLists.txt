@@ -140,47 +140,44 @@ endif()
 
 endif() # MINI_STIR
 
-include(stir_lib_target)
+target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
 
-target_link_libraries(recon_buildblock)
+set(TARGET ${STIR_BUILDBLOCK_LIB})
 
 if (STIR_MPI)
-  target_include_directories(recon_buildblock ${MPI_CXX_INCLUDE_PATH})
-  target_link_libraries(recon_buildblock PUBLIC ${MPI_CXX_LIBRARIES})
+  target_include_directories(${TARGET} ${MPI_CXX_INCLUDE_PATH})
+  target_link_libraries(${TARGET} PUBLIC ${MPI_CXX_LIBRARIES})
 endif()
 
 if (STIR_OPENMP)
-  target_link_libraries(recon_buildblock PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
+  target_link_libraries(${TARGET} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 endif()
 
 if (NOT MINI_STIR)
-  # TODO what to do with IO?
-  # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
-  target_link_libraries(recon_buildblock PUBLIC modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
+  # not necessary as all in one library now
+  # target_link_libraries(${TARGET} PUBLIC ${STIR_SPATIAL_TRANSFORMATION_BUIDBLOCK_LIB} )
 
 if (STIR_WITH_NiftyPET_PROJECTOR)
-	target_link_libraries(recon_buildblock PRIVATE NiftyPET::petprj)
-	target_link_libraries(recon_buildblock PRIVATE NiftyPET::mmr_auxe)
-	target_link_libraries(recon_buildblock PRIVATE NiftyPET::mmr_lmproc)
-	target_link_libraries(recon_buildblock PRIVATE CUDA::cudart)
+	target_link_libraries(${TARGET} PRIVATE NiftyPET::petprj)
+	target_link_libraries(${TARGET} PRIVATE NiftyPET::mmr_auxe)
+	target_link_libraries(${TARGET} PRIVATE NiftyPET::mmr_lmproc)
+	target_link_libraries(${TARGET} PRIVATE CUDA::cudart)
 endif()
 
-else()
-  target_link_libraries(recon_buildblock PUBLIC numerics_buildblock data_buildblock buildblock)
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)
-  target_link_libraries(recon_buildblock PRIVATE parallelproj::parallelproj_c)
+  target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_c)
   if (parallelproj_built_with_CUDA)
-    target_link_libraries(recon_buildblock PRIVATE parallelproj::parallelproj_cuda)
+    target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_cuda)
   endif()
 endif()
 
 if (HAVE_HDF5)
   # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
-  target_include_directories(recon_buildblock PRIVATE ${HDF5_INCLUDE_DIRS})
+  target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
 endif()
 
 if (STIR_WITH_CUDA)
-  target_link_libraries(recon_buildblock PRIVATE CUDA::cudart)
+  target_link_libraries(${TARGET} PRIVATE CUDA::cudart)
 endif()

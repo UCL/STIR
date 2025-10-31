@@ -116,6 +116,8 @@ if (NOT HAVE_SYSTEM_GETOPT)
   list(APPEND ${dir_LIB_SOURCES} getopt.c)
 endif()
 
+set(TARGET ${STIR_BUILDBLOCK_LIB})
+set(dir ${TARGET})
 include(stir_lib_target)
 
 
@@ -124,7 +126,7 @@ if (HAVE_JSON)
   # Unfortunately, the simple line below exports the dependency while this is really not
   # necessary.
   #
-  # target_link_libraries(buildblock PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
+  # target_link_libraries(${TARGET} PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
 
   # So, we currently use an ugly work-around from
   # https://gitlab.kitware.com/cmake/cmake/-/issues/15415#note_334852
@@ -132,24 +134,19 @@ if (HAVE_JSON)
   # In that case, we will need to add it in STIRConfig.cmake.in
   #
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(buildblock PUBLIC "${TMP}")
+  target_include_directories(${TARGET} PUBLIC "${TMP}")
 endif()
-
-target_link_libraries(buildblock)
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)
-  target_link_libraries(buildblock PUBLIC ${LLN_LIBRARIES})
+  target_link_libraries(${TARGET} PUBLIC ${LLN_LIBRARIES})
 endif()
 
 if (HAVE_HDF5)
   # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
-  target_include_directories(buildblock PRIVATE ${HDF5_INCLUDE_DIRS})
+  target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
 endif()
 
-# TODO currently needed as filters need fourier
-#target_link_libraries(buildblock PUBLIC numerics_buildblock)
-
 if (STIR_OPENMP)
-  target_link_libraries(buildblock PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
+  target_link_libraries(${TARGET} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 endif()

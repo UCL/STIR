@@ -82,36 +82,38 @@ endif()
 
 endif() # MINI_STIR
 
-include(stir_lib_target)
+target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
 
-target_link_libraries(IO)
+set(TARGET ${STIR_BUILDBLOCK_LIB})
+
+target_link_libraries(${TARGET})
 
 if (LLN_FOUND)
-  target_include_directories(IO PUBLIC ${LLN_INCLUDE_DIRS})
-  target_link_libraries(IO PUBLIC ${LLN_LIBRARIES})
+  target_include_directories(${TARGET} PUBLIC ${LLN_INCLUDE_DIRS})
+  target_link_libraries(${TARGET} PUBLIC ${LLN_LIBRARIES})
 endif()
 
 if (CERN_ROOT_FOUND)
-  target_include_directories(IO PRIVATE ${CERN_ROOT_INCLUDE_DIRS})
+  target_include_directories(${TARGET} PRIVATE ${CERN_ROOT_INCLUDE_DIRS})
   if (TARGET ROOT::Tree)
-   target_link_libraries(IO PRIVATE ROOT::Tree)
+   target_link_libraries(${TARGET} PRIVATE ROOT::Tree)
   else()
-   target_link_libraries(IO PRIVATE ${CERN_ROOT_LIBRARIES})
+   target_link_libraries(${TARGET} PRIVATE ${CERN_ROOT_LIBRARIES})
   endif()
 endif()
 
 if (HAVE_HDF5)
-  target_include_directories(IO PUBLIC ${HDF5_INCLUDE_DIRS})
-  target_link_libraries(IO PUBLIC ${HDF5_CXX_LIBRARIES})
+  target_include_directories(${TARGET} PUBLIC ${HDF5_INCLUDE_DIRS})
+  target_link_libraries(${TARGET} PUBLIC ${HDF5_CXX_LIBRARIES})
 endif()
 
 if (HAVE_ITK)
-  target_link_libraries(IO PRIVATE ITKCommon ${ITK_LIBRARIES})
+  target_link_libraries(${TARGET} PRIVATE ITKCommon ${ITK_LIBRARIES})
 endif()
 
 if (UPENN_FOUND)
-  target_include_directories(IO PUBLIC ${UPENN_INCLUDE_DIR})
-  target_link_libraries(IO PRIVATE ${UPENN_libsss_tof} ${UPENN_libfit} ${UPENN_libdist} ${UPENN_libgeom}
+  target_include_directories(${TARGET} PUBLIC ${UPENN_INCLUDE_DIR})
+  target_link_libraries(${TARGET} PRIVATE ${UPENN_libsss_tof} ${UPENN_libfit} ${UPENN_libdist} ${UPENN_libgeom}
         ${UPENN_liblor} ${UPENN_liblist} ${UPENN_libmhdr} ${JANSSON_LIBRARY} ${ZLIB_LIBRARY_RELEASE}
 ${UPENN_libimagio} ${UPENN_libimagio++})
 endif()
@@ -121,7 +123,7 @@ if (HAVE_JSON)
   # Unfortunately, the simple line below exports the dependency while this is really not
   # necessary.
   #
-  # target_link_libraries(IO PUBLIC PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
+  # target_link_libraries(${TARGET} PUBLIC PRIVATE "$<BUILD_INTERFACE:nlohmann_json::nlohmann_json>")
 
   # So, we currently use an ugly work-around from
   # https://gitlab.kitware.com/cmake/cmake/-/issues/15415#note_334852
@@ -129,11 +131,5 @@ if (HAVE_JSON)
   # In that case, we will need to add it in STIRConfig.cmake.in
   #
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(IO PRIVATE "${TMP}")
-endif()
-
-if (NOT MINI_STIR)
-  # currently needed for ParametricDensity (TODO get rid of this somehow?)
-  target_link_libraries(IO PUBLIC modelling_buildblock )
-  target_link_libraries(IO PUBLIC listmode_buildblock)
+  target_include_directories(${TARGET} PRIVATE "${TMP}")
 endif()
