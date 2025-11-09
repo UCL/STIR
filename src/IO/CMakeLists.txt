@@ -148,11 +148,11 @@ if (HAVE_PETSIRD)
 #   #set(PETSIRD_dir ../../PETSIRD/cpp/generated)
 
 
-target_include_directories(IO PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
-  $<INSTALL_INTERFACE:include>
-)
+#target_include_directories(IO PUBLIC
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
+#  $<INSTALL_INTERFACE:include>
+#)
 
 
 # # # target_include_directories(IO PUBLIC
@@ -184,7 +184,7 @@ target_include_directories(IO PUBLIC
 # # needed for helpers
 # target_include_directories(IO PUBLIC ${PETSIRD_dir}/..)
 # target_include_directories(IO PUBLIC ${PETSIRD_dir}/../helpers/include)
-target_link_libraries(IO PUBLIC petsird_generated)
+target_link_libraries(IO PUBLIC petsird_helpers)
 endif()
 
 

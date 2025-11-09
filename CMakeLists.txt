@@ -106,19 +106,19 @@ option(DISABLE_UPENN "disable use of UPENN filetypes" ON)
 option(DISABLE_PETSIRD "disable use of PETSIRD filetypes" OFF)
 
 find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-# Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
-endif()
+# if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+# # Update submodules as needed
+#     option(GIT_SUBMODULE "Check submodules during build" ON)
+#     if(GIT_SUBMODULE)
+#         message(STATUS "Submodule update")
+#         execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+#                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
+#         if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+#             message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+#         endif()
+#     endif()
+# endif()
 
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external_helpers/fmt/CMakeLists.txt")
     message(FATAL_ERROR "The {fmt} submodule was not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
@@ -305,11 +305,11 @@ if(NOT DISABLE_PETSIRD)
       set(HAVE_PETSIRD FALSE)
       message(WARNING "PETSIRD generation failed with code ${JUST_RESULT}. HAVE_PETSIRD not set.")
   endif()
-  set(PETSIRD_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)
-  add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
-  install(TARGETS petsird_generated
-          EXPORT STIRTargets
-          DESTINATION lib)
+  set(PETSIRD_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp)
+  add_subdirectory(${PETSIRD_dir} PETSIRD)
+  #install(TARGETS petsird_generated
+  #        EXPORT STIRTargets
+  #        DESTINATION lib)
 endif()
 
 #### enable support for ctest
