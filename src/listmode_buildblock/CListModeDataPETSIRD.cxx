@@ -503,7 +503,19 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
                       << mean_coord.x() << "," << mean_coord.y() << "," << mean_coord.z() << "," << std::endl;
           }
 
-      this->map->set_detector_map(petsird_map);
+      this->map.reset(new DetectorCoordinateMap(petsird_map));
+
+      int tof_mash_factor = 1;
+      this->set_proj_data_info_sptr(std::const_pointer_cast<const ProjDataInfo>(
+          ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+                                                 1,
+                                                 this_scanner_sptr->get_num_rings() - 1,
+                                                 this_scanner_sptr->get_num_detectors_per_ring() / 2,
+                                                 this_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                 /* arc_correction*/ false,
+                                                 tof_mash_factor)
+              ->create_shared_clone()));
+
     }
 
   shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
