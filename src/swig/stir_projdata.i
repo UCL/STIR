@@ -99,6 +99,8 @@ stir::CartesianCoordinate3D<float>
 }
 }
 
+%nodefaultctor stir::Viewgram;
+%nodefaultctor stir::Sinogram;
 %include "stir/Viewgram.h"
 %include "stir/RelatedViewgrams.h"
 %include "stir/Sinogram.h"

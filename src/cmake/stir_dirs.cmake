@@ -58,7 +58,7 @@ if (NOT MINI_STIR)
     )
 
   # need to list IO first such that its dependencies on other libraries are resolved
-  SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D analytic_SRT2DSPECT  iterative_OSMAPOSL   iterative_KOSMAPOSL
+  SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D analytic_SRT2DSPECT analytic_GRD2D analytic_DDSR2D iterative_OSMAPOSL   iterative_KOSMAPOSL
     iterative_OSSPS
     scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
     display   data_buildblock numerics_buildblock buildblock
@@ -80,6 +80,8 @@ if (NOT MINI_STIR)
     analytic/FBP2D
     analytic/SRT2D
     analytic/SRT2DSPECT
+    analytic/GRD2D 
+    analytic/DDSR2D
     analytic/FBP3DRP
     iterative/OSMAPOSL  
     iterative/KOSMAPOSL

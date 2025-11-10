@@ -13,6 +13,7 @@
 // system libraries
 #include <stdlib.h>
 #include <math.h>
+
 using namespace std;
 
 //... user defined libraries .......................................
@@ -301,9 +302,9 @@ fill_ang(angle_type* ang, const SPECTUB::wmh_type& wmh, const float* Rrad)
 
       //... ratios calculation .......................................................
 
-      const float deg = wmh.prj.ang0 + (float)i * wmh.prj.incr; // angle in degrees
-      ang[i].cos = cos(deg * dg2rd);                            // cosinus of the angle
-      ang[i].sin = sin(deg * dg2rd);                            // sinus of the angle
+      const float deg = wmh.prj.angles[i];
+      ang[i].cos = cos(deg * dg2rd); // cosinus of the angle
+      ang[i].sin = sin(deg * dg2rd); // sinus of the angle
 
       //... first octave (0->45degrees) equivalent angle and its trigonometric ratios .......
 

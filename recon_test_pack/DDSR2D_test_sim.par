@@ -1,0 +1,15 @@
+DDSR2DParameters :=
+; test file for DDSR2D 
+input file := my_sino${suffix}.hs 
+attenuation map file := my_atten_image.hv
+
+xy output image size (in pixels) := 91
+zoom := 0.5
+
+noise filter := 0
+noise filter 2 := 0
+
+output filename prefix := my_test_sim_image_DDSR2D
+
+
+end:=

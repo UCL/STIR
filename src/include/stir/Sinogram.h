@@ -47,15 +47,11 @@ class Sinogram : public Array<2, elemT>
 {
 private:
   typedef Array<2, elemT> base_type;
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs the next typedef to be public
 public:
 #endif
   typedef Sinogram<elemT> self_type;
-#ifdef SWIG
-  // SWIG needs a default constructor
-  inline Sinogram() {}
-#endif
 
 public:
   //! Construct sinogram from proj_data_info pointe and indices.  Data are set to 0.
