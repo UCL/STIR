@@ -1,6 +1,6 @@
 #include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
-#include "../../PETSIRD/cpp/generated/binary/protocols.h"
-#include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
+#include "petsird/binary/protocols.h"
+#include "petsird/hdf5/protocols.h"
 // #include "../../PETSIRD/cpp/generated/types.h"
 // #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
 

@@ -56,18 +56,25 @@ CListEventPETSIRD::get_LOR() const
   DetectionPositionPair<> det_pos_pair;
 
   // this->get_data().get_detection_position_pair(det_pos_pair);
-
+  std::cout << det_pos_pair.pos1().axial_coord() << " " << det_pos_pair.pos1().radial_coord() << " " << det_pos_pair.pos1().tangential_coord() << std::endl;
+  std::cout << det_pos_pair.pos2().axial_coord() << " " << det_pos_pair.pos2().radial_coord() << " " << det_pos_pair.pos2().tangential_coord() << std::endl;
   lor.p1() = map_to_use().get_coordinate_for_index(det_pos_pair.pos1());
   lor.p2() = map_to_use().get_coordinate_for_index(det_pos_pair.pos2());
+  std::cout << "lor_p1" << lor.p1().x() << " " << lor.p1().y() << " " << lor.p1().z() << std::endl;
+  std::cout << "lor_p2" <<lor.p2().x() << " " << lor.p2().y() << " " << lor.p2().z() << std::endl;
 
   return lor;
 }
 
-void
-CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
-{
+// void
+// CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+// {
 
-  int nikos = 0;
-}
+//   DetectionPositionPair<> det_pos_pair;
+//   this->get_data().get_detection_position_pair(det_pos_pair);
+
+
+//   int nikos = 0;
+// }
 
 END_NAMESPACE_STIR

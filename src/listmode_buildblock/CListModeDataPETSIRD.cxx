@@ -30,12 +30,12 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 
-#include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
-#include "helpers/include/petsird_helpers/create.h"
-#include "helpers/include/petsird_helpers/geometry.h"
+#include "petsird_helpers.h"
+#include "petsird_helpers/create.h"
+#include "petsird_helpers/geometry.h"
 
-#include "../../PETSIRD/cpp/generated/binary/protocols.h"
-#include "../../PETSIRD/cpp/generated/hdf5/protocols.h"
+#include "petsird/binary/protocols.h"
+#include "petsird/hdf5/protocols.h"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/CListRecordPETSIRD.h"
@@ -271,14 +271,13 @@ CListModeDataPETSIRD::figure_out_block_angles(std::set<float>& unique_angle_modu
 }
 
 bool
-CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformation& scanner_info,
-                                                 const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list)
+CListModeDataPETSIRD::isCylindricalConfiguration(const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list)
 {
   // Determine DOI based on material
   float average_doi = 0.0;
-  if (scanner_info.bulk_materials.size() > 0)
+  if (scanner_info->bulk_materials.size() > 0)
     {
-      const std::string& material = scanner_info.bulk_materials[0].name;
+      const std::string& material = scanner_info->bulk_materials[0].name;
       if (material.size() > 0)
         average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
     }
@@ -291,11 +290,11 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
       return false;
     }
 
-  const auto& tof_bin_edges = scanner_info.tof_bin_edges[type_of_module - 1][type_of_module - 1];
+  const auto& tof_bin_edges = scanner_info->tof_bin_edges[type_of_module - 1][type_of_module - 1];
   std::cout << "Num. of TOF bins " << tof_bin_edges.NumberOfBins() << std::endl;
 
   std::set<float> unique_tof_values;
-  find_uniqe_values_2D(unique_tof_values, scanner_info.tof_resolution);
+  find_uniqe_values_2D(unique_tof_values, scanner_info->tof_resolution);
 
   numberOfModules = replicated_module_list[0].NumberOfObjects();
   numberOfElementsIndices = replicated_module_list[0].object.detecting_elements.NumberOfObjects();
@@ -393,7 +392,7 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const petsird::ScannerInformati
                   unique_elements_vertical_values.size(),
                   /*num_detector_layers_v*/
                   1,                                             // num_detector_layers_v
-                  scanner_info.energy_resolution_at_511.front(), // energy_resolution_v
+                  scanner_info->energy_resolution_at_511.front(), // energy_resolution_v
                   511,                                           // reference_energy_v
                   1,
                   0.F,
@@ -428,8 +427,8 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
 
   current_lm_data_ptr->ReadHeader(header);
-  petsird::ScannerInformation scanner_info = header.scanner;
-  petsird::ScannerGeometry scanner_geo = scanner_info.scanner_geometry;
+  scanner_info = std::make_shared<petsird::ScannerInformation>(header.scanner);
+  petsird::ScannerGeometry scanner_geo = scanner_info->scanner_geometry;
   std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_geo.replicated_modules;
 
   // Get the first TimeBlock
@@ -442,7 +441,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   else
     error("CListModeDataPETSIRD: holds_alternative not true. Abord.");
-  isCylindricalConfiguration(scanner_info, replicated_module_list);
+  isCylindricalConfiguration(replicated_module_list);
   bool b = false;
   if (b) // isCylindricalConfiguration(scanner_info, replicated_module_list))
     {
@@ -487,7 +486,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
             DetectionPosition<> detpos(tang_pos, ax_pos, rad_pos);
             petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, 1 };
 
-            auto box_shape = petsird_helpers::geometry::get_detecting_box(scanner_info, type_of_module, expanded_detection_bin);
+            auto box_shape = petsird_helpers::geometry::get_detecting_box(*scanner_info, type_of_module, expanded_detection_bin);
             CartesianCoordinate3D<float> mean_coord;
 
             for (auto& corner : box_shape.corners)
@@ -548,7 +547,7 @@ CListModeDataPETSIRD::open_lm_file() const
 shared_ptr<CListRecord>
 CListModeDataPETSIRD::get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD);
+  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD(scanner_info));
   std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_scanner_sptr(
       this->get_proj_data_info_sptr()->get_scanner_sptr());
   std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_PETSIRD_ranges(numberOfModules, numberOfElementsIndices);
@@ -563,7 +562,7 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 
   auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
   const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support mulitple pairs of modules.
-  const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events->at(0).at(0) : prompt_list;
+  const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events.at(0).at(0) : prompt_list;
 
   const auto& event_list = curr_is_prompt ? prompt_list : delayed_list;
 

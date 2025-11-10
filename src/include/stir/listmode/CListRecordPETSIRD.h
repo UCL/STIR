@@ -40,11 +40,11 @@ Coincidence Event Class for PETSIRD: Header File
 #include "stir/DetectionPositionPair.h"
 #include "stir/Succeeded.h"
 #include "stir/ByteOrderDefine.h"
-
+#include "petsird_helpers.h"
 #include "boost/cstdint.hpp"
 
 #include "stir/DetectorCoordinateMap.h"
-#include "types.h"
+//#include "petsird/types.h"
 
 // #include "../../PETSIRD/cpp/generated/types.h"
 
@@ -66,7 +66,7 @@ public:
   inline LORAs2Points<float> get_LOR() const override;
 
   //! Override the default implementation
-  inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
+  // inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
   /*! Set the scanner */
@@ -119,7 +119,8 @@ public:
 class CListRecordPETSIRD : public CListRecord
 {
 public:
-  CListRecordPETSIRD() {}
+  CListRecordPETSIRD(shared_ptr<petsird::ScannerInformation> scanner_info) 
+  : scanner_info(scanner_info) {}
 
   // ~CListRecordPETSIRD() override {}
 
@@ -140,21 +141,36 @@ public:
 
   virtual Succeeded init_from_data(const petsird::CoincidenceEvent& data, bool is_prompt = true)
   {
-    auto decodeElementAndModuleIndex
-        = [](int linearIndex, int energyIndex, int numberOfElementsIndices, int numberOfModules) -> std::pair<int, int> {
-      int reduced = (linearIndex - energyIndex) / numberOfModules;
-      int moduleIndex = reduced / numberOfElementsIndices;
-      int elementIndex = reduced % numberOfElementsIndices;
-      return { elementIndex, moduleIndex };
-    };
+    // auto decodeElementAndModuleIndex
+    //     = [](int linearIndex, int energyIndex, int numberOfElementsIndices, int numberOfModules) -> std::pair<int, int> {
+    //   int reduced = (linearIndex - energyIndex) / numberOfModules;
+    //   int moduleIndex = reduced / numberOfElementsIndices;
+    //   int elementIndex = reduced % numberOfElementsIndices;
+    //   return { elementIndex, moduleIndex };
+    // };
 
-    event_data.det_0
-        = decodeElementAndModuleIndex(data.detection_bins[0], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
-    event_data.det_1
-        = decodeElementAndModuleIndex(data.detection_bins[1], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
+    // help expand detection 
+    //const ScannerInformation& scanner, const TypeOfModule& type_of_module, const T& list_of_detection_bins
+    auto dd = petsird_helpers::expand_detection_bin(*scanner_info, 
+      0, 
+      data.detection_bins[0]);
+      event_data.det_0 = { dd.element_index, dd.module_index };
+    std::cout << "Expanded 1: " << dd.module_index << "  " << dd.element_index << std::endl;
+    auto ee = petsird_helpers::expand_detection_bin(*scanner_info, 
+      0, 
+      data.detection_bins[1]);
+      event_data.det_1 = { ee.element_index, ee.module_index };
+    std::cout << "Expanded 2: " << ee.module_index << "  " << ee.element_index << std::endl;
 
-    std::cout << event_data.det_0.first << "  " << event_data.det_0.second << std::endl;
-    std::cout << event_data.det_1.first << "  " << event_data.det_1.second << std::endl;
+    //(data.detection_bins, event_data.numberOfElementsIndices, event_data.numberOfModules);
+
+    // event_data.det_0
+    //     = decodeElementAndModuleIndex(data.detection_bins[0], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
+    // event_data.det_1
+    //     = decodeElementAndModuleIndex(data.detection_bins[1], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
+
+    // std::cout << event_data.det_0.first << "  " << event_data.det_0.second << std::endl;
+    // std::cout << event_data.det_1.first << "  " << event_data.det_1.second << std::endl;
     event_data.set_prompt(is_prompt);
     return Succeeded::yes;
   }
@@ -162,6 +178,8 @@ public:
 private:
   CListEventPETSIRD event_data;
   CListTimePETSIRD time_data;
+
+  shared_ptr<petsird::ScannerInformation> scanner_info;// = header.scanner;
 };
 
 END_NAMESPACE_STIR

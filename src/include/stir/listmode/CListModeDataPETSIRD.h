@@ -37,7 +37,7 @@ Coincidence LM Data Class for PETSIRD
 #include "stir/listmode/CListRecord.h"
 #include "stir/shared_ptr.h"
 
-#include "../../PETSIRD/cpp/generated/protocols.h"
+#include "petsird/protocols.h"
 
 START_NAMESPACE_STIR
 
@@ -88,12 +88,13 @@ private:
 
   shared_ptr<Scanner> this_scanner_sptr;
 
+  shared_ptr<petsird::ScannerInformation> scanner_info;
+
   mutable bool curr_is_prompt = true;
 
   mutable bool m_has_delayeds;
 
-  bool isCylindricalConfiguration(const petsird::ScannerInformation& scanner_info,
-                                  const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);
+  bool isCylindricalConfiguration(const std::vector<petsird::ReplicatedDetectorModule>& replicated_module_list);
 
   void find_uniqe_values_1D(std::set<float>& values, const std::vector<float>& input);
 
