@@ -121,7 +121,7 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
   const CartesianCoordinate3D<float> point1 = lor2.p1();
   const CartesianCoordinate3D<float> point2 = lor2.p2();
 
-  // Coordinate system correction:
+  // Coordinate system correction: TODO remove in future with ORIGIN shift PR
   // LOR coordinates have origin at scanner center (z=0 at center of all rings)
   // Image coordinates have origin at first ring (z=0 at ring 0)
   // Calculate the offset: distance from first ring to scanner center
