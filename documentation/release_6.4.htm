@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <title>Summary of changes in STIR release 6.4</title>
+</head>
+
+<body>
+  <h1>Summary of changes in STIR release 6.4</h1>
+
+
+  <h2>Overall summary</h2>
+
+    <p>
+      This version is 100% backwards compatible with STIR 6.2, aside from three important bug fixes,
+      which will change results (see below).
+    </p>
+    <p>
+      This is a release with many new features, as listed below. Highlights are
+      <ul>
+
+      </ul>
+      But there are many other changes from other contibutors as well, see below.
+      Of course, there is also the usual code-cleanup and some improvements to the documentation.
+      Overall overview and release management was by Kris Thielemans (UCL) with help
+      from Daniel Deidda (NPL).
+    </p>
+
+    <h2>Patch release info</h2>
+    <ul>
+      <li>
+        6.4.0 released x/2025<br>
+        <a href="https://github.com/UCL/STIR/milestone/12">GitHub Milestone 6.3</a>
+      </li>
+    </ul>
+
+  <h2> Summary for end users (also to be read by developers)</h2>
+
+
+  <h3>New functionality</h3>
+  <h4>General</h4>
+  <ul>
+  </ul>
+  <h4>Python</h4>
+  <ul>
+  </ul>
+
+  <h4>Utilities</h4>
+  <ul>
+  </ul>
+
+  <h3>Changed functionality</h3>
+  <ul>
+  </ul>
+  <h4>Changes to examples</h4>
+  <ul>
+  </ul>
+
+  <h3>Bug fixes</h3>
+  <ul>
+  </ul>
+
+  <h3>Build system</h3>
+  <ul>
+    <li>
+      Several libraries were merged into one library (called <code>stir_buildblock</code>,
+      but this might change in the future). This avoids
+      circular dependencies between libraries, and should therefore avoid linking problems
+      in external projects. It could also make it possible to enable shared libraries
+      (not recommended yet).<br>
+      This change should be transparent to the developer of external projects, as long as the
+      <code>${STIR_LIBRARIES}</code> CMake variable is used, as previously already recommended
+      (see the STIR-UsersGuide). However, developers that extend STIR via the <code>STIR_LOCAL</code>
+      mechanism might have to change their STIR library dependencies (see the
+      <a href=https://github.com/UCL/STIR/pull/1658>PR</a> for details).
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1658>PR #1658</a>
+    </li>
+  </ul>
+
+  <h3>Known problems</h3>
+  <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.<br>
+    An important bug is for the "ray tracing matrix" projector for TOF PET. Oblique
+    segments currently have problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.
+  </p>
+
+
+  <H2>What is new for developers (aside from what should be obvious from the above):</H2>
+
+  <h3>New functionality</h3>
+  <ul>
+  </ul>
+
+  <h3>Changed functionality</h3>
+  <ul>
+  </ul>
+
+  <h3>Bug fixes</h3>
+  <ul>
+  </ul>
+
+  <h3>New Deprecations and renames</h3>
+  <ul>
+  </ul>
+
+  <h3>Test changes</h3>
+  <p>All new features and most code changes were accompanied by new tests.</p>
+
+</body>
+
+</html>
