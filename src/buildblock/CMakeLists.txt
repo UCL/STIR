@@ -143,8 +143,12 @@ if (LLN_FOUND)
 endif()
 
 if (HAVE_HDF5)
-  # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
-  target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
+  if (TARGET hdf5::hdf5_cpp)
+    target_link_libraries(${TARGET} PUBLIC hdf5::hdf5_cpp)
+  else()
+    # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
+    target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
+  endif()
 endif()
 
 if (STIR_OPENMP)
