@@ -13,6 +13,5 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= modelling_registries
 
-include(stir_lib_target)
+target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
 
-target_link_libraries(modelling_buildblock PUBLIC buildblock IO)

@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016-2023 University College London
+# Copyright 2013, 2014, 2016-2023, 2025 University College London
 
 # This file is part of STIR.
 #
@@ -204,6 +204,13 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
         message(STATUS "CMake detected a little_endian system")
     endif()
 endif()
+
+#### Define name for the main library
+
+set(STIR_BUILDBLOCK_LIB stir_buildblock)
+# use different names for the same library, in case we want to split them up again
+set(STIR_RECON_BUILDBLOCK_LIB stir_buildblock)
+set (STIR_SPATIAL_TRANSFORMATION_BUIDBLOCK_LIB stir_buildblock)
 
 #### Create stir/config.h
 
