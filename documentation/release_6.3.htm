@@ -11,9 +11,56 @@
 
   <h2>Overall summary</h2>
 
+    <p>
+      This version is 100% backwards compatible with STIR 6.2, aside from three important bug fixes,
+      which will change results (see below).
+    </p>
+    <p>
+      This is a release with many new features, as listed below. Highlights are
+      <ul>
+        <li>the new Gibbs penalty hierarchy with CUDA and OpenMP support (and much easier addition of new
+          potential functions) (Matteo Neel Colombo, Univ of Milano-Bicocca),
+        </li>
+        <li>
+          new 2D analytic reconstruction algorithms (including two that allow
+          quantitative reconstruction of SPECT) (Dimitra Kyriakopoulou, UCL),
+        </li>
+        <li>
+          better Python support including algebraic operations and faster conversion to NumPy arrays
+          (Kris Thielemans, UCL),
+        </li>
+        <li>
+          continuous memory storage for arrays (allowing zero-copy
+          access to image/projection data in SIRF Python, but not yet in STIR Python)
+          (Kris Thielemans, UCL),
+        </li>
+        <li>
+          faster scatter estimation for blocks on cylindrical scanners
+          (Markus Jehl, Positrigo),
+        </li>
+        <li>
+          reduced memory usage for iterative reconstructions, avoiding hitting the current limitation
+          of 2^31 elements in <code>ProjDataInMemory</code>
+          (Kris Thielemans, UCL),
+        </li>
+        <li>
+          Python code for adapting e7tools output for Siemens Vision 600 to STIR
+          (Nicole Jurjew, UCL)
+        </li>
+      </ul>
+      But there are many other changes from other contibutors as well, see below.
+      Of course, there is also the usual code-cleanup and some improvements to the documentation.
+      Overall overview and release management was by Kris Thielemans (UCL) with help
+      from Daniel Deidda (NPL).
+    </p>
 
-  <h2>Patch release info</h2>
-
+    <h2>Patch release info</h2>
+    <ul>
+      <li>
+        6.3.0 released 31/10/2025<br>
+        <a href="https://github.com/UCL/STIR/milestone/12">GitHub Milestone 6.3</a>
+      </li>
+    </ul>
 
   <h2> Summary for end users (also to be read by developers)</h2>
 
@@ -308,19 +355,7 @@
   </ul>
 
   <h3>Test changes</h3>
-  <h4>Python tests</h4>
-  <ul>
-    <li>
-      Tests for numerical operations for the "container" classes were added in the same PR as the code.<br>
-      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
-    </li>
-  </ul>
-
-  <h4>C++ tests</h4>
-
-
-  <h4>recon_test_pack</h4>
-
+  <p>All new features and most code changes were accompanied by new tests.</p>
 
 </body>
 
