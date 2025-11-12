@@ -154,7 +154,7 @@ assert( sinogram.sum()==0)
 assert( sinogram.get_segment_num()==2)
 assert( sinogram.get_axial_pos_num()==1)
 assert( sinogram.get_num_views() == projdatainfo.get_num_views())
-assert( isequal(sinogram.get_proj_data_info(), projdatainfo))
+assert(eq(sinogram.get_proj_data_info(), projdatainfo)) % change isequal to eq
 % create some empty objects
 segment=projdatainfo.get_empty_segment_by_view(0);
 assert(segment.find_max()==0)
@@ -175,6 +175,7 @@ seg=proj_data.get_segment_by_sinogram(0);
 assert(seg.find_min()==0);
 seg.fill(4);
 assert(seg.find_min()==4);
-assert(isequal(proj_data.set_segment(seg), success));
+assert(eq(proj_data.set_segment(seg), success)); % change isequal to eq
+seg_temp = proj_data.set_segment(seg);
 seg2=proj_data.get_segment_by_sinogram(0);
 assert(isequal(seg2.to_matlab(), seg.to_matlab()));
