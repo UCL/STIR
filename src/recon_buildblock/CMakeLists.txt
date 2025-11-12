@@ -174,8 +174,8 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
 endif()
 
 if (HAVE_HDF5)
-  if (TARGET hdf5::hdf5_cpp)
-    target_link_libraries(${TARGET} PUBLIC hdf5::hdf5_cpp)
+  if (TARGET HDF5::HDF5)
+    target_link_libraries(${TARGET} PUBLIC HDF5::HDF5)
   else()
     # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
     target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
