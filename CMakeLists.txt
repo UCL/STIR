@@ -15,6 +15,8 @@ if(CCACHE_PROGRAM)
 endif()
 
 
+include(CMakePrintHelpers)
+
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -152,6 +154,17 @@ endif()
 
 if(NOT DISABLE_HDF5)
   find_package(HDF5 COMPONENTS CXX)
+  if (TARGET HDF5::HDF5)
+    option(USE_HDF5_TARGET "Use HDF5::HDF5 CMake target for dependencies (recommended)" ON)
+    mark_as_advanced(USE_HDF5_TARGET)
+    if (HDF5_FIND_DEBUG) # debugging print (re-use name of FindHDF5 CMake variable)
+      cmake_print_properties(
+        TARGETS HDF5::HDF5
+        PROPERTIES LOCATION INTERFACE_INCLUDE_DIRECTORIES IMPORTED_LINK_INTERFACE_LIBRARIES IMPORTED_LINK_DEPENDENT_LIBRARIES INTERFACE_LINK_LIBRARIES
+        )
+    endif()
+  endif()
+
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
