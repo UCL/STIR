@@ -60,7 +60,7 @@ target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
 set(TARGET ${STIR_BUILDBLOCK_LIB})
 
 if (HAVE_HDF5)
-  if (TARGET HDF5::HDF5)
+  if (USE_HDF5_TARGET)
     target_link_libraries(${TARGET} PUBLIC HDF5::HDF5)
   else()
     # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h

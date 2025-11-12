@@ -103,7 +103,7 @@ if (CERN_ROOT_FOUND)
 endif()
 
 if (HAVE_HDF5)
-  if (TARGET HDF5::HDF5)
+  if (USE_HDF5_TARGET)
     target_link_libraries(${TARGET} PUBLIC HDF5::HDF5)
   else()
     target_include_directories(${TARGET} PUBLIC ${HDF5_INCLUDE_DIRS})

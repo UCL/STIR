@@ -12,7 +12,7 @@
   <h2>Overall summary</h2>
 
     <p>
-      This version is 100% backwards compatible with STIR 6.2, aside from three important bug fixes,
+      This version is 100% backwards compatible with STIR 6.3, aside from three important bug fixes,
       which will change results (see below).
     </p>
     <p>
@@ -76,7 +76,15 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1658>PR #1658</a>
     </li>
-  </ul>
+    <li>
+      Use the CMake <code>HDF5::HDF5</code> target to specify dependencies on,
+      as opposed to <code>HDF5_CXX_LIBRARIES</code> etc. This should be more future proof
+      and avoids problems with the STIR conda-forge build. (This can be switched of
+      with the CMake option <code>USE_HDF5_TARGET=OFF</code>.)
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1665>PR #1665</a>
+    </li>
+</ul>
 
   <h3>Known problems</h3>
   <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.<br>
