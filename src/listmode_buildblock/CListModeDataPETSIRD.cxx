@@ -359,7 +359,70 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const std::vector<petsird::Repl
 
   info(format("I counted {} axial blocks with spacing {}", unique_dim3_values.size(), block_axial_spacing[0]));
 
-  this_scanner_sptr.reset(
+  // Check if the cyrcle area is less than 5% different from the polygon 
+  float expected_circle_area = float(M_PI * radius * radius);;
+  float polygon_area = float(0.5f * unique_angle_modules.size() * radius * radius * std::sin(2.f * float(M_PI) / unique_angle_modules.size()));
+  info(format("Circle area: {}, Polygon area: {}, pct {}", expected_circle_area, polygon_area, std::abs(expected_circle_area - polygon_area) / expected_circle_area));
+  if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.05f)
+    {
+      info("the cylindical area is more then 95% matching the polygon area. We will predsume a cylindrical configuration.");
+      this_scanner_sptr.reset(
+      new Scanner(Scanner::User_defined_scanner,
+                  std::string("PETSIRD_defined_scanner"),
+                  /* num dets per ring */
+                  (num_transaxial_blocks * unique_elements_vertical_values.size()),
+                  unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
+                  /* number of non arccor bins */
+                  (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                  /* number of maximum arccor bins */
+                  (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                  /* inner ring radius */
+                  radius,
+                  /* doi */ 4, // average_doi,
+                  /* ring spacing */
+                  element_horizontal_spacing[0], //* 10.f,
+                  // bin_size_v
+                  element_vertical_spacing[0],// * 10.f,
+                  /*intrinsic_tilt_v*/
+                  0.f,
+                  /*num_axial_blocks_per_bucket_v */
+                  unique_dim3_values.size(),
+                  /*num_transaxial_blocks_per_bucket_v*/
+                  1,
+                  /*num_axial_crystals_per_block_v*/
+                  unique_elements_horizontal_values.size(),
+                  /*num_transaxial_crystals_per_block_v*/
+                  unique_elements_vertical_values.size(),
+                  /*num_axial_crystals_per_singles_unit_v*/
+                  unique_elements_horizontal_values.size(),
+                  /*num_transaxial_crystals_per_singles_unit_v*/
+                  unique_elements_vertical_values.size(),
+                  /*num_detector_layers_v*/
+                  1,                                             // num_detector_layers_v
+                  scanner_info->energy_resolution_at_511.front(), // energy_resolution_v
+                  511,                                           // reference_energy_v
+                  tof_bin_edges.NumberOfBins() + 1,
+                  (tof_bin_edges.edges[1] - tof_bin_edges.edges[0])*10/2,
+                  *unique_tof_values.begin() * 10                                                        // non-TOF
+                  ));
+
+                            // 13,
+          // 4.056 * 1000 / 13,
+          // 555.F); // TODO singles info incorrect
+  
+
+  // /* maximum number of timing bins */
+  // tof_bin_edges.NumberOfBins(),
+  // /* size of basic TOF bin */
+  // 10,
+  // /* Scanner's timing resolution */
+  // *unique_tof_values.begin()));
+      return true;
+    }
+    else
+    {
+      info("the cylindical area is less then 95% matching the polygon area. We will predsume a non-cylindrical configuration.");
+      this_scanner_sptr.reset(
       new Scanner(Scanner::User_defined_scanner,
                   std::string("PETSIRD_defined_scanner"),
                   /* num dets per ring */
@@ -373,9 +436,9 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const std::vector<petsird::Repl
                   radius,
                   /* doi */ average_doi,
                   /* ring spacing */
-                  element_horizontal_spacing[0] * 10.f,
+                  element_horizontal_spacing[0], //* 10.f,
                   // bin_size_v
-                  element_vertical_spacing[0] * 10.f,
+                  element_vertical_spacing[0],// * 10.f,
                   /*intrinsic_tilt_v*/
                   0.f,
                   /*num_axial_blocks_per_bucket_v */
@@ -399,18 +462,13 @@ CListModeDataPETSIRD::isCylindricalConfiguration(const std::vector<petsird::Repl
                   0.F,                                                                 // non-TOF
                   "BlocksOnCylindrical",                                               // scanner_geometry_v
                   *unique_elements_horizontal_values.begin(),                          // axial_crystal_spacing_v
-                  std::round(*unique_elements_vertical_values.begin() * 10.0f) / 10.F, // transaxial_crystal_spacing_v
+                  std::round(*unique_elements_vertical_values.begin()), // transaxial_crystal_spacing_v
                   block_axial_spacing.front(),                                         // axial_block_spacing_v
                   radius * block_angular_spacing.front(),                              // transaxial_block_spacing_v
                   ""                                                                   // crystal_map_file_name_v
                   ));
-
-  // /* maximum number of timing bins */
-  // tof_bin_edges.NumberOfBins(),
-  // /* size of basic TOF bin */
-  // 10,
-  // /* Scanner's timing resolution */
-  // *unique_tof_values.begin()));
+      return false;
+    }
 
   return true;
 }
@@ -441,9 +499,8 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   else
     error("CListModeDataPETSIRD: holds_alternative not true. Abord.");
-  isCylindricalConfiguration(replicated_module_list);
-  bool b = false;
-  if (b) // isCylindricalConfiguration(scanner_info, replicated_module_list))
+  
+  if (  isCylindricalConfiguration(replicated_module_list))
     {
       int tof_mash_factor = 1;
       this->set_proj_data_info_sptr(std::const_pointer_cast<const ProjDataInfo>(
@@ -491,15 +548,15 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 
             for (auto& corner : box_shape.corners)
               { // if STIR (z,y,x) -> PETSIRD (-y, -x, z) pheraps  the order below needs to be changed
-                mean_coord.x() = +corner.c[0] / box_shape.corners.size();
-                mean_coord.y() = +corner.c[1] / box_shape.corners.size();
+                mean_coord.x() = +corner.c[0] / box_shape.corners.size() * 10 ;
+                mean_coord.y() = +corner.c[1] / box_shape.corners.size() * 10 ;
                 mean_coord.z() = +corner.c[2] / box_shape.corners.size();
               }
 
             //       save  mean pos into map
             petsird_map[detpos] = mean_coord;
-            std::cout << detpos.radial_coord() << "," << detpos.axial_coord() << "," << detpos.tangential_coord() << ","
-                      << mean_coord.x() << "," << mean_coord.y() << "," << mean_coord.z() << "," << std::endl;
+            std::cout << "NIKOSSS " << detpos.radial_coord() << ", " << detpos.axial_coord() << ", " << detpos.tangential_coord() << ", "
+                      << mean_coord.x() << ", " << mean_coord.y() << ", " << mean_coord.z() << ", " << std::endl;
           }
 
       this->map.reset(new DetectorCoordinateMap(petsird_map));
@@ -547,7 +604,7 @@ CListModeDataPETSIRD::open_lm_file() const
 shared_ptr<CListRecord>
 CListModeDataPETSIRD::get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD(scanner_info));
+  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD(scanner_info, this_scanner_sptr));
   std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_scanner_sptr(
       this->get_proj_data_info_sptr()->get_scanner_sptr());
   std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_PETSIRD_ranges(numberOfModules, numberOfElementsIndices);

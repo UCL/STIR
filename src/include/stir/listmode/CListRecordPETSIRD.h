@@ -66,7 +66,7 @@ public:
   inline LORAs2Points<float> get_LOR() const override;
 
   //! Override the default implementation
-  // inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
+  inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
   inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
   /*! Set the scanner */
@@ -93,7 +93,9 @@ public:
 
   int numberOfElementsIndices;
 
-  std::pair<int, int> det_0, det_1;
+  petsird_helpers::ExpandedDetectionBin exp_det_0, exp_det_1;
+
+  inline stir::DetectionPosition<> get_stir_det_pos_from_PETSIRD_id(const petsird_helpers::ExpandedDetectionBin& exp_det_bin) const;
 
 private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
@@ -119,8 +121,10 @@ public:
 class CListRecordPETSIRD : public CListRecord
 {
 public:
-  CListRecordPETSIRD(shared_ptr<petsird::ScannerInformation> scanner_info) 
-  : scanner_info(scanner_info) {}
+  CListRecordPETSIRD(shared_ptr<petsird::ScannerInformation> scanner_info, 
+  shared_ptr<Scanner> scanner_sptr) 
+  : scanner_info(scanner_info), 
+  this_scanner_sptr(scanner_sptr) {}
 
   // ~CListRecordPETSIRD() override {}
 
@@ -151,18 +155,19 @@ public:
 
     // help expand detection 
     //const ScannerInformation& scanner, const TypeOfModule& type_of_module, const T& list_of_detection_bins
-    auto dd = petsird_helpers::expand_detection_bin(*scanner_info, 
+    event_data.exp_det_0 = petsird_helpers::expand_detection_bin(*scanner_info, 
       0, 
       data.detection_bins[0]);
-      event_data.det_0 = { dd.element_index, dd.module_index };
-    std::cout << "Expanded 1: " << dd.module_index << "  " << dd.element_index << std::endl;
-    auto ee = petsird_helpers::expand_detection_bin(*scanner_info, 
+
+      // event_data.exp_det_0.first =  dd.element_index; 
+      // event_data.exp_det_0.second = dd.module_index;
+    // std::cout << "Expanded 1: " << event_data.exp_det_0.module_index << "  " << event_data.exp_det_0.element_index << std::endl;
+    event_data.exp_det_1 = petsird_helpers::expand_detection_bin(*scanner_info, 
       0, 
       data.detection_bins[1]);
-      event_data.det_1 = { ee.element_index, ee.module_index };
-    std::cout << "Expanded 2: " << ee.module_index << "  " << ee.element_index << std::endl;
-
-    //(data.detection_bins, event_data.numberOfElementsIndices, event_data.numberOfModules);
+      // event_data.det_1.first = ee.element_index;
+      // event_data.det_1.second = ee.module_index;
+    // std::cout << "Expanded 2: " << event_data.exp_det_1.module_index << "  " << event_data.exp_det_1.element_index << std::endl;
 
     // event_data.det_0
     //     = decodeElementAndModuleIndex(data.detection_bins[0], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
@@ -180,6 +185,7 @@ private:
   CListTimePETSIRD time_data;
 
   shared_ptr<petsird::ScannerInformation> scanner_info;// = header.scanner;
+  shared_ptr<Scanner> this_scanner_sptr;
 };
 
 END_NAMESPACE_STIR

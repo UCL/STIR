@@ -49,32 +49,73 @@
 
 START_NAMESPACE_STIR
 
+stir::DetectionPosition<> 
+CListEventPETSIRD::get_stir_det_pos_from_PETSIRD_id(const petsird_helpers::ExpandedDetectionBin& exp_det_bin) const
+{
+  const auto NUM_MODULES_ALONG_AXIS = scanner_sptr->get_num_axial_blocks();
+  const std::array<uint32_t, 3> NUM_CRYSTALS_PER_MODULE{
+      static_cast<unsigned>(scanner_sptr->get_num_detector_layers()),              // N0 (layers)
+      static_cast<unsigned>(scanner_sptr->get_num_transaxial_crystals_per_block()),// N1 (tx per block)
+      static_cast<unsigned>(scanner_sptr->get_num_axial_crystals_per_block())      // N2 (ax per block)
+  };
+
+  const auto ax_mod   = exp_det_bin.module_index % NUM_MODULES_ALONG_AXIS;
+  const auto tang_mod = exp_det_bin.module_index / NUM_MODULES_ALONG_AXIS;
+
+  const int N0 = static_cast<int>(NUM_CRYSTALS_PER_MODULE[0]);
+  const int N1 = static_cast<int>(NUM_CRYSTALS_PER_MODULE[1]);
+  const int N2 = static_cast<int>(NUM_CRYSTALS_PER_MODULE[2]);
+
+  std::array<int, 3> inds; // [layer, transaxial, axial] within the block
+  int id = static_cast<int>(exp_det_bin.element_index);
+
+  // -------- Row-wise de-linearization (transaxial varies fastest) --------
+  // Previous code did: axial first (inds[2] = id % N2; id /= N2; inds[1] = id % N1; ...)
+  // Change to: transaxial first, then axial.
+  inds[1] =  id % N1;  // transaxial within the block
+  id      /= N1;
+  inds[2] =  id % N2;  // axial within the block
+  id      /= N2;
+  inds[0] =  id;       // layer
+  // ----------------------------------------------------------------------
+
+  const stir::DetectionPosition<> pos(
+      inds[1] + tang_mod * N1,   // global transaxial crystal index
+      inds[2] + ax_mod   * N2,   // global axial crystal index
+      inds[0]            // layer
+  );
+  return pos;
+}
+
 LORAs2Points<float>
 CListEventPETSIRD::get_LOR() const
 {
   LORAs2Points<float> lor;
   DetectionPositionPair<> det_pos_pair;
 
-  // this->get_data().get_detection_position_pair(det_pos_pair);
-  std::cout << det_pos_pair.pos1().axial_coord() << " " << det_pos_pair.pos1().radial_coord() << " " << det_pos_pair.pos1().tangential_coord() << std::endl;
-  std::cout << det_pos_pair.pos2().axial_coord() << " " << det_pos_pair.pos2().radial_coord() << " " << det_pos_pair.pos2().tangential_coord() << std::endl;
+  det_pos_pair.pos1() = get_stir_det_pos_from_PETSIRD_id(exp_det_0); 
+  det_pos_pair.pos2() = get_stir_det_pos_from_PETSIRD_id(exp_det_1); 
+
   lor.p1() = map_to_use().get_coordinate_for_index(det_pos_pair.pos1());
   lor.p2() = map_to_use().get_coordinate_for_index(det_pos_pair.pos2());
-  std::cout << "lor_p1" << lor.p1().x() << " " << lor.p1().y() << " " << lor.p1().z() << std::endl;
-  std::cout << "lor_p2" <<lor.p2().x() << " " << lor.p2().y() << " " << lor.p2().z() << std::endl;
+  
+  // std::cout << "lor_p1 " << lor.p1().x() << " " << lor.p1().y() << " " << lor.p1().z() << std::endl;
+  // std::cout << "lor_p2 " <<lor.p2().x() << " " << lor.p2().y() << " " << lor.p2().z() << std::endl;
 
   return lor;
 }
 
-// void
-// CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
-// {
+void
+CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+{
 
-//   DetectionPositionPair<> det_pos_pair;
-//   this->get_data().get_detection_position_pair(det_pos_pair);
+  DetectionPositionPair<> det_pos_pair;
+  det_pos_pair.pos1() = get_stir_det_pos_from_PETSIRD_id(exp_det_0); 
+  det_pos_pair.pos2() = get_stir_det_pos_from_PETSIRD_id(exp_det_1); 
+  // this->get_data().get_detection_position_pair(det_pos_pair);
 
+  dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos_pair);
+}
 
-//   int nikos = 0;
-// }
 
 END_NAMESPACE_STIR

@@ -184,7 +184,7 @@ if (HAVE_PETSIRD)
 # # needed for helpers
 # target_include_directories(IO PUBLIC ${PETSIRD_dir}/..)
 # target_include_directories(IO PUBLIC ${PETSIRD_dir}/../helpers/include)
-target_link_libraries(IO PUBLIC petsird_helpers)
+# target_link_libraries(IO PUBLIC petsird_helpers)
 endif()
 
 
