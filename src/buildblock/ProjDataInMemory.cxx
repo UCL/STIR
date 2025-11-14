@@ -82,7 +82,7 @@ namespace detail
 {
 template <int num_dimensions>
 void
-copy_data_from_buffer(const Array<1, float>& buffer, Array<num_dimensions, float>& array, std::streamoff offset)
+copy_data_from_buffer(const Array<1, float, long long>& buffer, Array<num_dimensions, float>& array, std::streamoff offset)
 {
 #ifdef STIR_OPENMP
 #  pragma omp critical(PROJDATAINMEMORYCOPY)
@@ -96,7 +96,7 @@ copy_data_from_buffer(const Array<1, float>& buffer, Array<num_dimensions, float
 
 template <int num_dimensions>
 void
-copy_data_to_buffer(Array<1, float>& buffer, const Array<num_dimensions, float>& array, std::streamoff offset)
+copy_data_to_buffer(Array<1, float, long long>& buffer, const Array<num_dimensions, float>& array, std::streamoff offset)
 {
 #ifdef STIR_OPENMP
 #  pragma omp critical(PROJDATAINMEMORYCOPY)
