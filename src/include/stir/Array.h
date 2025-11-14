@@ -73,16 +73,16 @@ the object. However, as grow() is a virtual function, Array::grow is
 called, which initialises new elements first to 0.
 */
 
-template <int num_dimensions, typename elemT>
-class Array : public NumericVectorWithOffset<Array<num_dimensions - 1, elemT>, elemT>
+template <int num_dimensions, typename elemT, typename indexT>
+class Array : public NumericVectorWithOffset<Array<num_dimensions - 1, elemT, indexT>, elemT, indexT>
 {
 #ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
 public:
 #endif
-  typedef Array<num_dimensions, elemT> self;
-  typedef NumericVectorWithOffset<Array<num_dimensions - 1, elemT>, elemT> base_type;
+  typedef Array<num_dimensions, elemT, indexT> self;
+  typedef NumericVectorWithOffset<Array<num_dimensions - 1, elemT, indexT>, elemT, indexT> base_type;
 
 public:
   //@{
@@ -110,7 +110,7 @@ public:
 #  ifndef ARRAY_FULL2
   //! This defines an iterator type that iterates through all elements.
   typedef FullArrayIterator<typename base_type::iterator,
-                            typename Array<num_dimensions - 1, elemT>::full_iterator,
+                            typename Array<num_dimensions - 1, elemT, indexT>::full_iterator,
                             elemT,
                             full_reference,
                             full_pointer>
@@ -118,7 +118,7 @@ public:
 
   //! As full_iterator, but for const objects.
   typedef FullArrayIterator<typename base_type::const_iterator,
-                            typename Array<num_dimensions - 1, elemT>::const_full_iterator,
+                            typename Array<num_dimensions - 1, elemT, indexT>::const_full_iterator,
                             elemT,
                             const_full_reference,
                             const_full_pointer>
@@ -136,7 +136,7 @@ public:
   inline Array();
 
   //! Construct an Array of given range of indices, elements are initialised to 0
-  inline explicit Array(const IndexRange<num_dimensions>&);
+  inline explicit Array(const IndexRange<num_dimensions, indexT>&);
 
   //! Construct an Array pointing to existing contiguous data
   /*!
@@ -148,7 +148,7 @@ public:
     The C-array \a data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
   */
-  inline Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr);
+  inline Array(const IndexRange<num_dimensions, indexT>& range, shared_ptr<elemT[]> data_sptr);
 
 #ifndef SWIG
   // swig 2.0.4 gets confused by base_type (due to numeric template arguments)
@@ -200,7 +200,7 @@ public:
   inline const_full_iterator end_all_const() const;
   //@}
 
-  inline IndexRange<num_dimensions> get_index_range() const;
+  inline IndexRange<num_dimensions, indexT> get_index_range() const;
 
   //! return the total number of elements in this array
   inline size_t size_all() const;
@@ -215,10 +215,10 @@ public:
 
     \warning In most cases, calling resize() will result in the array using non-contiguous memory.
   */
-  inline virtual void resize(const IndexRange<num_dimensions>& range);
+  inline virtual void resize(const IndexRange<num_dimensions, indexT>& range);
 
   //! alias for resize()
-  virtual inline void grow(const IndexRange<num_dimensions>& range);
+  virtual inline void grow(const IndexRange<num_dimensions, indexT>& range);
 
   //! return sum of all elements
   inline elemT sum() const;
@@ -254,30 +254,30 @@ public:
 
   //! find regular range, returns \c false if the range is not regular
   /*! \see class IndexRange for a definition of (ir)regular ranges */
-  bool get_regular_range(BasicCoordinate<num_dimensions, int>& min, BasicCoordinate<num_dimensions, int>& max) const;
+  bool get_regular_range(BasicCoordinate<num_dimensions, indexT>& min, BasicCoordinate<num_dimensions, indexT>& max) const;
 
   //! allow array-style access, read/write
-  inline Array<num_dimensions - 1, elemT>& operator[](int i);
+  inline Array<num_dimensions - 1, elemT, indexT>& operator[](indexT i);
 
   //! array access, read-only
-  inline const Array<num_dimensions - 1, elemT>& operator[](int i) const;
+  inline const Array<num_dimensions - 1, elemT, indexT>& operator[](indexT i) const;
 
   //! allow array-style access given a BasicCoordinate to specify the indices, read/write
-  inline elemT& operator[](const BasicCoordinate<num_dimensions, int>& c);
+  inline elemT& operator[](const BasicCoordinate<num_dimensions, indexT>& c);
 
   //! array access given a BasicCoordinate to specify the indices, read-only
   // TODO alternative return value: elemT
-  inline const elemT& operator[](const BasicCoordinate<num_dimensions, int>& c) const;
+  inline const elemT& operator[](const BasicCoordinate<num_dimensions, indexT>& c) const;
 
   //! \name indexed access with range checking (throw std:out_of_range)
   //@{
-  inline Array<num_dimensions - 1, elemT>& at(int i);
+  inline Array<num_dimensions - 1, elemT, indexT>& at(indexT i);
 
-  inline const Array<num_dimensions - 1, elemT>& at(int i) const;
+  inline const Array<num_dimensions - 1, elemT, indexT>& at(indexT i) const;
 
-  inline elemT& at(const BasicCoordinate<num_dimensions, int>& c);
+  inline elemT& at(const BasicCoordinate<num_dimensions, indexT>& c);
 
-  inline const elemT& at(const BasicCoordinate<num_dimensions, int>& c) const;
+  inline const elemT& at(const BasicCoordinate<num_dimensions, indexT>& c) const;
   //@}
 
   //! \name Numerical operations
@@ -413,7 +413,7 @@ private:
     The C-array \a data_ptr will be accessed with the last dimension running fastest
     ("row-major" order).
   */
-  inline void init_with_copy(const IndexRange<num_dimensions>& range, elemT const* const data_ptr);
+  inline void init_with_copy(const IndexRange<num_dimensions, indexT>& range, elemT const* const data_ptr);
   //! Set the array to a range of indices, and point to/copy from \c data_ptr
   /*!
     \arg data_ptr should point to a contiguous block of correct size
@@ -424,9 +424,9 @@ private:
     \warning This function should only be called from within a constructor. It will ignore any existing content
     and therefore would cause memory leaks.
   */
-  inline void init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data);
+  inline void init(const IndexRange<num_dimensions, indexT>& range, elemT* const data_ptr, bool copy_data);
   // Make sure that we can access init() recursively
-  template <int num_dimensions2, class elemT2>
+  template <int num_dimensions2, class elemT2, class indexT2>
   friend class Array;
 
   using base_type::grow;
@@ -438,16 +438,16 @@ private:
  **************************************************/
 
 //! The 1-dimensional (partial) specialisation of Array.
-template <class elemT>
-class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
+template <class elemT, class indexT>
+class Array<1, elemT, indexT> : public NumericVectorWithOffset<elemT, elemT, indexT>
 {
 #ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
 public:
 #endif
-  typedef NumericVectorWithOffset<elemT, elemT> base_type;
-  typedef Array<1, elemT> self;
+  typedef NumericVectorWithOffset<elemT, elemT, indexT> base_type;
+  typedef Array<1, elemT, indexT> self;
 
 public:
   //! typedefs such that we do not need to have \c typename wherever we use these types defined in the base class
@@ -474,29 +474,29 @@ public:
   //! default constructor: array of length 0
   inline Array();
 
-  //! constructor given an IndexRange<1>, initialising elements to 0
-  inline explicit Array(const IndexRange<1>& range);
+  //! constructor given an IndexRange<1, indexT>, initialising elements to 0
+  inline explicit Array(const IndexRange<1, indexT>& range);
 
   //! constructor given first and last indices, initialising elements to 0
-  inline Array(const int min_index, const int max_index);
+  inline Array(const indexT min_index, const indexT max_index);
 
-  //! constructor given an IndexRange<1>, pointing to existing contiguous data
+  //! constructor given an IndexRange<1, indexT>, pointing to existing contiguous data
   /*!
     \arg data_ptr should point to a contiguous block of correct size.
     The constructed Array will essentially be a "view" of the
     \c data_sptr block. Therefore, any modifications to the array will modify the data at \a data_sptr.
     This will be the case until the Array is resized.
   */
-  inline Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr);
+  inline Array(const IndexRange<1, indexT>& range, shared_ptr<elemT[]> data_sptr);
 
-  //! constructor given an IndexRange<1> from existing contiguous data (will copy)
+  //! constructor given an IndexRange<1, indexT> from existing contiguous data (will copy)
   /*!
     \arg data_ptr should point to a contiguous block of correct size.
   */
-  inline Array(const IndexRange<1>& range, const elemT* const data_ptr);
+  inline Array(const IndexRange<1, indexT>& range, const elemT* const data_ptr);
 
   //! constructor from basetype
-  inline Array(const NumericVectorWithOffset<elemT, elemT>& il);
+  inline Array(const NumericVectorWithOffset<elemT, elemT, indexT>& il);
 
   //! Copy constructor
   // implementation needed as the above doesn't replace the normal copy-constructor
@@ -537,23 +537,23 @@ public:
   //@}
 
   //! return the range of indices used
-  inline IndexRange<1> get_index_range() const;
+  inline IndexRange<1, indexT> get_index_range() const;
 
   //! return the total number of elements in this array
   inline size_t size_all() const;
 
   //! Array::grow initialises new elements to 0
-  inline virtual void grow(const IndexRange<1>& range);
+  inline virtual void grow(const IndexRange<1, indexT>& range);
 
   // Array::grow initialises new elements to 0
-  inline void grow(const int min_index, const int max_index) override;
+  inline void grow(const indexT min_index, const indexT max_index) override;
 
   //! Array::resize initialises new elements to 0
-  inline virtual void resize(const IndexRange<1>& range);
+  inline virtual void resize(const IndexRange<1, indexT>& range);
 
-  inline void resize(const int min_index, const int max_index, bool initialise_with_0);
+  inline void resize(const indexT min_index, const indexT max_index, bool initialise_with_0);
   //! resize, initialising new elements to 0
-  inline void resize(const int min_index, const int max_index) override;
+  inline void resize(const indexT min_index, const indexT max_index) override;
 
   //! \name access to the data via a pointer
   //@{
@@ -603,7 +603,7 @@ public:
   inline bool is_regular() const;
 
   //! find regular range, returns \c false if the range is not regular
-  bool get_regular_range(BasicCoordinate<1, int>& min, BasicCoordinate<1, int>& max) const;
+  bool get_regular_range(BasicCoordinate<1, indexT>& min, BasicCoordinate<1, indexT>& max) const;
 
   /* Add numerical operators with correct return value, as opposed to those from the base class
    */
@@ -632,42 +632,42 @@ public:
   inline self operator/(const elemT a) const;
 
   //! allow array-style access, read/write
-  inline elemT& operator[](int i);
+  inline elemT& operator[](indexT i);
 
   //! array access, read-only
-  inline const elemT& operator[](int i) const;
+  inline const elemT& operator[](indexT i) const;
 
   //! allow array-style access giving its BasicCoordinate, read/write
-  inline const elemT& operator[](const BasicCoordinate<1, int>& c) const;
+  inline const elemT& operator[](const BasicCoordinate<1, indexT>& c) const;
 
   //! array access giving its BasicCoordinate, read-only
-  inline elemT& operator[](const BasicCoordinate<1, int>& c);
+  inline elemT& operator[](const BasicCoordinate<1, indexT>& c);
 
   //! \name indexed access with range checking (throw std:out_of_range)
   //@{
-  inline elemT& at(int i);
+  inline elemT& at(indexT i);
 
-  inline const elemT& at(int i) const;
+  inline const elemT& at(indexT i) const;
 
-  inline elemT& at(const BasicCoordinate<1, int>& c);
+  inline elemT& at(const BasicCoordinate<1, indexT>& c);
 
-  inline const elemT& at(const BasicCoordinate<1, int>& c) const;
+  inline const elemT& at(const BasicCoordinate<1, indexT>& c) const;
   //@}
 private:
   // Make sure we can call init() recursively.
-  template <int num_dimensions2, class elemT2>
+  template <int num_dimensions2, class elemT2, class indexT2>
   friend class Array;
 
   //! change vector with new index range and copy data from \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
   */
-  inline void init_with_copy(const IndexRange<1>& range, elemT const* const data_ptr);
+  inline void init_with_copy(const IndexRange<1, indexT>& range, elemT const* const data_ptr);
   //! change vector with new index range and point to \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
   */
-  inline void init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data);
+  inline void init(const IndexRange<1, indexT>& range, elemT* const data_ptr, bool copy_data);
 };
 
 END_NAMESPACE_STIR

@@ -23,6 +23,7 @@
 
 */
 
+#include "stir/VectorWithOffsetFwd.h"
 #include "stir/shared_ptr.h"
 #include "stir/deprecated.h"
 #include <iterator>
@@ -60,7 +61,7 @@ START_NAMESPACE_STIR
   we would have to use uninitialized_copy etc. in some places.
 */
 
-template <class T>
+template <class T, class indexT>
 class VectorWithOffset
 {
 public:
@@ -83,10 +84,10 @@ public:
   inline VectorWithOffset();
 
   //! Construct a VectorWithOffset of given length (initialised with \c T())
-  inline explicit VectorWithOffset(const int hsz);
+  inline explicit VectorWithOffset(const indexT hsz);
 
   //! Construct a VectorWithOffset with offset \c min_index (initialised with \c  T())
-  inline VectorWithOffset(const int min_index, const int max_index);
+  inline VectorWithOffset(const indexT min_index, const indexT max_index);
 
 #if STIR_VERSION < 070000
   //! Construct a VectorWithOffset of given length pointing to existing data
@@ -96,7 +97,7 @@ public:
 
     \deprecated
   */
-  STIR_DEPRECATED VectorWithOffset(const int hsz, T* const data_ptr, T* const end_of_data_ptr);
+  STIR_DEPRECATED VectorWithOffset(const indexT hsz, T* const data_ptr, T* const end_of_data_ptr);
 
   //! Construct a VectorWithOffset with offset \c min_index pointing to existing data
   /*!
@@ -105,28 +106,31 @@ public:
 
     \deprecated
   */
-  STIR_DEPRECATED inline VectorWithOffset(const int min_index, const int max_index, T* const data_ptr, T* const end_of_data_ptr);
+  STIR_DEPRECATED inline VectorWithOffset(const indexT min_index,
+                                          const indexT max_index,
+                                          T* const data_ptr,
+                                          T* const end_of_data_ptr);
 #endif
 
   //! Construct a VectorWithOffset of given length from a bare pointer (copying data)
-  VectorWithOffset(const int hsz, const T* const data_ptr);
+  VectorWithOffset(const indexT hsz, const T* const data_ptr);
 
   //! Construct a VectorWithOffset with offset \c min_index from a bare pointer (copying data)
-  inline VectorWithOffset(const int min_index, const int max_index, const T* const data_ptr);
+  inline VectorWithOffset(const indexT min_index, const indexT max_index, const T* const data_ptr);
 
   //! Construct a VectorWithOffset sharing existing data
   /*!
     \warning This refers to the original memory range, so any modifications to this object will modify
     the original data as well.
   */
-  inline VectorWithOffset(const int min_index, const int max_index, shared_ptr<T[]> data_sptr);
+  inline VectorWithOffset(const indexT min_index, const indexT max_index, shared_ptr<T[]> data_sptr);
 
   //! Construct a VectorWithOffset sharing existing data
   /*!
     \warning This refers to the original memory range, so any modifications to this object will modify
     the original data as well.
   */
-  inline VectorWithOffset(const int sz, shared_ptr<T[]> data_sptr)
+  inline VectorWithOffset(const indexT sz, shared_ptr<T[]> data_sptr)
       : VectorWithOffset(0, sz - 1, data_sptr)
   {}
 
@@ -169,22 +173,22 @@ public:
   //@{
   //! return number of elements in this vector
   /*! \deprecated Use size() instead. */
-  inline int get_length() const;
+  inline indexT get_length() const;
 
   //! return number of elements in this vector
   inline size_t size() const;
 
   //! get value of first valid index
-  inline int get_min_index() const;
+  inline indexT get_min_index() const;
 
   //! get value of last valid index
-  inline int get_max_index() const;
+  inline indexT get_max_index() const;
 
   //! change value of starting index
-  inline void set_offset(const int min_index);
+  inline void set_offset(const indexT min_index);
 
   //! identical to set_offset()
-  inline void set_min_index(const int min_index);
+  inline void set_min_index(const indexT min_index);
 
   //! grow the range of the vector, new elements are set to \c T()
   /*! Currently, it is only checked with assert() if old range is
@@ -194,10 +198,10 @@ public:
       resize() in a derived class, it is probably safest to overload
       grow() as well.
   */
-  inline virtual void grow(const int min_index, const int max_index);
+  inline virtual void grow(const indexT min_index, const indexT max_index);
 
   //! grow the range of the vector from 0 to new_size-1, new elements are set to \c T()
-  inline void grow(const unsigned int new_size);
+  inline void grow(const size_type new_size);
 
   //! change the range of the vector, new elements are set to \c T()
   /*! New memory is allocated if the range grows outside the range specified by
@@ -207,16 +211,16 @@ public:
       \todo in principle reallocation could be avoided when the new range would fit in the
       old one by shifting.
     */
-  inline virtual void resize(const int min_index, const int max_index);
+  inline virtual void resize(const indexT min_index, const indexT max_index);
 
   //! change the range of the vector from 0 to new_size-1, new elements are set to \c T()
-  inline void resize(const unsigned int new_size);
+  inline void resize(const size_type new_size);
 
   //! make the allocated range at least from \a min_index to \a max_index
-  inline void reserve(const int min_index, const int max_index);
+  inline void reserve(const indexT min_index, const indexT max_index);
 
   //! make the allocated range at least from 0 to new_size-1
-  inline void reserve(const unsigned int new_size);
+  inline void reserve(const size_type new_size);
 
   //! get allocated size
   inline size_t capacity() const;
@@ -232,7 +236,7 @@ public:
 
       For a vector of 0 length, this function returns 0.
   */
-  inline int get_capacity_min_index() const;
+  inline indexT get_capacity_min_index() const;
 
   //! get max_index within allocated range
   /*! This value depends on get_min_index() and hence will change
@@ -240,20 +244,20 @@ public:
 
       For a vector of 0 length, this function returns capacity()-1.
   */
-  inline int get_capacity_max_index() const;
+  inline indexT get_capacity_max_index() const;
   //@}
 
   //! allow array-style access, read/write
-  inline T& operator[](int i);
+  inline T& operator[](indexT i);
 
   //! array access, read-only
-  inline const T& operator[](int i) const;
+  inline const T& operator[](indexT i) const;
 
   //! allow array-style access, read/write, but with range checking (throws std::out_of_range)
-  inline T& at(int i);
+  inline T& at(indexT i);
 
   //! array access, read-only, but with range checking (throws std::out_of_range)
-  inline const T& at(int i) const;
+  inline const T& at(indexT i) const;
 
   //! checks if the vector is empty
   inline bool empty() const;
@@ -377,7 +381,7 @@ protected:
 
     calls resize()
   */
-  inline void init_with_copy(const int min_index, const int max_index, T const* const data_ptr);
+  inline void init_with_copy(const indexT min_index, const indexT max_index, T const* const data_ptr);
   //! initialise vector to the given index range and either copy from or point to \c data_ptr
   /*!
     \arg data_ptr should start to a contiguous block of correct size
@@ -387,13 +391,13 @@ protected:
     \warning This function should only be called from within a constructor. It will ignore any existing content
     and therefore would cause memory leaks.
   */
-  inline void init(const int min_index, const int max_index, T* const data_ptr, bool copy_data);
+  inline void init(const indexT min_index, const indexT max_index, T* const data_ptr, bool copy_data);
 
 private:
   //! length of vector
-  unsigned int length;
+  size_type length;
   //! starting index
-  int start;
+  indexT start;
 
   T* begin_allocated_memory;
   T* end_allocated_memory;

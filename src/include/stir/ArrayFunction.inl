@@ -27,13 +27,6 @@
 
 #include <cmath>
 #include <complex>
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-using ::log;
-using ::exp;
-} // namespace std
-#endif
 
 START_NAMESPACE_STIR
 
@@ -41,57 +34,57 @@ START_NAMESPACE_STIR
 // element wise and in place numeric functions
 //----------------------------------------------------------------------
 
-template <class elemT>
-inline Array<1, elemT>&
-in_place_log(Array<1, elemT>& v)
+template <typename elemT, typename indexT>
+inline Array<1, elemT, indexT>&
+in_place_log(Array<1, elemT, indexT>& v)
 {
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     v[i] = std::log(v[i]);
   return v;
 }
 
-template <int num_dimensions, class elemT>
-inline Array<num_dimensions, elemT>&
-in_place_log(Array<num_dimensions, elemT>& v)
+template <int num_dimensions, typename elemT, typename indexT>
+inline Array<num_dimensions, elemT, indexT>&
+in_place_log(Array<num_dimensions, elemT, indexT>& v)
 {
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     in_place_log(v[i]);
   return v;
 }
 
-template <class elemT>
-inline Array<1, elemT>&
-in_place_exp(Array<1, elemT>& v)
+template <typename elemT, typename indexT>
+inline Array<1, elemT, indexT>&
+in_place_exp(Array<1, elemT, indexT>& v)
 {
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     v[i] = std::exp(v[i]);
   return v;
 }
 
-template <int num_dimensions, class elemT>
-inline Array<num_dimensions, elemT>&
-in_place_exp(Array<num_dimensions, elemT>& v)
+template <int num_dimensions, typename elemT, typename indexT>
+inline Array<num_dimensions, elemT, indexT>&
+in_place_exp(Array<num_dimensions, elemT, indexT>& v)
 {
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     in_place_exp(v[i]);
   return v;
 }
 
-template <class elemT>
-inline Array<1, elemT>&
-in_place_abs(Array<1, elemT>& v)
+template <typename elemT, typename indexT>
+inline Array<1, elemT, indexT>&
+in_place_abs(Array<1, elemT, indexT>& v)
 {
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     if (v[i] < 0)
       v[i] = -v[i];
   return v;
 }
 
-template <int num_dimensions, class elemT>
-inline Array<num_dimensions, elemT>&
-in_place_abs(Array<num_dimensions, elemT>& v)
+template <int num_dimensions, typename elemT, typename indexT>
+inline Array<num_dimensions, elemT, indexT>&
+in_place_abs(Array<num_dimensions, elemT, indexT>& v)
 {
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     in_place_abs(v[i]);
   return v;
 }
@@ -100,8 +93,8 @@ template <class T, class FUNCTION>
 inline T&
 in_place_apply_function(T& v, FUNCTION f)
 {
-  typename T::full_iterator iter = v.begin_all();
-  const typename T::full_iterator end_iter = v.end_all();
+  auto iter = v.begin_all();
+  const auto end_iter = v.end_all();
   while (iter != end_iter)
     {
       *iter = f(*iter);
@@ -110,31 +103,31 @@ in_place_apply_function(T& v, FUNCTION f)
   return v;
 }
 
-template <int num_dim, typename elemT, typename FunctionObjectPtr>
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtr>
 inline void
-in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, FunctionObjectPtr f)
+in_place_apply_array_function_on_1st_index(Array<num_dim, elemT, indexT>& array, FunctionObjectPtr f)
 {
   assert(array.is_regular());
-  const int outer_min_index = array.get_min_index();
-  const int outer_max_index = array.get_max_index();
+  const auto outer_min_index = array.get_min_index();
+  const auto outer_max_index = array.get_max_index();
 
   // construct a vector with a full_iterator for every array[i]
   VectorWithOffset<
 #ifndef _MSC_VER
       typename
 #endif
-      Array<num_dim - 1, elemT>::full_iterator>
+      Array<num_dim - 1, elemT, indexT>::full_iterator>
       full_iterators(outer_min_index, outer_max_index);
-  for (int i = outer_min_index; i <= outer_max_index; ++i)
+  for (auto i = outer_min_index; i <= outer_max_index; ++i)
     full_iterators[i] = array[i].begin_all();
 
   // allocate 1d array
-  Array<1, elemT> array1d(outer_min_index, outer_max_index);
+  Array<1, elemT, indexT> array1d(outer_min_index, outer_max_index);
 
   while (full_iterators[outer_min_index] != array[outer_min_index].end_all())
     {
       // copy elements into 1d array
-      for (int i = outer_min_index; i <= outer_max_index; ++i)
+      for (auto i = outer_min_index; i <= outer_max_index; ++i)
         array1d[i] = *full_iterators[i];
 
       // apply function
@@ -142,41 +135,43 @@ in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, Functio
 
       // put results back
       // and increment full_iterators to do next index
-      for (int i = outer_min_index; i <= outer_max_index; ++i)
+      for (auto i = outer_min_index; i <= outer_max_index; ++i)
         *full_iterators[i]++ = array1d[i];
     }
 }
 
-template <int num_dim, typename elemT, typename FunctionObjectPtr>
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtr>
 inline void
-apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array, FunctionObjectPtr f)
+apply_array_function_on_1st_index(Array<num_dim, elemT, indexT>& out_array,
+                                  const Array<num_dim, elemT, indexT>& in_array,
+                                  FunctionObjectPtr f)
 {
   assert(in_array.is_regular());
   assert(out_array.is_regular());
-  const int in_min_index = in_array.get_min_index();
-  const int in_max_index = in_array.get_max_index();
-  const int out_min_index = out_array.get_min_index();
-  const int out_max_index = out_array.get_max_index();
+  const auto in_min_index = in_array.get_min_index();
+  const auto in_max_index = in_array.get_max_index();
+  const auto out_min_index = out_array.get_min_index();
+  const auto out_max_index = out_array.get_max_index();
 
   // construct a vector with a full_iterator for every in_array[i]
-  VectorWithOffset<typename Array<num_dim - 1, elemT>::const_full_iterator> in_full_iterators(in_min_index, in_max_index);
-  for (int i = in_min_index; i <= in_max_index; ++i)
+  VectorWithOffset<typename Array<num_dim - 1, elemT, indexT>::const_full_iterator> in_full_iterators(in_min_index, in_max_index);
+  for (auto i = in_min_index; i <= in_max_index; ++i)
     in_full_iterators[i] = in_array[i].begin_all();
   // same for out_array[i]
-  VectorWithOffset<typename Array<num_dim - 1, elemT>::full_iterator> out_full_iterators(out_min_index, out_max_index);
-  for (int i = out_min_index; i <= out_max_index; ++i)
+  VectorWithOffset<typename Array<num_dim - 1, elemT, indexT>::full_iterator> out_full_iterators(out_min_index, out_max_index);
+  for (auto i = out_min_index; i <= out_max_index; ++i)
     out_full_iterators[i] = out_array[i].begin_all();
 
   // allocate 1d array
-  Array<1, elemT> in_array1d(in_min_index, in_max_index);
-  Array<1, elemT> out_array1d(out_min_index, out_max_index);
+  Array<1, elemT, indexT> in_array1d(in_min_index, in_max_index);
+  Array<1, elemT, indexT> out_array1d(out_min_index, out_max_index);
 
   while (in_full_iterators[in_min_index] != in_array[in_min_index].end_all())
     {
       assert(out_full_iterators[out_min_index] != out_array[out_min_index].end_all());
       // copy elements into 1d array
       // increment in_full_iterators for next index
-      for (int i = in_min_index; i <= in_max_index; ++i)
+      for (auto i = in_min_index; i <= in_max_index; ++i)
         in_array1d[i] = *(in_full_iterators[i]++);
 
       // apply function
@@ -186,15 +181,15 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array, const Array<
 
       // put results back
       // increment out_full_iterators for next index
-      for (int i = out_min_index; i <= out_max_index; ++i)
+      for (auto i = out_min_index; i <= out_max_index; ++i)
         *(out_full_iterators[i]++) = out_array1d[i];
     }
   assert(out_full_iterators[out_min_index] == out_array[out_min_index].end_all());
 }
 
-template <int num_dim, typename elemT, typename FunctionObjectPtrIter>
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtrIter>
 inline void
-in_place_apply_array_functions_on_each_index(Array<num_dim, elemT>& array,
+in_place_apply_array_functions_on_each_index(Array<num_dim, elemT, indexT>& array,
                                              FunctionObjectPtrIter start,
                                              FunctionObjectPtrIter stop)
 {
@@ -203,22 +198,24 @@ in_place_apply_array_functions_on_each_index(Array<num_dim, elemT>& array,
   in_place_apply_array_function_on_1st_index(array, *start);
 
   ++start;
-  for (typename Array<num_dim, elemT>::iterator restiter = array.begin(); restiter != array.end(); ++restiter)
+  for (auto restiter = array.begin(); restiter != array.end(); ++restiter)
     in_place_apply_array_functions_on_each_index(*restiter, start, stop);
 }
 
-template <typename elemT, typename FunctionObjectPtrIter>
+template <typename elemT, typename indexT, typename FunctionObjectPtrIter>
 inline void
-in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, FunctionObjectPtrIter start, FunctionObjectPtrIter stop)
+in_place_apply_array_functions_on_each_index(Array<1, elemT, indexT>& array,
+                                             FunctionObjectPtrIter start,
+                                             FunctionObjectPtrIter stop)
 {
   assert(start + 1 == stop);
   (**start)(array);
 }
 
-template <int num_dim, typename elemT, typename FunctionObjectPtrIter>
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtrIter>
 inline void
-apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
-                                    const Array<num_dim, elemT>& in_array,
+apply_array_functions_on_each_index(Array<num_dim, elemT, indexT>& out_array,
+                                    const Array<num_dim, elemT, indexT>& in_array,
                                     FunctionObjectPtrIter start,
                                     FunctionObjectPtrIter stop)
 {
@@ -226,23 +223,23 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
   assert(num_dim > 1);
 
   assert(out_array.is_regular());
-  BasicCoordinate<num_dim, int> tmp_out_min_indices, tmp_out_max_indices;
+  BasicCoordinate<num_dim, indexT> tmp_out_min_indices, tmp_out_max_indices;
   out_array.get_regular_range(tmp_out_min_indices, tmp_out_max_indices);
   tmp_out_min_indices[1] = in_array.get_min_index();
   tmp_out_max_indices[1] = in_array.get_max_index();
-  Array<num_dim, elemT> tmp_out_array(IndexRange<num_dim>(tmp_out_min_indices, tmp_out_max_indices));
+  Array<num_dim, elemT, indexT> tmp_out_array(IndexRange<num_dim, indexT>(tmp_out_min_indices, tmp_out_max_indices));
 
-  for (int i = in_array.get_min_index(); i <= in_array.get_max_index(); ++i)
+  for (auto i = in_array.get_min_index(); i <= in_array.get_max_index(); ++i)
     apply_array_functions_on_each_index(tmp_out_array[i], in_array[i], start + 1, stop);
 
   apply_array_function_on_1st_index(out_array, tmp_out_array, *start);
 }
 
 // specialisation that uses ArrayFunctionObject::is_trivial etc
-template <int num_dim, typename elemT>
+template <int num_dim, typename elemT, typename indexT>
 inline void
-apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
-                                    const Array<num_dim, elemT>& in_array,
+apply_array_functions_on_each_index(Array<num_dim, elemT, indexT>& out_array,
+                                    const Array<num_dim, elemT, indexT>& in_array,
                                     ActualFunctionObjectPtrIter start,
                                     ActualFunctionObjectPtrIter stop)
 {
@@ -252,7 +249,7 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
   // cerr << "apply_array_functions_on_each_index dim " << num_dim << std::endl;
   if ((**start).is_trivial())
     {
-      for (int i = max(out_array.get_min_index(), in_array.get_min_index());
+      for (auto i = max(out_array.get_min_index(), in_array.get_min_index());
            i <= min(out_array.get_max_index(), in_array.get_max_index());
            ++i)
         apply_array_functions_on_each_index(out_array[i], in_array[i], start + 1, stop);
@@ -261,23 +258,23 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
     {
       assert(out_array.is_regular());
 
-      IndexRange<1> influencing_indices;
+      IndexRange<1, indexT> influencing_indices;
       if ((**start).get_influencing_indices(influencing_indices,
-                                            IndexRange<1>(out_array.get_min_index(), out_array.get_max_index()))
+                                            IndexRange<1, indexT>(out_array.get_min_index(), out_array.get_max_index()))
           == Succeeded::no)
-        influencing_indices = IndexRange<1>(influencing_indices.get_min_index(), in_array.get_max_index());
+        influencing_indices = IndexRange<1, indexT>(influencing_indices.get_min_index(), in_array.get_max_index());
       else
         {
-          influencing_indices = IndexRange<1>(max(influencing_indices.get_min_index(), in_array.get_min_index()),
-                                              min(influencing_indices.get_max_index(), in_array.get_max_index()));
+          influencing_indices = IndexRange<1, indexT>(max(influencing_indices.get_min_index(), in_array.get_min_index()),
+                                                      min(influencing_indices.get_max_index(), in_array.get_max_index()));
         }
-      BasicCoordinate<num_dim, int> tmp_out_min_indices, tmp_out_max_indices;
+      BasicCoordinate<num_dim, indexT> tmp_out_min_indices, tmp_out_max_indices;
       out_array.get_regular_range(tmp_out_min_indices, tmp_out_max_indices);
       tmp_out_min_indices[1] = influencing_indices.get_min_index();
       tmp_out_max_indices[1] = influencing_indices.get_max_index();
-      Array<num_dim, elemT> tmp_out_array(IndexRange<num_dim>(tmp_out_min_indices, tmp_out_max_indices));
+      Array<num_dim, elemT, indexT> tmp_out_array(IndexRange<num_dim, indexT>(tmp_out_min_indices, tmp_out_max_indices));
 
-      for (int i = influencing_indices.get_min_index(); i <= influencing_indices.get_max_index(); ++i)
+      for (auto i = influencing_indices.get_min_index(); i <= influencing_indices.get_max_index(); ++i)
         apply_array_functions_on_each_index(tmp_out_array[i], in_array[i], start + 1, stop);
 
       apply_array_function_on_1st_index(out_array, tmp_out_array, *start);
@@ -285,10 +282,10 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
 }
 
 // has to be here to get general 1D specialisation to compile
-template <typename elemT>
+template <typename elemT, typename indexT>
 inline void
-apply_array_functions_on_each_index(Array<1, elemT>& out_array,
-                                    const Array<1, elemT>& in_array,
+apply_array_functions_on_each_index(Array<1, elemT, indexT>& out_array,
+                                    const Array<1, elemT, indexT>& in_array,
                                     ActualFunctionObjectPtrIter start,
                                     ActualFunctionObjectPtrIter stop)
 {
@@ -296,10 +293,10 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
   (**start)(out_array, in_array);
 }
 
-template <typename elemT, typename FunctionObjectPtrIter>
+template <typename elemT, typename indexT, typename FunctionObjectPtrIter>
 inline void
-apply_array_functions_on_each_index(Array<1, elemT>& out_array,
-                                    const Array<1, elemT>& in_array,
+apply_array_functions_on_each_index(Array<1, elemT, indexT>& out_array,
+                                    const Array<1, elemT, indexT>& in_array,
                                     FunctionObjectPtrIter start,
                                     FunctionObjectPtrIter stop)
 {
@@ -309,19 +306,20 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
 
 /******************* functions that copy arrays using transformed indices *****/
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 inline void
-transform_array_to_periodic_indices(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array)
+transform_array_to_periodic_indices(Array<num_dimensions, elemT, indexT>& out_array,
+                                    const Array<num_dimensions, elemT, indexT>& in_array)
 {
   assert(norm(get_min_indices(out_array)) < .01); // check out_array is 0-based
 
-  BasicCoordinate<num_dimensions, int> min_indices, max_indices;
+  BasicCoordinate<num_dimensions, indexT> min_indices, max_indices;
 
   assert(out_array.get_regular_range(min_indices, max_indices));
   out_array.get_regular_range(min_indices, max_indices);
-  const BasicCoordinate<num_dimensions, int> out_sizes = max_indices - min_indices + 1;
+  const auto out_sizes = max_indices - min_indices + 1;
   {
-    BasicCoordinate<num_dimensions, int> index = get_min_indices(in_array);
+    BasicCoordinate<num_dimensions, indexT> index = get_min_indices(in_array);
     do
       {
         out_array[modulo(index, out_sizes)] = in_array[index];
@@ -329,19 +327,20 @@ transform_array_to_periodic_indices(Array<num_dimensions, elemT>& out_array, con
   }
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 inline void
-transform_array_from_periodic_indices(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array)
+transform_array_from_periodic_indices(Array<num_dimensions, elemT, indexT>& out_array,
+                                      const Array<num_dimensions, elemT, indexT>& in_array)
 {
   assert(norm(get_min_indices(in_array)) < .01); // check in_array is 0-based
 
-  BasicCoordinate<num_dimensions, int> min_indices, max_indices;
+  BasicCoordinate<num_dimensions, indexT> min_indices, max_indices;
 
   assert(in_array.get_regular_range(min_indices, max_indices));
   in_array.get_regular_range(min_indices, max_indices);
-  const BasicCoordinate<num_dimensions, int> in_sizes = max_indices - min_indices + 1;
+  const BasicCoordinate<num_dimensions, indexT> in_sizes = max_indices - min_indices + 1;
 
-  BasicCoordinate<num_dimensions, int> index = get_min_indices(out_array);
+  auto index = get_min_indices(out_array);
   do
     {
       out_array[index] = in_array[modulo(index, in_sizes)];
