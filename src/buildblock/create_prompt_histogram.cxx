@@ -18,6 +18,7 @@
 */
 
 #include "stir/create_prompt_histogram.h"
+#include "stir/ProjData.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
@@ -30,7 +31,7 @@ START_NAMESPACE_STIR
 // declaration of local function that does the work
 template <class TProjDataInfo>
 void
-create_prompt_histogram_help(Array<2, float>& prompt_histogram, const ProjDataInMemory& prompt_proj_data, const TProjDataInfo& proj_data_info)
+create_prompt_histogram_help(Array<2, float>& prompt_histogram, const ProjData& prompt_proj_data, const TProjDataInfo& proj_data_info)
 {
   const auto non_tof_proj_data_info_sptr = std::dynamic_pointer_cast<TProjDataInfo>(proj_data_info.create_non_tof_clone());
   Bin bin;
@@ -42,6 +43,7 @@ create_prompt_histogram_help(Array<2, float>& prompt_histogram, const ProjDataIn
            bin.axial_pos_num() <= prompt_proj_data.get_max_axial_pos_num(bin.segment_num());
            ++bin.axial_pos_num())
         {
+          auto sinogram = prompt_proj_data.get_sinogram(bin.axial_pos_num(), bin.segment_num());
 #ifdef STIR_OPENMP
 #  if _OPENMP >= 200711
 #    pragma omp parallel for collapse(2) // OpenMP 3.1
@@ -72,12 +74,12 @@ create_prompt_histogram_help(Array<2, float>& prompt_histogram, const ProjDataIn
 #  if _OPENMP >= 201012
 #    pragma omp atomic update
 #  else
-#    pragma omp critical(STIRMULTIPLYCRYSTALFACTORS)
+#    pragma omp critical(STIRCREATEPROMPTHISTOGRAM)
                       {
 #  endif
 #endif
-                      prompt_histogram[p1.axial_coord()][p1.tangential_coord()] += prompt_proj_data.get_bin_value(bin);
-                      prompt_histogram[p2.axial_coord()][p2.tangential_coord()] += prompt_proj_data.get_bin_value(bin);
+                      prompt_histogram[p1.axial_coord()][p1.tangential_coord()] += sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()];
+                      prompt_histogram[p2.axial_coord()][p2.tangential_coord()] += sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()];
 #if defined(STIR_OPENMP) && _OPENMP < 201012
                       }
 #endif
@@ -90,7 +92,7 @@ create_prompt_histogram_help(Array<2, float>& prompt_histogram, const ProjDataIn
 }
 
 void
-create_prompt_histogram(Array<2, float>& prompt_histogram, const ProjDataInMemory& prompt_proj_data)
+create_prompt_histogram(Array<2, float>& prompt_histogram, const ProjData& prompt_proj_data)
 {
   if (prompt_proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
     {
@@ -117,8 +119,8 @@ create_prompt_histogram(Array<2, float>& prompt_histogram, const ProjDataInMemor
 }
 
 template void
-create_prompt_histogram_help(Array<2, float>&, const ProjDataInMemory&, const ProjDataInfoCylindricalNoArcCorr&);
+create_prompt_histogram_help(Array<2, float>&, const ProjData&, const ProjDataInfoCylindricalNoArcCorr&);
 template void
-create_prompt_histogram_help(Array<2, float>&, const ProjDataInMemory&, const ProjDataInfoBlocksOnCylindricalNoArcCorr&);
+create_prompt_histogram_help(Array<2, float>&, const ProjData&, const ProjDataInfoBlocksOnCylindricalNoArcCorr&);
 
 END_NAMESPACE_STIR

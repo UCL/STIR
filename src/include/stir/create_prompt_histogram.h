@@ -18,9 +18,10 @@
 */
 
 #include "stir/ArrayFwd.h"
-#include "stir/ProjDataInMemory.h"
 
 START_NAMESPACE_STIR
+
+class ProjData;
 
 /*!
   \ingroup projdata
@@ -36,6 +37,6 @@ START_NAMESPACE_STIR
   and prompts: a comparison study." PloS one 11.9 (2016): e0162096).
 
 */
-void create_prompt_histogram(ArrayType<2, float>& prompt_histogram, const ProjDataInMemory& prompt_proj_data);
+void create_prompt_histogram(ArrayType<2, float>& prompt_histogram, const ProjData& prompt_proj_data);
 
 END_NAMESPACE_STIR
