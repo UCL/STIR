@@ -70,6 +70,7 @@ create_prompt_histogram_help(Array<2, float>& prompt_histogram, const ProjData& 
                     {
                       const auto& p1 = det_pos_pairs[i].pos1();
                       const auto& p2 = det_pos_pairs[i].pos2();
+                      const auto count = sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()];
 #if defined(STIR_OPENMP)
 #  if _OPENMP >= 201012
 #    pragma omp atomic update
@@ -78,8 +79,13 @@ create_prompt_histogram_help(Array<2, float>& prompt_histogram, const ProjData& 
                       {
 #  endif
 #endif
-                      prompt_histogram[p1.axial_coord()][p1.tangential_coord()] += sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()];
-                      prompt_histogram[p2.axial_coord()][p2.tangential_coord()] += sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()];
+                      prompt_histogram[p1.axial_coord()][p1.tangential_coord()] += count;
+#if defined(STIR_OPENMP)
+#  if _OPENMP >= 201012
+#    pragma omp atomic update
+#  endif
+#endif
+                      prompt_histogram[p2.axial_coord()][p2.tangential_coord()] += count;
 #if defined(STIR_OPENMP) && _OPENMP < 201012
                       }
 #endif
