@@ -3,7 +3,7 @@
   \file
   \ingroup projdata
 
-  \brief Declaration of stir::create_prompt_histogram
+  \brief Declaration of stir::create_crystal_histogram
 
   \author Markus Jehl
 
