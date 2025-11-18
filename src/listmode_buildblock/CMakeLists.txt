@@ -72,30 +72,13 @@ if (HAVE_HDF5)
 endif()
 
 if (HAVE_PETSIRD)
-#set(PETSIRD_dir ../../PETSIRD/cpp/generated)
-#add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
-
-#target_include_directories(listmode_buildblock PUBLIC
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/helpers/include>
-#  $<INSTALL_INTERFACE:include>
-#)
-
-# target_include_directories(listmode_buildblock PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-# target_include_directories(listmode_buildblock PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/helpers/include>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-# target_include_directories(listmode_buildblock PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated/binary>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-# target_link_libraries(listmode_buildblock PUBLIC petsird_helpers)
+target_include_directories(listmode_buildblock
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/helpers/include
+        ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated
+)
+target_link_libraries(listmode_buildblock
+    PRIVATE
+      petsird_generated
+  )
 endif()
