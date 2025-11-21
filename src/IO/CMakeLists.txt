@@ -111,17 +111,6 @@ if (HAVE_HDF5)
   target_link_libraries(IO PUBLIC ${HDF5_CXX_LIBRARIES})
 endif()
 
-if(HAVE_PETSIRD)
-target_include_directories(IO
-    PRIVATE
-        ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated
-)
-target_link_libraries(IO
-    PRIVATE
-      petsird_generated
-  )
-endif()
-
 if (HAVE_ITK)
   target_link_libraries(IO PRIVATE ITKCommon ${ITK_LIBRARIES})
 endif()
@@ -155,7 +144,13 @@ if (NOT MINI_STIR)
   target_link_libraries(IO PUBLIC listmode_buildblock)
 endif()
 
-
+if(HAVE_PETSIRD)
+  target_include_directories(IO
+    PUBLIC
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated>
+  )
+  target_link_libraries(IO PUBLIC petsird_generated)
+endif()
 
 
 

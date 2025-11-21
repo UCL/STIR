@@ -73,12 +73,12 @@ endif()
 
 if (HAVE_PETSIRD)
 target_include_directories(listmode_buildblock
-    PRIVATE
-        ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/helpers/include
-        ${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated
+    PUBLIC
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/helpers/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated>
 )
 target_link_libraries(listmode_buildblock
-    PRIVATE
+    PUBLIC
       petsird_generated
   )
 endif()

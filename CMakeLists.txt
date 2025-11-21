@@ -261,61 +261,35 @@ else()
 endif()
 
 if(NOT DISABLE_PETSIRD)
-
-  if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    # Check if PETSIRD is already registered as a submodule
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} config --file ${PROJECT_SOURCE_DIR}/.gitmodules --get-regexp "submodule\\.PETSIRD\\.path"
-      RESULT_VARIABLE SUBMOD_EXISTS
-      OUTPUT_QUIET
-      ERROR_QUIET
-    )
-
-    if(NOT SUBMOD_EXISTS EQUAL 0)
-      message(STATUS "Adding PETSIRD submodule...")
+ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    # Initialize PETSIRD submodule if not present
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/PETSIRD/CMakeLists.txt")
+      message(STATUS "Initializing PETSIRD submodule...")
       execute_process(
-        COMMAND ${GIT_EXECUTABLE} submodule add https://github.com/ETSInitiative/PETSIRD.git PETSIRD
+        COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive PETSIRD
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        RESULT_VARIABLE GIT_ADD_RESULT
+        RESULT_VARIABLE GIT_SUBMOD_RESULT
       )
-      if(NOT GIT_ADD_RESULT EQUAL 0)
-        message(WARNING "Submodule add failed with code ${GIT_ADD_RESULT}")
+      if(NOT GIT_SUBMOD_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to initialize PETSIRD submodule")
       endif()
-    else()
-      message(STATUS "PETSIRD submodule already exists in .gitmodules.")
     endif()
+  endif()
 
-    # Optionally ensure the submodule is checked out
-    # execute_process(
-    #   COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive PETSIRD
-    #   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    # )
-
-    # Build/generate PETSIRD C++ code
-    execute_process(
-      COMMAND just generate
-      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/PETSIRD
-      RESULT_VARIABLE JUST_RESULT
-    )
-
-    if(JUST_RESULT EQUAL 0)
-      set(HAVE_PETSIRD TRUE)
-      set(PETSIRD_base_dir "${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated")
-      set(PETSIRD_dir      "${PROJECT_SOURCE_DIR}/PETSIRD/cpp")
-      add_subdirectory(${PETSIRD_dir} PETSIRD)
-      install(TARGETS petsird_generated
-              EXPORT STIRTargets
-              DESTINATION lib)
-      message(STATUS "PETSIRD generation succeeded. THE PATH is ${PETSIRD_base_dir}. HAVE_PETSIRD set to TRUE.")
-    else()
-      set(HAVE_PETSIRD FALSE)
-      message(WARNING "PETSIRD generation failed with code ${JUST_RESULT}. HAVE_PETSIRD set to FALSE.")
-    endif()
-
+  # Check if PETSIRD directory exists
+  if(EXISTS "${PROJECT_SOURCE_DIR}/PETSIRD/cpp/CMakeLists.txt")
+    set(HAVE_PETSIRD TRUE)
+    set(PETSIRD_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp)
+    add_subdirectory(${PETSIRD_dir} PETSIRD)
+        # Make PETSIRD headers globally available
+    include_directories(${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)
+    include_directories(${PROJECT_SOURCE_DIR}/PETSIRD/cpp/helpers/include)
+    install(TARGETS petsird_generated
+        EXPORT STIRTargets
+        DESTINATION lib)
+    message(STATUS "PETSIRD support enabled")
   else()
-    # No git or no .git dir -> we can't auto-manage the submodule
-    set(HAVE_PETSIRD FALSE)
-    message(STATUS "Git not found or no .git directory; building STIR without PETSIRD support.")
+    message(FATAL_ERROR "PETSIRD directory not found. Please run: git submodule update --init --recursive")
   endif()
 
 endif()
