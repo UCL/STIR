@@ -157,6 +157,10 @@ if(NOT DISABLE_HDF5)
   if (TARGET HDF5::HDF5)
     option(USE_HDF5_TARGET "Use HDF5::HDF5 CMake target for dependencies (recommended)" ON)
     mark_as_advanced(USE_HDF5_TARGET)
+    # Depend on both HDF5::HDF5 (i.e. all libs just found), and hdf5::hdf5_cpp
+    # (i.e. C++ libs and dependencies). Only the latter should be necessary, but
+    # we need the former due to https://gitlab.kitware.com/cmake/cmake/-/issues/27379
+    set(HDF5_TARGET HDF5::HDF5;hdf5::hdf5_cpp)
     if (HDF5_FIND_DEBUG) # debugging print (re-use name of FindHDF5 CMake variable)
       cmake_print_properties(
         TARGETS HDF5::HDF5
