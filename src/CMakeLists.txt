@@ -29,6 +29,11 @@ option(BUILD_EXECUTABLES
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
+if (BUILD_SHARED_LIBS)
+    # needed explicitly for the registries
+    set(CMAKE_POSITION_INDEPENDENT_CODE True)
+endif()
+       
 ### Settings for external libraries
 
 if (LLN_FOUND)
