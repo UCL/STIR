@@ -97,6 +97,8 @@ public:
 
   inline stir::DetectionPosition<> get_stir_det_pos_from_PETSIRD_id(const petsird_helpers::ExpandedDetectionBin& exp_det_bin) const;
 
+  shared_ptr<PETSIRDToSTIRMap> petsird_to_stir;
+
 private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   shared_ptr<const Scanner> scanner_sptr;
@@ -122,9 +124,16 @@ class CListRecordPETSIRD : public CListRecord
 {
 public:
   CListRecordPETSIRD(shared_ptr<petsird::ScannerInformation> scanner_info, 
-  shared_ptr<Scanner> scanner_sptr) 
-  : scanner_info(scanner_info), 
-  this_scanner_sptr(scanner_sptr) {}
+  shared_ptr<Scanner> scanner_sptr, 
+  // shared_ptr<const DetectorCoordinateMapLightPETSIRD> map_sptr, 
+  shared_ptr<DetectorCoordinateMap> map_sptr,
+  shared_ptr<PETSIRDToSTIRMap> petsird_to_stir) 
+  : scanner_info(scanner_info)
+  {
+    event_data.set_scanner_sptr(scanner_sptr);
+    event_data.set_map_sptr(map_sptr);
+    event_data.petsird_to_stir = petsird_to_stir;
+  }
 
   // ~CListRecordPETSIRD() override {}
 
@@ -145,37 +154,14 @@ public:
 
   virtual Succeeded init_from_data(const petsird::CoincidenceEvent& data, bool is_prompt = true)
   {
-    // auto decodeElementAndModuleIndex
-    //     = [](int linearIndex, int energyIndex, int numberOfElementsIndices, int numberOfModules) -> std::pair<int, int> {
-    //   int reduced = (linearIndex - energyIndex) / numberOfModules;
-    //   int moduleIndex = reduced / numberOfElementsIndices;
-    //   int elementIndex = reduced % numberOfElementsIndices;
-    //   return { elementIndex, moduleIndex };
-    // };
-
-    // help expand detection 
-    //const ScannerInformation& scanner, const TypeOfModule& type_of_module, const T& list_of_detection_bins
     event_data.exp_det_0 = petsird_helpers::expand_detection_bin(*scanner_info, 
       0, 
       data.detection_bins[0]);
 
-      // event_data.exp_det_0.first =  dd.element_index; 
-      // event_data.exp_det_0.second = dd.module_index;
-    // std::cout << "Expanded 1: " << event_data.exp_det_0.module_index << "  " << event_data.exp_det_0.element_index << std::endl;
     event_data.exp_det_1 = petsird_helpers::expand_detection_bin(*scanner_info, 
       0, 
       data.detection_bins[1]);
-      // event_data.det_1.first = ee.element_index;
-      // event_data.det_1.second = ee.module_index;
-    // std::cout << "Expanded 2: " << event_data.exp_det_1.module_index << "  " << event_data.exp_det_1.element_index << std::endl;
-
-    // event_data.det_0
-    //     = decodeElementAndModuleIndex(data.detection_bins[0], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
-    // event_data.det_1
-    //     = decodeElementAndModuleIndex(data.detection_bins[1], 0, event_data.numberOfElementsIndices, event_data.numberOfModules);
-
-    // std::cout << event_data.det_0.first << "  " << event_data.det_0.second << std::endl;
-    // std::cout << event_data.det_1.first << "  " << event_data.det_1.second << std::endl;
+ 
     event_data.set_prompt(is_prompt);
     return Succeeded::yes;
   }
@@ -184,8 +170,7 @@ private:
   CListEventPETSIRD event_data;
   CListTimePETSIRD time_data;
 
-  shared_ptr<petsird::ScannerInformation> scanner_info;// = header.scanner;
-  shared_ptr<Scanner> this_scanner_sptr;
+  shared_ptr<petsird::ScannerInformation> scanner_info;
 };
 
 END_NAMESPACE_STIR

@@ -49,6 +49,28 @@ START_NAMESPACE_STIR
   coordinates.
 */
 
+struct ExpandedDetectionBinLess
+{
+
+    bool operator()(const petsird::ExpandedDetectionBin& a,
+                    const petsird::ExpandedDetectionBin& b) const
+    {
+        // Adjust field names if needed (I assume: module, element, energy_bin)
+        if (a.module_index < b.module_index) return true;
+        if (a.module_index > b.module_index) return false;
+
+        if (a.element_index < b.element_index) return true;
+        if (a.element_index > b.element_index) return false;
+        return a.energy_index < b.energy_index;
+    }
+};
+
+using PETSIRDToSTIRMap = std::map<
+    petsird::ExpandedDetectionBin,
+    stir::DetectionPosition<>,
+    ExpandedDetectionBinLess
+>;
+
 class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
 {
 public:
@@ -82,7 +104,17 @@ private:
 
   int numberOfElementsIndices;
 
+  int blocks_per_bucket_transaxial; 
+
+  int blocks_per_bucket_axial;
+
+  int num_axial_crystals_per_block;
+
+  int num_trans_crystals_per_block; 
+
   mutable petsird::EventTimeBlock curr_event_block;
+
+  shared_ptr<PETSIRDToSTIRMap> petsird_to_stir;
 
   petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
 

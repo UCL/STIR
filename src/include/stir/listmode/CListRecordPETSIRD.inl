@@ -27,10 +27,7 @@
   \ingroup listmode
   \brief Inline implementation of class stir::CListEventPETSIRD and stir::CListRecordPETSIRD with supporting classes
 
-  \author Jannis Fischer
-  \author Parisa Khateri
-  \author Markus Jehl
-  \author Kris Thielemans
+  \author Nikos Efthimiou
   \author Daniel Deidda
 */
 
@@ -38,53 +35,28 @@
 #include "stir/listmode/CListRecord.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/Bin.h"
-#include "stir/LORCoordinates.h"
-#include "stir/Succeeded.h"
-
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/error.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
-#include "stir/CartesianCoordinate3D.h"
-#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
 stir::DetectionPosition<> 
-CListEventPETSIRD::get_stir_det_pos_from_PETSIRD_id(const petsird_helpers::ExpandedDetectionBin& exp_det_bin) const
+CListEventPETSIRD::get_stir_det_pos_from_PETSIRD_id(const petsird::ExpandedDetectionBin& exp_det_bin) const
 {
-  const auto NUM_MODULES_ALONG_AXIS = scanner_sptr->get_num_axial_blocks();
-  const std::array<uint32_t, 3> NUM_CRYSTALS_PER_MODULE{
-      static_cast<unsigned>(scanner_sptr->get_num_detector_layers()),              // N0 (layers)
-      static_cast<unsigned>(scanner_sptr->get_num_transaxial_crystals_per_block()),// N1 (tx per block)
-      static_cast<unsigned>(scanner_sptr->get_num_axial_crystals_per_block())      // N2 (ax per block)
-  };
+// const-friendly lookup
+  auto it = petsird_to_stir->find(exp_det_bin);
+  if (it == petsird_to_stir->end()) {
+    // handle missing key however STIR usually does:
+    // - throw
+    // - or call error(...)
+    // - or return a default DetectionPosition
+    error("get_stir_det_pos_from_PETSIRD_id: PETSIRD id not found in petsird_to_stir map", exp_det_bin.module_index, exp_det_bin.element_index, exp_det_bin.energy_index);
+  }
 
-  const auto ax_mod   = exp_det_bin.module_index % NUM_MODULES_ALONG_AXIS;
-  const auto tang_mod = exp_det_bin.module_index / NUM_MODULES_ALONG_AXIS;
-
-  const int N0 = static_cast<int>(NUM_CRYSTALS_PER_MODULE[0]);
-  const int N1 = static_cast<int>(NUM_CRYSTALS_PER_MODULE[1]);
-  const int N2 = static_cast<int>(NUM_CRYSTALS_PER_MODULE[2]);
-
-  std::array<int, 3> inds; // [layer, transaxial, axial] within the block
-  int id = static_cast<int>(exp_det_bin.element_index);
-
-  // -------- Row-wise de-linearization (transaxial varies fastest) --------
-  // Previous code did: axial first (inds[2] = id % N2; id /= N2; inds[1] = id % N1; ...)
-  // Change to: transaxial first, then axial.
-  inds[1] =  id % N1;  // transaxial within the block
-  id      /= N1;
-  inds[2] =  id % N2;  // axial within the block
-  id      /= N2;
-  inds[0] =  id;       // layer
-  // ----------------------------------------------------------------------
-
-  const stir::DetectionPosition<> pos(
-      inds[1] + tang_mod * N1,   // global transaxial crystal index
-      inds[2] + ax_mod   * N2,   // global axial crystal index
-      inds[0]            // layer
-  );
-  return pos;
+  return it->second; // copy of DetectionPosition<>
 }
 
 LORAs2Points<float>
@@ -110,11 +82,42 @@ CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
 
   DetectionPositionPair<> det_pos_pair;
-  det_pos_pair.pos1() = get_stir_det_pos_from_PETSIRD_id(exp_det_0); 
-  det_pos_pair.pos2() = get_stir_det_pos_from_PETSIRD_id(exp_det_1); 
-  // this->get_data().get_detection_position_pair(det_pos_pair);
 
-  dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos_pair);
+  if(scanner_sptr->get_scanner_geometry() == "Cylindrical")
+    {
+      det_pos_pair.pos1() = get_stir_det_pos_from_PETSIRD_id(exp_det_0); 
+      det_pos_pair.pos2() = get_stir_det_pos_from_PETSIRD_id(exp_det_1); 
+      // this->get_data().get_detection_position_pair(det_pos_pair);
+      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos_pair);
+    }
+    else
+    {
+      if (!map_sptr)
+        {
+          std::cerr << "Error: No detector map set in CListEventPETSIRD::get_bin()" << std::endl;
+          // this->get_data().get_detection_position_pair(det_pos_pair);
+        }
+        else{
+          DetectionPositionPair<> det_pos_pair;
+          det_pos_pair.pos1() = get_stir_det_pos_from_PETSIRD_id(exp_det_0); 
+          det_pos_pair.pos2() = get_stir_det_pos_from_PETSIRD_id(exp_det_1); 
+          // std::cout<< exp_det_0.module_index << ", " << exp_det_0.element_index << " ---- " << exp_det_1.module_index << ", " << exp_det_1.element_index << std::endl;
+          const stir::CartesianCoordinate3D<float> c1 = map_sptr->get_coordinate_for_index(det_pos_pair.pos1());
+          const stir::CartesianCoordinate3D<float> c2 = map_sptr->get_coordinate_for_index(det_pos_pair.pos2());
+
+          // std::cout << "CListEventPETSIRD::get_bin(): det_pos1: " << det_pos_pair.pos1().tangential_coord() << ", "
+          //           << det_pos_pair.pos1().axial_coord() << ", " << det_pos_pair.pos1().radial_coord() << std::endl;
+          // std::cout << "CListEventPETSIRD::get_bin(): det_pos2: " << det_pos_pair.pos2().tangential_coord() << ", "
+          //           << det_pos_pair.pos2().axial_coord() << ", " << det_pos_pair.pos2().radial_coord() << std::endl;
+          // std::cout << "CListEventPETSIRD::get_bin(): c1: " << c1.x() << ", " << c1.y() << ", " << c1.z() << std::endl;
+          // std::cout << "CListEventPETSIRD::get_bin(): c2: " << c2.x() << ", " << c2.y() << ", " << c2.z() << std::endl;
+          const LORAs2Points<float> lor(c1, c2);
+          bin = proj_data_info.get_bin(lor);
+        }
+      
+    }
+
+
 }
 
 
