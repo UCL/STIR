@@ -169,94 +169,82 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
   max_tangential_pos_num = max_tang_poss;
 }
 
-//! \todo N.E: This function is very ugly and unnessesary complicated. Could be much better.
 void
 ProjDataInfo::set_tof_mash_factor(const int new_num)
 {
-  if (scanner_ptr->is_tof_ready() && new_num > 0)
-    {
-      tof_mash_factor = new_num;
-      if (tof_mash_factor > scanner_ptr->get_max_num_timing_poss())
-        error("ProjDataInfo::set_tof_mash_factor: TOF mashing factor (" + std::to_string(tof_mash_factor)
-              + +") must be smaller than or equal to the scanner's number of max timing bins ("
-              + std::to_string(scanner_ptr->get_max_num_timing_poss()) + ").");
+   const bool tof_ready = scanner_ptr->is_tof_ready();
 
-#if 0
-        // KT: code disabled as buggy but currently not needed
-        tof_increament_in_mm = tof_delta_time_to_mm(scanner_ptr->get_size_of_timing_pos());
-        min_unmashed_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss())/2;
-        max_unmashed_tof_pos_num = min_unmashed_tof_pos_num + (scanner_ptr->get_max_num_timing_poss()) -1;
+  // Non-TOF mode (either scanner not TOF-ready or invalid mash factor)
+  if (!tof_ready || new_num <= 0)
+  {
+    num_tof_bins   = 1;
+    tof_mash_factor = 0;
+    min_tof_pos_num = 0;
+    max_tof_pos_num = 0;
+    // we assume TOF mashing factor = 0 means non-TOF and the projector
+    // won't use any boundary conditions
+    return;
+  }
 
-        // Upper and lower boundaries of the timing poss;
-        tof_bin_unmashed_boundaries_mm.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);
-        tof_bin_unmashed_boundaries_ps.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);
+  const int max_timing_poss = scanner_ptr->get_max_num_timing_poss();
 
-        // Silently intialise the unmashed TOF bins.
-        for (int k = min_unmashed_tof_pos_num; k <= max_unmashed_tof_pos_num; ++k )
-        {
-            Bin bin;
-            bin.timing_pos_num() = k;
-            // if we ever re-enable this code, there is a BUG here:
-            // get_k relies on num_tof_bins, so this should have been set to the unmashed value from the scanner
-            float cur_low = get_k(bin) - get_sampling_in_k(bin)/2.f;
-            float cur_high = get_k(bin) + get_sampling_in_k(bin)/2.f;
+  if (new_num > max_timing_poss)
+  {
+    error("ProjDataInfo::set_tof_mash_factor: TOF mashing factor (" +
+          std::to_string(new_num) +
+          ") must be smaller than or equal to the scanner's number of "
+          "max timing bins (" +
+          std::to_string(max_timing_poss) + ").");
+  }
 
-            tof_bin_unmashed_boundaries_mm[k].low_lim = cur_low;
-            tof_bin_unmashed_boundaries_mm[k].high_lim = cur_high;
-            tof_bin_unmashed_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_unmashed_boundaries_mm[k].low_lim));
-            tof_bin_unmashed_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_unmashed_boundaries_mm[k].high_lim));
+  tof_mash_factor = new_num;
+  // Initialise mashed TOF bins
+tof_increament_in_mm =
+    tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
 
-        }
-#endif
-      // Now, initialise the mashed TOF bins.
-      tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
+const int num_mashed_bins = max_timing_poss / tof_mash_factor;
+num_tof_bins = num_mashed_bins;
 
-      // TODO cope with even numbers!
-      min_tof_pos_num = -(scanner_ptr->get_max_num_timing_poss() / tof_mash_factor) / 2;
-      max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor) - 1;
+// Compute min/max TOF position numbers without enforcing odd count
+//
+// We choose a symmetric convention:
+//   - If num_tof_bins is odd:    bins go from -N/2 ... +N/2
+//   - If num_tof_bins is even:   bins go from -(N/2) ... +(N/2 - 1)
+// This preserves the old behavior for odd counts and gives clean indexing for even counts.
+min_tof_pos_num = -num_tof_bins / 2;
+max_tof_pos_num = min_tof_pos_num + num_tof_bins - 1;
 
-      num_tof_bins = max_tof_pos_num - min_tof_pos_num + 1;
+// Upper and lower boundaries of the timing positions
+tof_bin_boundaries_mm.grow(min_tof_pos_num, max_tof_pos_num);
+tof_bin_boundaries_ps.grow(min_tof_pos_num, max_tof_pos_num);
 
-      // Ensure that we have a central tof bin.
-      if (num_tof_bins % 2 == 0)
-        error("ProjDataInfo: Number of TOF bins should be an odd number. Abort.");
+for (int k = min_tof_pos_num; k <= max_tof_pos_num; ++k)
+{
+    Bin bin;
+    bin.timing_pos_num() = k;
 
-      // Upper and lower boundaries of the timing poss;
-      tof_bin_boundaries_mm.grow(min_tof_pos_num, max_tof_pos_num);
+    const float sampling = get_sampling_in_k(bin);
+    const float center   = get_k(bin);
 
-      tof_bin_boundaries_ps.grow(min_tof_pos_num, max_tof_pos_num);
+    const float cur_low  = center - sampling / 2.f;
+    const float cur_high = center + sampling / 2.f;
 
-      for (int k = min_tof_pos_num; k <= max_tof_pos_num; ++k)
-        {
-          Bin bin;
-          bin.timing_pos_num() = k;
+    tof_bin_boundaries_mm[k].low_lim  = cur_low;
+    tof_bin_boundaries_mm[k].high_lim = cur_high;
 
-          float cur_low = get_k(bin) - get_sampling_in_k(bin) / 2.f;
-          float cur_high = get_k(bin) + get_sampling_in_k(bin) / 2.f;
+    tof_bin_boundaries_ps[k].low_lim  =
+        static_cast<float>(mm_to_tof_delta_time(cur_low));
+    tof_bin_boundaries_ps[k].high_lim =
+        static_cast<float>(mm_to_tof_delta_time(cur_high));
 
-          tof_bin_boundaries_mm[k].low_lim = cur_low;
-          tof_bin_boundaries_mm[k].high_lim = cur_high;
-          tof_bin_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].low_lim));
-          tof_bin_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].high_lim));
-          // I could imagine a better printing.
-          info(format("Tbin {}: {} - {} mm ({} - {} ps) = {}",
-                      k,
-                      tof_bin_boundaries_mm[k].low_lim,
-                      tof_bin_boundaries_mm[k].high_lim,
-                      tof_bin_boundaries_ps[k].low_lim,
-                      tof_bin_boundaries_ps[k].high_lim,
-                      get_sampling_in_k(bin)));
-        }
-    }
-  else if ((scanner_ptr->is_tof_ready() && new_num <= 0)
-           || !scanner_ptr->is_tof_ready()) // Case new_num <=, will produce non-TOF data for a TOF compatible scanner
-    {
-      num_tof_bins = 1;
-      tof_mash_factor = 0;
-      min_tof_pos_num = 0;
-      max_tof_pos_num = 0;
-      // we assume TOF mashing factor = 0 means non-TOF and the projecter won't use any boundary conditions
-    }
+    info(format("Tbin {}: {} - {} mm ({} - {} ps) = {}",
+                k,
+                tof_bin_boundaries_mm[k].low_lim,
+                tof_bin_boundaries_mm[k].high_lim,
+                tof_bin_boundaries_ps[k].low_lim,
+                tof_bin_boundaries_ps[k].high_lim,
+                sampling));
+}
 }
 
 std::vector<int>

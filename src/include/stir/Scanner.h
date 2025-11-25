@@ -574,6 +574,8 @@ public:
 
   shared_ptr<const DetectorCoordinateMap> get_detector_map_sptr() const { return detector_map_sptr; }
 
+  void set_detector_map(const DetectorCoordinateMap::det_pos_to_coord_type& coord_map);
+
 private:
   bool _already_setup;
   Type type;
@@ -628,7 +630,6 @@ private:
   std::string crystal_map_file_name;
   shared_ptr<DetectorCoordinateMap> detector_map_sptr; /*! effective detection positions including average DOI */
 
-  void set_detector_map(const DetectorCoordinateMap::det_pos_to_coord_type& coord_map);
   void initialise_max_FOV_radius();
 
   // function to create the maps
