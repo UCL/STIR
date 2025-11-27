@@ -172,12 +172,13 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
     _projected_data_sptr->fill(0.F);
 #endif
 
-  info("Calling parallelproj forward", 2);
-
 #ifdef parallelproj_built_with_CUDA
 
+  info("Calling parallelproj forward (CUDA)", 2);
+
   long long num_lors_per_chunk_floor
-      = _helper->num_lors / _num_gpu_chunks; // num_lors=407, num_GPU_chunks = 10, --> num_lors_per_chunk_floor = 407/10 = 40
+      = _helper->num_lors
+        / _num_gpu_chunks; // Vision 600: num_lors=407, num_GPU_chunks = 10, --> num_lors_per_chunk_floor = 407/10 = 40
   long long remainder = _helper->num_lors % _num_gpu_chunks; // remainder = 7; so in 7 chunks I'll have 1 LOR more
 
   long long num_lors_per_chunk;
@@ -208,7 +209,7 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
                                      _helper->origin.data(),
                                      _helper->voxsize.data(),
                                      mem_for_PP.data(),  // this is where the data is written to
-                                     num_lors_per_chunk, // 41(40) , PP docu: "number of geometrical LORs";
+                                     num_lors_per_chunk, // PP docu: "number of geometrical LORs";
                                      _helper->imgdim.data(),
                                      _helper->tofbin_width,
                                      &_helper->sigma_tof,
@@ -250,6 +251,8 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
   free_float_array_on_all_devices(image_on_cuda_devices);
 
 #else
+  info("Calling parallelproj forward (CPU)", 2);
+
   if (this->_proj_data_info_sptr->is_tof_data() == 1)
     {
 

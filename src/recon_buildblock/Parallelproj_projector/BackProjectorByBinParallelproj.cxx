@@ -184,7 +184,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
         }
       if (p.get_proj_data_info_sptr()->is_tof_data())
         {
-          info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda", 2);
+          info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda for one chunk", 2);
 
           std::vector<float> mem_for_PP_back(num_lors_per_chunk * _helper->num_tof_bins);
           const float* STIR_mem = p.get_const_data_ptr();
@@ -214,6 +214,8 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
         }
       else
         {
+          info("running the CUDA version of parallelproj, about to call function joseph3d_back_cuda for one chunk", 2);
+
           joseph3d_back_cuda(_helper->xstart.data() + 3 * offset,
                              _helper->xend.data() + 3 * offset,
                              image_on_cuda_devices,
@@ -224,6 +226,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
                              _helper->imgdim.data(),
                              /*threadsperblock*/ 64);
         }
+      info("done", 2);
       offset += num_lors_per_chunk;
     }
 
@@ -237,6 +240,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   free_float_array_on_all_devices(image_on_cuda_devices);
 
 #else
+  info("Calling parallelproj backprojector (CPU)", 2);
   if (this->_proj_data_info_sptr->is_tof_data() == 1)
     {
       std::vector<float> mem_for_PP_back(_helper->num_lors * _helper->num_tof_bins);
@@ -273,7 +277,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
                     _helper->imgdim.data());
     }
 #endif
-  info("done", 2);
+  info("PP backprojecting done. Finishing up", 2);
 
   p.release_const_data_ptr();
 
