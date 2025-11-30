@@ -11,6 +11,7 @@
   \author Mustapha Sadki
   \author Kris Thielemans
   \author Robert Twyman
+  \author Zekai Li
   \author PARAPET project
 
 */
@@ -114,14 +115,20 @@ ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& pro
 void
 ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
 {
-
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
   proj_data_info_sptr->get_LOR(lor, probabilities.get_bin());
   const LORAs2Points<float> lor2(lor);
   const CartesianCoordinate3D<float> point1 = lor2.p1();
   const CartesianCoordinate3D<float> point2 = lor2.p2();
 
-  // The direction can be from 1 -> 2 depending on the bin sign.
+  // Coordinate system correction: TODO remove in future with ORIGIN shift PR
+  // LOR coordinates have origin at scanner center (z=0 at center of all rings)
+  // Image coordinates have origin at first ring (z=0 at ring 0)
+  // Calculate the offset: distance from first ring to scanner center
+  const float scanner_z_offset = (proj_data_info_sptr->get_scanner_ptr()->get_num_rings() - 1) / 2.0f
+                                 * proj_data_info_sptr->get_scanner_ptr()->get_ring_spacing();
+  const CartesianCoordinate3D<float> coord_system_offset(scanner_z_offset, 0.0f, 0.0f);
+
   const CartesianCoordinate3D<float> middle = (point1 + point2) * 0.5f;
   const CartesianCoordinate3D<float> diff = point2 - middle;
   const CartesianCoordinate3D<float> diff_unit_vector(diff / static_cast<float>(norm(diff)));
@@ -129,7 +136,14 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
   for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin(); element_ptr != probabilities.end(); ++element_ptr)
     {
       Coordinate3D<int> c(element_ptr->get_coords());
-      const float d2 = -inner_product(image_info_sptr->get_physical_coordinates_for_indices(c) - middle, diff_unit_vector);
+      // Get voxel physical coordinates (in image coordinate system)
+      const CartesianCoordinate3D<float> voxel_pos_image = image_info_sptr->get_physical_coordinates_for_indices(c);
+
+      // Convert to scanner coordinate system by subtracting the offset
+      const CartesianCoordinate3D<float> voxel_pos_scanner = voxel_pos_image - coord_system_offset;
+
+      // Now compute TOF distance in the same coordinate system as the LOR
+      const float d2 = -inner_product(voxel_pos_scanner - middle, diff_unit_vector);
 
       const float low_dist
           = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].low_lim - d2));
