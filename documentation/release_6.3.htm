@@ -220,6 +220,22 @@
   <h3>Bug fixes</h3>
   <ul>
     <li>
+      Fixed a bug in the SPECTUB matrix (introduced in 4.0) that effectively inverted the "x" (horizontal in-plane) axis for the
+      emission image as part of the projection. This resulted in the need for an inconsistent attenuation
+      image orientation compared to the reconstructed emission image.
+      This axis inversion is now reverted, so
+      <ul>
+        <li><strong>reconstructions of existing SPECT data will have an x-flip with
+          respect to previous versions of STIR</strong> (unless older than 4.0).
+        </li>
+        <li>if your scripts are using an attenuation map, you need to <strong>remove
+          calls to <code>invert_axis x</code> on the attenuation map</strong> (or code to that effect) to get correct results.
+        </li>
+      </ul>
+      <br>
+      See <a href="https://github.com/UCL/STIR/pull/1631">PR #1631</a>.
+    </li>
+    <li>
       Fixed a bug in the scatter estimation code (introduced in release 5.1.0) if input data is 3D and "cylindrical"
       (there was no bug for "blocksoncylindrical" data).
       The scatter estimation runs on data constructed via SSRB. However, the attenuation correction factors were
