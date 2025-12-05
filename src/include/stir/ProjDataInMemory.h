@@ -103,7 +103,7 @@ public:
   ~ProjDataInMemory() override;
 
   //! Returns a  value of a bin
-  float get_bin_value(Bin& bin);
+  float get_bin_value(const Bin& bin) const;
 
   void set_bin_value(const Bin& bin);
 
