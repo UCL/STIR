@@ -164,7 +164,6 @@
 #include "stir/recon_buildblock/SqrtHessianRowSum.h"
 
 #include "stir/multiply_crystal_factors.h"
-#include "stir/create_crystal_histogram.h"
 #include "stir/decay_correction_factor.h"
 #include "stir/ML_norm.h"
 #include "stir/spatial_transformation/InvertAxis.h"
@@ -1184,7 +1183,6 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir_reconstruction.i"
 
 %include "stir/multiply_crystal_factors.h"
-%include "stir/create_crystal_histogram.h"
 %include "stir/decay_correction_factor.h"
 
 %shared_ptr(stir::ScatterSimulation);

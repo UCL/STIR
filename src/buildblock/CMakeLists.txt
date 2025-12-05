@@ -59,7 +59,6 @@ if (NOT MINI_STIR)
     interpolate_projdata.cxx
     extend_projdata.cxx
     multiply_crystal_factors.cxx
-    create_crystal_histogram.cxx
     ParseDiscretisedDensityParameters.cxx
     linear_regression.cxx
     overlap_interpolate.cxx

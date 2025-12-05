@@ -567,28 +567,3 @@ def test_multiply_crystal_factors():
     assert projdata.find_max() == projdata.find_min()
     view_mash_factor = s.get_num_detectors_per_ring() / 2 / projdatainfo.get_num_views()
     assert projdata.find_max() == view_mash_factor  # only true for span=1, as in this test case
-
-def test_create_crystal_histogram():
-    # Create proj data
-    s = Scanner.get_scanner_from_name("ECAT 962")
-    max_ring_difference = 9
-    num_views = 8
-    view_mash_factor = (s.get_num_detectors_per_ring() / 2) / 8
-    projdatainfo = ProjDataInfo.construct_proj_data_info(s, 1, max_ring_difference, num_views, 6, False)
-    projdata = ProjDataInMemory(ExamInfo(), projdatainfo)
-    projdata.fill(1)
-
-    # Create array
-    histogram = FloatArray2D(IndexRange2D(Int2BasicCoordinate((0,0)),
-                             Int2BasicCoordinate((s.get_num_rings() - 1, s.get_num_detectors_per_ring() - 1))))
-    histogram.fill(0)
-
-    # Test multiply_crystal_factors()
-    create_crystal_histogram(histogram, projdata)
-
-    # Check that the sum of the crystal histograms is double the sum of the projdata
-    # this is, because each event (i.e. value in a bin) is counted in the two crystals it hit
-    assert histogram.sum() / view_mash_factor == projdata.sum() * 2
-
-    # Check that some entry in the middle gets the expected number of contributions from the segments
-    assert histogram[int(s.get_num_rings() / 2)][80] / projdatainfo.get_num_segments() / 2 == 3
