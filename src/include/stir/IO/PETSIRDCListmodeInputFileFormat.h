@@ -25,8 +25,7 @@
   \ingroup listmode
   \brief Declaration of class stir::PETSIRDCListmodeInputFileFormat
 
-  \author Jannis Fischer
-  \author Markus Jehl, Positrigo
+  \author Nikos Efthimiou
   \author Daniel Deidda
 
 */
