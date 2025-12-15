@@ -2,9 +2,7 @@
 
 Coincidence Event Class for PETSIRD: Header File
 
-     Copyright 2015 ETH Zurich, Institute of Particle Physics
-     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-     Copyright 2020, 2022 Positrigo AG, Zurich
+     Copyright 2025, UMCG 
      Copyright 2025 National Physical Laboratory
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,9 +25,7 @@ Coincidence Event Class for PETSIRD: Header File
 \ingroup listmode
 \brief Declaration of class stir::CListEventPETSIRD and stir::CListRecordPETSIRD with supporting classes
 
-\author Jannis Fischer
-\author Parisa Khateri
-\author Markus Jehl
+\author Nikos Efthimiou
 \author Daniel Deidda
 */
 
@@ -68,32 +64,30 @@ public:
   //! Override the default implementation
   inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
 
-  inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
-  /*! Set the scanner */
-  /*! Currently only used if the map is not set. */
+  inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr;}
+
+  inline void set_petsird_to_stir_map(shared_ptr<PETSIRDToSTIRMap> new_map) { petsird_to_stir = new_map; }
+
   inline void set_scanner_sptr(shared_ptr<const Scanner> new_scanner_sptr) { scanner_sptr = new_scanner_sptr; }
 
-  virtual bool is_valid_template(const ProjDataInfo&) const override { return true; }
+  inline bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
-  virtual bool is_prompt() const override { return _prompt; }
+  inline bool is_prompt() const override { return _prompt; }
 
-  virtual Succeeded set_prompt(const bool prompt) override
+  inline Succeeded set_prompt(const bool prompt) override
   {
     _prompt = prompt;
     return Succeeded::yes;
   }
 
-  void set_PETSIRD_ranges(int _numberOfModules, int _numberOfElementsIndices)
+  inline void set_expanded_detection_bins(const petsird_helpers::ExpandedDetectionBin& det0,
+                                      const petsird_helpers::ExpandedDetectionBin& det1)
   {
-    numberOfModules = _numberOfModules;
-    numberOfElementsIndices = _numberOfElementsIndices;
-  }
+    exp_det_0 = det0;
+    exp_det_1 = det1;
+  } 
 
-  int numberOfModules;
-
-  int numberOfElementsIndices;
-
-  petsird_helpers::ExpandedDetectionBin exp_det_0, exp_det_1;
+  inline void set_tof_bin(const uint32_t value) { tof_bin = value; }
 
   inline stir::DetectionPosition<> get_stir_det_pos_from_PETSIRD_id(const petsird_helpers::ExpandedDetectionBin& exp_det_bin) const;
 
@@ -103,8 +97,8 @@ private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   shared_ptr<const Scanner> scanner_sptr;
   bool _prompt;
-
-  const DetectorCoordinateMap& map_to_use() const { return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
+  petsird_helpers::ExpandedDetectionBin exp_det_0, exp_det_1;
+  uint32_t tof_bin;
 };
 
 class CListTimePETSIRD : public ListTime
@@ -124,15 +118,10 @@ class CListRecordPETSIRD : public CListRecord
 {
 public:
   CListRecordPETSIRD(shared_ptr<petsird::ScannerInformation> scanner_info, 
-  shared_ptr<Scanner> scanner_sptr, 
-  // shared_ptr<const DetectorCoordinateMapLightPETSIRD> map_sptr, 
-  shared_ptr<DetectorCoordinateMap> map_sptr,
-  shared_ptr<PETSIRDToSTIRMap> petsird_to_stir) 
+  shared_ptr<Scanner> scanner_sptr)
   : scanner_info(scanner_info)
   {
     event_data.set_scanner_sptr(scanner_sptr);
-    event_data.set_map_sptr(map_sptr);
-    event_data.petsird_to_stir = petsird_to_stir;
   }
 
   // ~CListRecordPETSIRD() override {}
@@ -154,15 +143,18 @@ public:
 
   virtual Succeeded init_from_data(const petsird::CoincidenceEvent& data, bool is_prompt = true)
   {
-    event_data.exp_det_0 = petsird_helpers::expand_detection_bin(*scanner_info, 
-      0, 
-      data.detection_bins[0]);
 
-    event_data.exp_det_1 = petsird_helpers::expand_detection_bin(*scanner_info, 
-      0, 
-      data.detection_bins[1]);
+    event_data.set_expanded_detection_bins(
+      petsird_helpers::expand_detection_bin(*scanner_info, 
+        0, // TODO type_of_module, currently we only support single module types. 
+        data.detection_bins[0]),
+      petsird_helpers::expand_detection_bin(*scanner_info, 
+        0, // TODO type_of_module, currently we only support single module types.
+        data.detection_bins[1])
+    );
  
-    event_data.set_prompt(is_prompt);
+    event_data.set_prompt(is_prompt);    
+    event_data.set_tof_bin(data.tof_idx);
     return Succeeded::yes;
   }
 
