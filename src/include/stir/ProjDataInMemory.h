@@ -37,9 +37,9 @@ class Succeeded;
 */
 class ProjDataInMemory : public ProjData
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef ProjDataInMemory self_type;
   typedef ProjData base_type;

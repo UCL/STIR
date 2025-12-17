@@ -1,7 +1,7 @@
 #
 #
 # Copyright 2011-07-01 - 2013 Kris Thielemans
-# Copyright 2016, 2019, 2020 University College London
+# Copyright 2016, 2019, 2020, 2025 University College London
 
 # This file is part of STIR.
 #
@@ -21,6 +21,11 @@ target_include_directories(${dir} PUBLIC
 # make sure that if you use STIR, the compiler will be set to what was set via UseCXX
 target_compile_features(${dir} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_include_directories(${dir} PUBLIC ${Boost_INCLUDE_DIR})
+if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
+  # currently no stir::format in .h, such that we can make this PRIVATE
+  # (although it probably doesn't matter)
+  target_include_directories(${dir} PRIVATE ${FMT_INCLUDE_DIRS})
+endif()
 
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 

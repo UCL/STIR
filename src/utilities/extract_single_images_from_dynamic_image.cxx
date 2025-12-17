@@ -100,7 +100,7 @@ main(int argc, char* argv[])
                 }
               else
                 {
-                  current_filename = format(argv[1], i);
+                  current_filename = runtime_format(argv[1], i);
                 }
             }
           catch (std::exception& e)

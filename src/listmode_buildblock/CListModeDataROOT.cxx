@@ -280,7 +280,8 @@ CListModeDataROOT::set_defaults()
 Succeeded
 CListModeDataROOT::check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr)
 {
-  std::ostringstream stream("CListModeDataROOT: The Scanner does not match the GATE geometry. Check: ");
+  std::ostringstream stream;
+  stream << "CListModeDataROOT: The Scanner does not match the GATE geometry. Check: ";
   bool ok = true;
 
   if (scanner_sptr->get_num_rings() != root_file_sptr->get_num_rings())
@@ -346,8 +347,8 @@ CListModeDataROOT::check_scanner_definition(std::string& ret)
   if (num_rings == -1 || num_detectors_per_ring == -1 || max_num_non_arccorrected_bins == -1 || inner_ring_diameter == -1.f
       || average_depth_of_interaction == -1.f || ring_spacing == -.1f || bin_size == -1.f)
     {
-      std::ostringstream stream(
-          "CListModeDataROOT: The User_defined_scanner has not been fully described.\nPlease include in the hroot:\n");
+      std::ostringstream stream;
+      stream << "CListModeDataROOT: The User_defined_scanner has not been fully described.\nPlease include in the hroot:\n";
 
       if (num_rings == -1)
         stream << "Number of rings := \n";

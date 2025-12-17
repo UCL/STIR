@@ -100,3 +100,8 @@ else() # MINI_STIR
 endif()
     
 include(stir_exe_targets)
+
+if (BUILD_EXECUTABLES AND HAVE_ITK)
+  # explicit dependence on gdcm (via ITK) needed when using shared libraries
+  target_link_libraries(SPECT_dicom_to_interfile PRIVATE ITKCommon ${ITK_LIBRARIES})
+endif()

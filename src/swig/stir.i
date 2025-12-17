@@ -42,6 +42,8 @@
 
  #include "stir/find_STIR_config.h"
  #include "stir/Succeeded.h"
+ #include "stir/NumericType.h"
+ #include "stir/NumericInfo.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
  #include "stir/Bin.h"
@@ -141,7 +143,15 @@
 #include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/recon_buildblock/PLSPrior.h"
 #include "stir/recon_buildblock/RelativeDifferencePrior.h"
+
 #include "stir/recon_buildblock/LogcoshPrior.h"
+#include "stir/recon_buildblock/GibbsPenalty.h"
+#include "stir/recon_buildblock/GibbsQuadraticPenalty.h"
+#include "stir/recon_buildblock/GibbsRelativeDifferencePenalty.h"
+#ifdef STIR_WITH_CUDA
+#include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#include "stir/recon_buildblock/CUDA/CudaGibbsPenalty.h"
+#endif
 
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
@@ -180,6 +190,11 @@
    // helper code below. It is used to convert a Python object to a float.
    SWIGINTERN int
    SWIG_AsVal_double (PyObject * obj, double *val);
+   // TODO THIS NEEDS TO BE THE SAME as numpy.i
+   // We need it here because we need to include arrayobject in the preamble for swigstir functions
+   #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+   #include <numpy/arrayobject.h>
+   #include <numpy/ndarraytypes.h>
 #endif
 
    // local helper functions for conversions etc. These are not "exposed" to the target language 
@@ -233,10 +248,27 @@
 	return p;
       }
 
-    // fill an array from a Python sequence
-    // (could be trivially modified to just write to a C++ iterator)
-    template <int num_dimensions, typename elemT>
-      void fill_Array_from_Python_iterator(stir::Array<num_dimensions, elemT> * array_ptr, PyObject* const arg)
+    template <typename elemT>
+      int get_np_typenum()
+      {
+          const stir::NumericType type_id = stir::NumericInfo<elemT>().type_id();
+          switch (type_id.id)
+            {
+            case stir::NumericType::SCHAR: return NPY_BYTE;
+            case stir::NumericType::UCHAR: return NPY_UBYTE;
+            case stir::NumericType::SHORT: return NPY_SHORT;
+            case stir::NumericType::USHORT: return NPY_USHORT;
+            case stir::NumericType::LONG: return NPY_LONG;
+            case stir::NumericType::ULONG: return NPY_ULONG;
+            case stir::NumericType::FLOAT: return NPY_FLOAT;
+            case stir::NumericType::DOUBLE: return NPY_DOUBLE;
+            default: throw std::runtime_error("Unknown dtype of STIR array");
+            }
+      }
+
+    // fill an iterator from a Python sequence
+    template <typename elemT, typename IterT>
+      void fill_iterator_from_Python_iterator(IterT cpp_iter, IterT cpp_iter_end, PyObject* const arg)
     {
       if (!PyIter_Check(arg))
 	throw std::runtime_error("STIR-Python internal error: fill_Array_from_Python_iterators called but input is not an iterator");
@@ -245,15 +277,14 @@
 	PyObject *iterator = PyObject_GetIter(arg);
 	
 	PyObject *item;
-	typename stir::Array<num_dimensions, elemT>::full_iterator array_iter = array_ptr->begin_all();
-	while ((item = PyIter_Next(iterator)) && array_iter != array_ptr->end_all()) 
+	while ((item = PyIter_Next(iterator)) && (cpp_iter != cpp_iter_end))
         {
 	  double val;
 	  // TODO currently hard-wired as double which might imply extra conversions
 	  int ecode = SWIG_AsVal_double(item, &val);
 	  if (SWIG_IsOK(ecode)) 
 	  {
-	    *array_iter++ = static_cast<elemT>(val);
+	    *cpp_iter++ = static_cast<elemT>(val);
 	  }
 	  else
 	  {
@@ -266,8 +297,7 @@
 	  }
 	  Py_DECREF(item);
 	}
-
-	if (PyIter_Next(iterator) != NULL || array_iter != array_ptr->end_all())
+	if (PyIter_Next(iterator) != NULL || cpp_iter != cpp_iter_end)
         {
 	  throw std::runtime_error("fill() called with incorrect range of iterators, array needs to have the same number of elements");
 	}
@@ -281,21 +311,54 @@
 
     }
 
-#if 0
-    
-    // TODO  does not work yet.
-    // it doesn't compile as includes are in init section, which follows after this in the wrapper
-    // Even if it did compile, it might not work anyway as I haven't tested it.
-    template <typename IterT>
-      void fill_nparray_from_iterator(PyObject * np, IterT iterator)
+    // fill a STIR array from a Python sequence
+    template <int num_dimensions, typename elemT>
+      void fill_Array_from_Python_iterator(stir::Array<num_dimensions, elemT> * array_ptr, PyObject* const arg)
     {
+      fill_iterator_from_Python_iterator<elemT>(array_ptr->begin_all(), array_ptr->end_all(), arg);
+    }
+
+    template <typename elemT, typename IterT>
+      void fill_nparray_from_iterator(PyArrayObject * np, IterT cpp_iter)
+    {
+      if (!PyArray_EquivTypenums(PyArray_TYPE(np), get_np_typenum<elemT>()))
+        {
+          throw std::runtime_error("stir_object.fill needs to be called with numpy array of correct dtype");
+        }
+
+#if 1
+        auto iter = NpyIter_New(np, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
+        if (iter==NULL) {
+          return;
+        }
+        auto iternext = NpyIter_GetIterNext(iter, NULL);
+        auto dataptr = (elemT **) NpyIter_GetDataPtrArray(iter);
+        do {
+          **dataptr = *cpp_iter++;
+        }
+        while (iternext(iter));
+#else
+        // generic alternative, but doesn't compile and might be slower
+        auto iterator = PyObject_GetIter(np_array);
+	PyObject *item;
+	while (item = PyIter_Next(iterator))
+          {
+            *item = *cpp_iter++; // this does not compile. not sure how to assign
+            Py_DECREF(item);
+          }
+#endif
+    }
+
+    template <typename elemT, typename IterT>
+      void fill_iterator_from_nparray(IterT iterator, PyArrayObject * np)
+    {
+      if (!PyArray_EquivTypenums(PyArray_TYPE(np), get_np_typenum<elemT>()))
+        {
+          throw std::runtime_error("stir_object.fill needs to be called with numpy array of correct dtype");
+        }
+      
       // This code is more or less a copy of the "simple iterator example" (!) in the Numpy doc
-      // see e.g. http://students.mimuw.edu.pl/~pbechler/numpy_doc/reference/c-api.iterator.html
-      typedef float elemT;
-    NpyIter* iter;
-    NpyIter_IterNextFunc *iternext;
-    char** dataptr;
-    npy_intp* strideptr,* innersizeptr;
+      // see e.g. https://numpy.org/doc/stable/reference/c-api/iterator.html
 
     /* Handle zero-sized arrays specially */
     if (PyArray_SIZE(np) == 0) {
@@ -317,10 +380,17 @@
      *   casting NPY_NO_CASTING
      *     - No casting is required for this operation.
      */
-    iter = NpyIter_New(np, NPY_ITER_WRITEONLY|
+#if 0
+    // code for simpler loop, but it is likely slower
+    auto iter = NpyIter_New(np, NPY_ITER_READONLY,
+                        NPY_KEEPORDER, NPY_NO_CASTING,
+                        NULL);
+#else
+    auto iter = NpyIter_New(np, NPY_ITER_READONLY|
                              NPY_ITER_EXTERNAL_LOOP,
                         NPY_KEEPORDER, NPY_NO_CASTING,
                         NULL);
+#endif
     if (iter == NULL) {
       throw std::runtime_error("Error creating numpy iterator");
     }
@@ -329,37 +399,44 @@
      * The iternext function gets stored in a local variable
      * so it can be called repeatedly in an efficient manner.
      */
-    iternext = NpyIter_GetIterNext(iter, NULL);
+    auto iternext = NpyIter_GetIterNext(iter, NULL);
     if (iternext == NULL) {
         NpyIter_Deallocate(iter);
 	throw std::runtime_error("Error creating numpy iterator function");
     }
+#if 0
+    // code for simpler loop, but it is likely slower
+    auto dataptr = (elemT **) NpyIter_GetDataPtrArray(iter);
+    do {
+      *iterator++ = **dataptr;
+      /* Increment the iterator to the next inner loop */
+    } while(iternext(iter));
+#else
     /* The location of the data pointer which the iterator may update */
-    dataptr = NpyIter_GetDataPtrArray(iter);
+    auto dataptr = NpyIter_GetDataPtrArray(iter);
     /* The location of the stride which the iterator may update */
-    strideptr = NpyIter_GetInnerStrideArray(iter);
+    auto strideptr = NpyIter_GetInnerStrideArray(iter);
     /* The location of the inner loop size which the iterator may update */
-    innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
+    auto innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
 
     /* The iteration loop */
     do {
         /* Get the inner loop data/stride/count values */
-        char* data = *dataptr;
+        auto data = *dataptr;
         npy_intp stride = *strideptr;
         npy_intp count = *innersizeptr;
 
         /* This is a typical inner loop for NPY_ITER_EXTERNAL_LOOP */
         while (count--) {
-	  *(reinterpret_cast<elemT *>(data)) = static_cast<elemT>(*iterator++);
-            data += stride;
+	  *iterator++ = *(reinterpret_cast<elemT *>(data));
+          data += stride;
         }
-
         /* Increment the iterator to the next inner loop */
     } while(iternext(iter));
+#endif
 
     NpyIter_Deallocate(iter);
     }
-#endif
 
 #elif defined(SWIGMATLAB)
      // convert stir::Array to matlab (currently always converting to double)
@@ -659,6 +736,8 @@ namespace std {
 %{
   namespace swigstir {
 #ifdef SWIGPYTHON
+
+#if SWIG_VERSION < 0x040000
   template<typename OutIterator, 
 	   typename ValueType = typename std::iterator_traits<OutIterator>::value_type,
     typename FromOper = swig::from_oper<ValueType> >
@@ -713,13 +792,44 @@ namespace std {
     return new SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
   }
 
+#else
+
+  template<typename OutIter>
+  inline swig::SwigPyIterator*
+  make_forward_iterator(const OutIter& current, const OutIter& begin,const OutIter& end, PyObject *seq = 0)
+  {
+    return new swig::SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
+  }
+
+#endif // SWIG pre 4.0
+
 
 #endif
-  static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
+
+  // helper function that allocates a stir::Array of appropriate size
+  static stir::BasicCoordinate<4, int> array_for_proj_data_size(const ProjData& proj_data)
   {
     const int num_non_tof_sinos = proj_data.get_num_non_tof_sinograms();
- Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),num_non_tof_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
-      return array;
+    return stir::make_coordinate(proj_data.get_num_tof_poss(),num_non_tof_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss());
+  }
+
+  static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
+  {
+    Array<4,float> array(IndexRange4D(array_for_proj_data_size(proj_data)));
+    return array;
+  }
+
+  // helper function that allocates a numpy.ndarray of appropriate size
+  static PyArrayObject* create_nparray_for_proj_data(const ProjData& proj_data)
+  {
+    const auto stir_sizes = swigstir::array_for_proj_data_size(proj_data);
+    constexpr int num_dimensions = 4;
+    npy_intp dims[num_dimensions];
+    for (int d=0; d<num_dimensions; ++d)
+      dims[d] = stir_sizes[d + 1];
+    auto np_array =
+          (PyArrayObject *)PyArray_SimpleNew(num_dimensions, dims, NPY_FLOAT);
+    return np_array;
   }
 
   // a function for  converting ProjData to a 4D array as that's what is easy to use

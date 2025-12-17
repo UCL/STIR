@@ -4,7 +4,7 @@
 /*
   Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
   Copyright (C) 2011 Kris Thielemans
-  Copyright (C) 2013m 2018, University College London
+  Copyright (C) 2013, 2018, University College London
 
   This file is part of STIR.
 

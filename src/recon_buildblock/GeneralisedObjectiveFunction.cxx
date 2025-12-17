@@ -292,7 +292,7 @@ GeneralisedObjectiveFunction<TargetT>::add_multiplication_with_approximate_sub_H
     {
       // TODO used boost:scoped_ptr
       shared_ptr<TargetT> prior_output_sptr(output.get_empty_copy());
-      this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, output);
+      this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, input);
 
       // (*prior_output_sptr)/= num_subsets;
       // output -= *prior_output_sptr;
@@ -356,11 +356,26 @@ GeneralisedObjectiveFunction<TargetT>::accumulate_Hessian_times_input(TargetT& o
                                                                       const TargetT& current_image_estimate,
                                                                       const TargetT& input) const
 {
-  for (int subset_num = 0; subset_num < this->get_num_subsets(); ++subset_num)
+  if (this->accumulate_Hessian_times_input_without_penalty(output, current_image_estimate, input) == Succeeded::no)
+    return Succeeded::no;
+
+  if (!this->prior_is_zero())
     {
-      if (this->accumulate_sub_Hessian_times_input(output, current_image_estimate, input, subset_num) == Succeeded::no)
-        return Succeeded::no;
+      shared_ptr<TargetT> prior_output_sptr(output.get_empty_copy());
+      this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, input);
+
+      // output -= *prior_output_sptr;
+      auto prior_output_iter = prior_output_sptr->begin_all_const();
+      const auto end_prior_output_iter = prior_output_sptr->end_all_const();
+      auto output_iter = output.begin_all();
+      while (prior_output_iter != end_prior_output_iter)
+        {
+          *output_iter -= (*prior_output_iter);
+          ++output_iter;
+          ++prior_output_iter;
+        }
     }
+
   return Succeeded::yes;
 }
 
@@ -394,7 +409,7 @@ GeneralisedObjectiveFunction<TargetT>::accumulate_sub_Hessian_times_input(Target
     {
       // TODO used boost:scoped_ptr
       shared_ptr<TargetT> prior_output_sptr(output.get_empty_copy());
-      this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, output);
+      this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, input);
 
       typename TargetT::const_full_iterator prior_output_iter = prior_output_sptr->begin_all_const();
       const typename TargetT::const_full_iterator end_prior_output_iter = prior_output_sptr->end_all_const();

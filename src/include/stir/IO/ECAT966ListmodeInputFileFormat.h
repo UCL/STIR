@@ -116,7 +116,7 @@ public:
         pos -= 2;
       }
     const std::string filename_prefix = filename.substr(0, pos);
-    info(format("Reading ECAT listmode file with prefix {}", filename_prefix));
+    info("Reading ECAT listmode file with prefix " + filename_prefix);
 
     return unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT966>(filename_prefix));
   }

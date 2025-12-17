@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016-2023 University College London
+# Copyright 2013, 2014, 2016-2023, 2025 University College London
 
 # This file is part of STIR.
 #
@@ -29,6 +29,11 @@ option(BUILD_EXECUTABLES
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
+if (BUILD_SHARED_LIBS)
+    # needed explicitly for the registries
+    set(CMAKE_POSITION_INDEPENDENT_CODE True)
+endif()
+       
 ### Settings for external libraries
 
 if (LLN_FOUND)
@@ -137,7 +142,7 @@ if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
 
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT APPLE)
     # work around https://gitlab.kitware.com/cmake/cmake/-/issues/26037
     set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX -latomic)
     message(STATUS "OpenMP Linker flags for Clang: ${OpenMP_EXE_LINKER_FLAGS}")
@@ -205,6 +210,13 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
     endif()
 endif()
 
+#### Define name for the main library
+
+set(STIR_BUILDBLOCK_LIB stir_buildblock)
+# use different names for the same library, in case we want to split them up again
+set(STIR_RECON_BUILDBLOCK_LIB stir_buildblock)
+set (STIR_SPATIAL_TRANSFORMATION_BUIDBLOCK_LIB stir_buildblock)
+
 #### Create stir/config.h
 
 # This has to be written where we build somewhere. We will put it somewhere "natural"
@@ -253,7 +265,7 @@ endif()
 # create an object library with all the "registries"
 # Warning: dependencies for object libraries are not transitive!
 add_library(stir_registries OBJECT ${STIR_REGISTRIES})
-target_link_libraries(stir_registries PRIVATE fmt)
+target_link_libraries(stir_registries)
 #target_link_libraries(stir_registries PRIVATE petsird)
 
 # TODO, really should use stir_libs.cmake
