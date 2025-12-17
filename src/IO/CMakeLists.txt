@@ -150,12 +150,6 @@ if (HAVE_JSON)
   target_include_directories(${TARGET} PRIVATE "${TMP}")
 endif()
 
-if (NOT MINI_STIR)
-  # currently needed for ParametricDensity (TODO get rid of this somehow?)
-  target_link_libraries(${TARGET} PUBLIC modelling_buildblock )
-  target_link_libraries(${TARGET} PUBLIC listmode_buildblock)
-endif()
-
 if(HAVE_PETSIRD)
   target_link_libraries(${TARGET} PUBLIC petsird_generated)
 endif()
