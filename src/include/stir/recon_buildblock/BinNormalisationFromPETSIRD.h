@@ -17,7 +17,6 @@
 //     See STIR/LICENSE.txt for details
 // */
 
-
 // #ifndef __stir_recon_buildblock_BinNormalisationFromPETSIRD_H__
 // #define __stir_recon_buildblock_BinNormalisationFromPETSIRD_H__
 
@@ -31,23 +30,23 @@
 
 // START_NAMESPACE_STIR
 
-// class BinNormalisationFromPETSIRD : public RegisteredParsingObject<BinNormalisationFromPETSIRD, BinNormalisation, BinNormalisationWithCalibration>
+// class BinNormalisationFromPETSIRD : public RegisteredParsingObject<BinNormalisationFromPETSIRD, BinNormalisation,
+// BinNormalisationWithCalibration>
 // {
 // private:
-//   using base_type = BinNormalisation; 
+//   using base_type = BinNormalisation;
 
 //   public:
 //   //! Name which will be used when parsing a BinNormalisation object
 //   static const char* const registered_name;
 
-//   BinNormalisationFromPETSIRD(); 
+//   BinNormalisationFromPETSIRD();
 
 //   BinNormalisationFromPETSIRD(const std::string& filename);
 
 //   Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
 
-
-//   private: 
+//   private:
 
 //   void set_defaults() override;
 
@@ -59,8 +58,7 @@
 
 //   string normalisation_filename;
 
-// }; 
-
+// };
 
 // END_NAMESPACE_STIR
 

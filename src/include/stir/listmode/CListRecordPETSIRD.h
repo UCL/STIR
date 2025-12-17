@@ -75,12 +75,12 @@ public:
   }
 
   inline void set_expanded_detection_bins(const petsird_helpers::ExpandedDetectionBin& det0,
-                                       const petsird_helpers::ExpandedDetectionBin& det1, 
-                                      const uint32_t tof_idx) 
+                                          const petsird_helpers::ExpandedDetectionBin& det1,
+                                          const uint32_t tof_idx)
   {
     exp_det_0 = det0;
     exp_det_1 = det1;
-    m_tof_bin = tof_idx; 
+    m_tof_bin = tof_idx;
   }
 
   inline void set_tof_bin(const uint32_t value) { m_tof_bin = value; }
@@ -113,9 +113,7 @@ public:
 class CListRecordPETSIRD : public CListRecord
 {
 public:
-  CListRecordPETSIRD()
-  {
-  }
+  CListRecordPETSIRD() {}
 
   // ~CListRecordPETSIRD() override {}
 
@@ -124,7 +122,9 @@ public:
   bool is_event() const override { return true; }
 
   CListEventPETSIRD& event() override { return event_data; }
-  const CListEventPETSIRD& event() const override { /*return event_data;*/ }
+  const CListEventPETSIRD& event() const override
+  { /*return event_data;*/
+  }
 
   CListTimePETSIRD& time() override { return time_data; }
   const CListTimePETSIRD& time() const override { return time_data; }
@@ -140,7 +140,7 @@ public:
                                    const bool is_prompt = true)
   {
     event_data.set_expanded_detection_bins(det0, det1, tof_idx);
-    event_data.set_prompt(is_prompt);    
+    event_data.set_prompt(is_prompt);
     return Succeeded::yes;
   }
 

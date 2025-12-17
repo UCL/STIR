@@ -115,7 +115,7 @@ private:
   mutable petsird::TimeBlock curr_time_block;
 
   mutable petsird::EventTimeBlock curr_event_block;
-  
+
   //! Active module pair (prompt/delayed, or two modules for coincidences).
   //! \todo: This hard-codes a single/matterial layer detector assumption.
   petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
@@ -123,7 +123,7 @@ private:
   //! Current event prompt flag.
   mutable bool curr_is_prompt = true;
   //! Whether delayed events are present.
-  mutable bool m_has_delayeds;  
+  mutable bool m_has_delayeds;
 
   shared_ptr<petsird::ScannerInformation> scanner_info;
 

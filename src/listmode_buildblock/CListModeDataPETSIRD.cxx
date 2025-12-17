@@ -116,8 +116,7 @@ CListModeDataPETSIRD::open_lm_file() const
 shared_ptr<CListRecord>
 CListModeDataPETSIRD::get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(
-      new CListRecordPETSIRD()); //, this->map, petsird_to_stir));
+  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD()); //, this->map, petsird_to_stir));
   if (petsird_info_sptr->get_scanner_sptr()->get_scanner_geometry() == "Generic")
     {
       std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_map_sptr(this->map);
@@ -158,7 +157,8 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
                                                 event.detection_bins[0]),
           petsird_helpers::expand_detection_bin(*scanner_info,
                                                 0, // TODO type_of_module, currently we only support single module types.
-                                                event.detection_bins[1]), event.tof_idx,
+                                                event.detection_bins[1]),
+          event.tof_idx,
           curr_is_prompt)
           == Succeeded::no
       || record_of_general_type.time().set_time_in_millisecs(curr_event_block.time_interval.start) == Succeeded::no)

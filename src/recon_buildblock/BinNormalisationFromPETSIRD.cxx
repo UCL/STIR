@@ -67,8 +67,7 @@
 // void
 // BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
 // {
-//     normalisation_filename = filename; 
+//     normalisation_filename = filename;
 // }
-
 
 // END_NAMESPACE_STIR

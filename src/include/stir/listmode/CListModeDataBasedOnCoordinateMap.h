@@ -44,7 +44,6 @@
 
 // #include "stir/listmode/CListRecordSAFIR.h"
 
-
 START_NAMESPACE_STIR
 
 class CListModeDataBasedOnCoordinateMap : public CListModeData

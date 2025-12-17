@@ -62,7 +62,8 @@ struct ExpandedDetectionBinLess
 /*!
   \brief Mapping type from PETSIRD ExpandedDetectionBin to STIR DetectionPosition.
 */
-using PETSIRDToSTIRDetectorIndexMap = std::map<petsird::ExpandedDetectionBin, stir::DetectionPosition<>, ExpandedDetectionBinLess>;
+using PETSIRDToSTIRDetectorIndexMap
+    = std::map<petsird::ExpandedDetectionBin, stir::DetectionPosition<>, ExpandedDetectionBinLess>;
 
 /*!
   \brief Class to hold PETSIRD-related information for STIR and do any necessary conversions.
@@ -74,20 +75,11 @@ public:
 
   // void initialize();
 
-  inline std::shared_ptr<Scanner> get_scanner_sptr() const
-  {
-    return stir_scanner_sptr;
-  }
+  inline std::shared_ptr<Scanner> get_scanner_sptr() const { return stir_scanner_sptr; }
 
-  inline shared_ptr<PETSIRDToSTIRDetectorIndexMap> get_petsird_to_stir_map() const
-  {
-    return petsird_to_stir;
-  }
+  inline shared_ptr<PETSIRDToSTIRDetectorIndexMap> get_petsird_to_stir_map() const { return petsird_to_stir; }
 
-  inline shared_ptr<DetectorCoordinateMap::det_pos_to_coord_type> get_petsird_map_sptr() const
-  {
-    return petsird_map_sptr;
-  } 
+  inline shared_ptr<DetectorCoordinateMap::det_pos_to_coord_type> get_petsird_map_sptr() const { return petsird_map_sptr; }
 
   bool is_cylindrical_configuration() { return is_cylindrical; };
 
