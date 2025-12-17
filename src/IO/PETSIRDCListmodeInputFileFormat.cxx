@@ -52,7 +52,12 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
     }
 
   std::array<char, 4> signature_{};
-  file.read(signature_.data(), signature_.size());
+  file.read(signature_.data(), static_cast<std::streamsize>(signature_.size()));
+
+  if (file.gcount() != static_cast<std::streamsize>(signature_.size()))
+    {
+      error("Failed to read file signature: unexpected EOF or read error");
+    }
 
   if (signature_ == hdf5_signature)
     {
