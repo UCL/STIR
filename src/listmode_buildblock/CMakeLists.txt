@@ -72,13 +72,5 @@ if (HAVE_HDF5)
 endif()
 
 if (HAVE_PETSIRD)
-target_include_directories(listmode_buildblock
-    PUBLIC
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/helpers/include>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated>
-)
-target_link_libraries(listmode_buildblock
-    PUBLIC
-      petsird_generated
-  )
+target_link_libraries(listmode_buildblock PUBLIC petsird_generated)
 endif()

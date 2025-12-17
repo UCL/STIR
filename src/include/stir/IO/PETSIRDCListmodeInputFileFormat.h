@@ -2,8 +2,7 @@
 
  Class defining input file format for coincidence listmode data for PETSIRD.
 
-        Copyright 2015 ETH Zurich, Institute of Particle Physics
-        Copyright 2020 Positrigo AG, Zurich
+        Copyright 2025, UMCG
         Copyright 2025 National Physical Laboratory
 
         Licensed under the Apache License, Version 2.0 (the "License");

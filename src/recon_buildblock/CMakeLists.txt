@@ -104,6 +104,12 @@ list(APPEND ${dir_LIB_SOURCES}
 	BinNormalisationFromECAT8.cxx
 )
 
+# if (HAVE_PETSIRD)
+#   list(APPEND ${dir_LIB_SOURCES}
+# 	BinNormalisationFromPETSIRD.cxx
+#   )
+# endif()
+
 if (HAVE_HDF5)
 list(APPEND ${dir_LIB_SOURCES}
          BinNormalisationFromGEHDF5.cxx
@@ -182,3 +188,15 @@ endif()
 if (STIR_WITH_CUDA)
   target_link_libraries(recon_buildblock PRIVATE CUDA::cudart)
 endif()
+
+# if (HAVE_PETSIRD)
+# target_include_directories(recon_buildblock
+#     PUBLIC
+# 		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/helpers/include>
+#         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated>
+# )
+# target_link_libraries(recon_buildblock
+#     PUBLIC
+#       petsird
+#   )
+# endif()
