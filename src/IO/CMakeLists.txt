@@ -157,5 +157,5 @@ if (NOT MINI_STIR)
 endif()
 
 if(HAVE_PETSIRD)
-  target_link_libraries(IO PUBLIC petsird_generated)
+  target_link_libraries(${TARGET} PUBLIC petsird_generated)
 endif()

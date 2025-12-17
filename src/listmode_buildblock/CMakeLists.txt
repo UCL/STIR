@@ -76,5 +76,5 @@ if (HAVE_HDF5)
 endif()
 
 if (HAVE_PETSIRD)
-target_link_libraries(listmode_buildblock PUBLIC petsird_generated)
+target_link_libraries(${TARGET} PUBLIC petsird_generated)
 endif()
