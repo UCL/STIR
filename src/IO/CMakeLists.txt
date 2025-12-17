@@ -145,10 +145,6 @@ if (NOT MINI_STIR)
 endif()
 
 if(HAVE_PETSIRD)
-  target_include_directories(IO
-    PUBLIC
-      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated>
-  )
   target_link_libraries(IO PUBLIC petsird_generated)
 endif()
 

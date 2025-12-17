@@ -43,7 +43,7 @@
 #include "stir/shared_ptr.h"
 
 // #include "stir/listmode/CListRecordSAFIR.h"
-#include "stir/DetectorCoordinateMap.h"
+
 
 START_NAMESPACE_STIR
 

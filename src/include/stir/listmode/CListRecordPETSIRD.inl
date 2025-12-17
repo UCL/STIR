@@ -1,4 +1,4 @@
-/* CListRecordPETSIRD.inl
+/*      CListRecordPETSIRD.inl
         Coincidence Event Class for PETSIRD: Inline File
 
         Copyright 2025, UMCG 
@@ -83,14 +83,19 @@ CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 
   DetectionPositionPair<> det_pos_pair;
 
-  if (scanner_sptr->get_scanner_geometry() == "Cylindrical")
+  if (proj_data_info.get_scanner_sptr()->get_scanner_geometry() == "Cylindrical")
     {
+        if (!petsird_to_stir)
+        {
+          error("CListEventPETSIRD::get_bin: petsird_to_stir map not set. Probably your ProjDataInfo point to a Generic Scanner. \n The Scanner in the Listmode data and the one in the ProjDataInfo must match.");
+        }
+
       det_pos_pair.pos1() = get_stir_det_pos_from_PETSIRD_id(exp_det_1);
       det_pos_pair.pos2() = get_stir_det_pos_from_PETSIRD_id(exp_det_0);
-      det_pos_pair.timing_pos() = static_cast<int>(tof_bin) + (proj_data_info.get_min_tof_pos_num() );
+      det_pos_pair.timing_pos() = static_cast<int>(m_tof_bin) + (proj_data_info.get_min_tof_pos_num() );
       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos_pair);
     }
-  else if (scanner_sptr->get_scanner_geometry() == "Generic")
+  else if (proj_data_info.get_scanner_sptr()->get_scanner_geometry() == "Generic")
     {
             // if (!map_sptr)
       //         {
@@ -116,16 +121,20 @@ CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
       //           std::endl; const LORAs2Points<float> lor(c1, c2); bin = proj_data_info.get_bin(lor);
       //         }
     }
-  else if (scanner_sptr->get_scanner_geometry() == "BlocksOnCylindrical")
+  else if (proj_data_info.get_scanner_sptr()->get_scanner_geometry() == "BlocksOnCylindrical")
     {
-      det_pos_pair.pos1() = (*petsird_to_stir)[exp_det_0]; 
-      det_pos_pair.pos2() = (*petsird_to_stir)[exp_det_1]; 
+      if (!petsird_to_stir)
+        {
+          error("CListEventPETSIRD::get_bin: petsird_to_stir map not set. Probably your ProjDataInfo point to a Generic Scanner. \n The Scanner in the Listmode data and the one in the ProjDataInfo must match.");
+        }
+      det_pos_pair.pos1() = (*petsird_to_stir)[exp_det_1]; 
+      det_pos_pair.pos2() = (*petsird_to_stir)[exp_det_0]; 
       dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos_pair);
     }
   else
     {
       error("CListEventPETSIRD::get_bin: How did I get with an unsupported scanner geometry ? -",
-            scanner_sptr->get_scanner_geometry());
+            proj_data_info.get_scanner_sptr()->get_scanner_geometry());
     }
 }
 
