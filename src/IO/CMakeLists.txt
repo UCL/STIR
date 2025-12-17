@@ -147,13 +147,13 @@ if (HAVE_JSON)
   # In that case, we will need to add it in STIRConfig.cmake.in
   #
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(IO PRIVATE "${TMP}")
+  target_include_directories(${TARGET} PRIVATE "${TMP}")
 endif()
 
 if (NOT MINI_STIR)
   # currently needed for ParametricDensity (TODO get rid of this somehow?)
-  target_link_libraries(IO PUBLIC modelling_buildblock )
-  target_link_libraries(IO PUBLIC listmode_buildblock)
+  target_link_libraries(${TARGET} PUBLIC modelling_buildblock )
+  target_link_libraries(${TARGET} PUBLIC listmode_buildblock)
 endif()
 
 if(HAVE_PETSIRD)
