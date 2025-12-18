@@ -71,7 +71,7 @@ using PETSIRDToSTIRDetectorIndexMap
 class PETSIRDInfo
 {
 public:
-  explicit PETSIRDInfo(shared_ptr<const petsird::ScannerInformation>);
+  explicit PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_info_sptr, std::string scanner_geometry = "");
 
   // void initialize();
 
@@ -137,6 +137,8 @@ private:
   uint32_t num_trans_crystals_per_block;
 
   bool is_cylindrical = true;
+
+  std::string forced_geometry = "";
   //! Mapping from PETSIRD expanded bins to STIR detection positions.
   shared_ptr<PETSIRDToSTIRDetectorIndexMap> petsird_to_stir;
   //! Mapping from STIR detection positions to PETSIRD coordinates.

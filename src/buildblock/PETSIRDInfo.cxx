@@ -453,8 +453,8 @@ PETSIRDInfo::figure_out_block_angles(std::set<float>& unique_angle_modules, cons
       }
 }
 
-PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_info_sptr)
-    : petsird_scanner_info_sptr(petsird_info_sptr)
+PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_info_sptr, std::string scanner_geometry)
+    : petsird_scanner_info_sptr(petsird_info_sptr), forced_geometry(scanner_geometry)
 {
 
   if (!petsird_scanner_info_sptr)
@@ -478,6 +478,11 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_i
 
   const auto& tof_bin_edges = petsird_scanner_info_sptr->tof_bin_edges[type_of_module][type_of_module];
   info(fmt::format("Num. of TOF bins in PETSIRD {}", tof_bin_edges.NumberOfBins()));
+  if (tof_bin_edges.NumberOfBins() > 0)
+  {
+    info(fmt::format("Since the PETSIRD file has TOF information, STIR will force cylindrical geometry, as long as other things checkout."));
+    forced_geometry = "cylindrical";
+  }
 
   std::set<float> unique_tof_values;
   vector_utils::find_unique_values_2D(unique_tof_values, petsird_scanner_info_sptr->tof_resolution);
@@ -606,9 +611,9 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_i
                    polygon_area,
                    std::abs(expected_circle_area - polygon_area) / expected_circle_area));
 
-  if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.000000001f)
+  if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.05f || forced_geometry == "cylindrical")
     {
-      info("the cylindical area is more then 95% matching the polygon area. We will predsume a cylindrical configuration.");
+      info(fmt::format("The cylindical area {} is more then 95% matching the polygon area{}. We will predsume a cylindrical configuration.", expected_circle_area, polygon_area));
       stir_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
                                           std::string("PETSIRD_defined_scanner"),
                                           /* num dets per ring */
