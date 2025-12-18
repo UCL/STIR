@@ -47,6 +47,7 @@ jobs:
           parallelproj: "ON"
           ROOT: "ON"
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           compiler: gcc
           # compiler_version: 9
@@ -56,6 +57,7 @@ jobs:
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           compiler: clang
           #compiler_version:
@@ -66,6 +68,7 @@ jobs:
           ROOT: "OFF"
           # currently using ITK 5.2 which doesn't like clang 14
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           compiler: gcc
           compiler_version: 10
@@ -75,6 +78,7 @@ jobs:
           parallelproj: "OFF"
           ROOT: "OFF"
           ITK: "ON"
+          PETSIRD: "OFF"
         # gcc-12, C++20 test (Interesting, as gcc-12 does not support all of C++20 yet).
         # However, commented out, as this seems to hang during install step for unknown reasons.
         # See https://github.com/UCL/STIR/pull/1605
@@ -97,6 +101,7 @@ jobs:
           ROOT: "OFF"
           # Currently disabled due to out of disk space, see https://github.com/UCL/STIR/issues/1618
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           # shared library build
           compiler: gcc
@@ -107,6 +112,7 @@ jobs:
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           compiler: gcc
           # currently CUDA doesn't support gcc 14 yet
@@ -117,6 +123,7 @@ jobs:
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
+          PETSIRD: "OFF"
         - os: macOS-latest
           compiler: gcc
           # compiler_version: 11
@@ -127,6 +134,7 @@ jobs:
           BUILD_TYPE: "Debug"
           ROOT: "OFF"
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: macOS-latest
           compiler: clang
           compiler_version: 18
@@ -136,6 +144,7 @@ jobs:
           BUILD_TYPE: "Release"
           ROOT: "OFF"
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: macOS-latest
           compiler: clang
           compiler_version: 21
@@ -145,6 +154,7 @@ jobs:
           BUILD_TYPE: "Release"
           ROOT: "OFF"
           ITK: "OFF"
+          PETSIRD: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
