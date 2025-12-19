@@ -68,7 +68,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
     curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   else
-    error("CListModeDataPETSIRD: holds_alternative not true. Abord.");
+    error("CListModeDataPETSIRD: holds_alternative not true. Abort.");
 
   petsird_info_sptr = std::make_shared<PETSIRDInfo>(scanner_info);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
