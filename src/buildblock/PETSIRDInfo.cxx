@@ -474,7 +474,7 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_i
 
   if (type_of_module > 0)
     {
-      error("Multiple types of PETSIRD modules are not supported. Abord.");
+      error("Multiple types of PETSIRD modules are not supported. Abort.");
     }
 
   const auto& tof_bin_edges = petsird_scanner_info_sptr->tof_bin_edges[type_of_module][type_of_module];
