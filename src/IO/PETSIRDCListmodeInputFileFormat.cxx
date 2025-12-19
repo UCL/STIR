@@ -53,8 +53,17 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
       std::cerr << "Cannot open file: " << filename << std::endl;
       return false;
     }
-
   std::array<char, 4> signature_{};
+  auto it = std::isstreambuf_iterator<char>(file);
+  auto end = std::isstreambuf_iterator<char>();
+
+  for (size_t i = 0; i < signature.size() && it != end; ++i, ++it)
+    {
+      if (it == end)
+        error("Failed to read file signature: unexpected EOF");
+      signature_[i] = *it;
+    }
+
   // codacy:ignore CWE-120 CWE-20
   // Fixed-size preallocated buffer, bounded read, checked gcount()
   file.read(signature_.data(), static_cast<std::streamsize>(signature_.size()));
