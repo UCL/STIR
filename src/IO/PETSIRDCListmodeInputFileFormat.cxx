@@ -64,14 +64,8 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
       signature_[i] = *it;
     }
 
-  // codacy:ignore CWE-120 CWE-20
-  // Fixed-size preallocated buffer, bounded read, checked gcount()
-  file.read(signature_.data(), static_cast<std::streamsize>(signature_.size()));
-
-  if (!file || file.gcount() != static_cast<std::streamsize>(signature_.size()))
-    {
-      error("Failed to read file signature: unexpected EOF or read error");
-    }
+  if (!file)
+    error("Stream error while reading file signature");
 
   if (signature_ == hdf5_signature)
     {
