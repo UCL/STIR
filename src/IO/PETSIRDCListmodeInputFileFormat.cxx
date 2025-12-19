@@ -55,6 +55,8 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
     }
 
   std::array<char, 4> signature_{};
+  // codacy:ignore CWE-120 CWE-20
+  // Fixed-size preallocated buffer, bounded read, checked gcount()
   file.read(signature_.data(), static_cast<std::streamsize>(signature_.size()));
 
   if (!file || file.gcount() != static_cast<std::streamsize>(signature_.size()))
