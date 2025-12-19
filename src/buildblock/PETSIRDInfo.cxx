@@ -616,7 +616,7 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_i
   if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.05f || forced_geometry == "cylindrical")
     {
       info(fmt::format(
-          "The cylindical area {} is more then 95% matching the polygon area{}. We will predsume a cylindrical configuration.",
+          "The cylindrical area {} is more than 95% matching the polygon area{}. We will presume a cylindrical configuration.",
           expected_circle_area,
           polygon_area));
       stir_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
