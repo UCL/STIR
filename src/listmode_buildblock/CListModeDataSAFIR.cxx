@@ -114,7 +114,7 @@ CListModeDataSAFIR<CListRecordT>::open_lm_file() const
 }
 
 template <class CListRecordT>
-shared_ptr<CListRecordT>
+shared_ptr<CListRecord>
 CListModeDataSAFIR<CListRecordT>::get_empty_record_sptr() const
 {
   shared_ptr<CListRecordT> sptr(new CListRecordT);
@@ -125,12 +125,10 @@ CListModeDataSAFIR<CListRecordT>::get_empty_record_sptr() const
 
 template <class CListRecordT>
 Succeeded
-CListModeDataSAFIR<CListRecordT>::get_next_record(CListRecordT& record_of_general_type) const
+CListModeDataSAFIR<CListRecordT>::get_next_record(CListRecord& record_of_general_type) const
 {
-  CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
-  Succeeded status = current_lm_data_ptr->get_next_record(record);
-  // if( status == Succeeded::yes ) record.event_SAFIR().set_map_sptr(map);
-  return status;
+  auto& record = static_cast<CListRecordT&>(record_of_general_type);
+  return current_lm_data_ptr->get_next_record(record);
 }
 
 template <class CListRecordT>
@@ -140,7 +138,7 @@ CListModeDataSAFIR<CListRecordT>::reset()
   return current_lm_data_ptr->reset();
 }
 
-// template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
-// template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataSAFIR>>;
+template class CListModeDataSAFIR<CListRecordSAFIR<CListEventDataNeuroLF>>;
 
 END_NAMESPACE_STIR

@@ -59,13 +59,11 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 
   current_lm_data_ptr->ReadHeader(header);
   scanner_info = std::make_shared<petsird::ScannerInformation>(header.scanner);
-  // std::vector<petsird::ReplicatedDetectorModule> replicated_module_list = scanner_info->scanner_geometry.replicated_modules;
 
   // Get the first TimeBlock
-  // if (
   current_lm_data_ptr->ReadTimeBlocks(curr_time_block);
-  // )
-  // error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abord.");
+  if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+    error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abord.");
 
   if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
     curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);

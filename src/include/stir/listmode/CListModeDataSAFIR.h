@@ -61,8 +61,8 @@ public:
 
   CListModeDataSAFIR(const std::string& listmode_filename, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr);
 
-  shared_ptr<CListRecordT> get_empty_record_sptr() const override;
-  Succeeded get_next_record(CListRecordT& record_of_general_type) const override;
+  shared_ptr<CListRecord> get_empty_record_sptr() const override;
+  Succeeded get_next_record(CListRecord& record_of_general_type) const override;
 
   bool has_delayeds() const override { return false; }
 
