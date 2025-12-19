@@ -86,12 +86,6 @@ list(APPEND ${dir_LIB_SOURCES}
 )
 endif()
 
-if (HAVE_PETSIRD)
-list(APPEND ${dir_LIB_SOURCES}
-  PETSIRDCListmodeInputFileFormat.cxx
-)
-endif()
-
 endif() # MINI_STIR
 
 target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
