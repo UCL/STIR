@@ -661,7 +661,7 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_i
     }
   else
     {
-      info("the cylindical area is less then 95% matching the polygon area. We will predsume a non-cylindrical configuration.");
+      info("the cylindrical area is less than 95% matching the polygon area. We will presume a non-cylindrical configuration.");
       stir_scanner_sptr.reset(
           new Scanner(Scanner::User_defined_scanner,
                       std::string("PETSIRD_defined_scanner"),
