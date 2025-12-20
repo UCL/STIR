@@ -44,9 +44,6 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
   std::array<char, 4> hdf5_signature = { 'H', 'D', 'F', '5' };
   std::array<char, 4> binary_signature = { 'y', 'a', 'r', 'd' };
 
-  if (signature_.empty())
-    error("Internal error: signature buffer is empty");
-
   std::ifstream file(filename, std::ios::binary);
   if (!file.is_open())
     {
@@ -54,8 +51,8 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
       return false;
     }
   std::array<char, 4> signature_{};
-  auto it = std::isstreambuf_iterator<char>(file);
-  auto end = std::isstreambuf_iterator<char>();
+  auto it = std::istreambuf_iterator<char>(file);
+  auto end = std::istreambuf_iterator<char>();
 
   for (size_t i = 0; i < signature.size() && it != end; ++i, ++it)
     {

@@ -104,7 +104,7 @@ public:
 protected:
   virtual Succeeded open_lm_file() const override;
 
-  mutable shared_ptr<petsird::PETSIRDReaderBase> current_lm_data_ptr;
+  shared_ptr<petsird::PETSIRDReaderBase> current_lm_data_ptr;
 
 private:
   //! Whether to use the HDF5 reader.
@@ -115,19 +115,12 @@ private:
   mutable petsird::TimeBlock curr_time_block;
 
   mutable petsird::EventTimeBlock curr_event_block;
-
-  //! Active module pair (prompt/delayed, or two modules for coincidences).
-  //! \todo: This hard-codes a single/matterial layer detector assumption.
-  petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
-
   //! Current event prompt flag.
   mutable bool curr_is_prompt = true;
   //! Whether delayed events are present.
   mutable bool m_has_delayeds;
 
-  shared_ptr<petsird::ScannerInformation> scanner_info;
-
-  shared_ptr<PETSIRDInfo> petsird_info_sptr;
+  shared_ptr<const PETSIRDInfo> petsird_info_sptr;
 };
 
 END_NAMESPACE_STIR

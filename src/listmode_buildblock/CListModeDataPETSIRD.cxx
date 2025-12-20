@@ -32,15 +32,14 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/error.h"
 
 #include "petsird_helpers.h"
-#include "petsird_helpers/create.h"
-#include "petsird_helpers/geometry.h"
+// #include "petsird_helpers/create.h"
+// #include "petsird_helpers/geometry.h"
 
 #include "petsird/binary/protocols.h"
 #include "petsird/hdf5/protocols.h"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/CListRecordPETSIRD.h"
-#include <set>
 
 START_NAMESPACE_STIR
 
@@ -58,7 +57,6 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   m_has_delayeds = false;
 
   current_lm_data_ptr->ReadHeader(header);
-  scanner_info = std::make_shared<petsird::ScannerInformation>(header.scanner);
 
   // Get the first TimeBlock
   current_lm_data_ptr->ReadTimeBlocks(curr_time_block);
@@ -70,7 +68,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   else
     error("CListModeDataPETSIRD: holds_alternative not true. Abort.");
 
-  petsird_info_sptr = std::make_shared<PETSIRDInfo>(scanner_info);
+  petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
 
   int tof_mash_factor = 1;
@@ -88,8 +86,8 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   // Only PET scanners supported
   _exam_info_sptr->imaging_modality = ImagingModality::PT;
   _exam_info_sptr->originating_system = std::string("PETSIRD_defined_scanner");
-  // _exam_info_sptr->set_low_energy_thres(scanner_i);
-  // _exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
+  _exam_info_sptr->set_low_energy_thres(petsird_info_sptr->get_lower_energy_threshold());
+  _exam_info_sptr->set_high_energy_thres(petsird_info_sptr->get_upper_energy_threshold());
 
   this->exam_info_sptr = _exam_info_sptr;
 
@@ -114,30 +112,13 @@ CListModeDataPETSIRD::open_lm_file() const
 shared_ptr<CListRecord>
 CListModeDataPETSIRD::get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD()); //, this->map, petsird_to_stir));
-  if (petsird_info_sptr->get_scanner_sptr()->get_scanner_geometry() == "Generic")
-    {
-      std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_map_sptr(this->map);
-    }
-  else if (petsird_info_sptr->get_scanner_sptr()->get_scanner_geometry() == "BlocksOnCylindrical"
-           || petsird_info_sptr->get_scanner_sptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_petsird_to_stir_map(
-          petsird_info_sptr->get_petsird_to_stir_map());
-    }
-
-  // std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_scanner_sptr(
-  //     this->get_proj_data_info_sptr()->get_scanner_sptr());
-  // std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event().set_PETSIRD_ranges(numberOfModules, numberOfElementsIndices);
-  // std::dynamic_pointer_cast<CListRecordPETSIRD>(sptr)->event_PETSIRD().set_map_sptr(map);
-
+  shared_ptr<CListRecord> sptr(new CListRecordPETSIRD(petsird_info_sptr));
   return sptr;
 }
 
 Succeeded
 CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 {
-
   auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
   const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support mulitple pairs of modules.
   const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events.at(0).at(0) : prompt_list;
@@ -149,16 +130,7 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 
   auto event = event_list.at(curr_event_in_event_block);
 
-  if (record.init_from_data(
-          petsird_helpers::expand_detection_bin(*scanner_info,
-                                                0, // TODO type_of_module, currently we only support single module types.
-                                                event.detection_bins[0]),
-          petsird_helpers::expand_detection_bin(*scanner_info,
-                                                0, // TODO type_of_module, currently we only support single module types.
-                                                event.detection_bins[1]),
-          event.tof_idx,
-          curr_is_prompt)
-          == Succeeded::no
+  if (record.init_from_data(event, curr_is_prompt) == Succeeded::no
       || record_of_general_type.time().set_time_in_millisecs(curr_event_block.time_interval.start) == Succeeded::no)
     {
       return Succeeded::no;

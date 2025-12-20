@@ -27,6 +27,9 @@ Coincidence LM Data Class for PETSIRD
 \author Nikos Efthimiou
 */
 
+#ifndef __stir_listmode_PETSIRDInfo_H__
+#define __stir_listmode_PETSIRDInfo_H__
+
 #include "petsird/protocols.h"
 #include "stir/Scanner.h"
 #include "stir/DetectorCoordinateMap.h"
@@ -71,17 +74,46 @@ using PETSIRDToSTIRDetectorIndexMap
 class PETSIRDInfo
 {
 public:
-  explicit PETSIRDInfo(shared_ptr<const petsird::ScannerInformation> petsird_info_sptr, std::string scanner_geometry = "");
+
+  explicit PETSIRDInfo(const petsird::Header& header, std::string scanner_geometry = "");
 
   // void initialize();
 
   inline std::shared_ptr<Scanner> get_scanner_sptr() const { return stir_scanner_sptr; }
+
+  inline shared_ptr<const petsird::ScannerInformation> get_petsird_scanner_info_sptr() const { return petsird_scanner_info_sptr; }
 
   inline shared_ptr<PETSIRDToSTIRDetectorIndexMap> get_petsird_to_stir_map() const { return petsird_to_stir; }
 
   inline shared_ptr<DetectorCoordinateMap::det_pos_to_coord_type> get_petsird_map_sptr() const { return petsird_map_sptr; }
 
   bool is_cylindrical_configuration() { return is_cylindrical; };
+
+  float get_lower_energy_threshold() const
+  {
+    if (petsird_scanner_info_sptr->event_energy_bin_edges.empty())
+      return 0.0f;
+    float min_energy = std::numeric_limits<float>::max();
+    // for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
+    //   {
+    //     if (!bin_edges.edges.empty() && bin_edges.edges.front() < min_energy)
+    //       min_energy = bin_edges.edges.front();
+    //   }
+    return min_energy;
+  }
+
+  float get_upper_energy_threshold() const
+  {
+    if (petsird_scanner_info_sptr->event_energy_bin_edges.empty())
+      return 0.0f;
+    float max_energy = std::numeric_limits<float>::lowest();
+    // for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
+    //   {
+    //     if (!bin_edges.edges.empty() && bin_edges.edges.back() > max_energy)
+    //       max_energy = bin_edges.edges.back();
+    //   }
+    return max_energy;
+  }
 
 private:
   /*!
@@ -123,6 +155,8 @@ private:
   //! Active scanner instance.
   shared_ptr<Scanner> stir_scanner_sptr;
 
+  shared_ptr<const petsird::Header> petsird_header_sptr;
+
   //! Number of replicated modules.
   uint32_t numberOfModules;
   //! Number of element indices per module.
@@ -146,3 +180,5 @@ private:
 };
 
 END_NAMESPACE_STIR
+
+#endif

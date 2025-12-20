@@ -32,13 +32,14 @@ Coincidence Event Class for PETSIRD: Header File
 #ifndef __stir_listmode_CListRecordPETSIRD_H__
 #define __stir_listmode_CListRecordPETSIRD_H__
 
+#include "stir/listmode/CListEventScannerWithDiscreteDetectors.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/Succeeded.h"
 #include "stir/ByteOrderDefine.h"
-#include "boost/cstdint.hpp"
 
 #include "stir/DetectorCoordinateMap.h"
+#include "stir/PETSIRDInfo.h"
 
 START_NAMESPACE_STIR
 
@@ -52,17 +53,14 @@ coordinates to specify LORAs2Points from given detection pair indices.
 class CListEventPETSIRD : public CListEvent
 {
 public:
-  inline CListEventPETSIRD() {}
+  inline CListEventPETSIRD(shared_ptr<const PETSIRDInfo> petsird_info_sptr)
+      : petsird_info_sptr(std::move(petsird_info_sptr))
+  {}
 
   //! Returns LOR corresponding to the given event.
   inline LORAs2Points<float> get_LOR() const override;
 
-  //! Override the default implementation
   inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
-
-  inline void set_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr) { map_sptr = new_map_sptr; }
-
-  inline void set_petsird_to_stir_map(shared_ptr<PETSIRDToSTIRDetectorIndexMap> new_map) { petsird_to_stir = new_map; }
 
   inline bool is_valid_template(const ProjDataInfo&) const override { return true; }
 
@@ -74,6 +72,18 @@ public:
     return Succeeded::yes;
   }
 
+  inline void set_from_petsird(const petsird::CoincidenceEvent& event)
+  {
+    set_expanded_detection_bins(
+        petsird_helpers::expand_detection_bin(*petsird_info_sptr->get_petsird_scanner_info_sptr(),
+                                              0, // TODO type_of_module, currently we only support single module types.
+                                              event.detection_bins[0]),
+        petsird_helpers::expand_detection_bin(*petsird_info_sptr->get_petsird_scanner_info_sptr(),
+                                              0, // TODO type_of_module, currently we only support single module types.
+                                              event.detection_bins[1]),
+        event.tof_idx);// + (this->proj_data_info_sptr->get_min_tof_pos_num()));
+  }
+
   inline void set_expanded_detection_bins(const petsird_helpers::ExpandedDetectionBin& det0,
                                           const petsird_helpers::ExpandedDetectionBin& det1,
                                           const uint32_t tof_idx)
@@ -83,10 +93,25 @@ public:
     m_tof_bin = tof_idx;
   }
 
-  inline void set_tof_bin(const uint32_t value) { m_tof_bin = value; }
+  inline void set_tof_bin(const int32_t value) { m_tof_bin = value; }
 
-  inline stir::DetectionPosition<>
-  get_stir_det_pos_from_PETSIRD_id(const petsird_helpers::ExpandedDetectionBin& exp_det_bin) const;
+  inline void get_detection_position_pair(DetectionPositionPair<>& det_pos) const
+  {
+    // const-friendly lookup
+    auto it0 = petsird_to_stir->find(exp_det_1);
+    auto it1 = petsird_to_stir->find(exp_det_0);
+    if (it0 == petsird_to_stir->end() || it1 == petsird_to_stir->end())
+      {
+        error("get_stir_det_pos_from_PETSIRD_id: one or both PETSIRD ids not found",
+              exp_det_0.module_index,
+              exp_det_0.element_index,
+              exp_det_0.energy_index);
+      }
+
+    det_pos.pos1() = it0->second;                       // copy of DetectionPosition<>
+    det_pos.pos2() = it1->second;                       // copy of DetectionPosition<>
+    det_pos.timing_pos() = static_cast<int>(m_tof_bin); //+
+  }
 
 private:
   shared_ptr<const DetectorCoordinateMap> map_sptr = nullptr;
@@ -95,6 +120,7 @@ private:
   bool m_prompt;
   petsird_helpers::ExpandedDetectionBin exp_det_0, exp_det_1;
   uint32_t m_tof_bin;
+  shared_ptr<const PETSIRDInfo> petsird_info_sptr;
 };
 
 class CListTimePETSIRD : public ListTime
@@ -113,18 +139,16 @@ public:
 class CListRecordPETSIRD : public CListRecord
 {
 public:
-  CListRecordPETSIRD() {}
-
-  // ~CListRecordPETSIRD() override {}
+  CListRecordPETSIRD(shared_ptr<const PETSIRDInfo> petsird_info_sptr)
+      : event_data(petsird_info_sptr)
+  {}
 
   bool is_time() const override { return true; /*time_data.is_time();*/ }
 
   bool is_event() const override { return true; }
 
   CListEventPETSIRD& event() override { return event_data; }
-  const CListEventPETSIRD& event() const override
-  { /*return event_data;*/
-  }
+  const CListEventPETSIRD& event() const override { return event_data; }
 
   CListTimePETSIRD& time() override { return time_data; }
   const CListTimePETSIRD& time() const override { return time_data; }
@@ -134,12 +158,10 @@ public:
     // return dynamic_cast<CListRecordPETSIRD const*>(&e2) != 0 && raw == static_cast<CListRecordPETSIRD const&>(e2).r;
   }
 
-  virtual Succeeded init_from_data(const petsird_helpers::ExpandedDetectionBin& det0,
-                                   const petsird_helpers::ExpandedDetectionBin& det1,
-                                   const uint32_t tof_idx,
-                                   const bool is_prompt = true)
+  virtual Succeeded init_from_data(petsird::CoincidenceEvent& event, const bool is_prompt = true)
   {
-    event_data.set_expanded_detection_bins(det0, det1, tof_idx);
+    // event_data.set_expanded_detection_bins(det0, det1, tof_idx);
+    event_data.set_from_petsird(event);
     event_data.set_prompt(is_prompt);
     return Succeeded::yes;
   }
