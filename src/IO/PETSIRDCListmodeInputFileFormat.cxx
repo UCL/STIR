@@ -54,7 +54,7 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
   auto it = std::istreambuf_iterator<char>(file);
   auto end = std::istreambuf_iterator<char>();
 
-  for (size_t i = 0; i < signature.size() && it != end; ++i, ++it)
+  for (size_t i = 0; i < signature_.size() && it != end; ++i, ++it)
     {
       if (it == end)
         error("Failed to read file signature: unexpected EOF");
