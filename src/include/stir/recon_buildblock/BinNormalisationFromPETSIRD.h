@@ -31,7 +31,8 @@ using std::string;
 
 START_NAMESPACE_STIR
 
-class BinNormalisationFromPETSIRD : public RegisteredParsingObject<BinNormalisationFromPETSIRD, BinNormalisation, BinNormalisationWithCalibration>
+class BinNormalisationFromPETSIRD
+    : public RegisteredParsingObject<BinNormalisationFromPETSIRD, BinNormalisation, BinNormalisationWithCalibration>
 {
 private:
   using base_type = BinNormalisationWithCalibration;
@@ -73,7 +74,6 @@ private:
   shared_ptr<petsird::PETSIRDReaderBase> petsird_data_sptr;
 
   shared_ptr<petsird::ScannerInformation> scanner_info_sptr;
-
 };
 
 END_NAMESPACE_STIR

@@ -50,7 +50,7 @@ BinNormalisationFromPETSIRD::post_processing()
   if (base_type::post_processing())
     return true;
   read_norm_data(normalisation_filename);
-  return false; 
+  return false;
 }
 
 BinNormalisationFromPETSIRD::BinNormalisationFromPETSIRD()
@@ -82,8 +82,8 @@ BinNormalisationFromPETSIRD::set_up(const shared_ptr<const ExamInfo>& exam_info_
 void
 BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
 {
-  //petsird::Header header;
-  // petsird_data_sptr.reset(new petsird::binary::PETSIRDReader(filename));
+  // petsird::Header header;
+  //  petsird_data_sptr.reset(new petsird::binary::PETSIRDReader(filename));
 
   // petsird_data_sptr->ReadHeader(header);
 
@@ -92,7 +92,7 @@ BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
   // auto def = scanner_info_sptr->detection_efficiencies;
 
   int nikos = 0;
-  int nikosd = 0; 
+  int nikosd = 0;
 }
 
 END_NAMESPACE_STIR
