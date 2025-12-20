@@ -81,7 +81,7 @@ public:
         petsird_helpers::expand_detection_bin(*petsird_info_sptr->get_petsird_scanner_info_sptr(),
                                               0, // TODO type_of_module, currently we only support single module types.
                                               event.detection_bins[1]),
-        event.tof_idx);// + (this->proj_data_info_sptr->get_min_tof_pos_num()));
+        event.tof_idx); // + (this->proj_data_info_sptr->get_min_tof_pos_num()));
   }
 
   inline void set_expanded_detection_bins(const petsird_helpers::ExpandedDetectionBin& det0,

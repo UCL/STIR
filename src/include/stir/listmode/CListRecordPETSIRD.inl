@@ -50,7 +50,7 @@ CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
         }
       DetectionPositionPair<> det_pos_pair;
       get_detection_position_pair(det_pos_pair);
-      //! Warning: assuming that STIR ProjDataInfo and PETSIRD TOF binning match. If you have tof_mashing this can be wrong. 
+      //! Warning: assuming that STIR ProjDataInfo and PETSIRD TOF binning match. If you have tof_mashing this can be wrong.
       det_pos_pair.timing_pos() = static_cast<int>(m_tof_bin) + proj_data_info.get_min_tof_pos_num();
       // Try Blocks-on-Cylindrical first
       if (const auto* proj_blocks = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(&proj_data_info))
