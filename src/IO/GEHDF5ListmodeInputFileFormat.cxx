@@ -43,7 +43,7 @@ GEHDF5ListmodeInputFileFormat::actual_can_read(const FileSignature& signature, s
 }
 
 bool
-GEHDF5ListmodeInputFileFormat::can_read(const FileSignature& signature, const std::string& filename) 
+GEHDF5ListmodeInputFileFormat::can_read(const FileSignature& signature, const std::string& filename)
 {
   // check that it's a GE HDF5 list file etc
   try
