@@ -75,7 +75,7 @@ ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& signature,
 
 template <typename STIRImageType>
 bool
-ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& /*signature*/, const std::string& filename) const
+ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& /*signature*/, const std::string& filename)
 {
   typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
