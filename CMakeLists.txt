@@ -99,33 +99,33 @@ find_package( Boost 1.36.0 REQUIRED )
 
 #### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities
-option(DISABLE_LLN_MATRIX "disable use of LLN library" ON)
-option(DISABLE_ITK "disable use of ITK library" ON)
-option(DISABLE_HDF5 "disable use of HDF5 libraries" ON)
-option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" ON)
-option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" ON)
-option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" ON)
-option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" ON) # disable by default
-option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" ON)
-option(DISABLE_Parallelproj_PROJECTOR "disable use of Parallelproj projector" ON)
+option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
+option(DISABLE_ITK "disable use of ITK library" OFF)
+option(DISABLE_HDF5 "disable use of HDF5 libraries" OFF)
+option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
+option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
+option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" OFF)
+option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
+option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
+option(DISABLE_Parallelproj_PROJECTOR "disable use of Parallelproj projector" OFF)
 OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" OFF)
-option(DISABLE_UPENN "disable use of UPENN filetypes" ON)
 option(DISABLE_PETSIRD "disable use of PETSIRD filetypes" OFF)
+option(DISABLE_UPENN "disable use of UPENN filetypes" OFF)
 
 find_package(Git QUIET)
-# if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-# # Update submodules as needed
-#     option(GIT_SUBMODULE "Check submodules during build" ON)
-#     if(GIT_SUBMODULE)
-#         message(STATUS "Submodule update")
-#         execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-#                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
-#         if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-#             message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-#         endif()
-#     endif()
-# endif()
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+# Update submodules as needed
+    option(GIT_SUBMODULE "Check submodules during build" ON)
+    if(GIT_SUBMODULE)
+        message(STATUS "Submodule update")
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        endif()
+    endif()
+endif()
 
 include(CheckCXXSourceCompiles)
 
