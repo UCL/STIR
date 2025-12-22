@@ -75,10 +75,10 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
   if (!proj_cyl)
     error("BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency: "
           "ProjDataInfo is not of type ProjDataInfoCylindricalNoArcCorr");
-  DetectionPositionPair<> dp; 
+  DetectionPositionPair<> dp;
 
   proj_cyl->get_det_pos_pair_for_bin(dp, bin);
-  
+
   return petsird_info_sptr->get_detection_efficiency_for_bin(dp);
 }
 
