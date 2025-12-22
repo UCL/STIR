@@ -30,9 +30,11 @@ Coincidence LM Data Class for PETSIRD
 #ifndef __stir_listmode_PETSIRDInfo_H__
 #define __stir_listmode_PETSIRDInfo_H__
 
+#include "stir/DetectionPositionPair.h"
 #include "petsird/protocols.h"
 #include "stir/Scanner.h"
 #include "stir/DetectorCoordinateMap.h"
+#include "stir/ProjDataInfo.h"
 #include <set>
 
 START_NAMESPACE_STIR
@@ -62,11 +64,25 @@ struct ExpandedDetectionBinLess
   }
 };
 
+struct DetectionPositionLess
+{
+  bool operator()(const stir::DetectionPosition<>& a, const stir::DetectionPosition<>& b) const
+  {
+    if (a.radial_coord() != b.radial_coord())
+      return a.radial_coord() < b.radial_coord();
+    if (a.axial_coord() != b.axial_coord())
+      return a.axial_coord() < b.axial_coord();
+    return a.tangential_coord() < b.tangential_coord();
+  }
+};
+
 /*!
   \brief Mapping type from PETSIRD ExpandedDetectionBin to STIR DetectionPosition.
 */
 using PETSIRDToSTIRDetectorIndexMap
     = std::map<petsird::ExpandedDetectionBin, stir::DetectionPosition<>, ExpandedDetectionBinLess>;
+
+using STIRToPETSIRDDetectorIndexMap = std::map<stir::DetectionPosition<>, petsird::ExpandedDetectionBin, DetectionPositionLess>;
 
 /*!
   \brief Class to hold PETSIRD-related information for STIR and do any necessary conversions.
@@ -84,33 +100,85 @@ public:
 
   inline shared_ptr<PETSIRDToSTIRDetectorIndexMap> get_petsird_to_stir_map() const { return petsird_to_stir; }
 
+  inline shared_ptr<STIRToPETSIRDDetectorIndexMap> get_stir_to_petsird_map() const { return stir_to_petsird; }
+
   inline shared_ptr<DetectorCoordinateMap::det_pos_to_coord_type> get_petsird_map_sptr() const { return petsird_map_sptr; }
 
-  bool is_cylindrical_configuration() { return is_cylindrical; };
+  inline bool is_generic_geometry_used() const { return is_generic_geometry; }
+
+  inline bool is_block_configuration_used() const { return is_block_configuration; }
+
+  inline bool is_cylindrical_configuration_used() const { return is_cylindrical; };
+
+  inline float get_detection_efficiency_for_bin(const stir::DetectionPositionPair<>& dp) const
+  {
+    // std::cout << "WIth det efficiencies: " <<
+    // petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies->size()
+    //           << std::endl;
+    float eff = 1.0f;
+
+    const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
+
+    if (!detection_bin_efficiencies)
+      return eff; // no efficiencies available
+
+    auto it0 = stir_to_petsird->find(dp.pos1());
+    if (it0 == stir_to_petsird->end())
+      {
+        error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
+      }
+    auto it1 = stir_to_petsird->find(dp.pos2());
+    if (it1 == stir_to_petsird->end())
+      {
+        error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
+      }
+
+    if (detection_bin_efficiencies)
+      {
+        // eff *= ((*detection_bin_efficiencies)[0](detection_bin_1)
+        //         * (*detection_bin_efficiencies)[1](detection_bin_2));
+        if (eff == 0.F)
+          return 0.F;
+      }
+
+    // it0->second().module_index;
+    // it0->second().element_index;
+    // it1->second().module_index;
+    // it1->second().element_index;
+
+    // const auto& num_en0 = petsird_scanner_info_sptr->event_energy_bin_edges[0].NumberOfBins();
+    // const auto& num_en1 = petsird_scanner_info_sptr->event_energy_bin_edges[0].NumberOfBins();
+
+    // // TODO create helper for next calculation
+    // // eff *= module_pair_efficiencies.values(expanded_det_bin0.element_index * num_en0 + expanded_det_bin0.energy_index,
+    // //                                        expanded_det_bin1.element_index * num_en1 + expanded_det_bin1.energy_index);
+    // // Placeholder implementation
+    int nikos = 0;
+  }
 
   float get_lower_energy_threshold() const
   {
-    if (petsird_scanner_info_sptr->event_energy_bin_edges.empty())
+    if (petsird_scanner_info_sptr->event_energy_bin_edges.size() == 0)
       return 0.0f;
     float min_energy = std::numeric_limits<float>::max();
-    // for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
-    //   {
-    //     if (!bin_edges.edges.empty() && bin_edges.edges.front() < min_energy)
-    //       min_energy = bin_edges.edges.front();
-    //   }
+    for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
+      {
+        if (bin_edges.edges.front() < min_energy)
+          min_energy = bin_edges.edges.front();
+      }
     return min_energy;
   }
 
   float get_upper_energy_threshold() const
   {
-    if (petsird_scanner_info_sptr->event_energy_bin_edges.empty())
+    if (petsird_scanner_info_sptr->event_energy_bin_edges.size() == 0)
       return 0.0f;
     float max_energy = std::numeric_limits<float>::lowest();
-    // for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
-    //   {
-    //     if (!bin_edges.edges.empty() && bin_edges.edges.back() > max_energy)
-    //       max_energy = bin_edges.edges.back();
-    //   }
+    for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
+      {
+        if (bin_edges.edges.back() > max_energy)
+          max_energy = bin_edges.edges.back();
+      }
     return max_energy;
   }
 
@@ -171,9 +239,16 @@ private:
 
   bool is_cylindrical = true;
 
+  bool is_generic_geometry = false;
+
+  bool is_block_configuration = false;
+
   std::string forced_geometry = "";
   //! Mapping from PETSIRD expanded bins to STIR detection positions.
   shared_ptr<PETSIRDToSTIRDetectorIndexMap> petsird_to_stir;
+
+  shared_ptr<STIRToPETSIRDDetectorIndexMap> stir_to_petsird;
+
   //! Mapping from STIR detection positions to PETSIRD coordinates.
   shared_ptr<DetectorCoordinateMap::det_pos_to_coord_type> petsird_map_sptr;
 };

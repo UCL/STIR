@@ -41,13 +41,8 @@ START_NAMESPACE_STIR
 void
 CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
-  if (!is_null_ptr(petsird_to_stir))
+  if (petsird_info_sptr->is_cylindrical_configuration_used() || petsird_info_sptr->is_block_configuration_used())
     {
-      if (!petsird_to_stir)
-        {
-          error("CListEventPETSIRD::get_bin: petsird_to_stir map not set. Probably your ProjDataInfo point to a Generic Scanner. "
-                "\n The Scanner in the Listmode data and the one in the ProjDataInfo must match.");
-        }
       DetectionPositionPair<> det_pos_pair;
       get_detection_position_pair(det_pos_pair);
       //! Warning: assuming that STIR ProjDataInfo and PETSIRD TOF binning match. If you have tof_mashing this can be wrong.
@@ -55,12 +50,18 @@ CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
       // Try Blocks-on-Cylindrical first
       if (const auto* proj_blocks = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(&proj_data_info))
         {
-          proj_blocks->get_bin_for_det_pos_pair(bin, det_pos_pair);
+          if (proj_blocks->get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
+            bin.set_bin_value(1);
+          else
+            bin.set_bin_value(0);
         }
       // Else try Cylindrical
       else if (const auto* proj_cyl = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(&proj_data_info))
         {
-          proj_cyl->get_bin_for_det_pos_pair(bin, det_pos_pair);
+          if (proj_cyl->get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
+            bin.set_bin_value(1);
+          else
+            bin.set_bin_value(0);
         }
     }
   else

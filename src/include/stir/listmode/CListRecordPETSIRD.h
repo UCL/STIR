@@ -98,9 +98,9 @@ public:
   inline void get_detection_position_pair(DetectionPositionPair<>& det_pos) const
   {
     // const-friendly lookup
-    auto it0 = petsird_to_stir->find(exp_det_1);
-    auto it1 = petsird_to_stir->find(exp_det_0);
-    if (it0 == petsird_to_stir->end() || it1 == petsird_to_stir->end())
+    auto it0 = petsird_info_sptr->get_petsird_to_stir_map()->find(exp_det_1);
+    auto it1 = petsird_info_sptr->get_petsird_to_stir_map()->find(exp_det_0);
+    if (it0 == petsird_info_sptr->get_petsird_to_stir_map()->end() || it1 == petsird_info_sptr->get_petsird_to_stir_map()->end())
       {
         error("get_stir_det_pos_from_PETSIRD_id: one or both PETSIRD ids not found",
               exp_det_0.module_index,
@@ -110,13 +110,19 @@ public:
 
     det_pos.pos1() = it0->second;                       // copy of DetectionPosition<>
     det_pos.pos2() = it1->second;                       // copy of DetectionPosition<>
+
+    // auto s_it0 = petsird_info_sptr->get_stir_to_petsird_map()->find(it0->second);
+    // auto s_it1 = petsird_info_sptr->get_stir_to_petsird_map()->find(it1->second);
+    
+    // std::cout << "DET 0: module " << s_it0->second.module_index << " element " << s_it0->second.element_index << " energy " << s_it0->second.energy_index << std::endl;
+    // std::cout << "PETSIRD DET 0: module " << exp_det_0.module_index << " element " << exp_det_0.element_index << " energy " << exp_det_0.energy_index << std::endl;
+    // std::cout << "DET 1: module " << s_it1->second.module_index << " element " << s_it1->second.element_index << " energy " << s_it1->second.energy_index << std::endl;
+    // std::cout << "PETSIRD DET 1: module " << exp_det_1.module_index << " element " << exp_det_1.element_index << " energy " << exp_det_1.energy_index << std::endl;  
+
     det_pos.timing_pos() = static_cast<int>(m_tof_bin); //+
   }
 
 private:
-  shared_ptr<const DetectorCoordinateMap> map_sptr = nullptr;
-  shared_ptr<PETSIRDToSTIRDetectorIndexMap> petsird_to_stir = nullptr;
-
   bool m_prompt;
   petsird_helpers::ExpandedDetectionBin exp_det_0, exp_det_1;
   uint32_t m_tof_bin;

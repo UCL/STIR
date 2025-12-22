@@ -23,7 +23,6 @@
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
 #include "stir/PETSIRDInfo.h"
 
@@ -74,6 +73,8 @@ private:
   shared_ptr<petsird::PETSIRDReaderBase> petsird_data_sptr;
 
   shared_ptr<petsird::ScannerInformation> scanner_info_sptr;
+
+  shared_ptr<const PETSIRDInfo> petsird_info_sptr;
 };
 
 END_NAMESPACE_STIR

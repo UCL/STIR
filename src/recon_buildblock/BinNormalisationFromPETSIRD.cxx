@@ -20,6 +20,8 @@
 #include "petsird/binary/protocols.h"
 #include "petsird/hdf5/protocols.h"
 #include "stir/recon_buildblock/BinNormalisationFromPETSIRD.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 START_NAMESPACE_STIR
 
@@ -67,7 +69,17 @@ float
 BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) const
 {
   // Placeholder implementation
-  return 1.0f; // Replace with actual efficiency calculation
+
+  const auto* proj_cyl = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(this->proj_data_info_sptr.get());
+
+  if (!proj_cyl)
+    error("BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency: "
+          "ProjDataInfo is not of type ProjDataInfoCylindricalNoArcCorr");
+  DetectionPositionPair<> dp; 
+
+  proj_cyl->get_det_pos_pair_for_bin(dp, bin);
+  
+  return petsird_info_sptr->get_detection_efficiency_for_bin(dp);
 }
 
 Succeeded
@@ -82,17 +94,12 @@ BinNormalisationFromPETSIRD::set_up(const shared_ptr<const ExamInfo>& exam_info_
 void
 BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
 {
-  // petsird::Header header;
-  //  petsird_data_sptr.reset(new petsird::binary::PETSIRDReader(filename));
+  petsird::Header header;
+  petsird_data_sptr.reset(new petsird::binary::PETSIRDReader(filename));
 
-  // petsird_data_sptr->ReadHeader(header);
+  petsird_data_sptr->ReadHeader(header);
 
-  // scanner_info_sptr = std::make_shared<petsird::ScannerInformation>(header.scanner);
-
-  // auto def = scanner_info_sptr->detection_efficiencies;
-
-  int nikos = 0;
-  int nikosd = 0;
+  petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
 }
 
 END_NAMESPACE_STIR

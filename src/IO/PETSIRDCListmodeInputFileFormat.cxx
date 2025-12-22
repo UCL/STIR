@@ -56,8 +56,6 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
 
   for (size_t i = 0; i < signature_.size() && it != end; ++i, ++it)
     {
-      if (it == end)
-        error("Failed to read file signature: unexpected EOF");
       signature_[i] = *it;
     }
 

@@ -520,7 +520,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   std::vector<float> block_angular_spacing;
   if (!vector_utils::get_spacing_uniform(
           block_angular_spacing, unique_angle_modules, 1e-2)) /// epsilon * 10000) // relax epsilon here
-    is_cylindrical = false;
+    {
+      is_cylindrical = false;
+    }
 
   std::size_t group2 = 0, group3 = 0;
   {
@@ -565,9 +567,13 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   if (radius_indx == 0)
     {
       if (!vector_utils::get_spacing_uniform(element_horizontal_spacing, unique_elements_dim3_values))
-        is_cylindrical = false;
+        {
+          is_cylindrical = false;
+        }
       if (!vector_utils::get_spacing_uniform(element_vertical_spacing, unique_elements_dim2_values))
-        is_cylindrical = false;
+        {
+          is_cylindrical = false;
+        }
       unique_elements_horizontal_values = unique_elements_dim3_values;
       unique_elements_vertical_values = unique_elements_dim2_values;
     }
@@ -659,6 +665,8 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                                           *unique_tof_values.begin() * 10 // non-TOF
                                           ));
       is_cylindrical = true;
+      is_generic_geometry = false;
+      is_block_configuration = false;
     }
   else
     {
@@ -714,6 +722,8 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       ""                                                                 // crystal_map_file_name_v
                       ));
       is_cylindrical = false;
+      is_generic_geometry = false;
+      is_block_configuration = true;
     }
 
   /// Now let's create the PETISIRD - STIR geometry mapping
@@ -834,6 +844,17 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
         // Save to shared_ptr map
       }
 
+  // Reverse the mapping: from STIR detpos to PETSIRD mean coord
+  auto map = std::make_shared<STIRToPETSIRDDetectorIndexMap>();
+
+  for (const auto& [petsird_bin, stir_pos] : (*petsird_to_stir))
+    {
+      auto [it, inserted] = map->emplace(stir_pos, petsird_bin);
+      if (!inserted)
+        error("Non-unique STIR DetectionPosition while building reverse map");
+    }
+
+  stir_to_petsird = map;
   // // this->map.reset(new DetectorCoordinateMapLightPETSIRD(petsird_map));
   // this->map.reset(new DetectorCoordinateMap(petsird_map));
   // // this_scanner_sptr->get_detector_map_sptr()->set_detector_coordinate_map_light_sptr(
