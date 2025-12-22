@@ -44,7 +44,7 @@ public:
 
 protected:
   bool actual_can_read(const FileSignature& signature, std::istream& input) const override;
-  bool can_read(const FileSignature& signature, const std::string& filename) const override;
+  bool can_read(const FileSignature& signature, const std::string& filename) override;
 
 public:
   unique_ptr<data_type> read_from_file(std::istream& input) const override;
