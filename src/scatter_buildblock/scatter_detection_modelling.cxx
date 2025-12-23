@@ -65,14 +65,14 @@ ScatterSimulation::find_detectors(unsigned& det_num_A, unsigned& det_num_B, cons
     error("ScatterSimulation::find_detectors: need to call set_up() first");
 #endif
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-  auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get());
+  const auto* ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get());
   if (ptr)
     {
       ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, bin);
     }
   else
     {
-      auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get());
+      const auto* ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get());
       if (ptr)
         {
           ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, bin);
