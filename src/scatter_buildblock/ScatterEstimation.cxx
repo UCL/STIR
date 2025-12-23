@@ -610,12 +610,12 @@ ScatterEstimation::set_up()
            "discarded)");
       if (run_in_2d_projdata)
         {
-          this->scatter_simulation_sptr->set_template_proj_data_info(*this->input_projdata_2d_sptr->get_proj_data_info_sptr());
+          this->scatter_simulation_sptr->set_template_proj_data_info(this->input_projdata_2d_sptr->get_proj_data_info_sptr());
           this->scatter_simulation_sptr->set_exam_info(this->input_projdata_2d_sptr->get_exam_info());
         }
       else
         {
-          this->scatter_simulation_sptr->set_template_proj_data_info(*this->input_projdata_sptr->get_proj_data_info_sptr());
+          this->scatter_simulation_sptr->set_template_proj_data_info(this->input_projdata_sptr->get_proj_data_info_sptr());
           this->scatter_simulation_sptr->set_exam_info(this->input_projdata_sptr->get_exam_info());
         }
     }

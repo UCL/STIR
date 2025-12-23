@@ -352,14 +352,14 @@ ScatterSimulation::set_up()
   {
     CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
     // check above statement
-    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
+    if (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
       {
-        auto ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get());
+        const auto* ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get());
         ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
       }
     else
       {
-        auto ptr = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get());
+        const auto* ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get());
         ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
       }
 
@@ -374,14 +374,14 @@ ScatterSimulation::set_up()
     assert(fabs(m_last + m_first) < m_last * 10E-4);
   }
 #endif
-  if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
+  if (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
     {
       this->shift_detector_coordinates_to_origin
           = CartesianCoordinate3D<float>(this->proj_data_info_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
     }
   else
     {
-      if (dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
+      if (dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
         {
           // align BlocksOnCylindrical scanner ring 0 to z=0.
           this->shift_detector_coordinates_to_origin
@@ -736,23 +736,20 @@ ScatterSimulation::set_template_proj_data_info(const std::string& filename)
 
   this->set_exam_info(template_proj_data_sptr->get_exam_info());
 
-  this->set_template_proj_data_info(*template_proj_data_sptr->get_proj_data_info_sptr());
+  this->set_template_proj_data_info(template_proj_data_sptr->get_proj_data_info_sptr());
 }
 
 void
-ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
+ScatterSimulation::set_template_proj_data_info(std::shared_ptr<const ProjDataInfo> arg)
 {
   this->_already_set_up = false;
-  std::unique_ptr<ProjDataInfo> cloned(arg.clone());
-  if (auto* blocks = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*>(cloned.get()))
+  if (auto p = std::dynamic_pointer_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr>(arg))
     {
-      this->proj_data_info_sptr.reset(blocks);
-      cloned.release(); // transfer ownership
+      this->proj_data_info_sptr = p;
     }
-  else if (auto* cyl = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(cloned.get()))
+  else if (auto q = std::dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(arg))
     {
-      this->proj_data_info_sptr.reset(cyl);
-      cloned.release(); // transfer ownership
+      this->proj_data_info_sptr = q;
     }
   else
     {
@@ -949,7 +946,7 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                     false));
 
   info(format("ScatterSimulation: down-sampled scanner info:\n{}", templ_proj_data_info_sptr->parameter_info()), 3);
-  this->set_template_proj_data_info(*templ_proj_data_info_sptr);
+  this->set_template_proj_data_info(templ_proj_data_info_sptr);
   this->set_output_proj_data(this->output_proj_data_filename);
 
   return Succeeded::yes;
