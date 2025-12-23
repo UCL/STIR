@@ -419,7 +419,7 @@ jobs:
       run: |
           cd ${GITHUB_WORKSPACE}/build;
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
-          cmake --build . --config ${BUILD_TYPE}} --target install
+          cmake --build . --config ${BUILD_TYPE} --target install
 
     - name: ctest
       shell: bash
