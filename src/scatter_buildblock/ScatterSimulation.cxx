@@ -743,15 +743,20 @@ void
 ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
 {
   this->_already_set_up = false;
-  this->proj_data_info_sptr.reset(dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*>(arg.clone()));
-
-  if (is_null_ptr(this->proj_data_info_sptr))
+  std::unique_ptr<ProjDataInfo> cloned(arg.clone());
+  if (auto* blocks = dynamic_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr*>(cloned.get()))
     {
-      this->proj_data_info_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(arg.clone()));
-      if (is_null_ptr(this->proj_data_info_sptr))
-        {
-          error("ScatterSimulation: Can only handle non-arccorrected data");
-        }
+      this->proj_data_info_sptr.reset(blocks);
+      cloned.release(); // transfer ownership
+    }
+  else if (auto* cyl = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(cloned.get()))
+    {
+      this->proj_data_info_sptr.reset(cyl);
+      cloned.release(); // transfer ownership
+    }
+  else
+    {
+      error("ScatterSimulation: Can only handle non-arccorrected data");
     }
 
   // find final size of detection_points_vector
