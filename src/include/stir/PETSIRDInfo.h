@@ -30,12 +30,17 @@ Coincidence LM Data Class for PETSIRD
 #ifndef __stir_listmode_PETSIRDInfo_H__
 #define __stir_listmode_PETSIRDInfo_H__
 
+#include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
 #include "petsird/protocols.h"
 #include "stir/Scanner.h"
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/ProjDataInfo.h"
 #include <set>
+#include <boost/format.hpp>
+
+#include "stir/info.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
@@ -64,25 +69,13 @@ struct ExpandedDetectionBinLess
   }
 };
 
-struct DetectionPositionLess
-{
-  bool operator()(const stir::DetectionPosition<>& a, const stir::DetectionPosition<>& b) const
-  {
-    if (a.radial_coord() != b.radial_coord())
-      return a.radial_coord() < b.radial_coord();
-    if (a.axial_coord() != b.axial_coord())
-      return a.axial_coord() < b.axial_coord();
-    return a.tangential_coord() < b.tangential_coord();
-  }
-};
-
 /*!
   \brief Mapping type from PETSIRD ExpandedDetectionBin to STIR DetectionPosition.
 */
 using PETSIRDToSTIRDetectorIndexMap
     = std::map<petsird::ExpandedDetectionBin, stir::DetectionPosition<>, ExpandedDetectionBinLess>;
 
-using STIRToPETSIRDDetectorIndexMap = std::map<stir::DetectionPosition<>, petsird::ExpandedDetectionBin, DetectionPositionLess>;
+using STIRToPETSIRDDetectorIndexMap = std::map<stir::DetectionPosition<>, petsird::ExpandedDetectionBin>;
 
 /*!
   \brief Class to hold PETSIRD-related information for STIR and do any necessary conversions.
@@ -125,21 +118,33 @@ public:
     auto it0 = stir_to_petsird->find(dp.pos1());
     if (it0 == stir_to_petsird->end())
       {
+        info(boost::format("DetectionPosition pos1(): "
+                           "tangential %1%, "
+                           "axial %2%, "
+                           "radial %3%")
+             % dp.pos1().tangential_coord() % dp.pos1().axial_coord() % dp.pos1().radial_coord());
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
     auto it1 = stir_to_petsird->find(dp.pos2());
+
     if (it1 == stir_to_petsird->end())
       {
+        info(boost::format("DetectionPosition pos2(): "
+                           "tangential %1%, "
+                           "axial %2%, "
+                           "radial %3%")
+             % dp.pos2().tangential_coord() % dp.pos2().axial_coord() % dp.pos2().radial_coord());
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
 
-    if (detection_bin_efficiencies)
-      {
-        // eff *= ((*detection_bin_efficiencies)[0](detection_bin_1)
-        //         * (*detection_bin_efficiencies)[1](detection_bin_2));
-        if (eff == 0.F)
-          return 0.F;
-      }
+    return 1.f;
+    // if (detection_bin_efficiencies)
+    //   {
+    //     // eff *= ((*detection_bin_efficiencies)[0](detection_bin_1)
+    //     //         * (*detection_bin_efficiencies)[1](detection_bin_2));
+    //     if (eff == 0.F)
+    //       return 0.F;
+    //   }
 
     // it0->second().module_index;
     // it0->second().element_index;

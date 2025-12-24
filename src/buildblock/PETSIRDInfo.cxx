@@ -855,6 +855,41 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
     }
 
   stir_to_petsird = map;
+
+  if (petsird_to_stir->size() != stir_to_petsird->size())
+    {
+      std::cerr << "Map size mismatch!\n"
+                << "Forward size: " << petsird_to_stir->size() << "\n"
+                << "Reverse size: " << stir_to_petsird->size() << std::endl;
+      error("Forward and reverse maps differ in size");
+    }
+
+  //   for (const auto& [petsird_bin, stir_pos] : *petsird_to_stir)
+  // {
+  //   auto it = stir_to_petsird->find(stir_pos);
+
+  //   if (it == stir_to_petsird->end())
+  //   {
+  //     std::cerr << "Missing reverse entry for STIR position: "
+  //               << stir_pos.tangential_coord() << ", "
+  //               << stir_pos.axial_coord() << ", "
+  //               << stir_pos.radial_coord() << std::endl;
+  //     error("Reverse map lookup failed");
+  //   }
+
+  //   if (!(it->second == petsird_bin))
+  //   {
+  //     std::cerr << "Mismatch after round-trip!\n"
+  //               << "Forward PETSIRD bin: "<<  "\n"
+  //               << "Recovered PETSIRD bin: " << "\n"
+  //               << "STIR position: "
+  //               << stir_pos.tangential_coord() << ", "
+  //               << stir_pos.axial_coord() << ", "
+  //               << stir_pos.radial_coord() << std::endl;
+  //     error("Forward/backward maps are inconsistent");
+  //   }
+  // }
+
   // // this->map.reset(new DetectorCoordinateMapLightPETSIRD(petsird_map));
   // this->map.reset(new DetectorCoordinateMap(petsird_map));
   // // this_scanner_sptr->get_detector_map_sptr()->set_detector_coordinate_map_light_sptr(

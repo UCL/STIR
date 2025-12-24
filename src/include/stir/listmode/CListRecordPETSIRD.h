@@ -111,15 +111,20 @@ public:
     det_pos.pos1() = it0->second; // copy of DetectionPosition<>
     det_pos.pos2() = it1->second; // copy of DetectionPosition<>
 
+    std::cout << det_pos.pos1().tangential_coord() << ", " << det_pos.pos1().axial_coord() << ", "
+              << det_pos.pos1().radial_coord() << std::endl;
+    std::cout << det_pos.pos2().tangential_coord() << ", " << det_pos.pos2().axial_coord() << ", "
+              << det_pos.pos2().radial_coord() << std::endl;
+
     // auto s_it0 = petsird_info_sptr->get_stir_to_petsird_map()->find(it0->second);
     // auto s_it1 = petsird_info_sptr->get_stir_to_petsird_map()->find(it1->second);
 
     // std::cout << "DET 0: module " << s_it0->second.module_index << " element " << s_it0->second.element_index << " energy " <<
-    // s_it0->second.energy_index << std::endl; std::cout << "PETSIRD DET 0: module " << exp_det_0.module_index << " element " <<
-    // exp_det_0.element_index << " energy " << exp_det_0.energy_index << std::endl; std::cout << "DET 1: module " <<
-    // s_it1->second.module_index << " element " << s_it1->second.element_index << " energy " << s_it1->second.energy_index <<
-    // std::endl; std::cout << "PETSIRD DET 1: module " << exp_det_1.module_index << " element " << exp_det_1.element_index << "
-    // energy " << exp_det_1.energy_index << std::endl;
+    //  s_it0->second.energy_index << std::endl; std::cout << "PETSIRD DET 0: module " << exp_det_0.module_index << " element " <<
+    //  exp_det_0.element_index << " energy " << exp_det_0.energy_index << std::endl; std::cout << "DET 1: module " <<
+    //  s_it1->second.module_index << " element " << s_it1->second.element_index << " energy " << s_it1->second.energy_index <<
+    //  std::endl; std::cout << "PETSIRD DET 1: module " << exp_det_1.module_index << " element " << exp_det_1.element_index << "
+    //  energy " << exp_det_1.energy_index << std::endl;
 
     det_pos.timing_pos() = static_cast<int>(m_tof_bin); //+
   }
