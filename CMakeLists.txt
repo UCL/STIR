@@ -281,56 +281,13 @@ else()
   message(STATUS "Parallelproj projector support disabled or not available.")
 endif()
 
-if(NOT DISABLE_PETSIRD)
- if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    # Initialize PETSIRD submodule if not present
-    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/PETSIRD/CMakeLists.txt")
-      message(STATUS "Initializing PETSIRD submodule...")
-      execute_process(
-        COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive PETSIRD
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        RESULT_VARIABLE GIT_SUBMOD_RESULT
-      )
-      if(NOT GIT_SUBMOD_RESULT EQUAL 0)
-        message(FATAL_ERROR "Failed to initialize PETSIRD submodule")
-      endif()
+if(NOT DISABLE_PETSIRD) 
+    find_package(PETSIRD)
+    if (PETSIRD_FOUND)
+        message(STATUS "PETSIRD library found.")
+    else()
+        message(STATUS "PETSIRD library not found. Try and set the DIR manually.")
     endif()
-  endif()
-
-  # Check if PETSIRD directory exists
-  if(EXISTS "${PROJECT_SOURCE_DIR}/PETSIRD/cpp/CMakeLists.txt")
-    set(PETSIRD_CPP_DIR ${PROJECT_SOURCE_DIR}/PETSIRD/cpp)
-    set(PETSIRD_GENERATED_DIR ${PETSIRD_CPP_DIR}/generated/petsird)
-
-    find_program(YARDL_EXECUTABLE yardl)
-    if(NOT YARDL_EXECUTABLE)
-      message(FATAL_ERROR "yardl not found but required for PETSIRD")
-    endif()
-
-    if(NOT EXISTS "${PETSIRD_GENERATED_DIR}/CMakeLists.txt")
-      message(STATUS "Running yardl for PETSIRD...")
-      execute_process(
-        COMMAND just build
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/PETSIRD
-      )
-      if(NOT YARDL_RESULT EQUAL 0)
-        message(FATAL_ERROR "yardl generation failed")
-      endif()
-    endif()
-    set(HAVE_PETSIRD TRUE)
-    set(PETSIRD_dir ${PROJECT_SOURCE_DIR}/PETSIRD/cpp)
-    add_subdirectory(${PETSIRD_dir} PETSIRD)
-    # Make PETSIRD headers globally available
-    include_directories(${PROJECT_SOURCE_DIR}/PETSIRD/cpp/generated)
-    include_directories(${PROJECT_SOURCE_DIR}/PETSIRD/cpp/helpers/include)
-    install(TARGETS petsird_generated
-        EXPORT STIRTargets
-        DESTINATION lib)
-    message(STATUS "PETSIRD support enabled")
-  else()
-    message(FATAL_ERROR "PETSIRD directory not found")
-  endif()
-
 endif()
 
 #### enable support for ctest
