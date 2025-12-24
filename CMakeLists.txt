@@ -281,13 +281,43 @@ else()
   message(STATUS "Parallelproj projector support disabled or not available.")
 endif()
 
-if(NOT DISABLE_PETSIRD) 
-    find_package(PETSIRD)
-    if (PETSIRD_FOUND)
-        message(STATUS "PETSIRD library found.")
+if(NOT DISABLE_PETSIRD)
+  find_package(PETSIRD CONFIG)
+
+  if(PETSIRD_FOUND)
+    message(STATUS "PETSIRD support enabled (found PETSIRD).")
+    set(HAVE_PETSIRD ON)
+
+    # Inspect PETSIRD transitive dependencies
+    if(TARGET PETSIRD::petsird)
+      get_target_property(_petsird_libs PETSIRD::petsird INTERFACE_LINK_LIBRARIES)
+
+      # --- HDF5 ---
+      if(_petsird_libs MATCHES "HDF5::")
+        if(DISABLE_HDF5)
+          message(STATUS "PETSIRD was built with HDF5 → forcing DISABLE_HDF5=OFF")
+          set(DISABLE_HDF5 OFF CACHE BOOL "disable use of HDF5 libraries" FORCE)
+        endif()
+      endif()
+
+      # --- nlohmann_json (optional but recommended) ---
+      if(_petsird_libs MATCHES "nlohmann_json::")
+        if(DISABLE_NLOHMANN_JSON)
+          message(STATUS "PETSIRD was built with nlohmann_json → forcing DISABLE_NLOHMANN_JSON=OFF")
+          set(DISABLE_NLOHMANN_JSON OFF CACHE BOOL "disable use of nlohmann JSON libraries" FORCE)
+        endif()
+      endif()
+
     else()
-        message(STATUS "PETSIRD library not found. Try and set the DIR manually.")
+      message(FATAL_ERROR "PETSIRD::petsird target not found after find_package(PETSIRD)")
     endif()
+
+  else()
+    message(STATUS "PETSIRD not found: PETSIRD support will be disabled.")
+    set(HAVE_PETSIRD OFF)
+  endif()
+else()
+  set(HAVE_PETSIRD OFF)
 endif()
 
 #### enable support for ctest

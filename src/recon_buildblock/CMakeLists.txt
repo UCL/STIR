@@ -192,6 +192,6 @@ if (STIR_WITH_CUDA)
   target_link_libraries(${TARGET} PRIVATE CUDA::cudart)
 endif()
 
-if (HAVE_PETSIRD)
-target_link_libraries(${TARGET} PUBLIC petsird_generated)
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()

@@ -75,6 +75,6 @@ if (HAVE_HDF5)
   endif()
 endif()
 
-if (HAVE_PETSIRD)
-target_link_libraries(${TARGET} PUBLIC petsird_generated)
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()

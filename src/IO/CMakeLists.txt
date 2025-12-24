@@ -145,5 +145,5 @@ if (HAVE_JSON)
 endif()
 
 if(HAVE_PETSIRD)
-  target_link_libraries(${TARGET} PUBLIC petsird_generated)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()
