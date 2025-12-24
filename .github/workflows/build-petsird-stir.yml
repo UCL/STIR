@@ -1,0 +1,84 @@
+name: Build PETSIRD + STIR
+
+on:
+    push:
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    stir-with-petsird:
+        runs-on: ubuntu-24.04
+
+        env:
+            PETSIRD_PREFIX: ${{ github.workspace }}/petsird-install
+        
+        steps:
+        - name: Checkout STIR
+          uses: actions/checkout@v4
+
+        - name: Checkout PETSIRD
+          uses: actions/checkout@v4
+          with:
+            repository: NikEfth/PETSIRD
+            ref: fix/cmake-export
+            path: PETSIRD
+            
+        - name: Checkout Yardl (main)
+          uses: actions/checkout@v4
+          with:
+            repository: microsoft/yardl
+            ref: main
+            path: yardl
+            
+        - name: Setup micromamba (yardl env)
+          uses: mamba-org/setup-micromamba@v2
+          with:
+            environment-file: yardl/environment.yml
+            activate-environment: yardl
+        
+        - name: Export CMake prefix path
+          run: |
+            echo "CMAKE_PREFIX_PATH=$CONDA_PREFIX;$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+
+        - name: Setup Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: '1.22'
+
+        - name: Build and install Yardl
+          run: |
+            cd yardl/tooling/cmd/yardl
+            go build
+            mkdir -p "$HOME/.local/bin"
+            install -m 755 yardl $HOME/.local/bin/yardl
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+            "$HOME/.local/bin/yardl" --version
+
+        - name: Install just
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y cmake ninja-build just
+
+        - name: Install PETSIRD Python dependencies
+          run: |
+            micromamba install -y -n yardl -f PETSIRD/environment.yml
+            micromamba install -y -n yardl -c conda-forge libdate
+
+        - name: Generate PETSIRD sources (yardl) 
+          run: |
+            micromamba run -n yardl bash -lc "
+            export CC=/usr/bin/gcc
+            export CXX=/usr/bin/g++
+            cd PETSIRD/model
+            just build
+            ls ../cpp/generated
+            "
+
+
+
+
+
+
+
+
+        
