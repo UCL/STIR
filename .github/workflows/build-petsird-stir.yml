@@ -13,6 +13,15 @@ jobs:
             PETSIRD_PREFIX: ${{ github.workspace }}/petsird-install
         
         steps:
+        - name: Install System Dependencies (date-tz)
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y software-properties-common
+            sudo add-apt-repository -y universe
+            sudo apt-get update
+            sudo apt-get install -y libdate-tz-dev || sudo apt-get install -y libhowardhinnant-date-dev
+            # sudo apt-get install -y libopenblas-dev 
+
         - name: Checkout STIR
           uses: actions/checkout@v4
 
@@ -62,16 +71,35 @@ jobs:
         - name: Install PETSIRD Python dependencies
           run: |
             micromamba install -y -n yardl -f PETSIRD/environment.yml
-            micromamba install -y -n yardl -c conda-forge libdate
+            micromamba install -n yardl -c conda-forge xtensor xtensor-blas openblas
+        #     micromamba install -y -n yardl -c conda-forge libdate tzdata libcurl
 
         - name: Generate PETSIRD sources (yardl) 
           run: |
             micromamba run -n yardl bash -lc "
             export CC=/usr/bin/gcc
             export CXX=/usr/bin/g++
+            
+            # Make conda packages visible to CMake
+            export CMAKE_PREFIX_PATH=\$CONDA_PREFIX:\$CMAKE_PREFIX_PATH
+            export CXXFLAGS=\"-I\$MAMBA_ROOT_PREFIX/envs/yardl/include \$CXXFLAGS\"
+
             cd PETSIRD/model
             just build
-            ls ../cpp/generated
+            "
+        - name: Build PETSIRD C++
+          run: |
+            micromamba run -n yardl bash -lc "
+            cd PETSIRD/cpp
+            mkdir -p build 
+            cd build
+            
+            cmake .. \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_PREFIX_PATH=\"\$CONDA_PREFIX\" \
+                -DCMAKE_INSTALL_PREFIX=\"${{ env.PETSIRD_PREFIX }}\"
+
+            cmake --build . --target install -- -j$(nproc)
             "
 
 
