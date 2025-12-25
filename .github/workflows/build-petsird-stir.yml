@@ -19,6 +19,7 @@ jobs:
             sudo apt-get install -y software-properties-common
             sudo add-apt-repository -y universe
             sudo apt-get update
+            sudo apt install -y libomp-dev libboost-dev libhdf5-serial-dev nlohmann-json3-dev
             sudo apt-get install -y libdate-tz-dev || sudo apt-get install -y libhowardhinnant-date-dev
             # sudo apt-get install -y libopenblas-dev 
 
@@ -101,6 +102,37 @@ jobs:
 
             cmake --build . --target install -- -j$(nproc)
             "
+
+        - name: Fix yardl mistake
+          run: |
+            FILE="PETSIRD/cpp/generated/petsird/CMakeLists.txt"
+            echo "🔧 Fixing yardl-generated CMakeLists.txt (removing xtensor linkage)"
+            sed -i.bak \
+            -e '/^[[:space:]]*xtensor[[:space:]]*$/d' \
+            "$FILE"
+
+
+        - name: Build STIR with PETSIRD
+          run: |
+            micromamba run -n yardl bash -e <<'EOF'
+            export CC=/usr/bin/gcc
+            export CXX=/usr/bin/g++
+            export CMAKE_PREFIX_PATH="$CONDA_PREFIX:${PETSIRD_PREFIX}"
+            
+            mkdir -p build-stir
+            cd build-stir
+            
+            cmake .. \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_PREFIX_PATH=\"\$CMAKE_PREFIX_PATH\" \
+                -DPETSIRD_DIR=\"${{ env.PETSIRD_PREFIX }}/lib/cmake/PETSIRD\" \
+                -DDISABLE_PETSIRD:BOOL=OFF \
+                -DDISABLE_HDF5:BOOL=OFF \
+                -DDISABLE_NLOHMANN_JSON:BOOL=OFF\
+                -DSTIR_OPENMP:BOOL=ON
+            
+            cmake --build . -- -j$(nproc)
+            EOF
 
 
 

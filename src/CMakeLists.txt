@@ -272,6 +272,10 @@ target_link_libraries(stir_registries)
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
 
+if (HAVE_PETSIRD)
+  target_link_libraries(stir_registries PUBLIC PETSIRD::petsird)
+endif()
+
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 	ADD_SUBDIRECTORY(${STIR_DIR})

@@ -159,6 +159,8 @@ if(@STIR_WITH_Parallelproj_PROJECTOR@)
 endif()
 
 if(@HAVE_PETSIRD@)
+  find_package(PETSIRD CONFIG REQUIRED ${STIR_FIND_TYPE})
+  message(STATUS "PETSIRD support in STIR enabled.")
   set(HAVE_PETSIRD TRUE)
 endif()
 
