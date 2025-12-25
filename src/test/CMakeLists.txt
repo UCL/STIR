@@ -77,6 +77,13 @@ list (APPEND buildblock_simple_tests
         test_interpolate_projdata.cxx
 )
 
+if (HAVE_PETSIRD)
+  list (APPEND buildblock_simple_tests
+	test_PETSIRD.cxx
+  )
+  endif()
+
+
 endif() # MINI_STIR
 
 include(stir_test_exe_targets)

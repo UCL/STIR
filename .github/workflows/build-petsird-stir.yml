@@ -134,6 +134,16 @@ jobs:
             cmake --build . -- -j$(nproc)
             EOF
 
+        - name: Run STIR tests
+          run: |
+            micromamba run -n yardl bash -e <<'EOF'
+            export STIR_CONFIG_DIR=${GITHUB_WORKSPACE}/src/config
+            cd build-stir
+            make test 
+            EOF
+
+
+
 
 
 
