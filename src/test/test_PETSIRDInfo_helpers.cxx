@@ -145,7 +145,7 @@ PETSIRDTests::test_infer_group_sizes_dim2_dim3()
       for (int y = 0; y < 3; ++y)
         {
           // Test with float numbers and something in the x coordintate so that we don't have all zeros
-          pts.emplace_back(static_cast<float>(z+0.4), static_cast<float>(z+0.35), 0.1f+z/2.f);
+          pts.emplace_back(static_cast<float>(z + 0.4), static_cast<float>(z + 0.35), 0.1f + z / 2.f);
         }
     }
 

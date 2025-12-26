@@ -142,7 +142,7 @@ get_largest_vector(const std::set<float>& x, const std::set<float>& y, const std
       axis = 2;
     }
 
-//   stir::info(fmt::format("I believe the axial direction is the {}.", axis));
+  //   stir::info(fmt::format("I believe the axial direction is the {}.", axis));
   return *largest;
 }
 
