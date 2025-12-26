@@ -173,7 +173,6 @@ PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_di
               if (!detect_radius(el_trans))
                 {
                   error("Unable to determine radius from translation components.");
-                  continue;
                 }
             }
           else
@@ -218,6 +217,17 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   if (!petsird_scanner_info_sptr)
     error("PETSIRDInfo: Null PETSIRD ScannerInformation pointer provided.");
 
+  const auto& geom = petsird_scanner_info_sptr->scanner_geometry;
+
+  if (geom.replicated_modules.empty())
+    error("PETSIRDInfo: scanner_geometry.replicated_modules is empty.");
+
+  if (geom.replicated_modules[0].transforms.empty())
+    warning("PETSIRDInfo: replicated_modules[0].transforms is empty (rotation/angles may be unreliable).");
+
+  if (geom.replicated_modules[0].object.detecting_elements.transforms.empty())
+    error("PETSIRDInfo: detecting_elements.transforms is empty (cannot infer element spacing/radius).");
+
   //! TODO: Determine the DOI based on material
   float average_doi = 0.0;
   if (petsird_scanner_info_sptr->bulk_materials.size() > 0)
@@ -228,7 +238,6 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
     }
 
   const petsird::TypeOfModule type_of_module = petsird_scanner_info_sptr->scanner_geometry.replicated_modules.size() - 1;
-
   if (type_of_module > 0)
     {
       error("Multiple types of PETSIRD modules are not supported. Abort.");
@@ -496,13 +505,15 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
   // PRECOMPUTED from previous step:
   std::size_t groupSize
-      = blocks_per_bucket_transaxial == 1 ? 0 : num_trans_crystals_per_block; // e.g. 5, or 1 if purely monotonic
+      = blocks_per_bucket_transaxial == 1 ? 1 : num_trans_crystals_per_block; // e.g. 5, or 1 if purely monotonic
   // extern InnerLoopDim inner_dim;         // Axial / Tangential / Radial
 
   // Don't need these anymore. Keeping for future reference.
   // const int num_ax = blocks_per_bucket_axial * num_axial_crystals_per_block;
   // const int num_tang = blocks_per_bucket_transaxial * num_trans_crystals_per_block;
 
+  std::cerr << "Tile size (groupSize) = " << groupSize << "\n";
+  
   for (uint32_t module = 0; module < numberOfModules; module++)
     for (uint32_t elem = 0; elem < numberOfElementsIndices; elem++)
       //            for (uint32_t ener = 0; ener < num_event_energy_bins; ener++) //energy not supported yet
@@ -601,7 +612,6 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
         // Save to shared_ptr map
       }
-
   // Reverse the mapping: from STIR detpos to PETSIRD mean coord
   auto map = std::make_shared<STIRToPETSIRDDetectorIndexMap>();
 

@@ -111,10 +111,10 @@ public:
     det_pos.pos1() = it0->second; // copy of DetectionPosition<>
     det_pos.pos2() = it1->second; // copy of DetectionPosition<>
 
-    std::cout << det_pos.pos1().tangential_coord() << ", " << det_pos.pos1().axial_coord() << ", "
-              << det_pos.pos1().radial_coord() << std::endl;
-    std::cout << det_pos.pos2().tangential_coord() << ", " << det_pos.pos2().axial_coord() << ", "
-              << det_pos.pos2().radial_coord() << std::endl;
+    // std::cout << det_pos.pos1().tangential_coord() << ", " << det_pos.pos1().axial_coord() << ", "
+    //           << det_pos.pos1().radial_coord() << std::endl;
+    // std::cout << det_pos.pos2().tangential_coord() << ", " << det_pos.pos2().axial_coord() << ", "
+    //           << det_pos.pos2().radial_coord() << std::endl;
 
     // auto s_it0 = petsird_info_sptr->get_stir_to_petsird_map()->find(it0->second);
     // auto s_it1 = petsird_info_sptr->get_stir_to_petsird_map()->find(it1->second);
