@@ -513,7 +513,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   // const int num_tang = blocks_per_bucket_transaxial * num_trans_crystals_per_block;
 
   std::cerr << "Tile size (groupSize) = " << groupSize << "\n";
-  
+
   for (uint32_t module = 0; module < numberOfModules; module++)
     for (uint32_t elem = 0; elem < numberOfElementsIndices; elem++)
       //            for (uint32_t ener = 0; ener < num_event_energy_bins; ener++) //energy not supported yet
