@@ -499,8 +499,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
       = blocks_per_bucket_transaxial == 1 ? 0 : num_trans_crystals_per_block; // e.g. 5, or 1 if purely monotonic
   // extern InnerLoopDim inner_dim;         // Axial / Tangential / Radial
 
-  const int num_ax = blocks_per_bucket_axial * num_axial_crystals_per_block;
-  const int num_tang = blocks_per_bucket_transaxial * num_trans_crystals_per_block;
+  // Don't need these anymore. Keeping for future reference.
+  // const int num_ax = blocks_per_bucket_axial * num_axial_crystals_per_block;
+  // const int num_tang = blocks_per_bucket_transaxial * num_trans_crystals_per_block;
 
   for (uint32_t module = 0; module < numberOfModules; module++)
     for (uint32_t elem = 0; elem < numberOfElementsIndices; elem++)
@@ -508,7 +509,8 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
       {
         // ---- 1) Decompose elem into: tile, in-tile indices ----
         const uint32_t tileSize = groupSize * groupSize; // elems per tile
-        const uint32_t tiles_per_bucket = blocks_per_bucket_axial * blocks_per_bucket_transaxial;
+        // Don't need tiles_per_bucket for now. Keeping for future reference.
+        // const uint32_t tiles_per_bucket = blocks_per_bucket_axial * blocks_per_bucket_transaxial;
 
         const uint32_t tile = (groupSize > 0 ? elem / tileSize : 0);      // which tile
         const uint32_t inTile = (groupSize > 0 ? elem % tileSize : elem); // index inside tile
