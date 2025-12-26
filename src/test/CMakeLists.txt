@@ -79,7 +79,7 @@ list (APPEND buildblock_simple_tests
 
 if (HAVE_PETSIRD)
   list (APPEND buildblock_simple_tests
-	test_PETSIRD.cxx
+	test_PETSIRDInfo_helpers.cxx
   )
   endif()
 
