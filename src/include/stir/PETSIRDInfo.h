@@ -118,7 +118,21 @@ public:
     if (!detection_bin_efficiencies)
       return 1.f; // no efficiencies available
 
-    auto it0 = stir_to_petsird->find(dp.pos2());
+      DetectionPosition<> temp_dp1; 
+      DetectionPosition<> temp_dp2; 
+
+      if (dp.timing_pos() < 0)
+      {
+        temp_dp1 = dp.pos2();
+        temp_dp2 = dp.pos1();
+      }
+      else
+      {
+        temp_dp1 = dp.pos1();
+        temp_dp2 = dp.pos2();
+      }
+     
+    auto it0 = stir_to_petsird->find(temp_dp1);
     if (it0 == stir_to_petsird->end())
       {
         info(boost::format("DetectionPosition pos1(): "
@@ -128,7 +142,8 @@ public:
              % dp.pos1().tangential_coord() % dp.pos1().axial_coord() % dp.pos1().radial_coord());
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
-    auto it1 = stir_to_petsird->find(dp.pos1());
+    
+      auto it1 = stir_to_petsird->find(temp_dp2);
 
     if (it1 == stir_to_petsird->end())
       {
