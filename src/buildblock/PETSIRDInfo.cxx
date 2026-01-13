@@ -237,15 +237,17 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
         average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
     }
 
-  const petsird::TypeOfModule type_of_module = petsird_scanner_info_sptr->scanner_geometry.replicated_modules.size() - 1;
+  type_of_module = petsird_scanner_info_sptr->scanner_geometry.replicated_modules.size() - 1;
   if (type_of_module > 0)
     {
       error("Multiple types of PETSIRD modules are not supported. Abort.");
     }
 
+  module_pair = petsird::TypeOfModulePair{ type_of_module, type_of_module };
+
   const auto& tof_bin_edges = petsird_scanner_info_sptr->tof_bin_edges[type_of_module][type_of_module];
   info(fmt::format("Num. of TOF bins in PETSIRD {}", tof_bin_edges.NumberOfBins()));
-  if (tof_bin_edges.NumberOfBins() > 0)
+  if (tof_bin_edges.NumberOfBins() > 1)
     {
       info(fmt::format(
           "Since the PETSIRD file has TOF information, STIR will force cylindrical geometry, as long as other things checkout."));
@@ -356,12 +358,31 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
       }
   }
 
-  blocks_per_bucket_transaxial = group2 > 1 ? unique_elements_vertical_values.size() / group2 : group2;
-  std::cout << "blocks per bucket in transaxial direction = " << blocks_per_bucket_transaxial << "\n";
-  blocks_per_bucket_axial = group3 > 1 ? unique_elements_horizontal_values.size() / (numberOfElementsIndices / group3) : group3;
-  std::cout << "blocks per bucket in axial direction =  " << blocks_per_bucket_axial << "\n";
-  num_axial_crystals_per_block = unique_elements_horizontal_values.size() / blocks_per_bucket_axial;
-  num_trans_crystals_per_block = unique_elements_vertical_values.size() / blocks_per_bucket_transaxial;
+  bool has_tile_structure = group2 > 1 && group3 > 1 && (numberOfElementsIndices % (group2 * group3) == 0);
+  info(fmt::format("Has tile structure: {}", has_tile_structure ? "yes" : "no"));
+
+  if (has_tile_structure)
+    {
+      // GATE-style tiled PETSIRD
+      blocks_per_bucket_transaxial = group2 > 1 ? unique_elements_vertical_values.size() / group2 : group2;
+      std::cout << "blocks per bucket in transaxial direction = " << blocks_per_bucket_transaxial << "\n";
+      blocks_per_bucket_axial
+          = group3 > 1 ? unique_elements_horizontal_values.size() / (numberOfElementsIndices / group3) : group3;
+      std::cout << "blocks per bucket in axial direction =  " << blocks_per_bucket_axial << "\n";
+      num_axial_crystals_per_block = unique_elements_horizontal_values.size() / blocks_per_bucket_axial;
+      num_trans_crystals_per_block = unique_elements_vertical_values.size() / blocks_per_bucket_transaxial;
+    }
+  else
+    {
+      // STIR-style flattened PETSIRD
+      blocks_per_bucket_transaxial = 1;
+      blocks_per_bucket_axial = 1;
+
+      num_trans_crystals_per_block = unique_elements_vertical_values.size();
+      num_axial_crystals_per_block = unique_elements_horizontal_values.size();
+
+      warning("No block structure detected: falling back to flat crystal layout.");
+    }
 
   std::vector<float> block_axial_spacing;
   vector_utils::get_spacing_uniform(block_axial_spacing, main_axis);
@@ -384,57 +405,60 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                    expected_circle_area,
                    polygon_area,
                    std::abs(expected_circle_area - polygon_area) / expected_circle_area));
-
-  if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.05f || forced_geometry == "cylindrical")
+  // This is the NeuroLF ratio.
+  forced_geometry = "BlocksOnCylindrical"; 
+  if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.02f || forced_geometry == "cylindrical")
     {
       info(fmt::format("PETSIRDInfo: The cylindrical area {} is more than 95% matching the polygon area {}. We will presume a "
                        "cylindrical configuration.",
                        expected_circle_area,
                        polygon_area));
-      stir_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
-                                          std::string("PETSIRD_defined_scanner"),
-                                          /* num dets per ring */
-                                          (num_transaxial_blocks * unique_elements_vertical_values.size()),
-                                          unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
-                                          /* number of non arccor bins */
-                                          (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
-                                          /* number of maximum arccor bins */
-                                          (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
-                                          /* inner ring radius */
-                                          radius,
-                                          /* doi */ average_doi, // average_doi,
-                                          /* ring spacing */
-                                          element_horizontal_spacing[0], //* 10.f,
-                                          // bin_size_v
-                                          element_vertical_spacing[0], // * 10.f,
-                                          /*intrinsic_tilt_v*/
-                                          0.f,
-                                          /*num_axial_blocks_per_bucket_v */
-                                          blocks_per_bucket_axial,
-                                          /*num_transaxial_blocks_per_bucket_v*/
-                                          blocks_per_bucket_transaxial,
-                                          /*num_axial_crystals_per_block_v*/
-                                          num_axial_crystals_per_block,
-                                          /*num_transaxial_crystals_per_block_v*/
-                                          num_trans_crystals_per_block,
-                                          /*num_axial_crystals_per_singles_unit_v*/
-                                          unique_elements_horizontal_values.size() / blocks_per_bucket_axial,
-                                          /*num_transaxial_crystals_per_singles_unit_v*/
-                                          unique_elements_vertical_values.size() / blocks_per_bucket_transaxial,
-                                          /*num_detector_layers_v*/
-                                          1,                                                           // num_detector_layers_v
-                                          petsird_scanner_info_sptr->energy_resolution_at_511.front(), // energy_resolution_v
-                                          511,                                                         // reference_energy_v
-                                          tof_bin_edges.NumberOfBins(),
-                                          (tof_bin_edges.edges[1] - tof_bin_edges.edges[0]) / speed_of_light_in_mm_per_ps_div2,
-                                          *unique_tof_values.begin() * 10 // non-TOF
-                                          ));
+      stir_scanner_sptr.reset(
+          new Scanner(Scanner::User_defined_scanner,
+                      std::string("PETSIRD_defined_scanner"),
+                      /* num dets per ring */
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()),
+                      unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
+                      /* number of non arccor bins */
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      /* number of maximum arccor bins */
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      /* inner ring radius */
+                      radius,
+                      /* doi */ average_doi, // average_doi,
+                      /* ring spacing */
+                      element_horizontal_spacing[0], //* 10.f,
+                      // bin_size_v
+                      radius < 140 ? element_vertical_spacing[0] / 2 : element_vertical_spacing[0], // * 10.f,, // * 10.f,
+                      /*intrinsic_tilt_v*/
+                      0.f,
+                      /*num_axial_blocks_per_bucket_v */
+                      blocks_per_bucket_axial,
+                      /*num_transaxial_blocks_per_bucket_v*/
+                      blocks_per_bucket_transaxial,
+                      /*num_axial_crystals_per_block_v*/
+                      num_axial_crystals_per_block,
+                      /*num_transaxial_crystals_per_block_v*/
+                      num_trans_crystals_per_block,
+                      /*num_axial_crystals_per_singles_unit_v*/
+                      unique_elements_horizontal_values.size() / blocks_per_bucket_axial,
+                      /*num_transaxial_crystals_per_singles_unit_v*/
+                      unique_elements_vertical_values.size() / blocks_per_bucket_transaxial,
+                      /*num_detector_layers_v*/
+                      1,                                                           // num_detector_layers_v
+                      petsird_scanner_info_sptr->energy_resolution_at_511.front(), // energy_resolution_v
+                      511,                                                         // reference_energy_v
+                      tof_bin_edges.NumberOfBins(),
+                      (tof_bin_edges.edges[1] - tof_bin_edges.edges[0]) / speed_of_light_in_mm_per_ps_div2,
+                      *unique_tof_values.begin() * 10 // non-TOF
+                      ));
       is_cylindrical = true;
       is_generic_geometry = false;
       is_block_configuration = false;
     }
   else
     {
+      const uint32_t forced_axial_buckets = unique_dim3_values.size();
       info("PETSIRDInfo: The cylindrical area is less than 95% matching the polygon area. We will predsume a non-cylindrical "
            "configuration.");
       stir_scanner_sptr.reset(
@@ -453,11 +477,11 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       /* ring spacing */
                       element_horizontal_spacing[0], //* 10.f,
                       // bin_size_v
-                      element_vertical_spacing[0], // * 10.f,
+                      radius < 140 ? element_vertical_spacing[0] / 2 : element_vertical_spacing[0], // * 10.f,
                       /*intrinsic_tilt_v*/
                       0.f,
                       /*num_axial_blocks_per_bucket_v */
-                      1,
+                      forced_axial_buckets,
                       /*num_transaxial_blocks_per_bucket_v*/
                       1,
                       /*num_axial_crystals_per_block_v*/
@@ -514,104 +538,57 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
   std::cerr << "Tile size (groupSize) = " << groupSize << "\n";
 
-  for (uint32_t module = 0; module < numberOfModules; module++)
-    for (uint32_t elem = 0; elem < numberOfElementsIndices; elem++)
-      //            for (uint32_t ener = 0; ener < num_event_energy_bins; ener++) //energy not supported yet
+  const uint32_t num_rings = static_cast<uint32_t>(stir_scanner_sptr->get_num_rings());
+  const uint32_t num_det = static_cast<uint32_t>(stir_scanner_sptr->get_num_detectors_per_ring());
+  const uint32_t axial_blocks = static_cast<uint32_t>(stir_scanner_sptr->get_num_axial_blocks());
+  const uint32_t trans_crys = static_cast<uint32_t>(stir_scanner_sptr->get_num_transaxial_crystals_per_block());
+  const uint32_t axial_crys = static_cast<uint32_t>(stir_scanner_sptr->get_num_axial_crystals_per_block());
+  const uint32_t layers = static_cast<uint32_t>(stir_scanner_sptr->get_num_detector_layers());
+
+  for (uint32_t module = 0; module < numberOfModules; ++module)
+    for (uint32_t elem = 0; elem < numberOfElementsIndices; ++elem)
       {
-        // ---- 1) Decompose elem into: tile, in-tile indices ----
-        const uint32_t tileSize = groupSize * groupSize; // elems per tile
-        // Don't need tiles_per_bucket for now. Keeping for future reference.
-        // const uint32_t tiles_per_bucket = blocks_per_bucket_axial * blocks_per_bucket_transaxial;
+        petsird::ExpandedDetectionBin bin{ module, elem, 0 };
 
-        const uint32_t tile = (groupSize > 0 ? elem / tileSize : 0);      // which tile
-        const uint32_t inTile = (groupSize > 0 ? elem % tileSize : elem); // index inside tile
+        int tang_pos = 0, ax_pos = 0, rad_pos = 0;
 
-        const uint32_t i0 = inTile % groupSize; // fast inside tile (local "x")
-        const uint32_t i1 = inTile / groupSize; // slow inside tile (local "y")
-
-        int ax_pos = 0;
-        int tang_pos = 0;
-        int rad_pos = 0; // ignored for now
-
-        // ---- 2) Decode which block (tile) we are in along axial/tangential ----
-        switch (inner_dim)
+        if (!has_tile_structure)
           {
-            case InnerLoopDim::Tangential: {
-              // Here we assume:
-              // - i0 runs tangential inside a block
-              // - i1 runs axial  inside a block
-              //
-              // tiles are laid out as:
-              //   tangential: blocks_per_bucket_transaxial tiles
-              //   axial:      blocks_per_bucket_axial      tiles
+            // -------- STIR-origin PETSIRD (flat) --------
+            const uint32_t ax_mod = module % axial_blocks;
+            const uint32_t tang_mod = module / axial_blocks;
 
-              const uint32_t tang_block = tile % blocks_per_bucket_transaxial;
-              const uint32_t axial_block = tile / blocks_per_bucket_transaxial;
+            const uint32_t axial_in_block = elem % axial_crys;
+            const uint32_t tmp = elem / axial_crys;
+            const uint32_t trans_in_block = tmp % trans_crys;
+            const uint32_t radial = tmp / trans_crys;
 
-              tang_pos = static_cast<int>(tang_block * groupSize + i0);
-              ax_pos = static_cast<int>(axial_block * groupSize + i1);
-              break;
-            }
+            tang_pos = tang_mod * trans_crys + trans_in_block;
+            ax_pos = ax_mod * axial_crys + axial_in_block;
+            rad_pos = radial;
+          }
+        else
+          {
+            // -------- GATE-origin PETSIRD (tiled) --------
+            const uint32_t groupSize = num_trans_crystals_per_block;
+            const uint32_t tileSize = groupSize * groupSize;
 
-            case InnerLoopDim::Axial: {
-              // Here we assume:
-              // - i0 runs axial inside a block
-              // - i1 runs tangential inside a block
-              //
-              // tiles are laid out as:
-              //   axial:      blocks_per_bucket_axial      tiles
-              //   tangential: blocks_per_bucket_transaxial tiles
+            const uint32_t tile = elem / tileSize;
+            const uint32_t inTile = elem % tileSize;
 
-              const uint32_t axial_block = tile % blocks_per_bucket_axial;
-              const uint32_t tang_block = tile / blocks_per_bucket_axial;
+            const uint32_t i0 = inTile % groupSize;
+            const uint32_t i1 = inTile / groupSize;
 
-              ax_pos = static_cast<int>(axial_block * groupSize + i0);
-              tang_pos = static_cast<int>(tang_block * groupSize + i1);
-              break;
-            }
-            case InnerLoopDim::Radial: {
-              error("Radial inner loop not supported yet.");
-              break;
-            }
+            const uint32_t tang_block = tile % blocks_per_bucket_transaxial;
+            const uint32_t axial_block = tile / blocks_per_bucket_transaxial;
+
+            tang_pos = tang_block * groupSize + i0 + module * (num_trans_crystals_per_block * blocks_per_bucket_transaxial);
+            ax_pos = axial_block * groupSize + i1;
           }
 
-        DetectionPosition<> detpos(
-            tang_pos + module * (num_trans_crystals_per_block * blocks_per_bucket_transaxial), ax_pos, rad_pos);
-
-        petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, 0 };
-
-        if (is_generic_geometry)
-          {
-            auto box_shape = petsird_helpers::geometry::get_detecting_box(
-                *petsird_scanner_info_sptr, type_of_module, expanded_detection_bin);
-            CartesianCoordinate3D<float> mean_coord(0.f, 0.f, 0.f);
-
-            for (auto& corner : box_shape.corners)
-              {
-                mean_coord.x() += corner.c[0] / box_shape.corners.size();
-                mean_coord.y() += corner.c[1] / box_shape.corners.size();
-                mean_coord.z() += corner.c[2] / box_shape.corners.size();
-              }
-
-            (*petsird_map_sptr)[detpos] = mean_coord;
-
-            std::cout << detpos.radial_coord() << ", " << detpos.axial_coord() << ", " << detpos.tangential_coord() << ", "
-                      << mean_coord.x() << ", " << mean_coord.y() << ", " << mean_coord.z() << "\n";
-          }
-        else if (is_block_configuration || is_cylindrical)
-          {
-            (*petsird_to_stir)[expanded_detection_bin] = detpos;
-          }
-
-        // auto detectionBin = petsird_helpers::make_detection_bin(
-        //     *scanner_info,
-        //     type_of_module,
-        //     expanded_detection_bin);
-
-        // petsird_map[detectionBin] = mean_coord;
-
-        // Save to shared_ptr map
+        (*petsird_to_stir)[bin] = DetectionPosition<>(tang_pos, ax_pos, rad_pos);
       }
+
   // Reverse the mapping: from STIR detpos to PETSIRD mean coord
   auto map = std::make_shared<STIRToPETSIRDDetectorIndexMap>();
 

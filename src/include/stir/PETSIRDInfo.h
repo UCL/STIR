@@ -42,6 +42,10 @@ Coincidence LM Data Class for PETSIRD
 #include "stir/info.h"
 #include "stir/error.h"
 
+#include "petsird_helpers.h"
+#include "petsird_helpers/create.h"   // for make_detection_bin
+#include "petsird_helpers/geometry.h" // depending on where get_detection_efficiency lives
+
 START_NAMESPACE_STIR
 
 /*!
@@ -108,14 +112,13 @@ public:
     // std::cout << "WIth det efficiencies: " <<
     // petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies->size()
     //           << std::endl;
-    float eff = 1.0f;
 
     const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
 
     if (!detection_bin_efficiencies)
-      return eff; // no efficiencies available
+      return 1.f; // no efficiencies available
 
-    auto it0 = stir_to_petsird->find(dp.pos1());
+    auto it0 = stir_to_petsird->find(dp.pos2());
     if (it0 == stir_to_petsird->end())
       {
         info(boost::format("DetectionPosition pos1(): "
@@ -125,7 +128,7 @@ public:
              % dp.pos1().tangential_coord() % dp.pos1().axial_coord() % dp.pos1().radial_coord());
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
-    auto it1 = stir_to_petsird->find(dp.pos2());
+    auto it1 = stir_to_petsird->find(dp.pos1());
 
     if (it1 == stir_to_petsird->end())
       {
@@ -137,28 +140,13 @@ public:
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
 
-    return 1.f;
-    // if (detection_bin_efficiencies)
-    //   {
-    //     // eff *= ((*detection_bin_efficiencies)[0](detection_bin_1)
-    //     //         * (*detection_bin_efficiencies)[1](detection_bin_2));
-    //     if (eff == 0.F)
-    //       return 0.F;
-    //   }
+    const auto det0 = petsird_helpers::make_detection_bin(
+        *petsird_scanner_info_sptr, type_of_module, it0->second); // it0->second is ExpandedDetectionBin
 
-    // it0->second().module_index;
-    // it0->second().element_index;
-    // it1->second().module_index;
-    // it1->second().element_index;
+    const auto det1 = petsird_helpers::make_detection_bin(*petsird_scanner_info_sptr, type_of_module, it1->second);
 
-    // const auto& num_en0 = petsird_scanner_info_sptr->event_energy_bin_edges[0].NumberOfBins();
-    // const auto& num_en1 = petsird_scanner_info_sptr->event_energy_bin_edges[0].NumberOfBins();
+    return petsird_helpers::get_detection_efficiency(*petsird_scanner_info_sptr.get(), module_pair, det0, det1);
 
-    // // TODO create helper for next calculation
-    // // eff *= module_pair_efficiencies.values(expanded_det_bin0.element_index * num_en0 + expanded_det_bin0.energy_index,
-    // //                                        expanded_det_bin1.element_index * num_en1 + expanded_det_bin1.energy_index);
-    // // Placeholder implementation
-    int nikos = 0;
   }
 
   float get_lower_energy_threshold() const
@@ -247,6 +235,10 @@ private:
   bool is_generic_geometry = false;
 
   bool is_block_configuration = false;
+
+  petsird::TypeOfModule type_of_module;
+
+  petsird::TypeOfModulePair module_pair; 
 
   std::string forced_geometry = "";
   //! Mapping from PETSIRD expanded bins to STIR detection positions.

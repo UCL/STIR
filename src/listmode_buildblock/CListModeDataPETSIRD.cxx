@@ -31,17 +31,15 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/info.h"
 #include "stir/error.h"
 
-#include "petsird_helpers.h"
+
 // #include "petsird_helpers/create.h"
 // #include "petsird_helpers/geometry.h"
-
-#include "petsird/binary/protocols.h"
-#include "petsird/hdf5/protocols.h"
 
 #include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/CListRecordPETSIRD.h"
 
 START_NAMESPACE_STIR
+
 
 CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename, bool use_hdf5)
     : use_hdf5(use_hdf5)
@@ -62,6 +60,8 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   current_lm_data_ptr->ReadTimeBlocks(curr_time_block);
   if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
     error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abord.");
+
+  ++m_time_block_index;
 
   if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
     curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
@@ -155,7 +155,11 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
       else
         {
           if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+          {
+            current_lm_data_ptr->Close();
             return Succeeded::no;
+          }
+          ++m_time_block_index;
           curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
         }
     }
@@ -163,7 +167,11 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
     {
       curr_is_prompt = true;
       if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+      {
+        current_lm_data_ptr->Close();
         return Succeeded::no;
+      }
+      ++m_time_block_index;
       curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
     }
 
