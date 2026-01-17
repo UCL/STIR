@@ -40,9 +40,9 @@ START_NAMESPACE_STIR
 class ProjDataInfoCylindricalArcCorr : public ProjDataInfoCylindrical
 {
   typedef ProjDataInfoCylindrical base_type;
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef ProjDataInfoCylindricalArcCorr self_type;
 

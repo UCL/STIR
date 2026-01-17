@@ -76,12 +76,10 @@ called, which initialises new elements first to 0.
 template <int num_dimensions, typename elemT>
 class Array : public NumericVectorWithOffset<Array<num_dimensions - 1, elemT>, elemT>
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
- public:
-#else
-private:
+public:
 #endif
   typedef Array<num_dimensions, elemT> self;
   typedef NumericVectorWithOffset<Array<num_dimensions - 1, elemT>, elemT> base_type;
@@ -282,6 +280,92 @@ public:
   inline const elemT& at(const BasicCoordinate<num_dimensions, int>& c) const;
   //@}
 
+  //! \name Numerical operations
+  //@{
+  // tedious reimplementation to fix return types. This could be avoided by using boost::operators.
+  // However, reimplementing them explicitly helps SWIG.
+  inline self& operator+=(const self& x)
+  {
+    base_type::operator+=(x);
+    return *this;
+  }
+  inline self& operator-=(const self& x)
+  {
+    base_type::operator-=(x);
+    return *this;
+  }
+  inline self& operator*=(const self& x)
+  {
+    base_type::operator*=(x);
+    return *this;
+  }
+  inline self& operator/=(const self& x)
+  {
+    base_type::operator/=(x);
+    return *this;
+  }
+  inline self& operator+=(const elemT x)
+  {
+    base_type::operator+=(x);
+    return *this;
+  }
+  inline self& operator-=(const elemT x)
+  {
+    base_type::operator-=(x);
+    return *this;
+  }
+  inline self& operator*=(const elemT x)
+  {
+    base_type::operator*=(x);
+    return *this;
+  }
+  inline self& operator/=(const elemT x)
+  {
+    base_type::operator/=(x);
+    return *this;
+  }
+  inline self operator+(const self& x) const
+  {
+    self c(*this);
+    return c += x;
+  }
+  inline self operator+(const elemT x) const
+  {
+    self c(*this);
+    return c += x;
+  }
+  inline self operator-(const self& x) const
+  {
+    self c(*this);
+    return c -= x;
+  }
+  inline self operator-(const elemT x) const
+  {
+    self c(*this);
+    return c -= x;
+  }
+  inline self operator*(const self& x) const
+  {
+    self c(*this);
+    return c *= x;
+  }
+  inline self operator*(const elemT x) const
+  {
+    self c(*this);
+    return c *= x;
+  }
+  inline self operator/(const self& x) const
+  {
+    self c(*this);
+    return c /= x;
+  }
+  inline self operator/(const elemT x) const
+  {
+    self c(*this);
+    return c /= x;
+  }
+  //@}
+
   //! \deprecated a*x+b*y (use xapyb)
   template <typename elemT2>
   STIR_DEPRECATED inline void axpby(const elemT2 a, const Array& x, const elemT2 b, const Array& y);
@@ -356,19 +440,11 @@ private:
 //! The 1-dimensional (partial) specialisation of Array.
 template <class elemT>
 class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
-#ifdef STIR_USE_BOOST
-    ,
-                        boost::operators<Array<1, elemT>, NumericVectorWithOffset<elemT, elemT>>,
-                        boost::operators<Array<1, elemT>>,
-                        boost::operators<Array<1, elemT>, elemT>
-#endif
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
- public:
-#else
-private:
+public:
 #endif
   typedef NumericVectorWithOffset<elemT, elemT> base_type;
   typedef Array<1, elemT> self;
@@ -529,17 +605,8 @@ public:
   //! find regular range, returns \c false if the range is not regular
   bool get_regular_range(BasicCoordinate<1, int>& min, BasicCoordinate<1, int>& max) const;
 
-#ifndef STIR_USE_BOOST
-
-  /* KT 31/01/2000 I had to add these functions here, although they are
-  in NumericVectorWithOffset already.
-  Reason: we allow addition (and similar operations) of tensors of
-  different sizes. This implies that operator+= can call a 'grow'
-  on retval. For this to work, retval should be an Array, not
-  its base_type (which happens if these function are not repeated
-  in this class).
-  Complicated...
-  */
+  /* Add numerical operators with correct return value, as opposed to those from the base class
+   */
   //! elem by elem addition
   inline self operator+(const base_type& iv) const;
 
@@ -563,8 +630,6 @@ public:
 
   //! division with an 'elemT'
   inline self operator/(const elemT a) const;
-
-#endif // boost
 
   //! allow array-style access, read/write
   inline elemT& operator[](int i);

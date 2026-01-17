@@ -71,9 +71,9 @@ class ProjDataInfoGenericNoArcCorr : public ProjDataInfoGeneric
 {
 private:
   typedef ProjDataInfoGeneric base_type;
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef ProjDataInfoGenericNoArcCorr self_type;
 

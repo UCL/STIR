@@ -1105,15 +1105,15 @@ InterfilePDFSHeader::post_processing()
         transaxial_distance_between_blocks_in_cm = guessed_scanner_ptr->get_transaxial_block_spacing() / 10;
       // end of new variables for block geometry
 
-      if (guessed_scanner_ptr->is_tof_ready())
-        {
-          if (max_num_timing_poss < 0)
-            max_num_timing_poss = guessed_scanner_ptr->get_max_num_timing_poss();
-          if (size_of_timing_pos < 0)
-            size_of_timing_pos = guessed_scanner_ptr->get_size_of_timing_pos();
-          if (timing_resolution < 0)
-            timing_resolution = guessed_scanner_ptr->get_timing_resolution();
-        }
+      // TOF fields
+      {
+        if (max_num_timing_poss < 0)
+          max_num_timing_poss = guessed_scanner_ptr->get_max_num_timing_poss();
+        if (size_of_timing_pos < 0)
+          size_of_timing_pos = guessed_scanner_ptr->get_size_of_timing_pos();
+        if (timing_resolution < 0)
+          timing_resolution = guessed_scanner_ptr->get_timing_resolution();
+      }
 
       // consistency check with values of the guessed_scanner_ptr we guessed above
 

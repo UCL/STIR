@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2020, 2023 University College London
+    Copyright (C) 2013, 2020, 2023, 2025 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -24,6 +24,7 @@
 // include for min,max definitions
 #include <algorithm>
 #include "stir/error.h"
+#include "stir/assign.h"
 
 START_NAMESPACE_STIR
 
@@ -157,8 +158,12 @@ NumericVectorWithOffset<T, NUMBER>::operator-=(const NumericVectorWithOffset& v)
   // first check if *this is empty
   if (this->get_length() == 0)
     {
-      *this = v;
-      return *this *= -1;
+      if (v.get_length() == 0)
+        return *this;
+      // else
+      // Note: I cannot implement things like v.num[i] * (-1), as NUMBER can be a
+      // BasicCoordinate, an unsigned int or whatever
+      error("NumericVectorWithOffset-= called with rhs that is larger in size than lhs. This is no longer supported.");
     }
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
   for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
@@ -176,9 +181,13 @@ NumericVectorWithOffset<T, NUMBER>::operator*=(const NumericVectorWithOffset& v)
   // first check if *this is empty
   if (this->get_length() == 0)
     {
+      if (v.get_length() == 0)
+        return *this;
+      // else
       // we have to return an object of the same dimensions as v, but filled with 0.
       *this = v;
-      return *this *= 0;
+      assign(*this, 0);
+      return *this;
     }
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
   for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
@@ -196,9 +205,13 @@ NumericVectorWithOffset<T, NUMBER>::operator/=(const NumericVectorWithOffset& v)
   // first check if *this is empty
   if (this->get_length() == 0)
     {
+      if (v.get_length() == 0)
+        return *this;
+      // else
       // we have to return an object of the same dimensions as v, but filled with 0.
       *this = v;
-      return *this *= 0;
+      assign(*this, 0);
+      return *this;
     }
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
   for (int i = v.get_min_index(); i <= v.get_max_index(); i++)

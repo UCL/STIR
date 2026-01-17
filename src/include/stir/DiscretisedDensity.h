@@ -97,12 +97,10 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity : public ExamData, public ArrayType<num_dimensions, elemT>
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
- public:
-#else
-private:
+public:
 #endif
   typedef ArrayType<num_dimensions, elemT> base_type;
   typedef DiscretisedDensity<num_dimensions, elemT> self_type;

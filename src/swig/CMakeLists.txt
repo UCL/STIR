@@ -19,9 +19,12 @@ cmake_policy(SET CMP0086 NEW)
 if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
   FIND_PACKAGE(SWIG 3.0 REQUIRED)
+  if (SWIG_VERSION VERSION_LESS 3.0.12)
+    message(FATAL_ERROR "Your SWIG version is too old. We need at least 3.0.12, but (at least) 4.4 is highly recommended.")
+  endif()
   INCLUDE("${SWIG_USE_FILE}")
 
-  SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\" -DSTIR_DEPRECATED="" -DSTIR_TOF=1 -DSTIR_VERSION=${VERSION})
+  SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\" -DSTIR_DEPRECATED="" -DSTIR_TOF=1 -DSTIR_VERSION=${VERSION} -D__host__="" -D__device__="")
   # Manually add some flags (really should get this from elsewhere)
   if (HAVE_LLN_MATRIX)
     SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DHAVE_LLN_MATRIX)
@@ -35,6 +38,11 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
   if (parallelproj_FOUND)
    SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DHAVE_parallelproj)
   endif()
+  if (STIR_WITH_CUDA)
+    SET(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} -DSTIR_WITH_CUDA)
+  endif()
+
+
 
   SET_SOURCE_FILES_PROPERTIES(stir.i PROPERTIES CPLUSPLUS ON)
 
@@ -67,21 +75,21 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
   endif()
 
-  #if (SWIG_VERSION VERSION_LESS 3.0.11)
-    # Older SWIG versions (checked with 3.0.12) have problems with some templates and private typedefs.
-    # To get round this, some include files in STIR have "#ifdef SWIG" statements.
-    # We need to compile the wrapper with -DSWIG.
-    # However, none of the other STIR files (including the registries) should be compiled with -DSWIG
-    # We will do this using the SWIG_GENERATED_COMPILE_DEFINITIONS property
+  # (Older?) SWIG versions (checked with 4.4) have problems with some templates and private typedefs.
+  # To get round this, some include files in STIR have "#ifdef STIR_COMPILING_SWIG_WRAPPER" statements.
+   # We need to compile the wrapper with this preprocessor symbol defined.
+   # However, none of the other STIR files should be compiled with that symbol.
+   # We will do this using the SWIG_GENERATED_COMPILE_DEFINITIONS property
 
-    # KT thought this would work, but it doesn't. So instead, we use a similar line for each TARGET
-    # set_property(SOURCE stir.i PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS SWIG)
-    function(SWIG_WORKAROUND module)
-      set_property(TARGET ${module} PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS SWIG)
-    endfunction()
+   # KT thought this would work, but it doesn't.
+   # set_property(SOURCE stir.i PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS STIR_COMPILING_SWIG_WRAPPER)
+   # So instead, we use a similar line for each TARGET
+   function(SWIG_WORKAROUND module)
+     set_property(TARGET ${module} PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS STIR_COMPILING_SWIG_WRAPPER)
+   endfunction()
 
-  #endif()
-endif()
+ #endif()
+ endif()
 
 # Currently, CMake doesn't know about dependencies of swig-generated files, so
 # we will add it ourselves. Sadly, there are too many here, but it's probably safest.
@@ -178,7 +186,7 @@ if (BUILD_SWIG_OCTAVE)
     set_property(TARGET ${SWIG_MODULE_stiroct_REAL_NAME} PROPERTY SWIG_GENERATED_COMPILE_OPTIONS /bigobj)
   endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
-  SWIG_WORKAROUND(${SWIG_MODULE_stiroct_REAL_NAME})
+  SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
   if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
     set_property(TARGET ${SWIG_MODULE_stiroct_REAL_NAME} PROPERTY SWIG_GENERATED_INCLUDE_DIRECTORIES ${FMT_INCLUDE_DIRS})
   endif()
@@ -212,7 +220,7 @@ if (BUILD_SWIG_MATLAB)
         SUFFIX "_wrap.${Matlab_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
         LINK_FLAGS "${Matlab_CXXLINKER_FLAGS}"
         FOLDER "Matlab")
-  SWIG_WORKAROUND(${SWIG_MODULE_stirMATLAB_REAL_NAME})
+  SWIG_WORKAROUND(${SWIG_MODULE_stir_REAL_NAME})
   if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
     set_property(TARGET ${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTY SWIG_GENERATED_INCLUDE_DIRECTORIES ${FMT_INCLUDE_DIRS})
   endif()

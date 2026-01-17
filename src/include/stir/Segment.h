@@ -49,9 +49,9 @@ class Viewgram;
 template <typename elemT>
 class Segment
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // need to make typedef public for swig
- public:
+public:
 #endif
   typedef Segment<elemT> self_type;
 

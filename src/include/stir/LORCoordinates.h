@@ -183,9 +183,9 @@ protected:
 template <class coordT>
 class LORInCylinderCoordinates : public LOR<coordT>
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef LORInCylinderCoordinates<coordT> self_type;
 
@@ -294,9 +294,9 @@ private:
 template <class coordT>
 class LORAs2Points : public LOR<coordT>
 {
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef LORAs2Points<coordT> self_type;
 
@@ -366,9 +366,9 @@ template <class coordT>
 class LORInAxialAndSinogramCoordinates : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
 private:
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef LORInAxialAndSinogramCoordinates<coordT> self_type;
 
@@ -510,9 +510,9 @@ template <class coordT>
 class LORInAxialAndNoArcCorrSinogramCoordinates : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
 private:
-#ifdef SWIG
+#ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
- public:
+public:
 #endif
   typedef LORInAxialAndNoArcCorrSinogramCoordinates<coordT> self_type;
   typedef LORCylindricalCoordinates_z_and_radius<coordT> private_base_type;

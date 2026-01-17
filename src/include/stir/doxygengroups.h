@@ -311,31 +311,60 @@ functionality. This includes a forward and back projector, and uses either OpenM
 \ingroup STIR_library
 */
 /*!
-\defgroup OSMAPOSL OSMAPOSL
+\defgroup iterativereconstructors Iterative reconstructors
 \ingroup reconstructors
-Implementation of the OSMAP One-Step-Late reconstruction algorithm
+Iterative (statistical) reconstruction algorithms.
+*/
+/*!
+\defgroup OSMAPOSL OSMAPOSL
+\ingroup iterativereconstructors
+Implementation of the OSMAP One-Step-Late reconstruction algorithm.
 */
 /*!
 \defgroup KOSMAPOSL KOSMAPOSL
 \ingroup OSMAPOSL
-Implementation of the kernel-based OSMAP One-Step-Late reconstruction algorithm
+Implementation of the kernel-based OSMAP One-Step-Late reconstruction algorithm.
 */
 /*!
 \defgroup OSSPS OSSPS
+\ingroup iterativereconstructors
+Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorithm.
+*/
+/*!
+\defgroup analyticreconstructors Analytic reconstructors
 \ingroup reconstructors
-Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorithm
+Analytic (direct, closed-form) reconstruction methods.
 */
 /*!
 \defgroup FBP2D FBP2D
-\ingroup reconstructors
-Implementation of the 2D Filtered Back Projection algorithm
+\ingroup analyticreconstructors
+Implementation of the 2D Filtered Back Projection algorithm.
 */
 /*!
 \defgroup FBP3DRP FBP3DRP
-\ingroup reconstructors
-Implementation of the 3D Reprojection Filtered Back Projection algorithm
+\ingroup analyticreconstructors
+Implementation of the 3D Reprojection Filtered Back Projection algorithm.
 */
-
+/*!
+\defgroup SRT2D SRT2D
+\ingroup analyticreconstructors
+Implementation of the 2D PET Spline Reconstruction Technique algorithm.
+*/
+/*!
+\defgroup SRT2DSPECT SRT2DSPECT
+\ingroup analyticreconstructors
+Implementation of the 2D SPECT Spline Reconstruction Technique algorithm.
+*/
+/*!
+\defgroup GRD2D GRD2D
+\ingroup analyticreconstructors
+Implementation of the 2D PET GRiDding algorithm.
+*/
+/*!
+\defgroup DDSR2D DDSR2D
+\ingroup analyticreconstructors
+Implementation of the 2D Direct Differentiation SPECT Reconstruction algorithm.
+*/
 /*!
 \defgroup modelling Kinetic modelling building blocks
 \ingroup STIR_library

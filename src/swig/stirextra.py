@@ -62,13 +62,11 @@ def to_numpy(stirdata):
     """
     return the data in a STIR image or other Array as a numpy array
     """
-    # construct a numpy array using the "flat" STIR iterator
+    # construct a numpy array using as_array()
     try:
-        npstirdata=numpy.fromiter(stirdata.flat(), dtype=numpy.float32);
-        # now reshape into ND array
-        npdata=npstirdata.reshape(stirdata.shape());
-        return npdata
+        return stirdata.as_array()
     except:
-        # hopefully it's projection data
-        stirarray=stirdata.to_array();
-        return to_numpy(stirarray);
+        # some other data-type where as_array() isn't supported yet
+        npstirdata=numpy.fromiter(stirdata.flat(), dtype=numpy.float32)
+        # now reshape into ND array
+        return npstirdata.reshape(stirdata.shape())
