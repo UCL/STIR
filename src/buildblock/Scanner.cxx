@@ -483,7 +483,7 @@ Scanner::Scanner(Type scanner_type)
                  323,                                             // rings, because of the max ring difference is 322
                  520,                                             // max n non-arc-corr bins
                  520,                                             // default n arc-corr bins
-                 21 * 38,                                         // num detector per ring
+                 (20 + 1) * 38,                                   // num detector per ring
                  410.0F,                                          // inner ring radius (mm)
                  7.0F,                                            // unsure on this                          // avg DoI (mm)
                  3.29114F,                                        // ring spacing (mm)
@@ -492,11 +492,11 @@ Scanner::Scanner(Type scanner_type)
                  // ONLY used for CTI scanners for normalisation. These values will be ignored here.
                  4,
                  1, // n axial/trans blocks per bucket
-                 10,
-                 21, // n axial/trans xtals per block
-                 10,
-                 21, // n axial/trans xtals per singles unit
-                 1,  // n detector layers
+                 10 * 8 + 1,
+                 20 + 1, // n axial/trans xtals per block
+                 0,
+                 0, // n axial/trans xtals per singles unit
+                 1, // n detector layers
                  // energy
                  0.F,
                  511.F,
@@ -1638,6 +1638,7 @@ Scanner::get_num_virtual_axial_crystals_per_block() const
     {
     case E1080:
     case Siemens_mCT:
+    case Siemens_Quadra:
       return 1;
     default:
       return 0;
