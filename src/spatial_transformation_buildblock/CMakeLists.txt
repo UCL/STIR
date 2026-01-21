@@ -21,6 +21,5 @@ set(${dir_LIB_SOURCES}
    InvertAxis.cxx
 ) 
 
-include(stir_lib_target)
-
-target_link_libraries(${dir} PUBLIC buildblock numerics_buildblock)
+set(TARGET ${STIR_SPATIAL_TRANSFORMATION_BUIDBLOCK_LIB})
+target_sources(${TARGET} PRIVATE ${${dir_LIB_SOURCES}})

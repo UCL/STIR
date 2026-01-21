@@ -36,8 +36,6 @@
 
 START_NAMESPACE_STIR
 
-#ifndef SWIG // let SWIG ignore all this
-
 /*!
   \ingroup priors
   \brief Implementation of the Relative Difference penalty potential
@@ -132,11 +130,6 @@ public:
     this->epsilon = 1e-7;
   }
 };
-
-#else  // IGNORESWIG
-template <typename elemT>
-class RelativeDifferencePotential;
-#endif // SWIG
 
 /*!
   \ingroup priors

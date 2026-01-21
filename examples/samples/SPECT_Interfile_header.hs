@@ -5,7 +5,10 @@
 !imaging modality := nucmed
 
 ; name of file with binary data
-name of data file := somefile.s
+; Note: we are "self-referring" to the header here such that this file can be read by STIR as a "template".
+; (This is used in one of our tests.)
+; Obviously, this would normally not be the case.
+name of data file := SPECT_Interfile_header.hs
 
 !version of keys := 3.3
 !GENERAL DATA :=
