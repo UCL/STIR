@@ -1447,6 +1447,8 @@ make_fan_sum_data_help(Array<2, float>& data_fan_sums,
                        const TProjDataInfo& proj_data_info,
                        const ProjData& proj_data)
 {
+  if (proj_data.get_proj_data_info_sptr()->is_tof_data())
+    error("make_fan_data: Incompatible with TOF data. Abort.");
 
   const int half_fan_size = fan_size / 2;
   data_fan_sums.fill(0);
@@ -1461,7 +1463,7 @@ make_fan_sum_data_help(Array<2, float>& data_fan_sums,
            bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
            ++bin.axial_pos_num())
         {
-          auto sinogram = proj_data.get_sinogram(bin.axial_pos_num(), bin.segment_num());
+          const auto sinogram = proj_data.get_sinogram(bin);
 #ifdef STIR_OPENMP
 #  if _OPENMP >= 200711
 #    pragma omp parallel for collapse(2) // OpenMP 3.1
@@ -1482,10 +1484,10 @@ make_fan_sum_data_help(Array<2, float>& data_fan_sums,
                   std::vector<DetectionPositionPair<>> det_pos_pairs;
                   non_tof_proj_data_info_sptr->get_all_det_pos_pairs_for_bin(
                       det_pos_pairs, parallel_bin); // using the default argument to ignore TOF here
-                  for (unsigned int i = 0; i < det_pos_pairs.size(); ++i)
+                  for (const auto& dp_pair : det_pos_pairs)
                     {
-                      const auto& p1 = det_pos_pairs[i].pos1();
-                      const auto& p2 = det_pos_pairs[i].pos2();
+                      const auto& p1 = dp_pair.pos1();
+                      const auto& p2 = dp_pair.pos2();
                       const auto count = sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()];
 #if defined(STIR_OPENMP)
 #  if _OPENMP >= 201012
