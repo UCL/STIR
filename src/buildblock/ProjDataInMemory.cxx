@@ -350,7 +350,7 @@ ProjDataInMemory::read_from_file(const std::string& filename)
 }
 
 float
-ProjDataInMemory::get_bin_value(Bin& bin)
+ProjDataInMemory::get_bin_value(const Bin& bin) const
 {
   return buffer[this->get_index(bin)];
 }
