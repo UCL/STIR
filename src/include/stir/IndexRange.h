@@ -79,8 +79,11 @@ public:
   //! Empty range
   inline IndexRange();
 
+#ifndef SWIG
+  // SWIG bug prevents using base_type here. Leads to problems with num_dimensions-1
   //! Make an IndexRange from the base type
   inline IndexRange(const base_type& range);
+#endif
 
   //! Copy constructor
   inline IndexRange(const IndexRange<num_dimensions, indexT>& range);
