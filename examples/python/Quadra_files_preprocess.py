@@ -101,7 +101,7 @@ def remove_scan_data_lines_from_interfile_header(header_filename_new, header_fil
     data_type_string = r'scan data type description[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
-    num_data_types_string = 'number of scan data types[^\n]*\s*:=\s*[^\n]*\n'
+    num_data_types_string = r'number of scan data types[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(num_data_types_string, '', data)
 
     with open(header_filename_new, 'w') as f2:
@@ -239,7 +239,7 @@ try:
     os.mkdir(STIR_output_folder)
 except FileExistsError:
     print("STIR output folder exists, files are overwritten")
-    
+
 #%%
 ###################### PROMPTS FILE ############################
 ##### first, we check if the prompts file is compressed
@@ -454,7 +454,7 @@ TOF_bin = 6
 
 fig, ax = plt.subplots(figsize = (8,6))
 
-ax.plot(np.mean(prompts_precorr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='Prompts, pre-corrected multfactors')
+ax.plot(np.mean(prompts_precorr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='Prompts, corr-multfactors')
 ax.plot(np.mean(add_sino_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='additive term')
 
 ax.set_xlabel('Radial distance (bin)')
