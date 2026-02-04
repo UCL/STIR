@@ -69,15 +69,14 @@ def check_if_compressed(header_filename):
         else:
             print('You are trying to read e7tools compressed data. Please uncompress first!')
             sys.exit()
-    except:
+    except Exception:
         print('No compression info found in header!')
-        pass
 
 def plot_2d_image(idx,vol,title,clims=None,cmap="viridis"):
     """Customized version of subplot to plot 2D image"""
     plt.subplot(*idx)
     plt.imshow(vol,cmap=cmap)
-    if not clims is None:
+    if clims is not None:
         plt.clim(clims)
     plt.colorbar(shrink=.5, aspect=.9)
     plt.title(title)
@@ -99,7 +98,7 @@ def remove_scan_data_lines_from_interfile_header(header_filename_new, header_fil
     with open(header_filename_old) as f:
         data = f.read()
 
-    data_type_string = 'scan data type description[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'scan data type description[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
     num_data_types_string = 'number of scan data types[^\n]*\s*:=\s*[^\n]*\n'
@@ -122,7 +121,7 @@ def remove_data_offset(header_filename_new, header_filename_old):
     with open(header_filename_old) as f:
         data = f.read()
 
-    data_type_string = 'data offset in bytes[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'data offset in bytes[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
     with open(header_filename_new, 'w') as f2:
@@ -143,11 +142,11 @@ def replace_siemens_convention_in_interfile_header(header_name_new, header_name)
     with open(header_name) as f:
         data = f.read()
 
-    poss = re.search('matrix axis label\[2\]:=plane', data).span()
+    poss = re.search(r'matrix axis label\[2\]:=plane', data).span()
     data = data.replace(data[poss[0]:poss[1]], \
         'matrix axis label[2]:=sinogram views')
 
-    poss = re.search('matrix axis label\[3\]:=projection', data).span()
+    poss = re.search(r'matrix axis label\[3\]:=projection', data).span()
     data = data.replace(data[poss[0]:poss[1]], \
         'matrix axis label[3]:=number of sinograms')
 
@@ -158,7 +157,7 @@ def change_max_ring_distance(header_name_new, header_name, max_ring_diff):
     with open(header_name) as f:
         data = f.read()
 
-    poss = re.search('%maximum ring difference\s*:=[^\n]*', data).span()
+    poss = re.search(r'%maximum ring difference\s*:=[^\n]*', data).span()
     data = data.replace(data[poss[0]:poss[1]], \
         '%maximum ring difference:={}'.format(int(max_ring_diff)))
 
@@ -166,7 +165,6 @@ def change_max_ring_distance(header_name_new, header_name, max_ring_diff):
         f2.write(data)
 
 def remove_tof_dimension(header_name_new, header_name):
-    
     with open(header_name) as f:
         data = f.read()
 
@@ -174,23 +172,25 @@ def remove_tof_dimension(header_name_new, header_name):
     data = data.replace(data[poss[0]:poss[1]], \
         'number of dimensions:={}'.format(3))
 
-    data_type_string = 'matrix size\[4\]\s*:=[^\n]*\n'
+    data_type_string = r'matrix size\[4\]\s*:=[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
-    data_type_string = 'matrix axis label\[4\]*\s*:=TOF bin*\n'
+    data_type_string = r'matrix axis label\[4\]*\s*:=TOF bin*\n'
     data = re.sub(data_type_string, '', data)
 
-    data_type_string = 'scale factor \(ps\/bin\) (.*)\n'
+    data_type_string = r'scale factor \(ps\/bin\) (.*)\n'
     data = re.sub(data_type_string, '', data)
 
-    data_type_string = '%TOF mashing factor[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'%TOF mashing factor[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '%TOF mashing factor :=0\n', data)
 
-    data_type_string = '%number of TOF time bins[^\n]*\s*:=\s*[^\n]*\n'
+    data_type_string = r'%number of TOF time bins[^\n]*\s*:=\s*[^\n]*\n'
     data = re.sub(data_type_string, '', data)
 
     with open(header_name_new, 'w') as f2:
         f2.write(data)
+
+
 #%%
 data_folder_PATH = r'/PATHtosinograms'
 
@@ -284,7 +284,7 @@ norm_sino = stir.ProjData.read_from_file(norm_sino_to_read_withSTIR)
 if apply_DOI_adaption: DOI_adaption(norm_sino, 10)
 norm_sino_arr = stirextra.to_numpy(norm_sino)
 
-##### in case there were bad miniblocks during your measurement, the norm-file 
+##### In case there were bad miniblocks during your measurement, the norm-file
 ##### might contain negative values. We'll set them to a very high value here, such
 ##### that the detection efficiencies (1/norm-value) will be 0 (numerically)
 norm_sino_arr[norm_sino_arr<=0.] = 10^37
@@ -442,7 +442,7 @@ for i in range(33):
 multi_factors_STIR = stir.ProjDataInterfile(prompts_from_e7.get_exam_info(), proj_info, os.path.join(STIR_output_folder,multi_term_filename_fSTIR))
 multi_factors_STIR.fill(multi_factors_STIR_arr.flat)
 
-#%% 
+#%%
 ##### to compare the additive term with the acquisition data, we need to
 ##### pre-correct the prompts with the multiplicative factors
 prompts_precorr = prompts_arr * acf_arr * norm_sino_arr
@@ -454,7 +454,7 @@ TOF_bin = 6
 
 fig, ax = plt.subplots(figsize = (8,6))
 
-ax.plot(np.mean(prompts_precorr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='Prompts, pre-corrected f. multi. factors')
+ax.plot(np.mean(prompts_precorr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='Prompts, pre-corrected multfactors')
 ax.plot(np.mean(add_sino_arr[TOF_bin, central_slice-thickness_half:central_slice+thickness_half, 0, :], axis=(0)), label='additive term')
 
 ax.set_xlabel('Radial distance (bin)')
