@@ -15,6 +15,8 @@ if(CCACHE_PROGRAM)
 endif()
 
 
+include(CMakePrintHelpers)
+
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -59,9 +61,9 @@ ENDIF()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
-set(VERSION_MINOR   3)
+set(VERSION_MINOR   4)
 set(VERSION_PATCH   0)
-set(VERSION   060300) # only used in STIRConfig.h.in and swig/CMakeLists.txt
+set(VERSION   060400) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -152,6 +154,21 @@ endif()
 
 if(NOT DISABLE_HDF5)
   find_package(HDF5 COMPONENTS CXX)
+  if (TARGET HDF5::HDF5)
+    option(USE_HDF5_TARGET "Use HDF5::HDF5 CMake target for dependencies (recommended)" ON)
+    mark_as_advanced(USE_HDF5_TARGET)
+    # Depend on both HDF5::HDF5 (i.e. all libs just found), and hdf5::hdf5_cpp
+    # (i.e. C++ libs and dependencies). Only the latter should be necessary, but
+    # we need the former due to https://gitlab.kitware.com/cmake/cmake/-/issues/27379
+    set(HDF5_TARGET HDF5::HDF5;hdf5::hdf5_cpp)
+    if (HDF5_FIND_DEBUG) # debugging print (re-use name of FindHDF5 CMake variable)
+      cmake_print_properties(
+        TARGETS HDF5::HDF5
+        PROPERTIES LOCATION INTERFACE_INCLUDE_DIRECTORIES IMPORTED_LINK_INTERFACE_LIBRARIES IMPORTED_LINK_DEPENDENT_LIBRARIES INTERFACE_LINK_LIBRARIES
+        )
+    endif()
+  endif()
+
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)

@@ -98,6 +98,16 @@ jobs:
           # Currently disabled due to out of disk space, see https://github.com/UCL/STIR/issues/1618
           ITK: "OFF"
         - os: ubuntu-24.04
+          # shared library build
+          compiler: gcc
+          compiler_version: 14
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20 -DBUILD_SHARED_LIBS=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+        - os: ubuntu-24.04
           compiler: gcc
           # currently CUDA doesn't support gcc 14 yet
           compiler_version: 13
