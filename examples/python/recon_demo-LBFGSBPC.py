@@ -1,11 +1,7 @@
-# Demo of how to use STIR from python to reconstruct some data
-# To run in "normal" Python, you would type the following in the command line
-#  execfile('recon_demo.py')
-# In ipython, you can use
-#  %run recon_demo.py
+# Demo of how to use STIR from python to reconstruct some data with LBFGSBPC
 
 # Copyright 2012-06-05 - 2013 Kris Thielemans
-# Copyright 2015 University College London
+# Copyright 2025 University College London
 
 # This file is part of STIR.
 #
@@ -14,7 +10,6 @@
 # See STIR/LICENSE.txt for details
 
 import stir
-import stirextra
 import matplotlib.pyplot as plt
 import os
 from LBFGSBPC import LBFGSBPC
@@ -26,16 +21,15 @@ stir.Verbosity.set(0)
 # to close the window.
 try:
     plt.ion()
-except:
+except Exception:
     print("Enabling interactive-mode for plotting failed. Continuing.")
 
 # go to directory with input files
 os.chdir("../recon_demo")
 
-# initialise reconstruction object
+# %% initialise OSEM reconstruction object and objective function
 # we will do this here via a .par file
 OSEM_recon = stir.OSMAPOSLReconstruction3DFloat("recon_demo_OSEM.par")
-# set filenames to save subset sensitivities (for illustration purposes)
 poissonobj = OSEM_recon.get_objective_function()
 
 # %% run initial OSEM
