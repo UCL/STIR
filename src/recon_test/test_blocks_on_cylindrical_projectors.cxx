@@ -592,7 +592,7 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   shared_ptr<DiscretisedDensity<3, float>> image1_sptr(image.clone());
   write_to_file("image_to_fwp", *image1_sptr);
 
-  image.fill(0); 
+  image.fill(0);
 
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
