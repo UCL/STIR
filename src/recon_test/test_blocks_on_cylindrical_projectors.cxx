@@ -195,7 +195,7 @@ BlocksTests::run_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardPr
   shared_ptr<DiscretisedDensity<3, float>> image1_sptr(image.clone());
   write_to_file("image_for", *image1_sptr);
 
-  image.fill(0); //= *image.get_empty_copy();
+  image.fill(0);
   for (int i = 15; i < 360; i += 30)
     {
       theta2 = i * _PI / 180;
