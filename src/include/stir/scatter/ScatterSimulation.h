@@ -124,6 +124,8 @@ public:
 
   void set_template_proj_data_info(const std::string&);
 
+  void set_template_proj_data_info(const ProjDataInfo& arg);
+
   void set_template_proj_data_info(shared_ptr<const ProjDataInfo> arg);
 
   void set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3, float>>);
