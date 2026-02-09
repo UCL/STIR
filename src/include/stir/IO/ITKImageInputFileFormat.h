@@ -48,7 +48,7 @@ public:
   //! This function always returns \c false as ITK cannot read from istream
   bool can_read(const FileSignature& signature, std::istream& input) const override;
   //! Use ITK reader to check if it can read the file (by seeing if it throws an exception or not)
-  bool can_read(const FileSignature& signature, const std::string& filename) const override;
+  bool can_read(const FileSignature& signature, const std::string& filename) override;
 
   const std::string get_name() const override { return "ITK"; }
 

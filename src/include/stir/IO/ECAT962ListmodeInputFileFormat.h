@@ -48,7 +48,7 @@ public:
   {
     return this->actual_can_read(signature, input);
   }
-  virtual bool can_read(const FileSignature& signature, const std::string& listmode_filename_prefix) const
+  virtual bool can_read(const FileSignature& signature, const std::string& listmode_filename_prefix)
   {
     const std::string singles_filename = listmode_filename_prefix + "_1.sgl";
     std::ifstream singles_file(singles_filename.c_str(), std::ios::binary);

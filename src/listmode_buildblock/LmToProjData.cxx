@@ -38,7 +38,7 @@ FRAME_BASED_DT_CORR:
 // (Note: can currently NOT be disabled)
 #define USE_SegmentByView
 
-//#define FRAME_BASED_DT_CORR
+// #define FRAME_BASED_DT_CORR
 
 // set elem_type to what you want to use for the sinogram elements
 // we need a signed type, as randoms can be subtracted. However, signed char could do.

@@ -46,7 +46,7 @@ public:
   {
     return this->actual_can_read(signature, input);
   }
-  virtual bool can_read(const FileSignature& signature, const std::string& filename) const
+  virtual bool can_read(const FileSignature& signature, const std::string& filename)
   {
     std::ifstream input;
     open_read_binary(input, filename);

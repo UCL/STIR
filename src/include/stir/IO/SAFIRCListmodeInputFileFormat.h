@@ -91,7 +91,7 @@ public:
 
   //! Checks in binary data file for correct signature (can be either "SAFIR CListModeData", "NeuroLF CListModeData" or "MUPET
   //! CListModeData").
-  bool can_read(const FileSignature& signature, const std::string& filename) const override
+  bool can_read(const FileSignature& signature, const std::string& filename) override
   {
     // Looking for the right key in the parameter file
     std::ifstream par_file(filename.c_str());
@@ -151,7 +151,7 @@ protected:
   mutable std::string listmode_filename;
   mutable std::string crystal_map_filename;
   mutable std::string template_proj_data_filename;
-  mutable double lor_randomization_sigma;
+  mutable double lor_randomization_sigma = 0.0;
 
   bool actual_can_read(const FileSignature& signature, std::istream& input) const override
   {
