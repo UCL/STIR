@@ -73,6 +73,11 @@
       segments had problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.<br>
       <a href=https://github.com/UCL/STIR/pull/1675># 1675</a>. Extra tests were introduced in <a href=https://github.com/UCL/STIR/pull/1674># 1674</a>.
     </li>
+      <li>
+    Fixed a memory leak caused multiple calls to ProjDataInfo::clone() combined with dynamic_cast. 
+    The object is now cloned once and owndership is transferred safely after type checking.
+       </li>
+    <br>
   </ul>
 
   <h3>Build system</h3>
