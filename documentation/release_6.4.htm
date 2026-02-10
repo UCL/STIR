@@ -74,7 +74,7 @@
       <a href=https://github.com/UCL/STIR/pull/1675># 1675</a>. Extra tests were introduced in <a href=https://github.com/UCL/STIR/pull/1674># 1674</a>.
     </li>
       <li>
-    Fixed a memory leak caused multiple calls to ProjDataInfo::clone() combined with dynamic_cast. 
+    Fixed a (small) memory leak in <code>ScatterSimulation::set_up()</code> caused by multiple calls to <code>ProjDataInfo::clone()</code> combined with <code>dynamic_cast</code>. 
     The object is now cloned once and owndership is transferred safely after type checking.
        </li>
     <br>
