@@ -64,11 +64,11 @@
 #    include "stir/IO/ROOTListmodeInputFileFormat.h"
 #    include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
 #    include "stir/IO/InputStreamFromROOTFileForECATPET.h"
-#endif
+#  endif
 
-#ifdef HAVE_SIMSET
-#include "stir/IO/SimSETListmodeInputFileFormat.h"
-#include "stir/IO/InputStreamFromSimSET.h"
+#  ifdef HAVE_SIMSET
+#    include "stir/IO/SimSETListmodeInputFileFormat.h"
+#    include "stir/IO/InputStreamFromSimSET.h"
 #  endif
 
 #  ifdef HAVE_UPENN
@@ -109,16 +109,16 @@ static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat<CListEventDataNeuro
 static RegisterInputFileFormat<ROOTListmodeInputFileFormat> LMdummyROOT(6);
 static InputStreamFromROOTFileForCylindricalPET::RegisterIt dummy60606;
 static InputStreamFromROOTFileForECATPET::RegisterIt dummy606062;
-#endif
+#  endif
 
 //!
 //! \brief LMdummySimSET
 //! \author Nikos Efthimiou
 //! \details SimSET support
-#ifdef HAVE_SIMSET
+#  ifdef HAVE_SIMSET
 static RegisterInputFileFormat<SimSETListmodeInputFileFormat> LMdummySimSET(7);
-//static InputStreamFromSimSET::RegisterIt dummy70707;
-#endif
+// static InputStreamFromSimSET::RegisterIt dummy70707;
+#  endif
 
 #  ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT

@@ -15,14 +15,13 @@
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_IO_SimSETListmodeInputFileFormat_h__
-#define __stir_IO_SimSETListmodeInputFileFormat_h__
+#  define __stir_IO_SimSETListmodeInputFileFormat_h__
 
-
-#include "stir/IO/InputFileFormat.h"
-#include "stir/listmode/CListModeDataSimSET.h"
-#include "stir/error.h"
-#include <iostream>
-#include <unistd.h>
+#  include "stir/IO/InputFileFormat.h"
+#  include "stir/listmode/CListModeDataSimSET.h"
+#  include "stir/error.h"
+#  include <iostream>
+#  include <unistd.h>
 
 START_NAMESPACE_STIR
 
@@ -47,54 +46,41 @@ START_NAMESPACE_STIR
 //!
 //! \author Nikos Efthimiou
 //!
-class SimSETListmodeInputFileFormat :
-        public InputFileFormat<CListModeData >
+class SimSETListmodeInputFileFormat : public InputFileFormat<CListModeData>
 {
 public:
-    virtual const std::string
-    get_name() const
-    {
-        return "SimSET";
-    }
+  virtual const std::string get_name() const { return "SimSET"; }
 
-    virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
-    {
-        error("read_from_file for SimSET listmode data with istream not implemented %s:%s. Sorry",
-              __FILE__, __LINE__);
-        return unique_ptr<data_type>();
-    }
+  virtual unique_ptr<data_type> read_from_file(std::istream& input) const
+  {
+    error("read_from_file for SimSET listmode data with istream not implemented %s:%s. Sorry", __FILE__, __LINE__);
+    return unique_ptr<data_type>();
+  }
 
-    virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
-    {
-        return unique_ptr<data_type>(new CListModeDataSimSET(filename));
-    }
+  virtual unique_ptr<data_type> read_from_file(const std::string& filename) const
+  {
+    return unique_ptr<data_type>(new CListModeDataSimSET(filename));
+  }
 
 protected:
+  virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const
+  {
+    return this->is_SimSET_signature(signature.get_signature());
+  }
 
-    virtual
-    bool actual_can_read(const FileSignature& signature,
-                         std::istream& input) const
-    {
-        return this->is_SimSET_signature(signature.get_signature());
-    }
-
-    //! This is a very dirty function. We have to replicate argv in
-    //! a linux terminal fashion, as that is the acceptabel input to SimSET
-    //! function LbEnGetOptions. I could rewrite that, but the effort might
-    //! be too much.
-    bool is_SimSET_signature(const char* const signature) const
-    {
-        // checking for "interfile :"
-        const char * pos_of_colon = strchr(signature, ':');
-        if (pos_of_colon == NULL)
-          return false;
-        std::string keyword(signature, pos_of_colon-signature);
-        return (
-            standardise_interfile_keyword(keyword) ==
-            standardise_interfile_keyword("SimSET header"));
-    }
+  //! This is a very dirty function. We have to replicate argv in
+  //! a linux terminal fashion, as that is the acceptabel input to SimSET
+  //! function LbEnGetOptions. I could rewrite that, but the effort might
+  //! be too much.
+  bool is_SimSET_signature(const char* const signature) const
+  {
+    // checking for "interfile :"
+    const char* pos_of_colon = strchr(signature, ':');
+    if (pos_of_colon == NULL)
+      return false;
+    std::string keyword(signature, pos_of_colon - signature);
+    return (standardise_interfile_keyword(keyword) == standardise_interfile_keyword("SimSET header"));
+  }
 };
 
 END_NAMESPACE_STIR
@@ -114,7 +100,6 @@ END_NAMESPACE_STIR
 //        argv[0] = nullptr;
 //        argv[1] = nullptr;
 //        argv[2] = nullptr;
-
 
 //        char* pseudo_binary = new char[7];
 //        memset(pseudo_binary, 0, 7);
@@ -173,4 +158,3 @@ END_NAMESPACE_STIR
 //        delete [] argv_c;
 //        delete [] flag;
 //        delete [] knownOptions;
-
