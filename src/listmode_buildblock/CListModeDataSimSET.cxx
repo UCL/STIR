@@ -29,6 +29,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include <cstdio>
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
@@ -124,13 +125,12 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
    */
   if (PHGRDHST_IsUsePHGHistory() && (strlen(PhgRunTimeParams.PhgPhoHFileHistoryFilePath) == 0))
     {
-
       error("CListModeDataSimSET: No history file supplied in run time parameters.");
     }
   else
     {
-      strcpy(phgrdhstHistName, PhgRunTimeParams.PhgPhoHFileHistoryFilePath);
-      strcpy(phgrdhstHistParamsName, PhgRunTimeParams.PhgPhoHParamsFilePath);
+      std::snprintf(phgrdhstHistName, sizeof(phgrdhstHistName), "%s", PhgRunTimeParams.PhgPhoHFileHistoryFilePath);
+      std::snprintf(phgrdhstHistParamsName, sizeof(phgrdhstHistParamsName), "%s", PhgRunTimeParams.PhgPhoHParamsFilePath);
     }
 
   if (PhgRunTimeParams.PhgIsPET != 1)
