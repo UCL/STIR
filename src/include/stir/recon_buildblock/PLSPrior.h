@@ -5,15 +5,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details.
 */
@@ -26,10 +18,8 @@
   \author Yu-Jung Tsai
   */
 
-
 #ifndef __stir_recon_buildblock_PLSPrior_H__
 #define __stir_recon_buildblock_PLSPrior_H__
-
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
@@ -40,29 +30,29 @@
 
 START_NAMESPACE_STIR
 
-
 /*!
   \ingroup priors
   \brief
   A class in the GeneralisedPrior hierarchy. This implements the  anatomical penalty function, Parallel Level Sets (PLS),
-  proposed by Matthias J. Ehrhardt et. al in "PET Reconstruction With an Anatomical MRI
+  also sometimes called Directional TV, proposed by Matthias J. Ehrhardt et. al in "PET Reconstruction With an Anatomical MRI
   Prior Using Parallel Level Sets", IEEE Trans. med. Imag., vol. 35, no. 9, Sept. 2016.
   https://doi.org/10.1109/TMI.2016.2549601
   Note that PLS becomes smoothed TV when an uniform anatomical image is provided.
 
-  The prior has 2 parameters alpha and eta. It is computed for an image \f$ f f$ as
+  The prior has 2 parameters alpha and eta. It is computed for an image \f$ f \f$ as
 
   \f[
   \phi(f) = \sqrt{\alpha^2 + |\nabla f|^2 - {\langle\nabla f,\xi\rangle}^2}
   \f]
   where \f$ f \f$ is the PET image,
+  \f$\nabla \f$ is the finite difference operator (\b not taking voxel-sizes into account) and
   \f$ \xi \f$ is the normalised gradient of the anatomical image calculated as follows:
 
   \f[
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
   \f]
 
-  with \f$ v f$ the anatomical image, \f$ \alpha \f$ controls the edge-preservation property of PLS, and depends on the scale
+  with \f$ v \f$ the anatomical image, \f$ \alpha \f$ controls the edge-preservation property of PLS, and depends on the scale
   of the emission image,  and \f$ \eta \f$ avoids division by zero, and depends on the scale of the anatomical image.
 
 
@@ -102,22 +92,19 @@ START_NAMESPACE_STIR
 
 */
 template <typename elemT>
-class PLSPrior:  public
-                       RegisteredParsingObject< PLSPrior<elemT>,
-                                                GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                                                GeneralisedPrior<DiscretisedDensity<3,elemT> >
-                                              >
+class PLSPrior : public RegisteredParsingObject<PLSPrior<elemT>,
+                                                GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                                GeneralisedPrior<DiscretisedDensity<3, elemT>>>
 {
- private:
-  typedef
-    RegisteredParsingObject< PLSPrior<elemT>,
-                             GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                             GeneralisedPrior<DiscretisedDensity<3,elemT> > >
-    base_type;
+private:
+  typedef RegisteredParsingObject<PLSPrior<elemT>,
+                                  GeneralisedPrior<DiscretisedDensity<3, elemT>>,
+                                  GeneralisedPrior<DiscretisedDensity<3, elemT>>>
+      base_type;
 
- public:
+public:
   //! Name which will be used when parsing a GeneralisedPrior object
-  static const char * const registered_name;
+  static const char* const registered_name;
 
   //! Default constructor
   PLSPrior();
@@ -127,46 +114,46 @@ class PLSPrior:  public
 
   //! Has to be called before using this object
   /*! \todo set the anatomical image to zero if not defined */
-  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
+  Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
+
+  bool is_convex() const override;
 
   //! compute the value of the function
-  double
-    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+  double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
   //! compute gradient
-  void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
-                        const DiscretisedDensity<3,elemT> &current_image_estimate);
+  void compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
+                        const DiscretisedDensity<3, elemT>& current_image_estimate) override;
 
   //! get current kappa image
   /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
       modify the image by manipulating the image refered to by this pointer.
       Unpredictable results will occur.
   */
-  shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
-  shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_grad_sptr(int direction) const;
-  shared_ptr<DiscretisedDensity<3,elemT> > get_norm_sptr() const;
+  shared_ptr<const DiscretisedDensity<3, elemT>> get_kappa_sptr() const;
+  shared_ptr<const DiscretisedDensity<3, elemT>> get_anatomical_grad_sptr(int direction) const;
+  shared_ptr<const DiscretisedDensity<3, elemT>> get_norm_sptr() const;
 
-  //!get eta and alpha parameters
+  //! get eta and alpha parameters
   double get_eta() const;
   double get_alpha() const;
 
-  //!set eta parameter
+  //! set eta parameter
   void set_eta(const double);
-  //!set alpha parameter
+  //! set alpha parameter
   void set_alpha(const double);
 
   //! set anatomical pointer
-  void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  void set_anatomical_image_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>&);
   //! get anatomical pointer
-  shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
+  shared_ptr<const DiscretisedDensity<3, elemT>> get_anatomical_image_sptr() const;
   /// Set anatomical filename
   void set_anatomical_filename(const std::string& filename);
 
   //! set kappa image
-  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>&);
   /// Set kappa filename
   void set_kappa_filename(const std::string& filename);
-
 
   /// Set only 2D
   void set_only_2D(const bool arg) { only_2D = arg; }
@@ -189,47 +176,44 @@ protected:
 
   double eta, alpha;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
+  void set_defaults() override;
+  void initialise_keymap() override;
 
   //! the parsing will only override any exixting kappa-image or anatomical-image if the relevant keyword is present
-  virtual bool post_processing();
+  bool post_processing() override;
 
   //! Check that the prior is ready to be used
-  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+  void check(DiscretisedDensity<3, elemT> const& current_image_estimate) const override;
 
- private:
-
+private:
   //! compute the component x, y or z of the image gradient using forward difference
-  static void compute_image_gradient_element(DiscretisedDensity<3,elemT> & image_gradient_elem,
-                                      int direction,
-                                      const DiscretisedDensity<3,elemT> & image );
+  static void compute_image_gradient_element(DiscretisedDensity<3, elemT>& image_gradient_elem,
+                                             int direction,
+                                             const DiscretisedDensity<3, elemT>& image);
 
   //! compute normalisation for the gradient of the anatomical image (Eq. (5) of the paper)
-  void compute_normalisation_anatomical_gradient(DiscretisedDensity<3, elemT> &norm_im_grad,
-                                            const DiscretisedDensity<3,elemT> &image_grad_z,
-                                            const DiscretisedDensity<3,elemT> &image_grad_y,
-                                            const DiscretisedDensity<3,elemT> &image_grad_x);
+  void compute_normalisation_anatomical_gradient(DiscretisedDensity<3, elemT>& norm_im_grad,
+                                                 const DiscretisedDensity<3, elemT>& image_grad_z,
+                                                 const DiscretisedDensity<3, elemT>& image_grad_y,
+                                                 const DiscretisedDensity<3, elemT>& image_grad_x);
   //! Inner product in Eq. (9) of the paper but also the penalty function.
-  void compute_inner_product_and_penalty(DiscretisedDensity<3,elemT> &inner_product,
-                                           DiscretisedDensity<3,elemT> &penalty,
-                                         DiscretisedDensity<3,elemT> &pet_im_grad_z,
-                                         DiscretisedDensity<3,elemT> &pet_im_grad_y,
-                                         DiscretisedDensity<3,elemT> &pet_im_grad_x,
-                        const DiscretisedDensity<3,elemT> &pet_image);
+  void compute_inner_product_and_penalty(DiscretisedDensity<3, elemT>& inner_product,
+                                         DiscretisedDensity<3, elemT>& penalty,
+                                         DiscretisedDensity<3, elemT>& pet_im_grad_z,
+                                         DiscretisedDensity<3, elemT>& pet_im_grad_y,
+                                         DiscretisedDensity<3, elemT>& pet_im_grad_x,
+                                         const DiscretisedDensity<3, elemT>& pet_image);
 
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_grad_x_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_grad_y_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_grad_z_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > norm_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
-  void set_anatomical_grad_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&, int);
-  void set_anatomical_grad_norm_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
-  };
-
+  shared_ptr<const DiscretisedDensity<3, elemT>> anatomical_grad_x_sptr;
+  shared_ptr<const DiscretisedDensity<3, elemT>> anatomical_grad_y_sptr;
+  shared_ptr<const DiscretisedDensity<3, elemT>> anatomical_grad_z_sptr;
+  shared_ptr<const DiscretisedDensity<3, elemT>> anatomical_sptr;
+  shared_ptr<const DiscretisedDensity<3, elemT>> norm_sptr;
+  shared_ptr<const DiscretisedDensity<3, elemT>> kappa_ptr;
+  void set_anatomical_grad_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>&, int);
+  void set_anatomical_grad_norm_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>&);
+};
 
 END_NAMESPACE_STIR
 
 #endif
-

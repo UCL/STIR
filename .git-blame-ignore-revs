@@ -1,0 +1,8 @@
+# change to Apache 2.0 license
+47d1aa5f302c5b6b579de176535e01aa97d1ff27
+# run clang-tidy --modernize-use-override
+8af125617a113724f52d26e991bfc6c36abb952f
+# manual fixes in stir_experimental and clang-tidy modernize-use-override
+c5a1c6bc29d3f24d8fdb5c198946ec9580947257
+# stir_maintenance run pre-commit
+88f4ce70929a41c745fc39030e90c87bfaf046b7

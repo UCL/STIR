@@ -7,15 +7,7 @@
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
     Copyight (C) 2018, University College London
     This file is part of STIR.
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -41,42 +33,34 @@ START_NAMESPACE_STIR
 /*! \ingroup IO
 
 */
-class InterfileParametricDiscretisedDensityInputFileFormat :
-public InputFileFormat<ParametricVoxelsOnCartesianGrid>
+class InterfileParametricDiscretisedDensityInputFileFormat : public InputFileFormat<ParametricVoxelsOnCartesianGrid>
 {
- public:
-  virtual const std::string
-    get_name() const
-  {  return "Interfile"; }
+public:
+  const std::string get_name() const override { return "Interfile"; }
 
- protected:
-  virtual 
-    bool 
-    actual_can_read(const FileSignature& signature,
-		    std::istream&) const
+protected:
+  bool actual_can_read(const FileSignature& signature, std::istream&) const override
   {
     //. todo should check if it's an image
     return is_interfile_signature(signature.get_signature());
   }
 
-  virtual unique_ptr<data_type>
-    read_from_file(std::istream&) const
+  unique_ptr<data_type> read_from_file(std::istream&) const override
   {
     // needs more arguments, so we just give up (TODO?)
-    unique_ptr<data_type> ret;//(read_interfile_dynamic_image(input));
+    unique_ptr<data_type> ret; //(read_interfile_dynamic_image(input));
     if (is_null_ptr(ret))
       {
-	error("failed to read an Interfile image from stream");
+        error("failed to read an Interfile image from stream");
       }
     return ret;
   }
-  virtual unique_ptr<data_type>
-    read_from_file(const std::string& filename) const
+  unique_ptr<data_type> read_from_file(const std::string& filename) const override
   {
     unique_ptr<data_type> ret(read_interfile_parametric_image(filename));
     if (is_null_ptr(ret))
       {
-	error("failed to read an Interfile image from file \"%s\"", filename.c_str());
+        error("failed to read an Interfile image from file \"%s\"", filename.c_str());
       }
     return ret;
   }

@@ -4,15 +4,7 @@
 
 % This file is part of STIR.
 %
-% This file is free software; you can redistribute it and/or modify
-% it under the terms of the GNU Lesser General Public License as published by
-% the Free Software Foundation; either version 2.1 of the License, or
-% (at your option) any later version.
-%
-% This file is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU Lesser General Public License for more details.
+% SPDX-License-Identifier: Apache-2.0
 %
 % See STIR/LICENSE.txt for details
 
@@ -34,7 +26,7 @@ xlabel('x')
 title('slice 10, line 45 (starting from 0)')
 
 %% example for projection data (aka sinograms)
-projdata=stir.ProjData.read_from_file('../../recon_test_pack/SPECT/input.hs');
+projdata=stir.ProjData.read_from_file('../../recon_test_pack/SPECT/SPECTUB/input.hs');
 %% display direct sinograms
 % Of course, for SPECT there are only 'direct' sinograms (and no oblique sinograms)
 seg=projdata.get_segment_by_sinogram(0);

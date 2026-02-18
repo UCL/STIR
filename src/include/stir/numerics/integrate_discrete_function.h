@@ -4,15 +4,7 @@
     Copyright (C) 2004 - 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -22,7 +14,7 @@
   \brief Declaration of stir::integrate_discrete_function function
 
   \author Charalampos Tsoumpas
- 
+
 */
 
 #ifndef __stir_integrate_discrete_function_H__
@@ -30,9 +22,9 @@
 
 #include "stir/common.h"
 #include <vector>
-#include <iostream> 
+#include <iostream>
 #include <cstring>
-#include <iomanip> 
+#include <iomanip>
 #include <fstream>
 
 START_NAMESPACE_STIR
@@ -49,8 +41,9 @@ START_NAMESPACE_STIR
   \warning Type \c elemT should not be an integral type.
 */
 template <typename elemT>
-inline elemT 
-integrate_discrete_function(const std::vector<elemT> & coordinates, const std::vector<elemT> & values, const int interpolation_order = 1);
+inline elemT integrate_discrete_function(const std::vector<elemT>& coordinates,
+                                         const std::vector<elemT>& values,
+                                         const int interpolation_order = 1);
 
 END_NAMESPACE_STIR
 

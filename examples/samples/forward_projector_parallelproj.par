@@ -1,0 +1,11 @@
+Forward Projector parameters:=
+; example par file for specifying the forward projector for forward_project etc
+; this example uses the parallelproj projector
+type:=Parallelproj
+Forward Projector Using Parallelproj Parameters:=
+; this keyword allows increasing the number of chunks that the projector uses
+; increase if you run out of GPU memory
+num_gpu_chunks:=1
+verbosity:=0
+End Forward Projector Using Parallelproj Parameters:=
+end:=

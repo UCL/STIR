@@ -3,15 +3,7 @@
 %    Copyright (C) 2013-2014 University College London
 %    This file is part of STIR.
 %
-%    This file is free software; you can redistribute it and/or modify
-%    it under the terms of the GNU Lesser General Public License as published by
-%    the Free Software Foundation; either version 2.1 of the License, or
-%    (at your option) any later version.
-
-%    This file is distributed in the hope that it will be useful,
-%    but WITHOUT ANY WARRANTY; without even the implied warranty of
-%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%    GNU Lesser General Public License for more details.
+%    SPDX-License-Identifier: Apache-2.0
 %
 %    See STIR/LICENSE.txt for details
 %% Instructions
@@ -47,12 +39,12 @@ import stir.*
 %    tmpdir.chdir()
     fprintf('Creating files in %s\n', pwd())
     s=Scanner.get_scanner_from_name('ECAT 962');
-    %ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    %construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     %		  const int span, const int max_delta,
     %             const int num_views, const int num_tangential_poss, 
     %
     examinfo=ExamInfo();
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,6,8,6);
+    projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,6,8,6);
     assert (projdatainfo.get_scanner().get_num_rings()==32)
     projdata=ProjDataInterfile(examinfo, projdatainfo, 'stir_matlab_test.hs');
     assert (projdata.get_min_segment_num()==-1)

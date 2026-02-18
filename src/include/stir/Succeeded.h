@@ -16,17 +16,10 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -34,24 +27,35 @@
 
 START_NAMESPACE_STIR
 
-/*! 
-  \brief 
-  a class containing an enumeration type that can be used by functions to signal 
+/*!
+  \brief
+  a class containing an enumeration type that can be used by functions to signal
   successful operation or not
 
   Example:
   \code
   Succeeded f() { do_something;  return Succeeded::yes; }
   void g() { if (f() == Succeeded::no) error("Error calling f"); }
+  // the latter can also be written as
+  void g2() { if (!f().succeeded()) error("Error calling f"); }
   \endcode
 */
 class Succeeded
 {
 public:
-  enum value { yes, no };
-  Succeeded(const value& v) : v(v) {}
-  bool operator==(const Succeeded &v2) const { return v == v2.v; }
-  bool operator!=(const Succeeded &v2) const { return v != v2.v; }
+  enum value
+  {
+    yes,
+    no
+  };
+  Succeeded(const value& v = yes)
+      : v(v)
+  {}
+  bool operator==(const Succeeded& v2) const { return v == v2.v; }
+  bool operator!=(const Succeeded& v2) const { return v != v2.v; }
+  //! convenience function returns if it is equal to Succeeded::yes
+  bool succeeded() const { return this->v == yes; }
+
 private:
   value v;
 };

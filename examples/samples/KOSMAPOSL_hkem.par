@@ -52,6 +52,9 @@ only_2D:=1
 ; the following is the output prefix of the PET reconstructed image
 kernelised output filename prefix :=KOSMAPOSL
 
+;the following is only set if you want to freeze the kernel matrix to a certain subiteration. Default is -1
+;freeze iterative kernel at subiteration number :=21
+
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 

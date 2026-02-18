@@ -1,0 +1,349 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <title>Summary of changes in STIR release 6.3</title>
+</head>
+
+<body>
+  <h1>Summary of changes in STIR release 6.3</h1>
+
+
+  <h2>Overall summary</h2>
+
+    <p>
+      This version is 100% backwards compatible with STIR 6.2, aside from three important bug fixes,
+      which will change results (see below).
+    </p>
+    <p>
+      This is a release with many new features, as listed below. Highlights are
+      <ul>
+        <li>the new Gibbs penalty hierarchy with CUDA and OpenMP support (and much easier addition of new
+          potential functions) (Matteo Neel Colombo, Univ of Milano-Bicocca),
+        </li>
+        <li>
+          new 2D analytic reconstruction algorithms (including two that allow
+          quantitative reconstruction of SPECT) (Dimitra Kyriakopoulou, UCL),
+        </li>
+        <li>
+          better Python support including algebraic operations and faster conversion to NumPy arrays
+          (Kris Thielemans, UCL),
+        </li>
+        <li>
+          continuous memory storage for arrays (allowing zero-copy
+          access to image/projection data in SIRF Python, but not yet in STIR Python)
+          (Kris Thielemans, UCL),
+        </li>
+        <li>
+          faster scatter estimation for blocks on cylindrical scanners
+          (Markus Jehl, Positrigo),
+        </li>
+        <li>
+          reduced memory usage for iterative reconstructions, avoiding hitting the current limitation
+          of 2^31 elements in <code>ProjDataInMemory</code>
+          (Kris Thielemans, UCL),
+        </li>
+        <li>
+          Python code for adapting e7tools output for Siemens Vision 600 to STIR
+          (Nicole Jurjew, UCL)
+        </li>
+      </ul>
+      But there are many other changes from other contibutors as well, see below.
+      Of course, there is also the usual code-cleanup and some improvements to the documentation.
+      Overall overview and release management was by Kris Thielemans (UCL) with help
+      from Daniel Deidda (NPL).
+    </p>
+
+    <h2>Patch release info</h2>
+    <ul>
+      <li>
+        6.3.0 released 31/10/2025<br>
+        <a href="https://github.com/UCL/STIR/milestone/12">GitHub Milestone 6.3</a>
+      </li>
+    </ul>
+
+  <h2> Summary for end users (also to be read by developers)</h2>
+
+
+  <h3>New functionality</h3>
+  <h4>General</h4>
+  <ul>
+    <li>
+      Several 2D analytic reconstruction algorithms were added for PET (i.e. inverting the 2D Radon transform)
+      and parallel beam SPECT (inverting the 2D attenuated Radon transform). The latter
+      allow quantitatively correct analytic reconstruction of SPECT data (after scatter correction).
+      <ul>
+        <li>
+          The Spline Reconstruction Technique (SRT) algorithm has been added in 2 different versions:
+          <code>SRT2D</code> for PET and <code>SRT2DSPECT</code> for SPECT.
+          The reference for the implemented algorithms is:<br>
+          Fokas, A. S., A. Iserles, and V. Marinakis.
+          <cite>Reconstruction algorithm for single photon emission computed tomography and its numerical
+            implementation.</cite>
+          Journal of the Royal Society Interface* 3.6 (2006): 45-54.
+        </li>
+        <li>
+          <code>GRD2D</code> for PET is a direct Fourier method using regridding with Kaiser-Bessel functions.
+        </li>
+        <li>
+          <code>DDSR2D</code> for parallel beam SPECT uses Hilbert transforms in projection space.
+        </li>
+      </ul>
+      The reference for the implementation of these algorithms is:<br>
+      Dimitra Kyriakopoulou, <cite>Analytical and Numerical Aspects of Tomography</cite>,
+      PhD thesis, University College London (UCL), 2024,<br>
+      Available at:
+      <a href=https://discovery.ucl.ac.uk/id/eprint/10202525/>discovery.ucl.ac.uk/id/eprint/10202525/</a>.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1420>PR #1420</a> and <a href=https://github.com/UCL/STIR/pull/1595>PR #1595</a>.
+    </li>
+    <li>
+      Wiener and Gamma filters were added.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1420>PR #1420</a>.
+    </li>
+    <li>
+      <code>ScatterSimulation</code> can now downsample the scanner transaxially (crystals per ring) for
+      <code>BlocksOnCylindrical</code>,
+      scanners, which speeds up <code>ScatterEstimation</code> considerably. By default, downsampling the detectors per
+      reading
+      is disabled for backwards compatibility.<br>
+      <a href=https://github.com/UCL/STIR/pull/1291>PR #1291</a>
+    </li>
+    <li>
+      The priors code has been refactored to provide two common, parallelized base classes for CPU and GPU implementations (<code>GibbsPenalty</code> and <code>CudaGibbsPenalty</code>).<br>
+      On CPU, we introduce <code>GibbsQuadraticPenalty</code> and <code>GibbsRelativeDifferencePenalty</code>, which inherit from the parallelized <code>GibbsPenalty</code> base class (now parallelized using OpenMP).<br>
+      GPU implementations are also provided as <code>CudaGibbsQuadraticPenalty</code> and <code>CudaGibbsRelativeDifferencePenalty</code>.<br>
+      Currently, the new Gibbs penalties are still missing the paraboloidal surrogates related method implementations. They provide two new methods: <code>compute_gradient_times_input</code> and <code>compute_Hessian_diagonal</code>.<br>
+      <a href="https://github.com/UCL/STIR/pull/1629">PR #1629</a>
+    </li>
+    <li>
+      Data from GE Discovery MI systems in RDF9 should now be readable. TOF information on these scanners has also been
+      added.
+      However, projection data is currently still always returned as non-TOF (but list-mode data is read as TOF).<br>
+      <a href=https://github.com/UCL/STIR/pull/1503>PR #1503</a>
+    </li>
+    <li>
+      Added the ability to set a forward projector for mask projection in the <code>ScatterEstimation</code> class.<br>
+      <a href=https://github.com/UCL/STIR/pull/1530>PR #1530</a>
+    </li>
+    <li>
+      Duration in sinogram interfile/exam_info obtained from <code>LmToProjData</code>/<code>lm_to_projdata</code> has the
+      correct value if we unlist all the events. This is not true for ROOT files<br>
+      <a href=https://github.com/UCL/STIR/pull/1519>PR #1519</a>
+    </li>
+    <li>
+      <code>LmToProjData</code> class/<code>lm_to_projdata</code> utility now no longer requires a template projection data. If none is
+      specified, it will use the proj_data_info from the input list-mode.<br>
+      <b>Warning</b> for some scanners with TOF capabilities, this will result in very large projection data (possibly
+      larger than the default from the vendor).<br>
+      <a href=https://github.com/UCL/STIR/pull/1315>PR #1315</a>
+    </li>
+    <li>
+      Adapt the SPECTUB projector to handle data with only a subset of the views (constructed using <code>ProjData::get_subsets()</code>.
+      This is useful for SIRF/CIL applications using stochastic optimisation.<br>
+      <a href=https://github.com/UCL/STIR/pull/1596>PR #1596</a>
+    </li>
+  </ul>
+  <h4>Python</h4>
+  <ul>
+    <li>
+      "Container" classes such as <code>FloatVoxelsOnCartesianGrid</code>, <code>ProjDataInMemory</code>
+      and array-classes now have numerical operations properly defined, for instance
+      <code>a = b + c</code> and <code>a -= 3</code>. Note that <code>a = 1 + b</code> is not
+      yet available.<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+    </li>
+    <li>
+      The above "container" classes now have an extra member `as_array()` which returns a numpy <code>ndarray</code>. This
+      is equivalent to `stirextra.to_numpy()` which will become deprecated later. In addition, the
+      <code>fill()</code> method now directly accepts an <code>ndarray</code>, avoiding the need to go via an iterator.
+      These additions also make it easier to prt SIRF python code to STIR.<br>
+      <a href=https://github.com/UCL/STIR/pull/1632>PR #1632</a>
+    </li>
+    <li>
+      Added a Python script to convert e7tools generated Siemens Biograph Vision 600 sinograms to STIR compatible format.<br>
+      <a href=https://github.com/UCL/STIR/pull/1593>PR #1593</a>
+    </li>
+  </ul>
+
+  <h4>Utilities</h4>
+  <ul>
+    <li>
+      <code>stir_timings</code> has now an extra option to parse a par-file for a projector-pair.
+    </li>
+  </ul>
+
+  <h3>Changed functionality</h3>
+  <ul>
+    <li>
+      In previous versions, when reading data/images where the radionuclide was not set, a default was used (F18 for
+      PET, Tcm99 for SPECT).
+      This led to surprising (and sometimes wrong) behaviour. The radionuclide is now kept as "unknown".<br>
+      <a href=https://github.com/UCL/STIR/pull/1574>PR #1574</a>
+    </li>
+    <li>
+      Default ECAT scanner configurations updated to use a negative intrinsic tilt.
+    </li>
+    <li>
+      When computing the sensitivity images in <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code>,
+      we now avoid creating an extra <code>ProjDataInMemory</code> in most cases (there are still some corner
+      cases for TOF data when using non-TOF projector for the sensitivity, but then the memory overhead is small).
+      This enables LAFOV PET reconstructions with the "ray tracing" matrix (we use less memory, and we avoid running into a current
+      <code>ProjDataInMemory</code> <a href=https://github.com/UCL/STIR/issues/1505> limitation on the number of bins</a>).<br>
+      <a href=https://github.com/UCL/STIR/pull/1617>PR #1716</a>
+      </li>
+      <li>
+        Boost format was replaced by `std::format` for formatting strings. If C++20 or newer is
+        not yet used, a work-around is in place by using the <a href=https://github.com/fmtlib/fmt/>{fmt} library</a>
+        (included as as a git submodule).
+        Import <code>stir/format.h</code> and then use the <code>format()</code> function to create strings containing various variables. If the format string is not known at compile time,
+        use <code>runtime_format()</code> instead.<br>
+        Check the updated STIR-developers-overview.
+        <br>
+        <a href=https://github.com/UCL/STIR/pull/1591>PR #1591</a> and <a href=https://github.com/UCL/STIR/pull/1605>PR #1605</a>
+      </li>
+  </ul>
+  <h4>Changes to examples</h4>
+  <ul>
+    <li>
+      Python example <code>plot_sinogram_profiles.py</code> has been renamed to <code>plot_projdata_profiles.py</code>
+      and generalised to work with TOF dimensions etc. A small <code>pytest</code> has been added as well.<br>
+      <a href=https://github.com/UCL/STIR/pull/1370>PR #1370</a>
+    </li>
+    <li>
+      Python example <code>ProjDataVisualisation.py</code> now has a vmax slider.<br>
+      <a href=https://github.com/UCL/STIR/pull/1568>PR #1568</a>
+    </li>
+  </ul>
+
+  <h3>Bug fixes</h3>
+  <ul>
+    <li>
+      Fixed a bug in the scatter estimation code (introduced in release 5.1.0) if input data is 3D and "cylindrical"
+      (there was no bug for "blocksoncylindrical" data).
+      The scatter estimation runs on data constructed via SSRB. However, the attenuation correction factors were
+      incorrectly obtained with adding of oblique segments (as opposed to averaging).
+      This resulted in intermediate images that had the wrong attenuation correction which were approximately
+      num_segments times larger. This was compensated by the tail-fitting, but resulted in unexpected scale factors
+      (scale factors were around 1/num_segments times what was expected).
+      This means that if you used the "min/max scale factor" feature in the scatter estimate, you will have to adjust
+      your threshold values. Expected scatter tail-fitting scale factors should now be restored to ~1-1.5 (depending on
+      the amount of multiple and out-of-FOV scatter).
+      See <a href="https://github.com/UCL/STIR/issues/1532">Issue #1532</a> for more detail. Fixed by using averaging
+      functionality of SSRB instead of adding segments for attenuation correction factors.<br>
+      <a href=https://github.com/UCL/STIR/pull/1531>PR #1531</a>
+    </li>
+    <li>
+      Fixed a bug in the distributed LM computation code (introduced in 6.1) that neglected to accumulate outputs when
+      not built with OpenMP.<br>
+      See <a href="https://github.com/UCL/STIR/pull/1566">PR #1566</a>.
+    </li>
+    <li>
+      Fixed bugs in <code>accumulate_sub_Hessian_times_input</code> and <code>accumulate_sub_Hessian_times_input</code>
+      (and hence the non-subset versions) for objective functions when the prior is not zero.<br>
+      See <a href="https://github.com/UCL/STIR/pull/1649">PR #1649</a> and <a href="https://github.com/UCL/STIR/pull/1651">PR #1651</a>.
+    </li>
+  </ul>
+
+  <h3>Build system</h3>
+  <ul>
+    <li>Enable more diagnostics in CMake when finding CERN's ROOT (we used to silence them)<br>
+      <a href=https://github.com/UCL/STIR/pull/1552>PR #1552</a>
+    </li>
+    <li>Use OpenMP by default</li>
+    <li>Introduce advanced variable <code>MINI_STIR</code> defaulting to <code>OFF</code> for developers.
+      This will build a heavily reduced version of STIR which can speed up development time.<br>
+      <a href=https://github.com/UCL/STIR/pull/1584>PR #1584</a>
+    </li>
+  </ul>
+
+  <h3>Known problems</h3>
+  <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.<br>
+    An important bug is for the "ray tracing matrix" projector for TOF PET. Oblique
+    segments currently have problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.
+  </p>
+
+
+  <H2>What is new for developers (aside from what should be obvious from the above):</H2>
+
+  <h3>New functionality</h3>
+  <ul>
+    <li>
+      <code>ProjDataInMemory</code> <code>read_from_file</code> method now returns a <code>ProjDataInMemory</code>
+      object.
+    </li>
+    <li>
+      <code>Array::resize</code> and <code>Array::grow</code> argument <code>initialise_with_0</code> usage
+      fixed.
+    </li>
+  </ul>
+
+  <h3>Changed functionality</h3>
+  <ul>
+    <li>
+      In C++, "Container" classes such as <code>VoxelsOnCartesianGrid</code>, <code>ProjDataInMemory</code>
+      and array-classes now have numerical operations that return objects of the correct type.
+      (Previously, it was a base-class such as <code>NumericVectorWithOffset&lt;Array&lt;2, float&gt;, float&gt;</code>).<br>
+      <a href=https://github.com/UCL/STIR/pull/1630>PR #1630</a>
+    </li>
+    <li>
+      Made 2 (deprecated) members of <code>ProjDataInfoBlocksOnCylindricalNoArcCorr</code> <code>private</code>
+      and do some clean-up of which files to include.
+      <br>
+      <a href="https://github.com/UCL/STIR/pull/1556">PR #1556</a>
+    </li>
+    <li>
+      <code>LmToProjData::get_template_proj_data_info_sptr()</code> is now a <code>const</code> member returning
+      a <code>shared_ptr&lt;const ProjDataInfo&gt;</code>.<br>
+      <a href=https://github.com/UCL/STIR/pull/1315>PR #1315</a>
+    </li>
+    <li>
+      As <code>stir::Array</code> template arguments might change in the future,
+      it is now recommended to include <code>stir/ArrayFwd.h</code> when using forward
+      declaration and use the <code>ArrayType</code> template-alias in places where
+      a rectangular array that might live on a GPU is intended.<br>
+      <a href=https://github.com/UCL/STIR/pull/1589>PR #1589</a>
+    </li>
+    <li>
+      <code>Array</code> copy constructor now also uses contiguous memory allocation (as opposed to a sequence of 1D vectors).
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1592>PR #1592</a>.
+    </li>
+  </ul>
+
+  <h3>Bug fixes</h3>
+  <ul>
+    <li>Fixed minor incompatibility with gcc-14 and clang-18 by adding an extra include file.<br>
+      <a href=https://github.com/UCL/STIR/pull/1552>PR #1552</a>
+    </li>
+    <li>
+      Changed the way that some SWIG work-arounds are implemented, avoiding the SWIG-generated
+      wrapper to be compiled with the <code>SWIG</code> preprocessor symbol.<br>
+      <a href=https://github.com/UCL/STIR/pull/1647>PR #1647</a>
+    </li>
+  </ul>
+
+  <h3>New Deprecations and renames</h3>
+  <ul>
+    <li>
+      <code>truncate_end_planes</code> will be removed in v7.0
+    </li>
+    <li>
+      legacy compatibility with version 3, 4 and 5 will be removed in v7.0.
+      CMake options <code>STIR_PROJECTORS_AS_V3</code>, <code>STIR_LEGACY_IGNORE_VIEW_OFFSET</code> and
+      <code>STIR_ROOT_ROTATION_AS_V4</code> will therefore be removed.
+    </li>
+    <li>
+      Starting from v7.0, <code>GeneralizedPrior</code> will be renamed to <code>GeneralizedPenalty</code>.<br>
+      <code>QuadraticPrior</code>, <code>RelativeDifferencePrior</code>, and <code>LogcoshPrior</code> will be removed in favor of the new <code>GibbsPenalty</code> framework.
+      <a href=https://github.com/UCL/STIR/issues/1426>Issue #1426</a>
+    </li>
+  </ul>
+
+  <h3>Test changes</h3>
+  <p>All new features and most code changes were accompanied by new tests.</p>
+
+</body>
+
+</html>

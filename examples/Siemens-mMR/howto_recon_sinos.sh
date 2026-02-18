@@ -9,14 +9,16 @@ export bedcoilatnimg=cpmr-LM-00-umap-hardware.hv
 
 # create randoms estimate
 INPUT=dsino_span1.hs TEMPLATE=${PSINO} howto_create_randoms_from_delayed_sino.sh 
-convertSiemensInterfileToSTIR.sh  ${NORM}.hdr ${NORM}.hdr.STIR
 
 export sino_input=${PSINO} 
-export ECATNORM=${NORM}.hdr.STIR
+export ECATNORM=${NORM}.hdr
 
 convertSiemensInterfileToSTIR.sh ${atnimg} ${atnimg}.STIR
 atnimg=${atnimg}.STIR
 convertSiemensInterfileToSTIR.sh ${bedcoilatnimg} ${bedcoilatnimg}.STIR
 bedcoilatnimg=${bedcoilatnimg}.STIR
 
-howto_scatter_and_recon.sh
+stir_math summed_atnimg.hv ${atnimg} ${bedcoilatnimg}
+export atnimg=summed_atnimg.hv
+
+scatter_and_recon.sh

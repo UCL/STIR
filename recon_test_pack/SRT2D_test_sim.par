@@ -1,0 +1,19 @@
+SRT2DParameters :=
+; test file for SRT2D
+input file := my_precorrected_sino${suffix}.hs
+
+xy output image size (in pixels) := 91
+zoom := .5
+
+;post-filter type := Wiener
+;Wiener Filter Parameters :=
+;End Wiener Filter Parameters :=
+
+;post-filter type := Gamma
+;Gamma Filter Parameters :=
+;End Gamma Filter Parameters :=
+
+output filename prefix := my_test_sim_image_SRT2D
+
+
+end:=

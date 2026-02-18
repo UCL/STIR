@@ -1,0 +1,14 @@
+correct_projdata Parameters := 
+
+  input file := ${INPUT}
+  output filename := ${OUTPUT}
+  ; use data (1) or set to one (0) := 
+  apply (1) or undo (0) correction := 0
+  randoms projdata filename := ${RANDOMS}
+  
+  Bin Normalisation type := from projdata
+    Bin Normalisation From ProjData :=
+    normalisation projdata filename:= ${MULT}
+    End Bin Normalisation From ProjData:=
+
+END:=

@@ -7,22 +7,14 @@
   \brief Declaration of class stir::RegisteredObjectBase
 
   \author Kris Thielemans
-  
+
 
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -32,11 +24,11 @@
 #include <string>
 
 #ifndef __stir_RegisteredObjectBase_H__
-#define __stir_RegisteredObjectBase_H__
+#  define __stir_RegisteredObjectBase_H__
 
 START_NAMESPACE_STIR
 
-/*! \brief Base class for all classes that can parse .par files (and more?) 
+/*! \brief Base class for all classes that can parse .par files (and more?)
   \ingroup buildblock
   The only reason that this class exists is such that KeyParser can store
   different types of objects, and get some basic info from it.
@@ -48,7 +40,7 @@ START_NAMESPACE_STIR
 class RegisteredObjectBase : public ParsingObject
 {
 public:
-  virtual ~RegisteredObjectBase() {}
+  ~RegisteredObjectBase() override {}
 
   /*! \brief Returns the name of the type of the object.
 
@@ -57,8 +49,7 @@ public:
   KeyParser::parameter_info() needs to know this
   name such that it can fill it in.
   */
-  virtual std::string get_registered_name() const= 0;
+  virtual std::string get_registered_name() const = 0;
 };
 END_NAMESPACE_STIR
 #endif
-

@@ -7,3 +7,6 @@ STIR-version2-vs-version1.pdf
 
 # Directory made by AucTeX
 auto/
+
+# Directory made by make_distribution.sh
+doxy

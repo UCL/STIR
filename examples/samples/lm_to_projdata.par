@@ -5,6 +5,11 @@ lm_to_projdata Parameters:=
 
   ; parameters that determine the sizes etc of the output
 
+    ; Optional projection data to use as "template", i.e. the output
+    ; will have the same size.
+    ; If none is specified, we will use the proj_data_info from the input list-mode.
+    ; Warning: for some scanners with TOF capabilities, this will result in very
+    ; large projection data (possibly larger than the default from the vendor).
     template_projdata := some_projdata_file
     ; the next can be used to use a smaller number of segments than given 
     ; in the template
@@ -37,5 +42,5 @@ lm_to_projdata Parameters:=
     ; if you're short of RAM (i.e. a single projdata does not fit into memory),
     ; you can use this to process the list mode data in multiple passes.
     num_segments_in_memory := -1
-
+    num_TOF_bins_in_memory := -1
 End := 

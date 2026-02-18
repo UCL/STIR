@@ -1,0 +1,19 @@
+Scatter Simulation Parameters :=
+; minimal file for scatter estimation.
+; See User's Guide for more info
+Scatter Simulation type := PET Single Scatter Simulation
+PET Single Scatter Simulation Parameters :=
+
+; using default parameters here. they should work ok
+
+activity_image_filename := ${ACTIVITY_IMAGE}
+attenuation_image_filename := ${ATTEN_IMAGE}
+template_projdata_filename :=  ${TEMPLATE}
+
+; output filename without extension
+; files will be called "out".hs and "out".log
+output_filename_prefix :=${OUTPUT_PREFIX}
+
+
+End PET Single Scatter Simulation Parameters:=
+End Scatter Simulation Parameters:=

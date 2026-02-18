@@ -5,15 +5,7 @@
 #  Copyright (C) 2019, University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #      
@@ -21,12 +13,12 @@
 # 
 
 # Scripts should exit with error code when a test fails:
-if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
+if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+    # The code runs inside Travis or GHA
     set -e
 fi
 
-echo This script should work with STIR version 4.0. If you have
+echo This script should work with STIR version 5.2. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -84,7 +76,7 @@ get_ROI_value() {
 # warning: return 0 if they are different (which is non-standard I guess)
 compare_values() {
     if [ $# -ne 3 ]; then
-      echo "Something wrong with call to compare_values"
+      echo "Someting wrong with call to compare_values"
     exit 1
     fi
     error_bigger_than_x=`echo $1 $2 $3 | awk '{ print(($2/$1 - 1)*($2/$1 - 1)> ($3 * $3)) }'`
@@ -151,16 +143,16 @@ fi
 echo "===  make attenuation image"
 generate_image  generate_atten_cylinder.par
 
-echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
-template_sino=my_DSTE_3D_rd2_template.hs
+echo "===  create template sinogram (DSTE in 3D with max ring diff 3 to save time)"
+template_sino=my_DSTE_3D_rd3_template.hs
 cat > my_input.txt <<EOF
 Discovery STE
+
 1
-410
 n
 
-0
-2
+
+3
 EOF
 create_projdata_template  ${template_sino} < my_input.txt > my_create_${template_sino}.log 2>&1
 if [ $? -ne 0 ]; then 
@@ -176,7 +168,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: 'NR==4 { print $2}'`
+org_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/{ print $2}'`
 
 ./simulate_data.sh my_zoom_test4.hv my_atten_image.hv ${template_sino} 0
 if [ $? -ne 0 ]; then
@@ -184,11 +176,11 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: 'NR==4 { print $2}'`
+new_sum=`list_projdata_info --sum my_prompts.hs | awk -F: '/sum/{ print $2}'`
 
 if compare_values $org_sum $new_sum .01
 then
-  echo "DIFFERENCE IN su  of prompts IS TOO LARGE."
+  echo "DIFFERENCE IN sum of prompts IS TOO LARGE."
   exit 1
 fi
 
@@ -198,6 +190,7 @@ if [ -z "${error_log_files}" ]; then
  exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail ${error_log_files}
  exit 1
 fi
 

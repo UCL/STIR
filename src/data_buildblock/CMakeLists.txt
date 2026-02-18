@@ -5,15 +5,7 @@
 
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -24,16 +16,32 @@ set(dir  data_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	SinglesRates 
-	SinglesRatesForTimeFrames 
+	SinglesRates.cxx
+	SinglesRatesForTimeFrames.cxx
+        SinglesRatesForTimeSlices.cxx
+        randoms_from_singles.cxx
 )
 if (HAVE_ECAT)
   list(APPEND  ${dir_LIB_SOURCES}
-	SinglesRatesFromSglFile 
-	SinglesRatesFromECAT7  
+	SinglesRatesFromSglFile.cxx
+	SinglesRatesFromECAT7.cxx
+  )
+endif()
+if (HAVE_HDF5)
+    list (APPEND  ${dir_LIB_SOURCES}
+        SinglesRatesFromGEHDF5.cxx
   )
 endif()
 
-include(stir_lib_target)
+target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
 
-target_link_libraries(${dir} buildblock)
+set(TARGET ${STIR_BUILDBLOCK_LIB})
+
+if (HAVE_HDF5)
+  if (USE_HDF5_TARGET)
+    target_link_libraries(${TARGET} PUBLIC ${HDF5_TARGET})
+  else()
+    # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
+    target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
+  endif()
+endif()

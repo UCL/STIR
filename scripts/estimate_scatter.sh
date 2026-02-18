@@ -1,24 +1,25 @@
 #! /bin/bash
 # (very complicated) script to estimate scatter for PET
+# Note: this script is obsolete since STIR 4.1. Its functionality is
+# now incorporated in the estimate_scatter utility.
+#
 # Authors: Kris Thielemans and Nikolaos Dikaios
 #
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 #
 # Copyright 2005-2009, Hammersmith Imanet Ltd
 # Copyright 2014, University College London
 
+echo "========================================================================" >& 2
+echo "WARNING: this script is obsolete since STIR 4.1. Its functionality is" >& 2
+echo "incorporated in the estimate_scatter utility." >& 2
+echo "This script will be removed in a future version." >&2
+echo "========================================================================" >& 2
+#
 # Script for including single scatter correction to the final emission image
 
 #estimate_single_scatter:
@@ -470,9 +471,9 @@ SCATTER_LEVEL=1
 TEMPLATE=$template_proj_data_file
 OUTPUT_PREFIX=$unscaled
 export ACTIVITY_IMAGE DENSITY_IMAGE LOW_DENSITY_IMAGE SCATTER_LEVEL TEMPLATE OUTPUT_PREFIX
-echo estimate_scatter ${ACTIVITY_IMAGE} ${zoomed_attenuation_image} $template_proj_data_file \
-    $unscaled.hs $scatterpar  > estimate_scatter_${OUTPUT_PREFIX}.log
-estimate_scatter $scatterpar >> estimate_scatter_${OUTPUT_PREFIX}.log 2>&1 
+echo simulate_scatter ${ACTIVITY_IMAGE} ${zoomed_attenuation_image} $template_proj_data_file \
+    $unscaled.hs $scatterpar  > simulate_scatter_${OUTPUT_PREFIX}.log
+simulate_scatter $scatterpar >> simulate_scatter_${OUTPUT_PREFIX}.log 2>&1 
 
 
 # output of upsample_and_fit_single_scatter

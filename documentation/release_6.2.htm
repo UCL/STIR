@@ -1,0 +1,219 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Summary of changes in STIR release 6.2</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 6.2</h1>
+
+
+<h2>Overall summary</h2>
+    <p>
+      This version is 100% backwards compatible with STIR 6.1, aside from a bug fix for
+      the blocks-on-cylindrical set-up which caused the wrong geometry, and a changed
+      default of the tail-fitting of the scatter estimator (see below). However,
+      C++-17 is now required.
+    </p>
+    <p>
+      Main new features are the capability to mash TOF bins (via <tt>SSRB</tt> utility/code)
+      and a CUDA version of the Relative Difference Prior. There are also some
+      import bug fixes, as well as some speed-up (hopefully) in the use of arrays.
+    </p>
+
+    <p>
+      Of course, there is also the usual code-cleanup and improvements to the documentation.
+    </p>
+
+    <p>
+      This release contains mainly code written by Nicole Jurjew (UCL) (SSRB for TOF),
+      Imraj Singh (UCL) (CUDA version of the Relative Difference Prior),
+      Markus Jehl (Positrigo) (fixes for blocks on cylindrical) and Kris Thielemans (UCL).
+    </p>
+
+<h2>Patch release info</h2>
+<ul>
+  <li>
+    6.2.0 released 23/07/2024<br>
+    <a href="https://github.com/UCL/STIR/milestone/11">GitHub Milestone 6.2</a>
+  </li>
+</ul>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+
+
+<h3>New functionality</h3>
+<ul>
+  <li>
+    <code>ProjData</code> now has most of the methods for numerical operations as <code>Array</code>,
+    i.e. +=,-=,*=,/=,<code>find_max()</code>,<code>find_min()</code>,<code>sum()</code>.
+    <code>ProjDataInMemory</code> adds =,-,*,/ (as well as overloads that are faster than the implementations
+    in <code>ProjData</code>).<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a> and <a href=https://github.com/UCL/STIR/pull/1448>PR #1448</a>
+  </li>
+  <li>
+    New prior <code>CudaRelativeDifferencePrior</code> (use <tt>Cuda Relative Difference Prior</tt> in <tt>.par</tt> files), only
+    available if the CUDA toolkit is found during building. Results are identical to <code>RelativeDifferencePrior</code>
+    up to numerical rounding issues. However, the code is currently limited to 3x3x3 weights.<br>
+    Added timings for the RDP (both non-CUDA and CUDA) to the <tt>stir_timings</tt> utility.<br>
+    <a href=https://github.com/UCL/STIR/pull/1408>PR #1408</a>
+  </li>
+</ul>
+
+
+<h3>Changed functionality</h3>
+<ul>
+  <li>
+    The default minimum scale factor for tail-fitting in the scatter estimation is now 0.05 (was 0.4).
+    This (temporarily) resolves a problem that for the Siemens mMR, the default factor was too large
+    (see <a href=https://github.com/UCL/STIR/issues/1280>issue #1280</a>.<br>
+    <strong>WARNING:</strong><i>This potentially changes your scatter estimates</i>. (You can check log files
+    of the scatter estimation to see what the scaling factors are.) However,
+    the Siemens mMR example files already lowered the default scale factor to .1, so if you use(d)
+    those, you will get identical results.
+  </li>
+  <li>
+    <code>Array::sum()</code> (and hence images etc) now accumulates in a variable at higher precision to avoid loss of precision.<br>
+    <a href=https://github.com/UCL/STIR/pull/1439>PR #1439</a>
+  </li>
+  <li>
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code> now attempts to auto-detect
+    if it should compute sensitivity using TOF back-projection or not. It does this by
+    checking if its normalisation object can only handle TOF data or not.
+    This should mean that the <tt>use time-of-flight sensitivities</tt> keyword should now
+    rarely (if ever) be necessary.
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1458>PR #1458</a>
+    </li>
+    <li>
+    SSRB now allows to mash TOF bins.
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1464>PR #1464</a>
+    </li>
+  <li>
+    <tt>SPECT_dicom_to_interfile</tt> improvements:
+    <ul>
+      <li>remove requirement for the <tt>is_planar</tt> parameters.
+        As STIR can only read SPECT sinograms, we now read/set all fields
+        from a planar scan as well. There is therefore no need anymore for
+        the boolean, and it is just ignored.
+        Output of a conversion of planar data is now directly readable into STIR.
+      </li>
+      <li>
+        do checks if sequences are present to avoid seg-faults
+      </li>
+    </ul>
+    See <a href=https://github.com/UCL/STIR/pull/1473>PR #1473</a>
+  </li>
+</ul>
+
+
+<h3>Bug fixes</h3>
+<ul>
+  <li>
+    There was a bug in the computation of the detector coordinates for <code>BlocksOnCylindrical</code>
+    scanners that caused the buckets to not be symmetric. <br>
+    <a href=https://github.com/UCL/STIR/pull/1462>PR #1462</a>
+  </li>
+  <li>
+    <code>BlocksOnCylindrical</code> scanners were not axially symmetric due to a bug in how gaps were
+    handled. Also, downsampling of <code>BlocksOnCylindrical</code> scanners in scatter simulation was inaccurate.<br>
+    <a href=https://github.com/UCL/STIR/pull/1466>PR #1466</a>
+  </li>
+  <li>
+    The "Hessian times input" calculations of the Poisson log-likelihood for projection data
+    were incorrect when the forward projection of the "input" contains negatives.
+    We now detect this and throw an error if it occurs. A proper fix
+    will have to be for later.<br>
+    See <a href="https://github.com/UCL/STIR/issues/1461">Issue #1461</a>
+  </li>
+</ul>
+
+<h3>Build system</h3>
+<ul>
+  <li>
+    C++-17 is now required.
+  </li>
+  <li>
+    Force C++ version according to CERN ROOT versions: ROOT 6.28.10 needs C++17 and 6.30.2 needs C++20.
+    Also some fixes when relying on <code>root-config</code>.
+  </li>
+  <li>
+    Optionally enable CUDA as a CMake language (for the CUDA RDP). <strong>You should use CMake 3.23 or later</strong>
+    if you use CUDA. If you have the CUDA Toolkit but an old version of CMake that you cannot update,
+    you will have to set <tt>DISABLE_STIR_CUDA</tt> to <tt>ON</tt>.
+  </li>
+</ul>
+
+<h3>Known problems</h3>
+    <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.</p>
+
+
+<H2>What is new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Changed functionality</h3>
+<ul>
+    <li>
+      <code>Array</code> classes by default use contiguous memory allocation (as opposed to a sequence of 1D vectors).
+      This could speed up memory allocation and destruction of arrays with a high number of underlying 1D vectors. It also allows reading/writing
+      data in one call to the C++ library, as opposed to many small calls. Also added move constructors to the <code>Array</code>,
+      <code>VectorWithOffset</code> classes.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1236>PR #1236</a> and <a href=https://github.com/UCL/STIR/pull/1438>PR #1438</a>.
+    </li>
+</ul>
+
+<h3>Bug fixes</h3>
+<ul>
+  <li>
+    <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code> had a (minor?) problem with TOF data
+    that when computing the gradient, the normalisation object was not set-up with the TOF data,
+    but non-TOF instead. This did not happen in our normal reconstruction code, and would have thrown an error
+    if it occured.
+    <br>
+    Fixed in <a href=https://github.com/UCL/STIR/pull/1427>PR #1427</a>.
+  </li>
+</ul>
+
+
+<h3>Other code changes</h3>
+<ul>
+  <li>
+    Fixed an incompatibility with C++20.
+  </li>
+  <li>
+    Enabled OpenMP for <code>Array</code> members <code>find_max(), find_min(), sum(), sum_positive()</code>.
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1449>PR #1449</a>.
+  </li>
+  <li>
+    Changes to allow reading Siemens Biograph Vision data: iSSRB and SSRB are now included in the SWIG interface; minor changes to a shell script altering e7tools headers.
+  </li>
+</ul>
+
+<h3>Test changes</h3>
+
+<h4>C++ tests</h4>
+<ul>
+  <li>
+    Objective functions (both projection-data and list-mode) and priors now have a numerical test for <code>accumulate_Hessian_times_input</code>
+    <br>
+    <a href=https://github.com/UCL/STIR/pull/1418> PR #1418</a>
+  </li>
+</ul>
+
+<h4>recon_test_pack</h4>
+<ul>
+  <li>
+    The output of <tt>simulate_PET_data_for_tests.sh</tt> can now be varied by setting environment variables, e.g.
+    <code>max_rd</code>. (Do not forget to unset those variables afterwards!)
+  </li>
+  <li>
+    New test <tt>run_test_SSRB.sh</tt>
+  </li>
+</ul>
+
+</body>
+
+</html>

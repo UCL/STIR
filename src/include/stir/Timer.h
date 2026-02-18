@@ -1,19 +1,12 @@
-// 
+//
 //
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2023, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -54,16 +47,21 @@ START_NAMESPACE_STIR
   // etc
   \endcode
 
-  Derived classes simply have to implement the virtual function 
+  Derived classes simply have to implement the virtual function
    double get_current_value()
 */
 class Timer
-{  
+{
 public:
   inline Timer();
-  inline virtual ~Timer();  
-  inline void start();
+  inline virtual ~Timer();
+  //! start stopwatch, optionally resetting first
+  /*! the stopwatch should not be running already if asking to reset */
+  inline void start(bool do_reset = false);
+  //! stop stopwatch
   inline void stop();
+  //! reset stopwatch
+  /*! the stopwatch should not be running */
   inline void reset();
   //! return value is undefined when start() is not called first.
   inline double value() const;
@@ -72,12 +70,11 @@ protected:
   bool running;
   double previous_value;
   double previous_total_value;
-  
+
   virtual double get_current_value() const = 0;
 };
 
 END_NAMESPACE_STIR
-
 
 #include "stir/Timer.inl"
 

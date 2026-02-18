@@ -4,15 +4,7 @@
 #  Copyright (C) 2013 University College London
 #  This file is part of STIR.
 #
-#  This file is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-#  This file is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Lesser General Public License for more details.
+#  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
 #      
@@ -28,7 +20,7 @@ generate_input_data.sh
 # note: names and directory are hard-wired in the script above (but not in the simulate_data.sh script)
 cd output
 template_sino=my_DSTE_3D_rd1_template.hs
-simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino} ../scatter.par ../scatter_template.hs
+simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino} ../scatter_simulation.par ../scatter_template.hs
 if [ $? -ne 0 ]; then
   echo "Error running simulation"
   exit 1

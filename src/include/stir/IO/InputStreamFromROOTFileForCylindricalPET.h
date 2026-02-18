@@ -4,22 +4,15 @@
 \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
 
 \author Nikos Efthimiou
+\author Robert Twyman
 */
 /*
  *  Copyright (C) 2016, University of Leeds
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -35,8 +28,8 @@ START_NAMESPACE_STIR
 /*!
   \ingroup IO
   \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
-  \details From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#CylindricalPET">here</a> ) a cylindrical PET scanner has
-  five levels
+  \details From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#CylindricalPET">here</a> )
+  a cylindrical PET scanner has five levels
     * rsector
     * module
     * submodule
@@ -68,7 +61,6 @@ START_NAMESPACE_STIR
         Singles readout depth := 1
         exclude scattered events := ${EXCLUDE_SCATTERED}
         exclude random events := ${EXCLUDE_RANDOM}
-        offset (num of detectors) := 0
         low energy window (keV) := 0
         upper energy window (keV):= 10000
 
@@ -77,24 +69,21 @@ START_NAMESPACE_STIR
 
   \author Nikos Efthimiou
 */
-class InputStreamFromROOTFileForCylindricalPET : public
-        RegisteredParsingObject< InputStreamFromROOTFileForCylindricalPET ,
-        InputStreamFromROOTFile,
-        InputStreamFromROOTFile >
+class InputStreamFromROOTFileForCylindricalPET
+    : public RegisteredParsingObject<InputStreamFromROOTFileForCylindricalPET, InputStreamFromROOTFile, InputStreamFromROOTFile>
 {
 private:
-    typedef RegisteredParsingObject< InputStreamFromROOTFileForCylindricalPET ,
-    InputStreamFromROOTFile,
-    InputStreamFromROOTFile > base_type;
+  typedef RegisteredParsingObject<InputStreamFromROOTFileForCylindricalPET, InputStreamFromROOTFile, InputStreamFromROOTFile>
+      base_type;
 
 public:
+  //! Name which will be used when parsing a OSMAPOSLReconstruction object
+  static const char* const registered_name;
 
-    //! Name which will be used when parsing a OSMAPOSLReconstruction object
-    static const char * const registered_name;
+  //! Default constructor
+  InputStreamFromROOTFileForCylindricalPET();
 
-    //! Default constructor
-    InputStreamFromROOTFileForCylindricalPET();
-
+#if 0 // not used, so commented out
     InputStreamFromROOTFileForCylindricalPET(std::string filename,
                                              std::string chain_name,
                                              int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
@@ -104,74 +93,79 @@ public:
                                              bool exclude_scattered, bool exclude_randoms,
                                              float low_energy_window, float up_energy_window,
                                              int offset_dets);
+#endif
 
-    virtual ~InputStreamFromROOTFileForCylindricalPET() {}
+  ~InputStreamFromROOTFileForCylindricalPET() override
+  {}
 
-    virtual
-    Succeeded get_next_record(CListRecordROOT& record);
-    //! Must be called before calling for the first event.
-    virtual Succeeded set_up(const std::string & header_path);
+  Succeeded get_next_record(CListRecordROOT& record) override;
+  //! Must be called before calling for the first event.
+  Succeeded set_up(const std::string& header_path) override;
 
-    //! gives method information
-    virtual std::string method_info() const;
+  //! gives method information
+  virtual std::string method_info() const;
 
-    //! Calculate the number of rings based on the crystal, module, submodule repeaters
-    inline virtual int get_num_rings() const;
-    //! Calculate the number of detectors per ring based on the crystal, module, submodule repeaters
-    inline virtual int get_num_dets_per_ring() const;
-    //! Get the number of axial modules
-    inline virtual int get_num_axial_blocks_per_bucket_v() const;
-    //! Get the number of transaxial modules
-    inline virtual int get_num_transaxial_blocks_per_bucket_v() const;
-    //! Get the axial number of crystals per module
-    inline virtual int get_num_axial_crystals_per_block_v() const;
-    //! Get the transaxial number of crystals per module
-    inline virtual int get_num_transaxial_crystals_per_block_v() const;
-    //! Calculate the number of axial crystals per singles unit based on the repeaters numbers and the readout deptth
-    inline virtual int get_num_axial_crystals_per_singles_unit() const;
-    //! Calculate the number of trans crystals per singles unit based on the repeaters numbers and the readout deptth
-    inline virtual int get_num_trans_crystals_per_singles_unit() const;
+  //! Calculate the number of rings based on the crystal, module, submodule repeaters
+  inline int get_num_rings() const override;
+  //! Calculate the number of detectors per ring based on the crystal, module, submodule repeaters
+  inline int get_num_dets_per_ring() const override;
+  //! Get the number of axial modules
+  inline int get_num_axial_blocks_per_bucket_v() const override;
+  //! Get the number of transaxial modules
+  inline int get_num_transaxial_blocks_per_bucket_v() const override;
+  //! Calculate the number of axial crystals per singles unit based on the repeaters numbers and the readout deptth
+  inline int get_num_axial_crystals_per_singles_unit() const override;
+  //! Calculate the number of trans crystals per singles unit based on the repeaters numbers and the readout deptth
+  inline int get_num_trans_crystals_per_singles_unit() const override;
 
-    inline void set_crystal_repeater_x(int);
-    inline void set_crystal_repeater_y(int);
-    inline void set_crystal_repeater_z(int);
-    inline void set_submodule_repeater_x(int);
-    inline void set_submodule_repeater_y(int);
-    inline void set_submodule_repeater_z(int);
-    inline void set_module_repeater_x(int);
-    inline void set_module_repeater_y(int);
-    inline void set_module_repeater_z(int);
-    inline void set_rsector_repeater(int);
+  inline void set_submodule_repeater_x(int);
+  inline void set_submodule_repeater_y(int);
+  inline void set_submodule_repeater_z(int);
+  inline void set_module_repeater_x(int);
+  inline void set_module_repeater_y(int);
+  inline void set_module_repeater_z(int);
+  inline void set_rsector_repeater(int);
 
 protected:
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
+  //! \name TBranches for Cylindrical PET
+  //@{
+  TBranch* br_crystalID1 = nullptr;
+  TBranch* br_crystalID2 = nullptr;
+  TBranch* br_submoduleID1 = nullptr;
+  TBranch* br_submoduleID2 = nullptr;
+  TBranch* br_moduleID1 = nullptr;
+  TBranch* br_moduleID2 = nullptr;
+  TBranch* br_rsectorID1 = nullptr;
+  TBranch* br_rsectorID2 = nullptr;
+  //@}
 
-    Int_t crystalID1, crystalID2;
-    Int_t submoduleID1, submoduleID2;
-    Int_t moduleID1, moduleID2;
-    Int_t rsectorID1, rsectorID2;
+  //! \name ROOT Variables, i.e. to hold data from each entry.
+  //@{
+  std::int32_t crystalID1, crystalID2;
+  std::int32_t submoduleID1, submoduleID2;
+  std::int32_t moduleID1, moduleID2;
+  std::int32_t rsectorID1, rsectorID2;
+  //@}
 
-    int crystal_repeater_x;
-    int crystal_repeater_y;
-    int crystal_repeater_z;
-    int submodule_repeater_x;
-    int submodule_repeater_y;
-    int submodule_repeater_z;
-    int module_repeater_x;
-    int module_repeater_y;
-    int module_repeater_z;
-    int rsector_repeater;
+  int submodule_repeater_x;
+  int submodule_repeater_y;
+  int submodule_repeater_z;
+  int module_repeater_x;
+  int module_repeater_y;
+  int module_repeater_z;
+  int rsector_repeater;
 
-    //! In GATE, inside a block, the indeces start from the lower
-    //! unit counting upwards. Therefore in order to align the
-    //! crystals, between STIR and GATE we have to move half block more.
-    int half_block;
+  //! In GATE, inside a block, the indeces start from the lower
+  //! unit counting upwards. Therefore in order to align the
+  //! crystals, between STIR and GATE we have to move half block more.
+  int half_block;
 
 private:
-    bool check_all_required_keywords_are_set(std::string& ret) const;
+  bool check_all_required_keywords_are_set(std::string& ret) const;
 };
 
 END_NAMESPACE_STIR

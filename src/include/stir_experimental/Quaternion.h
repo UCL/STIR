@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2005, Hammersmith Imanet Ltd
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -14,8 +15,6 @@
   \author Kris Thielemans
 */
 
-
-
 #ifndef __stir_Quaternion_H__
 #define __stir_Quaternion_H__
 
@@ -24,41 +23,39 @@
 START_NAMESPACE_STIR
 
 template <typename coordT>
-class Quaternion : public BasicCoordinate<4, coordT>  // TODO kris wants private inheritance 
+class Quaternion : public BasicCoordinate<4, coordT> // TODO kris wants private inheritance
 {
 protected:
   typedef BasicCoordinate<4, coordT> base_type;
 
 public:
+  Quaternion();
+  Quaternion(const coordT&, const coordT&, const coordT&, const coordT&);
+  Quaternion(const base_type& q);
 
-   Quaternion();
-   Quaternion(const coordT&, const coordT&, const coordT&, const coordT&);
-   Quaternion(const base_type& q);
-   
-   /*coordT component_1() const;
-   coordT component_2() const;
-   coordT component_3() const;
-   coordT component_4() const;*/
- 
-   // Overload multiplication 
-   inline Quaternion & operator*= (const coordT& a);
-   inline Quaternion & operator*= (const Quaternion& q);
-   inline Quaternion operator* (const Quaternion& q) const;
-   inline Quaternion operator* (const coordT& a) const;
-   // Overload division
-   inline Quaternion & operator/= (const coordT& a);
-   inline Quaternion & operator/= (const Quaternion& q);
-   inline Quaternion operator/ (const Quaternion& q) const;
-   inline Quaternion operator/ (const coordT& a) const;
+  /*coordT component_1() const;
+  coordT component_2() const;
+  coordT component_3() const;
+  coordT component_4() const;*/
 
-   inline void neg_quaternion();
-   inline void conjugate();
-   inline void normalise();
-   inline void inverse();
-   inline static coordT dot_product (const Quaternion&, const Quaternion&);
+  // Overload multiplication
+  inline Quaternion& operator*=(const coordT& a);
+  inline Quaternion& operator*=(const Quaternion& q);
+  inline Quaternion operator*(const Quaternion& q) const;
+  inline Quaternion operator*(const coordT& a) const;
+  // Overload division
+  inline Quaternion& operator/=(const coordT& a);
+  inline Quaternion& operator/=(const Quaternion& q);
+  inline Quaternion operator/(const Quaternion& q) const;
+  inline Quaternion operator/(const coordT& a) const;
+
+  inline void neg_quaternion();
+  inline void conjugate();
+  inline void normalise();
+  inline void inverse();
+  inline static coordT dot_product(const Quaternion&, const Quaternion&);
 
 private:
-  
 };
 
 template <typename coordT>

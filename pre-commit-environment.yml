@@ -1,0 +1,7 @@
+name: pre-commit-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pre-commit
+  - clang-format=14.0

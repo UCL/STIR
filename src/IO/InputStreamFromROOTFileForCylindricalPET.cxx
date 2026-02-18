@@ -1,35 +1,27 @@
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021 UCL
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
 #include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
+#include <TChain.h>
+#include "stir/warning.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
-const char * const
-InputStreamFromROOTFileForCylindricalPET::registered_name =
-        "GATE_Cylindrical_PET";
+const char* const InputStreamFromROOTFileForCylindricalPET::registered_name = "GATE_Cylindrical_PET";
 
-InputStreamFromROOTFileForCylindricalPET::
-InputStreamFromROOTFileForCylindricalPET():
-    base_type()
+InputStreamFromROOTFileForCylindricalPET::InputStreamFromROOTFileForCylindricalPET()
+    : base_type()
 {
-    set_defaults();
+  set_defaults();
 }
-
+#if 0 // not used, so commented out (would need adapting since moving crystal_repeated_*)
 InputStreamFromROOTFileForCylindricalPET::
 InputStreamFromROOTFileForCylindricalPET(std::string _filename,
                                          std::string _chain_name,
@@ -47,6 +39,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     rsector_repeater(rsector_repeater)
 {
     set_defaults();
+    error("This constructor is incorrect"); //TODO set_defaults() will override the above
 
     filename = _filename;
     chain_name = _chain_name;
@@ -56,237 +49,247 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     up_energy_window = _up_energy_window;
     offset_dets = _offset_dets;
 
-    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
+    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2 - 1;
     if (half_block < 0 )
         half_block = 0;
 }
+#endif
 
 Succeeded
-InputStreamFromROOTFileForCylindricalPET::
-get_next_record(CListRecordROOT& record)
+InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& record)
 {
+  int ring1, ring2, crystal1, crystal2;
+  double delta_timing_bin;
+  bool eof = false;
 
-    while(true)
-    {
+#ifdef STIR_OPENMP
+#  pragma omp critical(LISTMODEIO)
+#endif
+  {
+    while (true)
+      {
         if (current_position == nentries)
-            return Succeeded::no;
+          {
+            eof = true;
+            break;
+          }
 
+        Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
+        current_position++;
 
-        if (stream_ptr->GetEntry(static_cast<Long64_t>(current_position)) == 0 )
-            return Succeeded::no;
+        if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
+          continue;
 
-        current_position ++ ;
+        // Get time information
+        GetEntryCheck(br_time1->GetEntry(brentry));
+        GetEntryCheck(br_time2->GetEntry(brentry));
 
-        if ( (this->comptonphantom1 > 0 || this->comptonphantom2 > 0) && this->exclude_scattered )
-            continue;
-        if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
-            continue;
-        if (this->energy1 < this->low_energy_window ||
-                 this->energy1 > this->up_energy_window ||
-                 this->energy2 < this->low_energy_window ||
-                 this->energy2 > this->up_energy_window)
-            continue;
+        // Get positional ID information
+        GetEntryCheck(br_crystalID1->GetEntry(brentry));
+        GetEntryCheck(br_crystalID2->GetEntry(brentry));
+
+        GetEntryCheck(br_submoduleID1->GetEntry(brentry));
+        GetEntryCheck(br_submoduleID2->GetEntry(brentry));
+
+        GetEntryCheck(br_moduleID1->GetEntry(brentry));
+        GetEntryCheck(br_moduleID2->GetEntry(brentry));
+
+        GetEntryCheck(br_rsectorID1->GetEntry(brentry));
+        GetEntryCheck(br_rsectorID2->GetEntry(brentry));
 
         break;
-    }
+      }
 
-    int ring1 = static_cast<int>(crystalID1/crystal_repeater_y)
-            + static_cast<int>(submoduleID1/submodule_repeater_y)*crystal_repeater_z
-            + static_cast<int>(moduleID1/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
+    ring1 = static_cast<int>(crystalID1 / crystal_repeater_y)
+            + static_cast<int>(submoduleID1 / submodule_repeater_y) * get_num_axial_crystals_per_block_v()
+            + static_cast<int>(moduleID1 / module_repeater_y) * submodule_repeater_z * get_num_axial_crystals_per_block_v();
 
-    int ring2 = static_cast<int>(crystalID2/crystal_repeater_y)
-            + static_cast<int>(submoduleID2/submodule_repeater_y)*crystal_repeater_z
-            + static_cast<int>(moduleID2/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
+    ring2 = static_cast<int>(crystalID2 / crystal_repeater_y)
+            + static_cast<int>(submoduleID2 / submodule_repeater_y) * get_num_axial_crystals_per_block_v()
+            + static_cast<int>(moduleID2 / module_repeater_y) * submodule_repeater_z * get_num_axial_crystals_per_block_v();
 
-    int crystal1 = rsectorID1  * module_repeater_y * submodule_repeater_y * crystal_repeater_y
-            + (moduleID1%module_repeater_y) * submodule_repeater_y * crystal_repeater_y
-            + (submoduleID1%submodule_repeater_y) * crystal_repeater_y
-            + (crystalID1%crystal_repeater_y);
+    crystal1 = rsectorID1 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+               + (moduleID1 % module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+               + (submoduleID1 % submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
+               + (crystalID1 % crystal_repeater_y);
 
-    int crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * crystal_repeater_y
-            + (moduleID2%module_repeater_y) * submodule_repeater_y * crystal_repeater_y
-            + (submoduleID2% submodule_repeater_y) * crystal_repeater_y
-            + (crystalID2%crystal_repeater_y);
+    crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+               + (moduleID2 % module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+               + (submoduleID2 % submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
+               + (crystalID2 % crystal_repeater_y);
 
     // GATE counts crystal ID =0 the most negative. Therefore
     // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
-    // Moved to post_processings().
-    //crystal1 -= half_block;
-    //crystal2 -= half_block;
+#ifdef STIR_ROOT_ROTATION_AS_V4
+    crystal1 -= half_block;
+    crystal2 -= half_block;
 
     // Add offset
     crystal1 += offset_dets;
     crystal2 += offset_dets;
+#endif
 
-    double delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+    delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+  }
 
-    return
-            record.init_from_data(ring1, ring2,
-                                  crystal1, crystal2,
-                                  time1, delta_timing_bin,
-                                  eventID1, eventID2);
+  if (eof)
+    return Succeeded::no;
+
+  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1, delta_timing_bin, eventID1, eventID2);
 }
 
 std::string
-InputStreamFromROOTFileForCylindricalPET::
-method_info() const
+InputStreamFromROOTFileForCylindricalPET::method_info() const
 {
-    std::ostringstream s;
-    s << this->registered_name;
-    return s.str();
+  std::ostringstream s;
+  s << this->registered_name;
+  return s.str();
 }
 
 void
 InputStreamFromROOTFileForCylindricalPET::set_defaults()
 {
-    base_type::set_defaults();
-    crystal_repeater_x = -1;
-    crystal_repeater_y = -1;
-    crystal_repeater_z = -1;
-    submodule_repeater_x = -1;
-    submodule_repeater_y = -1;
-    submodule_repeater_z = -1;
-    module_repeater_x = -1;
-    module_repeater_y = -1;
-    module_repeater_z = -1;
-    rsector_repeater = -1;
+  base_type::set_defaults();
+  submodule_repeater_x = -1;
+  submodule_repeater_y = -1;
+  submodule_repeater_z = -1;
+  module_repeater_x = -1;
+  module_repeater_y = -1;
+  module_repeater_z = -1;
+  rsector_repeater = -1;
+#ifdef STIR_ROOT_ROTATION_AS_V4
+  half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2 - 1;
+  if (half_block < 0)
+    half_block = 0;
+#else
+  half_block = 0;
+#endif
 }
 
 void
 InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
 {
-    base_type::initialise_keymap();
-    this->parser.add_start_key("GATE_Cylindrical_PET Parameters");
-    this->parser.add_stop_key("End GATE_Cylindrical_PET Parameters");
-    this->parser.add_key("number of Rsectors", &this->rsector_repeater);
-    this->parser.add_key("number of modules X", &this->module_repeater_x);
-    this->parser.add_key("number of modules Y", &this->module_repeater_y);
-    this->parser.add_key("number of modules Z", &this->module_repeater_z);
+  base_type::initialise_keymap();
+  this->parser.add_start_key("GATE_Cylindrical_PET Parameters");
+  this->parser.add_stop_key("End GATE_Cylindrical_PET Parameters");
+  this->parser.add_key("number of Rsectors", &this->rsector_repeater);
+  this->parser.add_key("number of modules X", &this->module_repeater_x);
+  this->parser.add_key("number of modules Y", &this->module_repeater_y);
+  this->parser.add_key("number of modules Z", &this->module_repeater_z);
 
-    this->parser.add_key("number of submodules X", &this->submodule_repeater_x);
-    this->parser.add_key("number of submodules Y", &this->submodule_repeater_y);
-    this->parser.add_key("number of submodules Z", &this->submodule_repeater_z);
-
-    this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
-    this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
-    this->parser.add_key("number of crystals Z", &this->crystal_repeater_z);
+  this->parser.add_key("number of submodules X", &this->submodule_repeater_x);
+  this->parser.add_key("number of submodules Y", &this->submodule_repeater_y);
+  this->parser.add_key("number of submodules Z", &this->submodule_repeater_z);
 }
 
-bool InputStreamFromROOTFileForCylindricalPET::
-post_processing()
+bool
+InputStreamFromROOTFileForCylindricalPET::post_processing()
 {
-    if (base_type::post_processing())
-        return true;
-    return false;
+  if (base_type::post_processing())
+    return true;
+  return false;
 }
 
 Succeeded
-InputStreamFromROOTFileForCylindricalPET::
-set_up(const std::string & header_path)
+InputStreamFromROOTFileForCylindricalPET::set_up(const std::string& header_path)
 {
-    if (base_type::set_up(header_path) == Succeeded::no)
-        return  Succeeded::no;
+  if (base_type::set_up(header_path) == Succeeded::no)
+    return Succeeded::no;
 
-    std::string missing_keywords;
-    if(!check_all_required_keywords_are_set(missing_keywords))
+  std::string missing_keywords;
+  if (!check_all_required_keywords_are_set(missing_keywords))
     {
-        warning(missing_keywords.c_str());
-        return Succeeded::no;
+      warning(missing_keywords.c_str());
+      return Succeeded::no;
     }
 
-    stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
-    stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
-    stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1);
-    stream_ptr->SetBranchAddress("submoduleID2",&submoduleID2);
-    stream_ptr->SetBranchAddress("moduleID1",&moduleID1);
-    stream_ptr->SetBranchAddress("moduleID2",&moduleID2);
-    stream_ptr->SetBranchAddress("rsectorID1",&rsectorID1);
-    stream_ptr->SetBranchAddress("rsectorID2",&rsectorID2);
+  stream_ptr->SetBranchAddress("crystalID1", &crystalID1, &br_crystalID1);
+  stream_ptr->SetBranchAddress("crystalID2", &crystalID2, &br_crystalID2);
+  stream_ptr->SetBranchAddress("submoduleID1", &submoduleID1, &br_submoduleID1);
+  stream_ptr->SetBranchAddress("submoduleID2", &submoduleID2, &br_submoduleID2);
+  stream_ptr->SetBranchAddress("moduleID1", &moduleID1, &br_moduleID1);
+  stream_ptr->SetBranchAddress("moduleID2", &moduleID2, &br_moduleID2);
+  stream_ptr->SetBranchAddress("rsectorID1", &rsectorID1, &br_rsectorID1);
+  stream_ptr->SetBranchAddress("rsectorID2", &rsectorID2, &br_rsectorID2);
 
-    nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
-    if (nentries == 0)
-        error("InputStreamFromROOTFileForCylindricalPET: The total number of entries in the ROOT file is zero. Abort.");
+  nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
+  if (nentries == 0)
+    error("InputStreamFromROOTFileForCylindricalPET: The total number of entries in the ROOT file is zero. Abort.");
 
-    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
-    if (half_block < 0 )
-        half_block = 0;
-
-    offset_dets -= half_block;
-
-    return Succeeded::yes;
+  return Succeeded::yes;
 }
 
-bool InputStreamFromROOTFileForCylindricalPET::
-check_all_required_keywords_are_set(std::string& ret) const
+bool
+InputStreamFromROOTFileForCylindricalPET::check_all_required_keywords_are_set(std::string& ret) const
 {
-    std::ostringstream stream("InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ");
-    bool ok = true;
+  std::ostringstream stream;
+  stream << "InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ";
+  bool ok = true;
 
-    if (crystal_repeater_x == -1)
+  if (crystal_repeater_x == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (crystal_repeater_y == -1)
+  if (crystal_repeater_y == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (crystal_repeater_z == -1)
+  if (crystal_repeater_z == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (submodule_repeater_x == -1)
+  if (submodule_repeater_x == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (submodule_repeater_y == -1)
+  if (submodule_repeater_y == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (submodule_repeater_z == -1)
+  if (submodule_repeater_z == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (module_repeater_x == -1)
+  if (module_repeater_x == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (module_repeater_y == -1)
+  if (module_repeater_y == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (module_repeater_z == -1)
+  if (module_repeater_z == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (rsector_repeater == -1)
+  if (rsector_repeater == -1)
     {
-        stream << "crystal_repeater_x, ";
-        ok = false;
+      stream << "crystal_repeater_x, ";
+      ok = false;
     }
 
-    if (!ok)
-        ret = stream.str();
+  if (!ok)
+    ret = stream.str();
 
-    return ok;
+  return ok;
 }
-
 
 END_NAMESPACE_STIR

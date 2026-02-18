@@ -1,4 +1,4 @@
-// 
+//
 //
 /*!
 
@@ -6,25 +6,17 @@
   \ingroup buildblock
 
   \brief declares the stir::CPUTimer class.
-    
+
   \author Kris Thielemans
   \author PARAPET project
-      
+
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -39,16 +31,16 @@ START_NAMESPACE_STIR
   \brief A class for measuring elapsed CPU time.
 
   CPUTimer is derived from Timer, and hence has the same interface. It
-  returns the amount of CPU time (in secs) used by the current process and its 
-  children. 
-  \warning If too long CPU times are measured, wrap-around will occur. 
+  returns the amount of CPU time (in secs) used by the current process and its
+  children.
+  \warning If too long CPU times are measured, wrap-around will occur.
   \warning Currently, CPUTimer returns garbage on Win95 (and probably Win98). It does
   work fine on NT, XP etc though.
-  
+
   \par Implementation details
 
-  For most systems, CPUTimer::value() returns elapsed CPU time using the 
-  ANSI clock() function.  From the man page: 
+  For most systems, CPUTimer::value() returns elapsed CPU time using the
+  ANSI clock() function.  From the man page:
   \verbatim
   The reported time is the sum
   of the CPU time of the calling process and its terminated child
@@ -56,12 +48,12 @@ START_NAMESPACE_STIR
   subroutines.
   \endverbatim
   clock() has a possible problem of wrap-around. For many Unix systems this
-  occurs very soon. For a SUN, the man page states this is every 2147 secs 
-  of CPU time (36 minutes !). AIX should be similar, as both have 
+  occurs very soon. For a SUN, the man page states this is every 2147 secs
+  of CPU time (36 minutes !). AIX should be similar, as both have
   CLOCKS_PER_SEC = 10e6, and clock_t == int == 32 bit.
 
-  So, since version 1.2 the times() function (with the rms_utime field) 
-  is used if <code>defined(__OS_UNIX__)</code>. The  man page for times() states something 
+  So, since version 1.2 the times() function (with the rms_utime field)
+  is used if <code>defined(__OS_UNIX__)</code>. The  man page for times() states something
   very similar to clock():
 
   <i>
@@ -78,16 +70,16 @@ START_NAMESPACE_STIR
 
 
   Finally, VC++ 5.0 seems to have a bug in clock() that makes its results
-  dependent on the load of the system (i.e. it is more like 'wall clock 
+  dependent on the load of the system (i.e. it is more like 'wall clock
   time').
-  We now use GetProcessTimes() (with the lpUserTime variable) instead. 
+  We now use GetProcessTimes() (with the lpUserTime variable) instead.
   The documentation states:
-  
+
   <i>
   ... the amount of time that the process has executed in user mode.
-  The time that each of the threads of the process has executed in user 
-  mode is determined, and then all of those times are summed together to 
-  obtain this value. 
+  The time that each of the threads of the process has executed in user
+  mode is determined, and then all of those times are summed together to
+  obtain this value.
   </i>
 
   Warning: this only works for NT, not for Win95
@@ -104,14 +96,11 @@ START_NAMESPACE_STIR
 class CPUTimer : public Timer
 {
 private:
-  virtual inline double get_current_value() const;
+  inline double get_current_value() const override;
 };
-
-
 
 END_NAMESPACE_STIR
 
 #include "stir/CPUTimer.inl"
 
 #endif // __CPUTimer_H__
-

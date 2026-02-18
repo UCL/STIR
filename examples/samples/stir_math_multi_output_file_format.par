@@ -1,0 +1,13 @@
+output file format parameters:=
+; sample .par file that can be used with stir_math (and other utilities) to specify the
+; output file format for dynamic images
+;
+; See the stir::OutputFileFormat hierarchy for possible values.
+; here we use the Multi STIR format (writing one file per volume)
+;
+
+output file format type := Multi
+Multi Output File Format Parameters:=
+; could specify a format for the individual images written, but currently we use the default.
+; individual output file format type:=
+End Multi Output File Format Parameters:=

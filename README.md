@@ -1,5 +1,10 @@
 # STIR: Software for Tomographic Image Reconstruction.
 
+[![GitHub Actions status](https://github.com/UCL/STIR/actions/workflows/build-test.yml/badge.svg)](https://github.com/UCL/STIR/actions/workflows/build-test.yml)
+[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/ga9xd1vsy0ik1soq/branch/master?svg=true)](https://ci.appveyor.com/project/KrisThielemans/stir/branch/master)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/c561421aa1af41e4a9ef779003f6fff0)](https://app.codacy.com/gh/UCL/STIR/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6604468.svg)](https://doi.org/10.5281/zenodo.6604468)
+
 STIR is Open Source software for use in tomographic imaging. Its aim is to
 provide a Multi-Platform Object-Oriented framework for all data
 manipulations in tomographic imaging. Currently, the emphasis is on
@@ -16,11 +21,4 @@ information.
 
 This software is distributed under an open source license, see [LICENSE.txt](LICENSE.txt)
 for details.
-
-## Build and test status of the master branch
-- Travis (tests Linux and MacOS)
-[![Travis Build Status](https://travis-ci.org/UCL/STIR.svg?branch=master)](https://travis-ci.org/UCL/STIR)
-
-- Appveyor (tests Windows)
-[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/ga9xd1vsy0ik1soq/branch/master?svg=true)](https://ci.appveyor.com/project/KrisThielemans/stir/branch/master)
 

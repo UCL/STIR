@@ -5,7 +5,8 @@
 # right now randoms stuff only handles single time frame
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/Siemens-mMR}
+# Can be overridden by setting the pardir env variable before calling this script
+: ${pardir:="`stir_config --examples-dir`/Siemens-mMR"}
 
 # should get these parameters from command line
 : ${INPUT:=test.hlm}

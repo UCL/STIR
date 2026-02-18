@@ -1,0 +1,30 @@
+ROIValues Parameters :=
+; This file illustrates using a single volume with multiple "labels"
+; (integer values) for different ROIs
+
+; Note that without label index, the ROI computations will use the voxel values as
+; weights, assumed to be between 0 and 1, to allow for "soft" ROIs
+; (e.g., the ROI mean will just be computed by multiplying with these weights)
+
+  ; give the ROI an (optional) name. Defaults to the empty string.              
+  ROI name := label_1
+  ROI shape type:= Discretised shape3D
+  Discretised Shape3D Parameters:=
+   input filename := label_indices.hv
+   ; select the index for the ROI you want. This just uses
+   ; a numerical comparison of the voxel value with the (integer) label index.
+   label index := 1
+  END:=
+
+  next shape:=
+
+  ROI name := label_2
+  ROI shape type:= Discretised shape3D
+  Discretised Shape3D Parameters:=
+   input filename := label_indices.hv
+   label index := 2
+  END:=
+
+  ; you can add other ROIs here, including shape-based ones
+  
+END:=

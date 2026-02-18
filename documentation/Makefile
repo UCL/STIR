@@ -1,8 +1,8 @@
 # Author Kris Thielemans
 # Copyright (C) 2004-2007, Hammersmith Imanet Ltd
 # Copyright (C) 2014, University College London
-# This file is part of STIR, and is distributed under the 
-# terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
+# This file is part of STIR
+# SPDX-License-Identifier: Apache-2.0
 
 
 all: STIR-glossary.pdf STIR-general-overview.pdf \

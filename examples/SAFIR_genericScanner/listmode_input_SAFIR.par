@@ -1,0 +1,4 @@
+CListModeDataSAFIR Parameters:=
+        listmode data filename:= coincidencesLM.clm.safir
+        template projection data filename:= muppet.hs
+END CListModeDataSAFIR Parameters:=

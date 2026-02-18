@@ -4,15 +4,7 @@
     Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -23,14 +15,16 @@
   \brief File that registers all stir::RegisterObject children in data_buildblock
 
   \author Kris Thielemans
-  
+
 */
 #include "stir/common.h"
 #ifdef HAVE_LLN_MATRIX
-#include "stir/data/SinglesRatesFromECAT7.h"
-#include "stir/data/SinglesRatesFromSglFile.h"
+#  include "stir/data/SinglesRatesFromECAT7.h"
+#  include "stir/data/SinglesRatesFromSglFile.h"
 #endif
-
+#ifdef HAVE_HDF5
+#  include "stir/data/SinglesRatesFromGEHDF5.h"
+#endif
 START_NAMESPACE_STIR
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
@@ -40,6 +34,8 @@ static SinglesRatesFromSglFile::RegisterIt dummy200;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
+#ifdef HAVE_HDF5
+static GE::RDF_HDF5::SinglesRatesFromGEHDF5::RegisterIt dummy300;
+#endif
 
 END_NAMESPACE_STIR
-

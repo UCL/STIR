@@ -13,7 +13,6 @@
 
 */
 
-
 // #include "stir_experimental/motion/RigidObject3DMotionFromPolaris.h"
 #include "stir_experimental/motion/Transform3DObjectImageProcessor.h"
 #include "stir_experimental/motion/NonRigidObjectTransformationUsingBSplines.h"
@@ -29,9 +28,9 @@ START_NAMESPACE_STIR
 
 static Transform3DObjectImageProcessor<float>::RegisterIt dummy1000;
 
-static NonRigidObjectTransformationUsingBSplines<3,float>::RegisterIt dummy2000;
-//static RigidObject3DTransformation::RegisterIt dummy2000;
+static NonRigidObjectTransformationUsingBSplines<3, float>::RegisterIt dummy2000;
+// static RigidObject3DTransformation::RegisterIt dummy2000;
 
-// static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt dummy4000;
+// static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt
+// dummy4000;
 END_NAMESPACE_STIR
-

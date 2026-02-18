@@ -1,16 +1,8 @@
 # Copyright (C) 2011-2012, Kris Thielemans
-# Copyright (C) 2013, University College London
+# Copyright (C) 2013-2022 University College London
 # This file is part of STIR.
 #
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# SPDX-License-Identifier: Apache-2.0
 #
 # See STIR/LICENSE.txt for details
 
@@ -21,58 +13,84 @@ set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
+set(buildblock_simple_tests
+        test_Array.cxx
+        test_VectorWithOffset.cxx
+        )
+      
+if (NOT MINI_STIR)
+
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
-	test_ROIs
-        test_warp_image
-	test_DynamicDiscretisedDensity
+	test_ROIs.cxx
+        test_warp_image.cxx
+	test_DynamicDiscretisedDensity.cxx
+	test_ScatterSimulation.cxx
+        test_ML_norm.cxx
+	test_proj_data_info_subsets_pet.cxx
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
-
+        test_DateTime.cxx
+        test_radionuclide.cxx
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
-	test_OutputFileFormat
-	IO/test_IO_DiscretisedDensity
-	IO/test_IO_DynamicDiscretisedDensity
-	IO/test_IO_ParametricDiscretisedDensity
-	IO/test_IO_ITKMulticomponent
-	test_linear_regression
-	test_stir_math
-	test_time_of_flight
+	test_OutputFileFormat.cxx
+	IO/test_IO_DiscretisedDensity.cxx
+	IO/test_IO_DynamicDiscretisedDensity.cxx
+	IO/test_IO_ParametricDiscretisedDensity.cxx
+	IO/test_IO_ITKMulticomponent.cxx
+	test_linear_regression.cxx
+	test_stir_math.cxx
+	test_time_of_flight.cxx
+	test_proj_data_info_subsets_spect.cxx
         # the next 2 are interactive, so we don't add a test for it, but only compile them
-	test_display
-	test_interpolate
+	test_display.cxx
+	test_interpolate.cxx
 )
 
-set(buildblock_simple_tests
-        test_Array
-        test_ArrayFilter
-        test_SeparableMetzArrayFilter
-        test_SeparableGaussianArrayFilter
-        test_NestedIterator
-        test_VectorWithOffset
-        test_convert_array
-	test_IndexRange
-	test_coordinates
-	test_filename_functions
-	test_VoxelsOnCartesianGrid
-	test_zoom_image
-	test_ByteOrder
-	test_Scanner
-	test_ArcCorrection
-	test_find_fwhm_in_image
-	test_proj_data_info
-	test_proj_data_in_memory
-	test_export_array
-        test_GeneralisedPoissonNoiseGenerator
-	test_multiple_proj_data
+list (APPEND buildblock_simple_tests
+        test_ArrayFilter.cxx
+        test_SeparableMetzArrayFilter.cxx
+        test_SeparableGaussianArrayFilter.cxx
+        test_NestedIterator.cxx
+        test_convert_array.cxx
+	test_IndexRange.cxx
+	test_coordinates.cxx
+	test_filename_functions.cxx
+        test_KeyParser.cxx
+	test_VoxelsOnCartesianGrid.cxx
+	test_zoom_image.cxx
+	test_ByteOrder.cxx
+        test_ImagingModality.cxx
+	test_Scanner.cxx
+	test_ArcCorrection.cxx
+	test_find_fwhm_in_image.cxx
+        test_DetectionPosition.cxx
+	test_proj_data_info.cxx
+	test_DetectorCoordinateMap.cxx
+	test_proj_data.cxx
+	test_proj_data_maths.cxx
+	test_export_array.cxx
+        test_GeneralisedPoissonNoiseGenerator.cxx
+	test_multiple_proj_data.cxx
+        test_interpolate_projdata.cxx
 )
+
+endif() # MINI_STIR
 
 include(stir_test_exe_targets)
 
+if (MINI_STIR)
+
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO" "")
+  create_stir_test(${source} "${STIR_RECON_BUILDBLOCK_LIB};" "")
+endforeach()
+
+else()
+
+foreach(source ${buildblock_simple_tests})
+  create_stir_test(${source} "Shape_buildblock;scatter_buildblock" "")
 endforeach()
 #
 
@@ -80,6 +98,11 @@ endforeach()
 ### i.e. those that need command line arguments
 
 if (BUILD_TESTING)
+
+# Add test for test_proj_data_info_subsets_spect with arguments
+ADD_TEST(NAME test_proj_data_info_subsets_spect
+			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_proj_data_info_subsets_spect ${CMAKE_SOURCE_DIR}/examples/samples/SPECT_Interfile_header.hs)
+add_STIR_CONFIG_DIR(test_proj_data_info_subsets_spect)
 
 ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in
@@ -138,6 +161,8 @@ ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Multi
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
 # Dynamic tests
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 
@@ -147,4 +172,7 @@ ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
+
 endif(BUILD_TESTING)
+
+endif() # MINI_STIR

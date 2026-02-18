@@ -1,0 +1,46 @@
+LineSearcher parameters :=
+
+    ; The image from which the line search will be performed
+    image filename := demo3_density.hv
+
+    ; The number of objective function evaluations to perform (default: 10)
+    number of evaluations := 10
+
+    ; The interval between the step sizes (alphas) can be either exponential (1) or linear (0) (default: 0)
+    use exponential alphas := 1
+
+    ; Control the minimum and maximum of alpha values to compute
+    ; `use exponential alphas := 1` then this controls the exponential e.g. 10^(alpha min) to 10^(alpha max)
+    alpha min := -10  ; default: 0.0
+    alpha max := -2   ; default: 1.0
+
+    ; Apply a lower threshold to every voxel in the computed images (default: 0.0)
+    line search image lower bound := 0.0
+
+    ; Objective function configuration
+    objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+    PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+        ; Measured sinogram data filename
+        input file := sino.hs
+
+        ; Additive sinogram data filename
+        additive_sinogram := 0
+
+        projector pair type := Matrix
+        projector pair using matrix parameters :=
+            matrix type := Ray Tracing
+            ray tracing matrix parameters :=
+                number of rays in tangential direction to trace for each bin := 10
+            end ray tracing matrix parameters :=
+        end projector pair using matrix parameters :=
+
+        ; Prior configuration
+        prior type := Quadratic
+        Quadratic Prior Parameters:=
+            penalisation factor := 0.0
+        END Quadratic Prior Parameters:=
+
+    end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+End :=
+

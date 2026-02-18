@@ -2,15 +2,7 @@
     Copyright (C) 2015, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -21,8 +13,11 @@
 
   \brief Implementation of functions related to setting/getting the number of threads
 
-  \author Kris Thielemans  
+  \author Kris Thielemans
 */
+
+#ifndef __stir_num_threads_h__
+#define __stir_num_threads_h__
 
 #include "stir/common.h"
 
@@ -32,7 +27,7 @@ START_NAMESPACE_STIR
 /*! \ingroup threads
   This returns the maxmimum number of threads to be used by STIR.
   Usually this should be equal to what you set earlier via set_num_threads().
-  
+
   Currently only useful when compiled with OpenMP support. Corresponds then
   to omp_get_max_threads()
 */
@@ -59,8 +54,8 @@ void set_num_threads(const int num_threads = 0);
  If OpenMP support is enabled, the default is normally set from the
  \c OMP_NUM_THREADS environment variable. However, if this is is
  not set, we use ~90% of the available processors.
-  
-  Currently only useful when compiled with OpenMP support. 
+
+  Currently only useful when compiled with OpenMP support.
 */
 int get_default_num_threads();
 
@@ -68,8 +63,10 @@ int get_default_num_threads();
 /*! \ingroup threads
   \see get_default_num_threads()
 
-  Currently only useful when compiled with OpenMP support. 
+  Currently only useful when compiled with OpenMP support.
 */
 void set_default_num_threads();
 
 END_NAMESPACE_STIR
+
+#endif

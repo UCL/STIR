@@ -1,0 +1,65 @@
+# Author: Elise Emond
+
+/vis/disable
+
+#-----------------#
+# G E O M E T R Y #
+#-----------------#
+
+
+# Material database
+/gate/geometry/setMaterialDatabase GateMaterials.db
+
+# Scanner
+/control/execute geometry.mac
+
+
+#---------------#
+# P H Y S I C S #
+#---------------#
+
+/control/execute physics.mac
+
+#-----------------------------#
+# I N I T I A L I S A T I O N #
+#-----------------------------#
+
+/gate/run/initialize
+
+#-------------------#
+# D I G I T I S E R #
+#-------------------#
+
+/control/execute digitiser.mac
+
+#-------------------------------------#
+# C O I N C I D E N C E   S O R T E R #
+#-------------------------------------#
+
+/control/execute csorter.mac
+
+#-------------------------------------#
+# R A D I O A C T I V E   S O U R C E #
+#-------------------------------------#
+
+/control/execute ../SourceFiles/source_SOURCENAME.mac
+
+#-----------------------#
+# O U T P U T   D A T A #
+#-----------------------#
+
+/gate/output/root/enable
+/gate/output/root/setFileName             root_data_SOURCENAME
+/gate/output/root/setRootHitFlag          0
+/gate/output/root/setRootSinglesFlag      0
+/gate/output/root/setRootCoincidencesFlag 1
+
+#---------------------------------#
+# A C Q U I S I T I O N   T I M E #
+#---------------------------------#
+
+/gate/application/setTimeSlice   100 ms
+/gate/application/setTimeStart   0 s
+/gate/application/setTimeStop    1 s
+
+/gate/application/startDAQ

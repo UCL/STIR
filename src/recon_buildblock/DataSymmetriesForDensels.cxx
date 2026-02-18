@@ -5,15 +5,7 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -39,32 +31,26 @@ using std::vector;
 
 START_NAMESPACE_STIR
 
-DataSymmetriesForDensels::
-DataSymmetriesForDensels()
+DataSymmetriesForDensels::DataSymmetriesForDensels()
 {}
 
 /*! Default implementation always returns \c true. Needs to be overloaded.
  */
 bool
-DataSymmetriesForDensels::
-blindly_equals(const root_type * const) const
-{ 
+DataSymmetriesForDensels::blindly_equals(const root_type* const) const
+{
   return true;
 }
 
 bool
-DataSymmetriesForDensels::
-operator ==(const root_type& that) const
-{ 
-  return
-    typeid(*this) == typeid(that) &&
-    this->blindly_equals(&that);
+DataSymmetriesForDensels::operator==(const root_type& that) const
+{
+  return typeid(*this) == typeid(that) && this->blindly_equals(&that);
 }
 
 bool
-DataSymmetriesForDensels::
-operator !=(const root_type& that) const
-{ 
+DataSymmetriesForDensels::operator!=(const root_type& that) const
+{
   return !((*this) == that);
 }
 
@@ -78,12 +64,11 @@ DataSymmetriesForDensels::num_related_densels(const Densel& b) const
 }
 
 /*! default implementation in terms of find_symmetry_operation_from_basic_densel */
-bool DataSymmetriesForDensels::find_basic_densel(Densel& b) const
+bool
+DataSymmetriesForDensels::find_basic_densel(Densel& b) const
 {
-  unique_ptr<SymmetryOperation> sym_op =
-    find_symmetry_operation_from_basic_densel(b);
+  unique_ptr<SymmetryOperation> sym_op = find_symmetry_operation_from_basic_densel(b);
   return sym_op->is_trivial();
 }
-
 
 END_NAMESPACE_STIR

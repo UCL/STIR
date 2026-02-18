@@ -1,0 +1,9 @@
+/gate/physics/addProcess PhotoElectric
+/gate/physics/processes/PhotoElectric/setModel StandardModel
+
+#/gate/physics/addProcess Compton							# Turned off to reduce error in crystalIDs for geometry test
+#/gate/physics/processes/Compton/setModel StandardModel		# Turned off to reduce error in crystalIDs for geometry test
+
+/gate/physics/processList Enabled
+
+/gate/physics/processList Initialized

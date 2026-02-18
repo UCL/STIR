@@ -4,15 +4,7 @@
     Copyright (C) 2006- 2013, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -46,7 +38,7 @@ START_NAMESPACE_STIR
 /*!
   \ingroup GeneralisedObjectiveFunction
   \ingroup modelling
-  \brief a base class for LogLikelihood of independent Poisson variables 
+  \brief a base class for LogLikelihood of independent Poisson variables
   where the mean values are linear combinations of the kinetic parameters.
 
   \par Parameters for parsing
@@ -54,21 +46,22 @@ START_NAMESPACE_STIR
 */
 
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData: 
-public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
+class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
+    : public RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
+                                     GeneralisedObjectiveFunction<TargetT>,
+                                     PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
 {
- private:
-  typedef  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
-                                GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> > base_type;
-  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float> > SingleFrameObjFunc ;
+private:
+  typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
+                                  GeneralisedObjectiveFunction<TargetT>,
+                                  PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
+      base_type;
+  typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float>> SingleFrameObjFunc;
   VectorWithOffset<SingleFrameObjFunc> _single_frame_obj_funcs;
- public:
-  
+
+public:
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
   PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData();
 
@@ -76,33 +69,32 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   /*! Dimensions etc are set from the \a dyn_proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT *
-    construct_target_ptr() const; 
-  virtual void 
-    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-                                                          const TargetT &current_estimate, 
-                                                          const int subset_num); 
+  TargetT* construct_target_ptr() const override;
 
- protected:
-  virtual double
-    actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-                                                      const int subset_num);
+  std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const override;
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr <TargetT> const& target_sptr);
+protected:
+  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override;
+
+  Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr) override;
 
   //! Add subset sensitivity to existing data
   /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites
    */
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
 
-  virtual Succeeded 
-      actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-                                                                             const TargetT& input,
-                                                                             const int subset_num) const;
- public:
+  Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
+                                                                                   const TargetT& input,
+                                                                                   const int subset_num) const override;
+
+  Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
+                                                                      const TargetT& current_image_estimate,
+                                                                      const TargetT& input,
+                                                                      const int subset_num) const override;
+
+public:
   /*! \name Functions to get parameters
-   \warning Be careful with changing shared pointers. If you modify the objects in 
+   \warning Be careful with changing shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
   */
   //@{
@@ -121,21 +113,21 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
    \warning After using any of these, you have to call set_up().
-   \warning Be careful with setting shared pointers. If you modify the objects in 
+   \warning Be careful with setting shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
   */
   //@{
   void set_recompute_sensitivity(const bool);
   void set_sensitivity_sptr(const shared_ptr<TargetT>&);
-  virtual int set_num_subsets(const int num_subsets);
+  int set_num_subsets(const int num_subsets) override;
 
-  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) override;
+  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) override;
 
-  virtual void set_input_data(const shared_ptr<ExamData> &);
-  virtual const DynamicProjData& get_input_data() const;
+  void set_input_data(const shared_ptr<ExamData>&) override;
+  const DynamicProjData& get_input_data() const override;
   //@}
- protected:
+protected:
   //! Filename with input projection data
   std::string _input_filename;
 
@@ -152,7 +144,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   /********************************/
   //! name of file in which additive projection data are stored
   std::string _additive_dyn_proj_data_filename;
- //! points to the additive projection data
+  //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<DynamicProjData> _additive_dyn_proj_data_sptr;
   /*! the normalisation or/and attenuation data */
@@ -167,16 +159,20 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   //! dynamic image template
   DynamicDiscretisedDensity _dyn_image_template;
 
-  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
 
-  //! Sets defaults for parsing 
+  void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                      const TargetT& current_estimate,
+                                                      const int subset_num,
+                                                      const bool add_sensitivity) override;
+
+  //! Sets defaults for parsing
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and
      \c recompute_sensitivity to \c false.
   */
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
 END_NAMESPACE_STIR

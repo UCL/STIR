@@ -7,7 +7,7 @@
 %%
 clc; clear all;
 %Path to TOF files. 
-path_name ='/home/nikos/Desktop/conv_LOR/'
+path_name = './'
 
 pre_sort_files_in_path = dir(path_name)
 nums = []

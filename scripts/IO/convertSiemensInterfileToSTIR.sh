@@ -43,7 +43,8 @@ fi
 # replace a number of keywords according to the proposed Interfile standard
 # due to restrictions of many sed versions, we first use @ in the replacement string to indicate a newline, 
 # and then use tr to replace @ with an actual newline 
-sed \
+tr -d '\r' < "${in}" | sed \
+ -e "s/!INTERFILE *$/!INTERFILE :=/" \
  -e "s/GENERAL IMAGE DATA *:=/GENERAL IMAGE DATA :=@!type of data := PET@/" \
  -e "s/image data byte order/imagedata byte order/" \
  -e "s#scale factor (mm/pixel)#scaling factor (mm/pixel)#" \
@@ -51,7 +52,7 @@ sed \
  -e "s/!*image duration (sec)/number of time frames:=1@\
 !image duration (sec)[1]/" \
  -e "s/\(image relative start time (sec)\)/\1[1]/" \
- "${in}" | tr @ "\n" > "${out}"
+| tr @ "\n" > "${out}"
 
 # check if sed worked
 if [ $? -ne 0 ]; then
