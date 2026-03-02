@@ -2,13 +2,18 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
-    Copyright (C) 2016, University of Hull
-    Copyright (C) 2016, 2019, 2021, 2023 UCL
-    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-    Copyright (C 2017-2018, University of Leeds
+ 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -19,36 +24,28 @@
 
   \brief Declaration of class stir::Scanner
 
-  \author Nikos Efthimiou
   \author Claire Labbe
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
-  \author Ottavia Bertolli
-  \author Palak Wadhwa
   \author PARAPET project
-  \author Parisa Khateri
-
 */
 #ifndef __stir_buildblock_SCANNER_H__
 #define __stir_buildblock_SCANNER_H__
 
 #include "stir/DetectionPosition.h"
-#include "stir/CartesianCoordinate3D.h"
-#include "stir/DetectorCoordinateMap.h"
-#include "stir/shared_ptr.h"
 #include <string>
 #include <list>
-#include <vector>
-#include <cmath>
-#include <algorithm>
-#include <fstream>
-#include <boost/algorithm/string.hpp>
-#include <boost/unordered_map.hpp>
+
+#ifndef STIR_NO_NAMESPACES
+using std::string;
+using std::list;
+#endif
 
 START_NAMESPACE_STIR
 
 class Succeeded;
+
 /*!
   \ingroup buildblock
   \brief A class for storing some info on the scanner
@@ -84,21 +81,9 @@ class Succeeded;
           collection of blocks. A \c singles_unit is then a set of crystals
           for which we can get singles rates.
 
-      A further complication is that some scanners (including many Siemens scanners)
-      insert virtual crystals in the sinogram data (corresponding to gaps between
-      detector blocks). We currently define the blocks as the "virtual" ones,
-      but provide extra members to find out how many of these virtual crystals there are.
-
       \warning This information is only sensible for discrete detector-based scanners.
-      \warning Currently, in a TOF compatible scanner template, the last three types have to
-                be explicitly defined to avoid ambiguity.
-      \warning The energy resolution has to be specified but it is used only for scatter correction.
-      \warning In order to define a nonTOF scanner the timing resolution has to be set to 0 or 1.
-                Anything else will trigger a TOF reconstruction.
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
-
-      \warning You have to call set_up() after using the \c set_* functions (except set_params()).
 
   \todo
     a hierarchy distinguishing between different types of scanners
@@ -106,25 +91,15 @@ class Succeeded;
 */
 class Scanner
 {
-  friend class BlocksTests;
-
 public:
+
   /************* static members*****************************/
   static Scanner* ask_parameters();
 
   //! get the scanner pointer from the name
-  static Scanner* get_scanner_from_name(const std::string& name);
-  //! get a string listing names for all predefined scanners
-  /* \return a string with one line per predefined scanner, listing the predefined names for
-     that scanner (separated by a comma)
-  */
-  static std::string list_all_names();
-  //! get a list with the names for each predefined scanner
-  /* \return a list of strings, each element is a name of a predefined scanner.
-     If a scanner can have multiple names, only one name is returned, i.e.
-     the list has the same length as the number of predefined scanners.
-  */
-  static std::list<std::string> get_names_of_predefined_scanners();
+  static Scanner * get_scanner_from_name(const string& name);
+  //! get the list of all names for the particular scanner
+  static string list_all_names();
 
   // E931 HAS to be first, Unknown_scanner HAS to be last
   // also, the list HAS to be consecutive (so DO NOT assign numbers here)
@@ -137,144 +112,59 @@ public:
      to flag up an error and do some guess work in trying to recognise the scanner from
      any given parameters.
   */
-  enum Type
-  {
-    E931,
-    E951,
-    E953,
-    E921,
-    E925,
-    E961,
-    E962,
-    E966,
-    E1080,
-    test_scanner,
-    Siemens_mMR,
-    Siemens_mCT,
-    Siemens_Vision_600,
-    Siemens_Quadra,
-    RPT,
-    HiDAC,
-    Advance,
-    DiscoveryLS,
-    DiscoveryST,
-    DiscoverySTE,
-    DiscoveryRX,
-    Discovery600,
-    PETMR_Signa,
-    Discovery690,
-    DiscoveryMI3ring,
-    DiscoveryMI4ring,
-    DiscoveryMI5ring,
-    DiscoveryMI6ring,
-    HZLR,
-    RATPET,
-    PANDA,
-    HYPERimage,
-    nanoPET,
-    HRRT,
-    Allegro,
-    GeminiTF,
-    SAFIRDualRingPrototype,
-    UPENN_5rings,
-    UPENN_5rings_no_gaps,
-    UPENN_6rings,
-    UPENN_6rings_no_gaps,
-    User_defined_scanner,
-    Unknown_scanner
-  };
-
-  virtual ~Scanner() {}
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
+	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
+	     Unknown_scanner};
 
   //! constructor that takes scanner type as an input argument
   Scanner(Type scanner_type);
 
+
   //! constructor -(list of names)
   /*! size info is in mm
-      \param intrinsic_tilt_v value in radians, \see get_intrinsic_azimuthal_tilt()
-      \param scanner_geometry_v \see set_scanner_geometry()
+      \param intrinsic_tilt_v value in radians, \see get_default_intrinsic_tilt()
       \warning calls error() when block/bucket info are inconsistent
    */
-  Scanner(Type type_v,
-          const std::list<std::string>& list_of_names_v,
-          int num_detectors_per_ring_v,
-          int num_rings_v,
+  Scanner(Type type_v, const list<string>& list_of_names_v,
+          int num_detectors_per_ring_v, int num_rings_v, 
           int max_num_non_arccorrected_bins_v,
           int default_num_arccorrected_bins_v,
-          float inner_ring_radius_v,
-          float average_depth_of_interaction_v,
-          float ring_spacing_v,
-          float bin_size_v,
-          float intrinsic_tilt_v,
-          int num_axial_blocks_per_bucket_v,
-          int num_transaxial_blocks_per_bucket_v,
-          int num_axial_crystals_per_block_v,
-          int num_transaxial_crystals_per_block_v,
+          float inner_ring_radius_v, float average_depth_of_interaction_v, 
+          float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+          int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
-          int num_detector_layers_v,
-          float energy_resolution_v = -1.0f,
-          float reference_energy_v = -1.0f,
-          short int max_num_of_timing_poss = -1,
-          float size_timing_pos = -1.0f,
-          float timing_resolution = -1.0f,
-          const std::string& scanner_geometry_v = "Cylindrical",
-          float axial_crystal_spacing_v = -1.0f,
-          float transaxial_crystal_spacing_v = -1.0f,
-          float axial_block_spacing_v = -1.0f,
-          float transaxial_block_spacing_v = -1.0f,
-          const std::string& crystal_map_file_name = "");
+          int num_detector_layers_v);
 
   //! constructor ( a single name)
   /*! size info is in mm
-      \param intrinsic_tilt value in radians, \see get_intrinsic_azimuthal_tilt()
-      \param scanner_geometry_v \see set_scanner_geometry()
+      \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
       \warning calls error() when block/bucket info are inconsistent
    */
-  Scanner(Type type_v,
-          const std::string& name,
-          int num_detectors_per_ring_v,
-          int num_rings_v,
+  Scanner(Type type_v, const string& name,
+          int num_detectors_per_ring_v, int num_rings_v, 
           int max_num_non_arccorrected_bins_v,
           int default_num_arccorrected_bins_v,
-          float inner_ring_radius_v,
-          float average_depth_of_interaction_v,
-          float ring_spacing_v,
-          float bin_size_v,
-          float intrinsic_tilt_v,
-          int num_axial_blocks_per_bucket_v,
-          int num_transaxial_blocks_per_bucket_v,
-          int num_axial_crystals_per_block_v,
-          int num_transaxial_crystals_per_block_v,
+          float inner_ring_radius_v, float average_depth_of_interaction_v, 
+          float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+          int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v,
           int num_transaxial_crystals_per_singles_unit_v,
-          int num_detector_layers_v,
-          float energy_resolution_v = -1.0f,
-          float reference_energy_v = -1.0f,
-          short int max_num_of_timing_poss = -1,
-          float size_timing_pos = -1.0f,
-          float timing_resolution = -1.0f,
-          const std::string& scanner_geometry_v = "Cylindrical",
-          float axial_crystal_spacing_v = -1.0f,
-          float transaxial_crystal_spacing_v = -1.0f,
-          float axial_block_spacing_v = -1.0f,
-          float transaxial_block_spacing_v = -1.0f,
-          const std::string& crystal_map_file_name = "");
+          int num_detector_layers_v);
 
-  //! Initialise internal geometry
-  /*! Currently called in the set_params() functions, but needs to be
-      called explicitly when afterwards using any of the other \c set_ functions
-  */
-  virtual void set_up();
 
-  //! get scanner parameters as a std::string
-  std::string parameter_info() const;
+
+  //! get scanner parameters as a string
+  string parameter_info() const;
   //! get the scanner name
-  const std::string& get_name() const;
+  const string& get_name() const;
   //! get all scanner names as a list of strings
-  const std::list<std::string>& get_all_names() const;
+  const list<string>& get_all_names() const;
   //! get all scanner names as a string
-  std::string list_names() const;
+  string list_names() const;
 
   //! comparison operator
   bool operator==(const Scanner& scanner) const;
@@ -284,7 +174,6 @@ public:
   inline Type get_type() const;
   //! checks consistency
   /*! Calls warning() with diagnostics when there are problems
-   * N.E: Should something check be added for TOF information?
    */
   Succeeded check_consistency() const;
 
@@ -317,8 +206,6 @@ public:
   inline int get_max_num_views() const;
   //! get inner ring radius
   inline float get_inner_ring_radius() const;
-  //! get maximum field of view radius
-  inline float get_max_FOV_radius() const;
   //! get effective ring radius
   inline float get_effective_ring_radius() const;
   //! get average depth of interaction
@@ -332,8 +219,11 @@ public:
       correspond to the vertical. This angle tells you how much the
       image will be rotated when this tilt is ignored in the reconstruction
       algorithm. It uses the same coordinate system as ProjDataInfo::get_phi().
+
+      \todo we still have to decide if ProjDataInfo::get_phi() will take 
+      this tilt into account or not. At present, STIR ignores the intrinsic tilt.
   */
-  inline float get_intrinsic_azimuthal_tilt() const;
+  inline float get_default_intrinsic_tilt() const;
   //! \name Info on crystals per block etc.
   //@{
   //! get number of transaxial blocks per bucket
@@ -371,98 +261,14 @@ public:
   inline int get_num_transaxial_singles_units() const;
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
-  //! Get the maximum number of TOF bins.
-  /*! \return will be 0 or negative if not known */
-  inline int get_max_num_timing_poss() const;
-  //! Get the size for one (unmashed) TOF bin in picoseconds
-  /*!
-    \return will be 0 or negative if not known
-    \todo change name to \c get_size_of_timing_pos_in_ps
-  */
-  inline float get_size_of_timing_pos() const;
-  //! Get the timing resolution of the scanner in picoseconds
-  /*!
-    \return will be 0 or negative if not known
-    \todo change name to \c get_size_of_timing_pos_in_ps
-    */
-  inline float get_timing_resolution() const;
-  //! Get the full width of the coincidence window in picoseconds
-  /*!
-    This is often written as \f$2\tau\f$ and is usually around 4000ps.
-    It is determined from \c get_max_num_timing_poss() and \c get_size_of_timing_pos().
 
-    \warning This is currently not known yet for many non-TOF scanners. The function will
-    then throw an error.
-  */
-  float get_coincidence_window_width_in_ps() const;
-  //! Get the full width of the coincidence window in millimeter
-  /*! Calls get_coincidence_window_width_in_ps() */
-  float get_coincidence_window_width_in_mm() const;
-
-  //! \name number of "fake" crystals per block, inserted by the scanner
-  /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
-    The other members of the class return the size of the "virtual" block. With these
-    functions you can find its true size (or set it).
-
-    You have to call set_up() after using the \c set_* functions.
-  */
-  //@{!
-  int get_num_virtual_axial_crystals_per_block() const;
-  int get_num_virtual_transaxial_crystals_per_block() const;
-  void set_num_virtual_axial_crystals_per_block(int);
-  void set_num_virtual_transaxial_crystals_per_block(int);
-  //@}
-
-  //! \name functions to get block geometry info
-  //@{
-  //! get scanner geometry
-  /*! \see set_scanner_geometry */
-  inline std::string get_scanner_geometry() const;
-  //! get crystal spacing in axial direction
-  inline float get_axial_crystal_spacing() const;
-  //! get crystal spacing in transaxial direction
-  inline float get_transaxial_crystal_spacing() const;
-  //! get block spacing in axial direction
-  inline float get_axial_block_spacing() const;
-  //! get block spacing in transaxial direction
-  inline float get_transaxial_block_spacing() const;
-  /*! get total axial length covered by the detectors (incl. any gaps between blocks etc.)
-    \todo Need to update this function when enabling different spacing between blocks and buckets etc.
-    For cylindrical scanners, calculates the length by the ring spacing.
-  */
-  inline float get_axial_length() const;
-  //@} (end of get block geometry info)
-
-  //! \name functions to get generic geometry info
-  //! get crystal map file name
-  inline std::string get_crystal_map_file_name() const;
 
   //@} (end of block/bucket info)
 
   //@} (end of get geometrical info)
 
-  //! \name Functions to get detector response info
-  //@{
-
-  //! get the energy resolution as a fraction at the reference energy
-  /*! Values for PET scanners are around 0.1 at 511 keV, depending on the scanner of course.
-
-    If less than or equal to 0, it is assumed to be unknown.
-  */
-  inline float get_energy_resolution() const;
-  //! get the reference energy in keV of the energy resolution
-  /*! For PET, normally set to 511 */
-  inline float get_reference_energy() const;
-  //! \c true if energy_resolution and reference_energy are set
-  inline bool has_energy_information() const;
-
-  //@} (end of get detector response info)
-
   //! \name Functions setting info
-  /*! Be careful to keep consistency by setting all relevant parameters.
-
-    You have to call set_up() after using any of these.
-  */
+  /*! Be careful to keep consistency by setting all relevant parameters*/
   //@{
   // zlong, 08-04-2004, add set_methods
   //! set scanner type
@@ -484,7 +290,7 @@ public:
   //! set default arc-corrected bin size
   inline void set_default_bin_size(const float& new_size);
   //! in degrees
-  inline void set_intrinsic_azimuthal_tilt(const float new_tilt);
+  inline void set_default_intrinsic_tilt(const float & new_tilt);
   //! \name Info on crystals per block etc.
   //@{
   //! set number of transaxial blocks per bucket
@@ -502,83 +308,29 @@ public:
   //! set number of transaxial crystals per singles unit
   inline void set_num_transaxial_crystals_per_singles_unit(const int& new_num);
   // TODO accomodate more complex geometries of singles units.
-  //@{
-  //! name functions to set block geometry info
-  //! set scanner geometry
-  /*!
-   \param new_scanner_geometry: "Cylindrical", "BlocksOnCylindrical" or "Generic"
-
-    Will also read the detector map from file if the geometry is \c "Generic".
-    \warning you need to call set_up() after calling this function.
-
-   \see set_scanner_geometry
-  */
-  void set_scanner_geometry(const std::string& new_scanner_geometry);
-  //! set crystal spacing in axial direction
-  inline void set_axial_crystal_spacing(const float& new_spacing);
-  //! set crystal spacing in transaxial direction
-  inline void set_transaxial_crystal_spacing(const float& new_spacing);
-  //! set block spacing in axial direction
-  inline void set_axial_block_spacing(const float& new_spacing);
-  //! set block spacing in transaxial direction
-  inline void set_transaxial_block_spacing(const float& new_spacing);
-  //! set crystal map file name for the generic geometry
-  /*! \warning, data is not read yet. use set_scanner_geometry() after calling this function */
-  inline void set_crystal_map_file_name(const std::string& new_crystal_map_file_name);
-  //@} (end of block geometry info)
 
   //@} (end of block/bucket info)
-  //! set the energy resolution of the system
-  /*! \sa get_energy_resolution() */
-  inline void set_energy_resolution(const float new_num);
-  //! set the reference energy (in keV) of the energy resolution
-  /*! \sa get_reference_energy() */
-  inline void set_reference_energy(const float new_num);
-  //! Set the maximum number of TOF bins.
-  inline void set_max_num_timing_poss(int new_num);
-  //! Set the delta t which correspnds to the max number of TOF bins.
-  inline void set_size_of_timing_poss(float new_num);
-  //! Set timing resolution
-  inline void set_timing_resolution(float new_num_in_ps);
-  //@} (end of set info)
 
   //@} (end of set info)
 
-  //! Calculate a singles bin index from axial and transaxial singles bin coordinates.
+  // Calculate a singles bin index from axial and transaxial singles bin coordinates.
   inline int get_singles_bin_index(int axial_index, int transaxial_index) const;
 
-  //! Method used to calculate a singles bin index from
-  //! a detection position.
+  // Method used to calculate a singles bin index from
+  // a detection position.
   inline int get_singles_bin_index(const DetectionPosition<>& det_pos) const;
 
-  //! Get the axial singles bin coordinate from a singles bin.
+
+  // Get the axial singles bin coordinate from a singles bin.
   inline int get_axial_singles_unit(int singles_bin_index) const;
 
-  //! Get the transaxial singles bin coordinate from a singles bin.
+  // Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
 
-  //! True if it is TOF compatible.
-  inline bool is_tof_ready() const;
-
-  //! Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
-  // used in CListRecordSAFIR.inl for accessing the coordinates
-  inline stir::DetectionPosition<> get_det_pos_for_index(const stir::DetectionPosition<>& det_pos) const;
-  //! Get the Cartesian coordinates (x,y,z) given the STIR detection position (det#, ring#, layer#)
-  // used in ProjInfoDataGenericNoArcCorr.cxx for accessing the coordinates
-  inline stir::CartesianCoordinate3D<float> get_coordinate_for_det_pos(const stir::DetectionPosition<>& det_pos) const;
-  //! Get the Cartesian coordinates (x,y,z) given the detection position id in the input crystal map
-  inline stir::CartesianCoordinate3D<float> get_coordinate_for_index(const stir::DetectionPosition<>& det_pos) const;
-  //! Find detection position at a coordinate
-  // used  in ProjInfoDataGenericNoArcCorr.cxx for accessing the get_bin
-  inline Succeeded find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
-                                                                      const CartesianCoordinate3D<float>& cart_coord) const;
-
-  shared_ptr<const DetectorCoordinateMap> get_detector_map_sptr() const { return detector_map_sptr; }
 
 private:
-  bool _already_setup;
   Type type;
-  std::list<std::string> list_of_names;
+  list<string> list_of_names;
   int num_rings; /* number of direct planes */
   int max_num_non_arccorrected_bins;
   int default_num_arccorrected_bins; /* default number of bins */
@@ -586,7 +338,6 @@ private:
 
   float inner_ring_radius;            /*! detector inner radius in mm*/
   float average_depth_of_interaction; /*! Average interaction depth in detector crystal */
-  float max_FOV_radius;               /*! detector maximum radius in mm - for cylindrical scanner identical to inner radius */
   float ring_spacing;                 /*! ring separation in mm*/
   float bin_size;                     /*! arc-corrected bin size in mm (spacing of transaxial elements) */
   float intrinsic_tilt;               /*! intrinsic tilt in radians*/
@@ -600,44 +351,24 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
 
-  //!
-  //! \brief energy resolution (FWHM as a fraction of the reference_energy)
-  //! \details This is the energy resolution of the system.
-  //! A negative value indicates, unknown.
-  //! This value is dominated by the material of the scintilation crystal
-  float energy_resolution;
-  //! In PET application this should always be 511 keV.
-  //! A negative value indicates, unknown.
-  float reference_energy;
-  //! The timing resolution of the scanner, in psec.
-  float timing_resolution;
-  //! The number of TOF bins. Without any mash factors
-  int max_num_of_timing_poss;
-  //! This number corresponds the the least significant clock digit.
-  float size_timing_pos;
 
-  //!
-  //! \brief scanner info needed for block geometry
-  //! \author Parisa Khateri
-  //! A negative value indicates unknown.
-  std::string scanner_geometry;     /*! scanner geometry */
-  float axial_crystal_spacing;      /*! crystal pitch in axial direction in mm*/
-  float transaxial_crystal_spacing; /*! crystal pitch in transaxial direction in mm*/
-  float axial_block_spacing;        /*! block pitch in axial direction in mm*/
-  float transaxial_block_spacing;   /*! block pitch in transaxial direction in mm*/
-
-  std::string crystal_map_file_name;
-  shared_ptr<DetectorCoordinateMap> detector_map_sptr; /*! effective detection positions including average DOI */
-
-  void set_detector_map(const DetectorCoordinateMap::det_pos_to_coord_type& coord_map);
-  void initialise_max_FOV_radius();
-
-  // function to create the maps
-  void read_detectormap_from_file(const std::string& filename);
+  // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
+  void set_params(Type type_v, const list<string>& list_of_names_v,
+                  int num_rings_v, 
+                  int max_num_non_arccorrected_bins_v,
+                  int num_detectors_per_ring_v,
+                  float inner_ring_radius_v,
+                  float average_depth_of_interaction_v,
+                  float ring_spacing_v,
+                  float bin_size_v, float intrinsic_tilt_v,
+                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_axial_crystals_per_singles_unit_v,
+                  int num_transaxial_crystals_per_singles_unit_v,
+                  int num_detector_layers_v);
 
   // ! set all parameters
-  void set_params(Type type_v,
-                  const std::list<std::string>& list_of_names_v,
+  void set_params(Type type_v, const list<string>& list_of_names_v,
                   int num_rings_v,
                   int max_num_non_arccorrected_bins_v,
                   int default_num_arccorrected_bins_v,
@@ -645,26 +376,14 @@ private:
                   float inner_ring_radius_v,
                   float average_depth_of_interaction_v,
                   float ring_spacing_v,
-                  float bin_size_v,
-                  float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v,
-                  int num_transaxial_blocks_per_bucket_v,
-                  int num_axial_crystals_per_block_v,
-                  int num_transaxial_crystals_per_block_v,
+                  float bin_size_v, float intrinsic_tilt_v,
+                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v,
-                  float energy_resolution_v = -1.0f,
-                  float reference_energy = -1.0f,
-                  short int max_num_of_timing_poss_v = -1.0f,
-                  float size_timing_pos_v = -1.0f,
-                  float timing_resolution_v = -1.0f,
-                  const std::string& scanner_geometry_v = "",
-                  float axial_crystal_spacing_v = -1.0f,
-                  float transaxial_crystal_spacing_v = -1.0f,
-                  float axial_block_spacing_v = -1.0f,
-                  float transaxial_block_spacing_v = -1.0f,
-                  const std::string& crystal_map_file_name = "");
+                  int num_detector_layers_v);
+
+
 };
 
 END_NAMESPACE_STIR
@@ -672,3 +391,4 @@ END_NAMESPACE_STIR
 #include "stir/Scanner.inl"
 
 #endif
+ 

@@ -3,10 +3,17 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -81,11 +88,14 @@ template <class TargetT>
 class IterativeReconstruction : public Reconstruction<TargetT>
 {
 private:
-  typedef Reconstruction<TargetT> base_type;
-
+  typedef
+    Reconstruction<TargetT>
+    base_type;
 public:
+
   //! accessor for the subiteration counter
-  int get_subiteration_num() const { return subiteration_num; }
+  int get_subiteration_num() const
+    {return subiteration_num;}
 
   //! accessor for finding the current subset number
   /*! The subset number is determined from the subiteration number.
@@ -109,7 +119,8 @@ public:
       IterativeReconstruction::initial_data_filename is not nice.
       \todo should not return a 'bare' pointer.
   */
-  virtual TargetT* get_initial_data_ptr() const;
+  virtual TargetT *
+    get_initial_data_ptr() const;
 
   //! executes the reconstruction
   /*!
@@ -119,7 +130,8 @@ public:
 
     \return Succeeded::yes if everything was alright.
    */
-  Succeeded reconstruct() override;
+  virtual Succeeded 
+    reconstruct();
 
   //! executes the reconstruction with \a target_data_sptr as initial value
   /*! After calling set_up(), repeatedly calls update_estimate(); end_of_iteration_processing();
@@ -127,26 +139,33 @@ public:
 
       Final reconstruction is saved in \a target_data_sptr
   */
-  Succeeded reconstruct(shared_ptr<TargetT> const& target_data_sptr) override;
+  virtual Succeeded 
+    reconstruct(shared_ptr<TargetT > const& target_data_sptr);
+	
+
 
   //! A utility function that creates a filename_prefix by appending the current subiteration number
   /*! Only works when no extension is present.
    */
-  std::string make_filename_prefix_subiteration_num(const std::string& filename_prefix) const;
+  std::string
+    make_filename_prefix_subiteration_num(const std::string& filename_prefix) const;
 
   //! A utility function that creates the output filename_prefix for the current subiteration number
   /*! Uses \a output_filename_prefix. Only works when no extension is present.
    */
-  std::string make_filename_prefix_subiteration_num() const;
+  std::string
+    make_filename_prefix_subiteration_num() const;
 
   /*! \name Functions to get parameters
    \warning Be careful with changing shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
   */
   //@{
-  GeneralisedObjectiveFunction<TargetT> const& get_objective_function() const;
+  GeneralisedObjectiveFunction<TargetT> const&
+    get_objective_function() const;
 
-  shared_ptr<GeneralisedObjectiveFunction<TargetT>> get_objective_function_sptr() const;
+  shared_ptr<GeneralisedObjectiveFunction<TargetT> >
+    get_objective_function_sptr() const;
 
   //! the maximum allowed number of full iterations
   const int get_max_num_full_iterations() const;
@@ -172,8 +191,6 @@ public:
 
   //! inter-iteration filter
   const DataProcessor<TargetT>& get_inter_iteration_filter() const;
-
-  shared_ptr<DataProcessor<TargetT>> get_inter_iteration_filter_sptr();
 
   //! subiteration interval at which to apply inter-iteration filters
   const int get_inter_iteration_filter_interval() const;
@@ -221,21 +238,16 @@ public:
 
   //! subiteration interval at which to report the values of the objective function
   void set_report_objective_function_values_interval(const int);
-
-  //!
-  //! \brief set_input_data
-  //! \author Nikos Efthimiou
-  void set_input_data(const shared_ptr<ExamData>& arg) override;
-  const ExamData& get_input_data() const override;
   //@}
 
-  Succeeded set_up(shared_ptr<TargetT> const& target_data_ptr) override;
+protected:
+ 
+  IterativeReconstruction();
+
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_ptr);
 
   //! the principal operations for updating the data iterates at each iteration
   virtual void update_estimate(TargetT& current_estimate) = 0;
-
-protected:
-  IterativeReconstruction();
 
   //! operations for the end of the iteration
   /*! At specific subiteration numbers, this
@@ -254,13 +266,15 @@ protected:
   // KT 14/12/2001 remove =0 as it's not a pure virtual and the default implementation is usually fine.
   virtual void end_of_iteration_processing(TargetT& current_estimate);
 
-  shared_ptr<GeneralisedObjectiveFunction<TargetT>> objective_function_sptr;
+  shared_ptr<GeneralisedObjectiveFunction<TargetT > >
+    objective_function_sptr;
 
   //! the subiteration counter
   int subiteration_num;
 
   //! used to abort the loop over iterations
   bool terminate_iterations;
+
 
   // parameters
 protected:
@@ -277,7 +291,7 @@ protected:
   int start_subiteration_num;
 
   //! name of the file containing the data for intializing the reconstruction
-  std::string initial_data_filename;
+  string initial_data_filename;
 
   //! the starting subset number
   int start_subset_num;
@@ -290,9 +304,13 @@ protected:
   //! signals whether to randomise the subset order in each iteration
   bool randomise_subset_order;
 
+
   //! inter-iteration filter
   shared_ptr<DataProcessor<TargetT>> inter_iteration_filter_ptr;
 
+
+
+  
   //! subiteration interval at which to apply inter-iteration filters
   int inter_iteration_filter_interval;
 
@@ -304,10 +322,10 @@ protected:
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
 
-  void set_defaults() override;
-  void initialise_keymap() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
   //! used to check acceptable parameter ranges, etc...
-  bool post_processing() override;
+  virtual bool post_processing();
 
 private:
   //! member storing the order in which the subsets will be traversed in this iteration
@@ -315,9 +333,13 @@ private:
   VectorWithOffset<int> _current_subset_array;
   //! used to randomly generate a subset sequence order for the current iteration
   VectorWithOffset<int> randomly_permute_subset_order() const;
+
+
 };
 
 END_NAMESPACE_STIR
 
 #endif
 // __IterativeReconstruction_h__
+
+

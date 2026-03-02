@@ -3,7 +3,15 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -20,12 +28,15 @@
 
 #include "stir/listmode/CListModeData.h"
 #include "stir/IO/InputStreamWithRecords.h"
+#include "stir/shared_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #  include "stir/IO/stir_ecat7.h"
 #else
 #  include "stir/IO/stir_ecat_common.h" // for namespace macros
 #endif
 #include <iostream>
+#include <string>
+#include <utility>
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -56,17 +67,23 @@ public:
   */
   CListModeDataECAT(const std::string& listmode_filename_prefix);
 
-  virtual std::string get_name() const;
+  virtual std::string
+    get_name() const;
 
-  virtual shared_ptr<CListRecord> get_empty_record_sptr() const;
+  virtual 
+    shared_ptr <CListRecord> get_empty_record_sptr() const;
 
-  virtual Succeeded get_next_record(CListRecord& record) const;
+  virtual 
+    Succeeded get_next_record(CListRecord& record) const;
 
-  virtual Succeeded reset();
+  virtual 
+    Succeeded reset();
 
-  virtual SavedPosition save_get_position();
+  virtual
+    SavedPosition save_get_position();
 
-  virtual Succeeded set_get_position(const SavedPosition&);
+  virtual
+    Succeeded set_get_position(const SavedPosition&);
 
   //! returns \c true, as ECAT listmode data stores delayed events (and prompts)
   /*! \todo this might depend on the acquisition parameters */
@@ -84,7 +101,6 @@ private:
   // const as it modifies only mutable elements
   // It has to be const as e.g. get_next_record calls it
   Succeeded open_lm_file(unsigned int) const;
-  // shared_ptr<Scanner> scanner_sptr;
 };
 
 END_NAMESPACE_ECAT7

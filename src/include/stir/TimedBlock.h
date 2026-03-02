@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,8 +29,7 @@
 */
 #ifndef _stir_TimedBlock_H_
 #define _stir_TimedBlock_H_
-namespace stir
-{
+namespace stir {
 
 class Timer;
 
@@ -63,6 +70,7 @@ template <class TimerT>
 class TimedBlock<TimerT = Timer>
 {
 public:
+
   //! Create a timed block
   inline TimedBlock(TimerT& Timer);
   //! Destroy a timed block
@@ -70,11 +78,14 @@ public:
 
 protected:
 private:
+
   TimedBlock(const TimedBlock&);            // Not defined
   TimedBlock& operator=(const TimedBlock&); // Not defined
 
   TimerT& m_Timer;
+
 };
+
 
 template <class TimerT>
 TimedBlock<TimerT>::TimedBlock(TimerT& timer)
@@ -88,6 +99,6 @@ TimedBlock<TimerT>::~TimedBlock(void)
 {
   m_Timer.stop();
 }
-} // namespace stir
+}
 
 #endif

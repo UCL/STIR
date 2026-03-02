@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,8 +29,10 @@
 #ifndef __stir_ThresholdMinToSmallPositiveValueDataProcessor_H__
 #define __stir_ThresholdMinToSmallPositiveValueDataProcessor_H__
 
+
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
+
 
 START_NAMESPACE_STIR
 
@@ -49,35 +59,46 @@ START_NAMESPACE_STIR
  */
 
 template <typename DataT>
-class ThresholdMinToSmallPositiveValueDataProcessor
-    : public RegisteredParsingObject<ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
+class ThresholdMinToSmallPositiveValueDataProcessor : 
+  public 
+    RegisteredParsingObject<
+        ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
                                      DataProcessor<DataT>,
-                                     DataProcessor<DataT>>
+        DataProcessor<DataT>
+    >
 {
 private:
-  typedef RegisteredParsingObject<ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
+  typedef 
+    RegisteredParsingObject<
+        ThresholdMinToSmallPositiveValueDataProcessor<DataT>,
                                   DataProcessor<DataT>,
-                                  DataProcessor<DataT>>
+        DataProcessor<DataT>
+    >
       base_type;
-
 public:
   static const char* const registered_name;
 
   //! Construct by calling set_defaults()
   ThresholdMinToSmallPositiveValueDataProcessor();
 
+  
 private:
+  
   int rim_truncation_image;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
-  Succeeded virtual_set_up(const DataT&) override;
+  Succeeded virtual_set_up(const DataT&);
 
-  void virtual_apply(DataT& out_data, const DataT& in_data) const override;
-  void virtual_apply(DataT& data) const override;
+  void  virtual_apply(DataT& out_data, const DataT& in_data) const;
+  void  virtual_apply(DataT& data) const ;
+
 };
+
 
 END_NAMESPACE_STIR
 
 #endif
+
+

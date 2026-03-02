@@ -13,8 +13,7 @@ zero end planes of segment 0:= 1
 
 ; if the next parameter is disabled, 
 ; the sensitivity will be computed
-; use %d where you want the subset-number (a la printf)
-subset sensitivity filenames:= sens_%d.hv
+sensitivity filename:= sens.hv
 ; specify additive projection data to handle randoms or so
 ; see User's Guide for more info
 additive sinogram := 0
@@ -49,10 +48,6 @@ output filename prefix := test_QP
 number of subsets:= 12
 number of subiterations:= 24
 save estimates at subiteration intervals:= 12
-
-; This is the default verbosity, just putting it here as an example
-; lower value means less output, 0 being the minimum
-verbosity := 2
 
 ; enable this for multiplicative form of OSMAPOSL (see User's Guide)
 ;MAP model := multiplicative

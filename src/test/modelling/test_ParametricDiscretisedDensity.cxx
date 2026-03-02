@@ -2,7 +2,15 @@
     Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+    
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -35,7 +43,6 @@
 #include <utility>
 #include <vector>
 #include <string>
-#include "stir/warning.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -43,24 +50,25 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
 using std::istream;
 using std::setw;
-using std::endl;
+#endif
 
 START_NAMESPACE_STIR
 
 class ParametricDiscretisedDensityTests : public RunTests
 {
 public:
-  ParametricDiscretisedDensityTests() {}
-  void run_tests() override;
+  ParametricDiscretisedDensityTests() 
+  {}
+  void run_tests();
   // private:
 };
 
-void
-ParametricDiscretisedDensityTests::run_tests()
+void ParametricDiscretisedDensityTests::run_tests()
 {
   set_tolerance(0.000000000000001);
 
@@ -69,19 +77,11 @@ ParametricDiscretisedDensityTests::run_tests()
   //! Setup the scanner details first
   const Scanner::Type test_scanner = Scanner::E966;
   const shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
-  VectorWithOffset<int> num_axial_pos_per_segment;
-  num_axial_pos_per_segment.resize(0, 0);
-  num_axial_pos_per_segment[0] = 48;
-  VectorWithOffset<int> min_ring_diff;
-  min_ring_diff.resize(0, 0);
-  min_ring_diff[0] = 0;
-  VectorWithOffset<int> max_ring_diff;
-  max_ring_diff.resize(0, 0);
-  max_ring_diff[0] = 0;
-  const int num_views = 144;
-  const int num_tangential_poss = 144;
-  ProjDataInfoCylindricalNoArcCorr proj_data_info(
-      scanner_sptr, num_axial_pos_per_segment, min_ring_diff, max_ring_diff, num_views, num_tangential_poss);
+  VectorWithOffset<int> num_axial_pos_per_segment;  num_axial_pos_per_segment.resize(0,0);  num_axial_pos_per_segment[0]=48;
+  VectorWithOffset<int> min_ring_diff;  min_ring_diff.resize(0,0);  min_ring_diff[0]=0;
+  VectorWithOffset<int> max_ring_diff; max_ring_diff.resize(0,0);  max_ring_diff[0]=0;
+  const int num_views=144; const int num_tangential_poss=144; 
+  ProjDataInfoCylindricalNoArcCorr proj_data_info(scanner_sptr,num_axial_pos_per_segment,min_ring_diff,max_ring_diff,num_views,num_tangential_poss);
   //! Setup some of the image details
   const CartesianCoordinate3D<float> origin(0.F, 0.F, 0.F);
   const CartesianCoordinate3D<float> grid_spacing(1.F, 1.F, 1.F);
@@ -90,11 +90,13 @@ ParametricDiscretisedDensityTests::run_tests()
     cerr << "Testing ParametricDiscretisedDensity class for one voxel..." << endl;
     const CartesianCoordinate3D<int> sizes(1, 1, 1);
 
-    const shared_ptr<ParametricVoxelsOnCartesianGrid> parametric_image_sptr(
-        new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(proj_data_info, zoom, grid_spacing, sizes)));
+    const shared_ptr<ParametricVoxelsOnCartesianGrid> parametric_image_sptr
+      (
+       new ParametricVoxelsOnCartesianGrid(
+					   ParametricVoxelsOnCartesianGridBaseType(proj_data_info,
+										   zoom,grid_spacing,sizes)));
     ParametricVoxelsOnCartesianGrid& parametric_image = *parametric_image_sptr;
-    parametric_image[0][0][0][1] = 1.F;
-    parametric_image[0][0][0][2] = 2.F;
+    parametric_image[0][0][0][1]=1.F;  parametric_image[0][0][0][2]=2.F;
 
     check_if_equal(parametric_image[0][0][0][1], 1.F, "check ParametricVoxelsOnCartesianGrid class implementation");
     check_if_equal(parametric_image[0][0][0][2], 2.F, "check ParametricVoxelsOnCartesianGrid class implementation");
@@ -111,8 +113,7 @@ ParametricDiscretisedDensityTests::run_tests()
     // ParametricVoxelsOnCartesianGrid & parametric_image = *parametric_image_sptr;
 
     // ParametricVoxelsOnCartesianGrid & parametric_image = *parametric_image_sptr;
-    ParametricVoxelsOnCartesianGrid parametric_image(
-        ParametricVoxelsOnCartesianGridBaseType(proj_data_info, zoom, grid_spacing, sizes));
+    ParametricVoxelsOnCartesianGrid parametric_image(ParametricVoxelsOnCartesianGridBaseType(proj_data_info,zoom,grid_spacing,sizes));
     for (int k = 0; k < 63; ++k)
       for (int j = -64; j < 63; ++j)
         for (int i = -64; i < 63; ++i)
@@ -124,9 +125,9 @@ ParametricDiscretisedDensityTests::run_tests()
       for (int j = -64; j < 63; ++j)
         for (int i = -64; i < 63; ++i)
           for (unsigned int par_num = 1; par_num <= num_params; ++par_num)
-            check_if_equal(parametric_image[k][j][i][par_num],
-                           static_cast<float>(par_num * (i * 1.F + j * 5.F - k * 10.F)),
+	    check_if_equal(parametric_image[k][j][i][par_num],static_cast<float> (par_num*(i*1.F+j*5.F-k*10.F)),
                            "Please, check the [] operator implementation");
+
 
     cerr << "- Checking construct_single_density(param_num) implementation." << endl;
     // TODO tests need to be rewritten to accomodate for other num_params!=2
@@ -141,29 +142,29 @@ ParametricDiscretisedDensityTests::run_tests()
       for (int j = -64; j < 63; ++j)
         for (int i = -64; i < 63; ++i)
           {
-            check_if_equal(parametric_image[k][j][i][1],
-                           single_density_1[k][j][i],
+	    check_if_equal(parametric_image[k][j][i][1],single_density_1[k][j][i],
                            "Please, check construct_single_density(param_num) implementation");
-            check_if_equal(parametric_image[k][j][i][2],
-                           single_density_2[k][j][i],
+	    check_if_equal(parametric_image[k][j][i][2],single_density_2[k][j][i],
                            "Please, check construct_single_density(param_num) implementation");
             for (unsigned int par_num = 1; par_num <= num_params; ++par_num)
-              check_if_equal(parametric_image[k][j][i][par_num],
-                             static_cast<float>(par_num * (i * 1.F + j * 5.F - k * 10.F)),
+	      check_if_equal(parametric_image[k][j][i][par_num],static_cast<float> (par_num*(i*1.F+j*5.F-k*10.F)),
                              "Please, check the construct_single_density(param_num) implementation");
           }
 
-    ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::full_iterator cur_iter_1 = single_density_1.begin_all();
-    ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::full_iterator cur_iter_2 = single_density_2.begin_all();
-    for (; cur_iter_1 != single_density_1.end_all() && cur_iter_2 != single_density_2.end_all(); ++cur_iter_1, ++cur_iter_2)
-      check_if_equal(*cur_iter_1 * 2.F, *cur_iter_2, "Please, check construct_single_density(param_num) implementation");
+    ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::full_iterator cur_iter_1 =
+      single_density_1.begin_all();
+    ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::full_iterator cur_iter_2 =
+      single_density_2.begin_all();
+    for (; cur_iter_1!=single_density_1.end_all() &&
+	   cur_iter_2!=single_density_2.end_all();	  
+	 ++cur_iter_1, ++cur_iter_2)			  
+      check_if_equal(*cur_iter_1*2.F, *cur_iter_2,
+		     "Please, check construct_single_density(param_num) implementation");   
 
     std::fill(single_density_1.begin_all(), single_density_1.end_all(), 1.F);
     std::fill(single_density_2.begin_all(), single_density_2.end_all(), 2.F);
     VectorWithOffset<shared_ptr<ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType>> v_test;
-    v_test.resize(1, 2);
-    v_test[1].reset(single_density_1.clone());
-    v_test[2].reset(single_density_2.clone());
+    v_test.resize(1,2); v_test[1].reset(single_density_1.clone()); v_test[2].reset(single_density_2.clone());
 #if 0
     // test disabled as function currently removed from class
     cerr << "- Checking constructor from(VectorWithOffset single_densities) implementation." << endl;
@@ -222,8 +223,7 @@ ParametricDiscretisedDensityTests::run_tests()
         for (int j = -64; still_equal && j < 63; ++j)
           for (int i = -64; still_equal && i < 63; ++i)
             for (unsigned int par_num = 1; still_equal && par_num <= num_params; ++par_num)
-              still_equal = check_if_equal(parametric_image[k][j][i][par_num],
-                                           static_cast<float>(2 + 1 - par_num),
+	      still_equal = check_if_equal(parametric_image[k][j][i][par_num],static_cast<float> (2+1-par_num),
                                            "Please, check update_parametric_image(VectorWithOffset) implementation");
     }
 #endif
@@ -233,8 +233,7 @@ ParametricDiscretisedDensityTests::run_tests()
 END_NAMESPACE_STIR
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   if (argc != 1)
     {

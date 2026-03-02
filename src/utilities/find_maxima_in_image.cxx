@@ -4,7 +4,15 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -35,21 +43,22 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/warning.h"
 
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
 
+
+#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::cout;
 using std::cerr;
 using std::setw;
+#endif
 
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 
   if (argc < 2 || argc > 5)
@@ -65,10 +74,12 @@ main(int argc, char* argv[])
   const int mask_size_xy = argc >= 4 ? atoi(argv[3]) : 1;
   const int mask_size_z = argc >= 5 ? atoi(argv[4]) : mask_size_xy;
 
-  cerr << "Finding " << num_maxima << " maxima, each at least \n\t" << mask_size_xy
-       << " pixels from each other in x,y direction, and\n\t" << mask_size_z << " pixels from each other in z direction.\n";
+  cerr << "Finding " << num_maxima << " maxima, each at least \n\t"
+       << mask_size_xy << " pixels from each other in x,y direction, and\n\t"
+       << mask_size_z << " pixels from each other in z direction.\n";
 
-  shared_ptr<DiscretisedDensity<3, float>> input_image_sptr(read_from_file<DiscretisedDensity<3, float>>(argv[1]));
+  shared_ptr< DiscretisedDensity<3,float> >  
+    input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
   DiscretisedDensity<3, float>& input_image = *input_image_sptr;
 
   const float mask_value = std::min(input_image.find_min() - 100, -1.E20F);
@@ -96,13 +107,20 @@ main(int argc, char* argv[])
                         max_k = k;
                         max_j = j;
                         max_i = i;
-                        cout << "max: " << setw(6) << current_maximum << " at: " << setw(3) << max_k << ',' << setw(3) << max_j
+			cout << "max: " << setw(6) << current_maximum 
+			     << " at: " 
+			     << setw(3) << max_k 
+			     << ',' << setw(3) << max_j 
                              << ',' << setw(3) << max_i;
                         {
-                          BasicCoordinate<3, float> phys_coord
-                              = input_image.get_physical_coordinates_for_indices(make_coordinate(max_k, max_j, max_i));
-                          cout << " which is " << setw(6) << phys_coord[1] << ',' << setw(6) << phys_coord[2] << ',' << setw(6)
-                               << phys_coord[3] << " in mm in physical coordinates";
+			    BasicCoordinate<3,float> phys_coord = 
+			      input_image.
+			      get_physical_coordinates_for_indices(make_coordinate(max_k, max_j, max_i));
+			    cout << " which is "
+				 << setw(6) << phys_coord[1] 
+				 << ',' << setw(6) << phys_coord[2] 
+				 << ',' << setw(6)  <<phys_coord[3]
+				 << " in mm in physical coordinates";
                         }
                         cout << '\n';
                         found = true;
@@ -126,8 +144,7 @@ main(int argc, char* argv[])
                   {
                     const int min_i_index = input_image[k][j].get_min_index();
                     const int max_i_index = input_image[k][j].get_max_index();
-                    for (int i = std::max(max_i - mask_size_xy, min_i_index); i <= std::min(max_i + mask_size_xy, max_i_index);
-                         ++i)
+		for ( int i = std::max(max_i-mask_size_xy,min_i_index); i<= std::min(max_i+mask_size_xy,max_i_index); ++i)
                       input_image[k][j][i] = mask_value;
                   }
               }
@@ -136,3 +153,4 @@ main(int argc, char* argv[])
     }
   return EXIT_SUCCESS;
 }
+  

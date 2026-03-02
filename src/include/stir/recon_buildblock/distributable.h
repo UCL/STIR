@@ -2,10 +2,17 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011, Hammersmith Imanet Ltd
     Copyright (C) 2013, University College London
-    Copyright (C) 2022, University of Pennsylvania
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -19,7 +26,6 @@
 
   \brief Declaration of the main functions that perform parallel processing
 
-  \author Nikos Efthimiou
   \author Alexey Zverovich
   \author Kris Thielemans
   \author Matthew Jacobson
@@ -27,15 +33,11 @@
   \author PARAPET project
 */
 #include "stir/shared_ptr.h"
-#include "stir/Bin.h"
-#include <vector>
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-class RelatedViewgrams;
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+template <typename elemT> class RelatedViewgrams;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class BinNormalisation;
 class ProjData;
 class ProjDataInfo;
@@ -45,7 +47,7 @@ class ForwardProjectorByBin;
 class BackProjectorByBin;
 class ProjectorByBinPair;
 class DistributedCachingInformation;
-class ProjMatrixByBin;
+
 
 //! \name Task-ids currently understood by stir::DistributedWorker
 /*! \ingroup distributable */
@@ -66,10 +68,11 @@ const int task_do_distributable_sensitivity_computation = 44;
     \todo currently uses some global variables for configuration in the distributed
     namespace. This needs to be converted to a class, e.g. \c DistributedMaster
 */
-void setup_distributable_computation(const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
-                                     const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                     const shared_ptr<const ProjDataInfo> proj_data_info_sptr,
-                                     const shared_ptr<const DiscretisedDensity<3, float>>& target_sptr,
+void setup_distributable_computation(
+                                     const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
+                                     const shared_ptr<ExamInfo>& exam_info_sptr,
+                                     const ProjDataInfo * const proj_data_info_ptr,
+                                     const shared_ptr<DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,
                                      const bool distributed_cache_enabled);
 
@@ -90,12 +93,13 @@ void end_distributable_computation();
     \warning The data in *measured_viewgrams_ptr are allowed to be overwritten, but the new data
     will not be used.
 */
-typedef void RPC_process_related_viewgrams_type(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+typedef  void RPC_process_related_viewgrams_type (
+                                                  const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                                 const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                                  DiscretisedDensity<3,float>* output_image_ptr, 
+                                                  const DiscretisedDensity<3,float>* input_image_ptr, 
                                                 RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                                int& count,
-                                                int& count2,
-                                                double* log_likelihood_ptr,
+                                                  int& count, int& count2, double* log_likelihood_ptr,
                                                 const RelatedViewgrams<float>* additive_binwise_correction_ptr,
                                                 const RelatedViewgrams<float>* mult_viewgrams_ptr);
 
@@ -160,17 +164,16 @@ typedef void RPC_process_related_viewgrams_type(const shared_ptr<ForwardProjecto
 
   \see DistributedWorker for how the slaves perform the computation if STIR_MPI is defined.
  */
-void distributable_computation(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+void distributable_computation(
+                               const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                const shared_ptr<BackProjectorByBin>& back_projector_sptr,
                                const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
                                DiscretisedDensity<3, float>* output_image_ptr,
                                const DiscretisedDensity<3, float>* input_image_ptr,
                                const shared_ptr<ProjData>& proj_data_ptr,
                                const bool read_from_proj_data,
-                               int subset_num,
-                               int num_subsets,
-                               int min_segment_num,
-                               int max_segment_num,
+                               int subset_num, int num_subsets,
+                               int min_segment_num, int max_segment_num,
                                bool zero_seg0_end_planes,
                                double* double_out_ptr,
                                const shared_ptr<ProjData>& additive_binwise_correction,
@@ -178,33 +181,10 @@ void distributable_computation(const shared_ptr<ForwardProjectorByBin>& forward_
                                const double start_time_of_frame,
                                const double end_time_of_frame,
                                RPC_process_related_viewgrams_type* RPC_process_related_viewgrams,
-                               DistributedCachingInformation* caching_info_ptr,
-                               int min_timing_pos_num,
-                               int max_timing_pos_num);
+                               DistributedCachingInformation* caching_info_ptr);
 
-/*!
-  \brief This function essentially implements a loop over a cached listmode file
-  \ingroup distributable
 
-  \param has_add if \c true, the additive term in \c record_cache is taken into account
-  \param accumulate if \c true, add to  \c output_image_ptr, otherwise fill it with zeroes before doing anything.
-  \param double_out_ptr accumulated value (for every event) computed by the call-back, unless the pointer is zero
-  \param call_back
-!*/
-template <typename CallBackT>
-void LM_distributable_computation(const shared_ptr<ProjMatrixByBin> PM_sptr,
-                                  const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
-                                  DiscretisedDensity<3, float>* output_image_ptr,
-                                  const DiscretisedDensity<3, float>* input_image_ptr,
-                                  const std::vector<BinAndCorr>& record_cache,
-                                  const int subset_num,
-                                  const int num_subsets,
-                                  const bool has_add,
-                                  const bool accumulate,
-                                  double* double_out_ptr,
-                                  CallBackT&& call_back);
-
-/*! \name Tag-names currently used by stir::distributable_computation and related functions
+  /*! \name Tag-names currently used by stir::distributable_computation and related functions0
    \ingroup distributable
 */
 //!@{
@@ -221,6 +201,8 @@ const int USE_OUTPUT_IMAGE_ARG_TAG = 71;
 
 //!@}
 
+
 END_NAMESPACE_STIR
 
 #endif // __stir_recon_buildblock_DISTRIBUTABLE_H__
+

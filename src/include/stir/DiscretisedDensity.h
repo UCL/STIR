@@ -4,12 +4,17 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, University College London
-    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
-                        Australian eHealth Research Centre
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,25 +28,23 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  \author Ashley Gillman
   \author (help from Alexey Zverovich)
   \author PARAPET project
+
+
+
 */
 
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Array.h"
-#include "stir/ExamData.h"
 #include "stir/shared_ptr.h"
 #include <string>
 
-START_NAMESPACE_STIR
-
-#ifdef SWIG
-// SWIG doesn't seem to understand how we define ArrayType (with `using`).
-// Do a HORRIBLE work-around for now. It will fail whenever we change ArrayType of course.
-// TODO
-#  define ArrayType Array
+#ifndef STIR_NO_NAMESPACES
+using std::string;
 #endif
+
+START_NAMESPACE_STIR
 
 /*!
   \ingroup densitydata
@@ -94,38 +97,29 @@ START_NAMESPACE_STIR
   hierarchy as shown in the class diagram.
 
 */
+
 template <int num_dimensions, typename elemT>
-class DiscretisedDensity : public ExamData, public ArrayType<num_dimensions, elemT>
+class DiscretisedDensity : public Array<num_dimensions,elemT>
+
 {
-#ifdef STIR_COMPILING_SWIG_WRAPPER
+#ifdef SWIG
   // work-around swig problem. It gets confused when using a private (or protected)
   // typedef in a definition of a public typedef/member
 public:
+#else
+ private: 
 #endif
-  typedef ArrayType<num_dimensions, elemT> base_type;
+  typedef Array<num_dimensions,elemT> base_type;
   typedef DiscretisedDensity<num_dimensions, elemT> self_type;
-
 public:
-  //! A typedef that can be used what the base of the hierarchy is
-  /*! For these purposes, we don't use Array (even though it's the base_type)
-      as DiscretisedDensity is used in STIR as the type for any image.
-
-      This typedef is used in write_to_file().
-  */
-  typedef DiscretisedDensity<num_dimensions, elemT> hierarchy_base_type;
-
   //! A static member to read an image from file
-  static DiscretisedDensity* read_from_file(const std::string& filename);
+  static DiscretisedDensity * read_from_file(const string& filename);
 
   //! Construct an empty DiscretisedDensity
   inline DiscretisedDensity();
 
-  //! Construct DiscretisedDensity from a given range of indices & origin
-  inline DiscretisedDensity(const IndexRange<num_dimensions>& range, const CartesianCoordinate3D<float>& origin);
-
-  //! Construct DiscretisedDensity from ExamInfo and a given range of indices & origin
-  inline DiscretisedDensity(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                            const IndexRange<num_dimensions>& range,
+  //! Construct DiscretisedDensity of a given range of indices & origin
+  inline DiscretisedDensity(const IndexRange<num_dimensions>& range,
                             const CartesianCoordinate3D<float>& origin);
 
   //! Return the origin
@@ -141,17 +135,8 @@ public:
 
     This class provides 3-way conversion functions. The derived classes have to implement
     the actual conversion between relative and index coordinates.
-
-    We distinguish also a fourth coordinate system, an LPS
-    patient-based one. It is similar to the physical one, but the
-    x (i.e. fastest-running) axis runs left-wards on the patient, the y-axis runs
-    posterior-wards on the patient and the z-axis runs superior-wards
-    on the patient. Conversion to this coordinate system depends on
-    the patient position being recorded correctly.
-    Only the most common patient positions are currently implemented.
   */
   //@{
-
   //! Return the coordinates of the centre of the basis-function corresponding to \c indices.
   /*! The return value is in the same coordinate system as get_origin().
       Implemented as
@@ -159,30 +144,32 @@ public:
       get_relative_coordinates_for_indices(indices)+get_origin()
       \endcode
   */
-  inline CartesianCoordinate3D<float>
+  inline 
+    CartesianCoordinate3D<float>
   get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions, int>& indices) const;
 
-  //! Return the coordinates of the centre of the basis-function corresponding to non-integer coordinate in 'physical'
-  //! coordinates.
+  //! Return the coordinates of the centre of the basis-function corresponding to non-integer coordinate in 'index' coordinates.
   /*! \see get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>&)
    */
-  inline CartesianCoordinate3D<float>
+  inline 
+    CartesianCoordinate3D<float>
   get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const;
 
   //! Return the relative coordinates of the centre of the basis-function corresponding to \c indices.
   /*! Implementation uses actual_get_relative_coordinates_for_indices
    */
-  inline CartesianCoordinate3D<float>
+  inline
+    CartesianCoordinate3D<float>
   get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions, int>& indices) const;
 
-  //! Return the relative coordinates of the centre of the basis-function corresponding to the non-integer coordinates in 'index'
-  //! coordinates.
+  //! Return the relative coordinates of the centre of the basis-function corresponding to the non-integer coordinates in 'index' coordinates.
   /*! The return value is relative to the origin.
 
    Implementation uses actual_get_relative_coordinates_for_indices
       \see get_physical_coordinates_for_indices()
   */
-  inline CartesianCoordinate3D<float>
+  inline
+    CartesianCoordinate3D<float>
   get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const;
 
   //! Return the indices of the basis-function closest to the given point.
@@ -192,7 +179,8 @@ public:
       get_indices_closest_to_relative_coordinates(coords-get_origin())
       \endcode
   */
-  inline BasicCoordinate<num_dimensions, int>
+  inline 
+    BasicCoordinate<num_dimensions,int>
   get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
   //! Return the indices of the basis-function closest to the given point.
@@ -200,45 +188,25 @@ public:
       Implementation uses
       stir::round on the result of get_index_coordinates_for_relative_coordinates.
   */
-  inline BasicCoordinate<num_dimensions, int>
+  inline
+    BasicCoordinate<num_dimensions,int>
   get_indices_closest_to_relative_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
   //! Return the indices of the basis-function closest to the given point.
   /*! The input argument should be in 'physical' coordinates.
       Implementation uses get_index_coordinates_for_relative_coordinates.
   */
-  inline BasicCoordinate<num_dimensions, float>
+  inline
+    BasicCoordinate<num_dimensions,float>
   get_index_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
   //! Return the index-coordinates of the basis-function closest to the given point.
   /*! The input argument should be in 'physical' coordinates relative to the origin.
     Implementation uses actual_get_index_coordinates_for_relative_coordinates.
   */
-  inline BasicCoordinate<num_dimensions, float>
+  inline
+    BasicCoordinate<num_dimensions,float>
   get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const;
-
-  //! Translation from LPS coordinates to continuous indices.
-  inline BasicCoordinate<num_dimensions, float>
-  get_index_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
-
-  //! Translation from physical to LPS coordinates.
-  inline CartesianCoordinate3D<float>
-  get_LPS_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& indices) const;
-
-  //! Translation from indices to LPS coordinates.
-  inline CartesianCoordinate3D<float> get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, int>& indices) const;
-
-  //! Translation from continuous indices to LPS coordinates.
-  inline CartesianCoordinate3D<float>
-  get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const;
-
-  //! Translation from LPS coordinates to physical coordinates.
-  inline CartesianCoordinate3D<float>
-  get_physical_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
-
-  //! Translation from LPS coordinates to indices.
-  inline BasicCoordinate<num_dimensions, int>
-  get_indices_closest_to_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
   //@}
 
@@ -251,9 +219,7 @@ public:
   //! Allocate a new DiscretisedDensity object with same characteristics as the current one.
   //*! \deprecated Use get_empty_copy() instead
   DiscretisedDensity<num_dimensions, elemT>* get_empty_discretised_density() const
-  {
-    return get_empty_copy();
-  }
+    { return get_empty_copy(); }
 
   //! \name Equality
   //@{
@@ -261,12 +227,15 @@ public:
   /*! If they do \c not have the same characteristics, the string \a explanation
       explains why.
   */
-  inline bool has_same_characteristics(self_type const&, std::string& explanation) const;
+  inline bool
+    has_same_characteristics(self_type const&,
+			     string& explanation) const;
 
   //! Checks if the 2 objects have the same type, index range, origin etc
   /*! Use this version if you do not need to know why they do not match.
    */
-  inline bool has_same_characteristics(self_type const&) const;
+  inline bool
+    has_same_characteristics(self_type const&) const;
 
   //! check equality (data has to be identical)
   /*! Uses has_same_characteristics() and Array::operator==.
@@ -289,7 +258,9 @@ protected:
       We need this function as C++ rules say that if you overload a function, you hide all
       functions of the same name.
   */
-  virtual bool actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&, std::string& explanation) const;
+  virtual bool
+    actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&,
+				    string& explanation) const;
 
   //! Implementation used by get_relative_coordinates_for_indices
   /*!  \par Developer's note
@@ -297,24 +268,18 @@ protected:
       We need this function as C++ rules say that if you overload a function, you hide all
       functions of the same name.
   */
-  virtual CartesianCoordinate3D<float>
+  virtual
+    CartesianCoordinate3D<float>
   actual_get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const = 0;
 
-  virtual BasicCoordinate<num_dimensions, float>
+  virtual
+    BasicCoordinate<num_dimensions,float>
   actual_get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const = 0;
 
 private:
   CartesianCoordinate3D<float> origin;
 
-  static inline CartesianCoordinate3D<float> swap_axes_based_on_orientation(const CartesianCoordinate3D<float>& coordinates,
-                                                                            const PatientPosition patient_position);
 };
-
-#ifdef SWIG
-// Undo HORRIBLE work-around.
-// TODO
-#  undef ArrayType
-#endif
 
 END_NAMESPACE_STIR
 

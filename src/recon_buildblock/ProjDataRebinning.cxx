@@ -11,7 +11,15 @@
     Copyright (C) 2003- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -19,14 +27,12 @@
 #include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
-#include "stir/warning.h"
-
-using std::string;
 
 START_NAMESPACE_STIR
 
 void
-ProjDataRebinning::set_defaults()
+ProjDataRebinning::
+set_defaults()
 {
   output_filename_prefix = "";
   input_filename = "";
@@ -34,29 +40,27 @@ ProjDataRebinning::set_defaults()
 }
 
 void
-ProjDataRebinning::initialise_keymap()
+ProjDataRebinning::
+initialise_keymap()
 {
   parser.add_key("input file", &input_filename);
   // parser.add_key("mash x views", &num_views_to_add);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
 
   parser.add_key("output filename prefix", &output_filename_prefix);
+ 
 }
 
+
 bool
-ProjDataRebinning::post_processing()
+ProjDataRebinning::
+post_processing()
 {
   if (output_filename_prefix.length() == 0)
-    {
-      warning("You need to specify an output prefix\n");
-      return true;
-    }
+  { warning("You need to specify an output prefix\n"); return true; }
 
   if (input_filename.length() == 0)
-    {
-      warning("You need to specify an input file\n");
-      return true;
-    }
+  { warning("You need to specify an input file\n"); return true; }
 
 #if 0
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
@@ -97,7 +101,8 @@ else
 #endif
 
 Succeeded
-ProjDataRebinning::set_up()
+ProjDataRebinning::
+set_up()
 {
   if (is_null_ptr(proj_data_sptr))
     {
@@ -117,19 +122,16 @@ ProjDataRebinning::set_up()
   return Succeeded::yes;
 }
 
-ProjDataRebinning::~ProjDataRebinning()
+ProjDataRebinning::
+~ProjDataRebinning()
 {}
 
-void
-ProjDataRebinning::set_max_segment_num_to_process(int ns)
-{
-  max_segment_num_to_process = ns;
+void ProjDataRebinning::set_max_segment_num_to_process(int ns)
+{ max_segment_num_to_process = ns;
 }
 
-int
-ProjDataRebinning::get_max_segment_num_to_process() const
-{
-  return max_segment_num_to_process;
+int ProjDataRebinning::get_max_segment_num_to_process() const
+{ return max_segment_num_to_process;
 }
 void
 ProjDataRebinning::set_output_filename_prefix(const string& s)
@@ -142,8 +144,10 @@ ProjDataRebinning::get_output_filename_prefix() const
   return output_filename_prefix;
 }
 
+
 shared_ptr<ProjData>
-ProjDataRebinning::get_proj_data_sptr()
+ProjDataRebinning::
+get_proj_data_sptr()
 {
   /* KT: deleted warning messages about null pointers.
      The user should check this, and might not want the have the
@@ -151,10 +155,13 @@ ProjDataRebinning::get_proj_data_sptr()
   return proj_data_sptr;
 }
 
+
 void
-ProjDataRebinning::set_input_proj_data_sptr(const shared_ptr<ProjData>& new_proj_data_sptr)
+ProjDataRebinning::
+set_input_proj_data_sptr(const shared_ptr<ProjData>& new_proj_data_sptr)
 {
   proj_data_sptr = new_proj_data_sptr;
 }
+
 
 END_NAMESPACE_STIR

@@ -15,7 +15,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,8 +32,7 @@
 START_NAMESPACE_STIR
 
 class ProjMatrixElemsForOneBin;
-template <typename elemT>
-class CartesianCoordinate3D;
+template <typename elemT> class CartesianCoordinate3D;
 
 /*! \ingroup recon_buildblock
 
@@ -66,7 +73,8 @@ class CartesianCoordinate3D;
   as this determines which plane the LOR intersects at this point.
 
 */
-void RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
+void 
+RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor, 
                                    const CartesianCoordinate3D<float>& start_point,
                                    const CartesianCoordinate3D<float>& end_point,
                                    const CartesianCoordinate3D<float>& voxel_size,

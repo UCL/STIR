@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -38,8 +46,12 @@ START_NAMESPACE_STIR
   \warning This function does not test for non-zero numbers by 0. Results in
   that case will likely depend on your processor and/or compiler settings.
 */
-template <class NumeratorIterT, class DenominatorIterT, class small_numT>
-inline void divide(const NumeratorIterT& numerator_begin,
+template <class NumeratorIterT,
+	  class DenominatorIterT,
+	  class small_numT>
+inline
+void 
+divide(const NumeratorIterT& numerator_begin,
                    const NumeratorIterT& numerator_end,
                    const DenominatorIterT& denominator_begin,
                    const small_numT small_num);

@@ -4,10 +4,17 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2020, 2023 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,12 +28,11 @@
 
   \author Kris Thielemans
   \author PARAPET project
-  \author Gemma Fardell
 
 */
 
+
 #include "stir/VectorWithOffset.h"
-#include "stir/deprecated.h"
 
 START_NAMESPACE_STIR
 /*!
@@ -46,36 +52,21 @@ START_NAMESPACE_STIR
 template <class T, class elemT>
 class NumericVectorWithOffset : public VectorWithOffset<T>
 {
-#ifdef SWIG
-public: // needs to be public for SWIG to be able to parse the "using" statement below
-#endif
-
+private:
   typedef VectorWithOffset<T> base_type;
 
 public:
-  using base_type::base_type;
+  //! Construct an empty NumericVectorWithOffset
+  inline NumericVectorWithOffset();
+
+  //! Construct a NumericVectorWithOffset of given length
+  inline explicit NumericVectorWithOffset(const int hsz);
+
+  //! Construct a NumericVectorWithOffset of elements with offset \c min_index
+  inline NumericVectorWithOffset(const int min_index, const int max_index);
 
   //! Constructor from an object of this class' base_type
   inline NumericVectorWithOffset(const VectorWithOffset<T>& t);
-
-  //! Constructor from an object of this class' base_type
-  inline NumericVectorWithOffset(const NumericVectorWithOffset& t)
-      : NumericVectorWithOffset(static_cast<const base_type&>(t))
-  {}
-
-  //! Swap content/members of 2 objects
-  // implementation in .h because of templates/friends/whatever, see https://stackoverflow.com/a/61020224
-  friend inline void swap(NumericVectorWithOffset& first, NumericVectorWithOffset& second) // nothrow
-  {
-    swap(static_cast<base_type&>(first), static_cast<base_type&>(second));
-  }
-
-  //! move constructor
-  /*! implementation uses the copy-and-swap idiom, see e.g. https://stackoverflow.com/a/3279550 */
-  NumericVectorWithOffset(NumericVectorWithOffset&& other) noexcept;
-
-  //! assignment
-  NumericVectorWithOffset& operator=(const NumericVectorWithOffset& other);
 
   // arithmetic operations with a vector, combining element by element
 
@@ -91,6 +82,7 @@ public:
   //! dividing vectors, element by element
   inline NumericVectorWithOffset operator/(const NumericVectorWithOffset& v) const;
 
+
   // arithmetic operations with a elemT
   // TODO??? use member templates
 
@@ -105,6 +97,7 @@ public:
 
   //! return a new vector with elements equal to the division of the elements in the original and the \c elemT
   inline NumericVectorWithOffset operator/(const elemT& v) const;
+
 
   // corresponding assignment operators
 
@@ -132,23 +125,6 @@ public:
   //! dividing the elements of the current vector by an \c elemT
   inline NumericVectorWithOffset& operator/=(const elemT& v);
 
-  //! \deprecated a*x+b*y (use xapyb)
-  template <typename elemT2>
-  STIR_DEPRECATED inline void
-  axpby(const elemT2 a, const NumericVectorWithOffset& x, const elemT2 b, const NumericVectorWithOffset& y);
-
-  //! set values of the array to x*a+y*b, where a and b are scalar
-  inline void xapyb(const NumericVectorWithOffset& x, const elemT a, const NumericVectorWithOffset& y, const elemT b);
-
-  //! set the values of the array to x*a+y*b, where a and b are vectors
-  inline void xapyb(const NumericVectorWithOffset& x,
-                    const NumericVectorWithOffset& a,
-                    const NumericVectorWithOffset& y,
-                    const NumericVectorWithOffset& b);
-
-  //! set the values of the array to self*a+y*b, where a and b are scalar or vectors
-  template <class T2>
-  inline void sapyb(const T2& a, const NumericVectorWithOffset& y, const T2& b);
 };
 
 END_NAMESPACE_STIR

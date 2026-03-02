@@ -10,31 +10,33 @@
     Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_detail_test_if_1d_H__
 #define __stir_detail_test_if_1d_H__
-namespace stir
-{
-namespace detail
-{
+namespace stir {
+  namespace detail {
 /*! \ingroup buildblock_detail
    \brief a class used to signify it's a 1D array
    \see test_if_1d
 */
-struct is_1d
-{
-};
+    struct is_1d{};
 /*! \ingroup buildblock_detail
    \brief a class used to signify it's not a 1D array
    \see test_if_1d
 */
-struct is_not_1d
-{
-};
+    struct is_not_1d{};
 
 /*! \ingroup buildblock_detail
    \brief a templated class used to check if it's a 1D array or not
@@ -67,17 +69,13 @@ struct is_not_1d
 // note: should be Num_dimensions and not num_dimensions
 // because for old compilers, num_dimensions is sometimes #defined (sigh)
 template <int Num_dimensions>
-struct test_if_1d : is_not_1d
-{
-};
+      struct test_if_1d : is_not_1d {};
 /*! \ingroup buildblock_detail
    \brief 1D specialisation of a templated class used to check if it's a 1D array or not
 */
 template <>
-struct test_if_1d<1> : is_1d
-{
-};
-} // namespace detail
-} // namespace stir
+      struct test_if_1d<1> : is_1d {};
+  }
+}
 
 #endif

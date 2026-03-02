@@ -4,7 +4,15 @@
   Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -33,8 +41,7 @@
 #include <algorithm>
 #include "stir/getopt.h"
 
-int
-main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
   USING_NAMESPACE_STIR;
   const char* output_filename = 0;
@@ -69,7 +76,9 @@ main(int argc, char* argv[])
           if (isprint(optopt))
             fprintf(stderr, "Unknown option `-%c'.\n", optopt);
           else
-            fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+	    fprintf (stderr,
+		     "Unknown option character `\\x%x'.\n",
+		     optopt);
           std::cerr << usage;
           return EXIT_FAILURE;
         }
@@ -83,8 +92,8 @@ main(int argc, char* argv[])
 
   if (do_parametric) // A better way will be to template it...
     {
-      shared_ptr<ParametricVoxelsOnCartesianGrid> input_image_sptr(
-          ParametricVoxelsOnCartesianGrid::read_from_file(input_filename));
+      shared_ptr<ParametricVoxelsOnCartesianGrid> 
+	input_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(input_filename));  
       shared_ptr<ParametricVoxelsOnCartesianGrid> output_image_sptr(input_image_sptr->clone());
       ParametricVoxelsOnCartesianGrid::full_iterator out_iter = output_image_sptr->begin_all();
       ParametricVoxelsOnCartesianGrid::const_full_iterator in_iter = input_image_sptr->begin_all_const();
@@ -92,16 +101,17 @@ main(int argc, char* argv[])
         {
           if (*in_iter < 0.F)
             *out_iter = -(*in_iter);
-          ++in_iter;
-          ++out_iter;
+	  ++in_iter; ++out_iter;
         }
-      Succeeded success
-          = OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file(output_filename, *output_image_sptr);
+      Succeeded success =
+	OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->
+	write_to_file(output_filename, *output_image_sptr);
       return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
     }
   else if (do_dynamic) // A better way will be to template it...
     {
-      const shared_ptr<DynamicDiscretisedDensity> input_image_sptr(read_from_file<DynamicDiscretisedDensity>(input_filename));
+      const shared_ptr<DynamicDiscretisedDensity> 
+	input_image_sptr(read_from_file<DynamicDiscretisedDensity>(input_filename));  
       const DynamicDiscretisedDensity input_image = *input_image_sptr;
       DynamicDiscretisedDensity output_image = input_image;
       for (unsigned int frame_num = 1; frame_num <= (input_image.get_time_frame_definitions()).get_num_frames(); ++frame_num)
@@ -112,16 +122,17 @@ main(int argc, char* argv[])
             {
               if (*in_iter < 0.F)
                 *out_iter = -(*in_iter);
-              ++in_iter;
-              ++out_iter;
+	      ++in_iter; ++out_iter;
             }
         }
-      Succeeded success = output_image.write_to_ecat7(output_filename);
+      Succeeded success =
+	output_image.write_to_ecat7(output_filename);
       return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
     }
   else
     {
-      shared_ptr<DiscretisedDensity<3, float>> input_image_sptr(read_from_file<DiscretisedDensity<3, float>>(input_filename));
+      shared_ptr<DiscretisedDensity<3,float> > 
+	input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
 
       shared_ptr<DiscretisedDensity<3, float>> output_image_sptr(input_image_sptr->clone());
       DiscretisedDensity<3, float>::full_iterator out_iter = output_image_sptr->begin_all();
@@ -130,11 +141,11 @@ main(int argc, char* argv[])
         {
           if (*in_iter < 0.F)
             *out_iter = -(*in_iter);
-          ++in_iter;
-          ++out_iter;
+	  ++in_iter; ++out_iter;
         }
-      Succeeded success
-          = OutputFileFormat<DiscretisedDensity<3, float>>::default_sptr()->write_to_file(output_filename, *output_image_sptr);
+      Succeeded success =
+	OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+	write_to_file(output_filename, *output_image_sptr);
       return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 }

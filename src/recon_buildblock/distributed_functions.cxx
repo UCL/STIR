@@ -3,7 +3,15 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -29,10 +37,7 @@
 #include <fstream>
 #include "stir/Succeeded.h"
 #include "stir/error.h"
-#include "stir/warning.h"
 #include <boost/shared_array.hpp>
-
-using std::ios;
 
 namespace distributed
 {
@@ -46,6 +51,7 @@ double total_rpc_time_slaves = 0.0;
 double total_rpc_time_2 = 0.0;
 bool test = false;
 
+        
 // global variable often used
 int num_processors;
 int length;
@@ -60,36 +66,27 @@ int sizes[6];        // array for receiving image dimensions
 
 stir::HighResWallClockTimer t;
 
+        
 //--------------------------------------Send Operations-------------------------------------
 
-void
-send_int_value(int value, int destination)
+  void send_int_value(int value, int destination)
 {
   int i = value;
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (destination == -1)
-    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Send(&i, 1, MPI_INT, destination, INT_TAG, MPI_COMM_WORLD);
+    if (destination == -1) MPI_Bcast(&i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
+    else MPI_Send(&i, 1, MPI_INT, destination, INT_TAG,  MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending int value took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending int value took " << t.value() << " seconds" << std::endl;
 #endif
 }
 
-void
-send_string(const std::string& str, int tag, int destination)
+  void send_string(const string& str, int tag, int destination)
 {
   // prepare sending parameter info
   length = str.length() + 1;
@@ -98,11 +95,7 @@ send_string(const std::string& str, int tag, int destination)
 
   // send parameter info
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   if (destination == -1)
@@ -118,54 +111,37 @@ send_string(const std::string& str, int tag, int destination)
     }
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending string took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending string took " << t.value() << " seconds" << std::endl;
 #endif
 
   delete[] buf;
 }
 
-void
-send_bool_value(bool value, int tag, int destination)
+  void send_bool_value(bool value, int tag, int destination)
 {
   int i;
-  if (value == true)
-    i = 1;
-  else
-    i = 0;
+    if (value==true) i=1;
+    else i=0; 
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (destination == -1 || tag == -1)
-    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Send(&i, 1, MPI_INT, destination, tag, MPI_COMM_WORLD);
+    if (destination==-1||tag ==-1) MPI_Bcast(&i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
+    else MPI_Send(&i, 1, MPI_INT, destination, tag, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << std::endl;
 #endif
+
 }
 
-void
-send_int_values(int* values, int count, int tag, int destination)
+  void send_int_values(int * values, int count, int tag, int destination)
 {
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   if (destination == -1)
@@ -173,29 +149,22 @@ send_int_values(int* values, int count, int tag, int destination)
       for (processor = 1; processor < num_processors; processor++)
         MPI_Send(values, count, MPI_INT, processor, tag, MPI_COMM_WORLD);
     }
-  else
-    MPI_Send(values, count, MPI_INT, destination, tag, MPI_COMM_WORLD);
+    else MPI_Send(values, count, MPI_INT, destination, tag, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
+    if (test_send_receive_times) t.stop();
   int my_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank); /*Gets the rank of the Processor*/
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave " << my_rank << ": sending int values took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave " << my_rank << ": sending int values took " << t.value() << " seconds"<< std::endl;
 #endif
+
 }
 
-void
-send_double_values(double* values, int count, int tag, int destination)
+  void send_double_values(double * values, int count, int tag, int destination)
 {
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   if (destination == -1)
@@ -203,19 +172,15 @@ send_double_values(double* values, int count, int tag, int destination)
       for (processor = 1; processor < num_processors; processor++)
         MPI_Send(values, count, MPI_DOUBLE, processor, tag, MPI_COMM_WORLD);
     }
-  else
-    MPI_Send(values, count, MPI_DOUBLE, destination, tag, MPI_COMM_WORLD);
+    else MPI_Send(values, count, MPI_DOUBLE, destination, tag, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master: sending double values took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: sending double values took " << t.value() << " seconds" << std::endl;
 #endif
 }
 
-void
-send_view_segment_numbers(const stir::ViewSegmentNumbers& vs_num, int tag, int destination)
+  void send_view_segment_numbers(const stir::ViewSegmentNumbers& vs_num, int tag, int destination)
 {
   int int_values[2];
   int_values[0] = vs_num.view_num();
@@ -223,11 +188,11 @@ send_view_segment_numbers(const stir::ViewSegmentNumbers& vs_num, int tag, int d
   distributed::send_int_values(int_values, 2, tag, destination);
 }
 
-void
-send_image_parameters(const stir::DiscretisedDensity<3, float>* input_image_ptr, int tag, int destination)
+  void send_image_parameters(const stir::DiscretisedDensity<3,float>* input_image_ptr, int tag, int destination)
 {
   // cast to allow getting image dimensions and grid_spacing
-  const stir::VoxelsOnCartesianGrid<float>* image = dynamic_cast<const stir::VoxelsOnCartesianGrid<float>*>(input_image_ptr);
+    const stir::VoxelsOnCartesianGrid<float>* image =
+      dynamic_cast<const stir::VoxelsOnCartesianGrid<float>* >(input_image_ptr);
 
   // input_image dimensions
   int sizes[6];
@@ -255,51 +220,36 @@ send_image_parameters(const stir::DiscretisedDensity<3, float>* input_image_ptr,
   parameters[4] = grid_spacing.y();
   parameters[5] = grid_spacing.z();
 
+                
   // Sending image parameters
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (tag == -1 || destination == -1)
-    MPI_Bcast(parameters, 6, MPI_FLOAT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Send(parameters, 6, MPI_FLOAT, destination, tag, MPI_COMM_WORLD);
+    if (tag == -1 || destination == -1) MPI_Bcast(parameters, 6, MPI_FLOAT, 0,  MPI_COMM_WORLD);
+    else MPI_Send(parameters, 6, MPI_FLOAT, destination, tag, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending image parameters took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending image parameters took " << t.value() << " seconds" << std::endl;
 #endif
 
     // send dimensions to construct IndexRange-object
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (tag == -1 || destination == -1)
-    MPI_Bcast(sizes, 6, MPI_INT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Send(sizes, 6, MPI_INT, destination, tag, MPI_COMM_WORLD);
+    if (tag == -1 || destination == -1) MPI_Bcast(sizes, 6, MPI_INT, 0,  MPI_COMM_WORLD);
+    else MPI_Send(sizes, 6, MPI_INT, destination, tag, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending image dimensions took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending image dimensions took " << t.value() << " seconds" << std::endl;
 #endif
+                
 }
 
-void
-send_image_estimate(const stir::DiscretisedDensity<3, float>* input_image_ptr, int destination)
+  void send_image_estimate(const stir::DiscretisedDensity<3,float>* input_image_ptr, int destination)
 {
   float* image_buf = new float[image_buffer_size];
 
@@ -308,11 +258,7 @@ send_image_estimate(const stir::DiscretisedDensity<3, float>* input_image_ptr, i
 
   // send input image
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   if (destination == -1)
@@ -321,21 +267,17 @@ send_image_estimate(const stir::DiscretisedDensity<3, float>* input_image_ptr, i
       // for (int processor=1; processor<num_processors; processor++)
       //   MPI_Send(image_buf, image_buffer_size, MPI_FLOAT, processor, IMAGE_ESTIMATE_TAG, MPI_COMM_WORLD);
     }
-  else
-    MPI_Send(image_buf, image_buffer_size, MPI_FLOAT, destination, IMAGE_ESTIMATE_TAG, MPI_COMM_WORLD);
+    else MPI_Send(image_buf, image_buffer_size, MPI_FLOAT, destination, IMAGE_ESTIMATE_TAG, MPI_COMM_WORLD);
 
   delete[] image_buf;
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending image values took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending image values took " << t.value() << " seconds" << std::endl;
 #endif
 }
 
-void
-send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDataInfo& proj_data_info, int destination)
+  void send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDataInfo& proj_data_info, int destination)
 {
   // KT TODO there must be a better way than writing to a temporary file on disk
   stir::shared_ptr<stir::ExamInfo> exam_info_sptr(new stir::ExamInfo(exam_info));
@@ -358,11 +300,7 @@ send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDa
   file_buffer[length - 1] = '\0';
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   // send text_buffer
@@ -379,12 +317,11 @@ send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDa
     }
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master: sending projection_data_info took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: sending projection_data_info took " << t.value() << " seconds" << std::endl;
 #endif
 
+                
   if (remove("for_slave.hs") != 0)
     stir::warning("Error deleting temporary file");
   if (remove("for_slave.s") != 0)
@@ -393,8 +330,7 @@ send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDa
   delete[] file_buffer;
 }
 
-void
-send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destination)
+  void send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destination)
 {
   // broadcast count of viewgrams to be received
   int num_viewgrams = viewgrams->get_num_viewgrams();
@@ -412,20 +348,18 @@ send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destination
     }
 }
 
-void
-send_viewgram(const stir::Viewgram<float>& viewgram, int destination)
+  void send_viewgram(const stir::Viewgram<float>& viewgram, int destination)
 {
   // send dimensions of viewgram (axial and tangential positions and the view and segment numbers)
-  int viewgram_values[7];
+    int viewgram_values[6];
   viewgram_values[0] = viewgram.get_min_axial_pos_num();
   viewgram_values[1] = viewgram.get_max_axial_pos_num();
   viewgram_values[2] = viewgram.get_min_tangential_pos_num();
   viewgram_values[3] = viewgram.get_max_tangential_pos_num();
   viewgram_values[4] = viewgram.get_view_num();
   viewgram_values[5] = viewgram.get_segment_num();
-  viewgram_values[6] = viewgram.get_timing_pos_num();
 
-  send_int_values(viewgram_values, 7, VIEWGRAM_DIMENSIONS_TAG, destination);
+    send_int_values(viewgram_values, 6, VIEWGRAM_DIMENSIONS_TAG, destination);
 
   // allocate send-buffer
   int buffer_size = (viewgram_values[1] - viewgram_values[0] + 1) * (viewgram_values[3] - viewgram_values[2] + 1);
@@ -434,73 +368,53 @@ send_viewgram(const stir::Viewgram<float>& viewgram, int destination)
 
   // send array
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   MPI_Send(viewgram_buf, buffer_size, MPI_FLOAT, destination, VIEWGRAM_TAG, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master: sending viewgram took " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: sending viewgram took " << t.value() << " seconds" << std::endl;
 #endif
 
   delete[] viewgram_buf;
 }
 
-void
-send_projectors(const stir::shared_ptr<stir::ProjectorByBinPair>& proj_pair_sptr, int destination)
+  void send_projectors(const stir::shared_ptr<stir::ProjectorByBinPair> &proj_pair_sptr, int destination)
 {
   // send registered name of projector pair
   distributed::send_string(proj_pair_sptr->get_registered_name(), REGISTERED_NAME_TAG, destination);
 
   // send parameter info of projector pair
   distributed::send_string(proj_pair_sptr->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, destination);
+
 }
 
 //--------------------------------------Receive Operations-------------------------------------
 
-int
-receive_int_value(int source)
+  int receive_int_value(int source)
 {
   int i;
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (source == -1)
-    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Recv(&i, 1, MPI_INT, source, INT_TAG, MPI_COMM_WORLD, &status);
+    if (source==-1) MPI_Bcast(&i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
+    else MPI_Recv(&i, 1, MPI_INT, source, INT_TAG, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received int value after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received int value after " << t.value() << " seconds" << std::endl;
 #endif
 
   return i;
 }
 
-std::string
-receive_string(int tag, int source)
+  string receive_string(int tag, int source)
 {
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   MPI_Recv(&length, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
@@ -508,28 +422,21 @@ receive_string(int tag, int source)
   MPI_Recv(buf, length, MPI_CHAR, source, tag, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received string value after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received string value after " << t.value() << " seconds" << std::endl;
 #endif
 
   // convert to string
-  std::string str(buf);
+    string str(buf);
   delete[] buf;
   return str;
 }
 
-void
-receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair>& projector_pair_ptr, int source)
+  void receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair> &projector_pair_ptr, int source)
 {
   // Receive projector-pair registered_keyword
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
   // KT TODO. use receive_string() to clean-up code
 
@@ -538,23 +445,17 @@ receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair>& pr
   MPI_Recv(buf, length, MPI_CHAR, source, REGISTERED_NAME_TAG, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received REGISTERED_NAME_TAG value after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received REGISTERED_NAME_TAG value after " << t.value() << " seconds" << std::endl;
 #endif
 
   // convert to string
-  std::string registered_name_proj_pair(buf);
+    string registered_name_proj_pair(buf);
   delete[] buf;
 
   // Receive parameter info
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   MPI_Recv(&length, 1, MPI_INT, source, PARAMETER_INFO_TAG, MPI_COMM_WORLD, &status);
@@ -563,110 +464,80 @@ receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair>& pr
   MPI_Recv(buf3, length, MPI_CHAR, source, PARAMETER_INFO_TAG, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received parameter info value after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received parameter info value after " << t.value() << " seconds" << std::endl;
 #endif
 
   // convert to string
-  std::string parameter_info(buf3);
+    string parameter_info(buf3);
   delete[] buf3;
 
   // construct new Backprojector and Forward Projector, projector_pair_ptr
   std::istringstream parameter_info_stream(parameter_info);
 
-  projector_pair_ptr.reset(stir::RegisteredObject<stir::ProjectorByBinPair>::read_registered_object(&parameter_info_stream,
-                                                                                                    registered_name_proj_pair));
+    projector_pair_ptr.
+      reset(stir::RegisteredObject<stir::ProjectorByBinPair>::
+	    read_registered_object(&parameter_info_stream, registered_name_proj_pair));
 }
 
-bool
-receive_bool_value(int tag, int source)
+  bool receive_bool_value(int tag, int source)
 {
   int i = 0; // initialise to avoid compiler warning
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (tag == -1 || source == -1)
-    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Recv(&i, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
+    if (tag==-1 || source == -1) MPI_Bcast(&i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
+    else MPI_Recv(&i, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received bool value after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received bool value after " << t.value() << " seconds" << std::endl;
 #endif
 
   return i != 0;
 }
 
-MPI_Status
-receive_int_values(int* values, int count, int tag)
+  MPI_Status receive_int_values(int * values, int count, int tag)
 {
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (tag == ARBITRARY_TAG)
-    MPI_Recv(values, count, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-  else
-    MPI_Recv(values, count, MPI_INT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
+    if (tag == ARBITRARY_TAG) MPI_Recv(values, count, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    else MPI_Recv(values, count, MPI_INT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
+    if (test_send_receive_times) t.stop();
   int my_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank); /*Gets the rank of the Processor*/
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave " << my_rank << ": received " << count << " int values after " << t.value() << " seconds"
-              << std::endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave " << my_rank << ": received "<< count << " int values after " << t.value() << " seconds"<< std::endl;
 #endif
 
   return status;
 }
 
-MPI_Status
-receive_double_values(double* values, int count, int tag)
+  MPI_Status receive_double_values(double * values, int count, int tag)
 {
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (tag == ARBITRARY_TAG)
-    MPI_Recv(values, count, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-  else
-    MPI_Recv(values, count, MPI_DOUBLE, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
+    if (tag == ARBITRARY_TAG) MPI_Recv(values, count, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    else MPI_Recv(values, count, MPI_DOUBLE, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received double values after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received double values after " << t.value() << " seconds" << std::endl;
 #endif
 
   return status;
 }
 
-MPI_Status
-receive_view_segment_numbers(stir::ViewSegmentNumbers& vs_num, int tag)
+  MPI_Status receive_view_segment_numbers(stir::ViewSegmentNumbers& vs_num, int tag)
 {
   int int_values[2];
   const MPI_Status status = distributed::receive_int_values(int_values, 2, tag);
@@ -675,56 +546,37 @@ receive_view_segment_numbers(stir::ViewSegmentNumbers& vs_num, int tag)
   return status;
 }
 
-void
-receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<3, float>>& image_ptr,
-                                 int& buffer,
-                                 int tag,
-                                 int source)
+  void receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<3, float> > &image_ptr, int &buffer, int tag, int source)
 {
   // receive image parameters (origin and grid_spacing)
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (tag == -1)
-    MPI_Bcast(parameters, 6, MPI_FLOAT, source, MPI_COMM_WORLD);
-  else
-    MPI_Recv(parameters, 6, MPI_FLOAT, source, tag, MPI_COMM_WORLD, &status);
+    if (tag==-1) MPI_Bcast(parameters, 6, MPI_FLOAT, source,  MPI_COMM_WORLD);
+    else MPI_Recv(parameters, 6, MPI_FLOAT, source, tag,  MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received origin and grid_spacing after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received origin and grid_spacing after " << t.value() << " seconds" << std::endl;
 
   // receive dimensions of Image-data
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
-  if (tag == -1)
-    MPI_Bcast(sizes, 6, MPI_INT, source, MPI_COMM_WORLD);
-  else
-    MPI_Recv(sizes, 6, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
+    if (tag==-1) MPI_Bcast(sizes, 6, MPI_INT, source,  MPI_COMM_WORLD);
+    else MPI_Recv(sizes, 6, MPI_INT, source, tag,  MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received image dimensions after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received image dimensions after " << t.value() << " seconds" << std::endl;
 #endif
 
   buffer = (sizes[3] - sizes[0] + 1) * (sizes[4] - sizes[1] + 1) * (sizes[5] - sizes[2] + 1);
 
   // construct new index range from received values
-  stir::IndexRange<3> range(stir::CartesianCoordinate3D<int>(sizes[2], sizes[1], sizes[0]),
+    stir::IndexRange<3> 
+      range(stir::CartesianCoordinate3D<int>(sizes[2],sizes[1],sizes[0]),
                             stir::CartesianCoordinate3D<int>(sizes[5], sizes[4], sizes[3]));
 
   // construct new image object to save received input-image values
@@ -741,10 +593,7 @@ receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<3, fl
 #endif
 }
 
-MPI_Status
-receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensity<3, float>>& image_ptr,
-                                        int buffer_size,
-                                        int source)
+  MPI_Status receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensity<3, float> > &image_ptr, int buffer_size, int source)
 {
   // buffer for input_image
   float* buffer = new float[buffer_size];
@@ -752,21 +601,15 @@ receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensit
     stir::error("Ran out of memory");
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   MPI_Bcast(buffer, buffer_size, MPI_FLOAT, source, MPI_COMM_WORLD);
   // else MPI_Recv(buffer, buffer_size, MPI_FLOAT, source, IMAGE_ESTIMATE_TAG, MPI_COMM_WORLD, & status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received image values after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received image values after " << t.value() << " seconds" << std::endl;
 #endif
 
   std::copy(buffer, buffer + buffer_size, image_ptr->begin_all());
@@ -775,19 +618,14 @@ receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensit
   return status;
 }
 
-void
-receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::ExamInfo>& exam_info_sptr,
+  void receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::ExamInfo>& exam_info_sptr, 
                                                   stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_sptr,
                                                   int source)
 {
   int len;
   // receive projection data info pointer
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   MPI_Recv(&len, 1, MPI_INT, source, PROJECTION_DATA_INFO_TAG, MPI_COMM_WORLD, &status);
@@ -795,10 +633,8 @@ receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::ExamInf
   MPI_Recv(proj_data_info_buf.get(), len, MPI_CHAR, source, PROJECTION_DATA_INFO_TAG, MPI_COMM_WORLD, &status);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received proj_data_info after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received proj_data_info after " << t.value() << " seconds" << std::endl;
 #endif
 
   // construct projector_info_ptr
@@ -812,12 +648,14 @@ receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::ExamInf
     }
   projector_info_ptr_stream.seekg(offset);
   exam_info_sptr = hdr.get_exam_info_sptr();
-  if (hdr.get_exam_info().imaging_modality.get_modality() == stir::ImagingModality::NM)
+    if (hdr.get_exam_info_ptr()->imaging_modality.get_modality() ==
+        stir::ImagingModality::NM)
     {
       stir::InterfilePDFSHeaderSPECT hdr;
       if (!hdr.parse(projector_info_ptr_stream))
         stir::error("Error receiving projection data info. Text does not seem to be in Interfile format");
-      proj_data_info_sptr = stir::shared_ptr<stir::ProjDataInfo>(hdr.data_info_sptr->clone());
+	proj_data_info_sptr = 
+	  stir::shared_ptr<stir::ProjDataInfo> (hdr.data_info_sptr->clone());
     }
   else
     {
@@ -825,12 +663,12 @@ receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::ExamInf
       if (!hdr.parse(projector_info_ptr_stream))
         stir::error("Error receiving projection data info. Text does not seem to be in Interfile format");
 
-      proj_data_info_sptr = stir::shared_ptr<stir::ProjDataInfo>(hdr.data_info_ptr->clone());
+	proj_data_info_sptr = 
+	  stir::shared_ptr<stir::ProjDataInfo> (hdr.data_info_ptr->clone());
     }
 }
 
-void
-receive_and_construct_related_viewgrams(stir::RelatedViewgrams<float>*& viewgrams,
+  void receive_and_construct_related_viewgrams(stir::RelatedViewgrams<float>*& viewgrams, 
                                         const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr,
                                         const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr,
                                         int source)
@@ -839,7 +677,7 @@ receive_and_construct_related_viewgrams(stir::RelatedViewgrams<float>*& viewgram
   int int_values[1];
   status = distributed::receive_int_values(int_values, 1, VIEWGRAM_COUNT_TAG);
 
-  std::vector<stir::Viewgram<float>> viewgrams_vector;
+    vector<stir::Viewgram<float> > viewgrams_vector;
 
   viewgrams_vector.reserve(int_values[0]);
 
@@ -859,28 +697,22 @@ receive_and_construct_related_viewgrams(stir::RelatedViewgrams<float>*& viewgram
   viewgrams = new stir::RelatedViewgrams<float>(viewgrams_vector, symmetries_sptr);
 }
 
-void
-receive_and_construct_viewgram(stir::Viewgram<float>*& viewgram_ptr,
+  void receive_and_construct_viewgram(stir::Viewgram<float>*& viewgram_ptr, 
                                const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr,
                                int source)
 {
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
-  // receive dimension of viewgram (vlues 0-3) and view_num + segment_num (values 4-5) and timing_pos_num (value 6)
-  int viewgram_values[7];
+    //receive dimension of viewgram (vlues 0-3) and view_num + segment_num (values 4-5)
+    int viewgram_values[6];
 
-  status = receive_int_values(viewgram_values, 7, VIEWGRAM_DIMENSIONS_TAG);
+    status = receive_int_values(viewgram_values, 6, VIEWGRAM_DIMENSIONS_TAG);
 
   const int v_num = viewgram_values[4];
   const int s_num = viewgram_values[5];
-  const int t_num = viewgram_values[6];
 
-  viewgram_ptr = new stir::Viewgram<float>(proj_data_info_ptr, v_num, s_num, t_num);
+    viewgram_ptr= new stir::Viewgram<float>(proj_data_info_ptr, v_num, s_num);
 
   // allocate receive-buffer
   const int buffer_size = (viewgram_values[1] - viewgram_values[0] + 1) * (viewgram_values[3] - viewgram_values[2] + 1);
@@ -895,22 +727,19 @@ receive_and_construct_viewgram(stir::Viewgram<float>*& viewgram_ptr,
   delete[] viewgram_buf;
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave: received viewgram_array after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received viewgram_array after " << t.value() << " seconds" << std::endl;
 #endif
+
 }
 
 //--------------------------------------Reduce Operations-------------------------------------
 
-void
-reduce_received_output_image(stir::DiscretisedDensity<3, float>* output_image_ptr, int destination)
+  void reduce_received_output_image(stir::DiscretisedDensity<3,float>* output_image_ptr, int destination)
 {
 #ifdef STIR_MPI_TIMINGS
   stir::HighResWallClockTimer fulltimer;
-  fulltimer.reset();
-  fulltimer.start();
+    fulltimer.reset(); fulltimer.start();
 #endif
   float* output_buf = new float[image_buffer_size];
   float* image_buf = new float[image_buffer_size];
@@ -918,26 +747,19 @@ reduce_received_output_image(stir::DiscretisedDensity<3, float>* output_image_pt
   // initialize output_buffer to zero.
   // contributions from all slaves will be added into it
   // KTXXXfor (int i=0; i<image_buffer_size;i++) output_buf[i]=0.0;
-  for (int i = 0; i < image_buffer_size; i++)
-    image_buf[i] = 0.0;
+    for (int i=0; i<image_buffer_size;i++) image_buf[i]=0.0;
 
     // receive output image values
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   MPI_Reduce(image_buf, output_buf, image_buffer_size, MPI_FLOAT, MPI_SUM, destination, MPI_COMM_WORLD);
   delete[] image_buf;
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master: reduced output_image after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times) t.stop();
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: reduced output_image after " << t.value() << " seconds" << std::endl;
 #endif
 
   std::cout << "Master: output_image reduced.\n";
@@ -947,16 +769,11 @@ reduce_received_output_image(stir::DiscretisedDensity<3, float>* output_image_pt
   delete[] output_buf;
 #ifdef STIR_MPI_TIMINGS
   fulltimer.stop();
-  if (test_send_receive_times /*&& fulltimer.value()>min_threshold*/)
-    std::cout << "Master: reduced output_image total after " << fulltimer.value() << " seconds" << std::endl;
+    if (test_send_receive_times /*&& fulltimer.value()>min_threshold*/) std::cout << "Master: reduced output_image total after " << fulltimer.value() << " seconds" << std::endl;
 #endif
 }
 
-void
-reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3, float>>& output_image_ptr,
-                    int image_buffer_size,
-                    int my_rank_ignored,
-                    int destination)
+  void reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3, float> > &output_image_ptr, int image_buffer_size, int my_rank_ignored, int destination)
 {
   float* output_buf = new float[image_buffer_size];
   float* image_buf = new float[image_buffer_size];
@@ -967,25 +784,19 @@ reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3, float>>& output
 
   // reduction of output_image at master
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    {
-      t.reset();
-      t.start();
-    }
+    if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
 
   MPI_Reduce(image_buf, output_buf, image_buffer_size, MPI_FLOAT, MPI_SUM, destination, MPI_COMM_WORLD);
   delete[] image_buf;
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
+    if (test_send_receive_times) t.stop();
   int my_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank); /*Gets the rank of the Processor*/
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Slave " << my_rank << ": reduced output_image after " << t.value() << " seconds" << std::endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave " << my_rank << ": reduced output_image after " << t.value() << " seconds" << std::endl;
 #endif
   delete[] output_buf;
 }
 
-} // namespace distributed
+}

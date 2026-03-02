@@ -13,7 +13,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,14 +31,7 @@
 START_NAMESPACE_STIR
 
 // currently checked by asserts()
-// partially from https://stackoverflow.com/a/27054190
-#if defined(BIG_ENDIAN_BYTE_ORDER_FROM_CMAKE)         /* variable set via CMake in stir/config.h */                              \
-    || (!defined(LITTLE_ENDIAN_BYTE_ORDER_FROM_CMAKE) /* variable set via CMake in stir/config.h */                              \
-        && ((!defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__)                \
-             && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__) && !defined(__i886__)       \
-             && !defined(__k6__) && !defined(__athlon__) && !defined(__x86_64__) && !defined(__k6__))                            \
-            || (defined(__MSL__) && !defined(__LITTLE_ENDIAN)) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN)        \
-            || (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) /* gcc */) || defined(__BIG_ENDIAN__)))
+#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__)&& !defined(__i886__) && !defined(__k6__) && !defined(__athlon__) && !defined(__x86_64__) && !defined(__k6__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
 #  define STIRIsNativeByteOrderBigEndian 1
 #  define STIRIsNativeByteOrderLittleEndian 0
 #else
@@ -84,4 +85,6 @@ START_NAMESPACE_STIR
   \see STIRIsNativeByteOrderBigEndian for details.
 */
 
+
 END_NAMESPACE_STIR
+

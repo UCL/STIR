@@ -4,7 +4,15 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -20,68 +28,64 @@
 */
 START_NAMESPACE_STIR
 
+
 template <class elemT>
 PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid()
     : DiscretisedDensityOnCartesianGrid<2, elemT>()
 {}
 
 template <class elemT>
-PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid(const Array<2, elemT>& v,
+PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid
+		      (const Array<2,elemT>& v,
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<2, float>& grid_spacing)
-    : DiscretisedDensityOnCartesianGrid<2, elemT>(v.get_index_range(), origin, grid_spacing)
+		       :DiscretisedDensityOnCartesianGrid<2,elemT>
+		       (v.get_index_range(),origin,grid_spacing)
 {
   Array<2, elemT>::operator=(v);
 }
 
+
 template <class elemT>
-PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid(const IndexRange<2>& range,
+PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid
+		      (const IndexRange<2>& range, 
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<2, float>& grid_spacing)
-    : DiscretisedDensityOnCartesianGrid<2, elemT>(range, origin, grid_spacing)
+		       :DiscretisedDensityOnCartesianGrid<2,elemT>
+		       (range,origin,grid_spacing)
 {}
+
 
 template <class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_min_y() const
-{
-  return this->get_length() == 0 ? 0 : this->get_min_index();
-}
+    { return this->get_length()==0 ? 0 : this->get_min_index(); }
 
 template <class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_min_x() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_y()].get_min_index();
-}
+    { return this->get_length()==0 ? 0 : (*this)[get_min_y()].get_min_index(); }
+
 
 template <class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_x_size() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_y()].get_length();
-}
+{ return  this->get_length()==0 ? 0 : (*this)[get_min_y()].get_length(); }
 
 template <class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_y_size() const
-{
-  return this->get_length() == 0 ? 0 : this->get_length();
-}
+{ return this->get_length()==0 ? 0 : this->get_length();}
 
 template <class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_max_x() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_y()].get_max_index();
-}
+{ return this->get_length()==0 ? 0 : (*this)[get_min_y()].get_max_index();}
 
 template <class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_max_y() const
-{
-  return this->get_length() == 0 ? 0 : this->get_max_index();
-}
+{ return this->get_length()==0 ? 0 : this->get_max_index();}
 
 template <class elemT>
 CartesianCoordinate2D<float>
@@ -118,8 +122,11 @@ PixelsOnCartesianGrid<elemT>*
 PixelsOnCartesianGrid<elemT>::get_empty_pixels_on_cartesian_grid() const
 
 {
-  return new PixelsOnCartesianGrid(this->get_index_range(), this->get_origin(), this->get_grid_spacing());
+  return new PixelsOnCartesianGrid(this->get_index_range(),
+		                   this->get_origin(), 
+		                   this->get_grid_spacing());
 }
+
 
 template <class elemT>
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES

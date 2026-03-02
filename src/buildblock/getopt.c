@@ -25,9 +25,11 @@
    Ditto for AIX 3.2 and <stdlib.h>.  */
 #ifndef HAVE_SYSTEM_GETOPT
 
+
 #  ifndef _NO_PROTO
 #    define _NO_PROTO
 #  endif
+
 
 #  if !defined __STDC__ || !__STDC__
 /* This is a separate conditional since some stdc systems
@@ -56,6 +58,7 @@
 #  endif
 
 #  ifndef ELIDE_CODE
+
 
 /* This needs to come after some library #include
    to get __GNU_LIBRARY__ defined.  */
@@ -182,7 +185,10 @@ int optopt = '?';
    of the value of `ordering'.  In the case of RETURN_IN_ORDER, only
    `--' can cause `getopt' to return -1 with `optind' != ARGC.  */
 
-static enum { REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER } ordering;
+static enum
+{
+  REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER
+} ordering;
 
 /* Value of POSIXLY_CORRECT environment variable.  */
 static char* posixly_correct;
@@ -209,7 +215,9 @@ static char* posixly_correct;
 extern char* getenv();
 #      endif
 
-static char* my_index(str, chr) const char* str;
+static char *
+my_index (str, chr)
+     const char *str;
 int chr;
 {
   while (*str)
@@ -290,7 +298,9 @@ static int nonoption_flags_len;
 static void exchange(char**);
 #    endif
 
-static void exchange(argv) char** argv;
+static void
+exchange (argv)
+     char **argv;
 {
   int bottom = first_nonopt;
   int middle = last_nonopt;
@@ -315,7 +325,9 @@ static void exchange(argv) char** argv;
         nonoption_flags_len = nonoption_flags_max_len = 0;
       else
         {
-          memset(__mempcpy(new_str, __getopt_nonoption_flags, nonoption_flags_max_len), '\0', top + 1 - nonoption_flags_max_len);
+          memset (__mempcpy (new_str, __getopt_nonoption_flags,
+                             nonoption_flags_max_len),
+                  '\0', top + 1 - nonoption_flags_max_len);
           nonoption_flags_max_len = top + 1;
           __getopt_nonoption_flags = new_str;
         }
@@ -405,11 +417,13 @@ const char* optstring;
     ordering = PERMUTE;
 
 #    if defined _LIBC && defined USE_NONOPTION_FLAGS
-  if (posixly_correct == NULL && argc == __libc_argc && argv == __libc_argv)
+  if (posixly_correct == NULL
+      && argc == __libc_argc && argv == __libc_argv)
     {
       if (nonoption_flags_max_len == 0)
         {
-          if (__getopt_nonoption_flags == NULL || __getopt_nonoption_flags[0] == '\0')
+          if (__getopt_nonoption_flags == NULL
+              || __getopt_nonoption_flags[0] == '\0')
             nonoption_flags_max_len = -1;
           else
             {
@@ -417,11 +431,13 @@ const char* optstring;
               int len = nonoption_flags_max_len = strlen(orig_str);
               if (nonoption_flags_max_len < argc)
                 nonoption_flags_max_len = argc;
-              __getopt_nonoption_flags = (char*)malloc(nonoption_flags_max_len);
+              __getopt_nonoption_flags =
+                (char *) malloc (nonoption_flags_max_len);
               if (__getopt_nonoption_flags == NULL)
                 nonoption_flags_max_len = -1;
               else
-                memset(__mempcpy(__getopt_nonoption_flags, orig_str, len), '\0', nonoption_flags_max_len - len);
+                memset (__mempcpy (__getopt_nonoption_flags, orig_str, len),
+                        '\0', nonoption_flags_max_len - len);
             }
         }
       nonoption_flags_len = nonoption_flags_max_len;
@@ -520,9 +536,9 @@ int long_only;
        from the shell indicating it is not an option.  The later information
        is only used when the used in the GNU libc.  */
 #    if defined _LIBC && defined USE_NONOPTION_FLAGS
-#      define NONOPTION_P                                                                                                        \
-        (argv[optind][0] != '-' || argv[optind][1] == '\0'                                                                       \
-         || (optind < nonoption_flags_len && __getopt_nonoption_flags[optind] == '1'))
+# define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0'       \
+                      || (optind < nonoption_flags_len                        \
+                          && __getopt_nonoption_flags[optind] == '1'))
 #    else
 #      define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0')
 #    endif
@@ -600,7 +616,8 @@ int long_only;
       /* We have found another option-ARGV-element.
          Skip the initial punctuation.  */
 
-      nextchar = (argv[optind] + 1 + (longopts != NULL && argv[optind][1] == '-'));
+      nextchar = (argv[optind] + 1
+                  + (longopts != NULL && argv[optind][1] == '-'));
     }
 
   /* Decode the current option-ARGV-element.  */
@@ -618,7 +635,9 @@ int long_only;
 
      This distinction seems to be the most useful approach.  */
 
-  if (longopts != NULL && (argv[optind][1] == '-' || (long_only && (argv[optind][2] || !my_index(optstring, argv[optind][1])))))
+  if (longopts != NULL
+      && (argv[optind][1] == '-'
+          || (long_only && (argv[optind][2] || !my_index (optstring, argv[optind][1])))))
     {
       char* nameend;
       const struct option* p;
@@ -636,7 +655,8 @@ int long_only;
       for (p = longopts, option_index = 0; p->name; p++, option_index++)
         if (!strncmp(p->name, nextchar, nameend - nextchar))
           {
-            if ((unsigned int)(nameend - nextchar) == (unsigned int)strlen(p->name))
+            if ((unsigned int) (nameend - nextchar)
+                == (unsigned int) strlen (p->name))
               {
                 /* Exact match found.  */
                 pfound = p;
@@ -650,7 +670,10 @@ int long_only;
                 pfound = p;
                 indfound = option_index;
               }
-            else if (long_only || pfound->has_arg != p->has_arg || pfound->flag != p->flag || pfound->val != p->val)
+            else if (long_only
+                     || pfound->has_arg != p->has_arg
+                     || pfound->flag != p->flag
+                     || pfound->val != p->val)
               /* Second or later nonexact match found.  */
               ambig = 1;
           }
@@ -662,7 +685,8 @@ int long_only;
 #    if defined _LIBC && defined USE_IN_LIBIO
               char* buf;
 
-              __asprintf(&buf, _("%s: option `%s' is ambiguous\n"), argv[0], argv[optind]);
+              __asprintf (&buf, _("%s: option `%s' is ambiguous\n"),
+                          argv[0], argv[optind]);
 
               if (_IO_fwide(stderr, 0) > 0)
                 __fwprintf(stderr, L"%s", buf);
@@ -671,7 +695,8 @@ int long_only;
 
               free(buf);
 #    else
-              fprintf(stderr, _("%s: option `%s' is ambiguous\n"), argv[0], argv[optind]);
+              fprintf (stderr, _("%s: option `%s' is ambiguous\n"),
+                       argv[0], argv[optind]);
 #    endif
             }
           nextchar += strlen(nextchar);
@@ -702,36 +727,27 @@ int long_only;
                         {
                           /* --option */
 #    if defined _LIBC && defined USE_IN_LIBIO
-                          __asprintf(&buf,
-                                     _("\
+                          __asprintf (&buf, _("\
 %s: option `--%s' doesn't allow an argument\n"),
-                                     argv[0],
-                                     pfound->name);
+                                      argv[0], pfound->name);
 #    else
-                          fprintf(stderr,
-                                  _("\
+                          fprintf (stderr, _("\
 %s: option `--%s' doesn't allow an argument\n"),
-                                  argv[0],
-                                  pfound->name);
+                                   argv[0], pfound->name);
 #    endif
                         }
                       else
                         {
                           /* +option or -option */
 #    if defined _LIBC && defined USE_IN_LIBIO
-                          __asprintf(&buf,
-                                     _("\
+                          __asprintf (&buf, _("\
 %s: option `%c%s' doesn't allow an argument\n"),
-                                     argv[0],
-                                     argv[optind - 1][0],
+                                      argv[0], argv[optind - 1][0],
                                      pfound->name);
 #    else
-                          fprintf(stderr,
-                                  _("\
+                          fprintf (stderr, _("\
 %s: option `%c%s' doesn't allow an argument\n"),
-                                  argv[0],
-                                  argv[optind - 1][0],
-                                  pfound->name);
+                                   argv[0], argv[optind - 1][0], pfound->name);
 #    endif
                         }
 
@@ -762,7 +778,9 @@ int long_only;
 #    if defined _LIBC && defined USE_IN_LIBIO
                       char* buf;
 
-                      __asprintf(&buf, _("%s: option `%s' requires an argument\n"), argv[0], argv[optind - 1]);
+                      __asprintf (&buf,
+                                  _("%s: option `%s' requires an argument\n"),
+                                  argv[0], argv[optind - 1]);
 
                       if (_IO_fwide(stderr, 0) > 0)
                         __fwprintf(stderr, L"%s", buf);
@@ -771,7 +789,9 @@ int long_only;
 
                       free(buf);
 #    else
-                      fprintf(stderr, _("%s: option `%s' requires an argument\n"), argv[0], argv[optind - 1]);
+                      fprintf (stderr,
+                               _("%s: option `%s' requires an argument\n"),
+                               argv[0], argv[optind - 1]);
 #    endif
                     }
                   nextchar += strlen(nextchar);
@@ -794,7 +814,8 @@ int long_only;
          or the option starts with '--' or is not a valid short
          option, then it's an error.
          Otherwise interpret it as a short option.  */
-      if (!long_only || argv[optind][1] == '-' || my_index(optstring, *nextchar) == NULL)
+      if (!long_only || argv[optind][1] == '-'
+          || my_index (optstring, *nextchar) == NULL)
         {
           if (print_errors)
             {
@@ -806,18 +827,22 @@ int long_only;
                 {
                   /* --option */
 #    if defined _LIBC && defined USE_IN_LIBIO
-                  __asprintf(&buf, _("%s: unrecognized option `--%s'\n"), argv[0], nextchar);
+                  __asprintf (&buf, _("%s: unrecognized option `--%s'\n"),
+                              argv[0], nextchar);
 #    else
-                  fprintf(stderr, _("%s: unrecognized option `--%s'\n"), argv[0], nextchar);
+                  fprintf (stderr, _("%s: unrecognized option `--%s'\n"),
+                           argv[0], nextchar);
 #    endif
                 }
               else
                 {
                   /* +option or -option */
 #    if defined _LIBC && defined USE_IN_LIBIO
-                  __asprintf(&buf, _("%s: unrecognized option `%c%s'\n"), argv[0], argv[optind][0], nextchar);
+                  __asprintf (&buf, _("%s: unrecognized option `%c%s'\n"),
+                              argv[0], argv[optind][0], nextchar);
 #    else
-                  fprintf(stderr, _("%s: unrecognized option `%c%s'\n"), argv[0], argv[optind][0], nextchar);
+                  fprintf (stderr, _("%s: unrecognized option `%c%s'\n"),
+                           argv[0], argv[optind][0], nextchar);
 #    endif
                 }
 
@@ -859,7 +884,8 @@ int long_only;
               {
                 /* 1003.2 specifies the format of this message.  */
 #    if defined _LIBC && defined USE_IN_LIBIO
-                __asprintf(&buf, _("%s: illegal option -- %c\n"), argv[0], c);
+                __asprintf (&buf, _("%s: illegal option -- %c\n"),
+                            argv[0], c);
 #    else
                 fprintf(stderr, _("%s: illegal option -- %c\n"), argv[0], c);
 #    endif
@@ -867,7 +893,8 @@ int long_only;
             else
               {
 #    if defined _LIBC && defined USE_IN_LIBIO
-                __asprintf(&buf, _("%s: invalid option -- %c\n"), argv[0], c);
+                __asprintf (&buf, _("%s: invalid option -- %c\n"),
+                            argv[0], c);
 #    else
                 fprintf(stderr, _("%s: invalid option -- %c\n"), argv[0], c);
 #    endif
@@ -912,7 +939,8 @@ int long_only;
 #    if defined _LIBC && defined USE_IN_LIBIO
                 char* buf;
 
-                __asprintf(&buf, _("%s: option requires an argument -- %c\n"), argv[0], c);
+                __asprintf (&buf, _("%s: option requires an argument -- %c\n"),
+                            argv[0], c);
 
                 if (_IO_fwide(stderr, 0) > 0)
                   __fwprintf(stderr, L"%s", buf);
@@ -921,7 +949,8 @@ int long_only;
 
                 free(buf);
 #    else
-                fprintf(stderr, _("%s: option requires an argument -- %c\n"), argv[0], c);
+                fprintf (stderr, _("%s: option requires an argument -- %c\n"),
+                         argv[0], c);
 #    endif
               }
             optopt = c;
@@ -972,7 +1001,8 @@ int long_only;
 #    if defined _LIBC && defined USE_IN_LIBIO
                 char* buf;
 
-                __asprintf(&buf, _("%s: option `-W %s' is ambiguous\n"), argv[0], argv[optind]);
+                __asprintf (&buf, _("%s: option `-W %s' is ambiguous\n"),
+                            argv[0], argv[optind]);
 
                 if (_IO_fwide(stderr, 0) > 0)
                   __fwprintf(stderr, L"%s", buf);
@@ -981,7 +1011,8 @@ int long_only;
 
                 free(buf);
 #    else
-                fprintf(stderr, _("%s: option `-W %s' is ambiguous\n"), argv[0], argv[optind]);
+                fprintf (stderr, _("%s: option `-W %s' is ambiguous\n"),
+                         argv[0], argv[optind]);
 #    endif
               }
             nextchar += strlen(nextchar);
@@ -1004,11 +1035,9 @@ int long_only;
 #    if defined _LIBC && defined USE_IN_LIBIO
                         char* buf;
 
-                        __asprintf(&buf,
-                                   _("\
+                        __asprintf (&buf, _("\
 %s: option `-W %s' doesn't allow an argument\n"),
-                                   argv[0],
-                                   pfound->name);
+                                    argv[0], pfound->name);
 
                         if (_IO_fwide(stderr, 0) > 0)
                           __fwprintf(stderr, L"%s", buf);
@@ -1017,11 +1046,9 @@ int long_only;
 
                         free(buf);
 #    else
-                        fprintf(stderr,
-                                _("\
+                        fprintf (stderr, _("\
 %s: option `-W %s' doesn't allow an argument\n"),
-                                argv[0],
-                                pfound->name);
+                                 argv[0], pfound->name);
 #    endif
                       }
 
@@ -1040,11 +1067,9 @@ int long_only;
 #    if defined _LIBC && defined USE_IN_LIBIO
                         char* buf;
 
-                        __asprintf(&buf,
-                                   _("\
+                        __asprintf (&buf, _("\
 %s: option `%s' requires an argument\n"),
-                                   argv[0],
-                                   argv[optind - 1]);
+                                    argv[0], argv[optind - 1]);
 
                         if (_IO_fwide(stderr, 0) > 0)
                           __fwprintf(stderr, L"%s", buf);
@@ -1053,7 +1078,9 @@ int long_only;
 
                         free(buf);
 #    else
-                        fprintf(stderr, _("%s: option `%s' requires an argument\n"), argv[0], argv[optind - 1]);
+                        fprintf (stderr,
+                                 _("%s: option `%s' requires an argument\n"),
+                                 argv[0], argv[optind - 1]);
 #    endif
                       }
                     nextchar += strlen(nextchar);
@@ -1105,7 +1132,9 @@ int long_only;
 #    if defined _LIBC && defined USE_IN_LIBIO
                     char* buf;
 
-                    __asprintf(&buf, _("%s: option requires an argument -- %c\n"), argv[0], c);
+                    __asprintf (&buf,
+                                _("%s: option requires an argument -- %c\n"),
+                                argv[0], c);
 
                     if (_IO_fwide(stderr, 0) > 0)
                       __fwprintf(stderr, L"%s", buf);
@@ -1114,7 +1143,9 @@ int long_only;
 
                     free(buf);
 #    else
-                    fprintf(stderr, _("%s: option requires an argument -- %c\n"), argv[0], c);
+                    fprintf (stderr,
+                             _("%s: option requires an argument -- %c\n"),
+                             argv[0], c);
 #    endif
                   }
                 optopt = c;
@@ -1140,10 +1171,14 @@ int argc;
 char* const* argv;
 const char* optstring;
 {
-  return _getopt_internal(argc, argv, optstring, (const struct option*)0, (int*)0, 0);
+  return _getopt_internal (argc, argv, optstring,
+                           (const struct option *) 0,
+                           (int *) 0,
+                           0);
 }
 
 #  endif /* Not ELIDE_CODE.  */
+
 
 /* Compile with -DTEST to make an executable for use in testing
    the above definition of `getopt'.  */

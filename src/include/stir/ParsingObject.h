@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -20,6 +28,7 @@
 */
 #ifndef __stir_ParsingObject_H__
 #define __stir_ParsingObject_H__
+
 
 #include "stir/KeyParser.h"
 
@@ -54,13 +63,13 @@ public:
       parse() returns false if there is some error, true otherwise.
   */
   //@{
-  bool parse(std::istream& f);
+   bool parse(istream& f);
   bool parse(const char* const filename);
   //@}
 
   void ask_parameters();
 
-  virtual std::string parameter_info();
+   string parameter_info();  
 
 protected:
   //! Set defaults before parsing
@@ -86,11 +95,13 @@ protected:
 
 private:
   bool keymap_is_initialised;
-
 protected:
   KeyParser parser;
+
 };
+
 
 END_NAMESPACE_STIR
 
 #endif
+

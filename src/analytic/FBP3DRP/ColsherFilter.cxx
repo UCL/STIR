@@ -16,7 +16,15 @@
 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -28,7 +36,6 @@
 #include "stir/numerics/fourier.h"
 #include "stir/IndexRange2D.h"
 #include "stir/Succeeded.h"
-#include "stir/warning.h"
 
 #ifdef __DEBUG_COLSHER
 // for debugging...
@@ -39,25 +46,36 @@
 #endif
 
 #include <math.h>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
 #include <sstream>
+#endif
 
 START_NAMESPACE_STIR
 
-std::string
-ColsherFilter::parameter_info() const
+std::string ColsherFilter::parameter_info() const
 {
+#ifdef BOOST_NO_STRINGSTREAM
+  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+  char str[2000];
+  ostrstream s(str, 2000);
+#else
   std::ostringstream s;
-
+#endif  
   s << "\nColsherFilter Parameters :="
 #ifdef NRFFT
-    << "\nFilter height := " << height << "\nFilter width := " << width
+      << "\nFilter height := "<< height
+      << "\nFilter width := "<< width      
 #endif
-    << "\nMaximum aperture (theta_max) := " << theta_max << "\nCut-off in cycles along planar direction:= " << fc_planar
+      << "\nMaximum aperture (theta_max) := "<< theta_max
+      << "\nCut-off in cycles along planar direction:= "<< fc_planar
     << "\nCut-off in cycles along axial direction:= " << fc_axial
     << "\nAlpha parameter along planar direction := " << alpha_planar
     << "\nAlpha parameter along axial direction:= " << alpha_axial
 #ifdef NRFFT
-    << "\nRadial sampling (along bin direction) := " << d_a << "\nAxial sampling (along ring direction) := " << d_b
+      << "\nRadial sampling (along bin direction) := "<< d_a
+      << "\nAxial sampling (along ring direction) := "<< d_b
     << "\nCopolar angle (gamma):= " << gamma
 #endif
       ;
@@ -67,35 +85,33 @@ ColsherFilter::parameter_info() const
 
 #ifndef NRFFT
 
+
+
 ColsherFilter::ColsherFilter(float theta_max_v,
-                             float alpha_colsher_axial_v,
-                             float fc_colsher_axial_v,
-                             float alpha_colsher_planar_v,
-                             float fc_colsher_planar_v,
+			     float alpha_colsher_axial_v, float fc_colsher_axial_v,
+			     float alpha_colsher_planar_v, float fc_colsher_planar_v,
                              const int stretch_factor_axial,
                              const int stretch_factor_planar)
     : theta_max(theta_max_v),
-      alpha_axial(alpha_colsher_axial_v),
-      fc_axial(fc_colsher_axial_v),
-      alpha_planar(alpha_colsher_planar_v),
-      fc_planar(fc_colsher_planar_v),
+          alpha_axial(alpha_colsher_axial_v), fc_axial(fc_colsher_axial_v),
+          alpha_planar(alpha_colsher_planar_v), fc_planar(fc_colsher_planar_v),
       stretch_factor_axial(stretch_factor_axial),
       stretch_factor_planar(stretch_factor_planar)
-{}
+{
+}
+
 
 #  ifdef __DEBUG_COLSHER
 #    ifndef NRFFT
 // a function to get the real part of a complex number used in the debugging stuff
-float
-real_part(const std::complex<float>& z)
-{
-  return z.real();
-}
+float real_part(const std::complex<float>& z) { return z.real(); }
 #    endif
 #  endif
 
 Succeeded
-ColsherFilter::set_up(int target_height, int target_width, float theta, float d_a, float d_b)
+ColsherFilter::
+set_up(int target_height, int target_width, float theta,
+       float d_a, float d_b)
 {
   /* Ideally we would sample the Colsher filter in 'real' space, and then
      construct the coefficients for discrete fourier transforms. Unfortunately,
@@ -113,7 +129,8 @@ ColsherFilter::set_up(int target_height, int target_width, float theta, float d_
     return Succeeded::yes;
   if (theta > theta_max + .001F)
     {
-      warning("ColsherFilter::set_up called with theta %g larger than theta_max %g", theta, theta_max);
+      warning("ColsherFilter::set_up called with theta %g larger than theta_max %g",
+	      theta, theta_max);
       return Succeeded::no;
     }
   start_timers();
@@ -153,7 +170,9 @@ ColsherFilter::set_up(int target_height, int target_width, float theta, float d_
               else
                 fil = static_cast<float>(mod_nu / 4. / asin(sin(theta_max) / sin(psi)));
               /* Apodizing Hanning window */;
-              fil *= static_cast<float>((alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
+	      fil *= 
+		static_cast<float>(
+				   (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
                                         * (alpha_axial + (1. - alpha_axial) * cos(_PI * fb / fc_axial)));
               fil *= scale_factor;
             }
@@ -166,19 +185,17 @@ ColsherFilter::set_up(int target_height, int target_width, float theta, float d_
 
   if (stretch_factor_planar > 1 || stretch_factor_axial > 1)
     {
-      Array<2, float> colsher_real = inverse_fourier_for_real_data_corrupting_input(filter);
+      Array<2,float > colsher_real=
+	inverse_fourier_for_real_data_corrupting_input(filter);
       // cut out tails. unfortunately that's a bit complicated because of wrap-around
       colsher_real.resize(IndexRange2D(target_height, target_width));
       for (int j = 0; j < target_height / 2; ++j)
         {
           for (int k = 0; k < target_width / 2; k++)
             {
-              if (j != 0)
-                colsher_real[target_height - j][k] = colsher_real[j][k];
-              if (j != 0 && k != 0)
-                colsher_real[target_height - j][target_width - k] = colsher_real[j][k];
-              if (k != 0)
-                colsher_real[j][target_width - k] = colsher_real[j][k];
+	      if (j!=0) colsher_real[target_height-j][k] = colsher_real[j][k];
+	      if (j!=0 &&k!=0) colsher_real[target_height-j][target_width-k] = colsher_real[j][k];
+	      if (k!=0) colsher_real[j][target_width-k] = colsher_real[j][k];
             }
         }
       filter = fourier_for_real_data(colsher_real);
@@ -195,7 +212,8 @@ ColsherFilter::set_up(int target_height, int target_width, float theta, float d_
        copy its real part into an Array of floats.
     */
     Array<2, float> real_filter(IndexRange2D(target_height, target_width / 2 + 1));
-    std::transform(filter.begin_all(), filter.end_all(), real_filter.begin_all(), real_part /*std::real<std::complex<float> >*/);
+    std::transform(filter.begin_all(), filter.end_all(), real_filter.begin_all(), 
+		   real_part/*std::real<std::complex<float> >*/);
     char file[200];
     sprintf(file, "%s_%d_%d_%g.dat", "new_colsher", target_width, target_height, theta);
     std::cout << "Saving filter : " << file << std::endl;
@@ -217,25 +235,13 @@ ColsherFilter::set_up(int target_height, int target_width, float theta, float d_
 
 #else // NRFFT
 
-ColsherFilter::ColsherFilter(int height_v,
-                             int width_v,
-                             float gamma_v,
-                             float theta_max_v,
-                             float d_a_v,
-                             float d_b_v,
-                             float alpha_colsher_axial_v,
-                             float fc_colsher_axial_v,
-                             float alpha_colsher_planar_v,
-                             float fc_colsher_planar_v)
-    : Filter2D<float>(height_v, width_v),
-      gamma(gamma_v),
-      theta_max(theta_max_v),
-      d_a(d_a_v),
-      d_b(d_b_v),
-      alpha_axial(alpha_colsher_axial_v),
-      fc_axial(fc_colsher_axial_v),
-      alpha_planar(alpha_colsher_planar_v),
-      fc_planar(fc_colsher_planar_v)
+ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float theta_max_v,
+				 float d_a_v, float d_b_v,
+                                 float alpha_colsher_axial_v, float fc_colsher_axial_v,
+                                 float alpha_colsher_planar_v, float fc_colsher_planar_v) 
+        : Filter2D<float>(height_v, width_v),gamma(gamma_v), theta_max(theta_max_v), d_a(d_a_v), d_b(d_b_v),
+          alpha_axial(alpha_colsher_axial_v), fc_axial(fc_colsher_axial_v),
+          alpha_planar(alpha_colsher_planar_v), fc_planar(fc_colsher_planar_v)
 {
 
   if (height == 0 || width == 0)
@@ -254,16 +260,13 @@ ColsherFilter::ColsherFilter(int height_v,
   int ii = 1; // float fmax = 0.F;
 
   // TODO don't use 0.5* for upper boundary
-  for (j = 0; j <= 0.5 * height; j++)
-    {
+    for (j = 0; j <= 0.5 * height; j++) {
       fb = (float)j / height;
       nu_b = fb / d_b;
-      for (k = 0; k <= 0.5 * width; k++)
-        {
+        for (k = 0; k <= 0.5 * width; k++) {
           fa = (float)k / width;
           nu_a = fa / d_a;
-          if (fa == 0. && fb == 0.)
-            {
+            if (fa == 0. && fb == 0.) {
               filter[ii++] = 0.F;
               continue;
             }
@@ -278,24 +281,29 @@ ColsherFilter::ColsherFilter(int height_v,
           else
             fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
+                       
           /* Apodizing Hanning window */;
           // CL 250899 In order to make similar to the CTI program, we use a damping window
           // for both planar and axial direction
 
           if (fa < fc_planar && fb < fc_axial)
-            filter[ii++] = static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
+                filter[ii++] = 
+		  static_cast<float>(
+				     fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
                                               * (alpha_axial + (1. - alpha_axial) * cos(_PI * fb / fc_axial)));
           else
             filter[ii++] = 0.F;
+
         }
 
-      for (k = int(-0.5 * width) + 1; k <= -1; k++)
-        {
+               
+        for (k = int (-0.5 * width) + 1; k <= -1; k++) {
           fa = (float)k / width;
           nu_a = fa / d_a;
           omega = atan2(nu_b, -nu_a);
           psi = acos(sin(omega) * sin(gamma));
 
+                        
           mod_nu = sqrt(nu_a * nu_a + nu_b * nu_b);
 
           if (cos(psi) >= cos(theta_max))
@@ -303,20 +311,21 @@ ColsherFilter::ColsherFilter(int height_v,
           else
             fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
+
           if (-fa < fc_planar && fb < fc_axial)
-            filter[ii++] = static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
+                filter[ii++] = 
+		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
                                               * (alpha_axial + (1. - alpha_axial) * cos(_PI * fb / fc_axial)));
           else
             filter[ii++] = 0.F;
+		
         }
     }
 
-  for (j = int(-0.5 * height) + 1; j <= -1; j++)
-    {
+    for (j = int (-0.5 * height) + 1; j <= -1; j++) {
       fb = (float)j / height;
       nu_b = fb / d_b;
-      for (k = 0; k <= 0.5 * width; k++)
-        {
+        for (k = 0; k <= 0.5 * width; k++) {
           fa = (float)k / width;
           nu_a = fa / d_a;
           omega = atan2(-nu_b, nu_a);
@@ -329,15 +338,17 @@ ColsherFilter::ColsherFilter(int height_v,
           else
             fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
+ 
           if (fa < fc_planar && -fb < fc_axial)
-            filter[ii++] = static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
+                filter[ii++] = 
+		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
                                               * (alpha_axial + (1. - alpha_axial) * cos(_PI * (-fb) / fc_axial)));
           else
             filter[ii++] = 0.F;
+                    
         }
 
-      for (k = int(-0.5 * width) + 1; k <= -1; k++)
-        {
+        for (k = int (-0.5 * width) + 1; k <= -1; k++) {
           fa = (float)k / width;
           nu_a = fa / d_a;
           omega = atan2(-nu_b, -nu_a);
@@ -351,10 +362,13 @@ ColsherFilter::ColsherFilter(int height_v,
             fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
           if (-fa < fc_planar && -fb < fc_axial)
-            filter[ii++] = static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
+                filter[ii++] = 
+		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
                                               * (alpha_axial + (1. - alpha_axial) * cos(_PI * (-fb) / fc_axial)));
           else
             filter[ii++] = 0.F;
+
+                         
         }
     }
 
@@ -362,6 +376,7 @@ ColsherFilter::ColsherFilter(int height_v,
   // TODO this assumes current value for the magic_number in backprojector
   filter *= static_cast<float>(4 * _PI * d_a);
 
+    
 #  ifdef __DEBUG_COLSHER
   {
     char file[200];
@@ -373,8 +388,10 @@ ColsherFilter::ColsherFilter(int height_v,
 #  endif
 }
 
-void
-Filter_proj_Colsher(Viewgram<float>& view_i, Viewgram<float>& view_i1, ColsherFilter& CFilter, int PadS, int PadZ)
+void Filter_proj_Colsher(Viewgram<float> & view_i,
+			 Viewgram<float> & view_i1,
+                         ColsherFilter& CFilter, 
+                         int PadS, int PadZ)
 {
   // start_timers();
 
@@ -392,10 +409,10 @@ Filter_proj_Colsher(Viewgram<float>& view_i, Viewgram<float>& view_i1, ColsherFi
   int roffset = -rmin * width * 2;
   Array<1, float> data(1, 2 * height * width);
 
+  
   for (int j = rmin; j <= rmax; j++)
     {
-      for (int k = minproj; k <= maxproj; k++)
-        {
+    for (int k = minproj; k <= maxproj; k++) {
           data[roffset + 2 * j * width + 2 * (k - minproj) + 1] = view_i[j][k];
           data[roffset + 2 * j * width + 2 * (k - minproj) + 2] = view_i1[j][k];
         }
@@ -405,6 +422,9 @@ Filter_proj_Colsher(Viewgram<float>& view_i, Viewgram<float>& view_i1, ColsherFi
     CFilter.apply(data);
   }
 
+  
+  
+  
   for (int j = rmin; j <= rmax; j++)
     {
       for (int k = minproj; k <= maxproj; k++)
@@ -415,6 +435,7 @@ Filter_proj_Colsher(Viewgram<float>& view_i, Viewgram<float>& view_i1, ColsherFi
     }
 
   // stop_timers();
+  
 }
 
 #endif // NRFFT

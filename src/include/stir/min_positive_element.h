@@ -4,7 +4,15 @@
     Copyright (C) 2002- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -47,8 +55,7 @@ min_positive_element(ForwardIter_t start, ForwardIter_t end)
   // go and look for the first (strictly) positive number
   while (start != end && *start <= 0)
     ++start;
-  if (start == end)
-    return end;
+  if (start==end) return end;
 
   // now look through the rest for a smaller positive number
   ForwardIter_t result = start;

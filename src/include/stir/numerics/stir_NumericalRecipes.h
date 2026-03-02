@@ -13,7 +13,15 @@
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -32,8 +40,8 @@ START_NAMESPACE_STIR
 */
 //@{
 
-inline void
-stir_to_nr(const VectorWithOffset<std::complex<float>>& c, VectorWithOffset<float>& nr_data)
+inline void stir_to_nr(const VectorWithOffset< std::complex<float> >& c,
+		VectorWithOffset<float>& nr_data)
 {
   for (int i = 0; i < c.get_length(); ++i)
     {
@@ -42,13 +50,14 @@ stir_to_nr(const VectorWithOffset<std::complex<float>>& c, VectorWithOffset<floa
     }
 }
 
-inline void
-stir_to_nr(const Array<2, std::complex<float>>& c2d, VectorWithOffset<float>& nr_data)
+inline void stir_to_nr(const Array<2,std::complex<float> >& c2d,
+		VectorWithOffset<float>& nr_data)
 {
 
   VectorWithOffset<float>::iterator nr_iter = nr_data.begin();
 
-  Array<2, std::complex<float>>::const_full_iterator iter = c2d.begin_all();
+  Array<2,std::complex<float> >::const_full_iterator iter=
+    c2d.begin_all();
 
   while (iter != c2d.end_all())
     {
@@ -58,13 +67,15 @@ stir_to_nr(const Array<2, std::complex<float>>& c2d, VectorWithOffset<float>& nr
     }
 }
 
-inline void
-stir_to_nr(const VectorWithOffset<Array<1, std::complex<float>>>& c2d, VectorWithOffset<float>& nr_data)
+
+inline void stir_to_nr(const VectorWithOffset<Array<1,std::complex<float> > >& c2d,
+		VectorWithOffset<float>& nr_data)
 {
 
   VectorWithOffset<float>::iterator nr_iter = nr_data.begin();
 
-  VectorWithOffset<Array<1, std::complex<float>>>::const_iterator iter = c2d.begin();
+  VectorWithOffset<Array<1,std::complex<float> > >::const_iterator iter = 
+    c2d.begin();
   while (iter != c2d.end())
     {
       Array<1, std::complex<float>>::const_iterator row_iter = iter->begin();
@@ -78,8 +89,8 @@ stir_to_nr(const VectorWithOffset<Array<1, std::complex<float>>>& c2d, VectorWit
     }
 }
 
-void
-nr_to_stir(const VectorWithOffset<float>& nr_data, VectorWithOffset<std::complex<float>>& c)
+void nr_to_stir(const VectorWithOffset<float>& nr_data,
+		VectorWithOffset< std::complex<float> >& c)
 {
   for (int i = 0; i < c.get_length(); ++i)
     {
@@ -87,11 +98,12 @@ nr_to_stir(const VectorWithOffset<float>& nr_data, VectorWithOffset<std::complex
     }
 }
 
-inline void
-nr_to_stir(const VectorWithOffset<float>& nr_data, Array<2, std::complex<float>>& c2d)
+inline void nr_to_stir(const VectorWithOffset<float>& nr_data,
+		Array<2,std::complex<float> > & c2d)
 {
   VectorWithOffset<float>::const_iterator nr_iter = nr_data.begin();
-  Array<2, std::complex<float>>::full_iterator iter = c2d.begin_all();
+  Array<2,std::complex<float> >::full_iterator iter=
+    c2d.begin_all();
   while (iter != c2d.end_all())
     {
       *iter = std::complex<float>(*nr_iter, *(nr_iter + 1));
@@ -100,11 +112,12 @@ nr_to_stir(const VectorWithOffset<float>& nr_data, Array<2, std::complex<float>>
     }
 }
 
-inline void
-nr_to_stir(const VectorWithOffset<float>& nr_data, VectorWithOffset<Array<1, std::complex<float>>>& c2d)
+inline void nr_to_stir(const VectorWithOffset<float>& nr_data,
+		VectorWithOffset<Array<1,std::complex<float> > >& c2d)
 {
   VectorWithOffset<float>::const_iterator nr_iter = nr_data.begin();
-  VectorWithOffset<Array<1, std::complex<float>>>::iterator iter = c2d.begin();
+  VectorWithOffset<Array<1,std::complex<float> > >::iterator iter = 
+    c2d.begin();
   while (iter != c2d.end())
     {
       Array<1, std::complex<float>>::iterator row_iter = iter->begin();

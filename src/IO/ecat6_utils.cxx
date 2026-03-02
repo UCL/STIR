@@ -1,6 +1,7 @@
 //
 //
 
+
 /*!
   \file
   \ingroup ECAT
@@ -19,7 +20,15 @@
     Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
   */
@@ -63,7 +72,6 @@ extern "C" FILE* mat_create(char* fname, Main_header* mhead);
 
 #include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
-#include "stir/warning.h"
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 #include <algorithm> // for std::swap
@@ -80,23 +88,24 @@ extern "C" FILE* mat_create(char* fname, Main_header* mhead);
 
 BOOST_STATIC_ASSERT(sizeof(unsigned short) == 2);
 
+
+
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 
-int
-get_scanheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Scan_subheader* shead, ScanInfoRec* scanParams)
+
+int get_scanheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead, 
+                     Scan_subheader *shead, ScanInfoRec *scanParams)
 {
   int status;
   MatDir entry;
 
   // check the header
   status = cti_read_ECAT6_Main_header(fptr, mhead);
-  if (status != EXIT_SUCCESS)
-    return EXIT_FAILURE;
+    if (status != EXIT_SUCCESS) return EXIT_FAILURE;
 
-  if (mhead->file_type != matScanFile)
-    {
+    if (mhead->file_type != matScanFile) {
       printf("\n- file is not a scan file, type = %d\n", mhead->file_type);
 #ifdef STIR_ORIGINAL_ECAT6
       dump_ECAT6_Main_header(0, mhead);
@@ -105,8 +114,7 @@ get_scanheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Scan_subheade
     }
 
   // look up matnum in scan file
-  if (!cti_lookup(fptr, mhead, matnum, &entry))
-    {
+    if (!cti_lookup (fptr, mhead, matnum, &entry)) {
       printf("\n- specified matrix not in scan file\n");
 #ifdef STIR_ORIGINAL_ECAT6
       dump_ECAT6_Main_header(0, mhead);
@@ -116,8 +124,7 @@ get_scanheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Scan_subheade
 
   // read scan subheader
   status = cti_read_scan_subheader(fptr, mhead, entry.strtblk, shead);
-  if (status != EXIT_SUCCESS)
-    {
+    if (status != EXIT_SUCCESS) {
       printf("\n- error reading scan subheader\n");
       return EXIT_FAILURE;
     }
@@ -136,42 +143,38 @@ get_scanheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Scan_subheade
   if (shead->data_type != mhead->data_type)
     printf("\nget_scanheader warning: \n"
            "data types differ between main header (%d) and subheader (%d)\n"
-           "Using value from subheader\n",
-           mhead->data_type,
-           shead->data_type);
+"Using value from subheader\n", mhead->data_type, shead->data_type);
 #endif
 
   return EXIT_SUCCESS;
 }
 
-int
-get_scandata(FILE* fptr, char* scan, ScanInfoRec* scanParams)
+int get_scandata (FILE *fptr, char *scan, ScanInfoRec *scanParams)
 {
   int status;
 
   // read data from scan file
-  if (!scan)
-    return EXIT_FAILURE;
+    if (!scan) return EXIT_FAILURE;
 
   status = cti_rblk(fptr, scanParams->strtblk, (char*)scan, scanParams->nblks);
   if (status != EXIT_SUCCESS)
     return EXIT_FAILURE;
-  return file_data_to_host(scan, scanParams->nblks, scanParams->data_type);
+    return 
+      file_data_to_host(scan, scanParams->nblks,scanParams->data_type);
 }
 
-int
-get_attnheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Attn_subheader* shead, ScanInfoRec* attnParams)
+
+int get_attnheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead, 
+                     Attn_subheader *shead, ScanInfoRec *attnParams)
 {
   int status;
   MatDir entry;
 
   // check the header
   status = cti_read_ECAT6_Main_header(fptr, mhead);
-  if (status != EXIT_SUCCESS)
-    return EXIT_FAILURE;
+    if (status != EXIT_SUCCESS) return EXIT_FAILURE;
 
-  if (mhead->file_type != matAttenFile)
-    {
+    if (mhead->file_type != matAttenFile) {
       printf("\n- file is not a attn file, type = %d\n", mhead->file_type);
 #ifdef STIR_ORIGINAL_ECAT6
       dump_ECAT6_Main_header(0, mhead);
@@ -180,8 +183,7 @@ get_attnheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Attn_subheade
     }
 
   // look up matnum in attn file
-  if (!cti_lookup(fptr, mhead, matnum, &entry))
-    {
+    if (!cti_lookup (fptr, mhead, matnum, &entry)) {
       printf("\n- specified matrix not in attn file\n");
 #ifdef STIR_ORIGINAL_ECAT6
       dump_ECAT6_Main_header(0, mhead);
@@ -191,8 +193,7 @@ get_attnheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Attn_subheade
 
   // read attn subheader
   status = cti_read_attn_subheader(fptr, mhead, entry.strtblk, shead);
-  if (status != EXIT_SUCCESS)
-    {
+    if (status != EXIT_SUCCESS) {
       printf("\n- error reading attn subheader\n");
       return EXIT_FAILURE;
     }
@@ -211,27 +212,25 @@ get_attnheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Attn_subheade
   if (shead->data_type != mhead->data_type)
     printf("\nget_attnheader warning: \n"
            "data types differ between main header (%d) and subheader (%d)\n"
-           "Using value from subheader\n",
-           mhead->data_type,
-           shead->data_type);
+"Using value from subheader\n", mhead->data_type, shead->data_type);
 #endif
 
   return EXIT_SUCCESS;
 }
 
-int
-get_normheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Norm_subheader* shead, ScanInfoRec* normParams)
+
+
+int get_normheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead, 
+                     Norm_subheader *shead, ScanInfoRec *normParams)
 {
   int status;
   MatDir entry;
 
   // check the header
   status = cti_read_ECAT6_Main_header(fptr, mhead);
-  if (status != EXIT_SUCCESS)
-    return EXIT_FAILURE;
+    if (status != EXIT_SUCCESS) return EXIT_FAILURE;
 
-  if (mhead->file_type != matNormFile)
-    {
+    if (mhead->file_type != matNormFile) {
       printf("\n- file is not a norm file, type = %d\n", mhead->file_type);
 #ifdef STIR_ORIGINAL_ECAT6
       dump_ECAT6_Main_header(0, mhead);
@@ -240,8 +239,7 @@ get_normheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Norm_subheade
     }
 
   // look up matnum in norm file
-  if (!cti_lookup(fptr, mhead, matnum, &entry))
-    {
+    if (!cti_lookup (fptr, mhead, matnum, &entry)) {
       printf("\n- specified matrix not in norm file\n");
 #ifdef STIR_ORIGINAL_ECAT6
       dump_ECAT6_Main_header(0, mhead);
@@ -251,8 +249,7 @@ get_normheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Norm_subheade
 
   // read norm subheader
   status = cti_read_norm_subheader(fptr, mhead, entry.strtblk, shead);
-  if (status != EXIT_SUCCESS)
-    {
+    if (status != EXIT_SUCCESS) {
       printf("\n- error reading norm subheader\n");
       return EXIT_FAILURE;
     }
@@ -271,9 +268,7 @@ get_normheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Norm_subheade
   if (shead->data_type != mhead->data_type)
     printf("\nget_normheader warning: \n"
            "data types differ between main header (%d) and subheader (%d)\n"
-           "Using value from subheader\n",
-           mhead->data_type,
-           shead->data_type);
+"Using value from subheader\n", mhead->data_type, shead->data_type);
 #endif
 
   return EXIT_SUCCESS;
@@ -286,97 +281,81 @@ cti_create(const char* const fname, const Main_header* mhead)
   return mat_create(const_cast<char*>(fname), const_cast<Main_header*>(mhead));
 }
 
-int
-cti_read_ECAT6_Main_header(FILE* fptr, ECAT6_Main_header* h)
+int     cti_read_ECAT6_Main_header (FILE *fptr, ECAT6_Main_header *h)
 {
   const int cti_status = mat_read_main_header(fptr, h);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-long
-cti_numcod(int frame, int plane, int gate, int data, int bed)
+long    cti_numcod (int frame, int plane, int gate, int data, int bed)
 {
   return mat_numcod(frame, plane, gate, data, bed);
 }
 
-void
-cti_numdoc(long matnum, Matval* matval)
+void cti_numdoc (long matnum, Matval *matval)
 {
   mat_numdoc(matnum, matval);
 }
 
-int
-cti_rblk(FILE* fptr, int blkno, void* bufr, int nblks)
+int     cti_rblk (FILE *fptr, int blkno, void *bufr, int nblks)
 {
   const int cti_status = mat_rblk(fptr, blkno, reinterpret_cast<char*>(bufr), nblks);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-cti_wblk(FILE* fptr, int blkno, void* bufr, int nblks)
+int     cti_wblk (FILE *fptr, int blkno, void *bufr, int nblks)
 {
   const int cti_status = mat_wblk(fptr, blkno, reinterpret_cast<char*>(bufr), nblks);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-cti_enter(FILE* fptr, const ECAT6_Main_header* mhead_ptr, long matnum, int nblks)
+int     cti_enter (FILE *fptr, const ECAT6_Main_header* mhead_ptr, long matnum, int nblks)
 {
   return mat_enter(fptr, const_cast<ECAT6_Main_header*>(mhead_ptr), matnum, nblks);
 }
 
-int
-cti_lookup(FILE* fptr, const ECAT6_Main_header* mhead_ptr, long matnum, MatDir* entry)
+int     cti_lookup (FILE *fptr, const ECAT6_Main_header* mhead_ptr, long matnum, MatDir *entry)
 {
   return mat_lookup(fptr, const_cast<ECAT6_Main_header*>(mhead_ptr), matnum, entry);
 }
 
-int
-cti_read_image_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum, Image_subheader* header_ptr)
+int	cti_read_image_subheader (FILE *fptr, const ECAT6_Main_header *h, int   blknum, Image_subheader *header_ptr)
 {
   const int cti_status = mat_read_image_subheader(fptr, const_cast<ECAT6_Main_header*>(h), blknum, header_ptr);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-cti_read_scan_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum, Scan_subheader* header_ptr)
+int     cti_read_scan_subheader (FILE *fptr, const ECAT6_Main_header *h, int blknum, Scan_subheader *header_ptr)
 {
   const int cti_status = mat_read_scan_subheader(fptr, const_cast<ECAT6_Main_header*>(h), blknum, header_ptr);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-cti_read_attn_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum, Attn_subheader* header_ptr)
+int     cti_read_attn_subheader (FILE *fptr, const ECAT6_Main_header *h, int blknum, Attn_subheader *header_ptr)
 {
   const int cti_status = mat_read_attn_subheader(fptr, const_cast<ECAT6_Main_header*>(h), blknum, header_ptr);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-cti_read_norm_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum, Norm_subheader* header_ptr)
+int     cti_read_norm_subheader (FILE *fptr, const ECAT6_Main_header *h, int blknum, Norm_subheader *header_ptr)
 {
   const int cti_status = mat_read_norm_subheader(fptr, const_cast<ECAT6_Main_header*>(h), blknum, header_ptr);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-cti_write_image_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum, const Image_subheader* header_ptr)
+int     cti_write_image_subheader (FILE *fptr, const ECAT6_Main_header *h, int blknum, const Image_subheader *header_ptr)
 {
-  const int cti_status
-      = mat_write_image_subheader(fptr, const_cast<ECAT6_Main_header*>(h), blknum, const_cast<Image_subheader*>(header_ptr));
+  const int cti_status = mat_write_image_subheader (fptr, const_cast<ECAT6_Main_header *>(h), blknum, const_cast<Image_subheader *>(header_ptr));
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-cti_write_scan_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum, const Scan_subheader* header_ptr)
+int     cti_write_scan_subheader (FILE *fptr, const ECAT6_Main_header *h, int blknum, const Scan_subheader *header_ptr)
 {
-  const int cti_status
-      = mat_write_scan_subheader(fptr, const_cast<ECAT6_Main_header*>(h), blknum, const_cast<Scan_subheader*>(header_ptr));
+  const int cti_status = mat_write_scan_subheader (fptr, const_cast<ECAT6_Main_header *>(h), blknum, const_cast<Scan_subheader *>(header_ptr));
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-file_data_to_host(char* dptr, int nblks, int dtype)
+int file_data_to_host(char *dptr, int nblks, int dtype)
 {
   const int cti_status = ::file_data_to_host(dptr, nblks, dtype);
   return cti_status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -388,20 +367,19 @@ file_data_to_host(char* dptr, int nblks, int dtype)
 
 #endif // STIR_ORIGINAL_ECAT6
 
-int
-cti_rings2plane(short nrings, short ring0, short ring1)
+int cti_rings2plane (short nrings, short ring0, short ring1) 
 
 {
   int d = (int)(ring0 / (nrings / 2));
 
-  return (ring1 * nrings / 2 + ring0 % (nrings / 2) + nrings / 2 * nrings * d + 1);
+    return (ring1 * nrings/2 + ring0 % (nrings/2) +
+            nrings/2 * nrings * d + 1);			 
 }
 
 #ifdef STIR_ORIGINAL_ECAT6
 #endif // STIR_ORIGINAL_ECAT6
 
-int
-cti_write_idata(FILE* fptr, int blk, const short* data, int ibytes)
+int cti_write_idata (FILE *fptr, int blk, const short *data, int ibytes)
 {
   unsigned int nblks;
   char* dataptr;
@@ -409,7 +387,8 @@ cti_write_idata(FILE* fptr, int blk, const short* data, int ibytes)
 
   if (ibytes % MatBLKSIZE != 0)
     {
-      warning("Error writing ECAT6 data: data_size should be a multiple of %d.\nNo Data written to file.", MatBLKSIZE);
+	warning("Error writing ECAT6 data: data_size should be a multiple of %d.\nNo Data written to file.",
+		MatBLKSIZE);
       return (EXIT_FAILURE);
     }
 #if STIRIsNativeByteOrderBigEndian
@@ -420,12 +399,10 @@ cti_write_idata(FILE* fptr, int blk, const short* data, int ibytes)
   // we'll use cti_wblk to write the data via another buffer.
   // this way, if we need to transform the data as we went, we can do it.
   nblks = toblocks(ibytes);
-  for (unsigned int i = 0; i < nblks; i++)
-    {
+    for (unsigned int i=0; i<nblks; i++) {
       bcopy(dataptr, bufr, MatBLKSIZE);
       swab(bufr, bufr, MatBLKSIZE);
-      if ((status = cti_wblk(fptr, blk + i, bufr, 1)) != EXIT_SUCCESS)
-        {
+	if ((status = cti_wblk (fptr, blk + i, bufr, 1)) != EXIT_SUCCESS) {
           return (EXIT_FAILURE);
         }
       dataptr += MatBLKSIZE;
@@ -448,41 +425,35 @@ cti_write_idata(FILE* fptr, int blk, const short* data, int ibytes)
 #ifdef STIR_ORIGINAL_ECAT6
 #endif // STIR_ORIGINAL_ECAT6
 
-int
-cti_write_image(
-    FILE* fptr, long matnum, const ECAT6_Main_header* mhead_ptr, const Image_subheader* header, const short* data, int data_size)
+int cti_write_image (FILE *fptr, long matnum, const ECAT6_Main_header *mhead_ptr, const Image_subheader *header,
+                     const short *data, int data_size)
 {
   int nxtblk, nblocks;
   int status;
 
   nblocks = (data_size + (MatBLKSIZE - 1)) / MatBLKSIZE;
   nxtblk = cti_enter(fptr, mhead_ptr, matnum, nblocks);
-  if (nxtblk <= 0)
-    return (EXIT_FAILURE);
+    if (nxtblk <= 0) return (EXIT_FAILURE);
 
   status = cti_write_image_subheader(fptr, mhead_ptr, nxtblk, header);
-  if (status != EXIT_SUCCESS)
-    return (EXIT_FAILURE);
+    if (status != EXIT_SUCCESS) return (EXIT_FAILURE);
 
   status = cti_write_idata(fptr, nxtblk + 1, data, data_size);
   return status;
 }
 
-int
-cti_write_scan(
-    FILE* fptr, long matnum, const ECAT6_Main_header* mhead_ptr, const Scan_subheader* header, const short* data, int data_size)
+int cti_write_scan (FILE *fptr, long matnum, const ECAT6_Main_header *mhead_ptr, const Scan_subheader *header,
+		    const short *data, int data_size)
 {
   int nxtblk, nblocks;
   int status;
 
   nblocks = (data_size + (MatBLKSIZE - 1)) / MatBLKSIZE;
   nxtblk = cti_enter(fptr, mhead_ptr, matnum, nblocks);
-  if (nxtblk <= 0)
-    return (EXIT_FAILURE);
+    if (nxtblk <= 0) return (EXIT_FAILURE);
 
   status = cti_write_scan_subheader(fptr, mhead_ptr, nxtblk, header);
-  if (status != EXIT_SUCCESS)
-    return (EXIT_FAILURE);
+    if (status != EXIT_SUCCESS) return (EXIT_FAILURE);
 
   status = cti_write_idata(fptr, nxtblk + 1, data, data_size);
   return status;
@@ -491,19 +462,16 @@ cti_write_scan(
 #ifdef STIR_ORIGINAL_ECAT6
 #endif
 
-static void
-fill_string(char* str, int len)
+static void fill_string (char *str, int len)
 {
-  for (int i = 0; i < len - 2; i++)
-    str[i] = '.';
+    for (int i=0; i<len-2; i++) str[i]='.';
   str[len - 2] = '\0';
 }
 #ifdef STIR_ORIGINAL_ECAT6
 
 #endif // STIR_ORIGINAL_ECAT6
 
-Scan_subheader
-scan_zero_fill()
+Scan_subheader scan_zero_fill() 
 {
   Scan_subheader v_shead;
 
@@ -517,10 +485,8 @@ scan_zero_fill()
   v_shead.loss_correction_fctr = -1.0;
   v_shead.tot_avg_cor = -1.0;
   v_shead.tot_avg_uncor = -1.0;
-  for (int i = 0; i < 16; i++)
-    v_shead.cor_singles[i] = -1.0;
-  for (int i = 0; i < 16; i++)
-    v_shead.uncor_singles[i] = -1.0;
+    for(int i=0;i<16;i++) v_shead.cor_singles[i]= -1.0;
+    for(int i=0;i<16;i++) v_shead.uncor_singles[i]= -1.0;
 
   v_shead.gate_duration = 0;
   v_shead.r_wave_offset = -1;
@@ -549,8 +515,7 @@ scan_zero_fill()
   return (v_shead);
 }
 
-Image_subheader
-img_zero_fill()
+Image_subheader img_zero_fill() 
 {
   Image_subheader v_ihead;
 
@@ -582,8 +547,7 @@ img_zero_fill()
   v_ihead.loss_corr_fctr = -1.0;
   v_ihead.ecat_calibration_fctr = -1.0;
   v_ihead.well_counter_cal_fctr = -1.0;
-  for (int i = 0; i < 6; i++)
-    v_ihead.filter_params[i] = -1.0;
+    for(int i=0;i<6;i++) v_ihead.filter_params[i]= -1.0;
 #endif
   v_ihead.frame_duration = 0;
   v_ihead.frame_start_time = 0;

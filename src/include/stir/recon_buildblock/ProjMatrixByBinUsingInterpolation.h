@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,10 +34,11 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/shared_ptr.h"
 
+ 
+
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Bin;
 /*!
   \ingroup projection
@@ -47,8 +56,12 @@ class Bin;
   \warning Preliminary code, not tested to usual STIR standards.
 */
 
-class ProjMatrixByBinUsingInterpolation
-    : public RegisteredParsingObject<ProjMatrixByBinUsingInterpolation, ProjMatrixByBin, ProjMatrixByBin>
+class ProjMatrixByBinUsingInterpolation : 
+  public RegisteredParsingObject<
+	      ProjMatrixByBinUsingInterpolation,
+              ProjMatrixByBin,
+              ProjMatrixByBin
+	       >
 {
 public:
   //! Name which will be used when parsing a ProjMatrixByBin object
@@ -60,11 +73,10 @@ public:
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
    */
-  void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-              const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
-              ) override;
-
-  ProjMatrixByBinUsingInterpolation* clone() const override;
+  virtual void set_up(		 
+		      const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    );
 
 private:
   bool do_symmetry_90degrees_min_phi;
@@ -78,13 +90,13 @@ private:
   CartesianCoordinate3D<float> origin;
   IndexRange<3> densel_range;
 
-  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
+
+  shared_ptr<ProjDataInfo> proj_data_info_ptr;
 
   // for Jacobian
-  const ProjDataInfoCylindrical& proj_data_info_cyl() const
-  {
-    return static_cast<const ProjDataInfoCylindrical&>(*proj_data_info_ptr);
-  }
+  const ProjDataInfoCylindrical&
+    proj_data_info_cyl() const
+    { return static_cast<const ProjDataInfoCylindrical&>(*proj_data_info_ptr); }
   /*!
     \brief
     The next class is used
@@ -100,6 +112,7 @@ private:
       jacobian(segment.get_average_delta(), s+ 0.5);
     \endcode
    */
+
 
   class JacobianForIntBP
   {
@@ -131,29 +144,40 @@ private:
         tmp = 4 * R2;
       if (!arccor)
         tmp *= sqrt(tmp);
-      return (arccor ? tmp : pow(tmp, 1.5F)) / pow(tmp + ring_spacing2 * delta * delta, 1.5F) * backprojection_normalisation;
+     return 
+       (arccor ? tmp : pow(tmp,1.5F)) /
+       pow(tmp + ring_spacing2*delta*delta, 1.5F)* backprojection_normalisation;
     }
   };
+
 
   JacobianForIntBP jacobian;
   bool use_piecewise_linear_interpolation_now;
   bool use_exact_Jacobian_now;
 
-  void calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const override;
+  virtual void 
+    calculate_proj_matrix_elems_for_one_bin(
+                                            ProjMatrixElemsForOneBin&) const;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
-  float get_element(const Bin& bin, const CartesianCoordinate3D<float>& densel_ctr) const;
-
+   float
+     get_element(const Bin& bin, 
+		 const CartesianCoordinate3D<float>& densel_ctr) const;
 private:
-  void find_tang_ax_pos_diff(float& tang_pos_diff,
+   void 
+     find_tang_ax_pos_diff(float& tang_pos_diff,
                              float& ax_pos_diff,
                              const Bin& bin,
                              const CartesianCoordinate3D<float>& point) const;
+   
 };
 
 END_NAMESPACE_STIR
 
 #endif
+
+
+

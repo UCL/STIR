@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -31,12 +39,17 @@ class Succeeded;
   \ingroup projection
   \brief A projector pair based on a single matrix
 */
-class ProjectorByBinPairUsingProjMatrixByBin
-    : public RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin, ProjectorByBinPair, ProjectorByBinPair>
+class ProjectorByBinPairUsingProjMatrixByBin : 
+  public RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin,
+                                 ProjectorByBinPair,
+                                 ProjectorByBinPair> 
 {
 private:
-  typedef RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin, ProjectorByBinPair, ProjectorByBinPair> base_type;
-
+  typedef
+    RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin,
+                            ProjectorByBinPair,
+                            ProjectorByBinPair> 
+    base_type;
 public:
   //! Name which will be used when parsing a ProjectorByBinPair object
   static const char* const registered_name;
@@ -49,23 +62,23 @@ public:
 
   //! Stores all necessary geometric info
   /*! First constructs forward and back projectors and then calls base_type::setup */
-  Succeeded set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-                   const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
-                   ) override;
+  virtual Succeeded set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
+    );
 
-  ProjMatrixByBin const* get_proj_matrix_ptr() const;
-
-  shared_ptr<ProjMatrixByBin> get_proj_matrix_sptr() const;
-
-  void set_proj_matrix_sptr(const shared_ptr<ProjMatrixByBin>& sptr);
+  ProjMatrixByBin const * 
+    get_proj_matrix_ptr() const;
 
 private:
+
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr;
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  void set_defaults();
+  void initialise_keymap();
+  bool post_processing();
 };
 
 END_NAMESPACE_STIR
+
 
 #endif // __stir_recon_buildblock_ProjectorByBinPairUsingProjMatrixByBin_h_

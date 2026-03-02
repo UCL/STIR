@@ -11,10 +11,17 @@
 */
 /*
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2021, 2024 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,6 +31,10 @@
 
 #include "stir/common.h"
 #include <string>
+
+#ifndef STIR_NO_NAMESPACES
+using std::string;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -41,7 +52,6 @@ class ProjDataInfo;
     away some bins. Half of the bins will be thrown away at each 'side' of a sinogram (see below).
   \param max_in_segment_num_to_process rebinned in_proj_data only upto this segment.
   Default value -1 means 'do all segments'.
-  \param num_tof_bins_to_combine can be used to increase TOF mashing.
 
   The original SSRB algorithm was developed in M.E. Daube-Witherspoon and
   G. Muehllehner, (1987) <i>Treatment of axial data in three-dimensional PET</i>,
@@ -55,15 +65,15 @@ class ProjDataInfo;
   segments. This essentially increases the axial compression (or span in CTI
   terminology), see the STIR Glossary on axial compression. In addition, SSRB
   can introduce extra mashing (see the STIR Glossary) of the data, i.e. add
-  views together. Finally, it can also be used to combine TOF bins together.
+  views together.
 
   Here is how to determine which bins are discarded when trimming is used.
   For a certain num_tangential_poss, the range is from
 \verbatim
    -(num_tangential_poss/2) to -(num_tangential_poss/2) + num_tangential_poss - 1.
 \endverbatim
-  The new \c num_tangential_poss is simply set to \c old_num_tangential_poss -
-  \a num_tang_poss_to_trim. Note that because of this, if \a num_tang_poss_to_trim is
+  The new num_tangential_poss is simply set to old_num_tangential_poss - 
+  num_tang_poss_to_trim. Note that because of this, if num_tang_poss_to_trim is
   negative, more (zero) bins will be added.
 
   \warning in_proj_data_info has to be (at least) of type ProjDataInfoCylindrical
@@ -71,14 +81,14 @@ class ProjDataInfo;
       identical 'num_segments_to_combine'. So it cannot handle standard
       GE Advance data.
   \todo get rid of both restrictions flagged as warnings in the documentation for this function.
-  \todo rename to something much more general than \c SSRB
 */
-ProjDataInfo* SSRB(const ProjDataInfo& in_proj_data_info,
+ProjDataInfo *
+SSRB(const ProjDataInfo& in_proj_data_info,
                    const int num_segments_to_combine,
                    const int num_views_to_combine = 1,
                    const int num_tangential_poss_to_trim = 0,
-                   const int max_in_segment_num_to_process = -1,
-                   const int num_tof_bins_to_combine = 1);
+     const int max_in_segment_num_to_process=-1
+     );
 
 //! Perform Single Slice Rebinning and write output to file
 /*!
@@ -91,20 +101,23 @@ ProjDataInfo* SSRB(const ProjDataInfo& in_proj_data_info,
   Default value -1 means 'do all segments'.
   \param do_normalisation (default true) wether to normalise the output sinograms
   corresponding to how many input sinograms contribute to them.
-  \param num_tof_bins_to_combine defaults to 1, so TOF bins are not combined.
 
-  \see SSRB(ProjData& out_projdata,
-     const ProjData& in_projdata,
-     const bool do_normalisation = true)
+  \see SSRB(const ProjDataInfo& in_proj_data_info,
+     const int num_segments_to_combine,
+     const int num_views_to_combine,
+     const int num_tang_poss_to_trim,
+     const int max_in_segment_num_to_process
+     ) for restrictions
   */
-void SSRB(const std::string& output_filename,
+void 
+SSRB(const string& output_filename,
           const ProjData& in_projdata,
           const int num_segments_to_combine,
           const int num_views_to_combine = 1,
           const int num_tangential_poss_to_trim = 0,
           const bool do_normalisation = true,
-          const int max_in_segment_num_to_process = -1,
-          const int num_tof_bins_to_combine = 1);
+     const int max_in_segment_num_to_process = -1
+     );
 
 //! Perform Single Slice Rebinning and write output to ProjData
 /*!
@@ -114,26 +127,17 @@ void SSRB(const std::string& output_filename,
   ProjData::set_sinogram().
   \param in_projdata input data
   \param do_normalisation (default true) wether to normalise the output sinograms
-  corresponding to how many (ignoring TOF) input sinograms contribute to them.
-  Note that we do not normalise according to the number of TOF bins.
-  This is because the projectors will take the width of the TOF bin
-  properly into account (by integration over the TOF kernel). (In contrast, in spatial
-  direction, projectors are outputting "normalised" data, i.e. corresponding to the
-  line integral).
+  corresponding to how many input sinograms contribute to them.
 
-
-  \warning \a in_projdata has to be (at least) of type ProjDataInfoCylindrical
-
-  \see SSRB(const ProjDataInfo& in_proj_data_info,
-     const int num_segments_to_combine,
-     const int num_views_to_combine,
-     const int num_tang_poss_to_trim,
-     const int max_in_segment_num_to_process,
-     const int num_tof_bins_to_combine
-     ) for information on the rebinning.
+  \warning in_proj_data_info has to be (at least) of type ProjDataInfoCylindrical
 */
-void SSRB(ProjData& out_projdata, const ProjData& in_projdata, const bool do_normalisation = true);
+void 
+SSRB(ProjData& out_projdata,
+     const ProjData& in_projdata,
+     const bool do_normalisation = true
+     );
 
 END_NAMESPACE_STIR
 
 #endif
+

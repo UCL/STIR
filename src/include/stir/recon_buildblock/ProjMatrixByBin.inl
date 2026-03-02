@@ -7,46 +7,134 @@
 
   \brief Implementations of inline functions for class stir::ProjMatrixByBin
 
-  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
-  \author Robert Twyman
-  \author Zekai Li
   \author PARAPET project
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
-    Copyright (C) 2016, University of Hull
-    Copyright (C) 2022 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/SymmetryOperation.h"
-#include "stir/geometry/line_distances.h"
-#include "stir/numerics/erf.h"
 
 START_NAMESPACE_STIR
 
 const DataSymmetriesForBins*
 ProjMatrixByBin::get_symmetries_ptr() const
 {
-  return symmetries_sptr.get();
+  return  symmetries_ptr.get();
 }
 
-const shared_ptr<DataSymmetriesForBins>
-ProjMatrixByBin::get_symmetries_sptr() const
+#if 0
+  \warning   Preconditions when cache_stores_only_basic_bins==true
+  <ul><li>all coordinates non-negative
+      <li>segment_num coded in 8 bits
+      <li>view coded in 9 bits
+      <li>axial_pos_num  in 6 bits
+      <li>tangential_pos_num in 9 bits   
+  </ul>
+  Preconditions when cache_stores_only_basic_bins==false
+#endif
+/*!
+  \warning Preconditions
+  <ul><li>abs(segment_num) coded in 7 bits
+      <li>view non-negative and coded in 9 bits
+      <li>axial_pos_num non-negative and in 6 bits
+      <li>abs(tangential_pos_num) in  8 bits   
+ */
+ProjMatrixByBin::CacheKey
+ProjMatrixByBin::cache_key(const Bin& bin) const
 {
-  return symmetries_sptr;
+#if 0
+  // this was an attempt to allow more bits for certain numbers by relying on 
+  // the fact that segment_num and tangetnail_pos_num was always positive.
+  // However, this depends on which symmetries you are using.
+  if (cache_stores_only_basic_bins)
+  {
+    assert(bin.segment_num()>=0);
+    assert(bin.segment_num() < (1<<8));  
+    assert(bin.view_num() >= 0);
+    assert(bin.view_num() < (1<<9));
+    assert(bin.axial_pos_num() >= 0);
+    assert(bin.axial_pos_num() < (1<<6));
+    assert(bin.tangential_pos_num() >= 0);
+    assert(bin.tangential_pos_num() < (1<<9));
+    return (CacheKey)(
+        (static_cast<unsigned int>(bin.axial_pos_num())<<26) 
+        | (static_cast<unsigned int>(bin.view_num()) << 17) 
+        | (static_cast<unsigned int>(bin.segment_num())) << 9) 
+        |  static_cast<unsigned int>(bin.tangential_pos_num() );    	
+  }
+  else
+#endif
+{
+ //KTBMCHANGE allow more entries by going to 64-bit
+#if 0
+    assert(abs(bin.segment_num()) < (1<<7));
+    assert(bin.view_num() >= 0);
+    assert(bin.view_num() < (1<<9));
+    assert(bin.axial_pos_num() >= 0);
+    assert(bin.axial_pos_num() < (1<<6));
+    assert(abs(bin.tangential_pos_num()) < (1<<8));
+    return (CacheKey)(
+        (static_cast<unsigned int>(bin.axial_pos_num())<<26) 
+        | (static_cast<unsigned int>(bin.view_num()) << 17) 
+        | (static_cast<unsigned int>(bin.segment_num()>=0?0:1) << 16)
+        | (static_cast<unsigned int>(abs(bin.segment_num())) << 9) 
+        | (static_cast<unsigned int>(bin.tangential_pos_num()>=0?0:1) << 8)
+        |  static_cast<unsigned int>(abs(bin.tangential_pos_num())) );    	
+  }
+#else
+      assert(abs(bin.segment_num()) < (1<<7));
+    assert(bin.view_num() >= 0);
+    assert(bin.view_num() < (1<<9));
+    assert(bin.axial_pos_num() >= 0);
+    assert(static_cast<boost::uint64_t>(bin.axial_pos_num()) < (static_cast<boost::uint64_t>(1)<<38));
+    assert(abs(bin.tangential_pos_num()) < (1<<8));
+    return (CacheKey)( 
+        (static_cast<boost::uint64_t>(bin.axial_pos_num())<<26) 
+        | (static_cast<boost::uint64_t>(bin.view_num()) << 17) 
+        | (static_cast<boost::uint64_t>(bin.segment_num()>=0?0:1) << 16)
+        | (static_cast<boost::uint64_t>(abs(bin.segment_num())) << 9) 
+        | (static_cast<boost::uint64_t>(bin.tangential_pos_num()>=0?0:1) << 8)
+        |  static_cast<boost::uint64_t>(abs(bin.tangential_pos_num())) );    	
+  }
+#endif
+  } 
+
+void  
+ProjMatrixByBin::
+cache_proj_matrix_elems_for_one_bin(
+                                    const ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST
+{ 
+  if ( cache_disabled ) return;
+  
+  //std::cerr << "cached lor size " << probabilities.size() << " capacity " << probabilities.capacity() << std::endl;    
+  // insert probabilities into the collection	
+  cache_collection.insert(MapProjMatrixElemsForOneBin::value_type( cache_key(probabilities.get_bin()), 
+                                                                   probabilities));  
 }
 
 inline void
-ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& probabilities, const Bin& bin) const
+ProjMatrixByBin::
+get_proj_matrix_elems_for_one_bin(
+                                  ProjMatrixElemsForOneBin& probabilities,
+                                  const Bin& bin) STIR_MUTABLE_CONST
 {
   // start_timers(); TODO, can't do this in a const member
 
@@ -55,145 +143,56 @@ ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& pro
 
   if (cache_stores_only_basic_bins)
     {
-      // find symmetry operator and basic bin
+    // find basic bin
       Bin basic_bin = bin;
-      unique_ptr<SymmetryOperation> symm_ptr = symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
+    auto_ptr<SymmetryOperation> symm_ptr = 
+      symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
       probabilities.set_bin(basic_bin);
       // check if basic bin is in cache
-      if (get_cached_proj_matrix_elems_for_one_bin(probabilities) == Succeeded::no)
+    if (get_cached_proj_matrix_elems_for_one_bin(probabilities) ==
+      Succeeded::no)
         {
-          // basic bin is not in cache, compute lor probabilities for the basic bin
+      // call 'calculate' just for the basic bin
           calculate_proj_matrix_elems_for_one_bin(probabilities);
 #ifndef NDEBUG
           probabilities.check_state();
 #endif
-          if (proj_data_info_sptr->is_tof_data() && this->tof_enabled)
-            { // Apply TOF kernel to basic bin
-              apply_tof_kernel(probabilities);
-            }
           cache_proj_matrix_elems_for_one_bin(probabilities);
         }
 
-      // now transform to original bin (inc. TOF)
+    // now transform to original bin
       symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
     }
-  else
-    { // !cache_stores_only_basic_bins
+  else // !cache_stores_only_basic_bins
+  {
       probabilities.set_bin(bin);
-      // if bin is in the cache, get the probabilities
-      if (get_cached_proj_matrix_elems_for_one_bin(probabilities) == Succeeded::no)
+    // check if in cache  
+    if (get_cached_proj_matrix_elems_for_one_bin(probabilities) ==
+      Succeeded::no)
         {
-          // bin probabilities not in the cache, check if basic bins are
           // find basic bin
           Bin basic_bin = bin;
-          unique_ptr<SymmetryOperation> symm_ptr = symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
-          probabilities.set_bin(basic_bin);
+      auto_ptr<SymmetryOperation> symm_ptr = 
+        symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
+      probabilities.set_bin(basic_bin);
           // check if basic bin is in cache
-          if (get_cached_proj_matrix_elems_for_one_bin(probabilities) == Succeeded::no)
+      if (get_cached_proj_matrix_elems_for_one_bin(probabilities) ==
+        Succeeded::no)
             {
-              // basic bin is not in cache, compute lor probabilities for the basic bin
+        // call 'calculate' just for the basic bin
               calculate_proj_matrix_elems_for_one_bin(probabilities);
 #ifndef NDEBUG
               probabilities.check_state();
 #endif
-              if (proj_data_info_sptr->is_tof_data() && this->tof_enabled)
-                { // Apply TOF kernel to basic bin
-                  apply_tof_kernel(probabilities);
-                }
+        cache_proj_matrix_elems_for_one_bin(probabilities);
             }
-          // now transform basic bin probabilities into original bin probabilities
           symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
-          // cache the probabilities for bin
           cache_proj_matrix_elems_for_one_bin(probabilities);
         }
     }
   // stop_timers(); TODO, can't do this in a const member
-}
-
-void
-ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
-{
-  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-  proj_data_info_sptr->get_LOR(lor, probabilities.get_bin());
-  const LORAs2Points<float> lor2(lor);
-  const CartesianCoordinate3D<float> point1 = lor2.p1();
-  const CartesianCoordinate3D<float> point2 = lor2.p2();
-
-  // Coordinate system correction: TODO remove in future with ORIGIN shift PR
-  // LOR coordinates have origin at scanner center (z=0 at center of all rings)
-  // Image coordinates have origin at first ring (z=0 at ring 0)
-  // Calculate the offset: distance from first ring to scanner center
-  const float scanner_z_offset = (proj_data_info_sptr->get_scanner_ptr()->get_num_rings() - 1) / 2.0f
-                                 * proj_data_info_sptr->get_scanner_ptr()->get_ring_spacing();
-  const CartesianCoordinate3D<float> coord_system_offset(scanner_z_offset, 0.0f, 0.0f);
-
-  const CartesianCoordinate3D<float> middle = (point1 + point2) * 0.5f;
-  const CartesianCoordinate3D<float> diff = point2 - middle;
-  const CartesianCoordinate3D<float> diff_unit_vector(diff / static_cast<float>(norm(diff)));
-
-  ProjMatrixElemsForOneBin tof_row(probabilities.get_bin());
-  // Estimate size of TOF row such that we can pre-allocate.
-  std::size_t max_num_elements;
-  {
-    const auto length = norm(point1 - point2);
-    const auto kernel_width = 8 / r_sqrt2_gauss_sigma;
-    const auto tof_bin_width = proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].high_lim
-                               - proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].low_lim;
-    const auto fraction = (kernel_width + tof_bin_width) / length;
-    // This seems to sometimes over-, sometimes underestimate, but it's probably not very important
-    // as std::vector will grow as necessary.
-    max_num_elements = std::size_t(probabilities.size() * std::min(fraction * 1.2, 1.001));
-  }
-  tof_row.reserve(max_num_elements);
-
-  for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin(); element_ptr != probabilities.end(); ++element_ptr)
-    {
-      Coordinate3D<int> c(element_ptr->get_coords());
-      // Get voxel physical coordinates (in image coordinate system)
-      const CartesianCoordinate3D<float> voxel_pos_image = image_info_sptr->get_physical_coordinates_for_indices(c);
-
-      // Convert to scanner coordinate system by subtracting the offset
-      const CartesianCoordinate3D<float> voxel_pos_scanner = voxel_pos_image - coord_system_offset;
-
-      // Now compute TOF distance in the same coordinate system as the LOR
-      const float d2 = -inner_product(voxel_pos_scanner - middle, diff_unit_vector);
-
-      const float low_dist
-          = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].low_lim - d2));
-      const float high_dist
-          = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].high_lim - d2));
-
-      const auto tof_kernel_value = get_tof_value(low_dist, high_dist);
-      if (tof_kernel_value > 0)
-        {
-          if (auto non_tof_value = element_ptr->get_value())
-            tof_row.push_back(ProjMatrixElemsForOneBin::value_type(c, non_tof_value * tof_kernel_value));
-        }
-      else
-        {
-          // Optimisation would be to get out of the loop once we're "beyond" the TOF kernel,
-          // but it is tricky to do. It requires that the input is sorted
-          // "along" the LOR, i.e. d2 increases montonically, but that doesn't seem to be true.
-          // if (tof_row.size() > 0)
-          //   break;
-        }
-    }
-  probabilities = tof_row;
-  // info("Estimate " + std::to_string(max_num_elements) + ", actual " + std::to_string(tof_row.size()));
-}
-
-float
-ProjMatrixByBin::get_tof_value(const float d1, const float d2) const
-{
-  const float d1_n = d1 * r_sqrt2_gauss_sigma;
-  const float d2_n = d2 * r_sqrt2_gauss_sigma;
-
-  if ((d1_n >= 4.f && d2_n >= 4.f) || (d1_n <= -4.f && d2_n <= -4.f))
-    return 0.F;
-  else
-    return static_cast<float>(0.5 * (erf_interpolation(d2_n) - erf_interpolation(d1_n)));
 }
 
 END_NAMESPACE_STIR

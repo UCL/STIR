@@ -18,88 +18,70 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
 START_NAMESPACE_STIR
 
-const Bin&
-ProjMatrixElemsForOneBin::get_bin() const
+Bin 
+ProjMatrixElemsForOneBin::
+get_bin() const
 {
   return bin;
 }
 
 void
-ProjMatrixElemsForOneBin::set_bin(const Bin& new_bin)
+ProjMatrixElemsForOneBin::
+set_bin(const Bin& new_bin)
 {
   bin = new_bin;
 }
 
-void
-ProjMatrixElemsForOneBin::push_back(const ProjMatrixElemsForOneBin::value_type& el)
+void ProjMatrixElemsForOneBin::push_back( const ProjMatrixElemsForOneBin::value_type& el)
 {
   elements.push_back(el);
 }
 
+
 ProjMatrixElemsForOneBin::size_type
-ProjMatrixElemsForOneBin::size() const
+ProjMatrixElemsForOneBin::
+size() const 
 {
   return elements.size();
 }
 
 ProjMatrixElemsForOneBin::iterator
 ProjMatrixElemsForOneBin::begin()
-{
-  return elements.begin();
-}
+  {  return elements.begin(); }
 
 ProjMatrixElemsForOneBin::const_iterator
-ProjMatrixElemsForOneBin::begin() const
-{
-  return elements.begin();
-};
+ProjMatrixElemsForOneBin::
+begin() const  
+  {  return elements.begin(); };
 
 ProjMatrixElemsForOneBin::iterator
-ProjMatrixElemsForOneBin::end()
-{
-  return elements.end();
-};
+ProjMatrixElemsForOneBin::
+end()
+  {  return elements.end();	};
 
 ProjMatrixElemsForOneBin::const_iterator
-ProjMatrixElemsForOneBin::end() const
-{
-  return elements.end();
-};
-
-ProjMatrixElemsForOneBin::reverse_iterator
-ProjMatrixElemsForOneBin::rbegin()
-{
-  return elements.rbegin();
-}
-
-ProjMatrixElemsForOneBin::const_reverse_iterator
-ProjMatrixElemsForOneBin::rbegin() const
-{
-  return elements.rbegin();
-};
-
-ProjMatrixElemsForOneBin::reverse_iterator
-ProjMatrixElemsForOneBin::rend()
-{
-  return elements.rend();
-};
-
-ProjMatrixElemsForOneBin::const_reverse_iterator
-ProjMatrixElemsForOneBin::rend() const
-{
-  return elements.rend();
-};
+ProjMatrixElemsForOneBin::
+end() const
+  {  return elements.end();	};
 
 ProjMatrixElemsForOneBin::iterator
-ProjMatrixElemsForOneBin::erase(iterator it)
-{
+ProjMatrixElemsForOneBin::
+erase(iterator it){
   return elements.erase(it);
 }
 

@@ -19,10 +19,19 @@
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
+
 
 #include "stir/Coordinate3D.h"
 
@@ -48,6 +57,7 @@ START_NAMESPACE_STIR
    \warning The constructor uses the order CartesianCoordinate3D<coordT>(z,y,x)
 */
 
+
 template <class coordT>
 class CartesianCoordinate3D : public Coordinate3D<coordT>
 {
@@ -60,7 +70,6 @@ public:
   inline CartesianCoordinate3D(const coordT&, const coordT&, const coordT&);
   inline CartesianCoordinate3D(const BasicCoordinate<3, coordT>& c);
   inline CartesianCoordinate3D& operator=(const BasicCoordinate<3, coordT>& c);
-  inline CartesianCoordinate3D& operator=(const coordT& c);
 #ifdef OLDDESIGN
   inline CartesianCoordinate3D(const Point3D& p);
 #endif
@@ -71,6 +80,7 @@ public:
   inline coordT y() const;
   inline coordT& x();
   inline coordT x() const;
+
 };
 
 END_NAMESPACE_STIR

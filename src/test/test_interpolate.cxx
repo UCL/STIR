@@ -16,7 +16,15 @@
     Copyright (C) 2000- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,8 +35,10 @@
 #include "stir/utilities.h"
 #include "stir/stream.h"
 
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
+#endif
 
 USING_NAMESPACE_STIR
 
@@ -44,15 +54,21 @@ main(int argc, char* argv[])
       for (int i = -9; i <= 9; i++)
         in[i] = .5 * square(i - 6) + 3. * i - 30;
 
+    
       do
         {
-          const float zoom = ask_num("Zoom ", 0., 100., 1.);
-          const float offset = ask_num("Offset ", -100., 100., 0.);
+      const float zoom = 
+	ask_num("Zoom ", 0., 100., 1.);
+      const float offset = 
+	ask_num("Offset ", -100., 100., 0.);
           const float min2 = (in.get_min_index() - .5 - offset) * zoom;
           const float max2 = (in.get_max_index() + .5 - offset) * zoom;
-          cout << "Range of non-zero 'out' coordinates : (" << min2 << ", " << max2 << ")" << endl;
-          const int out_min = ask_num("Start index ", (int)(min2 - 20), (int)(max2 + 20), (int)min2);
-          const int out_max = ask_num("End   index ", out_min, (int)(max2 + 20), (int)max2);
+      cout << "Range of non-zero 'out' coordinates : (" 
+	<< min2 << ", " << max2 << ")" << endl;
+      const int out_min = 
+	ask_num("Start index ", (int)(min2-20), (int)(max2+20), (int)min2);
+      const int out_max = 
+	ask_num("End   index ", out_min, (int)(max2+20), (int)max2);
 
           array out(out_min, out_max);
           // fill with some junk to see if it sets it to 0
@@ -72,14 +88,11 @@ main(int argc, char* argv[])
             for (int i = out_coords.get_min_index(); i <= out_coords.get_max_index(); ++i)
               out_coords[i] = (i - .5F) / zoom + offset;
             array new_out(out.get_index_range());
-            overlap_interpolate(new_out.begin(),
-                                new_out.end(),
-                                out_coords.begin(),
-                                out_coords.end(),
-                                in.begin(),
-                                in.end(),
-                                in_coords.begin(),
-                                in_coords.end());
+	overlap_interpolate(new_out.begin(), new_out.end(),
+			    out_coords.begin(), out_coords.end(),
+			    in.begin(), in.end(),
+			    in_coords.begin(), in_coords.end()
+			    );
             cout << new_out;
             new_out -= out;
             cout << "diff:\n" << new_out;
@@ -87,6 +100,7 @@ main(int argc, char* argv[])
       } while (ask("More ?", true));
     }
 
+  
   if (ask("2D", true))
     {
 
@@ -100,16 +114,22 @@ main(int argc, char* argv[])
 
       do
         {
-          const float zoom = ask_num("Zoom ", 0., 100., 1.);
-          const float offset = ask_num("Offset ", -100., 100., 0.);
+	const float zoom = 
+	  ask_num("Zoom ", 0., 100., 1.);
+	const float offset = 
+	  ask_num("Offset ", -100., 100., 0.);
           const float min2 = (in.get_min_index() - .5 - offset) * zoom;
           const float max2 = (in.get_max_index() + .5 - offset) * zoom;
-          cout << "Range of non-zero 'out' coordinates : (" << min2 << ", " << max2 << ")" << endl;
-          const int out_min = ask_num("Start index ", (int)(min2 - 20), (int)(max2 + 20), (int)min2);
-          const int out_max = ask_num("End   index ", out_min, (int)(max2 + 20), (int)max2);
+	cout << "Range of non-zero 'out' coordinates : (" 
+	  << min2 << ", " << max2 << ")" << endl;
+	const int out_min = 
+	  ask_num("Start index ", (int)(min2-20), (int)(max2+20), (int)min2);
+	const int out_max = 
+	  ask_num("End   index ", out_min, (int)(max2+20), (int)max2);
 
           array out(IndexRange2D(out_min, out_max, 3, 6));
 
+	
           // fill with some junk to see if it sets it to 0
           out.fill(111111111.F);
 
@@ -125,14 +145,11 @@ main(int argc, char* argv[])
             for (int i = out_coords.get_min_index(); i <= out_coords.get_max_index(); ++i)
               out_coords[i] = (i - .5F) / zoom + offset;
             array new_out(out.get_index_range());
-            overlap_interpolate(new_out.begin(),
-                                new_out.end(),
-                                out_coords.begin(),
-                                out_coords.end(),
-                                in.begin(),
-                                in.end(),
-                                in_coords.begin(),
-                                in_coords.end());
+	overlap_interpolate(new_out.begin(), new_out.end(),
+			    out_coords.begin(), out_coords.end(),
+			    in.begin(), in.end(),
+			    in_coords.begin(), in_coords.end()
+			    );
             cout << new_out;
             new_out -= out;
             cout << "diff:\n" << new_out;
@@ -141,5 +158,6 @@ main(int argc, char* argv[])
       } while (ask("More ?", true));
     }
 
+ 
   return EXIT_SUCCESS;
 }

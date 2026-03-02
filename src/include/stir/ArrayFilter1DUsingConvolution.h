@@ -14,7 +14,15 @@
     Copyright (C) 2000- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,13 +30,13 @@
 #ifndef __stir_ArrayFilter1DUsingConvolution_H__
 #define __stir_ArrayFilter1DUsingConvolution_H__
 
+
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 #include "stir/BoundaryConditions.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-class VectorWithOffset;
+template <typename elemT> class VectorWithOffset;
 
 /*!
   \ingroup Array
@@ -74,9 +82,11 @@ class VectorWithOffset;
   \todo implement other boundary conditions
   */
 template <typename elemT>
-class ArrayFilter1DUsingConvolution : public ArrayFunctionObject_2ArgumentImplementation<1, elemT>
+class ArrayFilter1DUsingConvolution : 
+  public ArrayFunctionObject_2ArgumentImplementation<1,elemT>
 {
 public:
+
   //! Construct a trivial filter
   ArrayFilter1DUsingConvolution();
 
@@ -84,24 +94,33 @@ public:
   /*! Currently \a bc has to be BoundaryConditions::zero or
       BoundaryConditions::constant
   */
-  ArrayFilter1DUsingConvolution(const VectorWithOffset<elemT>& filter_kernel,
-                                const BoundaryConditions::BC bc = BoundaryConditions::zero);
+  ArrayFilter1DUsingConvolution(const VectorWithOffset< elemT>& filter_kernel, const BoundaryConditions::BC bc= BoundaryConditions::zero);
   //! checks if the kernel corresponds to a trivial filter operation
   /*!
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
-  bool is_trivial() const override;
+  bool is_trivial() const;
 
-  Succeeded get_influencing_indices(IndexRange<1>& influencing_indices, const IndexRange<1>& output_indices) const override;
+  virtual Succeeded 
+    get_influencing_indices(IndexRange<1>& influencing_indices, 
+                            const IndexRange<1>& output_indices) const;
 
-  Succeeded get_influenced_indices(IndexRange<1>& influenced_indices, const IndexRange<1>& input_indices) const override;
+  virtual Succeeded 
+    get_influenced_indices(IndexRange<1>& influenced_indices, 
+                           const IndexRange<1>& input_indices) const;
 
 private:
   VectorWithOffset<elemT> filter_coefficients;
   BoundaryConditions::BC _bc;
-  void do_it(Array<1, elemT>& out_array, const Array<1, elemT>& in_array) const override;
+  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
+
 };
+
+
 
 END_NAMESPACE_STIR
 
+
 #endif // ArrayFilter1DUsingConvolution
+
+

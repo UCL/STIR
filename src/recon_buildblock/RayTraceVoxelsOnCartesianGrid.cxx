@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -33,23 +41,26 @@
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/round.h"
-#include "stir/warning.h"
 #include <math.h>
 #include <algorithm>
 
+#ifndef STIR_NO_NAMESPACE
 using std::min;
 using std::max;
+#endif
 
 START_NAMESPACE_STIR
 
 static inline bool
 is_half_integer(const float a)
 {
-  return fabs(floor(a) + .5F - a) < .0001F;
+  return
+    fabs(floor(a)+.5F - a)<.0001F;
 }
 
 void
-RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
+RayTraceVoxelsOnCartesianGrid
+        (ProjMatrixElemsForOneBin& lor, 
                               const CartesianCoordinate3D<float>& start_point,
                               const CartesianCoordinate3D<float>& stop_point,
                               const CartesianCoordinate3D<float>& voxel_size,
@@ -70,13 +81,16 @@ RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
   // make sure there's enough space in the LOR to avoid reallocation.
   // This will make it faster, but also avoid over-allocation
   // (as most STL implementations double the allocated size at over-run).
-  const int unsigned lor_size
-      = static_cast<unsigned int>(ceil(fabs(difference.z())) + ceil(fabs(difference.y())) + ceil(fabs(difference.x()))) + 3;
+  const int unsigned lor_size =
+    static_cast<unsigned int>(ceil(fabs(difference.z())) +
+			      ceil(fabs(difference.y())) +
+			      ceil(fabs(difference.x()))) + 3;
 
   // d12 is distance between the 2 points
   // it turns out we can multiply here with the normalisation_constant
   // (as that just scales the coordinate system)
-  const float d12 = static_cast<float>(norm(difference * voxel_size) * normalisation_constant);
+  const float d12 = 
+    static_cast<float>(norm(difference*voxel_size) * normalisation_constant);
 
   const int sign_x = difference.x() >= 0 ? 1 : -1;
   const int sign_y = difference.y() >= 0 ? 1 : -1;
@@ -122,9 +136,17 @@ RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
     if (norm(inc) > .1)
       {
         lor.reserve(lor.size() + 2 * lor_size);
-        RayTraceVoxelsOnCartesianGrid(lor, start_point - inc, stop_point - inc, voxel_size, normalisation_constant / 2);
-
-        RayTraceVoxelsOnCartesianGrid(lor, start_point + inc, stop_point + inc, voxel_size, normalisation_constant / 2);
+	RayTraceVoxelsOnCartesianGrid(lor, 
+				      start_point - inc,
+				      stop_point - inc, 
+				      voxel_size,
+				      normalisation_constant/2);
+	
+	RayTraceVoxelsOnCartesianGrid(lor, 
+				      start_point + inc,
+				      stop_point + inc, 
+				      voxel_size,
+				      normalisation_constant/2);
         lor.sort();
         return;
       }
@@ -201,11 +223,14 @@ RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
      -inc_? is a very low number.
   */
   // with the previous xy-plane
-  float az = zero_diff_in_z ? -inc_z : ((current_voxel.z() - start_point.z()) - sign_z * 0.5F) * inc_z * sign_z;
+  float az = zero_diff_in_z ? -inc_z : 
+    ((current_voxel.z() - start_point.z()) - sign_z*0.5F) * inc_z * sign_z;
   // with the previous yz-plane
-  float ax = zero_diff_in_x ? -inc_x : ((current_voxel.x() - start_point.x()) - sign_x * 0.5F) * inc_x * sign_x;
+  float ax = zero_diff_in_x ? -inc_x : 
+    ((current_voxel.x() - start_point.x()) - sign_x*0.5F) * inc_x * sign_x;
   // with the previous xz-plane
-  float ay = zero_diff_in_y ? -inc_y : ((current_voxel.y() - start_point.y()) - sign_y * 0.5F) * inc_y * sign_y;
+  float ay = zero_diff_in_y ? -inc_y : 
+    ((current_voxel.y() - start_point.y()) - sign_y*0.5F) * inc_y * sign_y;
 
   // The biggest a?  value gives the start of the a-row
   // Note that we should use a=0 if we want to start from start_point
@@ -213,18 +238,9 @@ RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
   float a = max(ax, max(ay, az));
 
   // now go the intersections with next plane
-  if (zero_diff_in_x)
-    ax = axend;
-  else
-    ax += inc_x;
-  if (zero_diff_in_y)
-    ay = ayend;
-  else
-    ay += inc_y;
-  if (zero_diff_in_z)
-    az = azend;
-  else
-    az += inc_z;
+  if (zero_diff_in_x) ax = axend; else ax += inc_x;
+  if (zero_diff_in_y) ay = ayend; else ay += inc_y;
+  if (zero_diff_in_z) az = azend; else az += inc_z;
 
   // just to be sure, check that ax was set large enough when difference.x() was small.
   assert(!zero_diff_in_x || ax > amax);
@@ -233,35 +249,27 @@ RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
 
   {
     // go along the LOR
-    while (a < amax)
-      {
+    while ( a  < amax) {
         if (ax < ay)
           if (ax < az)
             { // LOR leaves voxel through yz-plane
               lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel, ax - a));
-              a = ax;
-              ax += inc_x;
+          a = ax;ax += inc_x;
               current_voxel.x() += sign_x;
             }
-          else
-            { // LOR leaves voxel through xy-plane
+        else{ 	// LOR leaves voxel through xy-plane            	      
               lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel, az - a));
-              a = az;
-              az += inc_z;
+          a = az ;  az +=  inc_z;
               current_voxel.z() += sign_z;
             }
-        else if (ay < az)
-          { // LOR leaves voxel through xz-plane
+        else  if ( ay < az) {	// LOR leaves voxel through xz-plane 		                           
             lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel, ay - a));
-            a = ay;
-            ay += inc_y;
+          a = ay;   ay +=  inc_y;
             current_voxel.y() += sign_y;
           }
-        else
-          { // LOR leaves voxel through xy-plane
+        else {// LOR leaves voxel through xy-plane 			                      
             lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel, az - a));
-            a = az;
-            az += inc_z;
+          a = az; az +=  inc_z;
             current_voxel.z() += sign_z;
           }
       } // end of while (a<amax)

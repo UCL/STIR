@@ -11,7 +11,6 @@
 
   \brief Declaration of class stir::ProjMatrixElemsForOneBin
 
-  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -20,24 +19,44 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
+
+
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBinValue.h"
 #include "stir/Bin.h"
 #include <vector>
+#include <fstream>
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+using std::fstream;
+using std::random_access_iterator_tag;
+#endif
+
+
 
 START_NAMESPACE_STIR
 
 class Succeeded;
 class RelatedBins;
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
+
+
+
 
 /*!
 \brief This stores the non-zero projection matrix elements
@@ -61,7 +80,7 @@ class DiscretisedDensity;
 
 /*
   it might be a bit faster to derive this (privately) from
-  std::vector<value_type> as opposed to having a member of
+  vector<value_type> as opposed to having a member of
   that type.
   TODO: check
 */
@@ -76,23 +95,21 @@ public:
   This typedef is also required for 'standard' iterators.
   */
   typedef ProjMatrixElemsForOneBinValue value_type;
-
 private:
   //! shorthand to keep typedefs below concise
-  typedef std::vector<value_type> Element_vector;
+  typedef vector<value_type> Element_vector;
 
 public:
   //! typedefs for iterator support
   typedef Element_vector::iterator iterator;
   typedef Element_vector::const_iterator const_iterator;
-  typedef Element_vector::reverse_iterator reverse_iterator;
-  typedef Element_vector::const_reverse_iterator const_reverse_iterator;
   typedef Element_vector::size_type size_type;
   typedef Element_vector::difference_type difference_type;
-  typedef std::random_access_iterator_tag iterator_category;
+  typedef random_access_iterator_tag iterator_category;
 
   typedef value_type& reference;
   typedef const value_type& const_reference;
+
 
   //! constructor
   /*!
@@ -110,7 +127,7 @@ public:
   Succeeded check_state() const;
 
   //! get the bin coordinates corresponding to this row
-  inline const Bin& get_bin() const;
+  inline Bin get_bin() const;
   //! and set the bin coordinates
   inline void set_bin(const Bin&);
 
@@ -119,15 +136,9 @@ public:
   inline const_iterator begin() const;
   inline iterator end();
   inline const_iterator end() const;
-  inline reverse_iterator rbegin();
-  inline const_reverse_iterator rbegin() const;
-  inline reverse_iterator rend();
-  inline const_reverse_iterator rend() const;
 
   //! reset lor to 0 length
   void erase();
-  //! remove a single value_type
-  inline iterator erase(iterator it);
   //! add a new value_type object at the end
   /*!
      \warning For future compatibility, it is required
@@ -171,10 +182,12 @@ public:
   //! Compare 2 lors
   bool operator!=(const ProjMatrixElemsForOneBin&) const;
 
+
 #if 0  
-  void write(std::fstream&fst) const;     	
-  void read(std::fstream&fst );
+  void write(fstream&fst) const;     	
+  void read(fstream&fst );
 #endif
+
 
   //! Return sum of squares of all values
   /*! \warning This sums over all elements in the LOR, irrespective if they
@@ -184,20 +197,30 @@ public:
 
   //******************** projection operations ********************//
 
-  //! back project a single bin (accumulates)
-  void back_project(DiscretisedDensity<3, float>&, const Bin&) const;
+  //! back project a single bin 
+  void back_project(DiscretisedDensity<3,float>&,
+                    const Bin&) const;
 
-  //! forward project into a single bin (accumulates)
-  void forward_project(Bin&, const DiscretisedDensity<3, float>&) const;
-  //! back project related bins (accumulates)
-  void back_project(DiscretisedDensity<3, float>&, const RelatedBins&) const;
-  //! forward project related bins (accumulates)
-  void forward_project(RelatedBins&, const DiscretisedDensity<3, float>&) const;
+  //! forward project into a single bin
+  void forward_project(Bin&,
+                      const DiscretisedDensity<3,float>&) const;
+ //! back project related bins
+  void back_project(DiscretisedDensity<3,float>&,
+                    const RelatedBins&) const; 
+  //! forward project related bins
+  void forward_project(RelatedBins&,
+                       const DiscretisedDensity<3,float>&) const;
+
 
 private:
-  std::vector<value_type> elements;
+  vector<value_type> elements;    
   Bin bin;
+
+
+  //! remove a single value_type
+  inline iterator erase(iterator it);
 };
+
 
 END_NAMESPACE_STIR
 

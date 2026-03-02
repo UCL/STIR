@@ -1,4 +1,4 @@
-PostFiltering parameters :=
+PostFilteringParameters :=
   Postfilter type :=Median   
   Median Filter Parameters :=
   mask radius x := 1   

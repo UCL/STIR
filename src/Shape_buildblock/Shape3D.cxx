@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,11 +29,12 @@
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/info.h"
-#include "stir/format.h"
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
+#endif
+
 
 // Check the sampled elements of the voxel
 
@@ -40,19 +49,23 @@ Shape3D* Shape3D::read_from_file(const string& filename)
 */
 
 void
-Shape3D::set_origin(const CartesianCoordinate3D<float>& new_origin)
+Shape3D::
+set_origin(const CartesianCoordinate3D<float>& new_origin)
 {
   this->origin = new_origin;
 }
 
+
 void
-Shape3D::translate(const CartesianCoordinate3D<float>& direction)
+Shape3D::
+translate(const CartesianCoordinate3D<float>& direction)
 {
   this->set_origin(this->get_origin() + direction);
 }
 
 float
-Shape3D::get_geometric_volume() const
+Shape3D::
+get_geometric_volume() const
 {
   return -1.F;
 }
@@ -67,17 +80,24 @@ get_geometric_area() const
 #endif
 
 float
-Shape3D::get_voxel_weight(const CartesianCoordinate3D<float>& voxel_centre,
+Shape3D::
+get_voxel_weight(
+		 const CartesianCoordinate3D<float>& voxel_centre,
                           const CartesianCoordinate3D<float>& voxel_size,
                           const CartesianCoordinate3D<int>& num_samples) const
 {
   int value = 0;
 
-  for (float zsmall = -float(num_samples.z() - 1) / num_samples.z() / 2.F; zsmall <= 0.5F; zsmall += 1.F / num_samples.z())
+  for (float zsmall = -float(num_samples.z()-1)/num_samples.z()/2.F;
+       zsmall<=0.5F;
+       zsmall+=1.F/num_samples.z())
+  {
+    for (float ysmall =-float(num_samples.y()-1)/num_samples.y()/2.F;
+	 ysmall<=0.5F;
+	 ysmall+=1.F/num_samples.y())
     {
-      for (float ysmall = -float(num_samples.y() - 1) / num_samples.y() / 2.F; ysmall <= 0.5F; ysmall += 1.F / num_samples.y())
-        {
-          for (float xsmall = -float(num_samples.x() - 1) / num_samples.x() / 2.F; xsmall <= 0.5F;
+      for(float xsmall=-float(num_samples.x()-1)/num_samples.x()/2.F;
+	  xsmall<=0.5F;
                xsmall += 1.F / num_samples.x())
             {
               {
@@ -87,6 +107,7 @@ Shape3D::get_voxel_weight(const CartesianCoordinate3D<float>& voxel_centre,
               }
             }
         }
+    
     }
   return float(value) / (num_samples.z() * num_samples.y() * num_samples.x());
 }
@@ -98,7 +119,8 @@ Shape3D::get_voxel_weight(const CartesianCoordinate3D<float>& voxel_centre,
   \bug Objects which are only at the edge of the image can be missed
 */
 void
-Shape3D::construct_volume(VoxelsOnCartesianGrid<float>& image, const CartesianCoordinate3D<int>& num_samples) const
+Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image, 
+                          const CartesianCoordinate3D<int>& num_samples) const
 {
   const CartesianCoordinate3D<float>& voxel_size = image.get_voxel_size();
   const CartesianCoordinate3D<float>& origin = image.get_origin();
@@ -119,11 +141,16 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float>& image, const CartesianCo
         for (int x = min_x; x <= max_x; x++)
 
           {
-            const CartesianCoordinate3D<float> current_index(static_cast<float>(z), static_cast<float>(y), static_cast<float>(x));
+        const CartesianCoordinate3D<float> 
+	  current_index(static_cast<float>(z),
+			static_cast<float>(y),
+			static_cast<float>(x));
 
             // image[z][y][x] = get_voxel_weight(current_point,voxel_size,crude_num_samples);
 
-            image[z][y][x] = (is_inside_shape(current_index * voxel_size + origin)) ? 1.F : 0.F;
+	image[z][y][x] = 
+	  (is_inside_shape(current_index*voxel_size+origin))
+	  ? 1.F : 0.F;
           }
     }
 
@@ -147,22 +174,26 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float>& image, const CartesianCo
                 for (int j = y - 1; !recompute && (j <= y + 1); j++)
                   for (int k = x - 1; !recompute && (k <= x + 1); k++)
                     {
-                      const float value_of_neighbour
-                          = ((i < min_z) || (i > max_z) || (j < min_y) || (j > max_y) || (k < min_x) || (k > max_x))
-                                ? 0
-                                : image[i][j][k];
+		    const float value_of_neighbour =
+		      ((i < min_z) || (i> max_z) ||
+		       (j < min_y) || (j> max_y) ||
+	               (k < min_x) || (k> max_x)
+ 	              ) ? 0 : image[i][j][k];
                       recompute = (value_of_neighbour != current_value);
                     }
             }
           if (recompute)
             {
               num_recomputed++;
-              const CartesianCoordinate3D<float> current_index(
-                  static_cast<float>(z), static_cast<float>(y), static_cast<float>(x));
+	  const CartesianCoordinate3D<float> 
+	    current_index(static_cast<float>(z),
+			  static_cast<float>(y),
+			  static_cast<float>(x));
               image[z][y][x] = get_voxel_weight(current_index * voxel_size + origin, voxel_size, num_samples);
             }
         }
-  info(format("Number of voxels recomputed with finer sampling : {}", num_recomputed));
+  cerr << "Number of voxels recomputed with finer sampling : " << num_recomputed << endl;
+      
 }
 
 #if 0
@@ -194,13 +225,15 @@ void Shape3D::construct_slice(PixelsOnCartesianGrid<float> &plane,
 #endif
 
 void
-Shape3D::set_defaults()
+Shape3D::
+set_defaults()
 {
   origin[3] = origin[2] = origin[1] = 0;
 }
 
 void
-Shape3D::initialise_keymap()
+Shape3D::
+initialise_keymap()
 {
   this->parser.add_key("origin (in mm)", &origin);
 }
@@ -210,5 +243,6 @@ Shape3D::parameter_info()
 {
   return ParsingObject::parameter_info();
 }
+
 
 END_NAMESPACE_STIR

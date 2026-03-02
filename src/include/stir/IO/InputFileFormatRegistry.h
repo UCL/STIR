@@ -3,7 +3,15 @@
 /*
     Copyright (C) 2006-2008, Hammersmith Imanet Ltd
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -58,12 +66,14 @@ public:
       subsequent calls. This might lead to unexpected behaviour if your registry does
       not contain the expected factories.
   */
-  static shared_ptr<self_type>& default_sptr();
+  static
+    shared_ptr<self_type>& default_sptr();
 
   //! Default constructor without defaults (see find_factory())
   inline InputFileFormatRegistry() {}
 
   inline ~InputFileFormatRegistry() {}
+
 
   /*! \brief Add a file-format to the registry with given ranking
     Ranking 0 is the 'highest', so will be found first.
@@ -81,7 +91,9 @@ public:
 
       If no matching factory is found, we call error().
   */
-  Factory const& find_factory(const FileSignature& signature, std::istream& input) const;
+  Factory const & 
+    find_factory(const FileSignature& signature,
+		 std::istream& input) const;
 
   //! Find a factory that can handle a particular filename
   /*! The \c signature and \c input arguments are supposed to correspond to the same file.
@@ -91,17 +103,22 @@ public:
 
       If no matching factory is found, we call error().
   */
-  Factory const& find_factory(const FileSignature& signature, const std::string& filename) const;
+  Factory const & 
+    find_factory(const FileSignature& signature,
+		 const std::string& filename) const;
 
   //! Find a factory that can handle a particular filename
-  Factory const& find_factory(const std::string& filename) const;
+  Factory const & 
+    find_factory(const std::string& filename) const;
 
   //! Find a factory that can handle a particular stream
-  Factory const& find_factory(std::istream& input) const;
+  Factory const & 
+    find_factory(std::istream& input) const;
 
   //! List all possible registered names to the stream
   /*! Names are separated with newlines. */
-  void list_registered_names(std::ostream& stream) const;
+  void 
+    list_registered_names(std::ostream& stream) const;
 
 private:
   typedef typename std::multimap<unsigned, FactorySPtr> _registry_type;
@@ -110,11 +127,15 @@ private:
 
   _registry_type _registry;
 
-  bool _valid(const_iterator iter) const { return iter != this->_registry.end(); }
+  bool _valid(const_iterator iter) const
+  { return iter != this->_registry.end(); }
 
   // File can be either string or istream
   template <class File>
-  inline const_iterator _actual_find_factory(const FileSignature& signature, File& input) const
+    inline 
+    const_iterator 
+    _actual_find_factory(const FileSignature& signature,
+			 File& input) const
   {
     const_iterator iter = this->_registry.begin();
     const_iterator const end = this->_registry.end();
@@ -126,6 +147,7 @@ private:
       }
     return end;
   }
+
 };
 
 //! A helper class to allow automatic registration to the default InputFileFormatRegistry
@@ -144,7 +166,8 @@ struct RegisterInputFileFormat
   explicit RegisterInputFileFormat(const unsigned ranking)
   {
     shared_ptr<InputFileFormat<data_type>> format_sptr(new Format);
-    InputFileFormatRegistry<data_type>::default_sptr()->add_to_registry(format_sptr, ranking);
+    InputFileFormatRegistry<data_type>::default_sptr()->
+      add_to_registry(format_sptr, ranking);
   }
 
   /*! \brief Destructor remove the format from the registry.
@@ -152,9 +175,12 @@ struct RegisterInputFileFormat
   ~RegisterInputFileFormat()
   {
     Format format;
-    InputFileFormatRegistry<data_type>::default_sptr()->remove_from_registry(format);
+    InputFileFormatRegistry<data_type>::default_sptr()->
+      remove_from_registry(format);
   }
 };
+
+
 
 END_NAMESPACE_STIR
 

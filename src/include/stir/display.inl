@@ -17,7 +17,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -36,12 +44,17 @@ START_NAMESPACE_STIR
 */
 template <class elemT>
 void
-display(const Array<3, elemT>& plane_stack, double maxi, const char* const title, int zoom)
+display(const Array<3,elemT>& plane_stack,
+	double maxi,
+	const char * const title,
+	int zoom)
 
 {
-  VectorWithOffset<float> scale_factors(plane_stack.get_min_index(), plane_stack.get_max_index());
+  VectorWithOffset<float> scale_factors(plane_stack.get_min_index(), 
+				plane_stack.get_max_index());
   scale_factors.fill(1.);
-  VectorWithOffset<char*> text(plane_stack.get_min_index(), plane_stack.get_max_index());
+  VectorWithOffset<char *> text(plane_stack.get_min_index(), 
+				plane_stack.get_max_index());
 
   for (int i = plane_stack.get_min_index(); i <= plane_stack.get_max_index(); i++)
     {
@@ -49,10 +62,12 @@ display(const Array<3, elemT>& plane_stack, double maxi, const char* const title
       sprintf(text[i], "%d", i);
     }
 
-  display(plane_stack, scale_factors, text, maxi, title, zoom);
+  display(plane_stack, scale_factors, text, 
+          maxi, title,zoom);
   // clean up memory afterwards
   for (int i = plane_stack.get_min_index(); i <= plane_stack.get_max_index(); i++)
     delete[] text[i];
+
 }
 
 /*!
@@ -64,7 +79,9 @@ display(const Array<3, elemT>& plane_stack, double maxi, const char* const title
              int zoom) for more info.*/
 template <class elemT>
 void
-display(const Array<2, elemT>& plane, const char* const text, double maxi, int zoom)
+display(const Array<2,elemT>& plane,
+		    const char * const text,
+		    double maxi, int zoom )
 {
 
   if (plane.get_length() == 0)
@@ -88,75 +105,59 @@ display(const Array<2, elemT>& plane, const char* const text, double maxi, int z
 // VC and gcc 2.8.1 have problems with the defaults in the above declarations.
 // So, we have to do them by hand...
 
+
 template <class elemT, class scaleT, class CHARP>
-void
-display(const Array<3, elemT>& plane_stack,
+void display(const Array<3,elemT>& plane_stack,
         const VectorWithOffset<scaleT>& scale_factors,
         const VectorWithOffset<CHARP>& text,
         double maxi,
         const char* const title)
-{
-  display(plane_stack, scale_factors, text, maxi, title, 0);
-}
+{ display(plane_stack, scale_factors, text, maxi, title, 0); }
 
 template <class elemT, class scaleT, class CHARP>
-void
-display(const Array<3, elemT>& plane_stack,
+void display(const Array<3,elemT>& plane_stack,
         const VectorWithOffset<scaleT>& scale_factors,
         const VectorWithOffset<CHARP>& text,
         double maxi)
-{
-  display(plane_stack, scale_factors, text, maxi, 0, 0);
-}
+{ display(plane_stack, scale_factors, text, maxi, 0, 0); }
+
 
 template <class elemT, class scaleT, class CHARP>
-void
-display(const Array<3, elemT>& plane_stack, const VectorWithOffset<scaleT>& scale_factors, const VectorWithOffset<CHARP>& text)
-{
-  display(plane_stack, scale_factors, text, 0., 0, 0);
-}
+void display(const Array<3,elemT>& plane_stack,
+             const VectorWithOffset<scaleT>& scale_factors,
+             const VectorWithOffset<CHARP>& text)
+{ display(plane_stack, scale_factors, text, 0., 0, 0); }
 
 template <class elemT>
-void
-display(const Array<3, elemT>& plane_stack, double maxi, const char* const title)
-{
-  display(plane_stack, maxi, title, 0);
-}
+void display(const Array<3,elemT>& plane_stack,
+	     double maxi,
+	     const char * const title)
+{ display(plane_stack, maxi, title, 0); }
 
 template <class elemT>
-void
-display(const Array<3, elemT>& plane_stack, double maxi)
-{
-  display(plane_stack, maxi, 0, 0);
-}
+void display(const Array<3,elemT>& plane_stack,
+	     double maxi)
+{ display(plane_stack, maxi, 0, 0); }
 
 template <class elemT>
-void
-display(const Array<3, elemT>& plane_stack)
-{
-  display(plane_stack, 0., 0, 0);
-}
+void display(const Array<3,elemT>& plane_stack)
+{ display(plane_stack, 0., 0, 0); }
 
 template <class elemT>
-void
-display(const Array<2, elemT>& plane, const char* const text, double maxi)
-{
-  display(plane, text, maxi, 0);
-}
+void display(const Array<2,elemT>& plane,
+		    const char * const text,
+		    double maxi)
+{ display(plane, text, maxi, 0); }
 
 template <class elemT>
-void
-display(const Array<2, elemT>& plane, const char* const text)
-{
-  display(plane, text, 0., 0);
-}
+void display(const Array<2,elemT>& plane,
+		    const char * const text)
+{ display(plane, text, 0., 0); }
 
 template <class elemT>
-void
-display(const Array<2, elemT>& plane)
-{
-  display(plane, 0, 0., 0);
-}
+void display(const Array<2,elemT>& plane)
+{ display(plane, 0, 0., 0); }
+
 
 #endif
 

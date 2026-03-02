@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -29,7 +37,10 @@ Coordinate4D<coordT>::Coordinate4D()
 {}
 
 template <class coordT>
-Coordinate4D<coordT>::Coordinate4D(const coordT& c1, const coordT& c2, const coordT& c3, const coordT& c4)
+Coordinate4D<coordT>::Coordinate4D(const coordT& c1, 
+				   const coordT& c2, 
+				   const coordT& c3, 
+				   const coordT& c4)
     : base_type()
 {
   (*this)[1] = c1;
@@ -50,5 +61,6 @@ Coordinate4D<coordT>::operator=(const base_type& c)
   base_type::operator=(c);
   return *this;
 }
+
 
 END_NAMESPACE_STIR

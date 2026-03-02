@@ -1,7 +1,15 @@
 #  Copyright (C) 2013 University College London
 #  This file is part of STIR.
 #
-#  SPDX-License-Identifier: Apache-2.0
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
 #
 #  See STIR/LICENSE.txt for details
 #      
@@ -17,11 +25,6 @@ These files should be compatible with STIR 2.4 and 3.0.
 Requirements:
 - STIR utilities installed in your PATH 
 - bourne shell (present under Linux/Unix/MacOS, use cygwin or msys on Windows)
-- If you have installed STIR with MPI, you will need to first set the MPIRUN environment
-variable to be able to run MPI executables. In sh/bash/ksh etc, the following might work
-
- MPIRUN="mpirun -np 4"
- export MPIRUN
 
 
 Brief summary:
@@ -34,7 +37,7 @@ Brief summary:
 
 - simulate_data.sh performs the actual analytic simulation (calling simulate_scatter.sh to help)
 
-- recon_FBP2D.sh and recon_iterative.sh run reconstructions with example settings (set via the .par files)
+- recon_FBP2D.sh and recon_OSL.sh run reconstructions with example settings (set via the .par files)
 
 
 Various steps in the current simulation are too simple:
@@ -66,7 +69,7 @@ some stages. If necessary, you could add some options to the /bin/sh first line 
 
 - It would be relatively easy to run multiple noise realisations. 
 Just change the seed when calling poisson_noise and rename your output files (e.g. using the seed)
-(no need to rerun simulate_data.sh of course at that is only used to generate the mean of the data).
+(no need to rerun simulate_data.sh of course).
 
 Enjoy!
 

@@ -3,7 +3,6 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2001, IRSL
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -50,8 +49,7 @@ systems.
 
 /* Change November 1997: added next 3 lines */
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #ifdef VAX
@@ -75,7 +73,8 @@ extern "C"
          // ch is not changed, or the second character in the escape code
   Note: The following are ANSI escape sequences
 */
-#  define KB_DIRECTION(c) (c == 0x1b && getch() == 0x5b && (c = getch()) >= 0x41 && c <= 0x44)
+#define KB_DIRECTION(c) (c==0x1b && getch()==0x5b && \
+        (c=getch())>=0x41 && c<=0x44)
 #  define KB_UPARROW 0x41
 #  define KB_DNARROW 0x42
 #  define KB_RTARROW 0x43
@@ -99,7 +98,9 @@ extern "C"
 /* Macro's for using the arrowkeys. For explanation see above.
   Replace "escape code" with "extended charcode"
 */
-#  define KB_DIRECTION(c) (c == '\0' && ((c = (char)getch()) == 0x48 || c == 0x4b || c == 0x4d || c == 0x50))
+#define KB_DIRECTION(c) (c=='\0' && \
+                         ((c=(char)getch())==0x48 || c==0x4b ||c==0x4d || \
+			  c==0x50))
 #  define KB_UPARROW 0x48
 #  define KB_DNARROW 0x50
 #  define KB_RTARROW 0x4d
@@ -122,7 +123,8 @@ extern "C"
 
 /* Macro's for using the arrowkeys. For explanation see above.
  */
-#  define KB_DIRECTION(c) (c == 0x1b && getch() == 0x5b && (c = getch()) >= 0x41 && c <= 0x44)
+#define KB_DIRECTION(c) (c==0x1b && getch()==0x5b && \
+        (c=getch())>=0x41 && c<=0x44)
 #  define KB_UPARROW 0x41
 #  define KB_DNARROW 0x42
 #  define KB_RTARROW 0x43
@@ -136,7 +138,8 @@ extern "C"
 #  undef KB_RTARROW
 #  undef KB_LTARROW
 /* the next one is probably wrong */
-#  define KB_DIRECTION(c) (c == 0x1b && getch() == 0x5b && (c = getch()) >= 0x41 && c <= 0x44)
+#define KB_DIRECTION(c) (c==0x1b && getch()==0x5b && \
+        (c=getch())>=0x41 && c<=0x44)
 #  define KB_UPARROW XK_Up
 #  define KB_DNARROW XK_Down
 #  define KB_RTARROW XK_Right
@@ -163,6 +166,7 @@ extern "C"
 
   extern void message(char* fmt, ...);
   extern void error(char* fmt, ...);
+
 
 /* Change November 1997: added next 3 lines (end of extern "C") */
 #ifdef __cplusplus

@@ -3,7 +3,15 @@
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,7 +30,6 @@
 
 #include "stir/common.h"
 #include <iterator>
-#include "boost/iterator/iterator_adaptor.hpp"
 
 START_NAMESPACE_STIR
 
@@ -41,7 +48,6 @@ START_NAMESPACE_STIR
   class that uses FullArrayIterator implements end_all(). See the implementation of
   Array::end_all().
 
-  \todo use std::enable_if and std::is_convertible as opposed to boost::enable_if_convertible
   \internal
 */
 template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
@@ -73,7 +79,8 @@ public:
       convertible (using the SFINAE principle).
   */
   template <typename othertopleveliterT, typename otherrestiterT, typename _otherRef, typename _otherPtr>
-  FullArrayIterator(FullArrayIterator<othertopleveliterT, otherrestiterT, elemT, _otherRef, _otherPtr> const& other,
+    FullArrayIterator(
+                          FullArrayIterator<othertopleveliterT, otherrestiterT, elemT,  _otherRef, _otherPtr> const& other,
                     typename boost::enable_if_convertible<othertopleveliterT, topleveliterT>::type* = 0,
                     typename boost::enable_if_convertible<otherrestiterT, restiterT>::type* = 0)
       : current_top_level_iter(other.current_top_level_iter),
@@ -81,6 +88,7 @@ public:
         current_rest_iter(other.current_rest_iter),
         last_rest_iter(other.last_rest_iter)
   {}
+
 
   //! constructor with 0 (only 0, not another number)
   /*! This is necessary to be able to set \a current_rest_iter in the case of
@@ -121,8 +129,7 @@ public:
 #else
 private:
   // needed for conversion constructor
-  template <class, class, class, class, class>
-  friend class FullArrayIterator;
+  template <class,class,class,class,class> friend class FullArrayIterator;
 #endif
 
   //! the \c topleveliterT iterator pointing to the current \a row
@@ -136,6 +143,7 @@ private:
 
   //! a \c restiterT iterator pointing to the end of the current \a row
   restiterT last_rest_iter;
+
 };
 
 END_NAMESPACE_STIR

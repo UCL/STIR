@@ -16,7 +16,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -69,8 +77,8 @@ START_NAMESPACE_STIR
 */
 
 template <class Value, class DataType, class CoordinatesType>
-inline void linear_regression(Value& constant,
-                              Value& scale,
+inline void 
+linear_regression(Value& constant, Value& scale,
                               Value& chi_square,
                               Value& variance_of_constant,
                               Value& variance_of_scale,
@@ -78,7 +86,8 @@ inline void linear_regression(Value& constant,
                               const VectorWithOffset<DataType>& measured_data,
                               const VectorWithOffset<CoordinatesType>& coordinates,
                               const VectorWithOffset<float>& weights,
-                              const bool use_estimated_variance = true);
+                  const bool use_estimated_variance = true
+                  );
 
 /*!
   \ingroup buildblock
@@ -102,22 +111,21 @@ inline void linear_regression(Value& constant,
 */
 
 template <class Value, class DataIter, class CoordinatesIter, class WeightsIter>
-inline void linear_regression(Value& constant,
-                              Value& scale,
+inline void 
+linear_regression(Value& constant, Value& scale,
                               Value& chi_square,
                               Value& variance_of_constant,
                               Value& variance_of_scale,
                               Value& covariance_of_constant_with_scale,
-                              DataIter measured_data_begin,
-                              DataIter measured_data_end,
+                  DataIter measured_data_begin, DataIter measured_data_end,
                               CoordinatesIter coords_begin,
                               WeightsIter weights_begin,
                               const bool use_estimated_variance = true);
 
 template <class ValueIter, class DataIter, class CoordinatesIter, class WeightsIter>
-inline void linear_regression(ValueIter regression_values_begin,
-                              DataIter data_begin,
-                              DataIter data_end,
+inline void 
+linear_regression(ValueIter regression_values_begin,
+                  DataIter data_begin, DataIter data_end,
                               CoordinatesIter coords_begin,
                               WeightsIter weights_begin,
                               const bool use_estimated_variance = true);
@@ -127,3 +135,5 @@ END_NAMESPACE_STIR
 #include "stir/linear_regression.inl"
 
 #endif // __linear_regression_h__
+
+

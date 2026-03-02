@@ -4,10 +4,17 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,11 +34,12 @@
 #ifndef __Viewgram_h__
 #define __Viewgram_h__
 
+
 #include "stir/Array.h"
 #include "stir/ProjDataInfo.h"
-#include "stir/ViewgramIndices.h"
 #include "stir/IndexRange.h"
 #include "stir/shared_ptr.h"
+
 
 START_NAMESPACE_STIR
 
@@ -39,7 +47,7 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class for 2d projection data.
 
-  This represents a subset of the full projection. SegmentIndices and view_num
+  This represents a subset of the full projection. segment_num and tangential_pos_num 
   are fixed.
 
 */
@@ -47,49 +55,32 @@ START_NAMESPACE_STIR
 template <typename elemT>
 class Viewgram : public Array<2, elemT>
 {
+private:
   typedef Array<2, elemT> base_type;
-#ifdef STIR_COMPILING_SWIG_WRAPPER
+#ifdef SWIG
   // SWIG needs the next typedef to be public
 public:
 #endif
   typedef Viewgram<elemT> self_type;
+#ifdef SWIG
+  // SWIG needs a default constructor
+  inline Viewgram() {}
+#endif
 
 public:
-  //! Construct from proj_data_info pointer and indices. Data are set to 0.
-  inline Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, const ViewgramIndices& ind);
-
-  //! Construct with data set to the array.
-  inline Viewgram(const Array<2, elemT>& p,
-                  const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-                  const ViewgramIndices& ind);
-
   //! Construct from proj_data_info pointer, view and segment number. Data are set to 0.
-  /*!
-    \deprecated Use version with ViewgramIndices instead
-  */
-  inline Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                  const int v_num,
-                  const int s_num,
-                  const int t_num = 0);
+  inline Viewgram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
+                  const int v_num, const int s_num); 
 
   //! Construct with data set to the array.
-  /*!
-    \deprecated Use version with ViewgramIndices instead
-  */
-  inline Viewgram(const Array<2, elemT>& p,
-                  const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                  const int v_num,
-                  const int s_num,
-                  const int t_num = 0);
+  inline Viewgram(const Array<2,elemT>& p,const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
+                  const int v_num, const int s_num); 
+  
 
-  //! Get indices
-  inline ViewgramIndices get_viewgram_indices() const;
   //! Get segment number
   inline int get_segment_num() const;
   //! Get number of views
   inline int get_view_num() const;
-  //! Get timing position index
-  inline int get_timing_pos_num() const;
   //! Get minimum number of axial positions
   inline int get_min_axial_pos_num() const;
   //! Get maximum number of axial positions
@@ -107,12 +98,14 @@ public:
   inline Viewgram get_empty_copy(void) const;
 
   //! Overloading Array::grow
-  void grow(const IndexRange<2>& range) override;
+  void grow(const IndexRange<2>& range);
   //! Overloading Array::resize
-  void resize(const IndexRange<2>& range) override;
+  void resize(const IndexRange<2>& range);
 
-  //! Get shared pointer to proj data info
-  inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
+  //! Get the proj_data_info pointer
+  /*! \warning Do not use this pointer after the Viewgram object is destructed.
+  */
+  inline const ProjDataInfo* get_proj_data_info_ptr() const;
 
   //! \name Equality
   //@{
@@ -120,12 +113,15 @@ public:
   /*! If they do \c not have the same characteristics, the string \a explanation
       explains why.
   */
-  bool has_same_characteristics(self_type const&, std::string& explanation) const;
+  bool
+    has_same_characteristics(self_type const&,
+			     string& explanation) const;
 
   //! Checks if the 2 objects have the proj_data_info, segment_num etc.
   /*! Use this version if you do not need to know why they do not match.
    */
-  bool has_same_characteristics(self_type const&) const;
+  bool
+    has_same_characteristics(self_type const&) const;
 
   //! check equality (data has to be identical)
   /*! Uses has_same_characteristics() and Array::operator==.
@@ -139,8 +135,10 @@ public:
   //@}
 
 private:
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
-  ViewgramIndices _indices;
+  
+  shared_ptr<ProjDataInfo> proj_data_info_ptr; 
+  int view_num;
+  int segment_num;  
 };
 
 END_NAMESPACE_STIR

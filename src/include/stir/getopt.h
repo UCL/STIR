@@ -19,6 +19,8 @@
    to the Free Software Foundation, Inc., 59 Temple Place,
    Suite 330, Boston, MA 02111-1307 USA.  */
 
+    
+
 #ifndef _stir_GETOPT_H
 #define _stir_GETOPT_H
 
@@ -41,8 +43,7 @@
 #  endif
 
 #  ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #  endif
 
   /* For communication from `getopt' to the caller.
@@ -119,6 +120,7 @@ extern "C"
 #    define optional_argument 2
 #  endif /* need getopt */
 
+
   /* Get definitions and prototypes for functions to process the
      arguments in ARGV (ARGC of them, minus the program name) for
      options given in OPTS.
@@ -154,17 +156,17 @@ extern "C"
   //# endif /* __GNU_LIBRARY__ */
 
 #    ifndef __need_getopt
-  extern int
-  getopt_long(int ___argc, char* const* ___argv, const char* __shortopts, const struct option* __longopts, int* __longind);
-  extern int
-  getopt_long_only(int ___argc, char* const* ___argv, const char* __shortopts, const struct option* __longopts, int* __longind);
+extern int getopt_long (int ___argc, char *const *___argv,
+                        const char *__shortopts,
+                        const struct option *__longopts, int *__longind);
+extern int getopt_long_only (int ___argc, char *const *___argv,
+                             const char *__shortopts,
+                             const struct option *__longopts, int *__longind);
 
   /* Internal only.  Users should not call this directly.  */
-  extern int _getopt_internal(int ___argc,
-                              char* const* ___argv,
+extern int _getopt_internal (int ___argc, char *const *___argv,
                               const char* __shortopts,
-                              const struct option* __longopts,
-                              int* __longind,
+                             const struct option *__longopts, int *__longind,
                               int __long_only);
 #    endif
 #  else /* not __STDC__ */
@@ -187,3 +189,4 @@ extern int _getopt_internal();
 #endif /* HAVE_SYSTEM_GETOPT */
 
 #endif /* getopt.h */
+

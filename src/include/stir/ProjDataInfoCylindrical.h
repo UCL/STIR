@@ -1,12 +1,19 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2022 University College London
+    Copyright (C) 2013, University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
-    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -16,7 +23,6 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataInfoCylindrical
 
-  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Berta Marti Fuster
@@ -25,10 +31,15 @@
 #ifndef __stir_ProjDataInfoCylindrical_H__
 #define __stir_ProjDataInfoCylindrical_H__
 
+
 #include "stir/ProjDataInfo.h"
-#include "stir/CartesianCoordinate3D.h"
 #include <utility>
 #include <vector>
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+using std::pair;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -53,7 +64,7 @@ private:
 
 public:
   //! Type used by get_all_ring_pairs_for_segment_axial_pos_num()
-  typedef std::vector<std::pair<int, int>> RingNumPairs;
+  typedef vector<pair<int, int> > RingNumPairs;
 
   //! Constructors
   ProjDataInfoCylindrical();
@@ -69,14 +80,13 @@ public:
                           const VectorWithOffset<int>& num_axial_poss_per_segment,
                           const VectorWithOffset<int>& min_ring_diff,
                           const VectorWithOffset<int>& max_ring_diff,
-                          const int num_views,
-                          const int num_tangential_poss);
+    const int num_views,const int num_tangential_poss);
 
-  inline float get_tantheta(const Bin&) const override;
+  inline virtual float get_tantheta(const Bin&) const; 
 
-  inline float get_phi(const Bin&) const override;
+  inline float get_phi(const Bin&) const; 
 
-  inline float get_t(const Bin&) const override;
+  inline float get_t(const Bin&) const;
 
   //! Return z-coordinate of the middle of the LOR
   /*!
@@ -85,34 +95,13 @@ public:
     \warning Current implementation assumes that the axial positions are always 'centred',
     i.e. get_m(Bin(..., min_axial_pos_num,...)) == - get_m(Bin(..., max_axial_pos_num,...))
   */
-  inline float get_m(const Bin&) const override;
+  inline float get_m(const Bin&) const;
 
-  void get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor, const Bin& bin) const override;
-#if 0
-  // KT disabled these as untested (and unused)
-
-  //! This function returns the two points connecting the two detectors of the LOR.
-  //!  \warning there is not a specific guarantee that these are going to be the two
-  //! central points. This might be in the future a source of error.
-  void
-  get_LOR_as_two_points(CartesianCoordinate3D<float>& coord_1,
-                        CartesianCoordinate3D<float>& coord_2,
+  virtual void
+    get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
                         const Bin& bin) const;
 
-  //! This function is the same as get_LOR_as_two_points() but should faster.
-  //! \warning More testing needed.
-  void
-  get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
-                            CartesianCoordinate3D<float>& coord_2,
-                            const int det1,
-                            const int det2,
-                            const int ring1,
-                            const int ring2,
-                            const int timing_pos) const;
-#endif
-  //! Set azimuthal angle offset (in radians)
-  void set_azimuthal_angle_offset(const float angle);
-  //! Set the azimuthal sampling (in radians)
+ 
   void set_azimuthal_angle_sampling(const float angle);
 
   // void set_axial_sampling(const float samp, int segment_num);
@@ -121,21 +110,14 @@ public:
   /*! calls ProjDataInfo::set_num_views(), but makes sure that we cover the
       same range of angles as before (usually, but not necessarily, 180 degrees)
       by adjusting azimuthal_angle_sampling.
-
-      \warning This function does not change the \c azimutal_angle_offset, such that
-      the first view returns the same \c get_phi. Depending on what you want, you
-      might have to call \c set_azimuthal_angle_offset() as well.
   */
-  void set_num_views(const int new_num_views) override;
+  virtual void
+    set_num_views(const int new_num_views);
 
-  void set_tof_mash_factor(const int new_num) override;
-
-  //! Get azimuthal angle offset (in radians)
-  inline float get_azimuthal_angle_offset() const;
   //! Get the azimuthal sampling (in radians)
   inline float get_azimuthal_angle_sampling() const;
-  inline float get_sampling_in_t(const Bin&) const override;
-  inline float get_sampling_in_m(const Bin&) const override;
+  virtual inline float get_sampling_in_t(const Bin&) const;
+  virtual inline float get_sampling_in_m(const Bin&) const;
 
   //! Get the axial sampling (e.g in z_direction)
   /*!
@@ -144,13 +126,7 @@ public:
    (i.e. no axial compression), while it is half the
    ring spacing for spanned data.
   */
-  virtual inline float get_axial_sampling(int segment_num) const;
-  //! Return if axial sampling makes sense
-  /*! could be \c false for block/generic cases */
-  virtual inline bool axial_sampling_is_uniform() const
-  {
-    return true;
-  }
+  inline float get_axial_sampling(int segment_num) const;
 
   //! Get average ring difference for the given segment
   inline float get_average_ring_difference(int segment_num) const;
@@ -164,10 +140,10 @@ public:
   //! Set maximum ring difference
   void set_max_ring_difference(int max_ring_diff_v, int segment_num);
 
-  void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment) override;
-  void set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num) override;
-  void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num) override;
-  void reduce_segment_range(const int min_segment_num, const int max_segment_num) override;
+  virtual void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment); 
+  virtual void set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num);
+  virtual void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num);
+  virtual void reduce_segment_range(const int min_segment_num, const int max_segment_num);
 
   //! Set detector ring radius for all views
   inline void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius);
@@ -199,7 +175,8 @@ public:
   /*!
     \return Succeeded::yes when a corresponding segment was found.
     */
-  inline Succeeded get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const;
+  inline Succeeded 
+    get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const;
 
   //! Find to which segment and axial position a ring pair contributes
   /*!
@@ -218,7 +195,10 @@ public:
     ring spacing for spanned data.
   */
   inline Succeeded
-  get_segment_axial_pos_num_for_ring_pair(int& segment_num, int& axial_pos_num, const int ring1, const int ring2) const;
+    get_segment_axial_pos_num_for_ring_pair(int& segment_num,
+                                            int& axial_pos_num,
+                                            const int ring1,
+                                            const int ring2) const;
 
   //! Find all ring pairs that contribute to a segment and axial position
   /*!
@@ -229,7 +209,9 @@ public:
     (i.e. no axial compression), while it is half the
     ring spacing for spanned data.
   */
-  inline const RingNumPairs& get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num, const int axial_pos_num) const;
+  inline const RingNumPairs&
+    get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num,
+						 const int axial_pos_num) const;
   //! Find the number of ring pairs that contribute to a segment and axial position
   /*!
     \warning The implementation of this function currently assumes that the axial
@@ -237,7 +219,9 @@ public:
     (i.e. no axial compression), while it is half the
     ring spacing for spanned data.
   */
-  inline unsigned get_num_ring_pairs_for_segment_axial_pos_num(const int segment_num, const int axial_pos_num) const;
+  inline unsigned
+    get_num_ring_pairs_for_segment_axial_pos_num(const int segment_num,
+						 const int axial_pos_num) const;
 
   //! Find a ring pair that contributes to a segment and axial position
   /*!
@@ -251,11 +235,16 @@ public:
     (i.e. no axial compression), while it is half the
     ring spacing for spanned data.
   */
-  void get_ring_pair_for_segment_axial_pos_num(int& ring1, int& ring2, const int segment_num, const int axial_pos_num) const;
+  void
+    get_ring_pair_for_segment_axial_pos_num(int& ring1,
+					    int& ring2,
+					    const int segment_num,
+                                            const int axial_pos_num) const;
 
-  std::string parameter_info() const override;
+  virtual string parameter_info() const;
 
 protected:
+
   //! a variable that is set if the data corresponds to physical rings in the scanner
   /*! This is (only) used to prevent get_segment_axial_pos_num_for_ring_pair() et al
       to go wild. Indeed, for cases where there's cylindrical sampling, but not
@@ -275,10 +264,9 @@ protected:
   bool sampling_corresponds_to_physical_rings;
 
 protected:
-  bool blindly_equals(const root_type* const) const override = 0;
+  virtual bool blindly_equals(const root_type * const) const = 0;
 
 private:
-  float azimuthal_angle_offset;
   float azimuthal_angle_sampling;
   VectorWithOffset<float> ring_radius;
   float ring_spacing;
@@ -310,22 +298,22 @@ private:
   //! This function sets all of the above
   void initialise_ring_diff_arrays() const;
 
-  //! This function guarantees that ring_diff_arrays will be set but checks first if was done already
-  /*! This function is OPENMP thread-safe */
-  inline void initialise_ring_diff_arrays_if_not_done_yet() const;
-
   inline int get_num_axial_poss_per_ring_inc(const int segment_num) const;
 
+  //! This member will signal if the array below contain sensible info or not
+  mutable bool segment_axial_pos_to_ring_pair_allocated;
   //! This member stores a table used by get_all_ring_pairs_for_segment_axial_pos_num()
-  mutable VectorWithOffset<VectorWithOffset<shared_ptr<RingNumPairs>>> segment_axial_pos_to_ring_pair;
+  mutable VectorWithOffset< VectorWithOffset < shared_ptr<RingNumPairs> > > 
+    segment_axial_pos_to_ring_pair;
 
   //! allocate table
   void allocate_segment_axial_pos_to_ring_pair() const;
 
   //! initialise one element of the above table
-  /*! Not thread-safe! Use  initialise_ring_diff_arrays_if_not_done_yet() instead. */
   void compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_pos_num) const;
+
 };
+
 
 END_NAMESPACE_STIR
 

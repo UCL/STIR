@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2012, IRSL
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -59,23 +67,20 @@ unsigned long SC__color;
    All .F values should add up to 128.
    Last entry is used for the annotation color.
 */
-struct color_info
-{
-  SC_pixel_t R, G, B, F;
-};
+struct color_info { SC_pixel_t R,G,B,F;};
 
 /* last entry is annotation color */
-struct color_info sm4[6]
-    = { { 0, 0, 0, 32 }, { 0, 64, 94, 32 }, { 0, 127, 0, 32 }, { 127, 0, 0, 32 }, { 127, 127, 127, 0 }, { 127, 127, 0, 0 } };
+struct color_info sm4[6]={{0,0,0,32},{0,64,94,32},{0,127,0,32},
+ {127,0,0,32},{127,127,127,0},{127,127,0,0}};
 
-struct color_info sm4test[6]
-    = { { 0, 0, 0, 32 }, { 0, 0, 127, 32 }, { 0, 127, 0, 32 }, { 127, 0, 0, 32 }, { 127, 127, 127, 0 }, { 127, 127, 0, 0 } };
+struct color_info sm4test[6]={{0,0,0,32},{0,0,127,32},{0,127,0,32},
+ {127,0,0,32},{127,127,127,0},{127,127,0,0}};
 
 /* change November 1997
    .F values added only up to 126, added 2 to the second entry
    */
-struct color_info sm4green[6]
-    = { { 0, 0, 0, 32 }, { 0, 0, 127, 64 }, { 0, 127, 0, 31 }, { 127, 0, 0, 1 }, { 127, 127, 127, 0 }, { 127, 127, 0, 0 } };
+struct color_info sm4green[6]={{0,0,0,32},{0,0,127,64},{0,127,0,31},
+ {127,0,0,1},{127,127,127,0},{127,127,0,0}};
 
 /* KT 28/11/2002 adjusted first .F value to 128 */
 struct color_info bw[4] = { { 0, 0, 0, 128 }, { 127, 127, 127, 0 }, { 127, 127, 0, 0 } };
@@ -85,17 +90,16 @@ struct color_info inverse_bw[4] = { { 127, 127, 127, 128 }, { 0, 0, 0, 0 }, { 12
 
 /* KT 17/07/2000 added braces for inverse_bw */
 struct
-{
-  char name[10];
+{ char name[10];
   int size;
   struct color_info* p;
-} all_color_scales[NUMBER_SCALES] = {
-  { "sm4", 5, sm4 }, { "sm4test", 5, sm4test }, { "sm4green", 5, sm4green }, { "bw", 2, bw }, { "inverse_bw", 2, inverse_bw }
-};
+} all_color_scales[NUMBER_SCALES]={{"sm4",5,sm4},{"sm4test",5,sm4test},
+				   {"sm4green",5,sm4green},{"bw",2,bw},
+				   {"inverse_bw",2,inverse_bw}};
+
 
 /* KT 28/11/2002 heavily modified to account for TrueColor */
-int
-CreateColormap(Display* mydisplay, XVisualInfo my_visual_info, struct color_info* x, int size)
+int CreateColormap(Display *mydisplay, XVisualInfo my_visual_info, struct color_info *x, int size)
 {
   XColor cc;
   int i, j, k;
@@ -108,7 +112,10 @@ CreateColormap(Display* mydisplay, XVisualInfo my_visual_info, struct color_info
   if (my_visual_info.visual == NULL)
     return 1;
 
-  SCX_Colormap = XCreateColormap(mydisplay, DefaultRootWindow(SCX_display), my_visual_info.visual, AllocNone);
+  SCX_Colormap = XCreateColormap(mydisplay,DefaultRootWindow (SCX_display),
+                                 my_visual_info.visual,
+				 AllocNone
+				 );
   cc.flags = DoRed | DoGreen | DoBlue;
 
   for (i = 0, k = 0; i < size - 1; i++)
@@ -122,7 +129,8 @@ CreateColormap(Display* mydisplay, XVisualInfo my_visual_info, struct color_info
           cc.red = (int)((x[i].R + tmp_r * j) * SCX_Color_conv);
           cc.green = (int)((x[i].G + tmp_g * j) * SCX_Color_conv);
           cc.blue = (int)((x[i].B + tmp_b * j) * SCX_Color_conv);
-          cc.pixel = (int)(k++ * (SC_C_MAX - SC_C_BACKGROUND + 1) / 128. + .5) + SC_C_BACKGROUND;
+      cc.pixel = (int)(k++ * (SC_C_MAX-SC_C_BACKGROUND+1)/128. + .5)
+                 + SC_C_BACKGROUND;
           assert(cc.pixel <= SC_C_MAX);
           old_pixel_value = cc.pixel;
 
@@ -130,7 +138,8 @@ CreateColormap(Display* mydisplay, XVisualInfo my_visual_info, struct color_info
 
           if (XAllocColor(mydisplay, SCX_Colormap, &cc) == 0)
             {
-              message("X colormap initialisation: Error in color alloc %d, value %lu\n", k, cc.pixel);
+        message("X colormap initialisation: Error in color alloc %d, value %lu\n",
+		 k, cc.pixel);
               /*    return (1);*/
             }
           /* necessary for Truecolor */
@@ -138,6 +147,7 @@ CreateColormap(Display* mydisplay, XVisualInfo my_visual_info, struct color_info
           /*message("got %d,%d,%d pix %lx\n", cc.red, cc.green, cc.blue, cc.pixel);*/
         }
     }
+
 
   /* fill in last half of colors with the Annotation color
      for masking */
@@ -149,7 +159,8 @@ CreateColormap(Display* mydisplay, XVisualInfo my_visual_info, struct color_info
       cc.pixel = k;
       if (XAllocColor(mydisplay, SCX_Colormap, &cc) == 0)
         {
-          message("X colormap initialisation: Error in color alloc %d, value %lu\n", k, cc.pixel);
+        message("X colormap initialisation: Error in color alloc %d, value %lu\n",
+		 k, cc.pixel);
           /*    return (1);*/
         }
       SCX_color_translation[k] = cc.pixel;
@@ -157,20 +168,19 @@ CreateColormap(Display* mydisplay, XVisualInfo my_visual_info, struct color_info
   return 0;
 }
 
-int
-SetColormap(Display* mydisplay, Window mywindow, XVisualInfo my_visual_info, struct color_info* x, int size)
+int SetColormap(Display *mydisplay, Window  mywindow, XVisualInfo my_visual_info, struct color_info *x, int size)
 {
   CreateColormap(mydisplay, my_visual_info, x, size);
   XSetForeground(mydisplay, SCX_gc, SC_C_ANNOTATE);
   XSetWindowColormap(mydisplay, mywindow, SCX_Colormap);
   XSetWindowBorder(mydisplay, mywindow, SC_C_ANNOTATE);
   return (0);
+
 }
 
 /* KT 28/11/2002 heavily modified to account for TrueColor */
 /* helper function called by SC?_START() */
-static void
-SCX_init(XSizeHints* SCX_hint)
+static void SCX_init(XSizeHints* SCX_hint)
 {
   SCX_display = XOpenDisplay("");
   /* KT 13/10/98 added some error checking*/
@@ -190,15 +200,20 @@ SCX_init(XSizeHints* SCX_hint)
        Strategy:
        try PseudoColor, then TrueColor, then the default visual.
     */
-    if (!XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display), 8, PseudoColor, &SCX_visual_info)
-        && !XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display), 24, TrueColor, &SCX_visual_info)
-        && !XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display), 16, TrueColor, &SCX_visual_info)
-        && !XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display), 15, TrueColor, &SCX_visual_info))
+    if (!XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display),
+	  8, PseudoColor, &SCX_visual_info) &&
+        !XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display),
+			  24, TrueColor, &SCX_visual_info) &&
+        !XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display),
+			  16, TrueColor, &SCX_visual_info) &&
+        !XMatchVisualInfo(SCX_display, DefaultScreen(SCX_display),
+			  15, TrueColor, &SCX_visual_info))
       {
         /* get default */
         XVisualInfo* vinfo_list;
         int nitems;
-        SCX_visual_info.visualid = XVisualIDFromVisual(DefaultVisual(SCX_display, DefaultScreen(SCX_display)));
+      SCX_visual_info.visualid = 
+	XVisualIDFromVisual(DefaultVisual(SCX_display,DefaultScreen(SCX_display)));      
 #  if 0
       /* enable this when you want to be able to select the visual. If so,
          you can get the required number by using xdpyinfo.
@@ -206,7 +221,8 @@ SCX_init(XSizeHints* SCX_hint)
       SCX_visual_info.visualid = 
 	asknr("VisualID",0,10000,SCX_visual_info.visualid);
 #  endif
-        vinfo_list = XGetVisualInfo(SCX_display, VisualIDMask, &SCX_visual_info, &nitems);
+      vinfo_list = 
+	XGetVisualInfo(SCX_display, VisualIDMask, &SCX_visual_info, &nitems);
         if (nitems == 0)
           {
             error("X: Cannot get VisualInfo from default visual. Sorry\n");
@@ -215,34 +231,22 @@ SCX_init(XSizeHints* SCX_hint)
         XFree(vinfo_list);
       }
 
+
     /* write some info about the visual to the screen */
     {
       char* vclass;
       switch (SCX_get_class(SCX_visual_info))
         {
-        case StaticGray:
-          vclass = "StaticGray";
-          break;
-        case GrayScale:
-          vclass = "GrayScale";
-          break;
-        case StaticColor:
-          vclass = "StaticColor";
-          break;
-        case PseudoColor:
-          vclass = "PseudoColor";
-          break;
-        case TrueColor:
-          vclass = "TrueColor";
-          break;
-        case DirectColor:
-          vclass = "DirectColor";
-          break;
-        default:
-          vclass = "Unknown";
-          break;
+	case StaticGray: vclass = "StaticGray"; break;
+	case GrayScale: vclass = "GrayScale"; break;
+	case StaticColor: vclass = "StaticColor"; break;
+	case PseudoColor: vclass = "PseudoColor"; break;
+	case TrueColor: vclass = "TrueColor"; break;
+	case DirectColor: vclass = "DirectColor"; break;
+	default: vclass = "Unknown"; break;
         }
-      message("X visual selected: depth %d with class %s", SCX_visual_info.depth, vclass);
+      message("X visual selected: depth %d with class %s", 
+	      SCX_visual_info.depth, vclass);
 #  if 0
       message("red_mask %lx\ngreen_mask %lx\nblue mask %lx\n",
 	      SCX_visual_info.red_mask, SCX_visual_info.green_mask, SCX_visual_info.blue_mask);
@@ -253,7 +257,8 @@ SCX_init(XSizeHints* SCX_hint)
   /* find appropriate ZPixmap format */
   {
     int nitems, i;
-    XPixmapFormatValues* pixmapformats = XListPixmapFormats(SCX_display, &nitems);
+    XPixmapFormatValues * pixmapformats =
+      XListPixmapFormats(SCX_display, &nitems);
     if (pixmapformats == NULL)
       {
         message("X out of memory when requesting Pixmap info. No display of bitmaps\n");
@@ -274,8 +279,7 @@ SCX_init(XSizeHints* SCX_hint)
       }
 #  if 1
     message("Found pixmap format with depth %d, bits_per_pixel %d, scanline_pad %d.",
-            SCX_pixmap_format.depth,
-            SCX_pixmap_format.bits_per_pixel,
+	    SCX_pixmap_format.depth, SCX_pixmap_format.bits_per_pixel, 
             SCX_pixmap_format.scanline_pad);
 #  endif
     XFree(pixmapformats);
@@ -290,11 +294,15 @@ SCX_init(XSizeHints* SCX_hint)
       message("Color scales:");
       for (i = 0; i < NUMBER_SCALES; i++)
         printf("%d: %s|", i, all_color_scales[i].name);
-      CurrentColormap = asknr("Which one do you want ?", 0, NUMBER_SCALES - 1, CurrentColormap);
+      CurrentColormap = 
+	asknr("Which one do you want ?",0,NUMBER_SCALES-1, CurrentColormap);
     }
   message("Color map selected: %s\n", all_color_scales[CurrentColormap].name);
 
-  CreateColormap(SCX_display, SCX_visual_info, all_color_scales[CurrentColormap].p, all_color_scales[CurrentColormap].size);
+  CreateColormap(SCX_display, SCX_visual_info,
+	      all_color_scales[CurrentColormap].p, 
+	      all_color_scales[CurrentColormap].size);
+  
 
   /* create window */
   {
@@ -305,20 +313,17 @@ SCX_init(XSizeHints* SCX_hint)
      Thanks to Ken Lee to helping me out on this one. */
     attrib.backing_pixel = SCX_color_translation[SC_C_BACKGROUND];
     attrib.border_pixel = SCX_color_translation[SC_C_ANNOTATE];
-    SCX_window = XCreateWindow(SCX_display,
-                               DefaultRootWindow(SCX_display),
-                               SCX_hint->x,
-                               SCX_hint->y,
-                               (unsigned)SCX_hint->width,
-                               (unsigned)SCX_hint->height,
-                               5,
-                               SCX_visual_info.depth,
-                               InputOutput,
+    SCX_window = XCreateWindow (
+				SCX_display, DefaultRootWindow (SCX_display),
+				SCX_hint->x, SCX_hint->y, 
+				(unsigned)SCX_hint->width,  (unsigned)SCX_hint->height, 5, 
+				SCX_visual_info.depth, InputOutput,
                                SCX_visual_info.visual,
                                CWBackingStore | CWColormap | CWBorderPixel | CWBackingPixel,
                                &attrib);
 
-    XSetStandardProperties(SCX_display, SCX_window, "Display", "Display", None, 0, 0, SCX_hint);
+    XSetStandardProperties (SCX_display, SCX_window,
+			    "Display", "Display", None, 0, 0, SCX_hint);
   }
 
   SCX_gc = XCreateGC(SCX_display, SCX_window, 0, 0);
@@ -335,8 +340,7 @@ SCX_init(XSizeHints* SCX_hint)
 #  define SCX_hintX 800
 #  define SCX_hintY 600
 
-void
-SCX_START()
+void SCX_START()
 {
   XSizeHints SCX_hint;
 
@@ -349,8 +353,7 @@ SCX_START()
   SCX_init(&SCX_hint);
 }
 
-void
-SCX_START_BIG()
+void SCX_START_BIG()
 {
   XSizeHints SCX_hint;
   SCX_hint.x = (unsigned int)SCREEN_X_MAX / 100;
@@ -367,43 +370,37 @@ SCX_START_BIG()
    XLookupString(&report.xkey,...)
    It worked previously because report is a union including the correct type.
 */
-int
-SCX_WRITE(int* Xpos_x, int* Xpos_y, char* text)
+int SCX_WRITE(int *Xpos_x,int *Xpos_y,char *text)
 { /* when deleting characters, pieces of the image could disappear ?? */
   SC_MASK(SC_M_ANNOTATE);
-  XSelectInput(SCX_display, SCX_window, ButtonPressMask | KeyPressMask);
+  XSelectInput (SCX_display, SCX_window,
+         ButtonPressMask | KeyPressMask);
   while (1)
-    {
-      XEvent report;
+  { XEvent report;
       char chr[2];
       XNextEvent(SCX_display, &report);
       switch (report.type)
-        {
-        case ButtonPress:
+    { case ButtonPress:
           if (report.xbutton.button == Button3)
-            {
-              int x, y;
+        { int x,y;
               int stop = 0;
               int nr_chr = 0;
               x = *Xpos_x = report.xbutton.x;
               y = *Xpos_y = report.xbutton.y;
               while (!stop)
-                {
-                  XNextEvent(SCX_display, &report);
+          { XNextEvent (SCX_display, &report);
                   if (report.type == KeyPress)
                     {
                       XLookupString(&report.xkey, &chr[0], 1, NULL, NULL);
                       chr[1] = '\0';
                       switch (chr[0])
-                        {
-                        case 13: /* CR */
+              { case  13: /* CR */
                           text[nr_chr + 1] = '\0';
                           stop = 1;
                           break;
                         case '\177': /* BS ???? change it */
                           if (nr_chr)
-                            {
-                              chr[0] = text[--nr_chr];
+                  { chr[0] = text[--nr_chr];
                               x -= SC_CHAR_SPACING;
                               SC_MOVE(x, y);
                               SC_COLOR(SC_C_BACKGROUND);
@@ -413,8 +410,7 @@ SCX_WRITE(int* Xpos_x, int* Xpos_y, char* text)
                           break;
                         case 27: /* ESC */
                           while (nr_chr)
-                            {
-                              chr[0] = text[--nr_chr];
+                  { chr[0] = text[--nr_chr];
                               x -= SC_CHAR_SPACING;
                               SC_MOVE(x, y);
                               SC_COLOR(SC_C_BACKGROUND);
@@ -436,20 +432,18 @@ SCX_WRITE(int* Xpos_x, int* Xpos_y, char* text)
         case KeyPress:
           XLookupString(&report.xkey, &chr[0], 1, NULL, NULL);
           if (chr[0] == 'q' || chr[0] == 'Q')
-            {
-              SC_MASK(SC_M_ANNOTATE);
+        { SC_MASK(SC_M_ANNOTATE);
               return (0);
             }
-          else
-            return (1);
+        else return(1);
           break;
         }
     }
 }
 
-void SCX_STOP(stop) int stop;
-{
-  XEvent report;
+void SCX_STOP(stop)
+int stop;
+{ XEvent report;
 
   /* KT 28/11/2002 do this only for PseudoColor visuals. For the others, it is a noop */
   if (SCX_get_class(SCX_visual_info) == PseudoColor)
@@ -471,16 +465,14 @@ void SCX_STOP(stop) int stop;
           stop = 1;
           break;
         case ButtonPress:
-          if (report.xbutton.button != Button2)
-            break;
+	if (report.xbutton.button != Button2) break;
           CurrentColormap = (CurrentColormap + 1) % NUMBER_SCALES;
 
-          SetColormap(SCX_display,
-                      SCX_window,
-                      SCX_visual_info,
+	SetColormap(SCX_display, SCX_window, SCX_visual_info,
                       all_color_scales[CurrentColormap].p,
                       all_color_scales[CurrentColormap].size);
           break;
+      
         }
     }
   XUnmapWindow(SCX_display, SCX_window);
@@ -491,31 +483,29 @@ void SCX_STOP(stop) int stop;
   SCX_display = NULL;
 }
 
-unsigned
-SCX_X_MAX()
-{
-  Window wdummy;
+unsigned SCX_X_MAX()
+{ Window wdummy;
   /*KT 13/10/98 use different variables to prevent conflicts*/
   int x, y;
   unsigned width, height, bw, dep;
 
   if (SCX_display)
-    XGetGeometry(SCX_display, SCX_window, &wdummy, &x, &y, &width, &height, &bw, &dep);
+    XGetGeometry(SCX_display, SCX_window, &wdummy,
+                 &x, &y, &width, &height, &bw, &dep);
   else
     width = SCX_hintX;
   return (width);
 }
 
-unsigned
-SCX_Y_MAX()
-{
-  Window wdummy;
+unsigned SCX_Y_MAX()
+{ Window wdummy;
   /*KT 13/10/98 use different variables to prevent conflicts*/
   int x, y;
   unsigned width, height, bw, dep;
 
   if (SCX_display)
-    XGetGeometry(SCX_display, SCX_window, &wdummy, &x, &y, &width, &height, &bw, &dep);
+    XGetGeometry(SCX_display, SCX_window, &wdummy,
+            	 &x, &y, &width, &height, &bw, &dep);
   else
     height = SCX_hintY;
   return (height);
@@ -525,7 +515,8 @@ SCX_Y_MAX()
 #  undef SCX_hintY
 
 /* KT 28/11/2002 heavily modified to account for TrueColor */
-void SCX_PutImg(image, x_begin, y_begin, lengthX, lengthY) image_t* image;
+void SCX_PutImg (image,x_begin,y_begin,lengthX,lengthY)
+image_t *image;
 int x_begin, y_begin, lengthX, lengthY;
 {
   XImage* myimage;
@@ -535,9 +526,11 @@ int x_begin, y_begin, lengthX, lengthY;
   if (SCX_pixmap_format.depth == 0)
     return;
 
-  bytes_per_line
-      = ((lengthX * SCX_pixmap_format.bits_per_pixel + SCX_pixmap_format.scanline_pad - 1) / SCX_pixmap_format.scanline_pad)
-        * (SCX_pixmap_format.scanline_pad / 8);
+  bytes_per_line = 
+      ((lengthX*SCX_pixmap_format.bits_per_pixel + 
+	SCX_pixmap_format.scanline_pad-1
+	)/SCX_pixmap_format.scanline_pad
+       ) * (SCX_pixmap_format.scanline_pad/8);
 
   if (SCX_get_class(SCX_visual_info) != PseudoColor || bytes_per_line != lengthX)
     {
@@ -554,6 +547,7 @@ int x_begin, y_begin, lengthX, lengthY;
       local_image = (unsigned char*)image;
     }
 
+
   if (SCX_get_class(SCX_visual_info) != PseudoColor || bytes_per_line != lengthX)
     {
       int i;
@@ -561,8 +555,9 @@ int x_begin, y_begin, lengthX, lengthY;
       for (i = 0; i < lengthX * lengthY; ++i)
         {
           unsigned long color;
-          unsigned char* current_position
-              = local_image + (i / lengthX) * bytes_per_line + (i % lengthX) * (SCX_pixmap_format.bits_per_pixel / 8);
+      unsigned char * current_position =
+	local_image + (i/lengthX)*bytes_per_line + 
+	(i%lengthX)*(SCX_pixmap_format.bits_per_pixel/8);
           assert(SCX_pixmap_format.bits_per_pixel % 8 == 0);
           assert(image[i] >= SC_C_BACKGROUND);
           assert(image[i] <= SC_C_MAX);
@@ -635,13 +630,9 @@ int x_begin, y_begin, lengthX, lengthY;
   myimage = XCreateImage(SCX_display,
                          SCX_visual_info.visual,
                          SCX_pixmap_format.depth,
-                         ZPixmap,
-                         /*offset */ 0,
-                         (char*)local_image,
-                         (unsigned)lengthX,
-                         (unsigned)lengthY,
-                         SCX_pixmap_format.scanline_pad,
-                         bytes_per_line);
+			  ZPixmap, /*offset */ 0, (char *)local_image, 
+			  (unsigned)lengthX, (unsigned)lengthY, 
+			  SCX_pixmap_format.scanline_pad, bytes_per_line);
   if (myimage == NULL)
     {
       message("XcreateImage returned 0. No bitmap displayed.\n");
@@ -659,15 +650,15 @@ int x_begin, y_begin, lengthX, lengthY;
 #  endif
 
   SC_MASK(SC_M_ALL);
-  XPutImage(SCX_display, SCX_window, SCX_gc, myimage, 0, 0, x_begin, y_begin, (unsigned)lengthX, (unsigned)lengthY);
+  XPutImage (SCX_display, SCX_window, SCX_gc, myimage,
+         0, 0, x_begin, y_begin, (unsigned)lengthX, (unsigned)lengthY);
   SC_MASK(SC_C_ANNOTATE);
   XDestroyImage(myimage); /* Note: this deallocates local_image as well */
 }
 
-void
-SCX_SAVE_TO_FILE(int x_begin, int y_begin, int width, int height, FILE* outfile)
-{
-  XImage* myimage;
+void SCX_SAVE_TO_FILE
+(int x_begin,int y_begin,int width,int height,FILE *outfile)
+{ XImage * myimage;
   char* proc = "SCX_SAVE_TO_FILE";
   /*
     char  *dat;
@@ -678,8 +669,10 @@ SCX_SAVE_TO_FILE(int x_begin, int y_begin, int width, int height, FILE* outfile)
         ZPixmap, 0, dat, (int) width, (int)height, 8, 0);
   */
 
-  myimage = XGetImage(SCX_display, SCX_window, x_begin, y_begin, width, height, AllPlanes, ZPixmap);
-  fwrite_check(proc, (void*)myimage->data, (unsigned long)sizeof(SC_pixel_t) * width * height, outfile);
+  myimage = XGetImage(SCX_display, SCX_window,x_begin,y_begin,
+                width,height, AllPlanes,ZPixmap);
+  fwrite_check(proc,(void *)myimage->data,
+        (unsigned long)sizeof(SC_pixel_t)*width*height,outfile);
 }
 
 #endif /* SC_XWINDOWS */
@@ -687,7 +680,8 @@ SCX_SAVE_TO_FILE(int x_begin, int y_begin, int width, int height, FILE* outfile)
 /* change November 1997: added this function (was SCX_SCALE before) */
 /* 30/01/98 put high intensities on top of scale
    25/11/2002 try this again*/
-void SC_SCALE(pos_x, pos_y, size_x, size_y) int pos_x, pos_y, size_x, size_y;
+void SC_SCALE(pos_x,pos_y,size_x,size_y)
+int pos_x, pos_y, size_x, size_y;
 {
   unsigned char par;
   float pos_inc;
@@ -705,9 +699,10 @@ void SC_SCALE(pos_x, pos_y, size_x, size_y) int pos_x, pos_y, size_x, size_y;
      SC_C_BACKGROUND and SC_C_MAX */
   pos_inc = -((float)size_y) / (SC_C_MAX - SC_C_BACKGROUND + 1);
   pos_offset = pos_y + size_y - pos_inc * SC_C_BACKGROUND;
-  for (par = SC_C_BACKGROUND; par <= SC_C_MAX; par++)
-    {
-      SC_COLOR(par);
+  for(par=SC_C_BACKGROUND;
+      par<=SC_C_MAX;
+      par++)
+    { SC_COLOR(par);
       SC_RECT(pos_x + size_x, (int)(pos_offset + pos_inc * par + .5));
     }
   SC_PRMFIL(0);

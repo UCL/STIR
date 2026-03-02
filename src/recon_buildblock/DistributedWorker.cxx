@@ -3,7 +3,15 @@
     Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -32,16 +40,13 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
-#include "stir/warning.h"
-#include "stir/error.h"
-#include "stir/format.h"
+#include <boost/format.hpp>
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #include <exception>
 
 #include "stir/recon_buildblock/distributable_main.h"
 
-int
-main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 
   int return_value = EXIT_FAILURE;
@@ -64,7 +69,8 @@ main(int argc, char** argv)
       MPI_Comm_size(MPI_COMM_WORLD, &distributed::num_processors); /*Finds the number of processes being used*/
       MPI_Get_processor_name(processor_name, &namelength);
 
-      stir::info(format("Process {} of {} on {}", my_rank, distributed::num_processors, processor_name));
+      stir::info(boost::format("Process %d of %d on %s") 
+	   % my_rank % distributed::num_processors % processor_name);
 
       // master
       if (my_rank == 0)
@@ -78,7 +84,8 @@ main(int argc, char** argv)
             {
               return_value = stir::distributable_main(argc, argv);
               if (distributed::total_rpc_time_slaves != 0)
-                stir::info(format("Total time used for RPC-processing: {}", distributed::total_rpc_time_slaves));
+		stir::info(boost::format("Total time used for RPC-processing: %1%") %
+		     distributed::total_rpc_time_slaves);
             }
         }
       else // slaves
@@ -91,8 +98,9 @@ main(int argc, char** argv)
           return_value = EXIT_SUCCESS;
         }
 #endif
+
     }
-  catch (std::string& error_string)
+  catch (string& error_string)
     {
       // don't print yet, as error() already does that at the moment
       // std::cerr << error_string << std::endl;
@@ -100,7 +108,7 @@ main(int argc, char** argv)
     }
   catch (std::exception& e)
     {
-      stir::warning(e.what());
+      std::cerr << e.what() << std::endl;
       return_value = EXIT_FAILURE;
     }
 #ifdef STIR_MPI
@@ -109,6 +117,7 @@ main(int argc, char** argv)
   return return_value;
 }
 
+  
 namespace stir
 {
 
@@ -121,11 +130,11 @@ DistributedWorker<TargetT>::DistributedWorker()
 
 template <typename TargetT>
 DistributedWorker<TargetT>::~DistributedWorker()
-{}
+  {
+  }
 
 template <typename TargetT>
-void
-DistributedWorker<TargetT>::set_defaults()
+  void DistributedWorker<TargetT>::set_defaults()
 {
   log_likelihood_ptr = NULL;
   zero_seg0_end_planes = false;
@@ -133,8 +142,7 @@ DistributedWorker<TargetT>::set_defaults()
 }
 
 template <typename TargetT>
-void
-DistributedWorker<TargetT>::start()
+  void DistributedWorker<TargetT>::start()
 {
 
   // keep-on waiting for new tasks
@@ -150,28 +158,27 @@ DistributedWorker<TargetT>::start()
             return;
           }
 
-          case task_setup_distributable_computation: {
+          case task_setup_distributable_computation:
+            {
             this->setup_distributable_computation();
             break;
           }
 
-          case task_do_distributable_gradient_computation: {
+          case task_do_distributable_gradient_computation:
+            {
             this->distributable_computation(RPC_process_related_viewgrams_gradient);
             break;
           }
-          case task_do_distributable_loglikelihood_computation: {
+	  case task_do_distributable_loglikelihood_computation:
+	    {
             this->distributable_computation(RPC_process_related_viewgrams_accumulate_loglikelihood);
             break;
           }
-          case task_do_distributable_sensitivity_computation: {
-            this->distributable_computation(RPC_process_related_viewgrams_sensitivity_computation);
-            break;
-          }
-
           /*
             case task_do_distributable_sensitivity_computation;break;
           */
-          default: {
+          default:
+            {
             error("Internal error: Slave %d received unknown task-id %d", this->my_rank, task_id);
           }
         } // end switch task_id
@@ -179,8 +186,7 @@ DistributedWorker<TargetT>::start()
 }
 
 template <typename TargetT>
-void
-DistributedWorker<TargetT>::setup_distributable_computation()
+  void DistributedWorker<TargetT>::setup_distributable_computation()
 {
   // Receive zero_seg_end_planes
   this->zero_seg0_end_planes = distributed::receive_bool_value(-1, -1);
@@ -211,8 +217,7 @@ DistributedWorker<TargetT>::setup_distributable_computation()
   (configurations[3] == 1) ? cache_enabled = true : cache_enabled = false;
 
 #ifndef NDEBUG
-  if (distributed::test && my_rank == 1)
-    distributed::test_parameter_info_slave(proj_pair_sptr->stir::ParsingObject::parameter_info());
+    if (distributed::test && my_rank==1) distributed::test_parameter_info_slave(proj_pair_sptr->stir::ParsingObject::parameter_info());
 #endif
 
 #if 0
@@ -232,12 +237,13 @@ DistributedWorker<TargetT>::setup_distributable_computation()
 } // set_up
 
 template <typename TargetT>
-void
-DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgrams_type* RPC_process_related_viewgrams)
+  void DistributedWorker<TargetT>::
+  distributable_computation(RPC_process_related_viewgrams_type * RPC_process_related_viewgrams)
 {
   shared_ptr<TargetT> input_image_ptr = this->target_sptr; // use the target_sptr member as we don't need its values anyway
 
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(this->proj_pair_sptr->get_symmetries_used()->clone());
+    shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+      symmetries_sptr(this->proj_pair_sptr->get_symmetries_used()->clone());
 
 #ifndef NDEBUG
   if (distributed::test && my_rank == 1)
@@ -275,10 +281,6 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
         // output_image_ptr->fill(0.F);
       }
 
-    proj_pair_sptr->get_forward_projector_sptr()->set_input(*this->target_sptr);
-    if (!is_null_ptr(output_image_ptr))
-      proj_pair_sptr->get_back_projector_sptr()->start_accumulating_in_new_target();
-
     // loop to receive viewgrams until received END_ITERATION_TAG
     while (true)
       {
@@ -301,24 +303,23 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
           {
             viewgrams = new RelatedViewgrams<float>(proj_data_ptr->get_related_viewgrams(vs, symmetries_sptr));
             if (!is_null_ptr(binwise_correction))
-              additive_binwise_correction_viewgrams
-                  = new RelatedViewgrams<float>(binwise_correction->get_related_viewgrams(vs, symmetries_sptr));
+                  additive_binwise_correction_viewgrams = 
+                    new RelatedViewgrams<float>(binwise_correction->get_related_viewgrams(vs, symmetries_sptr));
             if (!is_null_ptr(mult_proj_data_sptr))
-              mult_viewgrams_ptr = new RelatedViewgrams<float>(mult_proj_data_sptr->get_related_viewgrams(vs, symmetries_sptr));
+                  mult_viewgrams_ptr = 
+                    new RelatedViewgrams<float>(mult_proj_data_sptr->get_related_viewgrams(vs, symmetries_sptr));
           }
         else if (status.MPI_TAG == NEW_VIEWGRAM_TAG) // receive a message with a new viewgram
           {
 #ifndef NDEBUG
             // run test for related viewgrams
-            if (distributed::test && my_rank == 1 && distributed::first_iteration == true)
-              distributed::test_related_viewgrams_slave(proj_data_info_sptr, symmetries_sptr);
+                if (distributed::test && my_rank==1 && distributed::first_iteration==true) distributed::test_related_viewgrams_slave(proj_data_info_sptr, symmetries_sptr);
 #endif
             // receive info if additive_binwise_correction_viewgrams are NULL
             const bool add_bin_corr_viewgrams = distributed::receive_bool_value(BINWISE_CORRECTION_TAG, 0);
             if (add_bin_corr_viewgrams)
               {
-                distributed::receive_and_construct_related_viewgrams(
-                    additive_binwise_correction_viewgrams, proj_data_info_sptr, symmetries_sptr, 0);
+                    distributed::receive_and_construct_related_viewgrams(additive_binwise_correction_viewgrams, proj_data_info_sptr, symmetries_sptr, 0);
               }
 
             // receive info if mult_viewgrams_ptr are NULL
@@ -335,8 +336,7 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
             if (cache_enabled)
               {
                 if (is_null_ptr(this->proj_data_ptr))
-                  this->proj_data_ptr.reset(
-                      new ProjDataInMemory(this->exam_info_sptr, this->proj_data_info_sptr, /*init_with_0*/ false));
+                      this->proj_data_ptr.reset(new ProjDataInMemory(this->exam_info_sptr,this->proj_data_info_sptr, /*init_with_0*/ false));
 
                 if (proj_data_ptr->set_related_viewgrams(*viewgrams) == Succeeded::no)
                   error("Slave %i: Storing viewgrams failed!\n", my_rank);
@@ -344,8 +344,7 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
                 if (add_bin_corr_viewgrams)
                   {
                     if (is_null_ptr(binwise_correction))
-                      binwise_correction.reset(
-                          new ProjDataInMemory(this->exam_info_sptr, this->proj_data_info_sptr, /*init_with_0*/ false));
+                          binwise_correction.reset(new ProjDataInMemory(this->exam_info_sptr,this->proj_data_info_sptr, /*init_with_0*/ false));
 
                     if (binwise_correction->set_related_viewgrams(*additive_binwise_correction_viewgrams) == Succeeded::no)
                       error("Slave %i: Storing additive_binwise_correction_viewgrams failed!\n", my_rank);
@@ -354,8 +353,7 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
                 if (mult_viewgrams)
                   {
                     if (is_null_ptr(mult_proj_data_sptr))
-                      mult_proj_data_sptr.reset(
-                          new ProjDataInMemory(this->exam_info_sptr, this->proj_data_info_sptr, /*init_with_0*/ false));
+                          mult_proj_data_sptr.reset(new ProjDataInMemory(this->exam_info_sptr,this->proj_data_info_sptr, /*init_with_0*/ false));
 
                     if (mult_proj_data_sptr->set_related_viewgrams(*mult_viewgrams_ptr) == Succeeded::no)
                       error("Slave %i: Storing mult_viewgrams_ptr failed!\n", my_rank);
@@ -367,10 +365,7 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
             // make reduction over computed output_images
             distributed::first_iteration = false;
             if (!is_null_ptr(output_image_ptr))
-              {
-                proj_pair_sptr->get_back_projector_sptr()->get_output(*output_image_ptr);
                 distributed::reduce_output_image(output_image_ptr, image_buffer_size, my_rank, 0);
-              }
             // and log_likelihood
             if (!is_null_ptr(log_likelihood_ptr))
               {
@@ -393,18 +388,14 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
           error("Slave received unknown tag");
 
         // measure time used for parallelized part
-        if (distributed::rpc_time)
-          {
-            t.reset();
-            t.start();
-          }
+            if (distributed::rpc_time) {t.reset(); t.start();}
 
         // call the actual calculation
-        RPC_process_related_viewgrams(this->proj_pair_sptr->get_forward_projector_sptr(),
+            RPC_process_related_viewgrams(
+                                          this->proj_pair_sptr->get_forward_projector_sptr(),
                                       this->proj_pair_sptr->get_back_projector_sptr(),
-                                      viewgrams,
-                                      count,
-                                      count2,
+                                          output_image_ptr.get(), input_image_ptr.get(), viewgrams, 
+                                          count, count2,
                                       log_likelihood_ptr,
                                       additive_binwise_correction_viewgrams,
                                       mult_viewgrams_ptr);
@@ -422,15 +413,13 @@ DistributedWorker<TargetT>::distributable_computation(RPC_process_related_viewgr
         // send count,count2 and ask for new work
         distributed::send_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG, 0);
 
-        if (viewgrams != NULL)
-          delete viewgrams;
-        if (additive_binwise_correction_viewgrams != NULL)
-          delete additive_binwise_correction_viewgrams;
-        if (mult_viewgrams_ptr != NULL)
-          delete mult_viewgrams_ptr;
+            if (viewgrams!=NULL) delete viewgrams;
+            if (additive_binwise_correction_viewgrams!=NULL) delete additive_binwise_correction_viewgrams;
+            if (mult_viewgrams_ptr!=NULL) delete mult_viewgrams_ptr;
       }
     if (distributed::rpc_time)
-      stir::info(format("Slave {} used {} seconds for PRC-processing.", my_rank, distributed::total_rpc_time_2));
+	  stir::info(boost::format("Slave %1% used %2% seconds for PRC-processing.")
+		     % my_rank % distributed::total_rpc_time_2);
   }
 }
 

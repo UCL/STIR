@@ -33,10 +33,21 @@ only work on systems where this library works properly.
     Copyright (C) 2000- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
+
+#ifdef HAVE_LLN_MATRIX
+
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
@@ -53,12 +64,15 @@ only work on systems where this library works properly.
 
 #include <stdarg.h>
 
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::ios;
 using std::iostream;
 using std::fstream;
 using std::cerr;
 using std::endl;
+#endif
+
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT
@@ -76,8 +90,7 @@ main(int argc, char** argv)
     }
 
   mptr = matrix_open(argv[1], MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
-  if (!mptr)
-    {
+  if (!mptr) {
       matrix_perror(argv[1]);
       exit(EXIT_FAILURE);
     }
@@ -100,7 +113,9 @@ main(int argc, char** argv)
       for (int frame_num = 1; frame_num <= num_frames; ++frame_num)
         for (int bed_num = 0; bed_num < num_bed_poss; ++bed_num)
           for (int gate_num = 1; gate_num <= num_gates; ++gate_num)
-            write_basic_interfile_header_for_ECAT7(interfile_header_filename, argv[1], frame_num, gate_num, data_num, bed_num);
+          write_basic_interfile_header_for_ECAT7( interfile_header_filename,
+                                                  argv[1], 
+						  frame_num, gate_num, data_num, bed_num);
     }
   else
     {
@@ -109,7 +124,12 @@ main(int argc, char** argv)
       const int gate_num = ask_num("Gate number ? ", 1, num_gates, 1);
       const int data_num = ask_num("Data number ? ", 0, 8, 0);
 
-      write_basic_interfile_header_for_ECAT7(interfile_header_filename, argv[1], frame_num, gate_num, data_num, bed_num);
+    write_basic_interfile_header_for_ECAT7( interfile_header_filename,
+                                            argv[1], frame_num, gate_num, data_num,
+                                            bed_num);
     }
   return EXIT_SUCCESS;
 }
+
+#endif
+

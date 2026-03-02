@@ -13,26 +13,33 @@
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 #include "stir/TimeFrameDefinitions.h"
-#include "stir/warning.h"
 #include <iostream>
 #include <string>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::cout;
+#endif
 
 USING_NAMESPACE_STIR
 
-void
-print_usage_and_exit(char const* const prog_name)
+void print_usage_and_exit(char const * const prog_name)
 {
-  cerr << "Usage:\n"
-       << prog_name << " PARAMETERS\n"
+  cerr << "Usage:\n" << prog_name << " PARAMETERS\n"
        << "where PARAMETERS has two possibilities:\n\n"
        << "1) print number of time frames\n"
        << "\t--num-time-frames Frame_def_filename\n\n"
@@ -65,40 +72,34 @@ main(int argc, char* argv[])
       if (strcmp(argv[1], "--num-time-frames") == 0)
         {
           only_num_time_frames = true;
-          --argc;
-          ++argv;
+	  --argc; ++argv;
         }
       else
         {
           if (strcmp(argv[1], "--msecs") == 0)
             {
               units_secs = false;
-              --argc;
-              ++argv;
+	      --argc; ++argv;
             }
           else if (strcmp(argv[1], "--duration") == 0 && !only_start_time && !only_end_time && !only_mid_time)
             {
               only_duration = true;
-              --argc;
-              ++argv;
+	      --argc; ++argv;
             }
           else if (strcmp(argv[1], "--start-time") == 0 && !only_duration && !only_end_time && !only_mid_time)
             {
               only_start_time = true;
-              --argc;
-              ++argv;
+	      --argc; ++argv;
             }
           else if (strcmp(argv[1], "--end-time") == 0 && !only_duration && !only_start_time && !only_mid_time)
             {
               only_end_time = true;
-              --argc;
-              ++argv;
+	      --argc; ++argv;
             }
           else if (strcmp(argv[1], "--mid-time") == 0 && !only_duration && !only_start_time && !only_end_time)
             {
               only_mid_time = true;
-              --argc;
-              ++argv;
+	      --argc; ++argv;
             }
           else
             print_usage_and_exit(prog_name);
@@ -123,7 +124,9 @@ main(int argc, char* argv[])
   if (argc != 3 && argc != 4)
     print_usage_and_exit(prog_name);
   const unsigned int start_frame_num = atoi(argv[2]);
-  const unsigned int end_frame_num = argc > 3 ? atoi(argv[3]) : start_frame_num;
+  const unsigned int end_frame_num = 
+    argc>3 ? atoi(argv[3]) : start_frame_num;
+
 
   for (unsigned frame_num = start_frame_num; frame_num <= end_frame_num; ++frame_num)
     {
@@ -132,7 +135,8 @@ main(int argc, char* argv[])
           /* Note: we intentionally check this in the loop.
              This way, we do get output for valid frames.
           */
-          warning("frame_num should be between 1 and %d\n", time_def.get_num_frames());
+	  warning("frame_num should be between 1 and %d\n", 
+		  time_def.get_num_frames());
           exit(EXIT_FAILURE);
         }
       const double start_frame = time_def.get_start_time(frame_num);
@@ -158,10 +162,13 @@ main(int argc, char* argv[])
       else if (only_mid_time)
         cout << mid_frame * units << endl;
       else
-        cout << "Start of frame " << frame_num << "   : " << start_frame * units << units_string << "\nMiddle of frame "
-             << frame_num << "  : " << mid_frame * units << units_string << "\nEnd of frame " << frame_num << "     : "
-             << end_frame * units << units_string << "\nFrame duration " << frame_num << "   : " << frame_duration * units
-             << units_string << endl;
+	cout << "Start of frame " << frame_num << "   : " << start_frame*units << units_string 
+	     << "\nMiddle of frame " << frame_num << "  : " << mid_frame*units << units_string 
+	     << "\nEnd of frame " << frame_num << "     : " << end_frame*units << units_string 
+	     << "\nFrame duration " << frame_num << "   : " << frame_duration*units << units_string << endl;
+
+
     }
   return EXIT_SUCCESS;
 }
+

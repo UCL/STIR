@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,14 +29,14 @@
 #ifndef __stir_recon_buildblock_FilterRootPrior_H__
 #define __stir_recon_buildblock_FilterRootPrior_H__
 
+
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
-template <typename DataT>
-class DataProcessor;
+template <typename DataT> class DataProcessor;
 
 /*!
   \ingroup priors
@@ -61,11 +69,21 @@ class DataProcessor;
   DataProcessor.
 */
 template <typename DataT>
-class FilterRootPrior : public RegisteredParsingObject<FilterRootPrior<DataT>, GeneralisedPrior<DataT>, GeneralisedPrior<DataT>>
+class FilterRootPrior:  public 
+      RegisteredParsingObject<
+	      FilterRootPrior<DataT>,
+              GeneralisedPrior<DataT >,
+	      GeneralisedPrior<DataT >
+	       >
 {
 private:
-  typedef RegisteredParsingObject<FilterRootPrior<DataT>, GeneralisedPrior<DataT>, GeneralisedPrior<DataT>> base_type;
-
+  typedef 
+      RegisteredParsingObject<
+	      FilterRootPrior<DataT>,
+              GeneralisedPrior<DataT >,
+	      GeneralisedPrior<DataT >
+	       >
+    base_type;
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
   static const char* const registered_name;
@@ -74,32 +92,30 @@ public:
   FilterRootPrior();
 
   //! Constructs it explicitly
-  FilterRootPrior(shared_ptr<DataProcessor<DataT>> const&, const float penalization_factor);
-
-  bool is_convex() const override;
+  FilterRootPrior(shared_ptr<DataProcessor<DataT> >const&, 
+		  const float penalization_factor);
 
   //! compute the value of the function
   /*! \warning Generally there is no function associated to this prior,
     so we just return 0 and write a warning the first time it's called.
    */
-  double compute_value(const DataT& current_estimate) override;
+  virtual double
+    compute_value(const DataT &current_estimate);
 
   //! compute gradient by applying the filter
-  void compute_gradient(DataT& prior_gradient, const DataT& current_estimate) override;
+  void compute_gradient(DataT& prior_gradient, 
+			const DataT &current_estimate);
 
-  //! Has to be called before using this object
-  Succeeded set_up(shared_ptr<const DataT> const& target_sptr) override;
-
-protected:
-  //! Check that the prior is ready to be used
-  void check(DataT const& current_image_estimate) const override;
 
 private:
   shared_ptr<DataProcessor<DataT>> filter_ptr;
-  void set_defaults() override;
-  void initialise_keymap() override;
+   virtual void set_defaults();
+   virtual void initialise_keymap();
+
 };
+
 
 END_NAMESPACE_STIR
 
 #endif
+

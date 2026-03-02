@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -89,12 +97,12 @@ START_NAMESPACE_STIR
   \c topleveliterT or \c rest_iter_type is only an input or
   output iterator.
 */
-template <typename topleveliterT, class GetRestRangeFunctionT = BeginEndFunction<topleveliterT>>
+template <typename topleveliterT,
+          class GetRestRangeFunctionT=BeginEndFunction<topleveliterT> >
 class NestedIterator
 {
 private:
   typedef typename GetRestRangeFunctionT::rest_iter_type rest_iter_type;
-
 public:
   typedef std::forward_iterator_tag iterator_category;
   typedef typename boost::iterator_difference<rest_iter_type>::type difference_type;
@@ -107,7 +115,8 @@ public:
   inline NestedIterator();
 
   //! constructor to initialise the members
-  inline NestedIterator(const topleveliterT& top_level_iter, const topleveliterT& end_top_level_iter);
+  inline NestedIterator(const topleveliterT& top_level_iter, 
+                        const topleveliterT& end_top_level_iter);
 
   //! constructor to convert between nested iterators using convertible top and next level iterators
   /*! Ignore the 2nd and 3rd argument. They are there to let the compiler check if the types are
@@ -148,8 +157,7 @@ public:
 #else
 private:
   // needed for conversion constructor
-  template <class, class>
-  friend class NestedIterator;
+  template <class,class> friend class NestedIterator;
 #endif
 
   //! the \c topleveliterT iterator pointing to the current \a row
@@ -163,7 +171,6 @@ private:
 
   //! a \c rest_iter_type iterator pointing to the end of the current \a row
   rest_iter_type _end_rest_iter;
-
 private:
   //! set the rest_iters to the range corresponding to a new \a top_level_iter
   void _set_rest_iters_for_current_top_level_iter();

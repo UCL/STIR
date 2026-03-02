@@ -3,12 +3,11 @@ Patlak Plot Parameters:=
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := FLOAT
-; see Users Guide
+scale factor := FLOAT
 blood data filename :=  
 ; In seconds
 Time Shift := 0
-; following settings are appropriate for STIR reconstructed images
 In total counts := 1
-In correct scale := 0
+In correct scale := 1
 
 end Patlak Plot Parameters:=

@@ -3,7 +3,15 @@
  Copyright (C) 2009 - 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -18,23 +26,21 @@
 
 #include "stir/spatial_transformation/GatedSpatialTransformation.h"
 #include "stir/spatial_transformation/warp_image.h"
-#include "stir/info.h"
-#include "stir/warning.h"
-#include "stir/error.h"
-#include "stir/format.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
 void
-GatedSpatialTransformation::set_defaults()
+GatedSpatialTransformation::
+set_defaults()
 {
   base_type::set_defaults();
   this->_transformation_filename_prefix = "";
-  this->_spline_type = static_cast<BSpline::BSplineType>(1);
-  ;
+  this->_spline_type=static_cast<BSpline::BSplineType> (1);;
 }
 
-const char* const GatedSpatialTransformation::registered_name = "Gated Spatial Transformation";
+const char * const 
+GatedSpatialTransformation::registered_name = "Gated Spatial Transformation";
 
 //! default constructor
 GatedSpatialTransformation::GatedSpatialTransformation()
@@ -61,7 +67,8 @@ GatedSpatialTransformation::get_time_gate_definitions() const
 }
 
 void
-GatedSpatialTransformation::initialise_keymap()
+GatedSpatialTransformation::
+initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key("Gated Spatial Transformation Parameters");
@@ -70,7 +77,8 @@ GatedSpatialTransformation::initialise_keymap()
 }
 
 bool
-GatedSpatialTransformation::post_processing()
+GatedSpatialTransformation::
+post_processing()
 {
   if (base_type::post_processing() == true)
     return true;
@@ -89,8 +97,7 @@ GatedSpatialTransformation::post_processing()
   return false;
 }
 
-//! Implementation to read the transformation vectors will be moved to the IO directory because it should be general. For example
-//! it can be in ECAT7 image formant
+//! Implementation to read the transformation vectors will be moved to the IO directory because it should be general. For example it can be in ECAT7 image formant
 void
 GatedSpatialTransformation::read_from_files(const std::string input_string)
 {
@@ -98,29 +105,22 @@ GatedSpatialTransformation::read_from_files(const std::string input_string)
 
   if (gate_defs_input_string.size() != 0)
     this->_gate_defs = TimeGateDefinitions(gate_defs_input_string);
-  else
-    {
+  else {
       error("No Time Gates Definitions available!!!\n ");
     }
 
-  const shared_ptr<GatedDiscretisedDensity> spatial_transformation_z_sptr(
-      GatedDiscretisedDensity::read_from_files(input_string, "d1"));
+  const shared_ptr<GatedDiscretisedDensity> spatial_transformation_z_sptr (GatedDiscretisedDensity::read_from_files(input_string,"d1"));
   const GatedDiscretisedDensity& spatial_transformation_z(*spatial_transformation_z_sptr);
 
-  const shared_ptr<GatedDiscretisedDensity> spatial_transformation_y_sptr(
-      GatedDiscretisedDensity::read_from_files(input_string, "d2"));
+  const shared_ptr<GatedDiscretisedDensity> spatial_transformation_y_sptr(GatedDiscretisedDensity::read_from_files(input_string,"d2"));
   const GatedDiscretisedDensity& spatial_transformation_y(*spatial_transformation_y_sptr);
 
-  const shared_ptr<GatedDiscretisedDensity> spatial_transformation_x_sptr(
-      GatedDiscretisedDensity::read_from_files(input_string, "d3"));
+  const shared_ptr<GatedDiscretisedDensity> spatial_transformation_x_sptr (GatedDiscretisedDensity::read_from_files(input_string,"d3"));
   const GatedDiscretisedDensity& spatial_transformation_x(*spatial_transformation_x_sptr);
 
-  const TimeGateDefinitions gate_defs(gate_defs_input_string); // This is not necessary as the defs are necessary for all the
-                                                               // files and it should be one file... Think how to do this.
+  const TimeGateDefinitions gate_defs(gate_defs_input_string);//This is not necessary as the defs are necessary for all the files and it should be one file... Think how to do this.
 
-  this->_spatial_transformation_z = spatial_transformation_z;
-  this->_spatial_transformation_y = spatial_transformation_y;
-  this->_spatial_transformation_x = spatial_transformation_x;
+  this->_spatial_transformation_z= spatial_transformation_z; this->_spatial_transformation_y= spatial_transformation_y; this->_spatial_transformation_x= spatial_transformation_x; 
   this->_spatial_transformations_are_stored = true;
 }
 
@@ -135,16 +135,15 @@ GatedSpatialTransformation::write_to_files(const std::string output_string)
 }
 
 void
-GatedSpatialTransformation::warp_image(GatedDiscretisedDensity& new_gated_image, const GatedDiscretisedDensity& gated_image) const
+GatedSpatialTransformation::warp_image(GatedDiscretisedDensity & new_gated_image,
+                          const GatedDiscretisedDensity & gated_image) const 
 {
   std::string explanation;
-  if (!(gated_image.get_densities()[0])->has_same_characteristics(*(gated_image.get_densities()[0]), explanation))
-    {
-      error(format("GatedSpatialTransformation::warp_image needs the same sizes for input and output images: {}", explanation));
+  if (!(new_gated_image.get_densities()[0])->has_same_characteristics(*(gated_image.get_densities()[0]), explanation)){
+        error(boost::format("GatedSpatialTransformation::warp_image needs the same sizes for input and output images: %1%") % explanation);
     }
   new_gated_image.set_time_gate_definitions(this->_gate_defs);
-  assert(gated_image.get_time_gate_definitions().get_num_gates()
-         == this->_spatial_transformation_x.get_time_gate_definitions().get_num_gates());
+  assert(gated_image.get_time_gate_definitions().get_num_gates()==this->_spatial_transformation_x.get_time_gate_definitions().get_num_gates());
   new_gated_image.fill_with_zero();
   if (this->_spatial_transformations_are_stored)
     for (unsigned int gate_num = 1; gate_num <= gated_image.get_time_gate_definitions().get_num_gates(); ++gate_num)
@@ -152,8 +151,7 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity& new_gated_image,
                                                    (this->_spatial_transformation_x.get_densities())[gate_num - 1],
                                                    (this->_spatial_transformation_y.get_densities())[gate_num - 1],
                                                    (this->_spatial_transformation_z.get_densities())[gate_num - 1],
-                                                   BSpline::linear,
-                                                   false);
+                                                 BSpline::linear, false);
   else
     error("The transformation fields haven't been set properly yet.\n");
 }
@@ -180,18 +178,48 @@ GatedSpatialTransformation::accumulate_warp_image(DiscretisedDensity<3, float>& 
 }
 
 void
+GatedSpatialTransformation::average_warp_image(DiscretisedDensity<3, float> & new_reference_image,
+                                               const GatedDiscretisedDensity & gated_image) const 
+{
+  new_reference_image.fill(0.F);
+  this->accumulate_average_warp_image(new_reference_image, gated_image);
+}
+
+void
+GatedSpatialTransformation::accumulate_average_warp_image(DiscretisedDensity<3, float> & new_reference_image,
+                                               const GatedDiscretisedDensity & gated_image) const 
+{
+  GatedDiscretisedDensity new_gated_image(gated_image);
+  new_gated_image.fill_with_zero();
+  this->warp_image(new_gated_image,gated_image);
+  //!todo This is not implemented as sum (or should it be the average?)
+  for(unsigned int gate_num = 1;gate_num<=gated_image.get_time_gate_definitions().get_num_gates() ; ++gate_num)
+    { 
+	 float gate_relative_duration=new_gated_image.get_time_gate_definitions().get_gate_relative_duration(gate_num);
+	 
+	 DiscretisedDensity<3,float>::full_iterator new_gated_image_iter = new_gated_image[gate_num].begin_all();
+     DiscretisedDensity<3,float>::full_iterator end_new_gated_image_iter = new_gated_image[gate_num].end_all();
+     DiscretisedDensity<3,float>::full_iterator new_reference_image_iter = new_reference_image.begin_all();	 
+	 
+	 while (new_gated_image_iter!=end_new_gated_image_iter) 
+	   { 
+	    *new_gated_image_iter *= gate_relative_duration;    //Nicolas K. : Scalar multiplication of current gate with the relative duration
+        *new_reference_image_iter += *new_gated_image_iter; //Nicolas K. : Scaled value accumulated over all motions/gates	
+	    ++new_gated_image_iter, ++new_reference_image_iter; 
+	   }	
+	}
+}
+
+void 
 GatedSpatialTransformation::warp_image(GatedDiscretisedDensity& gated_image,
                                        const DiscretisedDensity<3, float>& reference_image) const
 {
-  if ((gated_image.get_densities())[0]->size_all() != reference_image.size_all())
-    {
+  if ((gated_image.get_densities())[0]->size_all()!=reference_image.size_all()){
       error("GatedSpatialTransformation::warp_image needs the same sizes for input and output images.\n");
     }
-  if ((gated_image.get_densities())[0]->size_all() != (this->_spatial_transformation_y.get_densities())[0]->size_all())
-    {
-      info(format("Number of voxels in one gated image: {}", (gated_image.get_densities())[0]->size_all()));
-      info(format("Number of voxels in one motion vector gated image: {}",
-                  (this->_spatial_transformation_y.get_densities())[0]->size_all()));
+  if ((gated_image.get_densities())[0]->size_all()!=(this->_spatial_transformation_y.get_densities())[0]->size_all()){
+    std::cerr << "Number of voxels in one gated image: " << (gated_image.get_densities())[0]->size_all() << "\n";
+    std::cerr << "Number of voxels in one motion vector gated image: " << (this->_spatial_transformation_y.get_densities())[0]->size_all() << "\n";
       error("GatedSpatialTransformation::warp_image needs the same sizes for motion vectors and input/output images.\n");
     }
   const shared_ptr<DiscretisedDensity<3, float>> reference_image_sptr(reference_image.clone());
@@ -200,13 +228,11 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity& gated_image,
   if (this->_spatial_transformations_are_stored)
     for (unsigned int gate_num = 1; gate_num <= gated_image.get_time_gate_definitions().get_num_gates(); ++gate_num)
       {
-        const VoxelsOnCartesianGrid<float> density
-            = stir::warp_image(reference_image_sptr,
+        const VoxelsOnCartesianGrid<float> density = stir::warp_image(reference_image_sptr,
                                (this->_spatial_transformation_x.get_densities())[gate_num - 1],
                                (this->_spatial_transformation_y.get_densities())[gate_num - 1],
                                (this->_spatial_transformation_z.get_densities())[gate_num - 1],
-                               BSpline::linear,
-                               false);
+                                                                      BSpline::linear, false);
         const shared_ptr<DiscretisedDensity<3, float>> density_sptr(density.clone());
         gated_image.set_density_sptr(density_sptr, gate_num);
       }
@@ -215,7 +241,46 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity& gated_image,
 }
 
 void
-GatedSpatialTransformation::set_spatial_transformations(const GatedDiscretisedDensity& transformation_z,
+GatedSpatialTransformation::average_warp_image(DiscretisedDensity<3, float> & avg_warped_image,
+                                               const DiscretisedDensity<3, float> & reference_image) const 
+{
+  avg_warped_image.fill(0.F);
+  this->accumulate_average_warp_image(avg_warped_image, reference_image);
+}
+
+void 
+GatedSpatialTransformation::accumulate_average_warp_image(DiscretisedDensity<3, float> & avg_warped_image,
+                                                          const DiscretisedDensity<3, float> & reference_image) const 
+{
+
+  // Creation of a copy a gated image to temporarily store the motion transformed images of each motion/gate
+  const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr(reference_image.get_empty_copy());
+  GatedDiscretisedDensity gated_image = GatedDiscretisedDensity(this->_gate_defs, density_template_sptr);
+  
+  this->warp_image(gated_image,reference_image);
+  
+  // The relative durations for each motion/gate when applied as weights in the following weighted sum operation 
+  // effectively produced a time-weighted average warped image
+  for(unsigned int gate_num = 1;gate_num<=gated_image.get_time_gate_definitions().get_num_gates() ; ++gate_num)
+    { 
+	 float gate_relative_duration=gated_image.get_time_gate_definitions().get_gate_relative_duration(gate_num);
+	 
+	 DiscretisedDensity<3,float>::full_iterator gated_image_iter = gated_image[gate_num].begin_all();
+     DiscretisedDensity<3,float>::full_iterator end_gated_image_iter = gated_image[gate_num].end_all();
+     DiscretisedDensity<3,float>::full_iterator avg_warped_image_iter = avg_warped_image.begin_all();	 
+	 
+	 while (gated_image_iter!=end_gated_image_iter) 
+	   { 
+	    *gated_image_iter *= gate_relative_duration; //Nicolas K. : Scalar multiplication of current gate with the relative duration
+        *avg_warped_image_iter += *gated_image_iter; //Nicolas K. : Scaled value accumulated over all motions/gates	
+	    ++gated_image_iter, ++avg_warped_image_iter; 
+	   }	
+	}
+}
+
+void
+GatedSpatialTransformation::
+set_spatial_transformations(const GatedDiscretisedDensity & transformation_z, 
                                                         const GatedDiscretisedDensity& transformation_y,
                                                         const GatedDiscretisedDensity& transformation_x)
 {
@@ -227,24 +292,14 @@ GatedSpatialTransformation::set_spatial_transformations(const GatedDiscretisedDe
 
 void
 GatedSpatialTransformation::set_gate_defs(const TimeGateDefinitions& gate_defs)
-{
-  this->_gate_defs = gate_defs;
-}
+{ this->_gate_defs=gate_defs; }
+ 
+GatedDiscretisedDensity GatedSpatialTransformation::get_spatial_transformation_z() const
+{ return this->_spatial_transformation_z; }
+GatedDiscretisedDensity GatedSpatialTransformation::get_spatial_transformation_y() const
+{ return this->_spatial_transformation_y; }
+GatedDiscretisedDensity GatedSpatialTransformation::get_spatial_transformation_x() const
+{ return this->_spatial_transformation_x; }
 
-GatedDiscretisedDensity
-GatedSpatialTransformation::get_spatial_transformation_z() const
-{
-  return this->_spatial_transformation_z;
-}
-GatedDiscretisedDensity
-GatedSpatialTransformation::get_spatial_transformation_y() const
-{
-  return this->_spatial_transformation_y;
-}
-GatedDiscretisedDensity
-GatedSpatialTransformation::get_spatial_transformation_x() const
-{
-  return this->_spatial_transformation_x;
-}
 
 END_NAMESPACE_STIR

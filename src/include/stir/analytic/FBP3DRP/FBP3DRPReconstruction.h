@@ -6,7 +6,15 @@
 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,6 +30,8 @@
 #ifndef __stir_analytic_FBP3DRP_FBP3DRPRECONSTRUCTION_H__
 #define __stir_analytic_FBP3DRP_FBP3DRPRECONSTRUCTION_H__
 
+
+
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
@@ -29,20 +39,14 @@
 #include "stir/analytic/FBP3DRP/ColsherFilter.h"
 #include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
-#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-class RelatedViewgrams;
-template <typename elemT>
-class Sinogram;
-template <typename elemT>
-class SegmentBySinogram;
-template <typename elemT>
-class VoxelsOnCartesianGrid;
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+template <typename elemT> class RelatedViewgrams;
+template <typename elemT> class Sinogram;
+template <typename elemT> class SegmentBySinogram;
+template <typename elemT> class VoxelsOnCartesianGrid;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Succeeded;
 
 /* KT 180899 forget about PETAnalyticReconstruction for the moment
@@ -88,16 +92,11 @@ class Succeeded;
 
 
 */
-class FBP3DRPReconstruction
-    : public RegisteredParsingObject<FBP3DRPReconstruction, Reconstruction<DiscretisedDensity<3, float>>, AnalyticReconstruction>
+class FBP3DRPReconstruction: public AnalyticReconstruction
 {
-  // typedef AnalyticReconstruction base_type;
-  typedef RegisteredParsingObject<FBP3DRPReconstruction, Reconstruction<DiscretisedDensity<3, float>>, AnalyticReconstruction>
-      base_type;
-
+  typedef AnalyticReconstruction base_type;
 public:
-  //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char* const registered_name;
+
 
   //! Default constructor (calls set_defaults())
   FBP3DRPReconstruction();
@@ -106,18 +105,17 @@ public:
     \brief Constructor, initialises everything from parameter file, or (when
     parameter_filename == "") by calling ask_parameters().
   */
-  explicit FBP3DRPReconstruction(const std::string& parameter_filename);
+  explicit 
+    FBP3DRPReconstruction(const string& parameter_filename);
 
   // explicitly implement destructor (NOT inline) to avoid funny problems with
   // the shared_ptr<DiscretisedDensity<3,float> > destructor with gcc.
   // Otherwise, gcc will complain if you didn't include DiscretisedDensity.h
   // because it doesn't know ~DiscretisedDensity.
-  ~FBP3DRPReconstruction() override;
+  ~FBP3DRPReconstruction();
 
   //! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
-  std::string method_info() const override;
-
-  Succeeded set_up(shared_ptr<DiscretisedDensity<3, float>> const& target_image_sptr) override;
+   virtual string method_info() const;
 
 protected:
   /*!
@@ -128,10 +126,11 @@ protected:
     and returns the output reconstructed image
   */
 
-  Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const&) override;
+   virtual Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const&);
 
   //! Best fit of forward projected sinograms
   void do_best_fit(const Sinogram<float>& sino_measured, const Sinogram<float>& sino_calculated);
+
 
   //!  2D FBP implementation.
   void do_2D_reconstruction();
@@ -142,6 +141,7 @@ protected:
   //!  Read image estimated from 2D FBP
   void do_read_image2D();
 
+    
   //!  3D reconstruction implementation.
   void do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image);
 
@@ -149,31 +149,46 @@ protected:
   void do_arc_correction(RelatedViewgrams<float>& viewgrams) const;
 
   //!  Growing 8 viewgrams in both ring and bin directions.
-  void do_grow3D_viewgram(RelatedViewgrams<float>& viewgrams, int rmin, int rmax);
+    void do_grow3D_viewgram(RelatedViewgrams<float> & viewgrams, 
+                            int rmin, int rmax);
   //!  3D forward projection implentation by view.
-  void
-  do_forward_project_view(RelatedViewgrams<float>& viewgrams, int rmin, int rmax, int orig_min_ring, int orig_max_ring) const;
+    void do_forward_project_view(RelatedViewgrams<float> & viewgrams,
+                                 int rmin, int rmax,
+                                 int orig_min_ring, int orig_max_ring) const; 
   //!  Apply Colsher filter to 8 viewgrams.
   void do_colsher_filter_view(RelatedViewgrams<float>& viewgrams);
   //!  3D backprojection implentation for 8 viewgrams.
-  void do_3D_backprojection_view(RelatedViewgrams<float> const& viewgrams, int rmin, int rmax);
+    void do_3D_backprojection_view(RelatedViewgrams<float> const & viewgrams,
+                                   VoxelsOnCartesianGrid<float> &image,
+                                   int rmin, int rmax);
   //!  Saving CPU timing and values of reconstruction parameters into a log file.
   void do_log_file(const VoxelsOnCartesianGrid<float>& image);
 
-  virtual void do_byview_initialise(const VoxelsOnCartesianGrid<float>& image) const {};
 
-  virtual void do_byview_finalise(VoxelsOnCartesianGrid<float>& image){};
 
+
+    virtual void do_byview_initialise(const VoxelsOnCartesianGrid<float>& image) const
+    {};
+
+    virtual void do_byview_finalise(VoxelsOnCartesianGrid<float>& image) {};
 public:
   // KT 230899 this has to be public to let the Para stuff access it (sadly)
 
-  virtual void do_process_viewgrams(RelatedViewgrams<float>& viewgrams, int rmin, int rmax, int orig_min_ring, int orig_max_ring);
+    virtual void do_process_viewgrams(
+                                  RelatedViewgrams<float> & viewgrams,
+                                  int rmin, int rmax,
+                                  int orig_min_ring, int orig_max_ring,
+                                  VoxelsOnCartesianGrid<float> &image);
 
   // parameters stuff
 public:
+
+   
   void ask_parameters();
 
+ 
 protected:
+
   //! Switch to display intermediate images, 0,1,2
   int display_level;
 
@@ -188,7 +203,7 @@ protected:
     forward projector on it, you get sinograms of the same scale as the
     input sinograms. There is NO check on this.
   */
-  std::string image_for_reprojection_filename;
+  string image_for_reprojection_filename;
 
   //! Number of segments to combine with SSRB before calling FBP
   /*! default -1 will use SSRB only when the data are not yet axially compressed */
@@ -216,12 +231,14 @@ protected:
   //! Define Colsher at larger size than used for filtering, planar direction
   int colsher_stretch_factor_planar;
 
+
   //! =1 => apply additional fitting procedure to forward projected data (DISABLED)
   int fit_projections;
-
 private:
-  void set_defaults() override;
-  void initialise_keymap() override;
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+
 
   //! access to input proj_data_info cast to cylindrical type
   const ProjDataInfoCylindrical& input_proj_data_info_cyl() const;
@@ -247,3 +264,4 @@ private:
 END_NAMESPACE_STIR
 
 #endif
+

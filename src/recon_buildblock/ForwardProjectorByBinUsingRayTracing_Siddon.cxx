@@ -19,7 +19,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -52,13 +60,14 @@
 #include "stir/round.h"
 #include <math.h>
 #include <algorithm>
+#ifndef STIR_NO_NAMESPACE
 using std::min;
 using std::max;
+#endif
 
 START_NAMESPACE_STIR
 template <typename T>
-static inline int
-sign(const T& t)
+static inline int sign(const T& t) 
 {
   return t < 0 ? -1 : 1;
 }
@@ -75,26 +84,22 @@ sign(const T& t)
   See RayTraceVoxelsOnCartesianGrid for a shorter and clearer version of the Siddon algorithm.
   */
 
+
 // KT 20/06/2001 should now work for non-arccorrected data as well, pass s_in_mm
 #ifndef STIR_SIDDON_NO_TEMPLATE
 template <int Siddon>
 #endif
 bool
-ForwardProjectorByBinUsingRayTracing::proj_Siddon(
+ForwardProjectorByBinUsingRayTracing::
+proj_Siddon(
 #ifdef STIR_SIDDON_NO_TEMPLATE
     int Siddon,
 #endif
-    Array<4, float>& Projptr,
-    const VoxelsOnCartesianGrid<float>& Bild,
-    const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
-    const float cphi,
-    const float sphi,
-    const float delta,
-    const float s_in_mm,
-    const float R,
-    const int rmin,
-    const int rmax,
-    const float offset,
+            Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild, 
+	    const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	    const float cphi, const float sphi, const float delta, const 
+            float s_in_mm, 
+	    const float R, const int rmin, const int rmax, const float offset, 
     const int num_planes_per_axial_pos,
     const float axial_pos_to_z_offset,
     const float norm_factor,
@@ -123,7 +128,9 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
 
   // in our current coordinate system, the following constant is always 2
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(Bild.get_voxel_size().z() * num_planes_per_physical_ring / proj_data_info_sptr->get_ring_spacing() - 1) < 10E-4);
+  assert(fabs(Bild.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
+
+
 
 #ifdef NEWSCALE
   /* KT 16/02/98 removed division by voxel_size.x() to get line integrals in mm
@@ -136,7 +143,8 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
 
   // KT 1/12/2003 no longer subtract -1 as determination of first and last voxel is now
   // no longer sensitive to rounding error
-  const float fovrad_in_mm = min((min(Bild.get_max_x(), -Bild.get_min_x())) * Bild.get_voxel_size().x(),
+  const float fovrad_in_mm   = 
+    min((min(Bild.get_max_x(), -Bild.get_min_x()))*Bild.get_voxel_size().x(),
                                  (min(Bild.get_max_y(), -Bild.get_min_y())) * Bild.get_voxel_size().y());
 
   const CartesianCoordinate3D<float>& voxel_size = Bild.get_voxel_size();
@@ -185,9 +193,10 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
           }
         else
           {
-            max_a = min((fovrad_in_mm * sign(sphi) - s_in_mm * cphi) / sphi, (fovrad_in_mm * sign(cphi) + s_in_mm * sphi) / cphi);
-            min_a
-                = max((-fovrad_in_mm * sign(sphi) - s_in_mm * cphi) / sphi, (-fovrad_in_mm * sign(cphi) + s_in_mm * sphi) / cphi);
+        max_a = min((fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+                    (fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+        min_a = max((-fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+                    (-fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
             if (min_a > max_a - 1.E-3 * voxel_size.x())
               return false;
           }
@@ -198,14 +207,14 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
     start_point.x() = (s_in_mm * cphi + max_a * sphi) / voxel_size.x();
     start_point.y() = (s_in_mm * sphi - max_a * cphi) / voxel_size.y();
     // start_point.z() = (t_in_mm/costheta+offset_in_z - max_a*tantheta)/voxel_size.z();
-    start_point.z() = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset
-                      + +num_planes_per_physical_ring * delta / 2 * (1 - max_a / TMP);
+    start_point.z() = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset +
+      + num_planes_per_physical_ring * delta/2 * (1 - max_a / TMP);
 
     stop_point.x() = (s_in_mm * cphi + min_a * sphi) / voxel_size.x();
     stop_point.y() = (s_in_mm * sphi - min_a * cphi) / voxel_size.y();
     // stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
-    stop_point.z() = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset
-                     + +num_planes_per_physical_ring * delta / 2 * (1 - min_a / TMP);
+    stop_point.z() =  num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset +
+      + num_planes_per_physical_ring * delta/2 * (1 - min_a / TMP);
   }
   // find voxel which contains the start_point, and go to its 'left' edge
   const float xmin = round(start_point.x()) - sign_x * 0.5F;
@@ -227,11 +236,13 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
   const bool zero_diff_in_z = fabs(difference.z()) <= small_difference;
 
   // d12 is distance between the 2 points (times normalisation_const)
-  const float d12 = static_cast<float>(norm(difference * Bild.get_voxel_size()) * normalisation_constant);
+  const float d12 = 
+    static_cast<float>(norm(difference*Bild.get_voxel_size()) * normalisation_constant);
   // KT 16/02/98 multiply with d12 to get normalisation right from the start
   const float inc_x = (zero_diff_in_x) ? 1000000.F * d12 : d12 / (sign_x * difference.x());
   const float inc_y = (zero_diff_in_y) ? 1000000.F * d12 : d12 / (sign_y * difference.y());
   const float inc_z = (zero_diff_in_z) ? 1000000.F * d12 : d12 / (sign_z * difference.z());
+
 
   /* Find the a? values of the intersection points of the LOR with the planes between voxels.
      Note on special handling of rays parallel to one of the planes:
@@ -289,8 +300,10 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
   int Q;
   {
     // first compute it as floating point (although it has to be an int really)
-    const float Qf
-        = (2 * num_planes_per_axial_pos * (rmin + offset) + num_planes_per_physical_ring * delta + 2 * axial_pos_to_z_offset - Z);
+    const float Qf = (2*num_planes_per_axial_pos*(rmin + offset) 
+                      + num_planes_per_physical_ring*delta
+	              + 2*axial_pos_to_z_offset
+	              - Z); 
     // now use rounding to be safe
     Q = (int)floor(Qf + 0.5);
     assert(fabs(Q - Qf) < 10E-4);
@@ -325,18 +338,9 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
     }
   */
   /* Now we go slowly along the LOR */
-  if (zero_diff_in_x)
-    ax = axend;
-  else
-    ax += inc_x;
-  if (zero_diff_in_y)
-    ay = ayend;
-  else
-    ay += inc_y;
-  if (zero_diff_in_z)
-    az = azend;
-  else
-    az += inc_z;
+  if (zero_diff_in_x) ax = axend; else ax += inc_x;
+  if (zero_diff_in_y) ay = ayend; else ay += inc_y;
+  if (zero_diff_in_z) az = azend; else az += inc_z;
 
   // these are used to check boundaries on Z
   // We do not use get_min_index() explicitly as presumably a comparison with 0
@@ -345,220 +349,190 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
   const int maxplane = Bild.get_max_index();
   assert(Bild.get_min_index() == 0);
 
-  while (a < amax)
-    {
+  while (a < amax) {
       if (ax < ay)
-        if (ax < az)
-          { /* LOR leaves voxel through yz-plane */
+      if (ax < az) {	/* LOR leaves voxel through yz-plane */
             const float d = ax - a;
             int Zdup = Z;
             int Qdup = Q;
-            for (int ring0 = rmin; ring0 <= rmax; ring0++, Zdup += num_planes_per_axial_pos, Qdup += num_planes_per_axial_pos)
+        for (int ring0 = rmin; 
+	     ring0 <= rmax; 
+	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
               {
                 /* Alle Symetrien ausser s */
-                if (Zdup >= 0 && Zdup <= maxplane)
-                  {
+	  if (Zdup >= 0 && Zdup <= maxplane) {
                     Projptr[ring0][0][0][0] += d * Bild[Zdup][Y][X];
                     Projptr[ring0][0][0][2] += d * Bild[Zdup][X][-Y];
-                    if ((Siddon == 4) || (Siddon == 3))
-                      {
+	    if ((Siddon == 4) || (Siddon == 3)) {
                         Projptr[ring0][1][0][1] += d * Bild[Zdup][X][Y];
                         Projptr[ring0][1][0][3] += d * Bild[Zdup][Y][-X];
                       }
-                    if ((Siddon == 1) || (Siddon == 3))
-                      {
+	    if ((Siddon == 1) || (Siddon == 3)) {
                         Projptr[ring0][1][1][0] += d * Bild[Zdup][-Y][-X];
                         Projptr[ring0][1][1][2] += d * Bild[Zdup][-X][Y];
                       }
-                    if (Siddon == 3)
-                      {
+	    if (Siddon == 3) {
                         Projptr[ring0][0][1][1] += d * Bild[Zdup][-X][-Y];
                         Projptr[ring0][0][1][3] += d * Bild[Zdup][-Y][X];
                       }
                   }
-                if (Qdup >= 0 && Qdup <= maxplane)
-                  {
-                    if ((Siddon == 4) || (Siddon == 3))
-                      {
+	  if (Qdup >= 0 && Qdup <= maxplane) {
+	    if ((Siddon == 4) || (Siddon == 3)) {
                         Projptr[ring0][0][0][1] += d * Bild[Qdup][X][Y];
                         Projptr[ring0][0][0][3] += d * Bild[Qdup][Y][-X];
                       }
-                    if ((Siddon == 1) || (Siddon == 3))
-                      {
+	    if ((Siddon == 1) || (Siddon == 3)) {
                         Projptr[ring0][0][1][0] += d * Bild[Qdup][-Y][-X];
                         Projptr[ring0][0][1][2] += d * Bild[Qdup][-X][Y];
                       }
-                    if (Siddon == 3)
-                      {
+	    if (Siddon == 3) {
                         Projptr[ring0][1][1][1] += d * Bild[Qdup][-X][-Y];
                         Projptr[ring0][1][1][3] += d * Bild[Qdup][-Y][X];
                       }
                     Projptr[ring0][1][0][0] += d * Bild[Qdup][Y][X];
                     Projptr[ring0][1][0][2] += d * Bild[Qdup][X][-Y];
                   }
+						
               }
-            a = ax;
-            ax += inc_x;
+	a = ax ;  ax +=  inc_x;
             X--;
-          }
-        else
-          { /* LOR leaves voxel through xy-plane */
+      } else {	/* LOR leaves voxel through xy-plane */
             const float d = az - a;
             int Zdup = Z;
             int Qdup = Q;
-            for (int ring0 = rmin; ring0 <= rmax; ring0++, Zdup += num_planes_per_axial_pos, Qdup += num_planes_per_axial_pos)
+        for (int ring0 = rmin; 
+	     ring0 <= rmax; 
+	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
               {
                 /* all symmetries except in 's'*/
-                if (Zdup >= 0 && Zdup <= maxplane)
-                  {
+	  if (Zdup >= 0 && Zdup <= maxplane) {
                     Projptr[ring0][0][0][0] += d * Bild[Zdup][Y][X];
                     Projptr[ring0][0][0][2] += d * Bild[Zdup][X][-Y];
-                    if ((Siddon == 4) || (Siddon == 3))
-                      {
+	    if ((Siddon == 4) || (Siddon == 3)) {
                         Projptr[ring0][1][0][1] += d * Bild[Zdup][X][Y];
                         Projptr[ring0][1][0][3] += d * Bild[Zdup][Y][-X];
                       }
-                    if ((Siddon == 1) || (Siddon == 3))
-                      {
+	    if ((Siddon == 1) || (Siddon == 3)) {
                         Projptr[ring0][1][1][0] += d * Bild[Zdup][-Y][-X];
                         Projptr[ring0][1][1][2] += d * Bild[Zdup][-X][Y];
                       }
-                    if (Siddon == 3)
-                      {
+	    if (Siddon == 3) {
                         Projptr[ring0][0][1][1] += d * Bild[Zdup][-X][-Y];
                         Projptr[ring0][0][1][3] += d * Bild[Zdup][-Y][X];
+
                       }
                   }
-                if (Qdup >= 0 && Qdup <= maxplane)
-                  {
-                    if ((Siddon == 4) || (Siddon == 3))
-                      {
+	  if (Qdup >= 0 && Qdup <= maxplane) {
+	    if ((Siddon == 4) || (Siddon == 3)) {
                         Projptr[ring0][0][0][1] += d * Bild[Qdup][X][Y];
                         Projptr[ring0][0][0][3] += d * Bild[Qdup][Y][-X];
                       }
-                    if ((Siddon == 1) || (Siddon == 3))
-                      {
+	    if ((Siddon == 1) || (Siddon == 3)) {
                         Projptr[ring0][0][1][0] += d * Bild[Qdup][-Y][-X];
                         Projptr[ring0][0][1][2] += d * Bild[Qdup][-X][Y];
                       }
-                    if (Siddon == 3)
-                      {
+	    if (Siddon == 3) {
                         Projptr[ring0][1][1][1] += d * Bild[Qdup][-X][-Y];
                         Projptr[ring0][1][1][3] += d * Bild[Qdup][-Y][X];
                       }
                     Projptr[ring0][1][0][0] += d * Bild[Qdup][Y][X];
                     Projptr[ring0][1][0][2] += d * Bild[Qdup][X][-Y];
                   }
+						
               }
-            a = az;
-            az += inc_z;
+	a = az ;  az +=  inc_z;
             Z++;
             Q--;
           }
-      else if (ay < az)
-        { /* LOR leaves voxel through xz-plane */
+    else if (ay < az) {	/* LOR leaves voxel through xz-plane */
           const float d = ay - a;
           int Zdup = Z;
           int Qdup = Q;
-          for (int ring0 = rmin; ring0 <= rmax; ring0++, Zdup += num_planes_per_axial_pos, Qdup += num_planes_per_axial_pos)
+      for (int ring0 = rmin; 
+           ring0 <= rmax; 
+	   ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
             {
               /*   all symmetries except in 's' */
-              if (Zdup >= 0 && Zdup <= maxplane)
-                {
+	if (Zdup >= 0 && Zdup <= maxplane) {
                   Projptr[ring0][0][0][0] += d * Bild[Zdup][Y][X];
                   Projptr[ring0][0][0][2] += d * Bild[Zdup][X][-Y];
-                  if ((Siddon == 4) || (Siddon == 3))
-                    {
+	  if ((Siddon == 4) || (Siddon == 3)) {
                       Projptr[ring0][1][0][1] += d * Bild[Zdup][X][Y];
                       Projptr[ring0][1][0][3] += d * Bild[Zdup][Y][-X];
                     }
-                  if ((Siddon == 1) || (Siddon == 3))
-                    {
+	  if ((Siddon == 1) || (Siddon == 3)) {
                       Projptr[ring0][1][1][0] += d * Bild[Zdup][-Y][-X];
                       Projptr[ring0][1][1][2] += d * Bild[Zdup][-X][Y];
                     }
-                  if (Siddon == 3)
-                    {
+	  if (Siddon == 3) {
                       Projptr[ring0][0][1][1] += d * Bild[Zdup][-X][-Y];
                       Projptr[ring0][0][1][3] += d * Bild[Zdup][-Y][X];
                     }
                 }
-              if (Qdup >= 0 && Qdup <= maxplane)
-                {
-                  if ((Siddon == 4) || (Siddon == 3))
-                    {
+	if (Qdup >= 0 && Qdup <= maxplane) {
+	  if ((Siddon == 4) || (Siddon == 3)) {
                       Projptr[ring0][0][0][1] += d * Bild[Qdup][X][Y];
                       Projptr[ring0][0][0][3] += d * Bild[Qdup][Y][-X];
                     }
-                  if ((Siddon == 1) || (Siddon == 3))
-                    {
+	  if ((Siddon == 1) || (Siddon == 3)) {
                       Projptr[ring0][0][1][0] += d * Bild[Qdup][-Y][-X];
                       Projptr[ring0][0][1][2] += d * Bild[Qdup][-X][Y];
                     }
-                  if (Siddon == 3)
-                    {
+	  if (Siddon == 3) {
                       Projptr[ring0][1][1][1] += d * Bild[Qdup][-X][-Y];
                       Projptr[ring0][1][1][3] += d * Bild[Qdup][-Y][X];
                     }
                   Projptr[ring0][1][0][0] += d * Bild[Qdup][Y][X];
                   Projptr[ring0][1][0][2] += d * Bild[Qdup][X][-Y];
                 }
+					
             }
-          a = ay;
-          ay += inc_y;
+      a = ay;   ay +=  inc_y;
           Y++;
-        }
-      else
-        { /* LOR leaves voxel through xy-plane */
+    } else {/* LOR leaves voxel through xy-plane */
           const float d = az - a;
           int Zdup = Z;
           int Qdup = Q;
-          for (int ring0 = rmin; ring0 <= rmax; ring0++, Zdup += num_planes_per_axial_pos, Qdup += num_planes_per_axial_pos)
+        for (int ring0 = rmin; 
+	     ring0 <= rmax; 
+	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
             {
               /*   all symmetries except in 's' */
-              if (Zdup >= 0 && Zdup <= maxplane)
-                {
+	if (Zdup >= 0 && Zdup <= maxplane) {
                   Projptr[ring0][0][0][0] += d * Bild[Zdup][Y][X];
                   Projptr[ring0][0][0][2] += d * Bild[Zdup][X][-Y];
-                  if ((Siddon == 4) || (Siddon == 3))
-                    {
+	  if ((Siddon == 4) || (Siddon == 3)) {
                       Projptr[ring0][1][0][1] += d * Bild[Zdup][X][Y];
                       Projptr[ring0][1][0][3] += d * Bild[Zdup][Y][-X];
                     }
-                  if ((Siddon == 1) || (Siddon == 3))
-                    {
+	  if ((Siddon == 1) || (Siddon == 3)) {
                       Projptr[ring0][1][1][0] += d * Bild[Zdup][-Y][-X];
                       Projptr[ring0][1][1][2] += d * Bild[Zdup][-X][Y];
                     }
-                  if (Siddon == 3)
-                    {
+	  if (Siddon == 3) {
                       Projptr[ring0][0][1][1] += d * Bild[Zdup][-X][-Y];
                       Projptr[ring0][0][1][3] += d * Bild[Zdup][-Y][X];
                     }
                 }
-              if (Qdup >= 0 && Qdup <= maxplane)
-                {
-                  if ((Siddon == 4) || (Siddon == 3))
-                    {
+	if (Qdup >= 0 && Qdup <= maxplane) {
+	  if ((Siddon == 4) || (Siddon == 3)) {
                       Projptr[ring0][0][0][1] += d * Bild[Qdup][X][Y];
                       Projptr[ring0][0][0][3] += d * Bild[Qdup][Y][-X];
                     }
-                  if ((Siddon == 1) || (Siddon == 3))
-                    {
+	  if ((Siddon == 1) || (Siddon == 3)) {
                       Projptr[ring0][0][1][0] += d * Bild[Qdup][-Y][-X];
                       Projptr[ring0][0][1][2] += d * Bild[Qdup][-X][Y];
                     }
-                  if (Siddon == 3)
-                    {
+	  if (Siddon == 3) {
                       Projptr[ring0][1][1][1] += d * Bild[Qdup][-X][-Y];
                       Projptr[ring0][1][1][3] += d * Bild[Qdup][-Y][X];
                     }
                   Projptr[ring0][1][0][0] += d * Bild[Qdup][Y][X];
                   Projptr[ring0][1][0][2] += d * Bild[Qdup][X][-Y];
                 }
+					
             }
-          a = az;
-          az += inc_z;
+      a = az ;  az +=  inc_z;
           Z++;
           Q--;
         }
@@ -568,73 +542,61 @@ ForwardProjectorByBinUsingRayTracing::proj_Siddon(
   return true;
 }
 
+
 //**************** instantiations
 
 #if !defined(STIR_SIDDON_NO_TEMPLATE)
 // this is the normal code, but it doesn't compile with VC 6.0
-template bool
-ForwardProjectorByBinUsingRayTracing::proj_Siddon<1>(Array<4, float>& Projptr,
-                                                     const VoxelsOnCartesianGrid<float>&,
-                                                     const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
-                                                     const float cphi,
-                                                     const float sphi,
-                                                     const float delta,
+template 
+bool
+ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<1>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
                                                      const float s_in_mm,
-                                                     const float R,
-                                                     const int min_ax_pos_num,
-                                                     const int max_ax_pos_num,
-                                                     const float offset,
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
                                                      const int num_planes_per_axial_pos,
                                                      const float axial_pos_to_z_offset,
                                                      const float norm_factor,
                                                      const bool restrict_to_cylindrical_FOV);
 
-template bool
-ForwardProjectorByBinUsingRayTracing::proj_Siddon<2>(Array<4, float>& Projptr,
-                                                     const VoxelsOnCartesianGrid<float>&,
-                                                     const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
-                                                     const float cphi,
-                                                     const float sphi,
-                                                     const float delta,
+
+template
+bool
+ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<2>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
                                                      const float s_in_mm,
-                                                     const float R,
-                                                     const int min_ax_pos_num,
-                                                     const int max_ax_pos_num,
-                                                     const float offset,
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
                                                      const int num_planes_per_axial_pos,
                                                      const float axial_pos_to_z_offset,
                                                      const float norm_factor,
                                                      const bool restrict_to_cylindrical_FOV);
 
-template bool
-ForwardProjectorByBinUsingRayTracing::proj_Siddon<3>(Array<4, float>& Projptr,
-                                                     const VoxelsOnCartesianGrid<float>&,
-                                                     const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
-                                                     const float cphi,
-                                                     const float sphi,
-                                                     const float delta,
+
+template
+bool
+ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<3>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
                                                      const float s_in_mm,
-                                                     const float R,
-                                                     const int min_ax_pos_num,
-                                                     const int max_ax_pos_num,
-                                                     const float offset,
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
                                                      const int num_planes_per_axial_pos,
                                                      const float axial_pos_to_z_offset,
                                                      const float norm_factor,
                                                      const bool restrict_to_cylindrical_FOV);
 
-template bool
-ForwardProjectorByBinUsingRayTracing::proj_Siddon<4>(Array<4, float>& Projptr,
-                                                     const VoxelsOnCartesianGrid<float>&,
-                                                     const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
-                                                     const float cphi,
-                                                     const float sphi,
-                                                     const float delta,
+
+template
+bool
+ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<4>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
                                                      const float s_in_mm,
-                                                     const float R,
-                                                     const int min_ax_pos_num,
-                                                     const int max_ax_pos_num,
-                                                     const float offset,
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
                                                      const int num_planes_per_axial_pos,
                                                      const float axial_pos_to_z_offset,
                                                      const float norm_factor,

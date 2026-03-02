@@ -4,7 +4,15 @@
     Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,13 +30,11 @@
 #include <complex>
 #include <cmath>
 #ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-using ::acos;
-}
+ namespace std { using ::acos; }
 #endif
 
 START_NAMESPACE_STIR
+
 
 //----------------------------------------------------------------------
 // some functions specific for 1D Arrays
@@ -67,6 +73,8 @@ angle(const Array<1, elemT>& v1, const Array<1, elemT>& v2)
   return std::acos(inner_product(v1, v2) / norm(v1) / norm(v2));
 }
 
+
+
 //----------------------------------------------------------------------
 //  functions for matrices
 
@@ -75,14 +83,13 @@ angle(const Array<1, elemT>& v1, const Array<1, elemT>& v2)
 namespace detail
 {
 template <class elemT, class vecT>
-inline void
+  inline 
+  void
 matrix_multiply_help(vecT& retval, const Array<2, elemT>& m, const vecT& vec)
 {
   assert(m.is_regular());
   if (m.size() == 0)
-    {
-      return;
-    }
+      { return; }
 
   const int m_min_row = m.get_min_index();
   const int m_max_row = m.get_max_index();
@@ -99,7 +106,7 @@ matrix_multiply_help(vecT& retval, const Array<2, elemT>& m, const vecT& vec)
         retval[i] += m[i][j] * vec[j];
     }
 }
-} // namespace detail
+}
 
 template <class elemT>
 inline Array<1, elemT>
@@ -127,10 +134,7 @@ matrix_multiply(const Array<2, elemT>& m1, const Array<2, elemT>& m2)
   assert(m1.is_regular());
   assert(m2.is_regular());
   if (m1.size() == 0 || m2.size() == 0)
-    {
-      Array<2, elemT> retval;
-      return retval;
-    }
+    { Array<2,elemT> retval; return retval; }
 
   const int m1_min_row = m1.get_min_index();
   const int m1_max_row = m1.get_max_index();
@@ -142,7 +146,8 @@ matrix_multiply(const Array<2, elemT>& m1, const Array<2, elemT>& m2)
   assert(m1[m1_min_row].get_min_index() == m2_min_row);
   assert(m1[m1_min_row].get_max_index() == m2_max_row);
 
-  Array<2, elemT> retval(IndexRange2D(m1_min_row, m1_max_row, m2_min_col, m2_max_col));
+  Array<2,elemT> retval(IndexRange2D(m1_min_row, m1_max_row,
+				     m2_min_col, m2_max_col));
 
   for (int i = m1_min_row; i <= m1_max_row; ++i)
     {
@@ -155,22 +160,21 @@ matrix_multiply(const Array<2, elemT>& m1, const Array<2, elemT>& m2)
   return retval;
 }
 
+
 template <class elemT>
 inline Array<2, elemT>
 matrix_transpose(const Array<2, elemT>& m)
 {
   assert(m.is_regular());
   if (m.size() == 0)
-    {
-      Array<2, elemT> retval;
-      return retval;
-    }
+    { Array<2,elemT> retval; return retval; }
 
   const int m_min_row = m.get_min_index();
   const int m_max_row = m.get_max_index();
   const int m_min_col = m[m_min_row].get_min_index();
   const int m_max_col = m[m_min_row].get_max_index();
-  Array<2, elemT> new_m(IndexRange2D(m_min_col, m_max_col, m_min_row, m_max_row));
+  Array<2,elemT> new_m(IndexRange2D(m_min_col, m_max_col,
+				    m_min_row, m_max_row));
   for (int j = m_min_row; j <= m_max_row; ++j)
     for (int i = m_min_col; i <= m_max_col; ++i)
       new_m[i][j] = m[j][i];
@@ -178,7 +182,8 @@ matrix_transpose(const Array<2, elemT>& m)
 }
 
 template <class elemT>
-inline Array<2, elemT>
+inline 
+Array<2,elemT>
 diagonal_matrix(const unsigned dimension, const elemT value)
 {
   Array<2, elemT> m(IndexRange2D(dimension, dimension));
@@ -188,7 +193,8 @@ diagonal_matrix(const unsigned dimension, const elemT value)
 }
 
 template <int dimension, class elemT>
-inline Array<2, elemT>
+inline 
+Array<2,elemT>
 diagonal_matrix(const BasicCoordinate<dimension, elemT>& values)
 {
   Array<2, elemT> m(IndexRange2D(dimension, dimension));

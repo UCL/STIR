@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details.
 */
@@ -18,8 +26,10 @@
 
 */
 
+
 #ifndef __stir_recon_buildblock_QuadraticPrior_H__
 #define __stir_recon_buildblock_QuadraticPrior_H__
+
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
@@ -30,18 +40,16 @@
 
 START_NAMESPACE_STIR
 
+
 /*!
   \ingroup priors
   \brief
   A class in the GeneralisedPrior hierarchy. This implements a quadratic Gibbs prior.
 
-  The prior is computed as follows:
+  The gradient of the prior is computed as follows:
+  
   \f[
-  f = \frac{1}{4} \sum_{r,dr} w_{dr} (\lambda_r - \lambda_{r+dr})^2 * \kappa_r * \kappa_{r+dr}
-  \f]
-  with gradient
-  \f[
-  g_r = \sum_{dr} w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+  g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
   \f]
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
@@ -76,12 +84,15 @@ START_NAMESPACE_STIR
 
 */
 template <typename elemT>
-class QuadraticPrior : public RegisteredParsingObject<QuadraticPrior<elemT>,
+class QuadraticPrior:  public  
+                       RegisteredParsingObject< QuadraticPrior<elemT>,
                                                       GeneralisedPrior<DiscretisedDensity<3, elemT>>,
-                                                      PriorWithParabolicSurrogate<DiscretisedDensity<3, elemT>>>
+                                                PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
+                                              >
 {
 private:
-  typedef RegisteredParsingObject<QuadraticPrior<elemT>,
+  typedef
+    RegisteredParsingObject< QuadraticPrior<elemT>,
                                   GeneralisedPrior<DiscretisedDensity<3, elemT>>,
                                   PriorWithParabolicSurrogate<DiscretisedDensity<3, elemT>>>
       base_type;
@@ -96,41 +107,36 @@ public:
   //! Constructs it explicitly
   QuadraticPrior(const bool only_2D, float penalization_factor);
 
-  bool parabolic_surrogate_curvature_depends_on_argument() const override { return false; }
-
-  bool is_convex() const override;
+  virtual bool
+    parabolic_surrogate_curvature_depends_on_argument() const
+    { return false; }
 
   //! compute the value of the function
-  double compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate) override;
+  double
+    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
 
   //! compute gradient
   void compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
-                        const DiscretisedDensity<3, elemT>& current_image_estimate) override;
+                        const DiscretisedDensity<3,elemT> &current_image_estimate);
 
   //! compute the parabolic surrogate for the prior
   /*! in the case of quadratic priors this will just be the sum of weighting coefficients*/
   void parabolic_surrogate_curvature(DiscretisedDensity<3, elemT>& parabolic_surrogate_curvature,
-                                     const DiscretisedDensity<3, elemT>& current_image_estimate) override;
+                        const DiscretisedDensity<3,elemT> &current_image_estimate);
 
+  //! compute Hessian 
   void compute_Hessian(DiscretisedDensity<3, elemT>& prior_Hessian_for_single_densel,
                        const BasicCoordinate<3, int>& coords,
-                       const DiscretisedDensity<3, elemT>& current_image_estimate) const override;
+                const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-  //! Call accumulate_Hessian_times_input
-  void add_multiplication_with_approximate_Hessian(DiscretisedDensity<3, elemT>& output,
-                                                   const DiscretisedDensity<3, elemT>& input) const override;
+  virtual Succeeded 
+    add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
+                                                const DiscretisedDensity<3,elemT>& input) const;
 
-  //! Compute the multiplication of the hessian of the prior multiplied by the input.
-  //! For the quadratic function, the hessian of the prior is 1.
-  //! Therefore this will return the weights multiplied by the input.
-  void accumulate_Hessian_times_input(DiscretisedDensity<3, elemT>& output,
-                                      const DiscretisedDensity<3, elemT>& current_estimate,
-                                      const DiscretisedDensity<3, elemT>& input) const override;
-
-  //! get penalty weights for the neighbourhood
+  //! get penalty weights for the neigbourhood
   Array<3, float> get_weights() const;
 
-  //! set penalty weights for the neighbourhood
+  //! set penalty weights for the neigbourhood
   void set_weights(const Array<3, float>&);
 
   //! get current kappa image
@@ -138,13 +144,10 @@ public:
       modify the image by manipulating the image refered to by this pointer.
       Unpredictable results will occur.
   */
-  shared_ptr<const DiscretisedDensity<3, elemT>> get_kappa_sptr() const;
+  shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
 
   //! set kappa image
-  void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3, elemT>>&);
-
-  //! Has to be called before using this object
-  Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
+  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
 
 protected:
   //! can be set during parsing to restrict the weights to the 2D case
@@ -154,7 +157,7 @@ protected:
      gradient is computed. The filename will be constructed by concatenating
      gradient_filename_prefix and the counter.
   */
-  std::string gradient_filename_prefix;
+  string gradient_filename_prefix;
 
   //! penalty weights
   /*!
@@ -165,30 +168,15 @@ protected:
   //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
   std::string kappa_filename;
 
-  //! Check that the prior is ready to be used
-  void check(DiscretisedDensity<3, elemT> const& current_image_estimate) const override;
-
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
-
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 private:
-  shared_ptr<const DiscretisedDensity<3, elemT>> kappa_ptr;
-
-  //! The second partial derivatives of the Quadratic Prior
-  /*!
-   derivative_20 refers to the second derivative w.r.t. x_j (i.e. diagonal elements of the Hessian)
-   derivative_11 refers to the second derivative w.r.t. x_j and x_k (i.e. off-diagonal elements of the Hessian)
-   * @param x_j is the target voxel.
-   * @param x_k is the voxel in the neighbourhood.
-   * @return the second order partial derivatives of the Quadratic Prior
-   */
-  //@{
-  elemT derivative_20(const elemT x_j, const elemT x_k) const;
-  elemT derivative_11(const elemT x_j, const elemT x_k) const;
-  //@}
+  shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 };
+
 
 END_NAMESPACE_STIR
 
 #endif
+

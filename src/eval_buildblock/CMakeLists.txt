@@ -6,8 +6,8 @@ set(dir eval_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  compute_ROI_values.cxx
-  ROIValues.cxx
+  compute_ROI_values
+  ROIValues
 )
 
 
@@ -15,6 +15,6 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(eval_buildblock PUBLIC ${STIR_BUILDBLOCK_LIB} )
+target_link_libraries(eval_buildblock buildblock )
 
 

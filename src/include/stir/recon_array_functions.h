@@ -1,11 +1,17 @@
 //
-//
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011 Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,25 +28,25 @@
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
+  \author Nicolas A Karakatsanis
 
+  $Date: 2013-07-12 10:34:00 $
+  $Revision: 1.14 $
 */
 
-#include "stir/deprecated.h"
+#include "stir/common.h"
 
 START_NAMESPACE_STIR
 
+
 // TODO template this all in data type of Viewgram et al
 
-template <typename elemT>
-class SegmentByView;
-template <typename elemT>
-class SegmentBySinogram;
-template <typename elemT>
-class Viewgram;
-template <typename elemT>
-class RelatedViewgrams;
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+
+template <typename elemT> class SegmentByView;
+template <typename elemT> class SegmentBySinogram;
+template <typename elemT> class Viewgram;
+template <typename elemT> class RelatedViewgrams;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 #if 0
 //! scales an image and adds it to another
@@ -69,25 +75,21 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
 #endif
 
 //! divide viewgrams and set 'edge bins' to zero, put answer in numerator
-void divide_and_truncate(Viewgram<float>& numerator,
-                         const Viewgram<float>& denominator,
+void divide_and_truncate(Viewgram<float>& numerator, const Viewgram<float>& denominator,
                          const int rim_truncation_sino,
-                         int& count,
-                         int& count2,
-                         double* f = NULL);
+			 int& count, int& count2, double* f = NULL);
 
 //! divide related viewgrams and set 'edge bins' to zero, put answer in numerator
-void divide_and_truncate(RelatedViewgrams<float>& numerator,
-                         const RelatedViewgrams<float>& denominator,
+void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
                          const int rim_truncation_sino,
-                         int& count,
-                         int& count2,
-                         double* f = NULL);
+			 int& count, int& count2, double* f = NULL);
 
 //! sets to zero voxels within rim_truncation_image of the FOV rim
 void truncate_rim(DiscretisedDensity<3, float>& image_input,
                   const int rim_truncation_image,
                   const bool strictly_less_than_radius = true);
+
+
 
 //! sets the first and last rim_truncation_sino bins at the 'edges' to zero
 void truncate_rim(SegmentByView<float>& seg, const int rim_truncation_sino);
@@ -95,10 +97,8 @@ void truncate_rim(SegmentByView<float>& seg, const int rim_truncation_sino);
 //! sets the first and last rim_truncation_sino bins at the 'edges' to zero
 void truncate_rim(Viewgram<float>& viewgram, const int rim_truncation_sino);
 
-#if STIR_VERSION < 070000
 //! sets the end planes of the image to zero
-STIR_DEPRECATED void truncate_end_planes(DiscretisedDensity<3, float>& input_image, int input_num_planes = 1);
-#endif
+void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int input_num_planes=1);
 
 //! simple division of two sinograms, x/0 = 0
 void divide_array(SegmentByView<float>& numerator, const SegmentByView<float>& denominator);
@@ -114,5 +114,13 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
                               const int rim_truncation_sino,
                               double* accum);
 
+//! compute the log term of the loglikelihood function for given part of the image space
+void accumulate_loglikelihood(DiscretisedDensity<3,float>& outer_loop_dyn_image_estimate, 
+			 const DiscretisedDensity<3,float>& nested_loop_dyn_image_estimate,
+			 const int rim_truncation_sino,
+			 double* accum);
+
+
 END_NAMESPACE_STIR
 #endif // __recon_array_functions_h_
+

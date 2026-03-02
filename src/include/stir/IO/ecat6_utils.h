@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -108,6 +116,7 @@ int cti_read_ECAT6_Main_header(FILE* fptr, ECAT6_Main_header* h);
 */
 int cti_read_scan_subheader(FILE* fptr, const ECAT6_Main_header*, int blknum, Scan_subheader*);
 
+
 /*!
   \brief Read header data from a file and place it into a Attn_subheader
   struct. Returns EXIT_SUCCESS if no error.
@@ -118,6 +127,7 @@ int cti_read_scan_subheader(FILE* fptr, const ECAT6_Main_header*, int blknum, Sc
   \param header_ptr       struct to fill
 */
 int cti_read_attn_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum, Attn_subheader* header_ptr);
+
 
 /*!
   \brief Read header data from a file and place it into a Norm_subheader
@@ -216,12 +226,8 @@ int cti_write_scan_subheader(FILE* fptr, const ECAT6_Main_header* h, int blknum,
   actually less data in the sinogram. Similarly, the buffer has to be
   allocated to accomodate for this size.
 */
-int cti_write_image(FILE* fptr,
-                    long matnum,
-                    const ECAT6_Main_header* mhead_ptr,
-                    const Image_subheader* header_ptr,
-                    const short* data,
-                    int data_size);
+int     cti_write_image (FILE *fptr, long matnum, const ECAT6_Main_header *mhead_ptr, const Image_subheader *header_ptr,
+			 const short *data, int data_size);
 /*!
   \brief Write a scan, including headers, into a matrix file.
   \ingroup ECAT
@@ -238,12 +244,8 @@ int cti_write_image(FILE* fptr,
   actually less data in the sinogram. Similarly, the buffer has to be
   allocated to accomodate for this size.
 */
-int cti_write_scan(FILE* fptr,
-                   long matnum,
-                   const ECAT6_Main_header* mhead_ptr,
-                   const Scan_subheader* header_ptr,
-                   const short* data,
-                   int data_size);
+int     cti_write_scan (FILE *fptr, long matnum, const ECAT6_Main_header *mhead_ptr, const Scan_subheader *header_ptr,
+			const short *data, int data_size);
 /*!
   \brief Read main header and subheader from scan file. Returns EXIT_SUCCESS if no error.
   \ingroup ECAT
@@ -254,7 +256,8 @@ int cti_write_scan(FILE* fptr,
   \param shead      where to put the subheader
   \param scanParams where to put the scan parameters
 */
-int get_scanheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Scan_subheader* shead, ScanInfoRec* scanParams);
+int     get_scanheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead, 
+			 Scan_subheader *shead, ScanInfoRec *scanParams);
 /*!
   \brief Read scan data from file. Returns EXIT_FAILURE if the data could not be read.
   \ingroup ECAT
@@ -273,6 +276,7 @@ int get_scanheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Scan_subh
 
 int get_scandata(FILE* fptr, char* scan, ScanInfoRec* scanParams);
 
+
 /*!
   \brief Read main header and subheader from attn file. Returns EXIT_SUCCESS if no error.
   \ingroup ECAT
@@ -283,7 +287,9 @@ int get_scandata(FILE* fptr, char* scan, ScanInfoRec* scanParams);
   \param shead      where to put the subheader
   \param attnParams where to put the attn parameters
 */
-int get_attnheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Attn_subheader* shead, ScanInfoRec* attnParams);
+int     get_attnheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead, 
+			 Attn_subheader *shead, ScanInfoRec *attnParams);
+
 
 /*!
   \brief Read main header and subheader from normalisation file. Returns EXIT_SUCCESS if no error.
@@ -295,7 +301,8 @@ int get_attnheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Attn_subh
   \param shead      where to put the subheader
   \param nrmParams where to put the nrm parameters
 */
-int get_normheaders(FILE* fptr, long matnum, ECAT6_Main_header* mhead, Norm_subheader* shead, ScanInfoRec* nrmParams);
+int     get_normheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead, 
+			 Norm_subheader *shead, ScanInfoRec *nrmParams);
 
 // OTHER UTILITIES
 
@@ -379,6 +386,7 @@ void hostltovaxl(const long in, unsigned short out[2]);
   \param out  result.
 */
 void hostftovaxf(const float in, unsigned short out[2]);
+
 
 /*! \brief Fill main header with negative or default values.*/
 ECAT6_Main_header main_zero_fill();

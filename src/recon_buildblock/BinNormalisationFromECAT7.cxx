@@ -10,7 +10,15 @@
     its restrictive license. Affected parts are the dead-time correction
     in get_dead_time_efficiency and geo_Z_corr related code.
 
-    SPDX-License-Identifier: Apache-2.0
+    Most of this file is free software; you can redistribute that part and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -41,19 +49,23 @@
 #include "stir/Bin.h"
 #include "stir/display.h"
 #include "stir/is_null_ptr.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #include <algorithm>
 #include <fstream>
 
+#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
+#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-const char* const BinNormalisationFromECAT7::registered_name = "From ECAT7";
+	   
+
+const char * const 
+BinNormalisationFromECAT7::registered_name = "From ECAT7"; 
+
 
 namespace detail
 {
@@ -62,16 +74,20 @@ namespace detail
 // helper functions used in this class.
 //
 
-static float
-calc_geo_z_correction(const Bin& bin, int span)
-{
+static 
+float
+calc_geo_z_correction(const Bin& bin, int span) {
   const int rtmp = abs(bin.segment_num() * span);
   return (1.0F + ((0.007F - (0.000164F * rtmp)) * rtmp));
 }
 
-static int
-calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoCylindricalNoArcCorr* proj_data_cyl)
-{
+
+
+
+static 
+int
+calc_ring1_plus_ring2(const Bin& bin, 
+                      const ProjDataInfoCylindricalNoArcCorr *proj_data_cyl) {
 
   int segment_num = bin.segment_num();
 
@@ -80,35 +96,42 @@ calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoCylindricalNoArcCorr* pr
 
   const int num_rings = proj_data_cyl->get_scanner_ptr()->get_num_rings();
 
-  return ((2 * bin.axial_pos_num()
-           - (proj_data_cyl->get_min_axial_pos_num(segment_num) + proj_data_cyl->get_max_axial_pos_num(segment_num)))
-              / (min_ring_diff != max_ring_diff ? 2 : 1)
+  return( (2 * bin.axial_pos_num() - 
+           (proj_data_cyl->get_min_axial_pos_num(segment_num) + 
+            proj_data_cyl->get_max_axial_pos_num(segment_num))
+           ) / (min_ring_diff != max_ring_diff ? 2 : 1) 
           + num_rings - 1);
+  
 }
 
-static void
-set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+
+
+static
+void
+set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin,
-                                DetectionPositionPair<>& detection_position_pair)
-{
+                                DetectionPositionPair<>& detection_position_pair) {
   int det1_num = 0;
   int det2_num = 0;
 
-  proj_data_cyl_uncomp->get_det_num_pair_for_view_tangential_pos_num(
-      det1_num, det2_num, uncomp_bin.view_num(), uncomp_bin.tangential_pos_num());
+  proj_data_cyl_uncomp->get_det_num_pair_for_view_tangential_pos_num(det1_num, det2_num,
+                                                                     uncomp_bin.view_num(),
+                                                                     uncomp_bin.tangential_pos_num());
   detection_position_pair.pos1().tangential_coord() = det1_num;
   detection_position_pair.pos2().tangential_coord() = det2_num;
+  
 }
+
+
 
 // Returns the sum of the two axial coordinates. Or -1 if the ring positions are
 // out of range.
 // sets axial_coord of detection_position_pair
-static int
+static
+int
 set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr* proj_data_info_cyl,
-                           int ring1_plus_ring2,
-                           const Bin& uncomp_bin,
-                           DetectionPositionPair<>& detection_position_pair)
-{
+                           int ring1_plus_ring2, const Bin& uncomp_bin,
+                           DetectionPositionPair<>& detection_position_pair) {
 
   const int num_rings = proj_data_info_cyl->get_scanner_ptr()->get_num_rings();
 
@@ -117,8 +140,7 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr* proj_data_inf
   const int ring1 = (ring1_plus_ring2 - ring_diff) / 2;
   const int ring2 = (ring1_plus_ring2 + ring_diff) / 2;
 
-  if (ring1 < 0 || ring2 < 0 || ring1 >= num_rings || ring2 >= num_rings)
-    {
+  if (ring1<0 || ring2 < 0 || ring1>=num_rings || ring2 >= num_rings) {
       return (-1);
     }
 
@@ -128,19 +150,26 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr* proj_data_inf
   detection_position_pair.pos1().axial_coord() = ring1;
   detection_position_pair.pos2().axial_coord() = ring2;
 
+  
   return (ring1 + ring2);
 }
 
+
+
 } // end of namespace detail
+
+
+
 
 //
 // Member functions
 //
 
+
+
 void
 BinNormalisationFromECAT7::set_defaults()
 {
-  base_type::set_defaults();
   this->normalisation_ECAT7_filename = "";
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = true;
@@ -149,9 +178,9 @@ BinNormalisationFromECAT7::set_defaults()
 }
 
 void
-BinNormalisationFromECAT7::initialise_keymap()
+BinNormalisationFromECAT7::
+initialise_keymap()
 {
-  base_type::initialise_keymap();
   this->parser.add_start_key("Bin Normalisation From ECAT7");
   // todo remove obsolete keyword
   this->parser.add_key("normalisation_ECAT7_filename", &this->normalisation_ECAT7_filename);
@@ -165,32 +194,33 @@ BinNormalisationFromECAT7::initialise_keymap()
 }
 
 bool
-BinNormalisationFromECAT7::post_processing()
+BinNormalisationFromECAT7::
+post_processing()
 {
-  if (base_type::post_processing())
-    return true;
   read_norm_data(normalisation_ECAT7_filename);
-  this->set_calibration_factor(1);
   return false;
 }
 
-BinNormalisationFromECAT7::BinNormalisationFromECAT7()
+
+BinNormalisationFromECAT7::
+BinNormalisationFromECAT7()
 {
   set_defaults();
 }
 
-BinNormalisationFromECAT7::BinNormalisationFromECAT7(const std::string& filename)
+BinNormalisationFromECAT7::
+BinNormalisationFromECAT7(const string& filename)
 {
   read_norm_data(filename);
 }
 
 Succeeded
-BinNormalisationFromECAT7::set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
+BinNormalisationFromECAT7::
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
 {
-  base_type::set_up(proj_data_info_ptr_v);
-
   proj_data_info_ptr = proj_data_info_ptr_v;
-  proj_data_info_cyl_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_ptr.get());
+  proj_data_info_cyl_ptr =
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
   if (proj_data_info_cyl_ptr == 0)
     {
       warning("BinNormalisationFromECAT7 can only be used on non-arccorrected data\n");
@@ -203,7 +233,9 @@ BinNormalisationFromECAT7::set_up(const shared_ptr<const ProjDataInfo>& proj_dat
       return Succeeded::no;
     }
 
-  span = proj_data_info_cyl_ptr->get_max_ring_difference(0) - proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
+  span = 
+    proj_data_info_cyl_ptr->get_max_ring_difference(0) - 
+    proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
   // TODO insert check all other segments are the same
 
   mash = scanner_ptr->get_num_detectors_per_ring() / 2 / proj_data_info_ptr->get_num_views();
@@ -212,59 +244,72 @@ BinNormalisationFromECAT7::set_up(const shared_ptr<const ProjDataInfo>& proj_dat
 }
 
 void
-BinNormalisationFromECAT7::read_norm_data(const std::string& filename)
+BinNormalisationFromECAT7::
+read_norm_data(const string& filename)
 {
 
   MatrixFile* mptr = matrix_open(filename.c_str(), MAT_READ_ONLY, Norm3d);
   if (mptr == 0)
     error("BinNormalisationFromECAT7: error opening %s\n", filename.c_str());
 
-  scanner_ptr.reset(find_scanner_from_ECAT_system_type(mptr->mhptr->system_type));
+  scanner_ptr.reset(
+    find_scanner_from_ECAT_system_type(mptr->mhptr->system_type));
 
-  MatrixData* matrix = matrix_read(mptr, mat_numcod(1, 1, 1, 0, 0), Norm3d /*= read data as well */);
+  MatrixData* matrix = matrix_read( mptr, mat_numcod (1, 1, 1, 0, 0), 
+				    Norm3d /*= read data as well */);
   if (matrix == 0)
     error("BinNormalisationFromECAT7: error reading data in  %s\n", filename.c_str());
 
-  Norm3D_subheader* nrm_subheader_ptr = reinterpret_cast<Norm3D_subheader*>(matrix->shptr);
+  Norm3D_subheader * nrm_subheader_ptr =
+      reinterpret_cast<Norm3D_subheader *>(matrix->shptr);
 
   num_transaxial_crystals_per_block = nrm_subheader_ptr->num_transaxial_crystals;
 
+
   // Calculate the number of axial blocks per singles unit and
   // total number of blocks per singles unit.
-  int axial_crystals_per_singles_unit = scanner_ptr->get_num_axial_crystals_per_singles_unit();
+  int axial_crystals_per_singles_unit = 
+    scanner_ptr->get_num_axial_crystals_per_singles_unit();
 
-  int transaxial_crystals_per_singles_unit = scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
+  int transaxial_crystals_per_singles_unit =
+    scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
 
-  int axial_crystals_per_block = scanner_ptr->get_num_axial_crystals_per_block();
+  int axial_crystals_per_block = 
+    scanner_ptr->get_num_axial_crystals_per_block();
 
-  int transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
+  int transaxial_crystals_per_block = 
+    scanner_ptr->get_num_transaxial_crystals_per_block();
 
   // Axial blocks.
-  num_axial_blocks_per_singles_unit = axial_crystals_per_singles_unit / axial_crystals_per_block;
+  num_axial_blocks_per_singles_unit = 
+    axial_crystals_per_singles_unit / axial_crystals_per_block;
 
-  int transaxial_blocks_per_singles_unit = transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
+  int transaxial_blocks_per_singles_unit = 
+    transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
 
   // Total blocks.
-  num_blocks_per_singles_unit = num_axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
+  num_blocks_per_singles_unit = 
+    num_axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
+  
+
 
   if (scanner_ptr->get_num_rings() != nrm_subheader_ptr->num_crystal_rings)
     error("BinNormalisationFromECAT7: "
           "number of rings determined from subheader is %d, while the scanner object says it is %d\n",
-          nrm_subheader_ptr->num_crystal_rings,
-          scanner_ptr->get_num_rings());
+           nrm_subheader_ptr->num_crystal_rings, scanner_ptr->get_num_rings());
   if (scanner_ptr->get_num_detectors_per_ring() != nrm_subheader_ptr->crystals_per_ring)
     error("BinNormalisationFromECAT7: "
           "number of detectors per ring determined from subheader is %d, while the scanner object says it is %d\n",
-          nrm_subheader_ptr->crystals_per_ring,
-          scanner_ptr->get_num_detectors_per_ring());
+           nrm_subheader_ptr->crystals_per_ring, scanner_ptr->get_num_detectors_per_ring());
 
-  proj_data_info_cyl_uncompressed_ptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(
+  proj_data_info_cyl_uncompressed_ptr.reset(
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-                                    /*span=*/1,
-                                    scanner_ptr->get_num_rings() - 1,
+                  /*span=*/1, scanner_ptr->get_num_rings()-1,
                                     /*num_views,=*/scanner_ptr->get_num_detectors_per_ring() / 2,
                                     /*num_tangential_poss=*/nrm_subheader_ptr->num_r_elements,
-                                    /*arc_corrected =*/false)));
+                  /*arc_corrected =*/false)
+						     ));
 
   /*
     Extract geometrical & crystal interference, and crystal efficiencies from the
@@ -284,13 +329,17 @@ BinNormalisationFromECAT7::read_norm_data(const std::string& filename)
   2. crystal_interference_factors (num_transaxial_crystals_per_block * number_of_bins)
   3. efficiency_factors (number_of_rings*number_of_crystals ) */
 
-  geometric_factors
-      = Array<2, float>(IndexRange2D(0, nrm_subheader_ptr->num_geo_corr_planes - 1, min_tang_pos_num, max_tang_pos_num));
-  crystal_interference_factors
-      = Array<2, float>(IndexRange2D(min_tang_pos_num, max_tang_pos_num, 0, num_transaxial_crystals_per_block - 1));
+  geometric_factors = 
+    Array<2,float>(IndexRange2D(0,nrm_subheader_ptr->num_geo_corr_planes-1,
+                                min_tang_pos_num, max_tang_pos_num));
+  crystal_interference_factors =
+    Array<2,float>(IndexRange2D(min_tang_pos_num, max_tang_pos_num,
+		    0, num_transaxial_crystals_per_block-1));
   // SM 13/02/2003
-  efficiency_factors
-      = Array<2, float>(IndexRange2D(0, scanner_ptr->get_num_rings() - 1, 0, scanner_ptr->get_num_detectors_per_ring() - 1));
+  efficiency_factors =
+    Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
+		   0, scanner_ptr->get_num_detectors_per_ring()-1));
+  
 
 #if 0
   int geom_test = nrm_subheader_ptr->num_geo_corr_planes * (max_tang_pos_num-min_tang_pos_num +1);
@@ -300,12 +349,17 @@ BinNormalisationFromECAT7::read_norm_data(const std::string& filename)
 
   {
     float const* data_ptr = reinterpret_cast<float const*>(matrix->data_ptr);
-    for (Array<2, float>::full_iterator iter = geometric_factors.begin_all(); iter != geometric_factors.end_all();)
+    for (Array<2,float>::full_iterator iter = geometric_factors.begin_all();
+         iter != geometric_factors.end_all();
+    )
       *iter++ = *data_ptr++;
     for (Array<2, float>::full_iterator iter = crystal_interference_factors.begin_all();
-         iter != crystal_interference_factors.end_all();)
+         iter != crystal_interference_factors.end_all();
+    )
       *iter++ = *data_ptr++;
-    for (Array<2, float>::full_iterator iter = efficiency_factors.begin_all(); iter != efficiency_factors.end_all();)
+    for (Array<2,float>::full_iterator iter = efficiency_factors.begin_all();
+         iter != efficiency_factors.end_all();
+    )
       *iter++ = *data_ptr++;
   }
   // TODO mvoe dead-time stuff to a separate function
@@ -320,10 +374,12 @@ BinNormalisationFromECAT7::read_norm_data(const std::string& filename)
   axial_t1_array = Array<1, float>(0, scanner_ptr->get_num_rings() / num_axial_blocks_per_singles_unit - 1);
   axial_t2_array = Array<1, float>(0, scanner_ptr->get_num_rings() / num_axial_blocks_per_singles_unit - 1);
 
-  for (Array<1, float>::full_iterator iter = axial_t1_array.begin_all(); iter != axial_t1_array.end_all();)
+  for (Array<1,float>::full_iterator iter = axial_t1_array.begin_all();
+         iter != axial_t1_array.end_all();)
     *iter++ = *axial_t1++;
 
-  for (Array<1, float>::full_iterator iter = axial_t2_array.begin_all(); iter != axial_t2_array.end_all();)
+  for (Array<1,float>::full_iterator iter = axial_t2_array.begin_all();
+         iter != axial_t2_array.end_all();)
     *iter++ = *axial_t2++;
 #if 0
   // this is currently not used by CTI and hence not by get_dead_time_efficiency
@@ -334,6 +390,7 @@ BinNormalisationFromECAT7::read_norm_data(const std::string& filename)
       *iter++ = *trans_t1++;
 #endif
 
+  
   free_matrix_data(matrix);
   matrix_close(mptr);
 #if 0
@@ -382,42 +439,41 @@ BinNormalisationFromECAT7::read_norm_data(const std::string& filename)
   display(efficiency_factors, "eff");
   display(crystal_interference_factors, "crystal_interference_factors");
 #endif
-
-  if (use_dead_time())
-    warning("BinNormalisationFromECAT7: dead-time code might give wrong results");
 }
 
 bool
-BinNormalisationFromECAT7::use_detector_efficiencies() const
+BinNormalisationFromECAT7::
+use_detector_efficiencies() const
 {
   return this->_use_detector_efficiencies;
 }
 
 bool
-BinNormalisationFromECAT7::use_dead_time() const
+BinNormalisationFromECAT7::
+use_dead_time() const
 {
   return this->_use_dead_time;
 }
 
 bool
-BinNormalisationFromECAT7::use_geometric_factors() const
+BinNormalisationFromECAT7::
+use_geometric_factors() const
 {
   return this->_use_geometric_factors;
 }
 
 bool
-BinNormalisationFromECAT7::use_crystal_interference_factors() const
+BinNormalisationFromECAT7::
+use_crystal_interference_factors() const
 {
   return this->_use_crystal_interference_factors;
 }
 
 #if 1
 float
-BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
-{
+BinNormalisationFromECAT7::
+get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
 
-  const float start_time = get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-  const float end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
   // TODO disable when not HR+ or HR++
   /*
@@ -433,6 +489,7 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
     */
   const float geo_Z_corr = detail::calc_geo_z_correction(bin, span);
 
+  
   float total_efficiency = 0;
 
   /* Correct dead time */
@@ -443,6 +500,7 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
   const int min_ring_diff = proj_data_info_cyl_ptr->get_min_ring_difference(bin.segment_num());
   const int max_ring_diff = proj_data_info_cyl_ptr->get_max_ring_difference(bin.segment_num());
 
+
   /*
      ring1_plus_ring2 is the same for any ring pair that contributes to
      this particular bin.segment_num(), bin.axial_pos_num().
@@ -451,6 +509,8 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
   */
   const int ring1_plus_ring2 = detail::calc_ring1_plus_ring2(bin, proj_data_info_cyl_ptr);
 
+
+
   DetectionPositionPair<> detection_position_pair;
   Bin uncompressed_bin(0, 0, 0, bin.tangential_pos_num());
 
@@ -458,10 +518,15 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
 
     float view_efficiency = 0.;
 
-    for (uncompressed_bin.view_num() = start_view; uncompressed_bin.view_num() < end_view; ++uncompressed_bin.view_num())
-      {
 
-        detail::set_detection_tangential_coords(proj_data_info_cyl_uncompressed_ptr, uncompressed_bin, detection_position_pair);
+    for(uncompressed_bin.view_num() = start_view;
+        uncompressed_bin.view_num() < end_view;
+        ++uncompressed_bin.view_num() ) {
+
+      detail::set_detection_tangential_coords(proj_data_info_cyl_uncompressed_ptr,
+					      uncompressed_bin, detection_position_pair);
+
+      
 
         float lor_efficiency = 0.;
 
@@ -481,21 +546,25 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
         */
         for (uncompressed_bin.segment_num() = min_ring_diff + (min_ring_diff + ring1_plus_ring2) % 2;
              uncompressed_bin.segment_num() <= max_ring_diff;
-             uncompressed_bin.segment_num() += 2)
-          {
+          uncompressed_bin.segment_num()+=2 ) {
 
-            int geo_plane_num = detail::set_detection_axial_coords(
-                proj_data_info_cyl_ptr, ring1_plus_ring2, uncompressed_bin, detection_position_pair);
-            if (geo_plane_num < 0)
-              {
+        
+        int geo_plane_num = 
+	  detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
+					     ring1_plus_ring2, uncompressed_bin,
+					     detection_position_pair);
+        if ( geo_plane_num < 0 ) {
                 // Ring numbers out of range.
                 continue;
               }
 
+
 #  ifndef NDEBUG
             Bin check_bin;
             check_bin.set_bin_value(bin.get_bin_value());
-            assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin, detection_position_pair) == Succeeded::yes);
+        assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin, 
+                                                                detection_position_pair) ==
+               Succeeded::yes);
             assert(check_bin == bin);
 #  endif
 
@@ -505,12 +574,15 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
             float lor_efficiency_this_pair = 1.F;
             if (this->use_detector_efficiencies())
               {
-                lor_efficiency_this_pair = efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()]
-                                           * efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()];
+	    lor_efficiency_this_pair =
+	      efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] * 
+	      efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()];
               }
             if (this->use_dead_time())
               {
-                lor_efficiency_this_pair *= get_dead_time_efficiency(pos1) * get_dead_time_efficiency(pos2);
+	    lor_efficiency_this_pair *=
+	      get_dead_time_efficiency(pos1, start_time, end_time) * 
+	      get_dead_time_efficiency(pos2, start_time, end_time);
               }
             if (this->use_geometric_factors())
               {
@@ -526,9 +598,8 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
 
         if (this->use_crystal_interference_factors())
           {
-            view_efficiency += lor_efficiency
-                               * crystal_interference_factors[uncompressed_bin.tangential_pos_num()]
-                                                             [uncompressed_bin.view_num() % num_transaxial_crystals_per_block];
+	  view_efficiency += lor_efficiency * 
+	    crystal_interference_factors[uncompressed_bin.tangential_pos_num()][uncompressed_bin.view_num()%num_transaxial_crystals_per_block] ;
           }
         else
           {
@@ -544,8 +615,9 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
 #  ifdef SAME_AS_PETER
         const int geo_plane_num = 0;
 
-        total_efficiency
-            += view_efficiency * geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()] * geo_Z_corr;
+	total_efficiency += view_efficiency * 
+	  geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * 
+	  geo_Z_corr;
 #  else
         total_efficiency += view_efficiency * geo_Z_corr;
 #  endif
@@ -559,27 +631,31 @@ BinNormalisationFromECAT7::get_uncalibrated_bin_efficiency(const Bin& bin) const
 }
 #endif
 
-float
-BinNormalisationFromECAT7::get_dead_time_efficiency(const DetectionPosition<>& det_pos) const
-{
-  const float start_time = get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
-  const float end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
-  if (is_null_ptr(singles_rates_ptr))
+float 
+BinNormalisationFromECAT7::get_dead_time_efficiency (const DetectionPosition<>& det_pos,
+						    const double start_time,
+						    const double end_time) const
     {
+  if (is_null_ptr(singles_rates_ptr)) {
       return 1;
     }
 
   // Get singles rate per block (rate per singles unit / blocks per singles unit).
-  const float rate = singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time) / num_blocks_per_singles_unit;
+  const float rate = singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time) / 
+    num_blocks_per_singles_unit;
 
-  // TODO KT is not sure if the rate (currently returned in s^-1) has the appropriate units for the equation below
-  return (1.0F + axial_t1_array[det_pos.axial_coord() / num_axial_blocks_per_singles_unit] * rate
-          + axial_t2_array[det_pos.axial_coord() / num_axial_blocks_per_singles_unit] * rate * rate);
+  return
+    ( 1.0F + axial_t1_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate + 
+      axial_t2_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate * rate );
 
   //* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % num_transaxial_crystals_per_block ] * rate ) ) ;
+  
 }
+
+
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
+

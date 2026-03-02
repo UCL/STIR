@@ -9,7 +9,15 @@
     Copyright (C) 2004-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,8 +31,17 @@
 #include "stir/IndexRange.h"
 #include <complex>
 
+#if defined(_MSC_VER) && _MSC_VER<=1200
+/* VC 6.0 cannot overload the real and complex constructors
+   I just disable the complex version.
+   */
+#define __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
+
+#endif
+
 START_NAMESPACE_STIR
 class Succeeded;
+template <int num_dimensions, typename elemT> class Array;
 
 /*!
   \ingroup Array
@@ -42,9 +59,11 @@ class Succeeded;
   ArrayFilter1DUsingConvolution.
   */
 template <int num_dimensions, typename elemT>
-class ArrayFilterUsingRealDFTWithPadding : public ArrayFunctionObject_2ArgumentImplementation<num_dimensions, elemT>
+class ArrayFilterUsingRealDFTWithPadding : 
+  public ArrayFunctionObject_2ArgumentImplementation<num_dimensions,elemT>
 {
 public:
+
   //! Default constructor (trivial kernel)
   ArrayFilterUsingRealDFTWithPadding();
   //! Construct the filter given the real kernel coefficients
@@ -53,12 +72,14 @@ public:
   */
   ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, elemT>& real_filter_kernel);
 
+#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
   //! Construct the filter given the complex kernel coefficients
   /*! \see set_kernel(const Array<num_dimensions, std::complex<elemT> >&)
     \warning Will call error() when sizes are not appropriate.
     \warning This function is disabled for VC 6.0 because of compiler limitations
   */
   ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, std::complex<elemT>>& kernel_in_frequency_space);
+#endif
 
   //! set the real kernel coefficients
   /*
@@ -74,7 +95,8 @@ public:
       As this function uses fourier_for_real_data(), see there for restrictions
       on the possible kernel length, but at time of writing, it has to be a power of 2.
   */
-  Succeeded set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel);
+  Succeeded 
+    set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel);
 
   //! set the complex kernel coefficients
   /*  The kernel has to be given with index ranges starting from 0.
@@ -88,15 +110,17 @@ public:
       See fourier() for restrictions on the possible
       kernel length, but at time of writing, it has to be a power of 2.
   */
-  Succeeded set_kernel_in_frequency_space(const Array<num_dimensions, std::complex<elemT>>& kernel_in_frequency_space);
+  Succeeded
+    set_kernel_in_frequency_space(const Array<num_dimensions, std::complex<elemT> >& kernel_in_frequency_space);
 
   //! checks if the kernel corresponds to a trivial filter operation
   /*!
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
-  bool is_trivial() const override;
+  bool is_trivial() const;
 
 protected:
+
   Array<num_dimensions, std::complex<elemT>> kernel_in_frequency_space;
 
   //! Performs the convolution
@@ -105,14 +129,17 @@ protected:
       using wrap-around to/from
       an array with the same dimensions as the 'real' kernel.
   */
-  void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const override;
-
+  void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const;
 private:
   IndexRange<num_dimensions> padding_range;
   BasicCoordinate<num_dimensions, int> padded_sizes;
   Succeeded set_padding_range();
 };
 
+
 END_NAMESPACE_STIR
 
+
 #endif // ArrayFilterUsingRealDFTWithPadding
+
+

@@ -14,13 +14,21 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
+
 #include "stir/IO/interfile.h"
-#include "stir/ExamInfo.h"
 #include "stir/Sinogram.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
@@ -33,8 +41,6 @@
 #include "stir/convert_array.h"
 #include "stir/IndexRange2D.h"
 #include "stir/utilities.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 
 #include "stir/Scanner.h"
 #include "stir/ExamInfo.h"
@@ -51,17 +57,21 @@
 #include <fstream>
 #include <algorithm>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
 using std::fstream;
 using std::ios;
 using std::min;
+#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 
-static void cti_data_to_float_Array(Array<2, float>& out, char const* const buffer, const float scale_factor, int dtype);
+static void cti_data_to_float_Array(Array<2,float>&out, 
+                             char const * const buffer, const float scale_factor, int dtype);
+
 
 /*
   \brief reads data from a CTI file into a Sinogram object
@@ -71,11 +81,13 @@ static void cti_data_to_float_Array(Array<2, float>& out, char const* const buff
   \warning \a buffer has to be allocated with a size at least as large as the
   multiple of MatBLKSIZE that fits the whole sinogram (because it uses cti_wblk).
   */
-static void
-read_sinogram(Sinogram<float>& sino_2D, char* buffer, FILE* fptr, int mat_index, int frame, int gate, int data, int bed);
+static void read_sinogram(Sinogram<float>& sino_2D,
+                   char *buffer, 
+		   FILE*fptr, 
+		   int mat_index, 
+		   int frame, int gate, int data, int bed);
 
-static bool
-is_ECAT6_file(ECAT6_Main_header& mhead, const std::string& filename)
+static bool is_ECAT6_file(ECAT6_Main_header& mhead, const string& filename)
 {
   // check if it's ECAT 6
   FILE* cti_fptr = fopen(filename.c_str(), "rb");
@@ -122,60 +134,69 @@ is_ECAT6_file(ECAT6_Main_header& mhead, const std::string& filename)
     {
       fclose(cti_fptr);
       // do some checks on the main header
-      return mhead.sw_version >= 0 && mhead.sw_version <= 69
-             && (mhead.file_type == matScanFile || mhead.file_type == matImageFile || mhead.file_type == matAttenFile
-                 || mhead.file_type == matNormFile)
-             && mhead.num_frames > 0;
+      return 
+	mhead.sw_version>=0 && mhead.sw_version<=69  &&
+	( mhead.file_type == matScanFile ||
+	  mhead.file_type == matImageFile ||
+	  mhead.file_type == matAttenFile ||
+	  mhead.file_type == matNormFile) &&
+	mhead.num_frames>0;
     }
 }
 
-bool
-is_ECAT6_file(const std::string& filename)
+  
+bool is_ECAT6_file(const string& filename)
 {
   ECAT6_Main_header mhead;
   return is_ECAT6_file(mhead, filename);
 }
 
-bool
-is_ECAT6_image_file(const std::string& filename)
+bool is_ECAT6_image_file(const string& filename)
 {
   ECAT6_Main_header mhead;
-  return is_ECAT6_file(mhead, filename) && mhead.file_type == matImageFile;
+  return is_ECAT6_file(mhead, filename) &&
+    mhead.file_type ==matImageFile;
 }
 
-bool
-is_ECAT6_emission_file(const std::string& filename)
+
+bool is_ECAT6_emission_file(const string& filename)
 {
   ECAT6_Main_header mhead;
-  return is_ECAT6_file(mhead, filename) && mhead.file_type == matScanFile;
+  return is_ECAT6_file(mhead, filename) &&
+    mhead.file_type ==matScanFile;
 }
 
-bool
-is_ECAT6_attenuation_file(const std::string& filename)
+
+bool is_ECAT6_attenuation_file(const string& filename)
 {
   ECAT6_Main_header mhead;
-  return is_ECAT6_file(mhead, filename) && mhead.file_type == matAttenFile;
+  return is_ECAT6_file(mhead, filename) &&
+    mhead.file_type ==matAttenFile;
 }
 
-Scanner*
-find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead)
+
+
+Scanner* find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead)
 {
   // we could do more effort here by checking some values of other fields than system_type.
   // TODO
 
-  Scanner* scanner_ptr = find_scanner_from_ECAT_system_type(mhead.system_type);
+  
+  Scanner * scanner_ptr = 
+    find_scanner_from_ECAT_system_type(mhead.system_type);
   return scanner_ptr;
 }
 
-void
-make_ECAT6_Main_header(ECAT6_Main_header& mhead, Scanner const& scanner, const std::string& orig_name, ExamInfo const& exam_info)
+void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
+			    Scanner const& scanner,
+                            const string& orig_name                     
+                            )
 {
 #ifndef STIR_ORIGINAL_ECAT6
-  ecat::ecat7::make_ECAT7_main_header(mhead, scanner, orig_name, exam_info);
+  ecat::ecat7::make_ECAT7_main_header(mhead, scanner, orig_name);
   strcpy(mhead.magic_number, "MATRIX6.4");
   mhead.sw_version = 64;
 #else
-  warning("Exam_info currently ignored when creating an ECAT6 file");
   mhead = main_zero_fill();
   mhead.calibration_factor = 1.F;
 
@@ -191,20 +212,21 @@ make_ECAT6_Main_header(ECAT6_Main_header& mhead, Scanner const& scanner, const s
   mhead.transaxial_fov = scanner.get_default_num_arccorrected_bins() * scanner.get_default_bin_size() / 10;
 
   mhead.plane_separation = scanner.get_ring_spacing() / 2 / 10;
-  // WRONG mhead.gantry_tilt= scanner.get_intrinsic_azimuthal_tilt();
+  //WRONG mhead.gantry_tilt= scanner.get_default_intrinsic_tilt();
 #endif // STIR_ORIGINAL_ECAT6
 }
 
-void
-make_ECAT6_Main_header(ECAT6_Main_header& mhead,
+void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
                        Scanner const& scanner,
-                       const std::string& orig_name,
-                       DiscretisedDensity<3, float> const& density)
+                            const string& orig_name,
+                            DiscretisedDensity<3,float> const & density
+                            )
 {
-  make_ECAT6_Main_header(mhead, scanner, orig_name, density.get_exam_info());
+  make_ECAT6_Main_header(mhead, scanner, orig_name);
+  
+  DiscretisedDensityOnCartesianGrid<3,float> const & image =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
 
-  DiscretisedDensityOnCartesianGrid<3, float> const& image
-      = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float> const&>(density);
 
   // extra main parameters that depend on data type
   mhead.file_type = matImageFile;
@@ -212,33 +234,33 @@ make_ECAT6_Main_header(ECAT6_Main_header& mhead,
   mhead.plane_separation = image.get_grid_spacing()[1] / 10; // convert to cm
 }
 
-void
-make_ECAT6_Main_header(ECAT6_Main_header& mhead, const std::string& orig_name, ProjDataInfo const& proj_data_info)
+void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
+			    const string& orig_name,
+                            ProjDataInfo const & proj_data_info
+                            )
 {
-  warning("Exam_info currently ignored when creating an ECAT6 raw-data file");
-  ExamInfo dummy_exam_info;
-  make_ECAT6_Main_header(mhead, *proj_data_info.get_scanner_sptr(), orig_name, dummy_exam_info);
+  
+  make_ECAT6_Main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
 
   // extra main parameters that depend on data type
   mhead.file_type = matScanFile;
 
   mhead.num_planes = 0;
-  for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num(); ++segment_num)
+  for(int segment_num=proj_data_info.get_min_segment_num();
+      segment_num <= proj_data_info.get_max_segment_num();
+      ++segment_num)
     mhead.num_planes += proj_data_info.get_num_axial_poss(segment_num);
 
-  mhead.plane_separation = proj_data_info.get_scanner_sptr()->get_ring_spacing() / 10 / 2;
+  mhead.plane_separation=proj_data_info.get_scanner_ptr()->get_ring_spacing()/10/2;
 }
 
 VoxelsOnCartesianGrid<float>*
-ECAT6_to_VoxelsOnCartesianGrid(const int frame_num,
-                               const int gate_num,
-                               const int data_num,
-                               const int bed_num,
-                               FILE* cti_fptr,
-                               const ECAT6_Main_header& mhead)
+ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const int data_num, const int bed_num,
+                      FILE *cti_fptr, const ECAT6_Main_header & mhead)
 {
   MatDir entry;
   Image_subheader ihead;
+
 
   VoxelsOnCartesianGrid<float>* image_ptr = 0;
 
@@ -246,8 +268,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num,
   {
     long matnum = cti_numcod(frame_num, 1, gate_num, data_num, bed_num);
 
-    if (!cti_lookup(cti_fptr, &mhead, matnum, &entry))
-      { // get entry
+    if(!cti_lookup(cti_fptr, &mhead,  matnum, &entry)) { // get entry
         error("\nCouldn't find matnum %d in specified file.\n", matnum);
       }
     if (cti_read_image_subheader(cti_fptr, &mhead, entry.strtblk, &ihead) != EXIT_SUCCESS)
@@ -266,16 +287,23 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num,
   const int z_size = mhead.num_planes;
   const int min_z = 0;
 
-  IndexRange3D range_3D(0, z_size - 1, -y_size / 2, (-y_size / 2) + y_size - 1, -x_size / 2, (-x_size / 2) + x_size - 1);
+  IndexRange3D range_3D (0,z_size-1,
+			 -y_size/2,(-y_size/2)+y_size-1,
+			 -x_size/2,(-x_size/2)+x_size-1);
 
 #ifndef STIR_ORIGINAL_ECAT6
-  CartesianCoordinate3D<float> voxel_size(ihead.z_pixel_size * 10, ihead.y_pixel_size * 10, ihead.x_pixel_size * 10);
-  CartesianCoordinate3D<float> origin(ihead.z_offset, ihead.y_offset * 10, ihead.x_offset * 10);
+  CartesianCoordinate3D<float> 
+    voxel_size(ihead.z_pixel_size*10,ihead.y_pixel_size*10,ihead.x_pixel_size*10);
+  CartesianCoordinate3D<float> 
+    origin(ihead.z_offset, ihead.y_offset*10, ihead.x_offset*10);
 #else
-  CartesianCoordinate3D<float> voxel_size(ihead.slice_width * 10, ihead.pixel_size * 10, ihead.pixel_size * 10);
-  CartesianCoordinate3D<float> origin(0, ihead.y_origin * 10, ihead.x_origin * 10);
+  CartesianCoordinate3D<float> 
+    voxel_size(ihead.slice_width*10,ihead.pixel_size*10,ihead.pixel_size*10);
+  CartesianCoordinate3D<float> 
+    origin(0, ihead.y_origin*10, ihead.x_origin*10);
 #endif
 
+  
   image_ptr = new VoxelsOnCartesianGrid<float>(range_3D, origin, voxel_size);
 
   NumericType type;
@@ -290,13 +318,11 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num,
 
       long matnum = cti_numcod(frame_num, z + 1, gate_num, data_num, bed_num);
 
-      if (!cti_lookup(cti_fptr, &mhead, matnum, &entry))
-        { // get entry
+      if(!cti_lookup(cti_fptr, &mhead, matnum, &entry)) { // get entry
           error("\nCouldn't find matnum %d in specified file.\n", matnum);
         }
 
-      if (cti_read_image_subheader(cti_fptr, &mhead, entry.strtblk, &ihead) == EXIT_FAILURE)
-        { // get ihead for plane z
+      if(cti_read_image_subheader(cti_fptr, &mhead, entry.strtblk, &ihead)==EXIT_FAILURE) { // get ihead for plane z
           error("\nUnable to look up image subheader\n");
         }
 
@@ -308,8 +334,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num,
       {
         if (norm(image_ptr->get_origin() - sub_head_origin) > .01F)
           {
-            warning("ECAT6_to_VoxelsOnCartesianGrid: x,y offset in subheader of plane %d does not agree with plane 1. Ignoring "
-                    "it...\n",
+		    warning("ECAT6_to_VoxelsOnCartesianGrid: x,y offset in subheader of plane %d does not agree with plane 1. Ignoring it...\n",
                     z + 1);
           }
       }
@@ -319,8 +344,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num,
 #else // STIR_ORIGINAL_ECAT6
       float scale_factor = ihead.quant_scale;
 #endif
-      if (cti_rblk(cti_fptr, entry.strtblk + 1, cti_data, entry.endblk - entry.strtblk) != EXIT_SUCCESS)
-        { // get data
+      if(cti_rblk (cti_fptr, entry.strtblk+1, cti_data, entry.endblk-entry.strtblk)!=EXIT_SUCCESS) { // get data
           error("\nUnable to read data\n");
         }
       if (file_data_to_host(cti_data, entry.endblk - entry.strtblk, ihead.data_type) != EXIT_SUCCESS)
@@ -343,20 +367,14 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num,
   return image_ptr;
 }
 
-void
-ECAT6_to_PDFS(const int frame_num,
-              const int gate_num,
-              const int data_num,
-              const int bed_num,
-              int max_ring_diff,
-              bool arccorrected,
-              const std::string& data_name,
-              FILE* cti_fptr,
-              const ECAT6_Main_header& mhead)
+void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, const int bed_num,
+		   int max_ring_diff, bool arccorrected,
+                   const string& data_name, FILE *cti_fptr, const ECAT6_Main_header &mhead)
 {
   shared_ptr<Scanner> scanner_ptr(find_scanner_from_ECAT6_Main_header(mhead));
   cout << "Scanner determined from ECAT6_Main_header: " << scanner_ptr->get_name() << endl;
-  if (scanner_ptr->get_type() == Scanner::Unknown_scanner || scanner_ptr->get_type() == Scanner::User_defined_scanner)
+  if (scanner_ptr->get_type() == Scanner::Unknown_scanner ||
+      scanner_ptr->get_type() == Scanner::User_defined_scanner)
     {
       warning("ECAT6_to_PDFS: Couldn't determine the scanner \n"
               "(Main_header.system_type=%d), defaulting to 953.\n"
@@ -365,6 +383,7 @@ ECAT6_to_PDFS(const int frame_num,
       scanner_ptr.reset(new Scanner(Scanner::E953));
     }
 
+  
   const int num_rings = scanner_ptr->get_num_rings();
 
   // ECAT 6 does not have a flag for 3D vs. 2D, so we guess it first from num_planes
@@ -402,13 +421,12 @@ ECAT6_to_PDFS(const int frame_num,
     {
       if (max_ring_diff < 0)
         max_ring_diff = num_rings - 1;
-      const int num_sinos = (2 * max_ring_diff + 1) * num_rings - (max_ring_diff + 1) * max_ring_diff;
+    const int num_sinos = 
+      (2*max_ring_diff+1) * num_rings  - (max_ring_diff+1)*max_ring_diff;
 
       if (num_sinos > mhead.num_planes)
         warning("\n\aWarning: header says not enough planes in the file: %d (expected %d)."
-                "Continuing anyway...",
-                mhead.num_planes,
-                num_sinos);
+	    "Continuing anyway...", mhead.num_planes, num_sinos);
     }
 
   // construct a ProjDataFromStream object
@@ -424,21 +442,26 @@ ECAT6_to_PDFS(const int frame_num,
       long matnum = cti_numcod(frame_num, 1, gate_num, data_num, bed_num);
       switch (mhead.file_type)
         {
-          case matScanFile: {
+      case matScanFile:
+        {
             Scan_subheader shead;
             if (get_scanheaders(cti_fptr, matnum, &mhead_copy, &shead, &scanParams) != EXIT_SUCCESS)
               error("Error reading matnum %d\n", matnum);
             break;
           }
-          case matAttenFile: {
+      case matAttenFile:
+        {
             Attn_subheader shead;
-            if (get_attnheaders(cti_fptr, matnum, &mhead_copy, &shead, &scanParams) != EXIT_SUCCESS)
+          if(get_attnheaders (cti_fptr, matnum, &mhead_copy, 
+			      &shead, &scanParams)!= EXIT_SUCCESS)
               error("Error reading matnum %d\n", matnum);
             break;
           }
-          case matNormFile: {
+      case matNormFile:
+        {
             Norm_subheader shead;
-            if (get_normheaders(cti_fptr, matnum, &mhead_copy, &shead, &scanParams) != EXIT_SUCCESS)
+          if(get_normheaders (cti_fptr, matnum, &mhead_copy, 
+			      &shead, &scanParams)!= EXIT_SUCCESS)
               error("Error reading matnum %d\n", matnum);
             break;
           }
@@ -450,16 +473,19 @@ ECAT6_to_PDFS(const int frame_num,
     const int num_views = scanParams.nviews;
     const int num_tangential_poss = scanParams.nprojs;
 
+    
     shared_ptr<ProjDataInfo> p_data_info(
         ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span, max_ring_diff, num_views, num_tangential_poss, arccorrected));
 
-    ProjDataFromStream::StorageOrder storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+    
+    ProjDataFromStream::StorageOrder  storage_order=
+      ProjDataFromStream::Segment_AxialPos_View_TangPos;
 
 #if 1
-    std::string actual_data_name = data_name;
+    string actual_data_name=data_name;
     {
-      std::string::size_type pos = find_pos_of_extension(data_name);
-      if (pos != std::string::npos && data_name.substr(pos) == ".hs")
+      string::size_type pos=find_pos_of_extension(data_name);
+      if (pos!=string::npos && data_name.substr(pos)==".hs")
         replace_extension(actual_data_name, ".s");
       else
         add_extension(actual_data_name, ".s");
@@ -477,7 +503,8 @@ ECAT6_to_PDFS(const int frame_num,
         add_extension(actual_data_name.get(), ".s");
     }
 #endif
-    shared_ptr<std::iostream> sino_stream(new fstream(actual_data_name.c_str(), ios::out | ios::binary));
+    shared_ptr<iostream> sino_stream(
+      new fstream (actual_data_name.c_str(), ios::out| ios::binary));
 
     if (!sino_stream->good())
       {
@@ -485,10 +512,12 @@ ECAT6_to_PDFS(const int frame_num,
       }
 
     shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-    proj_data.reset(new ProjDataFromStream(exam_info_sptr, p_data_info, sino_stream, std::streamoff(0), storage_order));
+    proj_data.reset(
+		    new ProjDataFromStream(exam_info_sptr,p_data_info,sino_stream, std::streamoff(0), storage_order));
 
     write_basic_interfile_PDFS_header(actual_data_name, *proj_data);
   }
+
 
   // write to proj_data
   {
@@ -496,8 +525,8 @@ ECAT6_to_PDFS(const int frame_num,
     ByteOrder byte_order;
     find_type_from_ECAT_data_type(type, byte_order, scanParams.data_type);
     // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE
-    const size_t cti_data_size
-        = proj_data->get_num_tangential_poss() * proj_data->get_num_views() * type.size_in_bytes() + MatBLKSIZE;
+    const size_t cti_data_size = 
+      proj_data->get_num_tangential_poss()*proj_data->get_num_views()*type.size_in_bytes()+ MatBLKSIZE;
     // use scoped_array to auto-delete the memory
     boost::scoped_array<char> cti_data_sptr(new char[cti_data_size]);
     char* cti_data = cti_data_sptr.get();
@@ -513,27 +542,27 @@ ECAT6_to_PDFS(const int frame_num,
             cout << "  " << w;
             int num_axial_poss = num_rings - w;
 
-            for (int ring1 = 0; ring1 < num_axial_poss; ring1++)
-              {                        // ring order: 0-0,1-1,..,15-15 then 0-1,1-2,..,14-15
+        for(int ring1=0; ring1<num_axial_poss; ring1++) { // ring order: 0-0,1-1,..,15-15 then 0-1,1-2,..,14-15
                 int ring2 = ring1 + w; // ring1<=ring2
                 int mat_index = cti_rings2plane(num_rings, ring1, ring2);
                 Sinogram<float> sino_2D = proj_data->get_empty_sinogram(ring1, w);
                 // TODO remove as will be set below
                 proj_data->set_sinogram(sino_2D);
-                read_sinogram(sino_2D, cti_data, cti_fptr, mat_index, frame_num, gate_num, data_num, bed_num);
+          read_sinogram(sino_2D, cti_data, cti_fptr, mat_index, 
+            frame_num, gate_num, data_num, bed_num);
                 proj_data->set_sinogram(sino_2D);
               }
 
             // negative ring difference
-            if (w > 0)
-              {
+        if(w>0) {
                 cout << "  " << -w;
-                for (int ring2 = 0; ring2 < num_axial_poss; ring2++)
-                  {                        // ring order: 0-1,2-1,..,15-14 then 2-0,3-1,..,15-13
+          for(int ring2=0; ring2<num_axial_poss; ring2++) { // ring order: 0-1,2-1,..,15-14 then 2-0,3-1,..,15-13
                     int ring1 = ring2 + w; // ring1>ring2
                     int mat_index = cti_rings2plane(num_rings, ring1, ring2);
                     Sinogram<float> sino_2D = proj_data->get_empty_sinogram(ring2, -w, false);
-                    read_sinogram(sino_2D, cti_data, cti_fptr, mat_index, frame_num, gate_num, data_num, bed_num);
+            read_sinogram(sino_2D, cti_data,
+              cti_fptr, mat_index, 
+              frame_num, gate_num, data_num, bed_num);
 
                     proj_data->set_sinogram(sino_2D);
                   }
@@ -547,7 +576,8 @@ ECAT6_to_PDFS(const int frame_num,
         for (int z = 0; z < proj_data->get_num_axial_poss(0); z++)
           {
             Sinogram<float> sino_2D = proj_data->get_empty_sinogram(z, 0, false);
-            read_sinogram(sino_2D, cti_data, cti_fptr, z + 1, frame_num, gate_num, data_num, bed_num);
+        read_sinogram(sino_2D, cti_data, cti_fptr, z+1, 
+                      frame_num, gate_num, data_num, bed_num);
             proj_data->set_sinogram(sino_2D);
           }
 
@@ -557,23 +587,30 @@ ECAT6_to_PDFS(const int frame_num,
   } // end of write
 }
 
+
 // takes a pre-allocated buffer (which will be modified)
-void
-read_sinogram(Sinogram<float>& sino_2D, char* buffer, FILE* fptr, int mat_index, int frame, int gate, int data, int bed)
+void read_sinogram(Sinogram<float>& sino_2D,
+                   char *buffer, 
+		   FILE*fptr, 
+		   int mat_index, 
+		   int frame, int gate, int data, int bed)
 {
   ECAT6_Main_header mhead;
   ScanInfoRec scanParams;
-  const long matnum = cti_numcod(frame, mat_index, gate, data, bed);
+  const long matnum=
+    cti_numcod (frame,mat_index,gate,data,bed);
   if (cti_read_ECAT6_Main_header(fptr, &mhead) != EXIT_SUCCESS)
     error("read_sinogram: error reading ECAT6_Main_header");
 
   float scale_factor = 0; // intialised to avoid compiler warnings
   switch (mhead.file_type)
     {
-      case matScanFile: {
+    case matScanFile:
+      {
         Scan_subheader shead;
 
-        if (get_scanheaders(fptr, matnum, &mhead, &shead, &scanParams) != EXIT_SUCCESS)
+        if(get_scanheaders (fptr, matnum, &mhead, 
+                            &shead, &scanParams)!= EXIT_SUCCESS)
           error("Error reading matnum %d\n", matnum);
 
         scale_factor = shead.scale_factor;
@@ -583,19 +620,23 @@ read_sinogram(Sinogram<float>& sino_2D, char* buffer, FILE* fptr, int mat_index,
           warning("\nread_sinogram warning: loss_correction_fctr invalid, using 1\n");
         break;
       }
-      case matAttenFile: {
+    case matAttenFile:
+      {
         Attn_subheader shead;
 
-        if (get_attnheaders(fptr, matnum, &mhead, &shead, &scanParams) != EXIT_SUCCESS)
+        if(get_attnheaders (fptr, matnum, &mhead, 
+                            &shead, &scanParams)!= EXIT_SUCCESS)
           error("Error reading matnum %d\n", matnum);
 
         scale_factor = shead.scale_factor;
         break;
       }
-      case matNormFile: {
+    case matNormFile:
+      {
         Norm_subheader shead;
 
-        if (get_normheaders(fptr, matnum, &mhead, &shead, &scanParams) != EXIT_SUCCESS)
+        if(get_normheaders (fptr, matnum, &mhead, 
+                            &shead, &scanParams)!= EXIT_SUCCESS)
           error("Error reading matnum %d\n", matnum);
 
         scale_factor = shead.scale_factor;
@@ -608,40 +649,34 @@ read_sinogram(Sinogram<float>& sino_2D, char* buffer, FILE* fptr, int mat_index,
     error("Error reading matnum %d\n", matnum);
 
   cti_data_to_float_Array(sino_2D, buffer, scale_factor, scanParams.data_type);
+
 }
+
 
 Succeeded
 DiscretisedDensity_to_ECAT6(FILE* fptr,
                             DiscretisedDensity<3, float> const& density,
                             const ECAT6_Main_header& mhead,
-                            const int frame_num,
-                            const int gate_num,
-                            const int data_num,
-                            const int bed_num)
+                            const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
 
-  DiscretisedDensityOnCartesianGrid<3, float> const& image
-      = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float> const&>(density);
+
+  DiscretisedDensityOnCartesianGrid<3,float> const & image =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
+
 
   if (mhead.file_type != matImageFile)
     {
       warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
               "Main header.file_type should be ImageFile\n",
-              frame_num,
-              gate_num,
-              data_num,
-              bed_num);
+            frame_num, gate_num, data_num, bed_num);
       return Succeeded::no;
     }
   if (mhead.num_planes != image.get_length())
     {
       warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
               "Main header.num_planes should be %d\n",
-              frame_num,
-              gate_num,
-              data_num,
-              bed_num,
-              image.get_length());
+            frame_num, gate_num, data_num, bed_num,image.get_length());
       return Succeeded::no;
     }
   const float voxel_size_z = image.get_grid_spacing()[1] / 10; // convert to cm
@@ -651,14 +686,11 @@ DiscretisedDensity_to_ECAT6(FILE* fptr,
     {
       warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
               "Main header.plane_separation should be %g\n",
-              frame_num,
-              gate_num,
-              data_num,
-              bed_num,
-              voxel_size_z);
+            frame_num, gate_num, data_num, bed_num,voxel_size_z);
       return Succeeded::no;
     }
 
+  
   Image_subheader ihead = img_zero_fill();
 
   const int min_z = image.get_min_index();
@@ -686,9 +718,11 @@ DiscretisedDensity_to_ECAT6(FILE* fptr,
   // after writing to file.
   // ECAT6 origin is somewhere in the middle of the image
   // WARNING this has to be consistent with reading
-  if (image[0][0].get_min_index() != -(x_size / 2) || image[0][0].get_max_index() != -(x_size / 2) + x_size - 1
-      || image[0].get_min_index() != -(y_size / 2) || image[0].get_max_index() != -(y_size / 2) + y_size - 1
-      || image.get_min_index() != 0)
+  if (image[0][0].get_min_index() != -(x_size/2) ||
+      image[0][0].get_max_index() != -(x_size/2) + x_size - 1 ||
+      image[0].get_min_index() != -(y_size/2) ||
+      image[0].get_max_index() != -(y_size/2) + y_size - 1 ||
+      image.get_min_index() != 0)
     {
       warning("DiscretisedDensity_to_ECAT6 is currently limited to input images in the standard STIR index range.\n"
               "Data not written.");
@@ -699,13 +733,18 @@ DiscretisedDensity_to_ECAT6(FILE* fptr,
   ihead.z_offset = image.get_origin().z() / 10;
   shared_ptr<Scanner> scanner_ptr(find_scanner_from_ECAT6_Main_header(mhead));
 
-  const float depth_of_interaction_factor
-      = 1 + scanner_ptr->get_average_depth_of_interaction() / scanner_ptr->get_inner_ring_radius();
+  const float depth_of_interaction_factor =
+    1 + 
+    scanner_ptr->get_average_depth_of_interaction() /
+    scanner_ptr->get_inner_ring_radius();
   // note: CTI uses shead.x_resolution instead of mhead.bin_size
   // but we don't have access to the sinogram here, and these 2 fields
   // should be equal anyway.
-  ihead.recon_zoom = mhead.bin_size / voxel_size_x * scanner_ptr->get_default_num_arccorrected_bins() / float(image[0].size())
-                     * depth_of_interaction_factor;
+  ihead.recon_zoom= 
+    mhead.bin_size/voxel_size_x *
+    scanner_ptr->get_default_num_arccorrected_bins()/
+    float(image[0].size()) *
+    depth_of_interaction_factor;
 
   ihead.decay_corr_fctr = 1;
 #else  // STIR_ORIGINAL_ECAT6
@@ -732,8 +771,7 @@ DiscretisedDensity_to_ECAT6(FILE* fptr,
   short* cti_data = new short[cti_data_size / 2];
   Array<2, short> plane(image[min_z].get_index_range());
 
-  for (int z = 0; z < z_size; z++)
-    { // loop on planes
+  for(int z=0; z<z_size; z++) { // loop on planes
       float scale_factor = 0;
       convert_array(plane, scale_factor, image[z + min_z]);
       ihead.image_min = plane.find_min();
@@ -752,14 +790,9 @@ DiscretisedDensity_to_ECAT6(FILE* fptr,
 
       // write data
       long matnum = cti_numcod(frame_num, z - min_z + 1, gate_num, data_num, bed_num);
-      if (cti_write_image(fptr, matnum, &mhead, &ihead, cti_data, cti_data_size) != EXIT_SUCCESS)
-        {
+    if(cti_write_image(fptr, matnum, &mhead, &ihead, cti_data, cti_data_size)!=EXIT_SUCCESS) {
           warning("Unable to write image plane %d at (f%d, g%d, d%d, b%d) to file, exiting.\n",
-                  z - min_z + 1,
-                  frame_num,
-                  gate_num,
-                  data_num,
-                  bed_num);
+               z-min_z+1, frame_num, gate_num, data_num, bed_num);
           delete[] cti_data;
           return Succeeded::no;
         }
@@ -768,65 +801,61 @@ DiscretisedDensity_to_ECAT6(FILE* fptr,
   return Succeeded::yes;
 }
 
+
 Succeeded
 DiscretisedDensity_to_ECAT6(DiscretisedDensity<3, float> const& density,
-                            std::string const& cti_name,
-                            std::string const& orig_name,
+			    string const & cti_name, string const&orig_name,
                             const Scanner& scanner,
-                            const int frame_num,
-                            const int gate_num,
-                            const int data_num,
-                            const int bed_num)
+                            const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
   ECAT6_Main_header mhead;
   make_ECAT6_Main_header(mhead, scanner, orig_name, density);
 
+  
   FILE* fptr = cti_create(cti_name.c_str(), &mhead);
-  Succeeded result = DiscretisedDensity_to_ECAT6(fptr, density, mhead, frame_num, gate_num, data_num, bed_num);
+  Succeeded result =
+    DiscretisedDensity_to_ECAT6(fptr,
+                            density, 
+			    mhead,
+                            frame_num, gate_num,data_num, bed_num);
 
   fclose(fptr);
   return result;
 }
 
 Succeeded
-ProjData_to_ECAT6(FILE* fptr,
-                  ProjData const& proj_data,
-                  const ECAT6_Main_header& mhead,
-                  const int frame_num,
-                  const int gate_num,
-                  const int data_num,
-                  const int bed_num,
+ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header& mhead,
+                  const int frame_num, const int gate_num, const int data_num, const int bed_num,
                   const bool write_2D_sinograms)
 {
   if (mhead.file_type != matScanFile)
     {
       warning("ProjData_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
               "Main header.file_type should be ImageFile\n",
-              frame_num,
-              gate_num,
-              data_num,
-              bed_num);
+            frame_num, gate_num, data_num, bed_num);
       return Succeeded::no;
     }
 
-  const int max_segment_num = write_2D_sinograms ? 0 : min(proj_data.get_max_segment_num(), -proj_data.get_min_segment_num());
+  const int max_segment_num = 
+    write_2D_sinograms
+    ? 0
+    :
+      min(proj_data.get_max_segment_num(), -proj_data.get_min_segment_num())
+;
   const int min_segment_num = -max_segment_num;
 
   {
     int num_planes = 0;
-    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+    for(int segment_num=min_segment_num;
+	segment_num <= max_segment_num;
+	++segment_num)
       num_planes += proj_data.get_num_axial_poss(segment_num);
 
     if (mhead.num_planes != num_planes)
       {
         warning("ProjData_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
                 "Main header.num_planes should be %d, but is %d\n",
-                frame_num,
-                gate_num,
-                data_num,
-                bed_num,
-                num_planes,
-                mhead.num_planes);
+		frame_num, gate_num, data_num, bed_num,num_planes, mhead.num_planes);
         if (mhead.num_planes < num_planes)
           return Succeeded::no;
       }
@@ -855,8 +884,10 @@ ProjData_to_ECAT6(FILE* fptr,
   shead.loss_correction_fctr = 1;
   // find sample_distance
   {
-    ProjDataInfoCylindricalArcCorr const* const proj_data_info_cyl_ptr
-        = dynamic_cast<ProjDataInfoCylindricalArcCorr const* const>(proj_data.get_proj_data_info_sptr().get());
+    ProjDataInfoCylindricalArcCorr const * const
+      proj_data_info_cyl_ptr =
+      dynamic_cast<ProjDataInfoCylindricalArcCorr const * const>
+      (proj_data.get_proj_data_info_ptr());
     if (proj_data_info_cyl_ptr == NULL)
       {
         warning("This is not arc-corrected data. Filling in default_bin_size from scanner \n");
@@ -865,7 +896,7 @@ ProjData_to_ECAT6(FILE* fptr,
 #else
         shead.sample_distance =
 #endif
-            proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_default_bin_size() / 10;
+        proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10;
       }
     else
       {
@@ -881,12 +912,15 @@ ProjData_to_ECAT6(FILE* fptr,
   // find num_rings and check span
   int num_rings = proj_data.get_num_axial_poss(0);
   {
-    ProjDataInfoCylindrical const* const proj_data_info_cyl_ptr
-        = dynamic_cast<ProjDataInfoCylindrical const* const>(proj_data.get_proj_data_info_sptr().get());
+    ProjDataInfoCylindrical const * const
+      proj_data_info_cyl_ptr =
+      dynamic_cast<ProjDataInfoCylindrical const * const>
+      (proj_data.get_proj_data_info_ptr());
     if (proj_data_info_cyl_ptr != NULL)
       {
         // check if spanned data in segment 0
-        if (proj_data_info_cyl_ptr->get_min_ring_difference(0) < proj_data_info_cyl_ptr->get_max_ring_difference(0))
+	if (proj_data_info_cyl_ptr->get_min_ring_difference(0) <
+	    proj_data_info_cyl_ptr->get_max_ring_difference(0))
           {
             if (write_2D_sinograms)
               num_rings = (proj_data.get_num_axial_poss(0) + 1) / 2;
@@ -899,31 +933,33 @@ ProjData_to_ECAT6(FILE* fptr,
       }
   }
 
-  if (num_rings != proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings())
+
+  if (num_rings != proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings())
     {
       warning("Expected %d num_rings from scanner while segment 0 implies %d rings\n",
-              proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_num_rings(),
-              num_rings);
+            proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings(), num_rings);
     }
 
   short* cti_data = new short[plane_size];
-  Array<2, short> short_sinogram(
-      IndexRange2D(min_view, proj_data.get_max_view_num(), min_bin, proj_data.get_max_tangential_pos_num()));
+  Array<2,short> short_sinogram(IndexRange2D(min_view,proj_data.get_max_view_num(),
+    min_bin,proj_data.get_max_tangential_pos_num()));
 
   cout << endl << "Processing segment number:";
 
-  for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+  for(int segment_num=min_segment_num;
+      segment_num <= max_segment_num;
+      ++segment_num)
     {
       cout << "  " << segment_num;
 
+    
       const int num_axial_poss = proj_data.get_num_axial_poss(segment_num);
       const int min_axial_poss = proj_data.get_min_axial_pos_num(segment_num);
 
       if (!write_2D_sinograms && num_axial_poss != num_rings - abs(segment_num))
         {
           warning("Can only handle span==1 data. Number of sinograms in this segment "
-                  "should be %d. Exiting\n",
-                  num_rings - abs(segment_num));
+	      "should be %d. Exiting\n",  num_rings - abs(segment_num));
           delete[] cti_data;
           return Succeeded::no;
         }
@@ -935,6 +971,7 @@ ProjData_to_ECAT6(FILE* fptr,
           float scale_factor = 0;
           convert_array(short_sinogram, scale_factor, float_sinogram);
 
+      
           shead.scan_min = short_sinogram.find_min();
           shead.scan_max = short_sinogram.find_max();
           shead.scale_factor = scale_factor == 0 ? 1.F : scale_factor;
@@ -948,18 +985,14 @@ ProjData_to_ECAT6(FILE* fptr,
           // write data
           int ring1, ring2;
           if (segment_num >= 0)
-            {
-              ring1 = z;
-              ring2 = z + segment_num;
-            }
+      { ring1= z; ring2= z+segment_num; }
           else
-            {
-              ring1 = z + abs(segment_num);
-              ring2 = z;
-            }
+      { ring1= z+abs(segment_num); ring2= z; }
 
-          const int indexcod
-              = write_2D_sinograms ? z + 1 : cti_rings2plane(num_rings, ring1, ring2); // change indexation into CTI
+      const int indexcod= 
+	write_2D_sinograms 
+	? z+1
+	: cti_rings2plane( num_rings, ring1, ring2); // change indexation into CTI
           const long matnum = cti_numcod(frame_num, indexcod, gate_num, data_num, bed_num);
           if (cti_write_scan(fptr, matnum, &mhead, &shead, cti_data, plane_size * sizeof(short)) != EXIT_SUCCESS)
             {
@@ -975,60 +1008,67 @@ ProjData_to_ECAT6(FILE* fptr,
   return Succeeded::yes;
 }
 
+
 Succeeded
-ProjData_to_ECAT6(ProjData const& proj_data,
-                  std::string const& cti_name,
-                  std::string const& orig_name,
-                  const int frame_num,
-                  const int gate_num,
-                  const int data_num,
-                  const int bed_num,
+ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string const & orig_name,
+                  const int frame_num, const int gate_num, const int data_num, const int bed_num,
                   const bool write_2D_sinograms)
 {
   ECAT6_Main_header mhead;
-  make_ECAT6_Main_header(mhead, orig_name, *proj_data.get_proj_data_info_sptr());
+  make_ECAT6_Main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
+  
 
   FILE* fptr = cti_create(cti_name.c_str(), &mhead);
-  Succeeded result = ProjData_to_ECAT6(fptr, proj_data, mhead, frame_num, gate_num, data_num, bed_num, write_2D_sinograms);
+  Succeeded result =
+    ProjData_to_ECAT6(fptr, proj_data, mhead, 
+		      frame_num, gate_num,data_num, bed_num, write_2D_sinograms);
 
   fclose(fptr);
   return result;
 }
 
-void
-cti_data_to_float_Array(Array<2, float>& out, char const* const buffer, const float scale_factor, int dtype)
+void cti_data_to_float_Array(Array<2,float>&out, 
+                             char const * const buffer, const float scale_factor, int dtype)
 {
 
   BOOST_STATIC_ASSERT(sizeof(float) == 4);
 
   switch (dtype)
     {
-      case ECAT_Byte_data_type: {
-        signed char const* cti_data = reinterpret_cast<signed char const* const>(buffer);
+  case ECAT_Byte_data_type:
+  {
+    signed char const *  cti_data = 
+      reinterpret_cast<signed char const * const >(buffer);
         for (int y = out.get_min_index(); y <= out.get_max_index(); y++)
           for (int x = out[y].get_min_index(); x <= out[y].get_max_index(); x++)
             out[y][x] = scale_factor * (*cti_data++);
         break;
       }
     case ECAT_I2_little_endian_data_type:
-      case ECAT_I2_big_endian_data_type: {
-        boost::int16_t const* cti_data = reinterpret_cast<boost::int16_t const* const>(buffer);
+  case ECAT_I2_big_endian_data_type:
+  {
+    boost::int16_t const * cti_data = 
+      reinterpret_cast<boost::int16_t const * const >(buffer);
         for (int y = out.get_min_index(); y <= out.get_max_index(); y++)
           for (int x = out[y].get_min_index(); x <= out[y].get_max_index(); x++)
             out[y][x] = scale_factor * (*cti_data++);
         break;
       }
     case ECAT_I4_little_endian_data_type:
-      case ECAT_I4_big_endian_data_type: {
-        boost::int32_t const* cti_data = reinterpret_cast<boost::int32_t const* const>(buffer);
+  case ECAT_I4_big_endian_data_type:
+    {
+      boost::int32_t const * cti_data = 
+	reinterpret_cast<boost::int32_t const * const >(buffer);
         for (int y = out.get_min_index(); y <= out.get_max_index(); y++)
           for (int x = out[y].get_min_index(); x <= out[y].get_max_index(); x++)
             out[y][x] = scale_factor * (*cti_data++);
         break;
       }
     case ECAT_R4_VAX_data_type:
-      case ECAT_R4_IEEE_big_endian_data_type: {
-        float const* cti_data = reinterpret_cast<float const* const>(buffer);
+  case ECAT_R4_IEEE_big_endian_data_type:
+  {
+    float const * cti_data = 
+      reinterpret_cast<float const * const >(buffer);
         for (int y = out.get_min_index(); y <= out.get_max_index(); y++)
           for (int x = out[y].get_min_index(); x <= out[y].get_max_index(); x++)
             out[y][x] = scale_factor * (*cti_data++);

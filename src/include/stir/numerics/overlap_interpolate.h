@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,8 +35,7 @@
 
 START_NAMESPACE_STIR
 
-template <class T>
-class VectorWithOffset;
+template <class T> class VectorWithOffset;
 
 /*!
   \ingroup numerics
@@ -41,11 +48,13 @@ class VectorWithOffset;
                      const bool only_add_to_output=false, const bool assign_rest_with_zeroes)
 */
 template <typename T>
-void overlap_interpolate(VectorWithOffset<T>& out_data,
+void
+overlap_interpolate(VectorWithOffset<T>& out_data, 
                          const VectorWithOffset<T>& in_data,
                          const float zoom,
                          const float offset,
                          const bool assign_rest_with_zeroes = true);
+
 
 /*! \ingroup numerics
   \brief 'overlap' interpolation for iterators, with arbitrary 'bin' sizes.
@@ -119,17 +128,15 @@ void overlap_interpolate(VectorWithOffset<T>& out_data,
   <li> first version by Kris Thielemans</li>
   </ul>
  */
-template <typename out_iter_t, typename out_coord_iter_t, typename in_iter_t, typename in_coord_iter_t>
-inline void overlap_interpolate(const out_iter_t out_begin,
-                                const out_iter_t out_end,
-                                const out_coord_iter_t out_coord_begin,
-                                const out_coord_iter_t out_coord_end,
-                                const in_iter_t in_begin,
-                                in_iter_t in_end,
-                                const in_coord_iter_t in_coord_begin,
-                                const in_coord_iter_t in_coord_end,
-                                const bool only_add_to_output = false,
-                                const bool assign_rest_with_zeroes = true);
+template <typename out_iter_t, typename out_coord_iter_t,
+	  typename in_iter_t, typename in_coord_iter_t>
+inline
+void
+ overlap_interpolate(const out_iter_t out_begin, const out_iter_t out_end, 
+		     const out_coord_iter_t out_coord_begin, const out_coord_iter_t out_coord_end,
+		     const in_iter_t in_begin, in_iter_t in_end,
+		     const in_coord_iter_t in_coord_begin, const in_coord_iter_t in_coord_end,
+		     const bool only_add_to_output=false, const bool assign_rest_with_zeroes=true);
 
 END_NAMESPACE_STIR
 

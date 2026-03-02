@@ -16,7 +16,15 @@
     Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -48,7 +56,8 @@ START_NAMESPACE_STIR
    give you float which is (a tiny bit) larger than fabs(b).
 
 */
-inline double
+inline
+double
 modulo(const double a, const double b)
 {
   const double res = fmod(a, b);
@@ -66,14 +75,15 @@ modulo(const double a, const double b)
   So, you should probably not rely too much on the result being less than
   \a b.
 */
-inline float
+inline
+float
 modulo(const float a, const float b)
 {
-  float res = static_cast<float>(modulo(static_cast<double>(a), static_cast<double>(b)));
+  float res = 
+    static_cast<float>(modulo(static_cast<double>(a),static_cast<double>(b)));
   assert(res >= 0);
   const float abs_b = b >= 0 ? b : -b;
-  if (res >= abs_b)
-    res -= abs_b;
+  if (res>=abs_b) res -= abs_b;
   assert(res >= 0);
   return res;
 }
@@ -83,7 +93,8 @@ modulo(const float a, const float b)
    Result will be larger than or equal to 0, and (strictly) smaller than
    \a abs(b).
 */
-inline int
+inline
+int
 modulo(const int a, const int b)
 {
   const int res = a % b;
@@ -99,7 +110,8 @@ modulo(const int a, const int b)
      \code result[d] = modulo(a[d], b[d] \endcode
 */
 template <int num_dimensions, typename T>
-inline BasicCoordinate<num_dimensions, T>
+inline
+BasicCoordinate<num_dimensions, T>
 modulo(const BasicCoordinate<num_dimensions, T>& a, const BasicCoordinate<num_dimensions, T>& b)
 {
   BasicCoordinate<num_dimensions, T> result;
@@ -114,7 +126,8 @@ modulo(const BasicCoordinate<num_dimensions, T>& a, const BasicCoordinate<num_di
     a range \f$[0,2\pi)\f$.
 */
 template <typename FloatOrDouble>
-inline FloatOrDouble
+inline 
+FloatOrDouble
 from_min_pi_plus_pi_to_0_2pi(const FloatOrDouble phi)
 {
   static const FloatOrDouble two_pi = static_cast<FloatOrDouble>(2 * _PI);
@@ -134,7 +147,8 @@ from_min_pi_plus_pi_to_0_2pi(const FloatOrDouble phi)
 //! Convert angle to standard range
 /*! Identical to <tt>modulo(phi, static_cast<FloatOrDouble>(2*_PI))</tt> */
 template <typename FloatOrDouble>
-inline FloatOrDouble
+inline 
+FloatOrDouble
 to_0_2pi(const FloatOrDouble phi)
 {
   return modulo(phi, static_cast<FloatOrDouble>(2 * _PI));

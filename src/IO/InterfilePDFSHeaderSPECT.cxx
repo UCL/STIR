@@ -3,7 +3,15 @@
     Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,12 +29,14 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <numeric>
 #include <functional>
-#include "stir/warning.h"
 
+#ifndef STIR_NO_NAMESPACES
+using std::binary_function;
 using std::pair;
 using std::sort;
 using std::cerr;
 using std::endl;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -37,25 +47,30 @@ InterfilePDFSHeaderSPECT::InterfilePDFSHeaderSPECT()
 {
   num_segments = 1;
   num_views = -1;
-  add_key("number of projections", &num_views);
+  add_key("number of projections", 
+          &num_views);
   start_angle = 0;
-  add_key("start angle", &start_angle);
+  add_key("start angle", 
+          &start_angle);
   direction_of_rotation = "cw";
-  add_key("direction of rotation", &direction_of_rotation);
+  add_key("direction of rotation", 
+          &direction_of_rotation);
   extent_of_rotation = double_value_not_set;
-  add_key("extent of rotation", &extent_of_rotation);
+  add_key("extent of rotation", 
+          &extent_of_rotation);
   // TODO convert to ASCIIlist
   orbit = "circular";
-  add_key("orbit", &orbit);
+  add_key("orbit",
+          &orbit);
   radius_of_rotation = double_value_not_set;
   add_key("radius", &radius_of_rotation);
   add_key("radii", &radii_of_rotation); // for non-circular orbits
   // overwrite vectored-value, as v3.3 had a scalar
   add_key("data offset in bytes", &data_offset);
+
 }
 
-bool
-InterfilePDFSHeaderSPECT::post_processing()
+bool InterfilePDFSHeaderSPECT::post_processing()
 {
 
   if (InterfileHeader::post_processing() == true)
@@ -102,8 +117,7 @@ InterfilePDFSHeaderSPECT::post_processing()
           warning("Interfile error: radius not set");
           return true;
         }
-      for (int i = 0; i < num_views; i++)
-        radii[i] = static_cast<float>(radius_of_rotation);
+      for ( int i = 0 ; i < num_views ; i++ ) radii[ i ] = static_cast<float>(radius_of_rotation);	
     }
   else if (orbit == "non-circular")
     {
@@ -113,8 +127,7 @@ InterfilePDFSHeaderSPECT::post_processing()
           warning("Interfile error: number of projections must be consistent with radius vector length");
           return true;
         }
-      for (int i = 0; i < num_views; i++)
-        radii[i] = static_cast<float>(radii_of_rotation[i]);
+      for ( int i = 0 ; i < num_views ; i++ ) radii[ i ] = static_cast<float>(radii_of_rotation[i]);	
     }
   else
     {
@@ -122,22 +135,23 @@ InterfilePDFSHeaderSPECT::post_processing()
       return true;
     }
 
+
   // somewhat strange values to be compatible with PET
   VectorWithOffset<int> sorted_min_ring_diff(0, 0);
   VectorWithOffset<int> sorted_max_ring_diff(0, 0);
-  VectorWithOffset<int> sorted_num_axial_poss_per_segment(0, 0);
+  VectorWithOffset<int> sorted_num_rings_per_segment(0,0);
   sorted_min_ring_diff[0] = 0;
   sorted_max_ring_diff[0] = 0;
-  sorted_num_axial_poss_per_segment[0] = num_axial_poss;
+  sorted_num_rings_per_segment[0]=num_axial_poss;
 
   // we construct a new scanner object with
   // data from the Interfile header (or the guessed scanner).
   // Initialize the scanner values (most are not used in SPECT reconstruction)
 
-  const int num_rings = sorted_num_axial_poss_per_segment[0];
+  const int num_rings = sorted_num_rings_per_segment[0];
   const int num_detectors_per_ring = -1; // num_views*2;
   const double average_depth_of_interaction_in_cm = 0;
-  const double distance_between_rings_in_cm = z_spacing_in_cm;
+  const double distance_between_rings_in_cm = z_spacing_in_cm*2; // need to do times 2  such that default z-spacing of reconstruction is z_spacing
   double default_bin_size_in_cm = bin_size_in_cm;
   const double view_offset_in_degrees = start_angle;
   const int max_num_non_arccorrected_bins = num_bins;
@@ -149,15 +163,11 @@ InterfilePDFSHeaderSPECT::post_processing()
   const int num_axial_crystals_per_singles_unit = -1;
   const int num_transaxial_crystals_per_singles_unit = -1;
   const int num_detector_layers = 1;
-  const float energy_resolution = -1.f;
-  const float reference_energy = -1.f;
-  const short int max_num_of_timing_poss = 1;
-  const float size_timing_pos = -1.f;
-  const float timing_resolution = -1.f;
-
-  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
-  shared_ptr<Scanner> scanner_ptr_from_file(new Scanner(guessed_scanner_ptr->get_type(),
-                                                        get_exam_info_sptr()->originating_system,
+	
+  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  shared_ptr<Scanner> scanner_ptr_from_file(
+                                            new Scanner(guessed_scanner_ptr->get_type(), 
+                                                        get_exam_info_ptr()->originating_system,
                                                         num_detectors_per_ring,
                                                         num_rings,
                                                         max_num_non_arccorrected_bins,
@@ -173,12 +183,7 @@ InterfilePDFSHeaderSPECT::post_processing()
                                                         num_transaxial_crystals_per_block,
                                                         num_axial_crystals_per_singles_unit,
                                                         num_transaxial_crystals_per_singles_unit,
-                                                        num_detector_layers,
-                                                        energy_resolution,
-                                                        reference_energy,
-                                                        max_num_of_timing_poss,
-                                                        size_timing_pos,
-                                                        timing_resolution));
+                                                        num_detector_layers));
 #if 0
   if (default_bin_size_in_cm <= 0)
     default_bin_size_in_cm =
@@ -189,13 +194,14 @@ InterfilePDFSHeaderSPECT::post_processing()
             bin_size_in_cm,
             scanner_ptr_from_file->get_default_bin_size()/10);
 #endif
-  ProjDataInfoCylindricalArcCorr* my_data_info_ptr = new ProjDataInfoCylindricalArcCorr(scanner_ptr_from_file,
+  ProjDataInfoCylindricalArcCorr* my_data_info_ptr = 
+    new ProjDataInfoCylindricalArcCorr (
+                                        scanner_ptr_from_file,
                                                                                         float(bin_size_in_cm * 10.),
-                                                                                        sorted_num_axial_poss_per_segment,
+                                        sorted_num_rings_per_segment,
                                                                                         sorted_min_ring_diff,
                                                                                         sorted_max_ring_diff,
-                                                                                        num_views,
-                                                                                        num_bins);
+                                        num_views,num_bins);
 
   my_data_info_ptr->set_ring_radii_for_all_views(radii);
 
@@ -220,5 +226,6 @@ InterfilePDFSHeaderSPECT::post_processing()
 
   return false;
 }
+
 
 END_NAMESPACE_STIR

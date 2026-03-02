@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -46,6 +54,7 @@ Note that to store projection data in ECAT6, a 3D sinogram cannot be axially com
 
 */
 
+
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -57,22 +66,22 @@ Note that to store projection data in ECAT6, a 3D sinogram cannot be axially com
 #include <iostream>
 #include <vector>
 #include <string>
-#include "stir/warning.h"
-#include "stir/error.h"
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::vector;
 using std::string;
 using std::size_t;
+#endif
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT6
 
-int
-main(int argc, char* argv[])
+
+int main(int argc, char *argv[])
 {
   char cti_name[1000], scanner_name[1000] = "";
   vector<string> filenames;
@@ -99,8 +108,7 @@ main(int argc, char* argv[])
               else
                 warning("Ignored unrecognised option: %s.", argv[2]);
 
-              argv++;
-              argc--;
+	    argv++; argc--;
             }
           strcpy(cti_name, argv[2]);
           int num_files = argc - 3;
@@ -156,7 +164,8 @@ main(int argc, char* argv[])
           filenames.push_back(cur_name);
         }
 
-      ask_filename_with_extension(cti_name, "Name of the ECAT6 file? ", its_an_image ? ".img" : ".scn");
+    ask_filename_with_extension(cti_name,"Name of the ECAT6 file? ",
+      its_an_image ? ".img" : ".scn");
     }
 
   size_t num_frames, num_gates, num_bed_poss, num_data;
@@ -185,12 +194,15 @@ main(int argc, char* argv[])
   if (its_an_image)
     {
 
-      shared_ptr<Scanner> scanner_ptr(strlen(scanner_name) == 0 ? Scanner::ask_parameters()
-                                                                : Scanner::get_scanner_from_name(scanner_name));
+    shared_ptr<Scanner> scanner_ptr(
+      strlen(scanner_name)==0 ?
+      Scanner::ask_parameters() :
+      Scanner::get_scanner_from_name(scanner_name));
 
       // read first image
       cerr << "Reading " << filenames[0] << endl;
-      shared_ptr<DiscretisedDensity<3, float>> density_ptr(read_from_file<DiscretisedDensity<3, float>>(filenames[0]));
+    shared_ptr<DiscretisedDensity<3,float> > 
+      density_ptr(read_from_file<DiscretisedDensity<3,float> >(filenames[0]));
 
       ECAT6_Main_header mhead;
       make_ECAT6_Main_header(mhead, *scanner_ptr, filenames[0], *density_ptr);
@@ -206,7 +218,11 @@ main(int argc, char* argv[])
 
       while (1)
         {
-          if (DiscretisedDensity_to_ECAT6(fptr, *density_ptr, mhead, frame_num) == Succeeded::no)
+      if (DiscretisedDensity_to_ECAT6(fptr,
+                                      *density_ptr, 
+                                      mhead,
+                                      frame_num)
+                                      == Succeeded::no)
             {
               fclose(fptr);
               return EXIT_FAILURE;
@@ -217,7 +233,8 @@ main(int argc, char* argv[])
               return EXIT_SUCCESS;
             }
           cerr << "Reading " << filenames[frame_num - 1] << endl;
-          density_ptr = read_from_file<DiscretisedDensity<3, float>>(filenames[frame_num - 1]);
+      density_ptr =
+        read_from_file<DiscretisedDensity<3,float> >(filenames[frame_num-1]);
         }
     }
   else
@@ -225,7 +242,8 @@ main(int argc, char* argv[])
 
       // read first data set
       cerr << "Reading " << filenames[0] << endl;
-      shared_ptr<ProjData> proj_data_ptr = ProjData::read_from_file(filenames[0]);
+    shared_ptr<ProjData > proj_data_ptr =
+      ProjData::read_from_file(filenames[0]);
 
       ECAT6_Main_header mhead;
       FILE* fptr;
@@ -240,7 +258,7 @@ main(int argc, char* argv[])
         }
       else
         {
-          make_ECAT6_Main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_sptr());
+	make_ECAT6_Main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
           mhead.num_frames = num_frames;
           mhead.num_gates = num_gates;
           mhead.num_bed_pos = num_bed_poss - 1;
@@ -260,10 +278,14 @@ main(int argc, char* argv[])
           size_t current_frame_num, current_bed_num, current_gate_num, current_data_num;
           if (interactive)
             {
-              current_frame_num = ask_num("Frame number ? ", min_frame_num, max_frame_num, min_frame_num);
-              current_bed_num = ask_num("Bed number ? ", min_bed_num, max_bed_num, min_bed_num);
-              current_gate_num = ask_num("Gate number ? ", min_gate_num, max_gate_num, min_gate_num);
-              current_data_num = ask_num("Data number ? ", 0, 7, 0);
+	  current_frame_num= 
+	    ask_num("Frame number ? ", min_frame_num, max_frame_num, min_frame_num);
+	  current_bed_num= 
+	    ask_num("Bed number ? ", min_bed_num, max_bed_num, min_bed_num);
+	  current_gate_num=
+	    ask_num("Gate number ? ", min_gate_num, max_gate_num, min_gate_num);
+	  current_data_num=
+	    ask_num("Data number ? ",0,7, 0);
             }
           else
             {
@@ -275,10 +297,7 @@ main(int argc, char* argv[])
           if (ProjData_to_ECAT6(fptr,
                                 *proj_data_ptr,
                                 mhead,
-                                current_frame_num,
-                                current_gate_num,
-                                current_data_num,
-                                current_bed_num,
+                            current_frame_num, current_gate_num, current_data_num, current_bed_num,
                                 its_a_2D_sinogram)
               == Succeeded::no)
             {
@@ -291,7 +310,10 @@ main(int argc, char* argv[])
               return EXIT_SUCCESS;
             }
           cerr << "Reading " << filenames[frame_num - 1] << endl;
-          proj_data_ptr = ProjData::read_from_file(filenames[frame_num - 1]);
+      proj_data_ptr =
+        ProjData::read_from_file(filenames[frame_num-1]);
         }
     }
 }
+
+

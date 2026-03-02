@@ -11,13 +11,24 @@
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 #include <iostream>
-#include "stir/error.h"
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
 #include <sstream>
+#endif
 
 START_NAMESPACE_STIR
 /*!
@@ -30,15 +41,24 @@ START_NAMESPACE_STIR
 */
 template <class NUMBER>
 inline NUMBER
-ask_num(const std::string& str, NUMBER minimum_value, NUMBER maximum_value, NUMBER default_value)
+ask_num (const std::string& str,
+	 NUMBER minimum_value,
+	 NUMBER maximum_value,
+	 NUMBER default_value)
 {
 
   while (1)
     {
       std::string input;
-      std::cerr << "\n" << str << "[" << minimum_value << "," << maximum_value << " D:" << default_value << "]: ";
+    std::cerr << "\n" << str 
+         << "[" << minimum_value << "," << maximum_value 
+	 << " D:" << default_value << "]: ";
       std::getline(std::cin, input);
+#ifdef BOOST_NO_STRINGSTREAM
+    istrstream ss(input.c_str());
+#else
       std::istringstream ss(input.c_str());
+#endif
 
       NUMBER value = default_value;
       ss >> value;
@@ -48,9 +68,11 @@ ask_num(const std::string& str, NUMBER minimum_value, NUMBER maximum_value, NUMB
     }
 }
 
+
+
 template <class IFSTREAM>
-inline IFSTREAM&
-open_read_binary(IFSTREAM& s, const std::string& name)
+inline IFSTREAM& open_read_binary(IFSTREAM& s, 
+				  const std::string& name)
 {
 #if 0
   //KT 30/07/98 The next lines are only necessary (in VC 5.0) when importing 
@@ -64,40 +86,34 @@ open_read_binary(IFSTREAM& s, const std::string& name)
 #endif
   // KT 14/01/2000 added name of file in error message
   if (s.fail() || s.bad())
-    {
-      error("Error opening file %s\n", name.c_str());
-    }
+    { error("Error opening file %s\n", name.c_str());  }
   return s;
 }
 
 template <class OFSTREAM>
-inline OFSTREAM&
-open_write_binary(OFSTREAM& s, const std::string& name)
+inline OFSTREAM& open_write_binary(OFSTREAM& s, 
+				  const std::string& name)
 {
   s.open(name.c_str(), std::ios::out | std::ios::binary);
   // KT 14/01/2000 added name of file in error message
   if (s.fail() || s.bad())
-    {
-      error("Error opening file %s\n", name.c_str());
-    }
+    { error("Error opening file %s\n", name.c_str()); }
   return s;
 }
 
 template <class FSTREAM>
-inline void
-close_file(FSTREAM& s)
+inline void close_file(FSTREAM& s)
 {
   s.close();
 }
 
+
 #ifndef _MSC_VER
-char*
-strupr(char* const str)
+char *strupr(char * const str)
 {
   for (char* a = str; *a; a++)
     {
-      if ((*a >= 'a') && (*a <= 'z'))
-        *a += 'A' - 'a';
+    if ((*a >= 'a')&&(*a <= 'z')) *a += 'A'-'a';
     };
   return str;
 }

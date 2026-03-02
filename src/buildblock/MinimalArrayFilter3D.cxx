@@ -4,7 +4,15 @@
     Copyright (C) 2006 - 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -42,9 +50,8 @@ MinimalArrayFilter3D<elemT>::MinimalArrayFilter3D()
 
 template <typename elemT>
 int
-MinimalArrayFilter3D<elemT>::extract_neighbours(Array<1, elemT>& neigbours,
-                                                const Array<3, elemT>& in_array,
-                                                const Coordinate3D<int>& c_pixel) const
+MinimalArrayFilter3D<elemT>::
+extract_neighbours(Array<1,elemT>& neigbours,const Array<3,elemT>& in_array,const Coordinate3D<int>& c_pixel) const
 {
   int index = 0;
 
@@ -72,7 +79,8 @@ MinimalArrayFilter3D<elemT>::extract_neighbours(Array<1, elemT>& neigbours,
 
 template <typename elemT>
 void
-MinimalArrayFilter3D<elemT>::do_it(Array<3, elemT>& out_array, const Array<3, elemT>& in_array) const
+MinimalArrayFilter3D<elemT>::
+do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
 {
   assert(out_array.get_index_range() == in_array.get_index_range());
 
@@ -82,21 +90,25 @@ MinimalArrayFilter3D<elemT>::do_it(Array<3, elemT>& out_array, const Array<3, el
     for (int y = out_array[z].get_min_index(); y <= out_array[z].get_max_index(); ++y)
       for (int x = out_array[z][y].get_min_index(); x <= out_array[z][y].get_max_index(); ++x)
         {
-          const int num_neighbours = extract_neighbours(neighbours, in_array, Coordinate3D<int>(z, y, x));
+       const int num_neighbours =
+	 extract_neighbours(neighbours,in_array,Coordinate3D<int>(z,y,x));
           if (num_neighbours == 0)
             continue;
-          out_array[z][y][x] = *std::min_element(neighbours.begin(), neighbours.begin() + num_neighbours);
+       out_array[z][y][x] = 
+	 *std::min_element(neighbours.begin(), neighbours.begin() + num_neighbours);
         }
 }
 
 template <typename elemT>
 bool
-MinimalArrayFilter3D<elemT>::is_trivial() const
+MinimalArrayFilter3D<elemT>::
+is_trivial() const
 {
   if (mask_radius_x != 1 && mask_radius_y != 1 && mask_radius_z != 1)
     return true;
   else
     return false;
+
 }
 
 // instantiation

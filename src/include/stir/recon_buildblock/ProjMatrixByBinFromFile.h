@@ -4,7 +4,15 @@
     Copyright (C) 2004- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -28,10 +36,11 @@
 #include "stir/shared_ptr.h"
 #include <iostream>
 
+ 
+
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Bin;
 /*!
   \ingroup projection
@@ -68,7 +77,12 @@ class Bin;
   \endverbatim
 */
 
-class ProjMatrixByBinFromFile : public RegisteredParsingObject<ProjMatrixByBinFromFile, ProjMatrixByBin, ProjMatrixByBin>
+class ProjMatrixByBinFromFile : 
+  public RegisteredParsingObject<
+	      ProjMatrixByBinFromFile,
+              ProjMatrixByBin,
+              ProjMatrixByBin
+	       >
 {
 public:
   //! Name which will be used when parsing a ProjMatrixByBin object
@@ -79,28 +93,29 @@ public:
       a template image and template sinogram. You will need all 4 to be able to read the
       matrix back in.
   */
-  static Succeeded write_to_file(const std::string& output_filename_prefix,
+static Succeeded
+  write_to_file(const string& output_filename_prefix, 
                                  const ProjMatrixByBin& proj_matrix,
-                                 const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+		const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
                                  const DiscretisedDensity<3, float>& template_density);
 
   //! Default constructor (calls set_defaults())
   ProjMatrixByBinFromFile();
 
   //! Checks all necessary geometric info
-  void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-              const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
-              ) override;
-
-  ProjMatrixByBinFromFile* clone() const override;
+  virtual void set_up(		 
+		      const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    );
 
 private:
-  std::string parsed_version;
-  std::string template_density_filename;
-  std::string template_proj_data_filename;
-  std::string data_filename;
 
-  std::string symmetries_type;
+  string parsed_version;
+  string template_density_filename;
+  string template_proj_data_filename;
+  string data_filename;
+  
+  string symmetries_type;
   // should be in symmetries
   bool do_symmetry_90degrees_min_phi;
   bool do_symmetry_180degrees_min_phi;
@@ -114,17 +129,25 @@ private:
   CartesianCoordinate3D<float> origin;
   IndexRange<3> densel_range;
 
-  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
-  void calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const override;
+  shared_ptr<ProjDataInfo> proj_data_info_ptr;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+
+  virtual void 
+    calculate_proj_matrix_elems_for_one_bin(
+                                            ProjMatrixElemsForOneBin&) const;
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
   Succeeded read_data();
+    
 };
 
 END_NAMESPACE_STIR
 
 #endif
+
+
+

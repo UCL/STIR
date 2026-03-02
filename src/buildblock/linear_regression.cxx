@@ -16,25 +16,30 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/linear_regression.h"
-#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 
-namespace detail
-{
+namespace detail {
 
 // see linear_regression.inl for more info
 
+
 template <class Value>
-void
-linear_regression_compute_fit_from_S(Value& constant,
-                                     Value& scale,
+void linear_regression_compute_fit_from_S(Value& constant, Value& scale,
                                      Value& chi_square,
                                      Value& variance_of_constant,
                                      Value& variance_of_scale,
@@ -46,9 +51,12 @@ linear_regression_compute_fit_from_S(Value& constant,
                                      const double Stt,
                                      const double Sty,
                                      const std::size_t data_size,
-                                     const bool use_estimated_variance)
+                                          const bool use_estimated_variance
+                       )
 {
 
+  
+  
   scale = static_cast<Value>(Sty / Stt);
   constant = static_cast<Value>((Sy - Sx * scale) / S);
   variance_of_scale = static_cast<Value>(1 / Stt);
@@ -75,7 +83,8 @@ linear_regression_compute_fit_from_S(Value& constant,
     }
   if (use_estimated_variance == true)
     {
-      const Value estimated_variance = static_cast<Value>(chi_square / (data_size - 2));
+    const Value estimated_variance = 
+      static_cast<Value>(chi_square/(data_size - 2));
       variance_of_scale *= estimated_variance;
       variance_of_constant *= estimated_variance;
       covariance_of_constant_with_scale *= estimated_variance;
@@ -83,8 +92,8 @@ linear_regression_compute_fit_from_S(Value& constant,
 }
 
 // instantiations
-template void linear_regression_compute_fit_from_S<>(float& constant,
-                                                     float& scale,
+template void 
+linear_regression_compute_fit_from_S<>(float& constant, float& scale,
                                                      float& chi_square,
                                                      float& variance_of_constant,
                                                      float& variance_of_scale,
@@ -96,10 +105,11 @@ template void linear_regression_compute_fit_from_S<>(float& constant,
                                                      const double Stt,
                                                      const double Sty,
                                                      const std::size_t data_size,
-                                                     const bool use_estimated_variance);
+                                       const bool use_estimated_variance
+                                       );
 
-template void linear_regression_compute_fit_from_S<>(double& constant,
-                                                     double& scale,
+template void 
+linear_regression_compute_fit_from_S<>(double& constant, double& scale,
                                                      double& chi_square,
                                                      double& variance_of_constant,
                                                      double& variance_of_scale,
@@ -111,7 +121,8 @@ template void linear_regression_compute_fit_from_S<>(double& constant,
                                                      const double Stt,
                                                      const double Sty,
                                                      const std::size_t data_size,
-                                                     const bool use_estimated_variance);
+                                       const bool use_estimated_variance
+                                       );
 
 } // end namespace detail
 

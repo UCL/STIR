@@ -18,7 +18,15 @@
 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -28,15 +36,14 @@
 
 #include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/ArrayFwd.h"
 #include <complex>
 
+
 START_NAMESPACE_STIR
-template <typename elemT>
-class SegmentByView;
-template <typename elemT>
-class SegmentBySinogram;
+template <typename elemT> class SegmentByView;
+template <typename elemT> class SegmentBySinogram;
 // template <typename elemT> class Sinogram;
+template <int num_dimensions, typename elemT> class Array;
 class Succeeded;
 
 /*
@@ -69,9 +76,8 @@ public:
 #endif
   // Default constructor by initialising all the elements conter to null
   explicit PETCount_rebinned(int total_v = 0, int miss_v = 0, int ssrb_v = 0)
-      : total(total_v),
-        miss(miss_v),
-        ssrb(ssrb_v){}
+        :total(total_v), miss(miss_v), ssrb(ssrb_v)
+        {}
 
   ;
 };
@@ -99,7 +105,9 @@ public:
   (the integer Fourier index corresponding to the azimuthal angle f), and by applying in each region
   a different method to estimated the rebinned sinogram.
 
-  The rebinned data are represented in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2,
+  KTTODO ^A in the next sentence?
+
+  The rebinned data are represented by  in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2, 
   where L is the length of the axial FOV and R the ring radius.
   In the high frequencies (region 1), the rebinned data are estimated using Fourier rebinning.
   In the second high frequency region (region 2), the consistency condition is not satisfied
@@ -110,15 +118,17 @@ public:
   neglected as in the SSRB approximation.
 */
 
-class FourierRebinning : public RegisteredParsingObject<FourierRebinning, ProjDataRebinning, ProjDataRebinning>
+class FourierRebinning : public   RegisteredParsingObject<
+                                  FourierRebinning,
+                                  ProjDataRebinning,
+                                  ProjDataRebinning>
 {
 private:
   typedef ProjDataRebinning base_type;
-
 public:
   //! Name which will be used when parsing a ProjDataRebinning object
   static const char* const registered_name;
-  void set_defaults() override;
+  virtual void set_defaults();
 
 protected:
   //! Smallest angular freq. index minimum 2 ( 1 is zero frequency)
@@ -137,10 +147,12 @@ public:
   FourierRebinning();
 
   //! This method returns the type of the algorithm for the rebinning
-  std::string method_info() const override { return ("FORE"); }
+    string method_info() const
+        { return("FORE"); }
+
 
   //! This method creates a stack of 2D rebinned sinograms from the whole 3D data set (i.e. the ProjData data) and saves it.
-  Succeeded rebin() override;
+   Succeeded rebin();
 
   //! A set of get and set utility functions to access the rebinning parameters
   inline void set_kmin(int km) { kmin = km; }
@@ -156,6 +168,7 @@ public:
   inline int get_fore_debug_level() { return fore_debug_level; }
 
 private:
+
   /*!
     \brief Fourier rebinning
 
@@ -166,19 +179,11 @@ private:
 
 
   */
-  void rebinning(ArrayType<3, std::complex<float>>& FT_rebinned_data,
-                 ArrayType<3, float>& Weights_for_FT_rebinned_data,
-                 PETCount_rebinned& num_rebinned,
-                 const ArrayType<2, std::complex<float>>& FT_current_sinogram,
-                 const float z,
-                 const float average_ring_difference_in_segment,
-                 const int num_views_pow2,
-                 const int num_tang_poss_pow2,
-                 const float half_distance_between_rings,
-                 const float sampling_distance_in_s,
-                 const float radial_sampling_freq_w,
-                 const float R_field_of_view_mm,
-                 const float ratio_ring_spacing_to_ring_radius);
+    void rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weights_for_FT_rebinned_data,
+       PETCount_rebinned &num_rebinned, const Array<2,std::complex<float> > &FT_current_sinogram, const float z, 
+       const float average_ring_difference_in_segment, const int num_views_pow2, const int num_tang_poss_pow2,
+       const float half_distance_between_rings, const float sampling_distance_in_s, const float radial_sampling_freq_w,
+       const float R_field_of_view_mm, const float ratio_ring_spacing_to_ring_radius);
 
   /*!
     \brief This method takes as input the real 3D data set
@@ -192,18 +197,11 @@ private:
     Pm(w,k) = Pm(w,k) + Pij(w,k) (i=ring0 and j=ring1), and m is the nearest integer to (i+j) -k(i-j)/(Rw)).
   */
 
-  void do_rebinning(ArrayType<3, std::complex<float>>& FT_rebinned_data,
-                    ArrayType<3, float>& Weights_for_FT_rebinned_data,
-                    PETCount_rebinned& count_rebinned,
-                    const SegmentBySinogram<float>& segment,
-                    const int num_tang_poss_pow2,
-                    const int num_views_pow2,
-                    const int num_planes,
-                    const float average_ring_difference_in_segment,
-                    const float half_distance_between_rings,
-                    const float sampling_distance_in_s,
-                    const float radial_sampling_freq_w,
-                    const float R_field_of_view_mm,
+    void do_rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weights_for_FT_rebinned_data,
+                      PETCount_rebinned &count_rebinned, const SegmentBySinogram<float> &segment, const int num_tang_poss_pow2,
+                      const int num_views_pow2, const int num_planes, const float average_ring_difference_in_segment,
+                      const float half_distance_between_rings, const float sampling_distance_in_s, 
+                      const float radial_sampling_freq_w, const float R_field_of_view_mm,
                     const float ratio_ring_spacing_to_ring_radius);
 
   /*!
@@ -218,15 +216,18 @@ private:
   //! This is a function to display the current counter of all rebinned elements
   void do_display_count(PETCount_rebinned& num_rebinned_total);
 
+
   //! This is a function to adjust the number of views of a segment to the next power of 2
   void do_adjust_nb_views_to_pow2(SegmentBySinogram<float>& segment);
 
   //! This function checks if the steering and input paramters for FORE are inside the possible range of parameters
   Succeeded fore_check_parameters(int num_tang_poss_pow2, int num_views_pow2, int max_segment_num_to_process);
 
+    
 protected:
-  bool post_processing() override;
-  void initialise_keymap() override;
+  virtual bool post_processing();  
+  virtual void initialise_keymap();
+
 };
 
 END_NAMESPACE_STIR

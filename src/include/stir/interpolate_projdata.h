@@ -4,7 +4,15 @@
     Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,12 +30,10 @@
 START_NAMESPACE_STIR
 
 class ProjData;
-template <int num_dimensions, class T>
-class BasicCoordinate;
-template <class elemT>
-class Sinogram;
-template <class elemT>
-class SegmentBySinogram;
+template <int num_dimensions, class T> class BasicCoordinate;
+template <class elemT> class Sinogram;
+template <class elemT> class SegmentBySinogram;
+
 
 //! \brief Perform B-Splines Interpolation
 /*!
@@ -51,16 +57,21 @@ class SegmentBySinogram;
   the input sinogram.
 */
 //@{
-Succeeded interpolate_projdata(ProjData& proj_data_out,
+Succeeded 
+interpolate_projdata(ProjData& proj_data_out,
                                const ProjData& proj_data_in,
                                const BSpline::BSplineType spline_type,
-                               const bool remove_interleaving = false);
-Succeeded interpolate_projdata(ProjData& proj_data_out,
-                               const ProjData& proj_data_in,
-                               const BasicCoordinate<3, BSpline::BSplineType>& these_types,
-                               const bool remove_interleaving);
+		     const bool remove_interleaving = false,
+		     const bool use_view_offset = false);
 Succeeded
-interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjData& proj_data_in, bool remove_interleaving);
+interpolate_projdata(ProjData& proj_data_out,
+		     const ProjData& proj_data_in,
+		     const BasicCoordinate<3, BSpline::BSplineType> & spline_type,
+		     const bool remove_interleaving = false,
+		     const bool use_view_offset = false);
 //@}
 
 END_NAMESPACE_STIR
+
+
+

@@ -2,10 +2,17 @@
 //
 /*
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
-    Copyright (C) 2023, 2024 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,141 +33,144 @@
 #include "stir/Succeeded.h"
 #include "stir/warning.h"
 #include "stir/error.h"
-#include "stir/format.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
-const char* const BinNormalisationFromProjData::registered_name = "From ProjData";
+const char * const 
+BinNormalisationFromProjData::registered_name = "From ProjData"; 
+
 
 void
 BinNormalisationFromProjData::set_defaults()
 {
-  base_type::set_defaults();
   normalisation_projdata_filename = "";
 }
 
 void
-BinNormalisationFromProjData::initialise_keymap()
+BinNormalisationFromProjData::
+initialise_keymap()
 {
-  base_type::initialise_keymap();
   parser.add_start_key("Bin Normalisation From ProjData");
   parser.add_key("normalisation_projdata_filename", &normalisation_projdata_filename);
   parser.add_stop_key("End Bin Normalisation From ProjData");
 }
 
 bool
-BinNormalisationFromProjData::post_processing()
+BinNormalisationFromProjData::
+post_processing()
 {
-  if (base_type::post_processing())
-    return true;
   norm_proj_data_ptr = ProjData::read_from_file(normalisation_projdata_filename);
   return false;
 }
 
-BinNormalisationFromProjData::BinNormalisationFromProjData()
+BinNormalisationFromProjData::
+BinNormalisationFromProjData()
 {
   set_defaults();
 }
 
-BinNormalisationFromProjData::BinNormalisationFromProjData(const std::string& filename)
+BinNormalisationFromProjData::
+BinNormalisationFromProjData(const string& filename)
     : norm_proj_data_ptr(ProjData::read_from_file(filename))
 {}
 
-BinNormalisationFromProjData::BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
+BinNormalisationFromProjData::
+BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
     : norm_proj_data_ptr(norm_proj_data_ptr)
 {}
 
-bool
-BinNormalisationFromProjData::is_TOF_only_norm() const
-{
-  if (!this->get_norm_proj_data_sptr())
-    error("BinNormalisationFromProjData: projection data not set.");
-  return this->get_norm_proj_data_sptr()->get_num_tof_poss() > 1;
-}
-
 Succeeded
-BinNormalisationFromProjData::set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                     const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
+BinNormalisationFromProjData::
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 {
-  if (!base_type::set_up(exam_info_sptr, proj_data_info_sptr).succeeded())
-    return Succeeded::no;
-
-  const auto& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
-  // complication: if the emission data is TOF but the norm is not, `apply()` et al. multiply all
-  // TOF bins with the non-TOF norm. So, we need to allow for that.
-  auto proj_to_check_sptr = proj_data_info_sptr;
-  if (!norm_proj.is_tof_data() && proj_data_info_sptr->is_tof_data())
-    proj_to_check_sptr = proj_data_info_sptr->create_non_tof_clone();
-  const auto& proj = *proj_to_check_sptr;
-
-  if (norm_proj == proj)
+  if (*(norm_proj_data_ptr->get_proj_data_info_ptr()) == *proj_data_info_ptr)
     return Succeeded::yes;
   else
     {
-      // Check if the emission data is "smaller" than the norm data (e.g. fewer segments)
-      // We will require equal tangential_pos ranges as `apply()` currently needs that.
-      bool ok = (norm_proj >= proj) && (norm_proj.get_min_tangential_pos_num() == proj.get_min_tangential_pos_num())
-                && (norm_proj.get_max_tangential_pos_num() == proj.get_max_tangential_pos_num());
-
-      for (int segment_num = proj.get_min_segment_num(); ok && segment_num <= proj.get_max_segment_num(); ++segment_num)
-        {
-          ok = norm_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num)
-               && norm_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
+    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_ptr());
+    const ProjDataInfo& proj = *proj_data_info_ptr;
+    bool ok = 
+      typeid(norm_proj) == typeid(proj) &&
+      *norm_proj.get_scanner_ptr()== *(proj.get_scanner_ptr()) &&
+      (norm_proj.get_min_view_num()==proj.get_min_view_num()) &&
+      (norm_proj.get_max_view_num()==proj.get_max_view_num()) &&
+      (norm_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
+      (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
+      norm_proj.get_min_segment_num() <= proj.get_min_segment_num() &&
+      norm_proj.get_max_segment_num() <= proj.get_max_segment_num();
+    
+    for (int segment_num=proj.get_min_segment_num();
+	 ok && segment_num<=proj.get_max_segment_num();
+	 ++segment_num)
+      {
+	ok = 
+	  norm_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num) &&
+	  norm_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
         }
       if (ok)
         return Succeeded::yes;
       else
         {
-          warning(
-              format("BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n{}\nEmission projdata "
-                     "info (made non-TOF if norm is non-TOF):\n{}\n--- (end of incompatible projection data info)---\n",
-                     norm_proj.parameter_info(),
-                     proj.parameter_info()));
+	warning(boost::format("BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n%s\nEmission projdata info:\n%s\n--- (end of incompatible projection data info)---\n")
+		% norm_proj.parameter_info()
+		% proj.parameter_info());
           return Succeeded::no;
         }
     }
 }
 
 bool
-BinNormalisationFromProjData::is_trivial() const
+BinNormalisationFromProjData::
+is_trivial() const
 {
-  return false;
+  // check if all data is 1 (up to a tolerance of 1e-4)
+  for (int segment_num = this->norm_proj_data_ptr->get_min_segment_num(); 
+       segment_num <= this->norm_proj_data_ptr->get_max_segment_num(); 
+       ++segment_num)
+    {
+      for (int view_num = this->norm_proj_data_ptr->get_min_view_num(); 
+           view_num <= this->norm_proj_data_ptr->get_max_view_num(); 
+           ++view_num)
+        {
+          const Viewgram<float> viewgram =
+            this->norm_proj_data_ptr->get_viewgram(view_num, segment_num);
+          if (fabs(viewgram.find_min()-1)>.0001 || fabs(viewgram.find_max()-1)>.0001)
+            return false; // return from function as we know not all data is 1
+        }
+    }
+  // if we get here. they were all 1
+  return true;
 }
 
 void
-BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const
+BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
-  this->check(*viewgrams.get_proj_data_info_sptr());
   const ViewSegmentNumbers vs_num = viewgrams.get_basic_view_segment_num();
-  const int timing_pos_num
-      = norm_proj_data_ptr->get_proj_data_info_sptr()->is_tof_data() ? viewgrams.get_basic_timing_pos_num() : 0;
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
-  viewgrams *= norm_proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr, false, timing_pos_num);
+    viewgrams *= 
+      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_sptr, false);
 }
 
 void
-BinNormalisationFromProjData::undo(RelatedViewgrams<float>& viewgrams) const
+BinNormalisationFromProjData::
+undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
-  this->check(*viewgrams.get_proj_data_info_sptr());
   const ViewSegmentNumbers vs_num = viewgrams.get_basic_view_segment_num();
-  const int timing_pos_num
-      = norm_proj_data_ptr->get_proj_data_info_sptr()->is_tof_data() ? viewgrams.get_basic_timing_pos_num() : 0;
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
-  viewgrams /= norm_proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr, false, timing_pos_num);
+    viewgrams /= 
+      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_sptr, false);
+
 }
 
 float
-BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin) const
+BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
 {
   // TODO
   error("BinNormalisationFromProjData::get_bin_efficiency is not implemented");
   return 1;
-}
 
-shared_ptr<ProjData>
-BinNormalisationFromProjData::get_norm_proj_data_sptr() const
-{
-  return this->norm_proj_data_ptr;
 }
 
 END_NAMESPACE_STIR
+

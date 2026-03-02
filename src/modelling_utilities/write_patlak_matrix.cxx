@@ -4,7 +4,15 @@
   Copyright (C) 2006- 2009, Hammersmith Imanet Ltd
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -12,7 +20,7 @@
 /*!
   \file
   \ingroup utilities
-  \brief Write the Model Matrix for the Patlak plot (e.g., for debugging)
+  \brief Multiplies Dynamic Images with the Model Matrix creating image in the Parametric Space
   \author Charalampos Tsoumpas
 
 
@@ -27,13 +35,16 @@
 
 */
 
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/PatlakPlot.h"
+#include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/OutputFileFormat.h"
 #include <string>
 #include <iostream>
+#include <iomanip>
 
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   USING_NAMESPACE_STIR
 
@@ -57,8 +68,7 @@ main(int argc, char* argv[])
   else
     {
       // Writing model matrix
-      std::cerr << "Writing Patlak Model Matrix in file 'model_matrix.out'"
-                << "\n";
+  std::cerr << "Writing Patlak Model Matrix in file 'model_matrix.out'" << "\n";
       Succeeded writing_succeeded = (patlak_plot.get_model_matrix().write_to_file("model_matrix.out"));
 
       if (writing_succeeded == Succeeded::yes)
@@ -67,3 +77,4 @@ main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 }
+

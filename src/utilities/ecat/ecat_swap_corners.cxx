@@ -99,19 +99,19 @@
 #include "stir/utilities.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/Succeeded.h"
-#include "stir/error.h"
 #include <iostream>
 #include <algorithm>
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::min;
 using std::max;
 using std::swap;
+#endif
 
 USING_NAMESPACE_STIR
 
-static void
-dets_to_ve(int da, int db, int* v, int* e, int ndets)
+static void dets_to_ve( int da, int db, int *v, int *e, int ndets)
 {
   int h, x, y, a, b, te;
 
@@ -121,8 +121,7 @@ dets_to_ve(int da, int db, int* v, int* e, int ndets)
   a = ((x + y + h + 1) % ndets) / 2;
   b = a + h;
   te = abs(x - y - h);
-  if ((y < a) || (b < x))
-    te = -te;
+	if ((y<a)||(b<x)) te=-te;
   *e = te;
   *v = a;
 }
@@ -134,12 +133,15 @@ typedef unsigned char byte;
 static int*
 compute_swap_lors_mashed(int nprojs, int nviews, int nmash, int* nptr)
 {
-  static byte ring_16[8][3]
-      = { { 0, 5, 0 }, { 0, 6, 0 }, { 0, 7, 1 }, { 1, 6, 1 }, { 10, 15, 0 }, { 9, 15, 0 }, { 8, 15, 2 }, { 9, 14, 2 } };
-  static byte ring_14[8][3]
-      = { { 0, 4, 0 }, { 0, 5, 0 }, { 0, 6, 1 }, { 1, 5, 1 }, { 9, 13, 0 }, { 8, 13, 0 }, { 8, 12, 2 }, { 7, 13, 2 } };
-  static byte ring_12[8][3]
-      = { { 0, 3, 0 }, { 0, 4, 0 }, { 0, 5, 1 }, { 1, 4, 1 }, { 8, 11, 0 }, { 7, 11, 0 }, { 7, 10, 2 }, { 6, 11, 2 } };
+	static byte ring_16[8][3] = {
+		{0,5,0}, {0,6,0}, {0,7,1}, {1,6,1},
+		{10,15,0}, {9,15,0}, {8,15,2}, {9,14,2}};
+	static byte ring_14[8][3] = {
+		{0,4,0}, {0,5,0}, {0,6,1}, {1,5,1},
+		{9,13,0}, {8,13,0}, {8,12,2}, {7,13,2}};
+	static byte ring_12[8][3] = {
+		{0,3,0}, {0,4,0}, {0,5,1}, {1,4,1},
+		{8,11,0}, {7,11,0}, {7,10,2}, {6,11,2}};
   // KT guess, but it was wrong
   /*static byte ring_18[8][3] = {
           {0,7,0}, {0,8,0}, {0,9,1}, {1,8,1},
@@ -149,14 +151,10 @@ compute_swap_lors_mashed(int nprojs, int nviews, int nmash, int* nptr)
   int db = 32, off, nodup;
   byte* fixer = 0;
 
-  if (nviews % 2 == 0)
-    fixer = (byte*)ring_16;
-  if (nviews % 7 == 0)
-    fixer = (byte*)ring_14;
-  if (nviews % 7 == 0)
-    db = 8 * 7;
-  if (nviews % 3 == 0)
-    fixer = (byte*)ring_12;
+	if (nviews%2 == 0) fixer = (byte *)ring_16;
+	if (nviews%7 == 0) fixer = (byte *)ring_14;
+	if (nviews%7 == 0) db = 8*7;
+	if (nviews%3 == 0) fixer = (byte *)ring_12;
 
   if (fixer == 0)
     error("ecat_swap_corners: num_views not compatible with what this routine can cope with");
@@ -164,8 +162,7 @@ compute_swap_lors_mashed(int nprojs, int nviews, int nmash, int* nptr)
   n = 0;
   ndets = nviews * 2 * nmash;
   cerr << "swap_corners: guessing " << ndets << " detectors per ring\n";
-  if (nviews % 9 == 0)
-    db = ndets / 12;
+	if (nviews%9 == 0) db = ndets/12;
   list = (int*)malloc(db * db * 8 * sizeof(int));
   for (i = 0; i < 8; i++)
     {
@@ -178,24 +175,19 @@ compute_swap_lors_mashed(int nprojs, int nviews, int nmash, int* nptr)
             dets_to_ve(a * db + deta, b * db + detb, &v, &e, ndets);
             e += nprojs / 2;
             off = (v / nmash) * nprojs + e;
-            if (m == 1 && v < nviews * nmash / 2)
-              continue;
-            if (m == 2 && v > nviews * nmash / 2)
-              continue;
+		if (m==1 && v<nviews*nmash/2) continue;
+		if (m==2 && v>nviews*nmash/2) continue;
             nodup = 1;
             for (j = 0; j < n; j++)
-              if (off == list[j])
-                nodup = 0;
-            if (nodup && (e + 1 > 0) && (e < nprojs))
-              list[n++] = off;
+		  if (off == list[j]) nodup=0;
+		if (nodup && (e+1>0) && (e<nprojs)) list[n++] = off;
           }
     }
   *nptr = n;
   return (list);
 }
 
-int
-main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 
   if (argc != 3)
@@ -204,21 +196,30 @@ main(int argc, char** argv)
       return EXIT_FAILURE;
     }
 
-  shared_ptr<ProjData> org_proj_data_ptr = ProjData::read_from_file(argv[2]);
-  ProjDataInterfile new_proj_data(
-      org_proj_data_ptr->get_exam_info_sptr(), org_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(), argv[1]);
+  shared_ptr<ProjData> org_proj_data_ptr = 
+    ProjData::read_from_file(argv[2]);
+  ProjDataInterfile 
+    new_proj_data(org_proj_data_ptr->get_exam_info_sptr(),
+		  org_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+                  argv[1]);  
+
 
   const int num_tang_poss = org_proj_data_ptr->get_num_tangential_poss();
   const int min_tang_pos_num = org_proj_data_ptr->get_min_tangential_pos_num();
   const int min_view_num = org_proj_data_ptr->get_min_view_num();
 
-  const int mash = org_proj_data_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_detectors_per_ring()
-                   / org_proj_data_ptr->get_num_views() / 2;
+  const int mash =
+    org_proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring() /
+    org_proj_data_ptr->get_num_views() / 2;
   cerr << "Mash factor determined from data is " << mash << endl;
 
+
   int num_swapped = 0;
-  int* swap_lors = compute_swap_lors_mashed(
-      org_proj_data_ptr->get_num_tangential_poss(), org_proj_data_ptr->get_num_views(), mash, &num_swapped);
+  int *swap_lors = 
+    compute_swap_lors_mashed(org_proj_data_ptr->get_num_tangential_poss(), 
+                             org_proj_data_ptr->get_num_views(), 
+                             mash,
+                             &num_swapped);
 
   // first do segment 0 (no swapping)
   new_proj_data.set_segment(org_proj_data_ptr->get_segment_by_sinogram(0));
@@ -230,8 +231,10 @@ main(int argc, char** argv)
            axial_pos_num <= org_proj_data_ptr->get_max_axial_pos_num(segment_num);
            ++axial_pos_num)
         {
-          Sinogram<float> sino1 = org_proj_data_ptr->get_sinogram(axial_pos_num, segment_num, false);
-          Sinogram<float> sino2 = org_proj_data_ptr->get_sinogram(axial_pos_num, -segment_num, false);
+      Sinogram<float> sino1=
+	org_proj_data_ptr->get_sinogram(axial_pos_num, segment_num, false);
+      Sinogram<float> sino2=
+	org_proj_data_ptr->get_sinogram(axial_pos_num, -segment_num, false);
 
           for (int i = 0; i < num_swapped; i++)
             {

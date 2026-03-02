@@ -22,7 +22,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -34,10 +42,11 @@
 #include <fstream>
 #include <iostream>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
 using std::istream;
-using std::endl;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -75,14 +84,13 @@ public:
       : in(in)
   {}
 
-  void run_tests() override;
-
+  void run_tests();
 private:
   istream& in;
 };
 
-void
-linear_regressionTests::run_tests()
+
+void linear_regressionTests::run_tests()
 {
   cerr << "Testing linear_regression function..." << endl;
 
@@ -122,8 +130,11 @@ linear_regressionTests::run_tests()
       double expected_covariance_of_constant_with_scale;
       double expected_chi_square;
 
-      in >> expected_constant >> expected_scale >> expected_chi_square >> expected_variance_of_constant
-          >> expected_variance_of_scale >> expected_covariance_of_constant_with_scale;
+    in >> expected_constant >> expected_scale 
+      >> expected_chi_square 
+      >> expected_variance_of_constant >> expected_variance_of_scale 
+      >> expected_covariance_of_constant_with_scale;
+    
 
       double scale = 0;
       double constant = 0;
@@ -132,8 +143,8 @@ linear_regressionTests::run_tests()
       double covariance_of_constant_with_scale = 0;
       double chi_square = 0;
 
-      linear_regression(constant,
-                        scale,
+    linear_regression(
+      constant, scale,
                         chi_square,
                         variance_of_constant,
                         variance_of_scale,
@@ -142,8 +153,10 @@ linear_regressionTests::run_tests()
                         coordinates,
                         weights);
 
-      check_if_equal(expected_constant, constant, "for parameter constant, should be equal");
-      check_if_equal(expected_scale, scale, "for parameter scale, should be equal");
+    check_if_equal(expected_constant, constant, 
+		    "for parameter constant, should be equal");
+    check_if_equal(expected_scale, scale, 
+		    "for parameter scale, should be equal");
 
       // KT 24/01/2001 changed tolerance for this comparisons
       /* chi_square is computed as a
@@ -169,7 +182,8 @@ linear_regressionTests::run_tests()
       {
         const double old_tolerance = get_tolerance();
         set_tolerance(error_on_chi_square);
-        check_if_equal(expected_chi_square, chi_square, "for parameter chi_square, should be equal");
+      check_if_equal(expected_chi_square, chi_square, 
+		     "for parameter chi_square, should be equal");
 
         // first check if chi_square is really 0 (upto rounding errors)
         if (fabs(expected_chi_square) < error_on_chi_square)
@@ -178,11 +192,12 @@ linear_regressionTests::run_tests()
         // next variances are proportional to chi_square
         if (expected_chi_square != 0)
           set_tolerance(fabs(expected_variance_of_constant / expected_chi_square * error_on_chi_square));
-        check_if_equal(
-            expected_variance_of_constant, variance_of_constant, "for parameter variance_of_constant, should be equal");
+      check_if_equal(expected_variance_of_constant, variance_of_constant, 
+		     "for parameter variance_of_constant, should be equal");
         if (expected_chi_square != 0)
           set_tolerance(fabs(expected_variance_of_scale / expected_chi_square * error_on_chi_square));
-        check_if_equal(expected_variance_of_scale, variance_of_scale, "for parameter variance_of_scale, should be equal");
+      check_if_equal(expected_variance_of_scale, variance_of_scale, 
+		     "for parameter variance_of_scale, should be equal");
         if (expected_chi_square != 0)
           set_tolerance(fabs(expected_covariance_of_constant_with_scale / expected_chi_square * error_on_chi_square));
         /*
@@ -201,12 +216,12 @@ linear_regressionTests::run_tests()
     }
 }
 
+
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   if (argc != 2)
     {
@@ -215,10 +230,12 @@ main(int argc, char** argv)
       return EXIT_FAILURE;
     }
 
+
   ifstream in(argv[1]);
   if (!in)
     {
-      cerr << argv[0] << ": Error opening input file " << argv[1] << "\nExiting.\n";
+    cerr << argv[0] 
+         << ": Error opening input file " << argv[1] << "\nExiting.\n";
 
       return EXIT_FAILURE;
     }

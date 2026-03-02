@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -17,11 +25,14 @@
   \author Kris Thielemans
 */
 
+#ifndef HAVE_LLN_MATRIX
+#error This file can only be compiled when HAVE_LLN_MATRIX is #defined
+#endif
+
 #ifndef __stir_recon_buildblock_BinNormalisationFromECAT7_H__
 #define __stir_recon_buildblock_BinNormalisationFromECAT7_H__
 
 #include "stir/recon_buildblock/BinNormalisation.h"
-#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -32,8 +43,8 @@
 #include "stir/Array.h"
 #include <string>
 
-#ifndef HAVE_LLN_MATRIX
-#  error This file can only be compiled when HAVE_LLN_MATRIX is #defined
+#ifndef STIR_NO_NAMESPACE
+using std::string;
 #endif
 
 START_NAMESPACE_STIR
@@ -68,16 +79,10 @@ START_NAMESPACE_ECAT7
   End Bin Normalisation From ECAT7:=
   \endverbatim
 
-  \par Warning
-  dead-time code might currently give wrong results due to uncertainty in units for singles rates
-
 */
-class BinNormalisationFromECAT7
-    : public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation, BinNormalisationWithCalibration>
+class BinNormalisationFromECAT7 :
+   public RegisteredParsingObject<BinNormalisationFromECAT7, BinNormalisation>
 {
-private:
-  using base_type = BinNormalisationWithCalibration;
-
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char* const registered_name;
@@ -91,10 +96,10 @@ public:
   BinNormalisationFromECAT7();
 
   //! Constructor that reads the projdata from a file
-  BinNormalisationFromECAT7(const std::string& filename);
+  BinNormalisationFromECAT7(const string& filename);
 
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
-  float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
+  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
@@ -113,9 +118,9 @@ private:
   int num_transaxial_crystals_per_block;
   // TODO move to Scanner
   int num_axial_blocks_per_singles_unit;
-  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_ptr;
   ProjDataInfoCylindricalNoArcCorr const* proj_data_info_cyl_ptr;
-  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
   int mash;
   int num_blocks_per_singles_unit;
@@ -125,15 +130,16 @@ private:
   bool _use_geometric_factors;
   bool _use_crystal_interference_factors;
 
-  void read_norm_data(const std::string& filename);
-  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
+  void read_norm_data(const string& filename);
+  float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
+				  const double start_time, const double end_time) const;
 
   // parsing stuff
-  virtual void set_defaults() override;
-  virtual void initialise_keymap() override;
-  virtual bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
-  std::string normalisation_ECAT7_filename;
+  string normalisation_ECAT7_filename;
 };
 
 END_NAMESPACE_ECAT7

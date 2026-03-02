@@ -14,7 +14,15 @@
     Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,10 +33,13 @@
 
 #include <iostream>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
+#endif
 
 START_NAMESPACE_STIR
+
 
 /*!
   \brief Test class for ByteOrder and the preprocessor defines from
@@ -38,7 +49,7 @@ START_NAMESPACE_STIR
 class ByteOrderTests : public RunTests
 {
 public:
-  void run_tests() override;
+  void run_tests();
 };
 
 void
@@ -63,14 +74,15 @@ ByteOrderTests::run_tests()
   check(ByteOrder::get_native_order() == ByteOrder::big_endian,
         "STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly.");
 #endif
+
 }
+
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int
-main()
+int main()
 {
   ByteOrderTests tests;
   tests.run_tests();

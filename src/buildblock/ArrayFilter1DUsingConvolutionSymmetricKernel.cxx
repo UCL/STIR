@@ -14,7 +14,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,31 +31,35 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
 
-#include <algorithm>
-using std::min;
-
 START_NAMESPACE_STIR
 template <typename elemT>
-ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::ArrayFilter1DUsingConvolutionSymmetricKernel(
-    const VectorWithOffset<elemT>& filter_coefficients_v)
+ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::
+ArrayFilter1DUsingConvolutionSymmetricKernel(const VectorWithOffset<elemT> &filter_coefficients_v)
     : filter_coefficients(filter_coefficients_v)
 {
   // TODO: remove 0 elements at the outside
 
-  assert(filter_coefficients.get_length() == 0 || filter_coefficients.get_min_index() == 0);
+  assert(filter_coefficients.get_length() == 0 ||
+         filter_coefficients.get_min_index()==0);
 }
+
 
 template <typename elemT>
 bool
-ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::is_trivial() const
+ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::
+is_trivial() const
 {
-  return filter_coefficients.get_length() == 0 || (filter_coefficients.get_length() == 1 && filter_coefficients[0] == 1);
+  return
+    filter_coefficients.get_length() == 0 ||
+    (filter_coefficients.get_length()==1 &&
+     filter_coefficients[0] == 1);
 }
 
 // TODO generalise to arbitrary index ranges
 template <typename elemT>
 void
-ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::do_it(Array<1, elemT>& out_array, const Array<1, elemT>& in_array) const
+ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::
+do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
 {
   assert(out_array.get_min_index() == in_array.get_min_index());
   assert(out_array.get_max_index() == in_array.get_max_index());
@@ -62,7 +74,8 @@ ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::do_it(Array<1, elemT>& out_
   const int in_max = in_array.get_max_index();
   const int j_max = filter_coefficients.get_max_index();
 
-  for (int i = in_array.get_min_index(); i <= in_array.get_max_index(); i++)
+  for (int i=in_array.get_min_index(); 
+       i<=in_array.get_max_index(); i++) 
     {
       out_array[i] = filter_coefficients[0] * in_array[i];
       int j = 1;
@@ -145,6 +158,7 @@ ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::do_it(Array<1, elemT>& out_
 #endif
 }
 
+
 #if 0
 template <typename elemT>
 static void
@@ -162,3 +176,4 @@ cir_shift_to_right(VectorWithOffset<elemT>&output,const VectorWithOffset<elemT>&
 template class ArrayFilter1DUsingConvolutionSymmetricKernel<float>;
 
 END_NAMESPACE_STIR
+

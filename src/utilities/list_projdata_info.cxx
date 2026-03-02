@@ -1,12 +1,18 @@
 /*
     Copyright (C) 2002 - 2005-06-09, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2020 University College London
-    Copyright (C) 2016, University of Hull
-
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,7 +30,6 @@
   Add one or more options to print the exam/geometric/min/max/sum information.
   If no option is specified, geometric info is printed.
 
-  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
@@ -33,15 +38,13 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/SegmentByView.h"
 #include "stir/is_null_ptr.h"
-#include "stir/warning.h"
 #include <iostream>
 #include <limits>
 #include <string>
 
 USING_NAMESPACE_STIR
 
-void
-print_usage_and_exit(const std::string& program_name)
+void print_usage_and_exit(const std::string& program_name)
 {
   std::cerr << "Usage: " << program_name << " [--all | --min | --max | --sum | --geom | --exam] projdata_file\n"
             << "\nAdd one or more options to print the exam/geometric/min/max/sum information.\n"
@@ -49,8 +52,7 @@ print_usage_and_exit(const std::string& program_name)
   exit(EXIT_FAILURE);
 }
 
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   const char* const program_name = argv[0];
   // skip program name
@@ -72,38 +74,32 @@ main(int argc, char* argv[])
       if (strcmp(argv[0], "--all") == 0)
         {
           print_min = print_max = print_sum = print_geom = print_exam = true;
-          --argc;
-          ++argv;
+	  --argc; ++argv;
         }
       else if (strcmp(argv[0], "--max") == 0)
         {
           print_max = true;
-          --argc;
-          ++argv;
+	  --argc; ++argv;
         }
       else if (strcmp(argv[0], "--min") == 0)
         {
           print_min = true;
-          --argc;
-          ++argv;
+	  --argc; ++argv;
         }
       else if (strcmp(argv[0], "--sum") == 0)
         {
           print_sum = true;
-          --argc;
-          ++argv;
+	  --argc; ++argv;
         }
       else if (strcmp(argv[0], "--geom") == 0)
         {
           print_geom = true;
-          --argc;
-          ++argv;
+	  --argc; ++argv;
         }
       else if (strcmp(argv[0], "--exam") == 0)
         {
           print_exam = true;
-          --argc;
-          ++argv;
+	  --argc; ++argv;
         }
       else
         print_usage_and_exit(program_name);
@@ -128,27 +124,36 @@ main(int argc, char* argv[])
     }
 
   if (print_exam)
-    std::cout << proj_data_sptr->get_exam_info_sptr()->parameter_info();
+    {
+      const ExamInfo& exam_info = *proj_data_sptr->get_exam_info_ptr();
+      std::cout << "Modality: " << proj_data_sptr->get_exam_info_ptr()->imaging_modality.get_name() << '\n';
+      std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
+      std::cout << "Scan start time in secs since 1970 UTC: " << exam_info.start_time_in_secs_since_1970 << '\n';
+      if (exam_info.time_frame_definitions.get_num_time_frames() == 1)
+	{
+	  std::cout << "Time frame start - end (duration), all in secs: "
+		    << exam_info.time_frame_definitions.get_start_time(1)
+		    << " - "
+		    << exam_info.time_frame_definitions.get_end_time(1)
+		    << " ("
+		    << exam_info.time_frame_definitions.get_duration(1)
+		    << ")\n";
+	}
+    }
   if (print_geom)
-    std::cout << proj_data_sptr->get_proj_data_info_sptr()->parameter_info() << std::endl;
+    std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
 
   if (print_min || print_max || print_sum)
     {
       const int min_segment_num = proj_data_sptr->get_min_segment_num();
       const int max_segment_num = proj_data_sptr->get_max_segment_num();
-      const int min_timing_num = proj_data_sptr->get_min_tof_pos_num();
-      const int max_timing_num = proj_data_sptr->get_max_tof_pos_num();
-
       bool accumulators_initialized = false;
-      float accum_min
-          = std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
+      float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
       float accum_max = std::numeric_limits<float>::min();
       double sum = 0.;
-      for (int timing_num = min_timing_num; timing_num <= max_timing_num; ++timing_num)
-        {
           for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
             {
-              const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num, timing_num));
+	    const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num));
               const float this_max = seg.find_max();
               const float this_min = seg.find_min();
               sum += static_cast<double>(seg.sum());
@@ -160,11 +165,8 @@ main(int argc, char* argv[])
                 }
               else
                 {
-                  if (accum_max < this_max)
-                    accum_max = this_max;
-                  if (accum_min > this_min)
-                    accum_min = this_min;
-                }
+		if (accum_max<this_max) accum_max=this_max;
+		if (accum_min>this_min) accum_min=this_min;
             }
         }
       if (print_min)

@@ -3,7 +3,15 @@
  Copyright (C) 2010 - 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -20,6 +28,7 @@
 #include "stir/MaximalImageFilter3D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DiscretisedDensity.h"
+
 
 START_NAMESPACE_STIR
 
@@ -43,7 +52,9 @@ MaximalImageFilter3D<elemT>::virtual_set_up(const DiscretisedDensity<3, elemT>& 
 {
   /*   if (consistency_check(density) == Succeeded::no)
        return Succeeded::no;*/
-  maximal_filter = MaximalArrayFilter3D<elemT>(Coordinate3D<int>(mask_radius_z, mask_radius_y, mask_radius_x));
+  maximal_filter = 
+    MaximalArrayFilter3D<elemT>(Coordinate3D<int>
+                                (mask_radius_z, mask_radius_y, mask_radius_x));
 
   return Succeeded::yes;
 }
@@ -58,8 +69,7 @@ MaximalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density
 
 template <typename elemT>
 void
-MaximalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density,
-                                           const DiscretisedDensity<3, elemT>& in_density) const
+MaximalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
 {
   // assert(consistency_check(in_density) == Succeeded::yes);
   maximal_filter(out_density, in_density);
@@ -89,7 +99,10 @@ MaximalImageFilter3D<elemT>::initialise_keymap()
 }
 
 template <>
-const char* const MaximalImageFilter3D<float>::registered_name = "Maximal";
+const char * const 
+MaximalImageFilter3D<float>::registered_name =
+  "Maximal";
+
 
 #ifdef _MSC_VER
 // prevent warning message on reinstantiation,

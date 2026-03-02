@@ -2,7 +2,15 @@
  Copyright (C) 2011 - 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -19,12 +27,11 @@
 
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-  if (argc != 4)
-    {
-      std::cerr << "Usage: " << argv[0] << " <output filename prefix> <input filename> [number of axial planes] \n";
+  if(argc!=4) {
+    std::cerr << "Usage: " << argv[0] 
+              << " <output filename prefix> <input filename> [number of axial planes] \n";		
       exit(EXIT_FAILURE);
     }
   char const* const output_filename_prefix = argv[1];
@@ -62,8 +69,8 @@ main(int argc, char** argv)
             (*out_image_sptr)[c[1]][c[2]][c[3]] = 0.F;
         }
     }
-  const Succeeded res
-      = OutputFileFormat<DiscretisedDensity<3, float>>::default_sptr()->write_to_file(output_filename_prefix, *out_image_sptr);
+  const Succeeded res = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    write_to_file(output_filename_prefix, *out_image_sptr);
 
   return res == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }

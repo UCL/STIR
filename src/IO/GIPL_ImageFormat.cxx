@@ -3,7 +3,15 @@
  Copyright (C) 2012 - 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -126,8 +134,7 @@ Image::~Image()
  *	\param	filename		Input filename
  */
 // -------------------------------------------------------------------------
-void
-Image::GiplRead(char* filename)
+void Image::GiplRead(char* filename)
 {
   printf("Read %s\n", filename);
 
@@ -168,8 +175,7 @@ cout << "Exception raised: " << str << '\n';
 
   // Update image dimension
   ImageDimension = 2;
-  if (m_dim[2] > 1)
-    ImageDimension = 3;
+	if(m_dim[2]>1) ImageDimension = 3;
 
   // Update parameters dimension
   ParametersDimension = ImageDimension * ImageDimension + ImageDimension;
@@ -187,6 +193,8 @@ cout << "Exception raised: " << str << '\n';
     delete[] vData;
   if (vData_f)
     delete[] vData_f;
+
+	
 
   // Check data type
   switch (m_image_type)
@@ -243,8 +251,7 @@ cout << "Exception raised: " << str << '\n';
  *	\brief	Get minimum and maximum gray values in image.
  */
 // -------------------------------------------------------------------------
-void
-Image::GetMinMaxValue()
+void Image::GetMinMaxValue()
 {
   iMax = -16959;
   iMin = +16959;
@@ -276,11 +283,10 @@ Image::GetMinMaxValue()
 /**
  *	\brief	Read GIPL header.
  *
- *	\param	myFile		Input file
+*	\param	myfile		Input file
  */
 // -------------------------------------------------------------------------
-void
-Image::ReadGiplHeader(std::fstream* myFile)
+void Image::ReadGiplHeader(std::fstream* myFile)
 {
   int i;
   for (i = 0; i < 4; i++)
@@ -306,6 +312,7 @@ Image::ReadGiplHeader(std::fstream* myFile)
   myFile->read(reinterpret_cast<char*>(&m_user_def1), sizeof(m_user_def1));
   myFile->read(reinterpret_cast<char*>(&m_user_def2), sizeof(m_user_def2));
   myFile->read(reinterpret_cast<char*>(&m_magic_number), sizeof(m_magic_number));
+	
 }
 
 // -------------------------------------------------------------------------
@@ -315,8 +322,7 @@ Image::ReadGiplHeader(std::fstream* myFile)
  *	\param	filename		Output filename
  */
 // -------------------------------------------------------------------------
-void
-Image::GiplWrite(const char* filename)
+void Image::GiplWrite(const char* filename)
 {
   // Open file for writing
   std::fstream myFile(filename, std::ios_base::out | std::ios_base::binary);
@@ -384,8 +390,7 @@ Image::GiplWrite(const char* filename)
  *	\param	myfile		Output file
  */
 // -------------------------------------------------------------------------
-void
-Image::WriteGiplHeader(fstream* myFile)
+void Image::WriteGiplHeader(fstream* myFile)
 {
   int i;
   for (i = 0; i < 4; i++)
@@ -418,26 +423,21 @@ Image::WriteGiplHeader(fstream* myFile)
  *	\brief	Swap bytes (little/big endian conversion).
  */
 // -------------------------------------------------------------------------
-void
-Image::ByteSwapHeader() // for PC little endian
+void Image::ByteSwapHeader() // for PC little endian
 {
   int i;
-  for (i = 0; i < 4; i++)
-    ByteSwap(&(m_dim[i]));
+	for(i=0;i<4;i++) ByteSwap(&(m_dim[i]));
 
   ByteSwap(&(m_image_type));
 
-  for (i = 0; i < 4; i++)
-    ByteSwap(&(m_pixdim[i]));
+	for(i=0;i<4;i++) ByteSwap(&(m_pixdim[i]));	
 
-  for (i = 0; i < 12; i++)
-    ByteSwap(&(m_matrixElements[i]));
+	for(i=0;i<12;i++) ByteSwap(&(m_matrixElements[i]));	
 
   ByteSwap(&(m_min));
   ByteSwap(&(m_max));
 
-  for (i = 0; i < 4; i++)
-    ByteSwap(&(m_origin[i]));
+	for(i=0;i<4;i++) ByteSwap(&(m_origin[i]));	
 
   ByteSwap(&(m_pixval_offset));
   ByteSwap(&(m_pixval_cal));
@@ -455,8 +455,7 @@ Image::ByteSwapHeader() // for PC little endian
  *	\param	Input		Input image
  */
 // -------------------------------------------------------------------------
-void
-Image::Zeros(Image* Input, short iType)
+void Image::Zeros(Image* Input, short iType)
 {
   // Initialize image with dimensions
   this->Initialize(Input, iType);
@@ -489,8 +488,7 @@ Image::Zeros(Image* Input, short iType)
  *	\param	Input		Input image
  */
 // -------------------------------------------------------------------------
-void
-Image::Zeros()
+void Image::Zeros()
 {
   // Set image to 0
   if (this->m_image_type == 15)
@@ -521,8 +519,7 @@ Image::Zeros()
  *	\param	Input		Input image
  */
 // -------------------------------------------------------------------------
-void
-Image::Ones(Image* Input, short iType)
+void Image::Ones(Image* Input, short iType)
 {
   // Initialize image with dimensions
   this->Initialize(Input, iType);
@@ -552,8 +549,7 @@ Image::Ones(Image* Input, short iType)
  *	\param	Input		Input image
  */
 // -------------------------------------------------------------------------
-void
-Image::Initialize(Image* Input, short iType)
+void Image::Initialize(Image* Input, short iType)
 {
   // Set new data properties
   for (int i = 0; i < 4; i++)
@@ -606,8 +602,7 @@ Image::Initialize(Image* Input, short iType)
  *	\param	Input		Input image
  */
 // -------------------------------------------------------------------------
-void
-Image::Initialize(Image* Input)
+void Image::Initialize(Image* Input)
 {
   // Set new data properties
   for (int i = 0; i < 4; i++)
@@ -646,8 +641,7 @@ Image::Initialize(Image* Input)
  *	\param	Input		Input image
  */
 // -------------------------------------------------------------------------
-void
-Image::Copy(Image* Input, short iType)
+void Image::Copy(Image* Input, short iType)
 {
   // Initialize image with dimensions
   this->Initialize(Input, iType);
@@ -674,19 +668,16 @@ Image::Copy(Image* Input, short iType)
 //   Byte swap functions
 // -------------------------------------------------------------------------
 
-void
-Image::ByteSwap(int* i) // for PC little endian
-{
-  typedef struct
+void Image::ByteSwap(int *i) // for PC little endian
   {
+  typedef struct {
     unsigned char byte1;
     unsigned char byte2;
     unsigned char byte3;
     unsigned char byte4;
   } Bytes;
 
-  typedef union
-  {
+  typedef union {
     int integer;
     Bytes bytes;
   } intUnion;
@@ -703,17 +694,14 @@ Image::ByteSwap(int* i) // for PC little endian
   return;
 }
 
-void
-Image::ByteSwap(short* s) // for PC little endian
-{
-  typedef struct
+void Image::ByteSwap(short *s) // for PC little endian
   {
+  typedef struct {
     unsigned char byte1;
     unsigned char byte2;
   } Bytes;
 
-  typedef union
-  {
+  typedef union {
     short shortint;
     Bytes bytes;
   } shortUnion;
@@ -728,19 +716,16 @@ Image::ByteSwap(short* s) // for PC little endian
   return;
 }
 
-void
-Image::ByteSwap(float* f) // for PC little endian
-{
-  typedef struct
+void Image::ByteSwap(float *f) // for PC little endian
   {
+  typedef struct {
     unsigned char byte1;
     unsigned char byte2;
     unsigned char byte3;
     unsigned char byte4;
   } Bytes;
 
-  typedef union
-  {
+  typedef union {
     float floatnum;
     Bytes bytes;
   } floatUnion;
@@ -757,11 +742,9 @@ Image::ByteSwap(float* f) // for PC little endian
   return;
 }
 
-void
-Image::ByteSwap(double* d) // for PC little endian
-{
-  typedef struct
+void Image::ByteSwap(double *d) // for PC little endian
   {
+  typedef struct {
     unsigned char byte1;
     unsigned char byte2;
     unsigned char byte3;
@@ -772,8 +755,7 @@ Image::ByteSwap(double* d) // for PC little endian
     unsigned char byte8;
   } Bytes;
 
-  typedef union
-  {
+  typedef union {
     double doublenum;
     Bytes bytes;
   } doubleUnion;

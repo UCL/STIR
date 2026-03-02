@@ -18,21 +18,41 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
+
+
 #include "stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.h"
 #include "stir/Densel.h"
 #include <vector>
+//#include <fstream>
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+//using std::fstream;
+using std::random_access_iterator_tag;
+#endif
+
+
 
 START_NAMESPACE_STIR
 
 class RelatedDensels;
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Succeeded;
+
+
 
 /*! \ingroup projection
 \brief This stores the non-zero projection matrix elements
@@ -52,7 +72,7 @@ class Succeeded;
 
 /*
   it might be a bit faster to derive this (privately) from
-  std::vector<value_type> as opposed to having a member of
+  vector<value_type> as opposed to having a member of
   that type.
   TODO: check
 */
@@ -67,10 +87,9 @@ public:
   This typedef is also required for 'standard' iterators.
   */
   typedef ProjMatrixElemsForOneDenselValue value_type;
-
 private:
   //! shorthand to keep typedefs below concise
-  typedef std::vector<value_type> Element_vector;
+  typedef vector<value_type> Element_vector;
 
 public:
   //! typedefs for iterator support
@@ -78,10 +97,11 @@ public:
   typedef Element_vector::const_iterator const_iterator;
   typedef Element_vector::size_type size_type;
   typedef Element_vector::difference_type difference_type;
-  typedef std::random_access_iterator_tag iterator_category;
+  typedef random_access_iterator_tag iterator_category;
 
   typedef value_type& reference;
   typedef const value_type& const_reference;
+
 
   //! constructor
   ProjMatrixElemsForOneDensel();
@@ -100,7 +120,7 @@ public:
   Succeeded check_state() const;
 
   //! get the Densel coordinates corresponding to this row
-  inline const Densel& get_densel() const;
+  inline Densel get_densel() const;
   //! and set the Densel coordinates
   inline void set_densel(const Densel&);
 
@@ -149,6 +169,7 @@ public:
   void read(fstream&fst );
 #endif
 
+
   //! Return sum of squares of all values
   /*! \warning This sums over all elements in the LOR, irrespective if they
       are inside the FOV or not
@@ -174,12 +195,14 @@ public:
 #endif
 
 private:
-  std::vector<value_type> elements;
+  vector<value_type> elements;    
   Densel densel;
+
 
   //! remove a single value_type
   inline iterator erase(iterator it);
 };
+
 
 END_NAMESPACE_STIR
 

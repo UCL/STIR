@@ -2,11 +2,17 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2016, University of Hull
-    Copyright (C) 2020, 2024 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -15,10 +21,9 @@
   \ingroup GeneralisedObjectiveFunction
   \brief Declaration of class stir::GeneralisedObjectiveFunction
 
-  \author Nikos Efthimiou
   \author Kris Thielemans
-  \author Robert Twyman Skelly
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -28,50 +33,49 @@
 #include "stir/Succeeded.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
-#include "stir/info.h"
-#include "stir/warning.h"
-#include "stir/error.h"
-using std::string;
 
 START_NAMESPACE_STIR
 
 template <typename TargetT>
 void
-GeneralisedObjectiveFunction<TargetT>::set_defaults()
+GeneralisedObjectiveFunction<TargetT>::
+set_defaults()
 {
   this->prior_sptr.reset();
   // note: cannot use set_num_subsets(1) here, as other parameters (such as projectors) are not set-up yet.
   this->num_subsets = 1;
+  //Number of nested iterations
+  this->num_nested_subiterations=1;
+  //Number of nested initialization iterations
+  this->num_nested_initialization_subiterations=0;
 }
 
 template <typename TargetT>
 void
-GeneralisedObjectiveFunction<TargetT>::initialise_keymap()
+GeneralisedObjectiveFunction<TargetT>::
+initialise_keymap()
 {
   this->parser.add_parsing_key("prior type", &prior_sptr);
 }
 
 template <typename TargetT>
-GeneralisedObjectiveFunction<TargetT>::~GeneralisedObjectiveFunction()
+GeneralisedObjectiveFunction<TargetT>::
+~GeneralisedObjectiveFunction()
 {}
 
 template <typename TargetT>
 Succeeded
-GeneralisedObjectiveFunction<TargetT>::set_up(shared_ptr<TargetT> const& target_data_ptr)
+GeneralisedObjectiveFunction<TargetT>::
+set_up(shared_ptr<TargetT> const& target_data_ptr)
 {
-  if (target_data_ptr->get_exam_info().imaging_modality.is_unknown()
-      || this->get_input_data().get_exam_info().imaging_modality.is_unknown())
-    warning("Imaging modality is unknown for either the target or the input data or both.\n"
-            "Going ahead anyway.");
-  else if (target_data_ptr->get_exam_info().imaging_modality != this->get_input_data().get_exam_info().imaging_modality)
-    error("Imaging modality should be the same for the target and the input data");
-
-  if (!is_null_ptr(this->prior_sptr) && this->prior_sptr->set_up(target_data_ptr) == Succeeded::no)
+  if (!is_null_ptr(this->prior_sptr) &&
+      this->prior_sptr->set_up(target_data_ptr) == Succeeded::no)
     return Succeeded::no;
 
   if (this->num_subsets <= 0)
     {
-      warning("Number of subsets %d should be larger than 0.", this->num_subsets);
+      warning("Number of subsets %d should be larger than 0.",
+	      this->num_subsets);
       return Succeeded::no;
     }
 
@@ -80,35 +84,51 @@ GeneralisedObjectiveFunction<TargetT>::set_up(shared_ptr<TargetT> const& target_
 
 template <typename TargetT>
 GeneralisedPrior<TargetT>* const
-GeneralisedObjectiveFunction<TargetT>::get_prior_ptr() const
-{
-  return this->prior_sptr.get();
-}
-
-template <typename TargetT>
-shared_ptr<GeneralisedPrior<TargetT>>
-GeneralisedObjectiveFunction<TargetT>::get_prior_sptr()
-{
-  return this->prior_sptr;
-}
+GeneralisedObjectiveFunction<TargetT>::
+get_prior_ptr() const
+{ return this->prior_sptr.get(); }
 
 template <typename TargetT>
 void
-GeneralisedObjectiveFunction<TargetT>::set_prior_sptr(const shared_ptr<GeneralisedPrior<TargetT>>& arg)
+GeneralisedObjectiveFunction<TargetT>::
+set_prior_sptr(const shared_ptr<GeneralisedPrior<TargetT> >& arg)
 {
   this->prior_sptr = arg;
 }
 
 template <typename TargetT>
 bool
-GeneralisedObjectiveFunction<TargetT>::prior_is_zero() const
+GeneralisedObjectiveFunction<TargetT>::
+prior_is_zero() const
 {
-  return is_null_ptr(this->prior_sptr) || this->prior_sptr->get_penalisation_factor() == 0;
+  return
+    is_null_ptr(this->prior_sptr) ||
+    this->prior_sptr->get_penalisation_factor() == 0;
+}
+
+template <typename TargetT>
+bool
+GeneralisedObjectiveFunction<TargetT>::
+is_nested() const
+{
+  return !is_null_ptr(this->last_nested_estimate_sptr);
+}
+
+template <typename TargetT>
+void
+GeneralisedObjectiveFunction<TargetT>::
+set_nested_output_filename_prefix(std::string& filename_prefix, int global_subiteration_num)
+{
+  char num[50];
+  sprintf(num, "_%d", global_subiteration_num);
+  
+  this->nested_output_filename_prefix=filename_prefix + num;
 }
 
 template <typename TargetT>
 double
-GeneralisedObjectiveFunction<TargetT>::compute_penalty(const TargetT& current_estimate)
+GeneralisedObjectiveFunction<TargetT>::
+compute_penalty(const TargetT& current_estimate)
 {
   if (this->prior_is_zero())
     return 0.;
@@ -118,25 +138,25 @@ GeneralisedObjectiveFunction<TargetT>::compute_penalty(const TargetT& current_es
 
 template <typename TargetT>
 double
-GeneralisedObjectiveFunction<TargetT>::compute_penalty(const TargetT& current_estimate, const int subset_num)
+GeneralisedObjectiveFunction<TargetT>::
+compute_penalty(const TargetT& current_estimate,
+		const int subset_num)
 {
   return this->compute_penalty(current_estimate) / this->get_num_subsets();
 }
 
 template <typename TargetT>
 void
-GeneralisedObjectiveFunction<TargetT>::compute_sub_gradient(TargetT& gradient,
+GeneralisedObjectiveFunction<TargetT>::
+compute_sub_gradient(TargetT& gradient, 
                                                             const TargetT& current_estimate,
                                                             const int subset_num)
 {
-  if (!this->already_set_up)
-    error("Need to call set_up() for objective function first");
   assert(gradient.get_index_range() == current_estimate.get_index_range());
 
-  if (subset_num < 0 || subset_num >= this->get_num_subsets())
-    error("compute_sub_gradient subset_num out-of-range error");
-
-  this->compute_sub_gradient_without_penalty(gradient, current_estimate, subset_num);
+   this->compute_sub_gradient_without_penalty(gradient, 
+					      current_estimate, 
+					      subset_num); 
   if (!this->prior_is_zero())
     {
       shared_ptr<TargetT> prior_gradient_sptr(gradient.get_empty_copy());
@@ -150,122 +170,75 @@ GeneralisedObjectiveFunction<TargetT>::compute_sub_gradient(TargetT& gradient,
       while (prior_gradient_iter != end_prior_gradient_iter)
         {
           *gradient_iter -= (*prior_gradient_iter) / this->get_num_subsets();
-          ++gradient_iter;
-          ++prior_gradient_iter;
-        }
-    }
-}
-
-template <typename TargetT>
-void
-GeneralisedObjectiveFunction<TargetT>::compute_gradient_without_penalty(TargetT& gradient, const TargetT& current_estimate)
-{
-  // do first subset
-  compute_sub_gradient_without_penalty(gradient, current_estimate, 0);
-  if (this->get_num_subsets() == 1)
-    return;
-
-  shared_ptr<TargetT> subset_gradient_sptr(gradient.get_empty_copy());
-  for (int subset_num = 1; subset_num < this->get_num_subsets(); ++subset_num)
-    {
-      this->compute_sub_gradient_without_penalty(*subset_gradient_sptr, current_estimate, subset_num);
-
-      auto subset_gradient_iter = subset_gradient_sptr->begin_all_const();
-      const auto end_subset_gradient_iter = subset_gradient_sptr->end_all_const();
-      auto gradient_iter = gradient.begin_all();
-      while (subset_gradient_iter != end_subset_gradient_iter)
-        {
-          *gradient_iter += (*subset_gradient_iter);
-          ++gradient_iter;
-          ++subset_gradient_iter;
-        }
-    }
-}
-
-template <typename TargetT>
-void
-GeneralisedObjectiveFunction<TargetT>::compute_gradient(TargetT& gradient, const TargetT& current_estimate)
-{
-  this->compute_gradient_without_penalty(gradient, current_estimate);
-  if (!this->prior_is_zero())
-    {
-      shared_ptr<TargetT> prior_gradient_sptr(gradient.get_empty_copy());
-      this->prior_sptr->compute_gradient(*prior_gradient_sptr, current_estimate);
-
-      // gradient -= *prior_gradient_sptr;
-      auto prior_gradient_iter = prior_gradient_sptr->begin_all_const();
-      const auto end_prior_gradient_iter = prior_gradient_sptr->end_all_const();
-      auto gradient_iter = gradient.begin_all();
-      while (prior_gradient_iter != end_prior_gradient_iter)
-        {
-          *gradient_iter -= (*prior_gradient_iter);
-          ++gradient_iter;
-          ++prior_gradient_iter;
+	   ++gradient_iter; ++prior_gradient_iter;
         }
     }
 }
 
 template <typename TargetT>
 int
-GeneralisedObjectiveFunction<TargetT>::get_num_subsets() const
+GeneralisedObjectiveFunction<TargetT>::
+get_num_subsets() const
 {
   return this->num_subsets;
 }
 
 template <typename TargetT>
 double
-GeneralisedObjectiveFunction<TargetT>::compute_objective_function_without_penalty(const TargetT& current_estimate)
+GeneralisedObjectiveFunction<TargetT>::
+compute_objective_function_without_penalty(const TargetT& current_estimate)
 {
   double result = 0.;
   for (int subset_num = 0; subset_num < this->get_num_subsets(); ++subset_num)
-    result += this->compute_objective_function_without_penalty(current_estimate, subset_num);
+    result += 
+      this->compute_objective_function_without_penalty(current_estimate, subset_num);
   return result;
 }
 
 template <typename TargetT>
 double
-GeneralisedObjectiveFunction<TargetT>::compute_objective_function_without_penalty(const TargetT& current_estimate,
+GeneralisedObjectiveFunction<TargetT>::
+compute_objective_function_without_penalty(const TargetT& current_estimate,
                                                                                   const int subset_num)
 {
-  if (!this->already_set_up)
-    error("Need to call set_up() for objective function first");
-  if (subset_num < 0 || subset_num >= this->get_num_subsets())
-    error("compute_objective_function_without_penalty subset_num out-of-range error");
-
-  return this->actual_compute_objective_function_without_penalty(current_estimate, subset_num);
+  return
+    this->actual_compute_objective_function_without_penalty(current_estimate, subset_num);
 }
 
 template <typename TargetT>
 double
-GeneralisedObjectiveFunction<TargetT>::compute_objective_function(const TargetT& current_estimate, const int subset_num)
+GeneralisedObjectiveFunction<TargetT>::
+compute_objective_function(const TargetT& current_estimate,
+			   const int subset_num)
 {
-  return this->compute_objective_function_without_penalty(current_estimate, subset_num)
-         - this->compute_penalty(current_estimate, subset_num);
+  return
+    this->compute_objective_function_without_penalty(current_estimate, subset_num) -
+    this->compute_penalty(current_estimate, subset_num);
 }
 
 template <typename TargetT>
 double
-GeneralisedObjectiveFunction<TargetT>::compute_objective_function(const TargetT& current_estimate)
+GeneralisedObjectiveFunction<TargetT>::
+compute_objective_function(const TargetT& current_estimate)
 {
-  return this->compute_objective_function_without_penalty(current_estimate) - this->compute_penalty(current_estimate);
+  return
+    this->compute_objective_function_without_penalty(current_estimate) -
+    this->compute_penalty(current_estimate);
 }
 
-/////////////////////// Approximate Hessian
+/////////////////////// Hessian
 
 template <typename TargetT>
 Succeeded
-GeneralisedObjectiveFunction<TargetT>::add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
+GeneralisedObjectiveFunction<TargetT>::
+add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                                                        const TargetT& input,
                                                                                                        const int subset_num) const
 {
-  if (!this->already_set_up)
-    error("Need to call set_up() for objective function first");
-  if (subset_num < 0 || subset_num >= this->get_num_subsets())
-    error("add_multiplication_with_approximate_sub_Hessian_without_penalty subset_num out-of-range error");
-
   {
     string explanation;
-    if (!output.has_same_characteristics(input, explanation))
+    if (!output.has_same_characteristics(input,
+					 explanation))
       {
         warning("GeneralisedObjectiveFunction:\n"
                 "input and output for add_multiplication_with_approximate_sub_Hessian_without_penalty\n"
@@ -274,25 +247,31 @@ GeneralisedObjectiveFunction<TargetT>::add_multiplication_with_approximate_sub_H
         return Succeeded::no;
       }
   }
-  return this->actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(output, input, subset_num);
+  return
+   this->actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(output,
+										input,
+										subset_num); 
 }
 
 template <typename TargetT>
 Succeeded
-GeneralisedObjectiveFunction<TargetT>::add_multiplication_with_approximate_sub_Hessian(TargetT& output,
+GeneralisedObjectiveFunction<TargetT>::
+add_multiplication_with_approximate_sub_Hessian(TargetT& output,
                                                                                        const TargetT& input,
                                                                                        const int subset_num) const
 {
-  if (!this->already_set_up)
-    error("Need to call set_up() for objective function first");
-  if (this->add_multiplication_with_approximate_sub_Hessian_without_penalty(output, input, subset_num) == Succeeded::no)
+  if (this->add_multiplication_with_approximate_sub_Hessian_without_penalty(output, input, subset_num) ==
+      Succeeded::no)
     return Succeeded::no;
 
   if (!this->prior_is_zero())
     {
       // TODO used boost:scoped_ptr
       shared_ptr<TargetT> prior_output_sptr(output.get_empty_copy());
-      this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, input);
+      if (this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, output) ==
+	  Succeeded::no)
+	return Succeeded::no;
+
 
       // (*prior_output_sptr)/= num_subsets;
       // output -= *prior_output_sptr;
@@ -302,78 +281,28 @@ GeneralisedObjectiveFunction<TargetT>::add_multiplication_with_approximate_sub_H
       while (prior_output_iter != end_prior_output_iter)
         {
           *output_iter -= (*prior_output_iter) / this->get_num_subsets();
-          ++output_iter;
-          ++prior_output_iter;
+	   ++output_iter; ++prior_output_iter;
         }
     }
 
   return Succeeded::yes;
-}
+
+    }
+
 
 template <typename TargetT>
 Succeeded
-GeneralisedObjectiveFunction<TargetT>::add_multiplication_with_approximate_Hessian_without_penalty(TargetT& output,
-                                                                                                   const TargetT& input) const
+GeneralisedObjectiveFunction<TargetT>::
+add_multiplication_with_approximate_Hessian_without_penalty(TargetT& output,
+							    const TargetT& input) const
 {
   for (int subset_num = 0; subset_num < this->get_num_subsets(); ++subset_num)
     {
-      if (this->add_multiplication_with_approximate_sub_Hessian_without_penalty(output, input, subset_num) == Succeeded::no)
-        return Succeeded::no;
-    }
-
-  return Succeeded::yes;
-}
-
-template <typename TargetT>
-Succeeded
-GeneralisedObjectiveFunction<TargetT>::add_multiplication_with_approximate_Hessian(TargetT& output, const TargetT& input) const
-{
-  for (int subset_num = 0; subset_num < this->get_num_subsets(); ++subset_num)
-    {
-      if (this->add_multiplication_with_approximate_sub_Hessian(output, input, subset_num) == Succeeded::no)
-        return Succeeded::no;
-    }
-
-  return Succeeded::yes;
-}
-
-template <typename TargetT>
-Succeeded
-GeneralisedObjectiveFunction<TargetT>::actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(
-    TargetT& output, const TargetT& input, const int subset_num) const
-{
-  error("GeneralisedObjectiveFunction:\n"
-        "actual_add_multiplication_with_approximate_sub_Hessian_without_penalty implementation is not overloaded by your "
-        "objective function.");
-  return Succeeded::no;
-}
-
-//////////////////// Hessian
-
-template <typename TargetT>
-Succeeded
-GeneralisedObjectiveFunction<TargetT>::accumulate_Hessian_times_input(TargetT& output,
-                                                                      const TargetT& current_image_estimate,
-                                                                      const TargetT& input) const
-{
-  if (this->accumulate_Hessian_times_input_without_penalty(output, current_image_estimate, input) == Succeeded::no)
+      if (this->add_multiplication_with_approximate_sub_Hessian_without_penalty(output,
+										input,
+										subset_num) ==
+	  Succeeded::no)
     return Succeeded::no;
-
-  if (!this->prior_is_zero())
-    {
-      shared_ptr<TargetT> prior_output_sptr(output.get_empty_copy());
-      this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, input);
-
-      // output -= *prior_output_sptr;
-      auto prior_output_iter = prior_output_sptr->begin_all_const();
-      const auto end_prior_output_iter = prior_output_sptr->end_all_const();
-      auto output_iter = output.begin_all();
-      while (prior_output_iter != end_prior_output_iter)
-        {
-          *output_iter -= (*prior_output_iter);
-          ++output_iter;
-          ++prior_output_iter;
-        }
     }
 
   return Succeeded::yes;
@@ -381,92 +310,31 @@ GeneralisedObjectiveFunction<TargetT>::accumulate_Hessian_times_input(TargetT& o
 
 template <typename TargetT>
 Succeeded
-GeneralisedObjectiveFunction<TargetT>::accumulate_Hessian_times_input_without_penalty(TargetT& output,
-                                                                                      const TargetT& current_image_estimate,
+GeneralisedObjectiveFunction<TargetT>::
+add_multiplication_with_approximate_Hessian(TargetT& output,
                                                                                       const TargetT& input) const
 {
   for (int subset_num = 0; subset_num < this->get_num_subsets(); ++subset_num)
     {
-      if (this->accumulate_sub_Hessian_times_input_without_penalty(output, current_image_estimate, input, subset_num)
-          == Succeeded::no)
+      if (this->add_multiplication_with_approximate_sub_Hessian(output,
+								input,
+								subset_num) ==
+	  Succeeded::no)
         return Succeeded::no;
     }
+
   return Succeeded::yes;
 }
 
 template <typename TargetT>
 Succeeded
-GeneralisedObjectiveFunction<TargetT>::accumulate_sub_Hessian_times_input(TargetT& output,
-                                                                          const TargetT& current_image_estimate,
-                                                                          const TargetT& input,
-                                                                          const int subset_num) const
-{
-  if (this->accumulate_sub_Hessian_times_input_without_penalty(output, current_image_estimate, input, subset_num)
-      == Succeeded::no)
-    return Succeeded::no;
-
-  if (!this->prior_is_zero())
-    {
-      // TODO used boost:scoped_ptr
-      shared_ptr<TargetT> prior_output_sptr(output.get_empty_copy());
-      this->prior_sptr->accumulate_Hessian_times_input(*prior_output_sptr, current_image_estimate, input);
-
-      typename TargetT::const_full_iterator prior_output_iter = prior_output_sptr->begin_all_const();
-      const typename TargetT::const_full_iterator end_prior_output_iter = prior_output_sptr->end_all_const();
-      typename TargetT::full_iterator output_iter = output.begin_all();
-      while (prior_output_iter != end_prior_output_iter)
-        {
-          *output_iter -= (*prior_output_iter) / this->get_num_subsets();
-          ++output_iter;
-          ++prior_output_iter;
-        }
-    }
-  return Succeeded::yes;
-}
-
-template <typename TargetT>
-Succeeded
-GeneralisedObjectiveFunction<TargetT>::accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
-                                                                                          const TargetT& current_image_estimate,
+GeneralisedObjectiveFunction<TargetT>::
+actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                                           const TargetT& input,
                                                                                           const int subset_num) const
 {
-  if (!this->already_set_up)
-    error("Need to call set_up() for objective function first");
-  if (subset_num < 0 || subset_num >= this->get_num_subsets())
-    error("accumulate_sub_Hessian_times_input_without_penalty subset_num out-of-range error");
-
-  {
-    string explanation;
-    if (!output.has_same_characteristics(input, explanation))
-      {
-        warning("GeneralisedObjectiveFunction:\n"
-                "input and output for accumulate_sub_Hessian_times_input_without_penalty\n"
-                "should have the same characteristics.\n%s",
-                explanation.c_str());
-        return Succeeded::no;
-      }
-
-    if (!output.has_same_characteristics(current_image_estimate, explanation))
-      {
-        warning("GeneralisedObjectiveFunction:\n"
-                "current_image_estimate and output for accumulate_sub_Hessian_times_input_without_penalty\n"
-                "should have the same characteristics.\n%s",
-                explanation.c_str());
-        return Succeeded::no;
-      }
-  }
-
-  return this->actual_accumulate_sub_Hessian_times_input_without_penalty(output, current_image_estimate, input, subset_num);
-}
-
-template <typename TargetT>
-Succeeded
-GeneralisedObjectiveFunction<TargetT>::actual_accumulate_sub_Hessian_times_input_without_penalty(
-    TargetT& output, const TargetT& input, const TargetT& current_image_estimate, const int subset_num) const
-{
   error("GeneralisedObjectiveFunction:\n"
-        "actual_accumulate_sub_Hessian_times_input_without_penalty implementation is not overloaded by your objective function.");
+	"actual_add_multiplication_with_approximate_sub_Hessian_without_penalty implementation is not overloaded by your objective function.");
   return Succeeded::no;
 }
 
@@ -474,20 +342,30 @@ GeneralisedObjectiveFunction<TargetT>::actual_accumulate_sub_Hessian_times_input
 
 template <typename TargetT>
 std::string
-GeneralisedObjectiveFunction<TargetT>::get_objective_function_values_report(const TargetT& current_estimate)
+GeneralisedObjectiveFunction<TargetT>::
+get_objective_function_values_report(const TargetT& current_estimate)
 {
+#ifdef BOOST_NO_STRINGSTREAM
+  char str[10000];
+  ostrstream s(str, 10000);
+#else
   std::ostringstream s;
-
-  const double no_penalty = this->compute_objective_function_without_penalty(current_estimate);
-  const double penalty = this->compute_penalty(current_estimate);
-  s << "Objective function without penalty " << no_penalty << "\nPenalty                            " << penalty
-    << "\nDifference (i.e. total)            " << no_penalty - penalty << '\n';
+#endif
+  const double no_penalty = 
+    this->compute_objective_function_without_penalty(current_estimate);
+  const double penalty =
+    this->compute_penalty(current_estimate);
+  s << "Objective function without penalty " << no_penalty
+    << "\nPenalty                            " << penalty
+    << "\nDifference (i.e. total)            " << no_penalty-penalty
+    << '\n';
   return s.str();
 }
 
 template <typename TargetT>
 bool
-GeneralisedObjectiveFunction<TargetT>::subsets_are_approximately_balanced() const
+GeneralisedObjectiveFunction<TargetT>::
+subsets_are_approximately_balanced() const
 {
   std::string dummy;
   return this->actual_subsets_are_approximately_balanced(dummy);
@@ -495,16 +373,12 @@ GeneralisedObjectiveFunction<TargetT>::subsets_are_approximately_balanced() cons
 
 template <typename TargetT>
 bool
-GeneralisedObjectiveFunction<TargetT>::subsets_are_approximately_balanced(std::string& warning_message) const
+GeneralisedObjectiveFunction<TargetT>::
+subsets_are_approximately_balanced(std::string& warning_message) const
 {
-#if 0
-  // TODO cannot do this yet, as this function is called in
-  // `PoissonLogLikelihoodWithLinearModelForMean::compute_sensitivities` during set_up()
-  if (!this->already_set_up)
-    error("Need to call set_up() for objective function first");
-#endif
   return this->actual_subsets_are_approximately_balanced(warning_message);
 }
+
 
 #ifdef _MSC_VER
 // prevent warning message on instantiation of abstract class
@@ -513,5 +387,8 @@ GeneralisedObjectiveFunction<TargetT>::subsets_are_approximately_balanced(std::s
 
 template class GeneralisedObjectiveFunction<DiscretisedDensity<3, float>>;
 template class GeneralisedObjectiveFunction<ParametricVoxelsOnCartesianGrid>;
+template class GeneralisedObjectiveFunction<GeneralizedPatlakVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
+
+

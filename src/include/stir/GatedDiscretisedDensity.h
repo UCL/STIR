@@ -4,7 +4,15 @@
  Copyright (C) 2009- 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -34,16 +42,22 @@ class Succeeded;
 class GatedDiscretisedDensity
 {
 public:
-  static GatedDiscretisedDensity* read_from_file(const std::string& filename);
-
-  static GatedDiscretisedDensity* read_from_files(const std::string& filename);
-
-  static GatedDiscretisedDensity* read_from_files(const std::string& filename, const std::string& suffix);
+  static
+    GatedDiscretisedDensity*
+    read_from_file(const std::string& filename);
+	
+  static
+    GatedDiscretisedDensity*
+    read_from_files(const std::string& filename);
+	
+  static
+    GatedDiscretisedDensity*
+    read_from_files(const std::string& filename,const std::string& suffix);
 
   GatedDiscretisedDensity() {}
 
   GatedDiscretisedDensity(const GatedDiscretisedDensity& argument);
-  GatedDiscretisedDensity(const std::string& filename);
+  GatedDiscretisedDensity(const string& filename);
 
   GatedDiscretisedDensity(const TimeGateDefinitions& time_gate_definitions)
   {
@@ -51,7 +65,9 @@ public:
     _time_gate_definitions = time_gate_definitions;
   }
 
-  GatedDiscretisedDensity(const shared_ptr<DiscretisedDensity<3, float>>& density_sptr, const unsigned int num_gates);
+  GatedDiscretisedDensity(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
+                          const unsigned int num_gates);
+	
 
   //!  Construct an empty GatedDiscretisedDensity based on a shared_ptr<DiscretisedDensity<3,float> >
   GatedDiscretisedDensity(const TimeGateDefinitions& time_gate_definitions,
@@ -75,7 +91,8 @@ public:
     }
 #endif
 
-  GatedDiscretisedDensity& operator=(const GatedDiscretisedDensity& argument);
+  GatedDiscretisedDensity&
+    operator=(const GatedDiscretisedDensity& argument);
 
   /*! \name get/set the densities
     \warning The gate_num starts from 1
@@ -84,7 +101,9 @@ public:
   /*!
     \warning This function is likely to disappear later, and is dangerous to use.
   */
-  void set_density_sptr(const shared_ptr<DiscretisedDensity<3, float>>& density_sptr, const unsigned int gate_num);
+  void 
+    set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
+		     const unsigned int gate_num);
 
   void resize_densities(const TimeGateDefinitions& time_gate_definitions)
   {
@@ -97,29 +116,29 @@ public:
     std::vector<shared_ptr<DiscretiseDensity<3,float> > _densities);
   */
 
-  const std::vector<shared_ptr<DiscretisedDensity<3, float>>>& get_densities() const;
+  const std::vector<shared_ptr<DiscretisedDensity<3,float> > > &
+    get_densities() const ;
 
-  const DiscretisedDensity<3, float>& get_density(const unsigned int gate_num) const;
+  const DiscretisedDensity<3,float> & 
+    get_density(const unsigned int gate_num) const ;
 
-  const DiscretisedDensity<3, float>& operator[](const unsigned int gate_num) const
-  {
-    return this->get_density(gate_num);
-  }
+  const DiscretisedDensity<3,float> & 
+    operator[](const unsigned int gate_num) const 
+    { return this->get_density(gate_num); }
 
-  DiscretisedDensity<3, float>& get_density(const unsigned int gate_num);
+  DiscretisedDensity<3,float> & 
+    get_density(const unsigned int gate_num);
 
-  DiscretisedDensity<3, float>& operator[](const unsigned int gate_num)
-  {
-    return this->get_density(gate_num);
-  }
+  DiscretisedDensity<3,float> & 
+    operator[](const unsigned int gate_num)  
+    { return this->get_density(gate_num); }
   //@}
 
   void set_time_gate_definitions(TimeGateDefinitions time_gate_definitions)
-  {
-    this->_time_gate_definitions = time_gate_definitions;
-  }
+  {this->_time_gate_definitions=time_gate_definitions;}
 
-  const TimeGateDefinitions& get_time_gate_definitions() const;
+  const TimeGateDefinitions & 
+    get_time_gate_definitions() const ;
 
   unsigned get_num_gates() const
   {
@@ -131,8 +150,11 @@ public:
     Currently only in format.
     \warning write_time_gate_definitions() is not yet implemented, so time information is missing.
   */
-  Succeeded write_to_files(const std::string& filename) const;
-  Succeeded write_to_files(const std::string& filename, const std::string& suffix) const;
+  Succeeded   
+    write_to_files(const std::string& filename) const;
+  Succeeded   
+    write_to_files(const string& filename,const string& suffix) const;
+
 
 private:
   // warning: if adding any new members, you have to change the copy constructor as well.

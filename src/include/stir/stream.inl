@@ -16,7 +16,15 @@
     Copyright (C) 2013 Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,7 +35,6 @@
 */
 
 #include <algorithm>
-#include "stir/warning.h"
 
 START_NAMESPACE_STIR
 
@@ -58,6 +65,7 @@ operator<<(std::ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
   str << '}';
   return str;
 }
+
 
 template <typename elemT>
 std::ostream&
@@ -97,7 +105,8 @@ operator>>(std::istream& str, std::vector<elemT>& v)
         }
       else
         break;
-  } while (str && c == ',');
+  }
+  while (str && c  == ',');
 
   if (str.fail())
     {
@@ -135,9 +144,7 @@ operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v)
   if (!str || c != '{')
     {
       warning("reading a coordinate of dimension %d, expected opening {, found %c instead.\n"
-              "Elements will be undefined",
-              num_dimensions,
-              c);
+              "Elements will be undefined", num_dimensions, c);
       return str;
     }
   for (int i = 1; i <= num_dimensions; i++)
@@ -148,9 +155,7 @@ operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v)
       if (i < num_dimensions && (!str || c != ','))
         {
           warning("reading a coordinate of dimension %d, expected comma, found %c instead.\n"
-                  "Remaining elements will be undefined",
-                  num_dimensions,
-                  c);
+              "Remaining elements will be undefined", num_dimensions, c);
           return str;
         }
       if (i == num_dimensions && (!str || c != '}'))
@@ -160,6 +165,7 @@ operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v)
         }
     }
   return str;
+  
 }
 
 END_NAMESPACE_STIR

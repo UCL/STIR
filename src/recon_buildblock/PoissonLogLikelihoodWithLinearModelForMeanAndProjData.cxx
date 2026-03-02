@@ -1,10 +1,17 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2016-2025 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -15,12 +22,10 @@
 
   \author Kris Thielemans
   \author Matthew Jacobson
-  \author Nikos Efthimiou
-  \author Elise Emond
-  \author Robert Twyman
   \author Sanida Mustafovic
   \author PARAPET project
 */
+
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -28,12 +33,9 @@
 #include "stir/Succeeded.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/stream.h"
-#include "stir/info.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
-#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+
 #include "stir/DiscretisedDensity.h"
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/DistributedCachingInformation.h"
@@ -47,59 +49,60 @@
 #  include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #else
 #  include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #  include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
-#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
-#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
-#include "stir/recon_buildblock/BinNormalisationWithCalibration.h"
 
-#include "stir/ProjDataInMemory.h"
 
 #include "stir/Viewgram.h"
 #include "stir/recon_array_functions.h"
 #include "stir/is_null_ptr.h"
 #include <iostream>
 #include <algorithm>
-#include <functional>
 #include <sstream>
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/distributed_functions.h"
 #endif
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
-#include "stir/format.h"
+#include <boost/format.hpp>
 
-using std::vector;
-using std::pair;
+#ifndef STIR_NO_NAMESPACES
 using std::ends;
+using std::cerr;
+using std::endl;
 using std::max;
+#endif
+
 
 START_NAMESPACE_STIR
 
 const int rim_truncation_sino = 0; // TODO get rid of this
 
 template <typename TargetT>
-const char* const PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::registered_name
-    = "PoissonLogLikelihoodWithLinearModelForMeanAndProjData";
+const char * const 
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+registered_name = 
+"PoissonLogLikelihoodWithLinearModelForMeanAndProjData";
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_defaults()
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_defaults()
 {
   base_type::set_defaults();
 
   this->input_filename = "";
   this->max_segment_num_to_process = -1;
-  this->max_timing_pos_num_to_process = 0;
   // KT 20/06/2001 disabled
   // num_views_to_add=1;
   this->proj_data_sptr.reset(); // MJ added
   this->zero_seg0_end_planes = 0;
-  this->use_tofsens = false;
 
   this->additive_projection_data_filename = "0";
   this->additive_proj_data_sptr.reset();
+
 
   // set default for projector_pair_ptr
 #ifndef USE_PMRT
@@ -112,7 +115,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_defaults()
   shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(PM));
 #endif
 
-  this->projector_pair_ptr.reset(new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+  this->projector_pair_ptr.reset(
+				 new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
   this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->frame_num = 1;
@@ -121,7 +125,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_defaults()
   vector<pair<double, double>> frame_times(1, pair<double, double>(0, 1));
   this->frame_defs = TimeFrameDefinitions(frame_times);
 
-  this->target_parameter_parser.set_defaults();
+
+  // image stuff
+  this->output_image_size_xy=-1;
+  this->output_image_size_z=-1;
+  this->zoom=1.F;
+  this->Xoffset=0.F;
+  this->Yoffset=0.F;
+  // KT 20/06/2001 new
+  this->Zoffset=0.F;
 
 #ifdef STIR_MPI
   // distributed stuff
@@ -135,12 +147,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_defaults()
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::initialise_keymap()
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters");
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters");
-  this->parser.add_key("use time-of-flight sensitivities", &this->use_tofsens);
   this->parser.add_key("input file", &this->input_filename);
   // KT 20/06/2001 disabled
   // parser.add_key("mash x views", &num_views_to_add);
@@ -148,7 +160,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::initialise_keyma
   this->parser.add_key("maximum absolute segment number to process", &this->max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->zero_seg0_end_planes);
 
-  this->target_parameter_parser.add_to_keymap(this->parser);
+  // image stuff
+
+  this->parser.add_key("zoom", &this->zoom);
+  this->parser.add_key("XY output image size (in pixels)",&this->output_image_size_xy);
+  this->parser.add_key("Z output image size (in pixels)",&this->output_image_size_z);
+  //parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
+  //parser.add_key("Y offset (in mm)", &this->Yoffset);
+  
+  this->parser.add_key("Z offset (in mm)", &this->Zoffset);
 
   this->parser.add_parsing_key("Projector pair type", &this->projector_pair_ptr);
   this->parser.add_key("additive sinogram", &this->additive_projection_data_filename);
@@ -169,34 +189,41 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::initialise_keyma
 
 template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing()
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+post_processing()
 {
   if (base_type::post_processing() == true)
     return true;
 
+  if (this->input_filename.length() == 0)
+  { warning("You need to specify an input file"); return true; }
     // KT 20/06/2001 disabled as not functional yet
 #if 0
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
   { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
 
-  if (this->input_filename.length() > 0)
-    {
       this->proj_data_sptr = ProjData::read_from_file(input_filename);
-
       if (is_null_ptr(this->proj_data_sptr))
-        {
-          error("Failed to read input file %s", input_filename.c_str());
-          return true;
-        }
-    }
+    { warning("Failed to read input file %s", input_filename.c_str()); return true; }
 
-  target_parameter_parser.check_values();
+ // image stuff
+  if (this->zoom <= 0)
+  { warning("zoom should be positive"); return true; }
+  
+  if (this->output_image_size_xy!=-1 && this->output_image_size_xy<1) // KT 10122001 appended_xy
+  { warning("output image size xy must be positive (or -1 as default)"); return true; }
+  if (this->output_image_size_z!=-1 && this->output_image_size_z<1) // KT 10122001 new
+  { warning("output image size z must be positive (or -1 as default)"); return true; }
+
 
   if (this->additive_projection_data_filename != "0")
     {
-      info(format("Reading additive projdata data {}", this->additive_projection_data_filename));
-      this->additive_proj_data_sptr = ProjData::read_from_file(this->additive_projection_data_filename);
+    cerr << "\nReading additive projdata data "
+         << this->additive_projection_data_filename 
+         << endl;
+    this->additive_proj_data_sptr = 
+      ProjData::read_from_file(this->additive_projection_data_filename);
     };
 
   // read time frame def
@@ -226,9 +253,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing(
 #else
   // check caching enabled value
   if (this->distributed_cache_enabled == true)
-    info("Will use distributed caching!");
-  else
-    info("Distributed caching is disabled. Will use standard distributed version without forced caching!");
+     cerr<<"\nWill use distributed caching!"<<endl;
+   else cerr<<"\nDistributed caching is disabled. Will use standard distributed version without forced caching!"<<endl;
 
 #  ifndef NDEBUG
   // check tests enabled value
@@ -249,7 +275,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing(
   // check timing values
   if (this->message_timings_enabled == true)
     {
-      info("Will print timings of MPI-Messages! This is used to find bottlenecks!");
+       cerr<<"\nWill print timings of MPI-Messages! This is used to find bottlenecks!"<<endl;
       distributed::test_send_receive_times = true;
     }
   // set timing threshold
@@ -257,8 +283,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing(
 
   if (this->rpc_timings_enabled == true)
     {
-      info("Will print run-times of processing RPC_process_related_viewgrams_gradient for every slave! This will give an idea of "
-           "the parallelization effect!");
+       cerr<<"\nWill print run-times of processing RPC_process_related_viewgrams_gradient for every slave! This will give an idea of the parallelization effect!"<<endl;
       distributed::rpc_time = true;
     }
 
@@ -269,22 +294,34 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing(
 }
 
 template <typename TargetT>
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::PoissonLogLikelihoodWithLinearModelForMeanAndProjData()
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData()
 {
   this->set_defaults();
 }
 
 template <typename TargetT>
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::~PoissonLogLikelihoodWithLinearModelForMeanAndProjData()
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+~PoissonLogLikelihoodWithLinearModelForMeanAndProjData()
 {
   end_distributable_computation();
 }
 
 template <typename TargetT>
 TargetT*
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::construct_target_ptr() const
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+construct_target_ptr() const
 {
-  return target_parameter_parser.create(this->get_input_data());
+  return
+      new VoxelsOnCartesianGrid<float> (*this->proj_data_sptr->get_proj_data_info_ptr(),
+                                        static_cast<float>(this->zoom),
+                                        CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
+                                                                     static_cast<float>(this->Yoffset),
+                                                                     static_cast<float>(this->Xoffset)),
+                                        CartesianCoordinate3D<int>(this->output_image_size_z,
+                                                                   this->output_image_size_xy,
+                                                                   this->output_image_size_xy)
+                                       );
 }
 
 /***************************************************************
@@ -292,94 +329,76 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::construct_target
 ***************************************************************/
 template <typename TargetT>
 const ProjData&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_proj_data() const
-{
-  return *this->proj_data_sptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_proj_data() const
+{ return *this->proj_data_sptr; }
 
 template <typename TargetT>
 const shared_ptr<ProjData>&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_proj_data_sptr() const
-{
-  return this->proj_data_sptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_proj_data_sptr() const
+{ return this->proj_data_sptr; }
 
 template <typename TargetT>
 const int
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_max_segment_num_to_process() const
-{
-  return this->max_segment_num_to_process;
-}
-
-template <typename TargetT>
-const int
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_max_timing_pos_num_to_process() const
-{
-  return this->max_timing_pos_num_to_process;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_max_segment_num_to_process() const
+{ return this->max_segment_num_to_process; }
 
 template <typename TargetT>
 const bool
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_zero_seg0_end_planes() const
-{
-  return this->zero_seg0_end_planes;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_zero_seg0_end_planes() const
+{ return this->zero_seg0_end_planes; }
 
 template <typename TargetT>
 const ProjData&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_additive_proj_data() const
-{
-  return *this->additive_proj_data_sptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_additive_proj_data() const
+{ return *this->additive_proj_data_sptr; }
 
 template <typename TargetT>
 const shared_ptr<ProjData>&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_additive_proj_data_sptr() const
-{
-  return this->additive_proj_data_sptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_additive_proj_data_sptr() const
+{ return this->additive_proj_data_sptr; }
 
 template <typename TargetT>
 const ProjectorByBinPair&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_projector_pair() const
-{
-  return *this->projector_pair_ptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_projector_pair() const
+{ return *this->projector_pair_ptr; }
 
 template <typename TargetT>
 const shared_ptr<ProjectorByBinPair>&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_projector_pair_sptr() const
-{
-  return this->projector_pair_ptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_projector_pair_sptr() const
+{ return this->projector_pair_ptr; }
 
 template <typename TargetT>
 const int
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_time_frame_num() const
-{
-  return this->frame_num;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_time_frame_num() const
+{ return this->frame_num; }
 
 template <typename TargetT>
 const TimeFrameDefinitions&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_time_frame_definitions() const
-{
-  return this->frame_defs;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_time_frame_definitions() const
+{ return this->frame_defs; }
 
 template <typename TargetT>
 const BinNormalisation&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_normalisation() const
-{
-  return *this->normalisation_sptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_normalisation() const
+{ return *this->normalisation_sptr; }
 
 template <typename TargetT>
 const shared_ptr<BinNormalisation>&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_normalisation_sptr() const
-{
-  return this->normalisation_sptr;
-}
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_normalisation_sptr() const
+{ return this->normalisation_sptr; }
+
 
 /***************************************************************
   set_ functions
@@ -387,98 +406,78 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_normalisatio
 
 template <typename TargetT>
 int
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_num_subsets(const int new_num_subsets)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_num_subsets(const int new_num_subsets)
 {
-  this->already_set_up = this->already_set_up && (this->num_subsets == new_num_subsets);
   this->num_subsets = std::max(new_num_subsets, 1);
   return this->num_subsets;
+
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_proj_data_sptr(const shared_ptr<ProjData>& arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_proj_data_sptr(const shared_ptr<ProjData>& arg)
 {
-  this->already_set_up = false;
   this->proj_data_sptr = arg;
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_max_segment_num_to_process(const int arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_max_segment_num_to_process(const int arg)
 {
-  this->already_set_up = this->already_set_up && (this->max_segment_num_to_process == arg);
   this->max_segment_num_to_process = arg;
+
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_max_timing_pos_num_to_process(const int arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_zero_seg0_end_planes(const bool arg)
 {
-  this->already_set_up = this->already_set_up && (this->max_timing_pos_num_to_process == arg);
-  this->max_timing_pos_num_to_process = arg;
-}
-
-template <typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_zero_seg0_end_planes(const bool arg)
-{
-  this->already_set_up = this->already_set_up && (this->zero_seg0_end_planes == arg);
   this->zero_seg0_end_planes = arg;
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_additive_proj_data_sptr(const shared_ptr<ExamData>& arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ProjData>& arg)
 {
-  this->already_set_up = false;
-  this->additive_proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
+
+  this->additive_proj_data_sptr = arg;
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>& arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>& arg) 
 {
-  this->already_set_up = false;
   this->projector_pair_ptr = arg;
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_frame_num(const int arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_frame_num(const int arg)
 {
-  this->already_set_up = this->already_set_up && (this->frame_num == arg);
   this->frame_num = arg;
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_frame_definitions(const TimeFrameDefinitions& arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_frame_definitions(const TimeFrameDefinitions& arg)
 {
-  this->already_set_up = this->already_set_up && (this->frame_defs == arg);
   this->frame_defs = arg;
 }
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 {
-  this->already_set_up = false;
   this->normalisation_sptr = arg;
-}
-
-template <typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_input_data(const shared_ptr<ExamData>& arg)
-{
-  this->already_set_up = false;
-  this->proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
-}
-
-template <typename TargetT>
-const ProjData&
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_input_data() const
-{
-  return *this->proj_data_sptr;
 }
 
 /***************************************************************
@@ -487,18 +486,20 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_input_data()
 
 template <typename TargetT>
 bool
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_subsets_are_approximately_balanced(
-    std::string& warning_message) const
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {
   assert(this->num_subsets > 0);
-  const DataSymmetriesForViewSegmentNumbers& symmetries
-      = *this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used();
+  const DataSymmetriesForViewSegmentNumbers& symmetries =
+    *this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used();
 
   Array<1, int> num_vs_in_subset(this->num_subsets);
   num_vs_in_subset.fill(0);
   for (int subset_num = 0; subset_num < this->num_subsets; ++subset_num)
     {
-      for (int segment_num = -this->max_segment_num_to_process; segment_num <= this->max_segment_num_to_process; ++segment_num)
+      for (int segment_num = -this->max_segment_num_to_process; 
+           segment_num <= this->max_segment_num_to_process; 
+           ++segment_num)
         for (int view_num = this->proj_data_sptr->get_min_view_num() + subset_num;
              view_num <= this->proj_data_sptr->get_max_view_num();
              view_num += this->num_subsets)
@@ -506,7 +507,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_subsets_a
             const ViewSegmentNumbers view_segment_num(view_num, segment_num);
             if (!symmetries.is_basic(view_segment_num))
               continue;
-            num_vs_in_subset[subset_num] += symmetries.num_related_view_segment_numbers(view_segment_num);
+            num_vs_in_subset[subset_num] +=
+              symmetries.num_related_view_segment_numbers(view_segment_num);
           }
     }
   for (int subset_num = 1; subset_num < this->num_subsets; ++subset_num)
@@ -519,8 +521,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_subsets_a
               << num_vs_in_subset
               << "\nEither reduce the number of symmetries used by the projector, or\n"
                  "change the number of subsets. It usually should be a divisor of\n"
-              << this->proj_data_sptr->get_num_views() << "/4 (or if that's not an integer, a divisor of "
-              << this->proj_data_sptr->get_num_views() << "/2 or " << this->proj_data_sptr->get_num_views() << ").\n";
+              << this->proj_data_sptr->get_num_views()
+              << "/4 (or if that's not an integer, a divisor of "
+              << this->proj_data_sptr->get_num_views()
+              << "/2 or "
+              << this->proj_data_sptr->get_num_views() 
+	      << ").\n";
           warning_message = str.str();
           return false;
         }
@@ -528,85 +534,42 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_subsets_a
   return true;
 }
 
-template <typename TargetT>
-bool
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::sensitivity_uses_same_projector() const
-{
-  return !this->proj_data_sptr->get_proj_data_info_sptr()->is_tof_data() || this->use_tofsens;
-}
-
 /***************************************************************
   set_up()
 ***************************************************************/
 template <typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::ensure_norm_is_set_up(bool for_original_data) const
-{
-
-  for_original_data = for_original_data || this->sensitivity_uses_same_projector();
-  if (for_original_data)
-    {
-      if (!this->norm_already_setup || !this->latest_setup_norm_was_with_orig_data)
-        {
-          if (this->normalisation_sptr->set_up(proj_data_sptr->get_exam_info_sptr(),
-                                               this->proj_data_sptr->get_proj_data_info_sptr())
-              == Succeeded::no)
-            error("Set_up of norm with original data failed.");
-        }
-    }
-  else
-    {
-      if (!this->norm_already_setup || this->latest_setup_norm_was_with_orig_data)
-        {
-          if (this->normalisation_sptr->set_up(proj_data_sptr->get_exam_info_sptr(), this->sens_proj_data_info_sptr)
-              == Succeeded::no)
-            error("Set_up of norm with non-TOF data failed.\n"
-                  "If your norm is TOF, set \"use time-of-flight sensitivities\" to true.");
-        }
-    }
-  this->norm_already_setup = true;
-  this->latest_setup_norm_was_with_orig_data = for_original_data;
-}
-
-template <typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::ensure_norm_is_set_up_for_sensitivity() const
-{
-  this->ensure_norm_is_set_up(false);
-}
-
-template <typename TargetT>
 Succeeded
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_sensitivity(
-    shared_ptr<const TargetT> const& target_sptr)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 {
-  if (is_null_ptr(this->proj_data_sptr))
-    error("you need to set the input data before calling set_up");
-
   if (this->max_segment_num_to_process == -1)
-    this->max_segment_num_to_process = this->proj_data_sptr->get_max_segment_num();
+    this->max_segment_num_to_process =
+      this->proj_data_sptr->get_max_segment_num();
 
   if (this->max_segment_num_to_process > this->proj_data_sptr->get_max_segment_num())
     {
-      error("max_segment_num_to_process (%d) is too large", this->max_segment_num_to_process);
+      warning("max_segment_num_to_process (%d) is too large",
+              this->max_segment_num_to_process); 
       return Succeeded::no;
     }
 
-  this->max_timing_pos_num_to_process = this->proj_data_sptr->get_max_tof_pos_num();
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_ptr()->clone());
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_sptr()->clone());
-
-#if 0
-  // KT 4/3/2017 disabled this. It isn't necessary and resolves modyfing the projectors in unexpected ways.
   proj_data_info_sptr->
     reduce_segment_range(-this->max_segment_num_to_process,
                          +this->max_segment_num_to_process);
-#endif
+  
   if (is_null_ptr(this->projector_pair_ptr))
-    {
-      error("You need to specify a projector pair");
-      return Succeeded::no;
-    }
+    { warning("You need to specify a projector pair"); return Succeeded::no; }
+
+  // set projectors to be used for the calculations
+
+  setup_distributable_computation(this->projector_pair_ptr,
+                                  this->proj_data_sptr->get_exam_info_sptr(),
+                                  this->proj_data_sptr->get_proj_data_info_ptr(),
+                                  target_sptr,
+                                  zero_seg0_end_planes,
+                                  distributed_cache_enabled);
 
 #ifdef STIR_MPI
   // set up distributed caching object
@@ -614,71 +577,38 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
     {
       this->caching_info_ptr = new DistributedCachingInformation(distributed::num_processors);
     }
-  else
-    caching_info_ptr = NULL;
+  else caching_info_ptr = NULL;
 #else
   // non parallel version
   caching_info_ptr = NULL;
 #endif
 
-  this->projector_pair_ptr->set_up(proj_data_info_sptr, target_sptr);
+  this->projector_pair_ptr->set_up(proj_data_info_sptr, 
+                                   target_sptr);
 
   // TODO check compatibility between symmetries for forward and backprojector
-  this->symmetries_sptr.reset(this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
+  this->symmetries_sptr.reset(
+			      this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
 
-  // we postpone calling setup_distributable_computation until we know which projectors we will use
-  this->distributable_computation_already_setup = false;
-  // similar for norm
-  this->norm_already_setup = false;
-
-  if (this->get_recompute_sensitivity())
-    {
       if (is_null_ptr(this->normalisation_sptr))
         {
-          error("Invalid normalisation object");
+    warning("Invalid normalisation object");
           return Succeeded::no;
         }
 
-      if (!this->use_tofsens && proj_data_info_sptr->is_tof_data() && normalisation_sptr->is_TOF_only_norm())
-        {
-          info("Detected TOF normalisation data, so using time-of-flight sensitivities");
-          this->use_tofsens = true;
-        }
-
-      if (this->sensitivity_uses_same_projector())
-        {
-          this->sens_backprojector_sptr = projector_pair_ptr->get_back_projector_sptr();
-          this->sens_symmetries_sptr = this->symmetries_sptr;
-          this->sens_proj_data_info_sptr = proj_data_info_sptr;
-        }
-      else
-        {
-          // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-          auto pdi_non_tof_sptr = proj_data_info_sptr->create_non_tof_clone();
-          this->sens_proj_data_info_sptr = pdi_non_tof_sptr;
-          this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
-          if (auto sens_bp_pm_sptr
-              = std::dynamic_pointer_cast<BackProjectorByBinUsingProjMatrixByBin>(this->sens_backprojector_sptr))
-            {
-              // There is no point caching the projection matrix as we will use it only once
-              // Furthermore, disabling the cache will mean less memory used
-              // (and we don't have to release it)
-              sens_bp_pm_sptr->get_proj_matrix_sptr()->enable_cache(false);
-            }
-          this->sens_backprojector_sptr->set_up(pdi_non_tof_sptr, target_sptr);
-          this->sens_symmetries_sptr.reset(this->sens_backprojector_sptr->get_symmetries_used()->clone());
-        }
-    }
+  if (this->normalisation_sptr->set_up(proj_data_info_sptr) == Succeeded::no)
+    return Succeeded::no;
 
   if (frame_num <= 0)
     {
-      error("frame_num should be >= 1");
+      warning("frame_num should be >= 1");
       return Succeeded::no;
     }
 
   if (static_cast<unsigned>(frame_num) > frame_defs.get_num_frames())
     {
-      error("frame_num is %d, but should be less than the number of frames %d.", frame_num, frame_defs.get_num_frames());
+      warning("frame_num is %d, but should be less than the number of frames %d.",
+              frame_num, frame_defs.get_num_frames());
       return Succeeded::no;
     }
 
@@ -691,29 +621,13 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_subset_gradient_without_penalty(
-    TargetT& gradient, const TargetT& current_estimate, const int subset_num, const bool add_sensitivity)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
+                                                      const TargetT &current_estimate, 
+                                                      const int subset_num)
 {
   assert(subset_num >= 0);
   assert(subset_num < this->num_subsets);
-
-  if (!this->distributable_computation_already_setup || !this->latest_setup_distributable_computation_was_with_orig_projectors)
-    {
-      // set TOF projectors to be used for the calculations
-      setup_distributable_computation(this->projector_pair_ptr,
-                                      this->proj_data_sptr->get_exam_info_sptr(),
-                                      this->proj_data_sptr->get_proj_data_info_sptr(),
-                                      std::shared_ptr<TargetT>(gradient.clone()),
-                                      zero_seg0_end_planes,
-                                      distributed_cache_enabled);
-      this->distributable_computation_already_setup = true;
-      this->latest_setup_distributable_computation_was_with_orig_projectors = true;
-    }
-  if (!this->distributable_computation_already_setup)
-    error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData internal error: setup_distributable_computation not called "
-          "(gradient calculation)");
-  if (!add_sensitivity)
-    this->ensure_norm_is_set_up();
   distributable_compute_gradient(this->projector_pair_ptr->get_forward_projector_sptr(),
                                  this->projector_pair_ptr->get_back_projector_sptr(),
                                  this->symmetries_sptr,
@@ -726,36 +640,20 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_s
                                  this->max_segment_num_to_process,
                                  this->zero_seg0_end_planes != 0,
                                  NULL,
-                                 this->additive_proj_data_sptr,
-                                 this->normalisation_sptr,
-                                 caching_info_ptr,
-                                 -this->max_timing_pos_num_to_process,
-                                 this->max_timing_pos_num_to_process,
-                                 add_sensitivity);
+                                 this->additive_proj_data_sptr 
+                                 , caching_info_ptr
+                                 );
+  
+
 }
+
 
 template <typename TargetT>
 double
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_objective_function_without_penalty(
-    const TargetT& current_estimate, const int subset_num)
-{
-  if (this->distributable_computation_already_setup || !this->latest_setup_distributable_computation_was_with_orig_projectors)
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
+                                                  const int subset_num)
     {
-      // set TOF projectors to be used for the calculations
-      setup_distributable_computation(this->projector_pair_ptr,
-                                      this->proj_data_sptr->get_exam_info_sptr(),
-                                      this->proj_data_sptr->get_proj_data_info_sptr(),
-                                      std::shared_ptr<TargetT>(current_estimate.clone()),
-                                      zero_seg0_end_planes,
-                                      distributed_cache_enabled);
-      this->distributable_computation_already_setup = true;
-      this->latest_setup_distributable_computation_was_with_orig_projectors = true;
-    }
-  if (!this->distributable_computation_already_setup)
-    error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData internal error: setup_distributable_computation not called "
-          "(function calculation)");
-  this->ensure_norm_is_set_up();
-
   double accum = 0.;
 
   distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(),
@@ -763,19 +661,17 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_o
                                          this->symmetries_sptr,
                                          current_estimate,
                                          this->proj_data_sptr,
-                                         subset_num,
-                                         this->get_num_subsets(),
+                                         subset_num, this->get_num_subsets(),
                                          -this->max_segment_num_to_process,
                                          this->max_segment_num_to_process,
-                                         this->zero_seg0_end_planes != 0,
-                                         &accum,
+                                         this->zero_seg0_end_planes != 0, &accum,
                                          this->additive_proj_data_sptr,
                                          this->normalisation_sptr,
                                          this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                          this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
-                                         this->caching_info_ptr,
-                                         -this->max_timing_pos_num_to_process,
-                                         this->max_timing_pos_num_to_process);
+                                         this->caching_info_ptr
+                                         );
+                
 
   return accum;
 }
@@ -789,16 +685,14 @@ sum_projection_data() const
   
   float counts=0.0F;
   
-  for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; ++segment_num)
-  {
-	  for (int timing_pos_num = -max_timing_pos_num_to_process; timing_pos_num <= max_timing_pos_num_to_process; ++timing_pos_num)
+  for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; segment_num++)
 	  {
 		for (int view_num = proj_data_sptr->get_min_view_num();
 			 view_num <= proj_data_sptr->get_max_view_num();
 			 ++view_num)
 		{
 
-		  Viewgram<float>  viewgram=proj_data_sptr->get_viewgram(view_num,segment_num,false,timing_pos_num);
+      Viewgram<float>  viewgram=proj_data_sptr->get_viewgram(view_num,segment_num);
 
 		  //first adjust data
 
@@ -815,7 +709,6 @@ sum_projection_data() const
 		  counts+=viewgram.sum();
 		}
 	  }
-  }
   
   return counts;
   
@@ -825,144 +718,79 @@ sum_projection_data() const
 
 template <typename TargetT>
 void
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::add_subset_sensitivity(TargetT& sensitivity,
-                                                                                       const int subset_num) const
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
   const int min_segment_num = -this->max_segment_num_to_process;
   const int max_segment_num = this->max_segment_num_to_process;
 
-  shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
+  // warning: has to be same as subset scheme used as in distributable_computation
+  for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+  {
+        //CPUTimer timer;
+        //timer.start();
 
-  if (this->sensitivity_uses_same_projector()
-      && (!this->distributable_computation_already_setup
-          || !this->latest_setup_distributable_computation_was_with_orig_projectors))
+    for (int view = this->proj_data_sptr->get_min_view_num() + subset_num; 
+        view <= this->proj_data_sptr->get_max_view_num(); 
+        view += this->num_subsets)
     {
-      // set original (which could be TOF) projectors to be used for the calculations
-      setup_distributable_computation(this->projector_pair_ptr,
-                                      this->proj_data_sptr->get_exam_info_sptr(),
-                                      this->sens_proj_data_info_sptr,
-                                      std::shared_ptr<TargetT>(sensitivity.clone()),
-                                      zero_seg0_end_planes,
-                                      distributed_cache_enabled);
-      this->distributable_computation_already_setup = true;
-      this->latest_setup_distributable_computation_was_with_orig_projectors = true;
+      const ViewSegmentNumbers view_segment_num(view, segment_num);
+
+      if (!symmetries_sptr->is_basic(view_segment_num))
+        continue;
+      this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
     }
-  else if (!this->sensitivity_uses_same_projector()
-           && (!this->distributable_computation_already_setup
-               || this->latest_setup_distributable_computation_was_with_orig_projectors))
-    {
-      // set non-TOF projector to be used for the calculations
-      shared_ptr<ForwardProjectorByBin> dummy_sptr;
-      auto sens_projector_pair_sptr
-          = std::make_shared<ProjectorByBinPairUsingSeparateProjectors>(dummy_sptr, this->sens_backprojector_sptr);
-
-      setup_distributable_computation(sens_projector_pair_sptr,
-                                      this->proj_data_sptr->get_exam_info_sptr(),
-                                      this->sens_proj_data_info_sptr,
-                                      std::shared_ptr<TargetT>(sensitivity.clone()),
-                                      zero_seg0_end_planes,
-                                      distributed_cache_enabled);
-      this->distributable_computation_already_setup = true;
-      this->latest_setup_distributable_computation_was_with_orig_projectors = false;
-    }
-  if (!this->distributable_computation_already_setup)
-    error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData internal error: setup_distributable_computation not called "
-          "(sensitivity calculation)");
-
-  this->ensure_norm_is_set_up_for_sensitivity();
-
-  // Even though we won't use the data, distributable_computation currently needs
-  // a valid proj_data as argument, to create the viewgrams from.
-  // Its content is irrelevant though.
-  // When using normal projectors, we will therefore use the existing proj_data_sptr.
-  // Otherwise, we create an object in memory (this is wasteful, but it is normally not very big, as it's non-TOF).
-  // TODO: create a "template" instead.
-  shared_ptr<ProjData> sens_proj_data_sptr = this->sensitivity_uses_same_projector()
-                                                 ? this->proj_data_sptr
-                                                 : std::make_shared<ProjDataInMemory>(this->proj_data_sptr->get_exam_info_sptr(),
-                                                                                      this->sens_proj_data_info_sptr,
-                                                                                      /* initialise_with_0 = */ false);
-
-  distributable_sensitivity_computation(this->sens_backprojector_sptr,
-                                        this->sens_symmetries_sptr,
-                                        *sensitivity_this_subset_sptr,
-                                        sensitivity,
-                                        sens_proj_data_sptr,
-                                        subset_num,
-                                        this->num_subsets,
-                                        min_segment_num,
-                                        max_segment_num,
-                                        this->zero_seg0_end_planes != 0,
-                                        NULL,
-                                        this->additive_proj_data_sptr,
-                                        this->normalisation_sptr,
-                                        this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
-                                        this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
-                                        this->caching_info_ptr,
-                                        use_tofsens ? -this->max_timing_pos_num_to_process : 0,
-                                        use_tofsens ? this->max_timing_pos_num_to_process : 0);
-
-  std::transform(sensitivity.begin_all(),
-                 sensitivity.end_all(),
-                 sensitivity_this_subset_sptr->begin_all(),
-                 sensitivity.begin_all(),
-                 std::plus<typename TargetT::full_value_type>());
+      //    cerr<<timer.value()<<endl;
 }
+}
+
 
 template <typename TargetT>
-std::unique_ptr<ExamInfo>
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_exam_info_uptr_for_target() const
-{
-  auto exam_info_uptr = this->get_exam_info_uptr_for_target();
-  if (auto norm_ptr = dynamic_cast<BinNormalisationWithCalibration const* const>(get_normalisation_sptr().get()))
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
     {
-      exam_info_uptr->set_calibration_factor(norm_ptr->get_calibration_factor());
-      // somehow tell the image that it's calibrated
+  RelatedViewgrams<float> viewgrams = 
+    this->proj_data_sptr->get_empty_related_viewgrams(view_seg_nums,
+                                                      this->symmetries_sptr);
+  viewgrams.fill(1.F);
+  // find efficiencies
+  {      
+    const double start_frame = this->frame_defs.get_start_time(this->frame_num);
+    const double end_frame = this->frame_defs.get_end_time(this->frame_num);
+    this->normalisation_sptr->undo(viewgrams,start_frame,end_frame);
     }
-  else
+  // backproject
     {
-      exam_info_uptr->set_calibration_factor(-1.F);
-      // somehow tell the image that it's not calibrated
-    }
-  return exam_info_uptr;
+    const int range_to_zero =
+      view_seg_nums.segment_num() == 0 && this->zero_seg0_end_planes
+      ? 1 : 0;
+    const int min_ax_pos_num = 
+      viewgrams.get_min_axial_pos_num() + range_to_zero;
+    const int max_ax_pos_num = 
+       viewgrams.get_max_axial_pos_num() - range_to_zero;
+
+    this->projector_pair_ptr->get_back_projector_sptr()->
+      back_project(sensitivity, viewgrams,
+                   min_ax_pos_num, max_ax_pos_num);
 }
 
-static std::vector<ViewgramIndices>
-find_basic_viewgram_indices_in_subset(const ProjDataInfo& proj_data_info,
-                                      const DataSymmetriesForViewSegmentNumbers& symmetries,
-                                      const int min_segment_num,
-                                      const int max_segment_num,
-                                      const int subset_num,
-                                      const int num_subsets)
-{
-  const std::vector<ViewSegmentNumbers> vs_nums_to_process = detail::find_basic_vs_nums_in_subset(
-      proj_data_info, symmetries, min_segment_num, max_segment_num, subset_num, num_subsets);
-
-  std::vector<ViewgramIndices> vg_idx_to_process;
-  for (auto vs_num : vs_nums_to_process)
-    {
-      for (int k = proj_data_info.get_min_tof_pos_num(); k <= proj_data_info.get_max_tof_pos_num(); ++k)
-        {
-          ViewgramIndices viewgram_idx = vs_num;
-          viewgram_idx.timing_pos_num() = k;
-          vg_idx_to_process.push_back(viewgram_idx);
-        }
-    }
-  return vg_idx_to_process;
 }
+
 
 template <typename TargetT>
 Succeeded
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
-    TargetT>::actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                                      const TargetT& input,
                                                                                      const int subset_num) const
 {
   {
-    std::string explanation;
-    if (!input.has_same_characteristics(this->get_sensitivity(), explanation))
+    string explanation;
+    if (!input.has_same_characteristics(this->get_sensitivity(), 
+                                        explanation))
       {
-        error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+        warning("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
               "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
               "should have the same characteristics.\n%s",
               explanation.c_str());
@@ -970,68 +798,44 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
       }
   }
 
-  this->ensure_norm_is_set_up();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
+    this->get_projector_pair().get_symmetries_used()->clone());
 
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(this->get_projector_pair().get_symmetries_used()->clone());
+  const double start_time =
+    this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
+  const double end_time =
+    this->get_time_frame_definitions().get_end_time(this->get_time_frame_num());
 
-  this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
-  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
+  for (int segment_num = -this->get_max_segment_num_to_process();
+       segment_num<= this->get_max_segment_num_to_process();
+       ++segment_num) 
+    {      
+      for (int view = this->get_proj_data().get_min_view_num() + subset_num; 
+           view <= this->get_proj_data().get_max_view_num(); 
+           view += this->num_subsets)
+        {
+          const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-  const std::vector<ViewgramIndices> vg_idx_to_process
-      = find_basic_viewgram_indices_in_subset(*this->get_proj_data().get_proj_data_info_sptr(),
-                                              *symmetries_sptr,
-                                              -this->get_max_segment_num_to_process(),
-                                              this->get_max_segment_num_to_process(),
-                                              subset_num,
-                                              this->get_num_subsets());
+          if (!symmetries_sptr->is_basic(view_segment_num))
+            continue;
 
-  info("Forward projecting input image.", 2);
-  volatile bool any_negatives = false;
-#ifdef STIR_OPENMP
-#  pragma omp parallel for schedule(dynamic)
-#endif
-  // note: older versions of openmp need an int as loop
-  for (int i = 0; i < static_cast<int>(vg_idx_to_process.size()); ++i)
-    {
-      if (any_negatives)
-        continue; // early exit as we'll throw error outside of the parallel for
-      const auto viewgram_idx = vg_idx_to_process[i];
-      {
-#ifdef STIR_OPENMP
-        const int thread_num = omp_get_thread_num();
-        const int num_threads = omp_get_num_threads();
-#else
-        const int thread_num = 0;
-        const int num_threads = 1;
-#endif
-        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
-                    thread_num,
-                    num_threads,
-                    viewgram_idx.segment_num(),
-                    viewgram_idx.view_num(),
-                    viewgram_idx.timing_pos_num()),
-             2);
-      }
       // first compute data-term: y*norm^2
-      RelatedViewgrams<float> viewgrams = this->get_proj_data().get_related_viewgrams(viewgram_idx, symmetries_sptr);
+          RelatedViewgrams<float> viewgrams =
+            this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
       // TODO add 1 for 1/(y+1) approximation
 
-      this->get_normalisation().apply(viewgrams);
+          this->get_normalisation().apply(viewgrams, start_time, end_time);
 
       // smooth TODO
 
-      this->get_normalisation().apply(viewgrams);
+          this->get_normalisation().apply(viewgrams, start_time, end_time);
 
       RelatedViewgrams<float> tmp_viewgrams;
       // set tmp_viewgrams to geometric forward projection of input
       {
-        tmp_viewgrams = this->get_proj_data().get_empty_related_viewgrams(viewgram_idx, symmetries_sptr);
-        this->get_projector_pair().get_forward_projector_sptr()->forward_project(tmp_viewgrams);
-        if (tmp_viewgrams.find_min() < 0)
-          {
-            any_negatives = true;
-            continue; // throw error outside of parallel for
-          }
+            tmp_viewgrams = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
+            this->get_projector_pair().get_forward_projector_sptr()->
+              forward_project(tmp_viewgrams, input);
       }
 
       // now divide by the data term
@@ -1041,189 +845,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<
       }
 
       // back-project
-      this->get_projector_pair().get_back_projector_sptr()->back_project(tmp_viewgrams);
-
-    } // end of loop over view/segments
-
-  if (any_negatives)
-    error("PoissonLL add_multiplication_with_approximate_sub_Hessian: forward projection of input contains negatives. The "
-          "result would be incorrect, so we abort.\n"
-          "See https://github.com/UCL/STIR/issues/1461");
-
-  shared_ptr<TargetT> tmp(output.get_empty_copy());
-  this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
-  // output += tmp;
-  std::transform(output.begin_all(),
-                 output.end_all(),
-                 tmp->begin_all(),
-                 output.begin_all(),
-                 std::minus<typename TargetT::full_value_type>());
-
-  return Succeeded::yes;
-}
-
-template <typename TargetT>
-Succeeded
-PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulate_sub_Hessian_times_input_without_penalty(
-    TargetT& output, const TargetT& current_image_estimate, const TargetT& input, const int subset_num) const
-{
-  { // check characteristics
-
-    std::string explanation;
-    if (!output.has_same_characteristics(this->get_sensitivity(), explanation))
-      {
-        error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
-              "sensitivity and output for add_multiplication_with_approximate_Hessian_without_penalty\n"
-              "should have the same characteristics.\n%s",
-              explanation.c_str());
-        return Succeeded::no;
+          this->get_projector_pair().get_back_projector_sptr()->
+            back_project(output, tmp_viewgrams);
       }
 
-    if (!input.has_same_characteristics(this->get_sensitivity(), explanation))
-      {
-        error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
-              "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
-              "should have the same characteristics.\n%s",
-              explanation.c_str());
-        return Succeeded::no;
-      }
-
-    if (!current_image_estimate.has_same_characteristics(this->get_sensitivity(), explanation))
-      {
-        error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
-              "sensitivity and current_image_estimate for add_multiplication_with_approximate_Hessian_without_penalty\n"
-              "should have the same characteristics.\n%s",
-              explanation.c_str());
-        return Succeeded::no;
-      }
-  }
-
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(this->get_projector_pair().get_symmetries_used()->clone());
-
-  this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
-  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
-
-  const std::vector<ViewgramIndices> vg_idx_to_process
-      = find_basic_viewgram_indices_in_subset(*this->get_proj_data().get_proj_data_info_sptr(),
-                                              *symmetries_sptr,
-                                              -this->get_max_segment_num_to_process(),
-                                              this->get_max_segment_num_to_process(),
-                                              subset_num,
-                                              this->get_num_subsets());
-
-  // Create and populate the input_viewgrams_vec with empty values.
-  // This is needed to make the order of the vector correct w.r.t vg_idx_to_process.
-  // OMP may mess this up
-  // Try:  std::vector<RelatedViewgrams<float>> input_viewgrams_vec(vg_idx_to_process.size());
-  std::vector<RelatedViewgrams<float>> input_viewgrams_vec;
-  for (int i = 0; i < static_cast<int>(vg_idx_to_process.size()); ++i)
-    {
-      const auto viewgram_idx = vg_idx_to_process[i];
-      input_viewgrams_vec.push_back(this->get_proj_data().get_empty_related_viewgrams(viewgram_idx, symmetries_sptr));
-    }
-
-  // Forward project input image
-  info("Forward projecting input image.", 2);
-  volatile bool any_negatives = false;
-#ifdef STIR_OPENMP
-#  pragma omp parallel for schedule(dynamic)
-#endif
-  for (int i = 0; i < static_cast<int>(vg_idx_to_process.size()); ++i)
-    { // Loop over each of the viewgrams in input_viewgrams_vec, forward projecting input into them
-      if (any_negatives)
-        continue; // early exit as we'll throw error outside of the parallel for
-
-      const auto viewgram_idx = vg_idx_to_process[i];
-      {
-#ifdef STIR_OPENMP
-        const int thread_num = omp_get_thread_num();
-        const int num_threads = omp_get_num_threads();
-#else
-        const int thread_num = 0;
-        const int num_threads = 1;
-#endif
-        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
-                    thread_num,
-                    num_threads,
-                    viewgram_idx.segment_num(),
-                    viewgram_idx.view_num(),
-                    viewgram_idx.timing_pos_num()),
-             2);
-      }
-      input_viewgrams_vec[i] = this->get_proj_data().get_empty_related_viewgrams(viewgram_idx, symmetries_sptr);
-      this->get_projector_pair().get_forward_projector_sptr()->forward_project(input_viewgrams_vec[i]);
-      if (input_viewgrams_vec[i].find_min() < 0)
-        {
-          any_negatives = true;
-          continue; // throw error outside of parallel for
-        }
-    }
-  if (any_negatives)
-    error("PoissonLL accumulate_sub_Hessian_times_input: forward projection of input contains negatives. The "
-          "result would be incorrect, so we abort.\n"
-          "See https://github.com/UCL/STIR/issues/1461");
-
-  info("Forward projecting current image estimate and back projecting to output.", 2);
-  this->get_projector_pair().get_forward_projector_sptr()->set_input(current_image_estimate);
-#ifdef STIR_OPENMP
-#  pragma omp parallel for schedule(dynamic)
-#endif
-  for (int i = 0; i < static_cast<int>(vg_idx_to_process.size()); ++i)
-    {
-      const auto viewgram_idx = vg_idx_to_process[i];
-      {
-#ifdef STIR_OPENMP
-        const int thread_num = omp_get_thread_num();
-        const int num_threads = omp_get_num_threads();
-#else
-        const int thread_num = 0;
-        const int num_threads = 1;
-#endif
-        info(format("Thread {}/{} calculating segment_num: {}, view_num: {}, TOF: {}",
-                    thread_num,
-                    num_threads,
-                    viewgram_idx.segment_num(),
-                    viewgram_idx.view_num(),
-                    viewgram_idx.timing_pos_num()),
-             2);
-      }
-      // Compute ybar_sq_viewgram = [ F(current_image_est) + additive ]^2
-      RelatedViewgrams<float> ybar_sq_viewgram;
-      {
-        ybar_sq_viewgram = this->get_proj_data().get_empty_related_viewgrams(vg_idx_to_process[i], symmetries_sptr);
-        this->get_projector_pair().get_forward_projector_sptr()->forward_project(ybar_sq_viewgram);
-
-        // add additive sinogram to forward projection
-        if (!(is_null_ptr(this->get_additive_proj_data_sptr())))
-          ybar_sq_viewgram += this->get_additive_proj_data().get_related_viewgrams(vg_idx_to_process[i], symmetries_sptr);
-        // square ybar
-        ybar_sq_viewgram *= ybar_sq_viewgram;
-      }
-
-      // Compute: final_viewgram * F(input) / ybar_sq_viewgram
-      // final_viewgram starts as measured data
-      RelatedViewgrams<float> final_viewgram = this->get_proj_data().get_related_viewgrams(vg_idx_to_process[i], symmetries_sptr);
-      {
-        // Mult input_viewgram
-        final_viewgram *= input_viewgrams_vec[i];
-        int tmp1 = 0, tmp2 = 0; // ignore counters returned by divide_and_truncate
-        // Divide final_viewgeam by ybar_sq_viewgram
-        divide_and_truncate(final_viewgram, ybar_sq_viewgram, 0, tmp1, tmp2);
-      }
-
-      // back-project final_viewgram
-      this->get_projector_pair().get_back_projector_sptr()->back_project(final_viewgram);
-
-    } // end of loop over view/segments
-
-  shared_ptr<TargetT> tmp(output.get_empty_copy());
-  this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
-  // output -= tmp;
-  std::transform(output.begin_all(),
-                 output.end_all(),
-                 tmp->begin_all(),
-                 output.begin_all(),
-                 std::minus<typename TargetT::full_value_type>());
+  } // end of loop over segments
 
   return Succeeded::yes;
 }
@@ -1235,131 +861,75 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_accumulat
 // make call-backs public for the moment
 
 //! Call-back function for compute_gradient
-template <bool add_sensitivity>
-static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
-
-//! Call-back function for sensitivity_computation
-RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;
-
 #else
 //! Call-back function for compute_gradient
-template <bool add_sensitivity>
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
-
-//! Call-back function for sensitivity_computation
-static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;
 #endif
 
-void
-distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                const shared_ptr<BackProjectorByBin>& back_projector_sptr,
                                const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
                                DiscretisedDensity<3, float>& output_image,
                                const DiscretisedDensity<3, float>& input_image,
                                const shared_ptr<ProjData>& proj_dat,
-                               int subset_num,
-                               int num_subsets,
-                               int min_segment,
-                               int max_segment,
+                                    int subset_num, int num_subsets,
+                                    int min_segment, int max_segment,
                                bool zero_seg0_end_planes,
                                double* log_likelihood_ptr,
                                shared_ptr<ProjData> const& additive_binwise_correction,
-                               shared_ptr<BinNormalisation> const& normalisation_sptr,
-                               DistributedCachingInformation* caching_info_ptr,
-                               int min_timing_pos_num,
-                               int max_timing_pos_num,
-                               const bool add_sensitivity)
+                                    DistributedCachingInformation* caching_info_ptr
+                                    )
 {
-  if (add_sensitivity)
-    {
-      // Within the RPC process, only do div/truncate ( backproj[ y/ybar ] )
+        
       distributable_computation(forward_projector_sptr,
                                 back_projector_sptr,
                                 symmetries_sptr,
-                                &output_image,
-                                &input_image,
-                                proj_dat,
-                                true, // i.e. do read projection data
-                                subset_num,
-                                num_subsets,
-                                min_segment,
-                                max_segment,
+                              &output_image, &input_image,
+                              proj_dat, true, //i.e. do read projection data
+                              subset_num, num_subsets,
+                              min_segment, max_segment,
                                 zero_seg0_end_planes,
                                 log_likelihood_ptr,
                                 additive_binwise_correction,
-                                /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(),
-                                0.,
-                                0.,
-                                &RPC_process_related_viewgrams_gradient<true>,
-                                caching_info_ptr,
-                                min_timing_pos_num,
-                                max_timing_pos_num);
-    }
-  else if (!add_sensitivity)
-    {
-      // Within the RPC process, subtract ones before to back projection ( backproj[ y/ybar - eff*1] )
-      distributable_computation(forward_projector_sptr,
-                                back_projector_sptr,
-                                symmetries_sptr,
-                                &output_image,
-                                &input_image,
-                                proj_dat,
-                                true, // i.e. do read projection data
-                                subset_num,
-                                num_subsets,
-                                min_segment,
-                                max_segment,
-                                zero_seg0_end_planes,
-                                log_likelihood_ptr,
-                                additive_binwise_correction,
-                                normalisation_sptr,
-                                0.,
-                                0.,
-                                &RPC_process_related_viewgrams_gradient<false>,
-                                caching_info_ptr,
-                                min_timing_pos_num,
-                                max_timing_pos_num);
-    }
+                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
+                              &RPC_process_related_viewgrams_gradient,
+                              caching_info_ptr
+                              );
 }
 
-void
-distributable_accumulate_loglikelihood(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+
+void distributable_accumulate_loglikelihood(
+                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                        const shared_ptr<BackProjectorByBin>& back_projector_sptr,
                                        const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
                                        const DiscretisedDensity<3, float>& input_image,
                                        const shared_ptr<ProjData>& proj_dat,
-                                       int subset_num,
-                                       int num_subsets,
-                                       int min_segment,
-                                       int max_segment,
+                                            int subset_num, int num_subsets,
+                                            int min_segment, int max_segment,
                                        bool zero_seg0_end_planes,
                                        double* log_likelihood_ptr,
                                        shared_ptr<ProjData> const& additive_binwise_correction,
                                        shared_ptr<BinNormalisation> const& normalisation_sptr,
                                        const double start_time_of_frame,
                                        const double end_time_of_frame,
-                                       DistributedCachingInformation* caching_info_ptr,
-                                       int min_timing_pos_num,
-                                       int max_timing_pos_num)
+                                            DistributedCachingInformation* caching_info_ptr
+                                            )
 
 {
   distributable_computation(forward_projector_sptr,
                             back_projector_sptr,
                             symmetries_sptr,
-                            NULL,
-                            &input_image,
-                            proj_dat,
-                            true, // i.e. do read projection data
-                            subset_num,
-                            num_subsets,
-                            min_segment,
-                            max_segment,
+                                    NULL, &input_image, 
+                                    proj_dat, true, //i.e. do read projection data
+                                    subset_num, num_subsets,
+                                    min_segment, max_segment,
                             zero_seg0_end_planes,
                             log_likelihood_ptr,
                             additive_binwise_correction,
@@ -1367,69 +937,28 @@ distributable_accumulate_loglikelihood(const shared_ptr<ForwardProjectorByBin>& 
                             start_time_of_frame,
                             end_time_of_frame,
                             &RPC_process_related_viewgrams_accumulate_loglikelihood,
-                            caching_info_ptr,
-                            min_timing_pos_num,
-                            max_timing_pos_num);
-}
-
-void
-distributable_sensitivity_computation(const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                      const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
-                                      DiscretisedDensity<3, float>& sensitivity,
-                                      const DiscretisedDensity<3, float>& input_image,
-                                      const shared_ptr<ProjData>& proj_dat,
-                                      int subset_num,
-                                      int num_subsets,
-                                      int min_segment,
-                                      int max_segment,
-                                      bool zero_seg0_end_planes,
-                                      double* log_likelihood_ptr,
-                                      shared_ptr<ProjData> const& additive_binwise_correction,
-                                      shared_ptr<BinNormalisation> const& normalisation_sptr,
-                                      const double start_time_of_frame,
-                                      const double end_time_of_frame,
-                                      DistributedCachingInformation* caching_info_ptr,
-                                      int min_timing_pos_num,
-                                      int max_timing_pos_num)
-
-{
-  distributable_computation(0,
-                            back_projector_sptr,
-                            symmetries_sptr,
-                            &sensitivity,
-                            &input_image,
-                            proj_dat,
-                            false, // i.e. don't read projection data
-                            subset_num,
-                            num_subsets,
-                            min_segment,
-                            max_segment,
-                            zero_seg0_end_planes,
-                            log_likelihood_ptr,
-                            additive_binwise_correction,
-                            normalisation_sptr,
-                            start_time_of_frame,
-                            end_time_of_frame,
-                            &RPC_process_related_viewgrams_sensitivity_computation,
-                            caching_info_ptr,
-                            min_timing_pos_num,
-                            max_timing_pos_num);
+                                    caching_info_ptr
+                                    );
 }
 
 //////////// RPC functions
 
-template <bool add_sensitivity>
-void
-RPC_process_related_viewgrams_gradient(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+
+void RPC_process_related_viewgrams_gradient(
+                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                        const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                            DiscretisedDensity<3,float>* output_image_ptr, 
+                                            const DiscretisedDensity<3,float>* input_image_ptr, 
                                        RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                       int& count,
-                                       int& count2,
-                                       double* log_likelihood_ptr /* = NULL */,
+                                            int& count, int& count2, double* log_likelihood_ptr /* = NULL */,
                                        const RelatedViewgrams<float>* additive_binwise_correction_ptr,
                                        const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {
+  assert(output_image_ptr != NULL);
+  assert(input_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
+  if (!is_null_ptr(mult_viewgrams_ptr))
+    error("Internal error: mult_viewgrams_ptr should be zero when computing gradient");
 
   RelatedViewgrams<float> estimated_viewgrams = measured_viewgrams_ptr->get_empty_copy();
 
@@ -1451,51 +980,47 @@ RPC_process_related_viewgrams_gradient(const shared_ptr<ForwardProjectorByBin>& 
                 }
     }
 */
-  forward_projector_sptr->forward_project(estimated_viewgrams);
+  forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
+        
+        
 
   if (additive_binwise_correction_ptr != NULL)
+  {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
+  }
+  
+
+    
+
+
 
   // for sinogram division
+
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
 
-  // adding the sensitivity:  backproj[y/ybar] *
-  // not adding the sensitivity computes the gradient:  backproj[y/ybar - 1] *
-  // * ignoring normalisation *
-  if (!add_sensitivity)
-    {
-      if (mult_viewgrams_ptr)
-        {
-          // subtract normalised ones from the data [y/ybar - 1/N]
-          *measured_viewgrams_ptr -= *mult_viewgrams_ptr;
-        }
-      else
-        {
-          // No mult_viewgrams_ptr, subtract ones [y/ybar - 1]
-          *measured_viewgrams_ptr -= 1;
-        }
-    }
-
-  // back project
-  back_projector_sptr->back_project(*measured_viewgrams_ptr);
+  back_projector_sptr->back_project(*output_image_ptr, *measured_viewgrams_ptr);
 };
 
-void
-RPC_process_related_viewgrams_accumulate_loglikelihood(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+
+void RPC_process_related_viewgrams_accumulate_loglikelihood(
+                                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                                        const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                                            DiscretisedDensity<3,float>* output_image_ptr,
+                                                            const DiscretisedDensity<3,float>* input_image_ptr, 
                                                        RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                                       int& count,
-                                                       int& count2,
-                                                       double* log_likelihood_ptr,
+                                                            int& count, int& count2, double* log_likelihood_ptr,
                                                        const RelatedViewgrams<float>* additive_binwise_correction_ptr,
                                                        const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {
+
+  assert(output_image_ptr == NULL);
+  assert(input_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
   assert(log_likelihood_ptr != NULL);
 
   RelatedViewgrams<float> estimated_viewgrams = measured_viewgrams_ptr->get_empty_copy();
 
-  forward_projector_sptr->forward_project(estimated_viewgrams);
+  forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
 
   if (additive_binwise_correction_ptr != NULL)
     {
@@ -1507,36 +1032,19 @@ RPC_process_related_viewgrams_accumulate_loglikelihood(const shared_ptr<ForwardP
       estimated_viewgrams *= (*mult_viewgrams_ptr);
     }
 
-  RelatedViewgrams<float>::iterator meas_viewgrams_iter = measured_viewgrams_ptr->begin();
-  RelatedViewgrams<float>::const_iterator est_viewgrams_iter = estimated_viewgrams.begin();
+  RelatedViewgrams<float>::iterator meas_viewgrams_iter = 
+          measured_viewgrams_ptr->begin();
+  RelatedViewgrams<float>::const_iterator est_viewgrams_iter = 
+          estimated_viewgrams.begin();
   // call function that does the actual work, it sits in recon_array_funtions.cxx (TODO)
-  for (; meas_viewgrams_iter != measured_viewgrams_ptr->end(); ++meas_viewgrams_iter, ++est_viewgrams_iter)
-    accumulate_loglikelihood(*meas_viewgrams_iter, *est_viewgrams_iter, rim_truncation_sino, log_likelihood_ptr);
+  for (;
+       meas_viewgrams_iter != measured_viewgrams_ptr->end();
+       ++meas_viewgrams_iter, ++est_viewgrams_iter)
+    accumulate_loglikelihood(*meas_viewgrams_iter, 
+                             *est_viewgrams_iter, 
+                             rim_truncation_sino, log_likelihood_ptr);
 };
 
-void
-RPC_process_related_viewgrams_sensitivity_computation(
-    const shared_ptr<ForwardProjectorByBin>&, // unused
-    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-    RelatedViewgrams<float>* template_viewgrams_ptr,
-    int&,                                                               // unused
-    int&,                                                               // unused
-    double*,                                                            // unused
-    const RelatedViewgrams<float>* /*additive_binwise_correction_ptr*/, // unused
-    const RelatedViewgrams<float>* mult_viewgrams_ptr)
-{
-  assert(template_viewgrams_ptr != NULL);
-
-  if (mult_viewgrams_ptr)
-    {
-      back_projector_sptr->back_project(*mult_viewgrams_ptr);
-    }
-  else
-    {
-      template_viewgrams_ptr->fill(1.F);
-      back_projector_sptr->back_project(*template_viewgrams_ptr);
-    }
-}
 
 #ifdef _MSC_VER
 // prevent warning message on instantiation of abstract class

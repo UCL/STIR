@@ -16,7 +16,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -62,8 +70,8 @@ namespace detail
 
 // defined in .cxx
 template <class Value>
-void linear_regression_compute_fit_from_S(Value& constant,
-                                          Value& scale,
+void 
+linear_regression_compute_fit_from_S(Value& constant, Value& scale,
                                           Value& chi_square,
                                           Value& variance_of_constant,
                                           Value& variance_of_scale,
@@ -75,7 +83,8 @@ void linear_regression_compute_fit_from_S(Value& constant,
                                           const double Stt,
                                           const double Sty,
                                           const std::size_t data_size,
-                                          const bool use_estimated_variance);
+                                     const bool use_estimated_variance
+                                     );
 
 template <class DataIter, class CoordinatesIter, class WeightsIter>
 inline void
@@ -85,8 +94,7 @@ linear_regression_compute_S(double& S,
                             double& Syy,
                             double& Stt,
                             double& Sty,
-                            const DataIter data_begin,
-                            const DataIter data_end,
+                            const DataIter data_begin, const DataIter data_end,
                             const CoordinatesIter coords_begin,
                             const WeightsIter weights_begin)
 {
@@ -119,14 +127,12 @@ linear_regression_compute_S(double& S,
 
 template <class Value, class DataIter, class CoordinatesIter, class WeightsIter>
 inline void
-linear_regression(Value& constant,
-                  Value& scale,
+linear_regression(Value& constant, Value& scale,
                   Value& chi_square,
                   Value& variance_of_constant,
                   Value& variance_of_scale,
                   Value& covariance_of_constant_with_scale,
-                  DataIter data_begin,
-                  DataIter data_end,
+                  DataIter data_begin, DataIter data_end,
                   CoordinatesIter coords_begin,
                   WeightsIter weights_begin,
                   const bool use_estimated_variance)
@@ -138,28 +144,25 @@ linear_regression(Value& constant,
   double Stt = 0;
   double Sty = 0;
 
-  detail::linear_regression_compute_S(S, Sx, Sy, Syy, Stt, Sty, data_begin, data_end, coords_begin, weights_begin);
+  detail::linear_regression_compute_S(S,Sx,Sy, Syy, Stt, Sty,
+                                      data_begin,  data_end,
+                                      coords_begin, 
+                                      weights_begin);
 
-  detail::linear_regression_compute_fit_from_S(constant,
-                                               scale,
+  detail::linear_regression_compute_fit_from_S(constant, scale,
                                                chi_square,
                                                variance_of_constant,
                                                variance_of_scale,
                                                covariance_of_constant_with_scale,
-                                               S,
-                                               Sx,
-                                               Sy,
-                                               Syy,
-                                               Stt,
-                                               Sty,
+                                               S,Sx,Sy, Syy, Stt, Sty,
                                                static_cast<std::size_t>(data_end - data_begin),
                                                use_estimated_variance);
+                                      
 }
 
 template <class Value, class DataType, class CoordinatesType>
 inline void
-linear_regression(Value& constant,
-                  Value& scale,
+linear_regression(Value& constant, Value& scale,
                   Value& chi_square,
                   Value& variance_of_constant,
                   Value& variance_of_scale,
@@ -167,21 +170,21 @@ linear_regression(Value& constant,
                   const VectorWithOffset<DataType>& measured_data,
                   const VectorWithOffset<CoordinatesType>& coordinates,
                   const VectorWithOffset<float>& weights,
-                  const bool use_estimated_variance)
+                  const bool use_estimated_variance
+                  )
 {
   assert(measured_data.get_min_index() == coordinates.get_min_index());
   assert(measured_data.get_min_index() == weights.get_min_index());
   assert(measured_data.get_max_index() == coordinates.get_max_index());
   assert(measured_data.get_max_index() == weights.get_max_index());
 
-  linear_regression(constant,
-                    scale,
+
+  linear_regression(constant, scale,
                     chi_square,
                     variance_of_constant,
                     variance_of_scale,
                     covariance_of_constant_with_scale,
-                    measured_data.begin(),
-                    measured_data.end(),
+                    measured_data.begin(), measured_data.end(),
                     coordinates.begin(),
                     weights.begin(),
                     use_estimated_variance);
@@ -190,8 +193,7 @@ linear_regression(Value& constant,
 template <class ValueIter, class DataIter, class CoordinatesIter, class WeightsIter>
 inline void
 linear_regression(ValueIter value_begin,
-                  DataIter data_begin,
-                  DataIter data_end,
+                  DataIter data_begin, DataIter data_end,
                   CoordinatesIter coords_begin,
                   WeightsIter weights_begin,
                   const bool use_estimated_variance)
@@ -203,22 +205,17 @@ linear_regression(ValueIter value_begin,
   double Stt = 0;
   double Sty = 0;
 
-  detail::linear_regression_compute_S(S, Sx, Sy, Syy, Stt, Sty, data_begin, data_end, coords_begin, weights_begin);
+  detail::linear_regression_compute_S(S,Sx,Sy, Syy, Stt, Sty,
+                                      data_begin,  data_end,
+                                      coords_begin, 
+                                      weights_begin);
 
   ValueIter value_iter = value_begin;
 
-  detail::linear_regression_compute_fit_from_S(*value_iter,
-                                               *(value_iter + 1),
-                                               *(value_iter + 2),
-                                               *(value_iter + 3),
-                                               *(value_iter + 4),
-                                               *(value_iter + 5),
-                                               S,
-                                               Sx,
-                                               Sy,
-                                               Syy,
-                                               Stt,
-                                               Sty,
+  detail::linear_regression_compute_fit_from_S(*value_iter, *(value_iter+1),
+                                               *(value_iter+2),*(value_iter+3),
+                                               *(value_iter+4),*(value_iter+5),
+                                               S, Sx, Sy, Syy, Stt, Sty,
                                                data_end - data_begin,
                                                use_estimated_variance);
   *(value_iter + 6) = *(value_iter)*Sx / Sy;

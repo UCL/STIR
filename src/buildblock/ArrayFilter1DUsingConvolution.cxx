@@ -14,7 +14,15 @@
     Copyright (C) 2001- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,43 +31,46 @@
 #include "stir/IndexRange.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
-#include "stir/error.h"
-
-#include <algorithm>
-using std::min;
-using std::max;
 
 START_NAMESPACE_STIR
 
 template <typename elemT>
-ArrayFilter1DUsingConvolution<elemT>::ArrayFilter1DUsingConvolution()
-    : filter_coefficients(),
-      _bc(BoundaryConditions::zero)
-{}
+ArrayFilter1DUsingConvolution<elemT>::
+ArrayFilter1DUsingConvolution()
+  : filter_coefficients(), _bc(BoundaryConditions::zero)
+{
+  
+}
 
 template <typename elemT>
-ArrayFilter1DUsingConvolution<elemT>::ArrayFilter1DUsingConvolution(const VectorWithOffset<elemT>& filter_coefficients_v,
-                                                                    const BoundaryConditions::BC bc)
-    : filter_coefficients(filter_coefficients_v),
-      _bc(bc)
+ArrayFilter1DUsingConvolution<elemT>::
+ArrayFilter1DUsingConvolution(const VectorWithOffset<elemT> &filter_coefficients_v, const BoundaryConditions::BC bc)
+  : filter_coefficients(filter_coefficients_v), _bc(bc)
 {
   // TODO: remove 0 elements at the outside
 }
 
+
 template <typename elemT>
 bool
-ArrayFilter1DUsingConvolution<elemT>::is_trivial() const
+ArrayFilter1DUsingConvolution<elemT>::
+is_trivial() const
 {
-  return filter_coefficients.get_length() == 0
-         || (filter_coefficients.get_length() == 1 && filter_coefficients.get_min_index() == 0 && filter_coefficients[0] == 1);
+  return
+    filter_coefficients.get_length() == 0 ||
+    (filter_coefficients.get_length()==1 && filter_coefficients.get_min_index()==0 &&
+     filter_coefficients[0] == 1);
 }
+
 
 template <typename elemT>
 Succeeded
-ArrayFilter1DUsingConvolution<elemT>::get_influencing_indices(IndexRange<1>& influencing_index_range,
+ArrayFilter1DUsingConvolution<elemT>::
+get_influencing_indices(IndexRange<1>& influencing_index_range, 
                                                               const IndexRange<1>& input_index_range) const
 {
-  influencing_index_range = (filter_coefficients.get_length() == 0)
+  influencing_index_range = 
+    (filter_coefficients.get_length() == 0)
                                 ? input_index_range
                                 : IndexRange<1>(input_index_range.get_min_index() - filter_coefficients.get_max_index(),
                                                 input_index_range.get_max_index() - filter_coefficients.get_min_index());
@@ -68,10 +79,12 @@ ArrayFilter1DUsingConvolution<elemT>::get_influencing_indices(IndexRange<1>& inf
 
 template <typename elemT>
 Succeeded
-ArrayFilter1DUsingConvolution<elemT>::get_influenced_indices(IndexRange<1>& influenced_index_range,
+ArrayFilter1DUsingConvolution<elemT>:: 
+get_influenced_indices(IndexRange<1>& influenced_index_range, 
                                                              const IndexRange<1>& input_index_range) const
 {
-  influenced_index_range = (filter_coefficients.get_length() == 0)
+  influenced_index_range = 
+    (filter_coefficients.get_length() == 0)
                                ? input_index_range
                                : IndexRange<1>(input_index_range.get_min_index() + filter_coefficients.get_min_index(),
                                                input_index_range.get_max_index() + filter_coefficients.get_max_index());
@@ -80,7 +93,8 @@ ArrayFilter1DUsingConvolution<elemT>::get_influenced_indices(IndexRange<1>& infl
 
 template <typename elemT>
 void
-ArrayFilter1DUsingConvolution<elemT>::do_it(Array<1, elemT>& out_array, const Array<1, elemT>& in_array) const
+ArrayFilter1DUsingConvolution<elemT>::
+do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
 {
   const int in_min = in_array.get_min_index();
   const int in_max = in_array.get_max_index();
@@ -93,17 +107,20 @@ ArrayFilter1DUsingConvolution<elemT>::do_it(Array<1, elemT>& out_array, const Ar
 
       switch (this->_bc)
         {
-          case BoundaryConditions::zero: {
+      case BoundaryConditions::zero:
+        {
             for (; i <= min(in_min - 1, out_max); ++i)
               out_array[i] = 0;
             break;
           }
-          case BoundaryConditions::constant: {
+      case BoundaryConditions::constant:
+        {
             for (; i <= min(in_min - 1, out_max); ++i)
               out_array[i] = in_array[in_min];
             break;
           }
-          default: {
+      default:
+        {
             error("ArrayFilter1DUsingConvolution: cannot handle this boundary condition yet. sorry");
           }
         }
@@ -115,17 +132,20 @@ ArrayFilter1DUsingConvolution<elemT>::do_it(Array<1, elemT>& out_array, const Ar
       }
       switch (this->_bc)
         {
-          case BoundaryConditions::zero: {
+      case BoundaryConditions::zero:
+        {
             for (; i <= out_max; ++i)
               out_array[i] = 0;
             break;
           }
-          case BoundaryConditions::constant: {
+      case BoundaryConditions::constant:
+        {
             for (; i <= out_max; ++i)
               out_array[i] = in_array[in_max];
             break;
           }
-          default: {
+      default:
+        {
             // should never get here, but without default: the compiler might issue a warning
           }
         }
@@ -134,6 +154,7 @@ ArrayFilter1DUsingConvolution<elemT>::do_it(Array<1, elemT>& out_array, const Ar
   const int j_min = filter_coefficients.get_min_index();
   const int j_max = filter_coefficients.get_max_index();
 
+
   for (int i = out_min; i <= out_max; i++)
     {
       out_array[i] = 0;
@@ -141,11 +162,13 @@ ArrayFilter1DUsingConvolution<elemT>::do_it(Array<1, elemT>& out_array, const Ar
       // first do right edge
       switch (this->_bc)
         {
-          case BoundaryConditions::zero: {
+      case BoundaryConditions::zero:
+        {
             j = max(j_min, i - in_max);
             break;
           }
-          case BoundaryConditions::constant: {
+      case BoundaryConditions::constant:
+        {
             // i_in=i-j> in_max, hence j< i-in_max
             for (; j < min(j_max + 1, i - in_max); ++j)
               out_array[i] += filter_coefficients[j] * in_array[in_max /*i-j*/];
@@ -162,24 +185,29 @@ ArrayFilter1DUsingConvolution<elemT>::do_it(Array<1, elemT>& out_array, const Ar
       // left edge
       switch (this->_bc)
         {
-          case BoundaryConditions::zero: {
+      case BoundaryConditions::zero:
+	{
             // nothing to do
             break;
           }
-          case BoundaryConditions::constant: {
+      case BoundaryConditions::constant:
+        {
             // i_in=i-j< in_min, hence j> i-in_min
             for (; j <= j_max; ++j)
               out_array[i] += filter_coefficients[j] * in_array[in_min /*i-j*/];
             break;
           }
-          default: {
+      default:
+        {
             // should never get here, but without default: the compiler might issue a warning
           }
         }
     }
+
 }
 // instantiation
 
 template class ArrayFilter1DUsingConvolution<float>;
 
 END_NAMESPACE_STIR
+

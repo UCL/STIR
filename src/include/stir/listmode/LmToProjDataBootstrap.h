@@ -7,16 +7,21 @@
   \brief Class for binning list mode files with the bootstrap method
 
   \author Kris Thielemans
-  \author Daniel Deidda
 
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet
-    Copyright (C) 2019, National Physical Laboratory
-    Copyright (C) 2019, University College of London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,8 +29,13 @@
 #ifndef __stir_listmode_LmToProjDataBootstrap_H__
 #define __stir_listmode_LmToProjDataBootstrap_H__
 
+
 #include "stir/listmode/LmToProjData.h"
 #include <vector>
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -69,20 +79,20 @@ class LmToProjDataBootstrap : public LmToProjDataT
 {
 
 public:
+     
   //! Constructor that parses from a file
   LmToProjDataBootstrap(const char* const par_filename);
   //! Constructor that parses from a file but with explicit seed
   /*! The \a seed argument will override any value found in the par file */
   LmToProjDataBootstrap(const char* const par_filename, const unsigned int seed);
 
-  Succeeded set_up() override;
-
 protected:
   //! will be called when a new time frame starts
   /*! Initialises a vector with the number of times each event has to be replicated */
-  void start_new_time_frame(const unsigned int new_frame_num) override;
+  virtual void start_new_time_frame(const unsigned int new_frame_num);
 
-  void get_bin_from_event(Bin& bin, const ListEvent&) const override;
+  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
+
 
   // \name parsing variables
   //@{
@@ -93,15 +103,19 @@ protected:
 
 private:
   typedef LmToProjDataT base_type;
-  typedef std::vector<unsigned char> replication_type;
+  typedef vector<unsigned char> replication_type;
+
 
   replication_type num_times_to_replicate;
   mutable replication_type::const_iterator num_times_to_replicate_iter;
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+
+  
 };
 
 END_NAMESPACE_STIR
+
 
 #endif

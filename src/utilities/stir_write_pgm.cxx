@@ -5,7 +5,15 @@
     Copyright (C) 2012-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2.0 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -30,7 +38,6 @@
 #include "stir/Coordinate2D.h"
 #include "stir/shared_ptr.h"
 #include "stir/error.h"
-#include "stir/warning.h"
 
 #include <cstdio>
 #include <fstream>
@@ -47,9 +54,10 @@ transpose_13(const VoxelsOnCartesianGrid<float>& image)
   std::swap(origin.x(), origin.z());
   CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
   std::swap(voxel_size.x(), voxel_size.z());
-  VoxelsOnCartesianGrid<float> out(
-      IndexRange3D(
-          image.get_min_x(), image.get_max_x(), image.get_min_y(), image.get_max_y(), image.get_min_z(), image.get_max_z()),
+  VoxelsOnCartesianGrid<float> 
+    out(IndexRange3D(image.get_min_x(),image.get_max_x(),
+                     image.get_min_y(),image.get_max_y(),
+                     image.get_min_z(),image.get_max_z()),
       origin,
       voxel_size);
   for (int x = image.get_min_x(); x <= image.get_max_x(); ++x)
@@ -66,9 +74,10 @@ transpose_12(const VoxelsOnCartesianGrid<float>& image)
   std::swap(origin.y(), origin.z());
   CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
   std::swap(voxel_size.y(), voxel_size.z());
-  VoxelsOnCartesianGrid<float> out(
-      IndexRange3D(
-          image.get_min_y(), image.get_max_y(), image.get_min_z(), image.get_max_z(), image.get_min_x(), image.get_max_x()),
+  VoxelsOnCartesianGrid<float> 
+    out(IndexRange3D(image.get_min_y(),image.get_max_y(),
+                     image.get_min_z(),image.get_max_z(),
+                     image.get_min_x(),image.get_max_x()),
       origin,
       voxel_size);
   for (int y = image.get_min_y(); y <= image.get_max_y(); ++y)
@@ -79,8 +88,11 @@ transpose_12(const VoxelsOnCartesianGrid<float>& image)
 }
 
 template <typename elemT>
-static void
-write_pgm(const std::string& filename, const Array<2, elemT>& plane, const double min_threshold, const double max_threshold)
+static 
+void 
+write_pgm (const std::string& filename,
+	   const Array<2,elemT>& plane,
+	   const double min_threshold, const double max_threshold)
 {
   if (plane.get_length() == 0)
     return;
@@ -125,8 +137,7 @@ write_pgm(const std::string& filename, const Array<2, elemT>& plane, const doubl
 
 END_NAMESPACE_STIR
 
-void
-print_usage_and_exit(const std::string& program_name)
+void print_usage_and_exit(const std::string& program_name)
 {
   std::cerr << "Usage: " << program_name << "\n\t"
             << "[--min min_value] [--max max_value] \\\n\t"
@@ -175,8 +186,7 @@ main(int argc, char** argv)
           std::cerr << "Unknown option: " << argv[0] << '\n';
           print_usage_and_exit(argv[0]);
         }
-      argc -= 2;
-      argv += 2;
+      argc-=2; argv+=2;
     }
 
   if (argc != 2)
@@ -187,25 +197,23 @@ main(int argc, char** argv)
   const std::string filename = argv[0];
   const std::string input_filename = argv[1];
 
-  stir::VoxelsOnCartesianGrid<float> image(dynamic_cast<stir::VoxelsOnCartesianGrid<float>&>(
-      *stir::read_from_file<stir::DiscretisedDensity<3, float>>(input_filename)));
+  stir::VoxelsOnCartesianGrid<float> image(
+	dynamic_cast<stir::VoxelsOnCartesianGrid<float> &>
+	(* stir::read_from_file<stir::DiscretisedDensity<3,float> >(input_filename)));
 
   if (max_threshold < min_threshold)
     max_threshold = image.find_max();
 
   switch (orientation)
     {
-    case 't':
-    case 'T':
+    case 't': case 'T':
       // transverse, nothing to do at the moment
       break;
-    case 's':
-    case 'S':
+    case 's': case 'S':
       // sagital
       image = stir::transpose_13(image);
       break;
-    case 'c':
-    case 'C':
+    case 'c': case 'C':
       // coronal
       image = stir::transpose_12(image);
       break;
@@ -218,7 +226,9 @@ main(int argc, char** argv)
   else if (slice_index >= image.get_length())
     stir::error("Requested slice index too large");
 
-  stir::write_pgm(filename, image[slice_index + image.get_min_index()], min_threshold, max_threshold);
+  stir::write_pgm (filename,
+		   image[slice_index + image.get_min_index()],
+		   min_threshold, max_threshold);
 
   return EXIT_SUCCESS;
 }

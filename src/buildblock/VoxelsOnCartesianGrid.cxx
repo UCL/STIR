@@ -3,10 +3,16 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2018- 2019, University College London
-    Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -18,7 +24,6 @@
   \author Sanida Mustafovic
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
-  \author Parisa Khateri
 
 
 */
@@ -37,28 +42,29 @@
 #include <fstream>
 #include <algorithm>
 #include <math.h>
-#include <memory>
-#include "stir/unique_ptr.h"
-#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
-#include "stir/ProjDataInfoGenericNoArcCorr.h"
-#include "stir/warning.h"
-#include "stir/error.h"
-#include "stir/format.h"
-
+#include <memory> // for auto_ptr
+#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
+#endif
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
 // a local help function to find appropriate sizes etc.
 
-static void
-find_sampling_and_z_size(float& z_sampling, float& s_sampling, int& z_size, const ProjDataInfo* proj_data_info_ptr)
+static void find_sampling_and_z_size(
+                                 float& z_sampling,
+                                 float& s_sampling,
+                                 int& z_size,
+                                 const ProjDataInfo* proj_data_info_ptr)
 {
 
   // first z- things
 
-  if (const ProjDataInfoCylindrical* proj_data_info_cyl_ptr = dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr))
+  if (const ProjDataInfoCylindrical*
+        proj_data_info_cyl_ptr = 
+        dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr))
 
     {
       // the case of cylindrical data
@@ -73,27 +79,11 @@ find_sampling_and_z_size(float& z_sampling, float& s_sampling, int& z_size, cons
       assert(proj_data_info_cyl_ptr->get_max_segment_num() >= 0);
 
       if (z_size < 0)
-        z_size = proj_data_info_cyl_ptr->get_max_ring_difference(0) > proj_data_info_cyl_ptr->get_min_ring_difference(0)
+      z_size = 
+        proj_data_info_cyl_ptr->get_max_ring_difference(0) >
+        proj_data_info_cyl_ptr->get_min_ring_difference(0)
                      ? proj_data_info_cyl_ptr->get_num_axial_poss(0)
                      : 2 * proj_data_info_cyl_ptr->get_num_axial_poss(0) - 1;
-    }
-  else if (const ProjDataInfoGeneric* proj_data_info_gen_ptr = dynamic_cast<const ProjDataInfoGeneric*>(proj_data_info_ptr))
-    {
-      // the case of Generic (and therefore BlocksOnCylindrical) data
-
-      z_sampling = proj_data_info_gen_ptr->get_ring_spacing() / 2;
-
-      // for 'span>1' case, we take z_size = number of sinograms in segment 0
-      // for 'span==1' case, we take 2*num_rings-1
-
-      // first check if we have segment 0
-      assert(proj_data_info_gen_ptr->get_min_segment_num() <= 0);
-      assert(proj_data_info_gen_ptr->get_max_segment_num() >= 0);
-
-      if (z_size < 0)
-        z_size = proj_data_info_gen_ptr->get_max_ring_difference(0) > proj_data_info_gen_ptr->get_min_ring_difference(0)
-                     ? proj_data_info_gen_ptr->get_num_axial_poss(0)
-                     : 2 * proj_data_info_gen_ptr->get_num_axial_poss(0) - 1;
     }
   else
     {
@@ -104,7 +94,8 @@ find_sampling_and_z_size(float& z_sampling, float& s_sampling, int& z_size, cons
       assert(proj_data_info_cyl_ptr->get_max_segment_num() >= 0);
 
       // TODO make this independent on segment etc.
-      z_sampling = proj_data_info_ptr->get_sampling_in_t(Bin(0, 0, 1, 0));
+    z_sampling = 
+      proj_data_info_ptr->get_sampling_in_t(Bin(0,0,1,0));
 
       if (z_size < 0)
         z_size = proj_data_info_ptr->get_num_axial_poss(0);
@@ -113,20 +104,27 @@ find_sampling_and_z_size(float& z_sampling, float& s_sampling, int& z_size, cons
   // now do s_sampling
 
   {
-    s_sampling = proj_data_info_ptr->get_scanner_ptr()->get_default_bin_size();
-    if (s_sampling <= 0)
+    s_sampling =
+      proj_data_info_ptr->get_scanner_ptr()->get_default_bin_size();
+    if (s_sampling ==0)
       {
-        s_sampling = proj_data_info_ptr->get_sampling_in_s(Bin(0, 0, 0, 0));
-        info(format("Determining voxel size from default_bin_size failed as it is not set.\n"
-                    "Using sampling_in_s for central bin {}.",
-                    s_sampling));
+        // TODO make this independent on segment etc.
+        s_sampling = 
+          proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+        info(boost::format("Determining voxel size from default_bin_size failed.\n"
+                           "Using sampling_in_s for central bin %1%.") %
+             s_sampling);
       }
     else
       {
-        info(format("Determined voxel size by dividing default_bin_size ({}) by zoom", s_sampling));
+        info(boost::format("Determined voxel size by dividing default_bin_size (%1%) by zoom") %
+             s_sampling);
       }
+
   }
+
 }
+
 
 template <class elemT>
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid()
@@ -134,37 +132,24 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid()
 {}
 
 template <class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const Array<3, elemT>& v,
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+                      (const Array<3,elemT>& v,
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<3, float>& grid_spacing)
-    : DiscretisedDensityOnCartesianGrid<3, elemT>(v.get_index_range(), origin, grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                       (v.get_index_range(),origin,grid_spacing)
 {
   Array<3, elemT>::operator=(v);
 }
 
-template <class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const IndexRange<3>& range,
-                                                    const CartesianCoordinate3D<float>& origin,
-                                                    const BasicCoordinate<3, float>& grid_spacing)
-    : DiscretisedDensityOnCartesianGrid<3, elemT>(range, origin, grid_spacing)
-{}
 
 template <class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                                    const Array<3, elemT>& v,
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+                      (const IndexRange<3>& range, 
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<3, float>& grid_spacing)
-    : DiscretisedDensityOnCartesianGrid<3, elemT>(exam_info_sptr, v.get_index_range(), origin, grid_spacing)
-{
-  Array<3, elemT>::operator=(v);
-}
-
-template <class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                                    const IndexRange<3>& range,
-                                                    const CartesianCoordinate3D<float>& origin,
-                                                    const BasicCoordinate<3, float>& grid_spacing)
-    : DiscretisedDensityOnCartesianGrid<3, elemT>(exam_info_sptr, range, origin, grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                       (range,origin,grid_spacing)
 {}
 
 // KT 10/12/2001 use new format of args for the constructor, and remove the make_xy_size_odd constructor
@@ -175,43 +160,6 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
                                                     const CartesianCoordinate3D<int>& sizes)
 
 {
-  shared_ptr<ExamInfo> exam_info_sptr_v(new ExamInfo);
-  this->construct_from_projdata_info(
-      exam_info_sptr_v, proj_data_info, CartesianCoordinate3D<float>(1.F, zoom, zoom), origin, sizes);
-}
-
-template <class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr_v,
-                                                    const ProjDataInfo& proj_data_info,
-                                                    const float zoom,
-                                                    const CartesianCoordinate3D<float>& origin,
-                                                    const CartesianCoordinate3D<int>& sizes)
-{
-  this->construct_from_projdata_info(
-      exam_info_sptr_v, proj_data_info, CartesianCoordinate3D<float>(1.F, zoom, zoom), origin, sizes);
-}
-
-template <class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr_v,
-                                                    const ProjDataInfo& proj_data_info,
-                                                    const CartesianCoordinate3D<float>& zooms,
-                                                    const CartesianCoordinate3D<float>& origin,
-                                                    const CartesianCoordinate3D<int>& sizes)
-{
-  this->construct_from_projdata_info(exam_info_sptr_v, proj_data_info, zooms, origin, sizes);
-}
-
-template <class elemT>
-void
-VoxelsOnCartesianGrid<elemT>::construct_from_projdata_info(const shared_ptr<const ExamInfo>& exam_info_sptr_v,
-                                                           const ProjDataInfo& proj_data_info,
-                                                           const CartesianCoordinate3D<float>& zooms,
-                                                           const CartesianCoordinate3D<float>& origin,
-                                                           const CartesianCoordinate3D<int>& sizes)
-{
-  this->exam_info_sptr = exam_info_sptr_v;
-  // sadly, this code is a complete copy of the above
-  // probably avoidable in C++11
   this->set_origin(origin);
 
   int z_size = sizes.z();
@@ -221,42 +169,38 @@ VoxelsOnCartesianGrid<elemT>::construct_from_projdata_info(const shared_ptr<cons
   float s_sampling = 0;
   find_sampling_and_z_size(z_sampling, s_sampling, z_size, &proj_data_info);
 
-  this->set_grid_spacing(CartesianCoordinate3D<float>(z_sampling, s_sampling, s_sampling) / zooms);
+  this->set_grid_spacing(
+      CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
+      );
   int x_size_used = sizes.x();
   int y_size_used = sizes.y();
 
   if (sizes.x() == -1 || sizes.y() == -1)
     {
-      std::vector<float> radii;
-      for (int view = 0; view < proj_data_info.get_max_view_num(); view++)
-        {
-          radii.push_back(abs(max(proj_data_info.get_s(Bin(0, view, 0, proj_data_info.get_max_tangential_pos_num())),
-                                  -proj_data_info.get_s(Bin(0, view, 0, proj_data_info.get_min_tangential_pos_num())))));
-        }
-
       // default it to cover full FOV by taking image_size>=2*FOVradius_in_pixs+1
-      const float FOVradius_in_mm = *std::max_element(radii.begin(), radii.end());
-
+      const float FOVradius_in_mm = 
+        max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
+            -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
       if (sizes.x() == -1)
         x_size_used = 2 * static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().x())) + 1;
       if (sizes.y() == -1)
         y_size_used = 2 * static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().y())) + 1;
     }
   if (x_size_used < 0)
-    error("VoxelsOnCartesianGrid: attempt to construct image with negative x_size %d\n", x_size_used);
+    error("VoxelsOnCartesianGrid: attempt to construct image with negative x_size %d\n", 
+          x_size_used);
   if (x_size_used == 0)
     warning("VoxelsOnCartesianGrid: constructed image with x_size 0\n");
   if (y_size_used < 0)
-    error("VoxelsOnCartesianGrid: attempt to construct image with negative y_size %d\n", y_size_used);
+    error("VoxelsOnCartesianGrid: attempt to construct image with negative y_size %d\n", 
+          y_size_used);
   if (y_size_used == 0)
     warning("VoxelsOnCartesianGrid: constructed image with y_size 0\n");
 
-  IndexRange3D range(0,
-                     z_size - 1,
-                     -(y_size_used / 2),
-                     -(y_size_used / 2) + y_size_used - 1,
-                     -(x_size_used / 2),
-                     -(x_size_used / 2) + x_size_used - 1);
+  IndexRange3D range (0, z_size-1, 
+                      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
+                      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
+
 
   this->grow(range);
 }
@@ -271,9 +215,11 @@ VoxelsOnCartesianGrid<elemT>*
 VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 
 {
-  return new VoxelsOnCartesianGrid(
-      this->get_exam_info().create_shared_clone(), this->get_index_range(), this->get_origin(), this->get_grid_spacing());
+  return new VoxelsOnCartesianGrid(this->get_index_range(),
+                                   this->get_origin(), 
+                                   this->get_grid_spacing());
 }
+
 
 template <class elemT>
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
@@ -294,9 +240,7 @@ VoxelsOnCartesianGrid<elemT>*
 #endif
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
-  VoxelsOnCartesianGrid* temp = new VoxelsOnCartesianGrid(*this);
-  temp->set_exam_info(temp->get_exam_info());
-  return temp;
+  return new VoxelsOnCartesianGrid(*this);
 }
 
 template <class elemT>
@@ -310,8 +254,11 @@ template <class elemT>
 PixelsOnCartesianGrid<elemT>
 VoxelsOnCartesianGrid<elemT>::get_plane(const int z) const
 {
-  PixelsOnCartesianGrid<elemT> plane(
-      this->operator[](z), this->get_origin(), Coordinate2D<float>(get_voxel_size().y(), get_voxel_size().x()));
+  PixelsOnCartesianGrid<elemT> 
+    plane(this->operator[](z),
+          this->get_origin(),
+          Coordinate2D<float>(get_voxel_size().y(), get_voxel_size().x())
+          );
   return plane;
 }
 
@@ -355,14 +302,16 @@ VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
 
 template <class elemT>
 BasicCoordinate<3, int>
-VoxelsOnCartesianGrid<elemT>::get_lengths() const
+VoxelsOnCartesianGrid<elemT>::
+get_lengths() const
 {
   return make_coordinate(this->get_z_size(), this->get_y_size(), this->get_x_size());
 }
 
 template <class elemT>
 BasicCoordinate<3, int>
-VoxelsOnCartesianGrid<elemT>::get_min_indices() const
+VoxelsOnCartesianGrid<elemT>::
+get_min_indices() const
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
@@ -372,7 +321,8 @@ VoxelsOnCartesianGrid<elemT>::get_min_indices() const
 
 template <class elemT>
 BasicCoordinate<3, int>
-VoxelsOnCartesianGrid<elemT>::get_max_indices() const
+VoxelsOnCartesianGrid<elemT>::
+get_max_indices() const
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
@@ -397,8 +347,8 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
     input, "Enter filename for input image", ".v", 
     ios::in | ios::binary);
 
-  unique_ptr<Scanner> scanner_ptr
-    (Scanner::ask_parameters());
+  std::auto_ptr<Scanner> scanner_ptr = 
+    std::auto_ptr<Scanner>(Scanner::ask_parameters());
 
 
   NumericType data_type;
@@ -471,14 +421,12 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
  instantiations
  **********************************************/
 template class VoxelsOnCartesianGrid<float>;
-template class VoxelsOnCartesianGrid<CartesianCoordinate3D<float>>;
 
 END_NAMESPACE_STIR
 
 #include "stir/modelling/KineticParameters.h"
-namespace stir
-{
+namespace stir {
 template class VoxelsOnCartesianGrid<KineticParameters<1, float>>;
 template class VoxelsOnCartesianGrid<KineticParameters<2, float>>;
 template class VoxelsOnCartesianGrid<KineticParameters<3, float>>;
-} // namespace stir
+}

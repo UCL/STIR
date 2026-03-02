@@ -14,7 +14,15 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,10 +34,11 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/shared_ptr.h"
 
+ 
+
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class ProjDataInfo;
 
 /*!
@@ -37,8 +46,8 @@ class ProjDataInfo;
   \brief Computes projection matrix elements for VoxelsOnCartesianGrid images
   by using a Length of Intersection (LOI) model.
 
-  Currently, the LOIs are divided by voxel_size.x(), unless \c NEWSCALE is
-  \c \#defined during compilation time of ProjMatrixByBinUsingRayTracing.cxx.
+  Currently, the LOIs are divided by voxel_size.x(), unless NEWSCALE is
+  #defined during compilation time of ProjMatrixByBinUsingRayTracing.cxx. 
 
   It is possible to use multiple LORs in tangential direction. The result
   will then be the average of the various contributions. Currently all these
@@ -109,8 +118,12 @@ class ProjDataInfo;
   the ring spacing of the scanner.
 */
 
-class ProjMatrixByBinUsingRayTracing
-    : public RegisteredParsingObject<ProjMatrixByBinUsingRayTracing, ProjMatrixByBin, ProjMatrixByBin>
+class ProjMatrixByBinUsingRayTracing : 
+  public RegisteredParsingObject<
+	      ProjMatrixByBinUsingRayTracing,
+              ProjMatrixByBin,
+              ProjMatrixByBin
+	       >
 {
 public:
   //! Name which will be used when parsing a ProjMatrixByBin object
@@ -122,11 +135,10 @@ public:
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
    */
-  void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-              const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
-              ) override;
-
-  ProjMatrixByBinUsingRayTracing* clone() const override;
+  virtual void set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    );
 
   //! \name If a cylindrical FOV or the whole image will be handled
   //!@{
@@ -187,13 +199,22 @@ private:
   CartesianCoordinate3D<int> min_index;
   CartesianCoordinate3D<int> max_index;
 
-  void calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const override;
+  shared_ptr<ProjDataInfo> proj_data_info_ptr;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+
+  virtual void 
+    calculate_proj_matrix_elems_for_one_bin(
+                                            ProjMatrixElemsForOneBin&) const;
+
+   virtual void set_defaults();
+   virtual void initialise_keymap();
+   virtual bool post_processing();
+
 };
 
 END_NAMESPACE_STIR
 
 #endif
+
+
+

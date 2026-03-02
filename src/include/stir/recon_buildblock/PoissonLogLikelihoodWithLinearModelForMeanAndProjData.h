@@ -1,9 +1,16 @@
 /*
     Copyright (C) 2003 - 2011-02-23, Hammersmith Imanet Ltd
-    Copyright (C) 2018, 2022, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,10 +29,9 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
-#include "stir/ParseAndCreateFrom.h"
-//#include "stir/ProjData.h"
+#include "stir/ProjData.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
-//#include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/TimeFrameDefinitions.h"
 #ifdef STIR_MPI
 #  include "stir/recon_buildblock/distributable.h" // for  RPC_process_related_viewgrams_type
@@ -38,6 +44,8 @@ class DistributedCachingInformation;
 //#ifdef STIR_MPI_CLASS_DEFINITION
 //#define PoissonLogLikelihoodWithLinearModelForMeanAndProjData PoissonLogLikelihoodWithLinearModelForMeanAndProjData_MPI
 //#endif
+
+
 
 /*!
   \ingroup GeneralisedObjectiveFunction
@@ -118,8 +126,8 @@ class DistributedCachingInformation;
   \endverbatim
 */
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndProjData
-    : public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
+class PoissonLogLikelihoodWithLinearModelForMeanAndProjData: 
+public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
                                      GeneralisedObjectiveFunction<TargetT>,
                                      PoissonLogLikelihoodWithLinearModelForMean<TargetT>>
 {
@@ -130,6 +138,7 @@ private:
       base_type;
 
 public:
+
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
   static const char* const registered_name;
 
@@ -152,19 +161,21 @@ public:
   //#endif
   //@}
 
+
   //! Default constructor calls set_defaults()
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
 
   //! Destructor
   /*! Calls end_distributable_computation()
    */
-  ~PoissonLogLikelihoodWithLinearModelForMeanAndProjData() override;
+  ~PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
 
   //! Returns a pointer to a newly allocated target object (with 0 data).
   /*! Dimensions etc are set from the \a proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  TargetT* construct_target_ptr() const override;
+  virtual TargetT *
+    construct_target_ptr() const; 
 
   /*! \name Functions to get parameters
    \warning Be careful with changing shared pointers. If you modify the objects in
@@ -174,7 +185,6 @@ public:
   const ProjData& get_proj_data() const;
   const shared_ptr<ProjData>& get_proj_data_sptr() const;
   const int get_max_segment_num_to_process() const;
-  const int get_max_timing_pos_num_to_process() const;
   const bool get_zero_seg0_end_planes() const;
   const ProjData& get_additive_proj_data() const;
   const shared_ptr<ProjData>& get_additive_proj_data_sptr() const;
@@ -193,58 +203,49 @@ public:
 
   */
   //@{
-  int set_num_subsets(const int num_subsets) override;
+  int set_num_subsets(const int num_subsets);
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
-  void set_max_timing_pos_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
-  // N.E. Changed to ExamData
-  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) override;
+  void set_additive_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&);
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
-  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) override;
-
-  void set_input_data(const shared_ptr<ExamData>&) override;
-  const ProjData& get_input_data() const override;
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
   //@}
 
-  void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+  virtual void 
+    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
                                                       const TargetT& current_estimate,
-                                                      const int subset_num,
-                                                      const bool add_sensitivity) override;
+                                                          const int subset_num); 
 
-  std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const override;
 #if 0
   // currently not used
   float sum_projection_data() const;
 #endif
-  void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
+  virtual void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
 protected:
-  Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr) override;
+  virtual Succeeded 
+    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr);
 
-  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override;
+  virtual double
+    actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
+                                                      const int subset_num);
 
   /*!
-    The Hessian (without penalty) is approximately given by:
+    The Hessian (without penalty) is approximatelly given by:
     \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
     where
-    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = y_i / ((P \lambda)_i + a_i)^2; \f]
+    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) ~= -1/y_i; \f]
     and \f$P_{ij} \f$ is the probability matrix.
-
-    This function uses the approximation of the hessian
-    \f[ h_i^{''}(y_i) \approx -1/y_i \f]
     Hence
-    \f[ H_{jk} = - \sum_i P_{ij}(1/y_i) P_{ik} \f]
+    \f[ H_{jk} =  \sum_i P_{ij}(1/y_i) P_{ik} \f]
 
     In the above, we've used the plug-in approximation by replacing
     forward projection of the true image by the measured data. However, the
     later are noisy and this can create problems.
-
-    The LogLikelihood is a concave function and therefore the Hessian is non-positive.
-    Thus, this (approximate-)Hessian vector product methods output volumes with negative values,
-    if the input is non-negative.
 
     \todo Two work-arounds for the noisy estimate of the Hessian are listed below,
     but they are currently not implemented.
@@ -257,37 +258,16 @@ protected:
     normalisation factors \f$n_i\f$) times a geometric part:
     \f[ P_{ij} = {1 \over n_i } G_{ij}\f]
 
-    It has also been suggested to use \f$1 \over y_i+1 \f$ (at least if the data are still Poisson).
+    It has also been suggested to use \f$1 \over y_i+1 \f$ (at least if the data are still Poisson.
   */
-  Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
+  virtual Succeeded 
+      actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                                    const TargetT& input,
-                                                                                   const int subset_num) const override;
-
-  /*!
-    The Hessian (without penalty) is approximately given by:
-    \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
-    where
-    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) = - y_i / ((P \lambda)_i + a_i)^2; \f]
-    and \f$P_{ij} \f$ is the probability matrix.
-
-    Hence
-    \f[ H_{jk} = - \sum_i P_{ij}(y_i / ((P \lambda)_i + a_i)^2) P_{ik} \f]
-
-    This function is computationally expensive and can be approximated, see
-    add_multiplication_with_approximate_sub_Hessian_without_penalty()
-
-    The loglikelihood is a concave function, see
-    add_multiplication_with_approximate_sub_Hessian_without_penalty() for
-    more details regarding Hessian methods.
-  */
-  Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
-                                                                      const TargetT& current_image_estimate,
-                                                                      const TargetT& input,
-                                                                      const int subset_num) const override;
+                                                                             const int subset_num) const;
 
 protected:
   //! Filename with input projection data
-  std::string input_filename;
+  string input_filename;
 
   //! points to the object for the total input projection data
   shared_ptr<ProjData> proj_data_sptr;
@@ -296,13 +276,33 @@ protected:
   /*! convention: if -1, use get_max_segment_num()*/
   int max_segment_num_to_process;
 
-  //! the maximum absolute time-of-flight bin number to use in the reconstruction
-  /*! convention: if -1, use get_max_tof_pos_num()*/
-  int max_timing_pos_num_to_process;
-
   /**********************/
-  ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
+  // image stuff
+  // TODO to be replaced with single class or so (TargetT obviously)
+  //! the output image size in x and y direction
+  /*! convention: if -1, use a size such that the whole FOV is covered
+  */
+  int output_image_size_xy; // KT 10122001 appended _xy
+
+  //! the output image size in z direction
+  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
+  */
+  int output_image_size_z; // KT 10122001 new
+
+  //! the zoom factor
+  double zoom;
+
+  //! offset in the x-direction
+  double Xoffset;
+
+  //! offset in the y-direction
+  double Yoffset;
+
+  // KT 20/06/2001 new
+  //! offset in the z-direction
+  double Zoffset;
   /********************************/
+
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_ptr;
@@ -310,20 +310,18 @@ protected:
   //! signals whether to zero the data in the end planes of the projection data
   bool zero_seg0_end_planes;
 
-  //! Triggers calculation of sensitivity using time-of-flight
-  bool use_tofsens;
-
   //! name of file in which additive projection data are stored
-  std::string additive_projection_data_filename;
-
+  string additive_projection_data_filename;
+ //! points to the additive projection data
+  /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<ProjData> additive_proj_data_sptr;
-
-  shared_ptr<BinNormalisation> normalisation_sptr;
 
   // TODO doc
   int frame_num;
-  std::string frame_definition_filename;
+  string frame_definition_filename;
   TimeFrameDefinitions frame_defs;
+  shared_ptr<BinNormalisation> normalisation_sptr;
+
 
   // Loglikelihood computation parameters
   //  TODO rename and move higher up in the hierarchy
@@ -334,17 +332,17 @@ protected:
   bool compute_total_loglikelihood;
 
   //! name of file in which loglikelihood measurements are stored
-  std::string loglikelihood_data_filename;
+  string loglikelihood_data_filename;
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
-  void set_defaults() override;
+  virtual void set_defaults();
   //! sets keys for parsing
   /*! Has to be called by initialise_keymap in the leaf-class */
-  void initialise_keymap() override;
+  virtual void initialise_keymap();
   //! checks values after parsing
   /*! Has to be called by post_processing in the leaf-class */
-  bool post_processing() override;
+  virtual bool post_processing();
 
   //! Checks of the current subset scheme is approximately balanced
   /*! For this class, this means that the sub-sensitivities are
@@ -352,54 +350,18 @@ protected:
       of views etc. It ignores unbalancing caused by normalisation_sptr
       (e.g. for instance when using asymmetric attenuation).
   */
-  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
-
+  bool actual_subsets_are_approximately_balanced(string& warning_message) const;
 private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
 
-  /*! \name variables/methods for TOF sensitivity processing
-
-  TOF can use a non-TOF backprojector to compute the sensitivity. This is because the TOF kernel
-  sums to 1 when summing over all TOF bins. The non-TOF computation is obviously faster.
-  However, it does mean we need to keep track of a different back-projector etc, as well as
-  remembering which one was used in a previous distributable computation.
-  */
-  //!@{
-  //! Backprojector used for sensitivity computation
-  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
-
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> sens_symmetries_sptr;
-  //! flag to check if we set-up distributable_computation with the original projectors or not
-  mutable bool latest_setup_distributable_computation_was_with_orig_projectors;
-  //! flag to check if setup_distributable_computation has been called already or not
-  mutable bool distributable_computation_already_setup;
-  //! return if we are using a different projector or not for the sensitivity calculation
-  /*! will always be \c true in the non-TOF case (or SPECT) */
-  bool sensitivity_uses_same_projector() const;
-  //! ProjDataInfo to be used for the sensitivity calculation
-  /*! Will be a non-TOF clone for TOF data when \c use_tofsens = \c false */
-  shared_ptr<const ProjDataInfo> sens_proj_data_info_sptr;
-  //! flag to check if we set-up normalisation with the original data or not
-  mutable bool latest_setup_norm_was_with_orig_data;
-  //! flag to check if normalisation has been set_up already or not
-  mutable bool norm_already_setup = false;
-
-  //!  helper function to makre sure we set-up normalisation_sptr correctly
-  void ensure_norm_is_set_up(bool for_original_data = true) const;
-  //! convenience for ensure_norm_is_set_up(false)
-  void ensure_norm_is_set_up_for_sensitivity() const;
-  //!@}
-#if 0
   void
     add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
-#endif
 };
 
 #ifdef STIR_MPI
 // made available to be called from DistributedWorker object
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
-RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;
 #endif
 
 END_NAMESPACE_STIR

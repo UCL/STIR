@@ -3,7 +3,15 @@
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,26 +30,19 @@
 #define N_INPUTS 10
 
 /* parse cmd-line and convert to cm */
-void assign_inputs(char** arg,
-                   int* nslices,
-                   int* xbins,
-                   int* ybins,
-                   float* xMin,
-                   float* xMax,
-                   float* yMin,
-                   float* yMax,
-                   float* zMin,
-                   float* zMax);
+void assign_inputs(char **arg,int *nslices,int *xbins,int *ybins,
+		   float *xMin,float *xMax,float *yMin,float *yMax,
+		   float *zMin,	float *zMax);
 
-int
-main(int argc, char** argv)
+int main(int argc,char **argv)
 {
   int i;
   double dz;
   int nslices, xbins, ybins;
   float xMin, xMax, yMin, yMax, zMin, zMax;
 
-  char* inputs[] = { "Number slices in object",
+  char *inputs[]={      
+    "Number slices in object",
                      "Number of pixels in x-direction",
                      "Number of pixels in y-direction",
                      "xMin (mm)",
@@ -49,16 +50,15 @@ main(int argc, char** argv)
                      "yMin (mm)",
                      "yMax (mm)",
                      "zMin (mm)",
-                     "zMax (mm)" };
+    "zMax (mm)"
+  };
 
-  if (argc == N_INPUTS)
-    assign_inputs(argv, &nslices, &xbins, &ybins, &xMin, &xMax, &yMin, &yMax, &zMin, &zMax);
+  if (argc==N_INPUTS) assign_inputs (argv,&nslices,&xbins,&ybins,&xMin,&xMax,&yMin,&yMax,&zMin,&zMax);
   else
     {
       fprintf(stderr, "\nThis program writes the object-spec to stdout to\nhelp constructing a PHG parameter file for SimSET.\n");
       fprintf(stderr, "\nUsage:\nwrite_phg_image_info");
-      for (i = 0; i < N_INPUTS - 1; i++)
-        {
+      for(i=0;i<N_INPUTS-1;i++) {
           fprintf(stderr, " \\\n\t%s", inputs[i]);
         }
       fprintf(stderr, "\n");
@@ -69,8 +69,7 @@ main(int argc, char** argv)
   printf("\n\n# OBJECT GEOMETRY VALUES");
   printf("\nNUM_ELEMENTS_IN_LIST	object = %d", nslices + 1);
   printf("\n		INT		num_slices = %d", nslices);
-  for (i = 0; i < nslices; i++)
-    {
+  for(i=0;i<nslices;i++){
       printf("\n		NUM_ELEMENTS_IN_LIST	slice = 9 ");
       printf("\n		INT	slice_number  = %d", i);
       printf("\n		REAL	zMin = %5.2f ", zMin + ((float)(i)*dz));
@@ -86,19 +85,11 @@ main(int argc, char** argv)
   return EXIT_SUCCESS;
 }
 
+
 /*==================================== ASSIGN_INPUTS ====================*/
 
-void
-assign_inputs(char** arg,
-              int* nslices,
-              int* xbins,
-              int* ybins,
-              float* xMin,
-              float* xMax,
-              float* yMin,
-              float* yMax,
-              float* zMin,
-              float* zMax)
+void assign_inputs(char **arg,int *nslices,int *xbins,int *ybins,
+		   float *xMin,float *xMax,float *yMin,float *yMax,float *zMin,float *zMax)
 {
   /* parse and convert to cm */
   *nslices = atoi(arg[1]);

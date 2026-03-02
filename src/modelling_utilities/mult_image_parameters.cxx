@@ -4,7 +4,15 @@
   Copyright (C) 2006- 2012, Hammersmith Imanet Ltd
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -35,8 +43,7 @@
 #include "stir/getopt.h"
 #include <algorithm>
 
-int
-main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
 
   USING_NAMESPACE_STIR;
@@ -64,7 +71,9 @@ main(int argc, char* argv[])
           if (isprint(optopt))
             fprintf(stderr, "Unknown option `-%c'.\n", optopt);
           else
-            fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+	  fprintf (stderr,
+		   "Unknown option character `\\x%x'.\n",
+		   optopt);
           std::cerr << usage;
           return EXIT_FAILURE;
         }
@@ -76,11 +85,12 @@ main(int argc, char* argv[])
       return EXIT_FAILURE;
     }
 
-  const shared_ptr<ParametricVoxelsOnCartesianGrid> input_image_sptr(
-      ParametricVoxelsOnCartesianGrid::read_from_file(input_filename));
+  const shared_ptr<ParametricVoxelsOnCartesianGrid> 
+    input_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(input_filename));  
   const ParametricVoxelsOnCartesianGrid& input_image = *input_image_sptr;
 
-  shared_ptr<DiscretisedDensity<3, float>> output_image_sptr((input_image_sptr->construct_single_density(1)).clone());
+  shared_ptr<DiscretisedDensity<3,float> > 
+    output_image_sptr((input_image_sptr->construct_single_density(1)).clone());
   DiscretisedDensity<3, float>& output_image = *output_image_sptr;
 
   const int min_k_index = output_image.get_min_index();
@@ -97,8 +107,10 @@ main(int argc, char* argv[])
             output_image[k][j][i] = input_image[k][j][i][1] * input_image[k][j][i][2];
         }
     }
-  Succeeded success
-      = OutputFileFormat<DiscretisedDensity<3, float>>::default_sptr()->write_to_file(output_filename, *output_image_sptr);
+  Succeeded success =
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    write_to_file(output_filename, *output_image_sptr);
 
   return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+

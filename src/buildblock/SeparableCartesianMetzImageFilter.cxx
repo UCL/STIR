@@ -14,44 +14,63 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/warning.h"
+
 
 START_NAMESPACE_STIR
 
+  
 template <typename elemT>
 Succeeded
-SeparableCartesianMetzImageFilter<elemT>::virtual_set_up(const DiscretisedDensity<3, elemT>& density)
+SeparableCartesianMetzImageFilter<elemT>::
+virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 {
   /*  if (consistency_check(density) == Succeeded::no)
       return Succeeded::no;
     */
-  const VoxelsOnCartesianGrid<float>& image = dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
+  const VoxelsOnCartesianGrid<float>& image =
+    dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
-  metz_filter
-      = SeparableMetzArrayFilter<3, elemT>(get_metz_fwhms(), get_metz_powers(), image.get_voxel_size(), get_max_kernel_sizes());
+  metz_filter = 
+    SeparableMetzArrayFilter<3,elemT>(get_metz_fwhms(),
+				      get_metz_powers(),
+				      image.get_voxel_size(), 
+				      get_max_kernel_sizes());
 
   return Succeeded::yes;
+  
 }
+
 
 template <typename elemT>
 void
-SeparableCartesianMetzImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density) const
+SeparableCartesianMetzImageFilter<elemT>::
+virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 {
   // assert(consistency_check(density) == Succeeded::yes);
   metz_filter(density);
 }
 
+
 template <typename elemT>
 void
-SeparableCartesianMetzImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density,
+SeparableCartesianMetzImageFilter<elemT>::
+virtual_apply(DiscretisedDensity<3,elemT>& out_density, 
                                                         const DiscretisedDensity<3, elemT>& in_density) const
 {
   // assert(consistency_check(in_density) == Succeeded::yes);
@@ -85,7 +104,8 @@ consistency_check( const DiscretisedDensity<3, elemT>& image) const
 #endif
 
 template <typename elemT>
-SeparableCartesianMetzImageFilter<elemT>::SeparableCartesianMetzImageFilter()
+SeparableCartesianMetzImageFilter<elemT>::
+SeparableCartesianMetzImageFilter()
     : fwhms(VectorWithOffset<float>(1, 3)),
       metz_powers(VectorWithOffset<float>(1, 3)),
       max_kernel_sizes(VectorWithOffset<int>(1, 3))
@@ -95,28 +115,27 @@ SeparableCartesianMetzImageFilter<elemT>::SeparableCartesianMetzImageFilter()
 
 template <typename elemT>
 VectorWithOffset<float>
-SeparableCartesianMetzImageFilter<elemT>::get_metz_fwhms() const
-{
-  return fwhms;
-}
+SeparableCartesianMetzImageFilter<elemT>:: 
+get_metz_fwhms() const
+{  return fwhms;}
 
 template <typename elemT>
 VectorWithOffset<float>
-SeparableCartesianMetzImageFilter<elemT>::get_metz_powers() const
-{
-  return metz_powers;
-}
+SeparableCartesianMetzImageFilter<elemT>::
+get_metz_powers() const
+{  return metz_powers;}
+
 
 template <typename elemT>
 VectorWithOffset<int>
-SeparableCartesianMetzImageFilter<elemT>::get_max_kernel_sizes() const
-{
-  return max_kernel_sizes;
-}
+SeparableCartesianMetzImageFilter<elemT>::
+get_max_kernel_sizes() const
+{  return max_kernel_sizes;}
 
 template <typename elemT>
 void
-SeparableCartesianMetzImageFilter<elemT>::set_defaults()
+SeparableCartesianMetzImageFilter<elemT>::
+set_defaults()
 {
   base_type::set_defaults();
   fwhms.fill(0);
@@ -126,7 +145,8 @@ SeparableCartesianMetzImageFilter<elemT>::set_defaults()
 
 template <typename elemT>
 void
-SeparableCartesianMetzImageFilter<elemT>::initialise_keymap()
+SeparableCartesianMetzImageFilter<elemT>::
+initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key("Separable Cartesian Metz Filter Parameters");
@@ -142,8 +162,12 @@ SeparableCartesianMetzImageFilter<elemT>::initialise_keymap()
   this->parser.add_stop_key("END Separable Cartesian Metz Filter Parameters");
 }
 
+
 template <>
-const char* const SeparableCartesianMetzImageFilter<float>::registered_name = "Separable Cartesian Metz";
+const char * const 
+SeparableCartesianMetzImageFilter<float>::registered_name =
+  "Separable Cartesian Metz";
+
 
 #ifdef _MSC_VER
 // prevent warning message on reinstantiation,
@@ -158,3 +182,6 @@ const char* const SeparableCartesianMetzImageFilter<float>::registered_name = "S
 template class SeparableCartesianMetzImageFilter<float>;
 
 END_NAMESPACE_STIR
+
+
+

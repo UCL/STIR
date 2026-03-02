@@ -14,57 +14,72 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 #include "stir/ParsingObject.h"
 #include <fstream>
-#include "stir/warning.h"
-#include "stir/error.h"
 
+#ifndef STIR_NO_NAMESPACE
 using std::ifstream;
+#endif
 
 START_NAMESPACE_STIR
 
 ParsingObject::ParsingObject()
-    : keymap_is_initialised(false)
+:
+  keymap_is_initialised(false)
 {}
 
+  
+  
+
 ParsingObject::ParsingObject(const ParsingObject& par)
-    : keymap_is_initialised(false)
+:
+  keymap_is_initialised(false)
 {}
+
 
 ParsingObject&
 ParsingObject::operator=(const ParsingObject& par)
 {
-  if (&par == this)
-    return *this;
+  if (&par == this) return *this;
   keymap_is_initialised = false;
   return *this;
 }
 
 void
-ParsingObject::set_defaults()
+ParsingObject::
+set_defaults()
 {}
 
 void
-ParsingObject::initialise_keymap()
+ParsingObject::
+initialise_keymap()
 {}
 
 bool
-ParsingObject::post_processing()
-{
-  return false;
-}
+ParsingObject::
+post_processing()
+{ return false; }
 
 void
-ParsingObject::set_key_values()
+ParsingObject::
+set_key_values()
 {}
 
 // void
 bool
-ParsingObject::parse(std::istream& in)
+ParsingObject:: parse(istream& in) 
 {
   // potentially remove the if() and always call initialise_keymap
   if (!keymap_is_initialised)
@@ -86,6 +101,7 @@ ParsingObject::parse(std::istream& in)
   else
     return true;
 }
+
 
 // void
 bool
@@ -126,7 +142,7 @@ ParsingObject::ask_parameters()
     }
 }
 
-std::string
+string
 ParsingObject::parameter_info()
 {
   if (!keymap_is_initialised)

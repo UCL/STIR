@@ -3,7 +3,15 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -78,8 +86,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfo.h"
 
-namespace stir
-{
+namespace stir {
 class ExamInfo;
 }
 
@@ -102,11 +109,11 @@ extern bool rpc_time;                //! enable timings for PRC_process_related_
 extern bool test_send_receive_times; //! enable timings for every single send/receive operation
 
 extern double total_rpc_time; //! adding up the time used for PRC_process_related_viewgrams_gradient() computation at all slaves
-extern double
-    total_rpc_time_2; //! adding up the time used for PRC_process_related_viewgrams_gradient() computation at a single slave
+  extern double total_rpc_time_2;       //!adding up the time used for PRC_process_related_viewgrams_gradient() computation at a single slave
 extern double total_rpc_time_slaves; //! value to reduce the total_rpc_time values
 extern double min_threshold;         //! threshold for displaying send/receive times, initially set to 0.1 seconds
 
+        
 //----------------------Send operations----------------------------------
 
 /*! \brief sends or broadcasts an integer value
@@ -115,12 +122,14 @@ extern double min_threshold;         //! threshold for displaying send/receive t
  */
 void send_int_value(int value, int destination);
 
+        
 /*! \brief sends or broadcasts a string
  * \param str the string to be sent
  * \param tag identifier to associate messages
  * \param destination the process id where to send the string. If set to -1 a Broadcast will be done
  */
-void send_string(const std::string& str, int tag, int destination);
+  void send_string(const string& str, int tag, int destination);
+        
 
 /*! \brief send or broadcast a bool value
  * \param value the bool value to be sent
@@ -131,6 +140,7 @@ void send_string(const std::string& str, int tag, int destination);
  */
 void send_bool_value(bool value, int tag, int destination);
 
+        
 /*! \brief sends or broadcasts some integer values
  * \param values pointer to integer values to be sent
  * \param count the count of integer values to be sent
@@ -139,6 +149,7 @@ void send_bool_value(bool value, int tag, int destination);
  */
 void send_int_values(int* values, int count, int tag, int destination);
 
+        
 /*! \brief send or broadcast double values
  * \param values pointer to the double values to be sent
  * \param count the count of double values to be sent
@@ -177,6 +188,7 @@ void send_projectors(const stir::shared_ptr<stir::ProjectorByBinPair>& proj_pair
  */
 void send_image_parameters(const stir::DiscretisedDensity<3, float>* input_image_ptr, int tag, int destination);
 
+        
 /*! \brief sends or broadcasts the values of a DiscretisedDensity object
  * \param input_image_ptr the image_ptr to be sent
  * \param destination the process id where to send the image values. If set to -1 a Broadcast will be done
@@ -186,6 +198,7 @@ void send_image_parameters(const stir::DiscretisedDensity<3, float>* input_image
  */
 void send_image_estimate(const stir::DiscretisedDensity<3, float>* input_image_ptr, int destination);
 
+        
 /*! \brief sends or broadcasts the information from ExamInfo and ProjDataInfo
  * \param exam_info the ExamInfo pointer to be sent
  * \param proj_data_info the ProjDataInfo pointer to be sent
@@ -203,6 +216,7 @@ void send_image_estimate(const stir::DiscretisedDensity<3, float>* input_image_p
  */
 void send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDataInfo& proj_data_info, int destination);
 
+        
 /*! \brief sends a RelatedViegrams object
  * \param viewgrams the viewgrams to be sent
  * \param destination the process id where to send the related viewgrams
@@ -214,6 +228,7 @@ void send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::P
  */
 void send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destination);
 
+        
 /*! \brief sends a Viewgram object
  * \param viewgram the viewgrams to be sent
  * \param destination the process id where to send the viewgram
@@ -225,20 +240,24 @@ void send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destin
  */
 void send_viewgram(const stir::Viewgram<float>& viewgram, int destination);
 
+        
 //----------------------Receive operations----------------------------------
 
+        
 /*! \brief receives a single integer value
  * \param source the process id from which to receive the interger value. If set to -1 the receive will be done from broadcast
  * \returns the received int value
  */
 int receive_int_value(int source);
 
+        
 /*! \brief receives a string
  * \param tag unique identifier to associate messages
  * \param source the process id from which to receive the string
  * \returns the received string
  */
-std::string receive_string(int tag, int source);
+  string receive_string(int tag, int source);
+
 
 /*! \brief receives all needed information to subsequently construct a ProjectorByBinPair object
  * \param projector_pair_ptr address pointer of the new ProjectorByBinPair pointer
@@ -254,6 +273,7 @@ std::string receive_string(int tag, int source);
  */
 void receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair>& projector_pair_ptr, int source);
 
+        
 /*! \brief receives a bool value
  * \param tag unique identifier to associate messages
  * \param source the process id from which to receive the bool value
@@ -264,6 +284,7 @@ void receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair
  */
 bool receive_bool_value(int tag, int source);
 
+        
 /*! \brief receives some integer values
  * \param values pointer to the receive buffer
  * \param count the count of integer values to be received
@@ -274,6 +295,7 @@ bool receive_bool_value(int tag, int source);
  */
 MPI_Status receive_int_values(int* values, int count, int tag);
 
+        
 /*! \brief receives some double values
  * \param values pointer to the receive buffer
  * \param count the count of double values to be received
@@ -306,10 +328,8 @@ MPI_Status receive_view_segment_numbers(stir::ViewSegmentNumbers& vs_num, int ta
  *
  * The function currently only supports VoxelsOnCartesianGrid
  */
-void receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<3, float>>& image_ptr,
-                                      int& buffer,
-                                      int tag,
-                                      int source);
+  void receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<3, float> > &image_ptr, int &buffer, int tag, int source);
+        
 
 /*! \brief receives the values of a DiscretisedDensity object
  * \param image_ptr the image_ptr to be sent
@@ -322,9 +342,8 @@ void receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<
  *
  * The buffer_size is used again to reduce the image values
  */
-MPI_Status receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensity<3, float>>& image_ptr,
-                                                   int buffer_size,
-                                                   int source);
+  MPI_Status receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensity<3,float> > &image_ptr, int buffer_size, int source);
+        
 
 /*! \brief receives information of ExamInfo and ProjDataInfo objects and constructs new ones from it
  * \param exam_info_sptr the new ExamInfo pointer to be set up
@@ -339,6 +358,7 @@ void receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::Ex
                                                        stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_sptr,
                                                        int source);
 
+        
 /*! \brief receives and constructs a RelatedViewgrams object
  * \param viewgrams object that will be filled with the data
  * \param proj_data_info_ptr the ProjDataInfo pointer describing the data
@@ -399,10 +419,7 @@ void reduce_received_output_image(stir::DiscretisedDensity<3, float>* output_ima
  * The buffer size was calculated in \c receive_image_values_and_fill_image_ptr().
  * Alternatively it can be calculated by the image parameters.
  */
-void reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3, float>>& output_image_ptr,
-                         int image_buffer_size,
-                         int my_rank,
-                         int destination);
+  void reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3,float> > &output_image_ptr, int image_buffer_size, int my_rank, int destination);
 
 /*! \name Tag-names currently used by functions in the distributed namespace
  */
@@ -419,6 +436,7 @@ const int PROJECTION_DATA_INFO_TAG = 30;
 const int PARAMETER_INFO_TAG = 21;
 const int REGISTERED_NAME_TAG = 25;
 //!@}
-} // namespace distributed
+}
 
 #endif
+

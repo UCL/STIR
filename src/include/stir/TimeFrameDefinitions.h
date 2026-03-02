@@ -3,7 +3,15 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -94,18 +102,11 @@ public:
    */
   unsigned int get_time_frame_num(const double start_time, const double end_time) const;
 
-  //! Set number of time frames
-  void set_num_time_frames(int num_time_frames) { frame_times.resize(num_time_frames); }
-
-  //! Set time frame
-  void set_time_frame(const unsigned int frame_num, const double start, const double end);
-
-  bool operator==(const TimeFrameDefinitions& t) const;
-
 private:
   //! Stores start and end time for each frame
   std::vector<std::pair<double, double>> frame_times;
   void read_fdef_file(const std::string& filename);
+
 };
 
 END_NAMESPACE_STIR

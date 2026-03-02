@@ -3,7 +3,6 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -23,6 +22,7 @@
 
 #include <stdarg.h>
 
+
 #ifdef VAX
 #  include ssdef
 #  include descrip
@@ -32,31 +32,28 @@
 static $DESCRIPTOR(TTdevice, "TT");
 static int TTchannel;
 
-char
-getch()
-{
-  char chr;
+char getch()
+{ char chr;
   unsigned int iosb[2];
 
   if (TTchannel == 0)
     error_check(sys$assign(&TTdevice, &TTchannel, 0, 0));
-  error_check(sys$qiow(0, TTchannel, IO$_READVBLK | IO$M_ESCAPE | IO$M_NOECHO, &iosb, 0, 0, &chr, sizeof(chr), 0, 0, 0, 0));
+  error_check(sys$qiow(0,TTchannel,IO$_READVBLK|IO$M_ESCAPE|IO$M_NOECHO,
+                &iosb,0,0,&chr,sizeof(chr),0,0,0,0));
   return (chr);
 }
 
 #endif
 
-int
-asknr(char str[], int minv, int maxv, int def)
-{
-  char ptr[10];
+
+int asknr (char str[],int minv,int maxv,int def)
+{ char ptr[10];
   int nnn, ret;
 
   while (1)
-    {
-      printf("\n%s [%d:%d D:%d]: ", str, minv, maxv, def);
+  { printf ("\n%s [%d:%d D:%d]: ",str,minv,maxv,def);
       if (fgets(ptr, 10, stdin) == NULL)
-        return def; /* nothing read, so return default */
+      return def; // nothing read, so return default
       ret = sscanf(ptr, "%d", &nnn);
       if (ret == 0 || ret == EOF)
         return def;
@@ -65,32 +62,28 @@ asknr(char str[], int minv, int maxv, int def)
       puts("\nOut of bounds");
     }
 }
-size_t
-fread_check(char* str, void* buffer, size_t size, FILE* infile)
-{
-  size_t ret;
+size_t fread_check(char *str, void *buffer, size_t size, FILE *infile)
+{ size_t ret;
   char tmp[200];
 
   ret = fread(buffer, sizeof(char), size, infile);
   if (ferror(infile))
-    {
-      sprintf(tmp, "\n%s: error reading for %lu bytes, %lu read\nreason", str, (unsigned long)size, (unsigned long)ret);
+  { sprintf(tmp,"\n%s: error reading for %lu bytes, %lu read\nreason",
+	    str,(unsigned long)size,(unsigned long)ret);
       perror(tmp);
       error("");
     }
   return (ret);
 }
 
-size_t
-fwrite_check(char* str, void* buffer, size_t size, FILE* outfile)
-{
-  size_t ret;
+size_t fwrite_check(char *str, void *buffer, size_t size, FILE *outfile)
+{ size_t ret;
   char tmp[200];
 
   ret = fwrite(buffer, 1, size, outfile);
   if (ret < size || ferror(outfile))
-    {
-      sprintf(tmp, "\n%s: error writing for %lu bytes, %lu written\nreason", str, (unsigned long)size, (unsigned long)ret);
+  { sprintf(tmp,"\n%s: error writing for %lu bytes, %lu written\nreason",
+                str,(unsigned long)size,(unsigned long)ret);
       if (ferror(outfile))
         perror(tmp);
       error("");
@@ -98,17 +91,14 @@ fwrite_check(char* str, void* buffer, size_t size, FILE* outfile)
   return (ret);
 }
 
-void
-fseek_check(char* str, FILE* file, long int offset, int pos)
-{
-  if (fseek(file, offset, pos))
+void fseek_check(char *str, FILE *file, long int offset, int pos)
+{ if (fseek(file,offset,pos))
     error("%s: error seeking in file to position %lu", str, offset);
 }
 
-void
-message(char* fmt, ...)
-{
-  va_list ptr;
+
+void message(char *fmt, ...)
+{ va_list ptr;
 
   va_start(ptr, fmt);
   fprintf(stderr, "\n");
@@ -116,10 +106,8 @@ message(char* fmt, ...)
   va_end(ptr);
 }
 
-void
-error(char* fmt, ...)
-{
-  va_list ptr;
+void error(char *fmt, ...)
+{ va_list ptr;
 
   va_start(ptr, fmt);
   fprintf(stderr, "\n");

@@ -11,7 +11,15 @@
     Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -20,20 +28,19 @@
 #include "stir/SeparableArrayFunctionObject.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/DiscretisedDensity.h"
-#include "stir/warning.h"
-
-#include <algorithm>
-using std::vector;
-using std::max;
 
 START_NAMESPACE_STIR
 
 template <>
-const char* const SeparableConvolutionImageFilter<float>::registered_name = "Separable Convolution";
+const char * const 
+SeparableConvolutionImageFilter<float>::registered_name =
+  "Separable Convolution";
+
 
 template <typename elemT>
 void
-SeparableConvolutionImageFilter<elemT>::initialise_keymap()
+SeparableConvolutionImageFilter<elemT>::
+initialise_keymap()
 {
   base_type::initialise_keymap();
 
@@ -42,11 +49,13 @@ SeparableConvolutionImageFilter<elemT>::initialise_keymap()
   this->parser.add_key("y-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin() + 1)));
   this->parser.add_key("z-dir filter coefficients", &(*filter_coefficients_for_parsing.begin()));
   this->parser.add_stop_key("END Separable Convolution Filter Parameters");
+
 }
 
 template <typename elemT>
 bool
-SeparableConvolutionImageFilter<elemT>::post_processing()
+SeparableConvolutionImageFilter<elemT>::
+post_processing()
 {
   if (base_type::post_processing() != false)
     return true;
@@ -54,9 +63,16 @@ SeparableConvolutionImageFilter<elemT>::post_processing()
   // copy filter_coefficients_for_parsing to filter_coefficients
   // todo drop any 0s at the start or end
 
-  auto coefficients_iter = filter_coefficients.begin();
-  auto parsing_iter = filter_coefficients_for_parsing.begin();
-  for (; parsing_iter != filter_coefficients_for_parsing.end(); ++parsing_iter, ++coefficients_iter)
+  typename VectorWithOffset< VectorWithOffset<elemT> >::iterator 
+    coefficients_iter = filter_coefficients.begin();
+#ifndef STIR_NO_NAMESPACES
+      std::
+#endif
+  vector< vector<double> >::const_iterator 
+    parsing_iter = filter_coefficients_for_parsing.begin();
+  for (;
+       parsing_iter != filter_coefficients_for_parsing.end();
+       ++parsing_iter, ++coefficients_iter)
     {
       const unsigned int size = static_cast<unsigned int>(parsing_iter->size());
       const int min_index = -static_cast<int>((size / 2));
@@ -69,9 +85,16 @@ SeparableConvolutionImageFilter<elemT>::post_processing()
       *coefficients_iter = VectorWithOffset<elemT>(min_index, min_index + size - 1);
 
       // can't use std::copy because of cast. sigh.
-      auto coefficients_elem_iter = coefficients_iter->begin();
-      auto parsing_elem_iter = parsing_iter->begin();
-      for (; parsing_elem_iter != parsing_iter->end(); ++parsing_elem_iter, ++coefficients_elem_iter)
+      typename VectorWithOffset<elemT>::iterator 
+	coefficients_elem_iter = coefficients_iter->begin();
+#ifndef STIR_NO_NAMESPACES
+      std::
+#endif
+	vector<double>::const_iterator 
+	parsing_elem_iter = parsing_iter->begin();
+      for (;
+	   parsing_elem_iter != parsing_iter->end();
+	   ++parsing_elem_iter, ++coefficients_elem_iter)
         *coefficients_elem_iter = static_cast<elemT>(*parsing_elem_iter);
     }
 
@@ -79,16 +102,21 @@ SeparableConvolutionImageFilter<elemT>::post_processing()
 }
 
 template <typename elemT>
-SeparableConvolutionImageFilter<elemT>::SeparableConvolutionImageFilter()
+SeparableConvolutionImageFilter<elemT>::
+SeparableConvolutionImageFilter()
     : filter_coefficients_for_parsing(3)
 {
   set_defaults();
 }
 
+
 template <typename elemT>
-SeparableConvolutionImageFilter<elemT>::SeparableConvolutionImageFilter(
-    const VectorWithOffset<VectorWithOffset<elemT>>& filter_coefficients)
-    : filter_coefficients_for_parsing(filter_coefficients.get_length()),
+SeparableConvolutionImageFilter<elemT>::
+SeparableConvolutionImageFilter(
+				     const VectorWithOffset< VectorWithOffset<elemT> >&
+				     filter_coefficients)
+  : 
+  filter_coefficients_for_parsing(filter_coefficients.get_length()),
       filter_coefficients(filter_coefficients)
 {
   assert(filter_coefficients.get_length() == 3); // num_dimensions
@@ -96,59 +124,60 @@ SeparableConvolutionImageFilter<elemT>::SeparableConvolutionImageFilter(
   // copy filter_coefficients to filter_coefficients_for_parsing such
   // that get_parameters() works properly
 
-  auto coefficients_iter = filter_coefficients.begin();
-  auto parsing_iter = filter_coefficients_for_parsing.begin();
-  for (; parsing_iter != filter_coefficients_for_parsing.end(); ++parsing_iter, ++coefficients_iter)
+  typename VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
+    coefficients_iter = filter_coefficients.begin();
+#ifndef STIR_NO_NAMESPACES
+      std::
+#endif
+  vector< vector<double> >::iterator 
+    parsing_iter = filter_coefficients_for_parsing.begin();
+  for (;
+       parsing_iter != filter_coefficients_for_parsing.end();
+       ++parsing_iter, ++coefficients_iter)
     {
       // make sure that there are 0s appended such that parsing will read it back
       // in correct place
-      const unsigned parsing_size = 2 * (max(coefficients_iter->get_max_index(), -coefficients_iter->get_min_index())) + 1;
+      const unsigned parsing_size = 
+	2*(max(coefficients_iter->get_max_index(),
+	       -coefficients_iter->get_min_index())) + 1;
       // make it long enough, and initialise with 0
       *parsing_iter = vector<double>(coefficients_iter->get_length(), 0);
 
-      for (int i = coefficients_iter->get_min_index(); i <= coefficients_iter->get_max_index(); ++i)
-        (*parsing_iter)[static_cast<unsigned>((parsing_size / 2) + i)] = (*coefficients_iter)[i];
-    }
+      for (int i = coefficients_iter->get_min_index();
+	   i <= coefficients_iter->get_max_index();
+	   ++i)
+	(*parsing_iter)[static_cast<unsigned>((parsing_size/2) + i)] = 
+	  (*coefficients_iter)[i];
 }
 
+}
+
+#if 0
 template <typename elemT>
-VectorWithOffset<VectorWithOffset<elemT>>
-SeparableConvolutionImageFilter<elemT>::get_filter_coefficients()
+VectorWithOffset<elemT>
+SeparableConvolutionImageFilter<elemT>::
+get_filter_coefficients()
 {
   return filter_coefficients;
 }
-
-template <typename elemT>
-void
-SeparableConvolutionImageFilter<elemT>::set_filter_coefficients(const VectorWithOffset<VectorWithOffset<elemT>>& v)
-{
-  filter_coefficients = v;
-}
-
-template <typename elemT>
-VectorWithOffset<elemT>
-SeparableConvolutionImageFilter<elemT>::get_filter_coefficients(const int axis)
-{
-  return filter_coefficients[axis];
-}
-
-template <typename elemT>
-void
-SeparableConvolutionImageFilter<elemT>::set_filter_coefficients(const int axis, const VectorWithOffset<elemT>& v)
-{
-  filter_coefficients[axis] = v;
-}
+#endif
 
 template <typename elemT>
 Succeeded
-SeparableConvolutionImageFilter<elemT>::virtual_set_up(const DiscretisedDensity<3, elemT>& density)
+SeparableConvolutionImageFilter<elemT>::
+virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 {
-  VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>> all_1d_filters(filter_coefficients.get_min_index(),
+  VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > > 
+    all_1d_filters(filter_coefficients.get_min_index(),
                                                                              filter_coefficients.get_max_index());
 
-  typename VectorWithOffset<VectorWithOffset<elemT>>::const_iterator coefficients_iter = filter_coefficients.begin();
-  typename VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>>::iterator filter_iter = all_1d_filters.begin();
-  for (; coefficients_iter != filter_coefficients.end(); ++filter_iter, ++coefficients_iter)
+  typename VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
+    coefficients_iter = filter_coefficients.begin();
+  typename VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::iterator 
+    filter_iter = all_1d_filters.begin();
+  for (;
+       coefficients_iter != filter_coefficients.end();
+       ++filter_iter, ++coefficients_iter)
     {
 
       filter_iter->reset(new ArrayFilter1DUsingConvolution<elemT>(*coefficients_iter));
@@ -156,31 +185,41 @@ SeparableConvolutionImageFilter<elemT>::virtual_set_up(const DiscretisedDensity<
   filter = SeparableArrayFunctionObject<3, elemT>(all_1d_filters);
 
   return Succeeded::yes;
+  
 }
+
 
 template <typename elemT>
 void
-SeparableConvolutionImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density) const
+SeparableConvolutionImageFilter<elemT>::
+virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 {
   filter(density);
+
 }
+
 
 template <typename elemT>
 void
-SeparableConvolutionImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density,
+SeparableConvolutionImageFilter<elemT>::
+virtual_apply(DiscretisedDensity<3,elemT>& out_density, 
                                                       const DiscretisedDensity<3, elemT>& in_density) const
 {
   filter(out_density, in_density);
 }
 
+
 template <typename elemT>
 void
-SeparableConvolutionImageFilter<elemT>::set_defaults()
+SeparableConvolutionImageFilter<elemT>::
+set_defaults()
 {
   base_type::set_defaults();
-  filter_coefficients = VectorWithOffset<VectorWithOffset<elemT>>(3);
+  filter_coefficients = 
+      VectorWithOffset< VectorWithOffset<elemT> >(3);    
 }
+
 
 #ifdef _MSC_VER
 // prevent warning message on reinstantiation,

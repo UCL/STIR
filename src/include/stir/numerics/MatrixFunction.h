@@ -4,7 +4,15 @@
     Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,6 +33,7 @@
 
 START_NAMESPACE_STIR
 
+
 //----------------------------------------------------------------------
 /*! \ingroup numerics
   \name functions specific for 1D Arrays
@@ -40,15 +49,18 @@ START_NAMESPACE_STIR
   Arguments must have the same index range.
  */
 template <class elemT>
-inline elemT inner_product(const Array<1, elemT>& v1, const Array<1, elemT>& v2);
+inline elemT 
+inner_product (const Array<1,elemT> & v1, const Array<1,elemT> &v2);
 
 //! angle between 2 1D arrays
 /*! \ingroup numbers
  */
 template <class elemT>
-inline double angle(const Array<1, elemT>& v1, const Array<1, elemT>& v2);
+inline double
+angle (const Array<1,elemT> & v1, const Array<1,elemT> &v2);
 
 //@} end of 1D functions
+
 
 //----------------------------------------------------------------------
 /*! \ingroup numerics
@@ -60,24 +72,28 @@ inline double angle(const Array<1, elemT>& v1, const Array<1, elemT>& v2);
 /*! Index ranges have to be compatible (checked with assert).
  */
 template <class elemT>
-inline Array<1, elemT> matrix_multiply(const Array<2, elemT>& m, const Array<1, elemT>& vec);
+inline Array<1,elemT> 
+  matrix_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec);
 
 //! matrix multiplication with vector (given as BasicCoordinate)
 /*! matrix size has to be compatible with \c dimension. Matrix index range has to start from 1.
    All of this is only checked with assert().
 */
 template <int dimension, class elemT>
-inline BasicCoordinate<dimension, elemT> matrix_multiply(const Array<2, elemT>& m, const BasicCoordinate<dimension, elemT>& vec);
+inline BasicCoordinate<dimension,elemT> 
+  matrix_multiply(const Array<2,elemT>& m, const BasicCoordinate<dimension,elemT>& vec);
 
 //! matrix multiplication
 /*! Index ranges have to be compatible (checked with assert).
  */
 template <class elemT>
-inline Array<2, elemT> matrix_multiply(const Array<2, elemT>& m1, const Array<2, elemT>& m2);
+inline Array<2,elemT>
+  matrix_multiply(const Array<2,elemT> &m1, const Array<2,elemT>& m2);
 
 //! matrix transposition
 template <class elemT>
-inline Array<2, elemT> matrix_transpose(const Array<2, elemT>& m);
+inline Array<2,elemT>
+  matrix_transpose (const Array<2,elemT>& m);
 
 //! construct a diagonal matrix with all elements on the diagonal equal
 /*! \param[in] dimension specifies the size of the matrix
@@ -94,7 +110,9 @@ inline Array<2, elemT> matrix_transpose(const Array<2, elemT>& m);
     <code>dimensions-1</code>.
 */
 template <class elemT>
-inline Array<2, elemT> diagonal_matrix(const unsigned dimension, const elemT value);
+inline 
+Array<2,elemT>
+  diagonal_matrix(const unsigned dimension, const elemT value);
 
 //! construct a diagonal matrix
 /*!
@@ -112,7 +130,10 @@ inline Array<2, elemT> diagonal_matrix(const unsigned dimension, const elemT val
     \a values).
 */
 template <int dimension, class elemT>
-inline Array<2, elemT> diagonal_matrix(const BasicCoordinate<dimension, elemT>& values);
+inline 
+Array<2,elemT>
+  diagonal_matrix(const BasicCoordinate<dimension,elemT>& values);
+
 
 //@}
 

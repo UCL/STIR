@@ -17,7 +17,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -80,6 +88,8 @@ public:
   inline NumericType type_id() const;
 };
 
+
+
 // Below are the actual details filled in.
 
 //! Basic properties of signed char
@@ -87,15 +97,21 @@ template <>
 class NumericInfo<signed char>
 {
   typedef signed char type;
-
 public:
-  bool signed_type() const { return true; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return SCHAR_MAX; }
-  type min_value() const { return SCHAR_MIN; }
-  NumericType type_id() const { return NumericType::SCHAR; }
+  bool signed_type() const
+    { return true; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return SCHAR_MAX; }
+  type min_value() const
+    { return SCHAR_MIN; }
+  NumericType type_id() const
+    { return NumericType::SCHAR; }
 };
 
 //! Basic properties of unsigned char
@@ -103,15 +119,21 @@ template <>
 class NumericInfo<unsigned char>
 {
   typedef unsigned char type;
-
 public:
-  bool signed_type() const { return false; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return UCHAR_MAX; }
-  type min_value() const { return 0; }
-  NumericType type_id() const { return NumericType::UCHAR; }
+  bool signed_type() const
+    { return false; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return UCHAR_MAX; }
+  type min_value() const
+    { return 0; }
+  NumericType type_id() const
+    { return NumericType::UCHAR; }
 };
 
 //! Basic properties of signed short
@@ -119,15 +141,21 @@ template <>
 class NumericInfo<signed short>
 {
   typedef signed short type;
-
 public:
-  bool signed_type() const { return true; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return SHRT_MAX; }
-  type min_value() const { return SHRT_MIN; }
-  NumericType type_id() const { return NumericType::SHORT; }
+  bool signed_type() const
+    { return true; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return SHRT_MAX; }
+  type min_value() const
+    { return SHRT_MIN; }
+  NumericType type_id() const
+    { return NumericType::SHORT; }
 };
 
 //! Basic properties of unsigned short
@@ -135,31 +163,44 @@ template <>
 class NumericInfo<unsigned short>
 {
   typedef unsigned short type;
-
 public:
-  bool signed_type() const { return false; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return USHRT_MAX; }
-  type min_value() const { return 0; }
-  NumericType type_id() const { return NumericType::USHORT; }
+  bool signed_type() const
+    { return false; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return USHRT_MAX; }
+  type min_value() const
+    { return 0; }
+  NumericType type_id() const
+    { return NumericType::USHORT; }
 };
+
 
 //! Basic properties of signed int
 template <>
 class NumericInfo<signed int>
 {
   typedef signed int type;
-
 public:
-  bool signed_type() const { return true; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return INT_MAX; }
-  type min_value() const { return INT_MIN; }
-  NumericType type_id() const { return NumericType::INT; }
+  bool signed_type() const
+    { return true; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return INT_MAX; }
+  type min_value() const
+    { return INT_MIN; }
+  NumericType type_id() const
+    { return NumericType::INT; }
 };
 
 //! Basic properties of unsigned int
@@ -167,31 +208,44 @@ template <>
 class NumericInfo<unsigned int>
 {
   typedef unsigned int type;
-
 public:
-  bool signed_type() const { return false; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return UINT_MAX; }
-  type min_value() const { return 0; }
-  NumericType type_id() const { return NumericType::UINT; }
+  bool signed_type() const
+    { return false; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return UINT_MAX; }
+  type min_value() const
+    { return 0; }
+  NumericType type_id() const
+    { return NumericType::UINT; }
 };
+
 
 //! Basic properties of signed long
 template <>
 class NumericInfo<signed long>
 {
   typedef signed long type;
-
 public:
-  bool signed_type() const { return true; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return LONG_MAX; }
-  type min_value() const { return LONG_MIN; }
-  NumericType type_id() const { return NumericType::LONG; }
+  bool signed_type() const
+    { return true; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return LONG_MAX; }
+  type min_value() const
+    { return LONG_MIN; }
+  NumericType type_id() const
+    { return NumericType::LONG; }
 };
 
 //! Basic properties of unsigned long
@@ -199,15 +253,22 @@ template <>
 class NumericInfo<unsigned long>
 {
   typedef unsigned long type;
-
 public:
-  bool signed_type() const { return false; }
-  bool integer_type() const { return true; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return ULONG_MAX; }
-  type min_value() const { return 0; }
-  NumericType type_id() const { return NumericType::ULONG; }
+  bool signed_type() const
+    { return false; }
+  bool integer_type() const
+    { return true; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return ULONG_MAX; }
+  type min_value() const
+    { return 0; }
+  NumericType type_id() const
+    { return NumericType::ULONG; }
+
 };
 
 //! Basic properties of float
@@ -215,15 +276,21 @@ template <>
 class NumericInfo<float>
 {
   typedef float type;
-
 public:
-  bool signed_type() const { return true; }
-  bool integer_type() const { return false; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return FLT_MAX; }
-  type min_value() const { return -FLT_MAX; }
-  NumericType type_id() const { return NumericType::FLOAT; }
+  bool signed_type() const
+    { return true; }
+  bool integer_type() const
+    { return false; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return FLT_MAX; }
+  type min_value() const
+    { return -FLT_MAX; }
+  NumericType type_id() const
+    { return NumericType::FLOAT; }
 };
 
 //! Basic properties of double
@@ -231,15 +298,21 @@ template <>
 class NumericInfo<double>
 {
   typedef double type;
-
 public:
-  bool signed_type() const { return true; }
-  bool integer_type() const { return false; }
-  size_t size_in_bytes() const { return sizeof(type); }
-  size_t size_in_bits() { return CHAR_BIT * size_in_bytes(); }
-  type max_value() const { return DBL_MAX; }
-  type min_value() const { return -DBL_MAX; }
-  NumericType type_id() const { return NumericType::DOUBLE; }
+  bool signed_type() const
+    { return true; }
+  bool integer_type() const
+    { return false; }
+  size_t size_in_bytes() const
+   { return sizeof(type); }
+  size_t size_in_bits() 
+    { return CHAR_BIT*size_in_bytes(); }
+  type max_value() const
+    { return DBL_MAX; }
+  type min_value() const
+    { return -DBL_MAX; }
+  NumericType type_id() const
+    { return NumericType::DOUBLE; }
 };
 
 END_NAMESPACE_STIR

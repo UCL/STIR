@@ -13,7 +13,15 @@
     Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -33,13 +41,13 @@
 #include "stir/stream.h" //XXX
 #include <iostream>
 #include <algorithm>
-#include <boost/static_assert.hpp>
 
 #ifdef DO_TIMINGS
 #  include "stir/CPUTimer.h"
 #endif
 
 START_NAMESPACE_STIR
+
 
 /*!
   \brief Tests Array functionality
@@ -49,11 +57,14 @@ START_NAMESPACE_STIR
 class ArrayFilterTests : public RunTests
 {
 public:
-  void run_tests() override;
-
+  void run_tests();
 private:
+
+
+
   template <int num_dimensions>
-  void compare_results_1arg(const ArrayFunctionObject<num_dimensions, float>& filter1,
+void 
+compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
                             const ArrayFunctionObject<num_dimensions, float>& filter2,
                             const Array<num_dimensions, float>& test)
   {
@@ -83,7 +94,8 @@ private:
   }
 
   template <int num_dimensions>
-  void compare_results_2arg(const ArrayFunctionObject<num_dimensions, float>& filter1,
+void 
+compare_results_2arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
                             const ArrayFunctionObject<num_dimensions, float>& filter2,
                             const Array<num_dimensions, float>& test)
   {
@@ -125,8 +137,7 @@ private:
             BasicCoordinate<num_dimensions, int> min_indices, max_indices;
             check(influenced_range.get_regular_range(min_indices, max_indices), "test only works for Arrays of regular range");
             const IndexRange<num_dimensions> larger_range(min_indices - 3, max_indices + 4); // WARNING ALIASING +7
-            // Array<num_dimensions,float> out1(IndexRange<num_dimensions>(influenced_range.get_min_index()-3,
-            // influenced_range.get_max_index()+4));
+	//Array<num_dimensions,float> out1(IndexRange<num_dimensions>(influenced_range.get_min_index()-3, influenced_range.get_max_index()+4));
             Array<num_dimensions, float> out1(larger_range);
             Array<num_dimensions, float> out2(out1.get_index_range());
             filter1(out1, test);
@@ -154,6 +165,7 @@ private:
           }
       }
   }
+
 };
 void
 ArrayFilterTests::run_tests()
@@ -174,16 +186,18 @@ ArrayFilterTests::run_tests()
       const int kernel_half_length = 30;
       const int DFT_kernel_size = 256;
       // necessary to avoid aliasing in DFT
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= (kernel_half_length * 2 + 1) * 2);
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= 2 * size1 + 3); // note +3 as test grows the array
+      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      assert(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
       Array<1, float> kernel_for_DFT(IndexRange<1>(0, DFT_kernel_size - 1));
       Array<1, float> kernel_for_conv(IndexRange<1>(-kernel_half_length, kernel_half_length));
       for (int i = -kernel_half_length; i < kernel_half_length; ++i)
         {
           kernel_for_conv[i] = i * i - 3 * i + 1.F;
-          kernel_for_DFT[modulo(i, DFT_kernel_size)] = kernel_for_conv[i];
+	  kernel_for_DFT[modulo(i,DFT_kernel_size)] =
+	    kernel_for_conv[i];
         }
 
+  
       ArrayFilterUsingRealDFTWithPadding<1, float> DFT_filter;
       check(DFT_filter.set_kernel(kernel_for_DFT) == Succeeded::yes, "initialisation DFT filter");
       ArrayFilter1DUsingConvolution<float> conv_filter(kernel_for_conv);
@@ -193,13 +207,13 @@ ArrayFilterTests::run_tests()
       set_tolerance(test.find_max() * kernel_for_conv.sum() * 1.E-6);
       // std::cerr << get_tolerance();
 
-      std::cerr << "Comparing DFT and Convolution with input offset 0\n";
+      cerr <<"Comparing DFT and Convolution with input offset 0\n";
       compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
-      std::cerr << "Comparing DFT and Convolution with input negative offset\n";
+      cerr <<"Comparing DFT and Convolution with input negative offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
-      std::cerr << "Comparing DFT and Convolution with input positive offset\n";
+      cerr <<"Comparing DFT and Convolution with input positive offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
@@ -209,7 +223,9 @@ ArrayFilterTests::run_tests()
       Array<1, float> kernel_for_conv(IndexRange<1>(-kernel_half_length, kernel_half_length));
       for (int i = 0; i < kernel_half_length; ++i)
         {
-          kernel_for_symconv[i] = kernel_for_conv[i] = kernel_for_conv[-i] = i * i - 3 * i + 1.F;
+	  kernel_for_symconv[i] =
+	    kernel_for_conv[i] = 
+	    kernel_for_conv[-i] = i*i-3*i+1.F;
         }
 
       // symmetric convolution currently requires equal in and out range
@@ -218,13 +234,15 @@ ArrayFilterTests::run_tests()
       for (int i = test.get_min_index(); i <= test.get_max_index(); ++i)
         test[i] = i * i * 2 - i - 100.F;
 
+  
+  
       ArrayFilter1DUsingConvolution<float> conv_filter(kernel_for_conv);
       ArrayFilter1DUsingConvolutionSymmetricKernel<float> symconv_filter(kernel_for_symconv);
 
       check(!symconv_filter.is_trivial(), "symconv is_trivial");
       check(!conv_filter.is_trivial(), "conv is_trivial");
       set_tolerance(test.find_max() * kernel_for_conv.sum() * 1.E-6);
-      std::cerr << "Comparing SymmetricConvolution and Convolution\n";
+      cerr <<"Comparing SymmetricConvolution and Convolution\n";
       // note: SymmetricConvolution cannot handle different input and output ranges
       compare_results_1arg(symconv_filter, conv_filter, test);
     }
@@ -256,8 +274,7 @@ ArrayFilterTests::run_tests()
           Array<1, float> out_cst_BCs_small = out_cst_BCs;
           out_cst_BCs_small.resize(out_cst_BCs.get_min_index() + kernel.get_max_index(),
                                    out_cst_BCs.get_max_index() + kernel.get_min_index());
-          check_if_equal(
-              out_cst_BCs_small, out_zero_BCs_small, "comparing 1D with different boundary conditions: internal values");
+	  check_if_equal(out_cst_BCs_small, out_zero_BCs_small, "comparing 1D with different boundary conditions: internal values");
         }
         // edge
         float left_boundary = test[0] * kernel[2] + test[0] * kernel[1] + test[0] * kernel[0] + test[1] * kernel[-1];
@@ -301,46 +318,46 @@ ArrayFilterTests::run_tests()
       }
     } // boundary conditions
 
+
   } // 1D
 
   std::cerr << "\nTesting 2D\n";
   {
     set_tolerance(.001F);
-    const int size1 = 6;
-    const int size2 = 20;
+    const int size1=6;const int size2=20;
     Array<2, float> test(IndexRange2D(size1, size2));
     Array<2, float> test_neg_offset(IndexRange2D(-5, size1 - 6, -10, size2 - 11));
     Array<2, float> test_pos_offset(IndexRange2D(1, size1, 2, size2 + 1));
     // initialise to some arbitrary values
     {
-      auto iter = test.begin_all();
-      for (int i = -100; iter != test.end_all(); ++i, ++iter)
-        *iter = i * i * 2.F - i - 100.F;
-      test[0][0] = 1.F;
+      Array<2,float>::full_iterator iter = test.begin_all();
+      /*for (int i=-100; iter != test.end_all(); ++i, ++iter)
+       *iter = 1;//i*i*2.F-i-100.F;*/
+      test[0][0]=1;
       std::copy(test.begin_all(), test.end_all(), test_neg_offset.begin_all());
       std::copy(test.begin_all(), test.end_all(), test_pos_offset.begin_all());
-      check_if_equal(test_neg_offset[-5][-10], 1.F);
-      check_if_equal(test_pos_offset[1][2], 1.F);
     }
     {
       const int kernel_half_length = 14;
       const int DFT_kernel_size = 64;
       // necessary to avoid aliasing in DFT
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= (kernel_half_length * 2 + 1) * 2);
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= 2 * size2 + 3); // note +3 as test grows the array
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= 2 * size1 + 3); // note +3 as test grows the array
+      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      assert(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
+      assert(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
       const Coordinate2D<int> sizes(DFT_kernel_size / 2, DFT_kernel_size);
       Array<2, float> kernel_for_DFT(IndexRange2D(DFT_kernel_size / 2, DFT_kernel_size));
-      Array<2, float> kernel_for_conv(
-          IndexRange2D(-(kernel_half_length / 2), kernel_half_length / 2, -kernel_half_length, kernel_half_length));
+      Array<2,float> kernel_for_conv(IndexRange2D(-(kernel_half_length/2),kernel_half_length/2,
+						  -kernel_half_length,kernel_half_length));
       for (int i = -(kernel_half_length / 2); i < kernel_half_length / 2; ++i)
         for (int j = -kernel_half_length; j < kernel_half_length; ++j)
           {
             const Coordinate2D<int> index(i, j);
             kernel_for_conv[index] = i * i - 3 * i + 1.F + j * i / 20.F;
-            kernel_for_DFT[modulo(index, sizes)] = kernel_for_conv[index];
+	  kernel_for_DFT[modulo(index,sizes)] =
+	    kernel_for_conv[index];
           }
 
+  
       ArrayFilterUsingRealDFTWithPadding<2, float> DFT_filter;
       check(DFT_filter.set_kernel(kernel_for_DFT) == Succeeded::yes, "initialisation DFT filter");
       ArrayFilter2DUsingConvolution<float> conv_filter(kernel_for_conv);
@@ -350,13 +367,13 @@ ArrayFilterTests::run_tests()
       set_tolerance(test.find_max() * kernel_for_conv.sum() * 1.E-6);
       // std::cerr << get_tolerance();
 
-      std::cerr << "Comparing DFT and Convolution with input offset 0\n";
+      cerr <<"Comparing DFT and Convolution with input offset 0\n";
       compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
-      std::cerr << "Comparing DFT and Convolution with input negative offset\n";
+      cerr <<"Comparing DFT and Convolution with input negative offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
-      std::cerr << "Comparing DFT and Convolution with input positive offset\n";
+      cerr <<"Comparing DFT and Convolution with input positive offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
@@ -364,9 +381,7 @@ ArrayFilterTests::run_tests()
   std::cerr << "\nTesting 3D\n";
   {
     set_tolerance(.001F);
-    const int size1 = 5;
-    const int size2 = 7;
-    const int size3 = 6;
+    const int size1=5;const int size2=7; const int size3=6;
     Array<3, float> test(IndexRange3D(size1, size2, size3));
     Array<3, float> test_neg_offset(IndexRange3D(-5, size1 - 6, -10, size2 - 11, -4, size3 - 5));
     Array<3, float> test_pos_offset(IndexRange3D(1, size1, 2, size2 + 1, 3, size3 + 4));
@@ -382,27 +397,26 @@ ArrayFilterTests::run_tests()
       const int kernel_half_length = 7;
       const int DFT_kernel_size = 32;
       // necessary to avoid aliasing in DFT
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= (kernel_half_length * 2 + 1) * 2);
-      BOOST_STATIC_ASSERT(DFT_kernel_size / 2 >= 2 * size1 + 3); // note +3 as test grows the array
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= 2 * size2 + 3);     // note +3 as test grows the array
-      BOOST_STATIC_ASSERT(DFT_kernel_size >= 2 * size3 + 3);     // note +3 as test grows the array
+      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      assert(DFT_kernel_size/2>=2*size1+3);// note +3 as test grows the array
+      assert(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
+      assert(DFT_kernel_size>=2*size3+3);// note +3 as test grows the array
       const Coordinate3D<int> sizes(DFT_kernel_size / 2, DFT_kernel_size, DFT_kernel_size);
       Array<3, float> kernel_for_DFT(IndexRange3D(DFT_kernel_size / 2, DFT_kernel_size, DFT_kernel_size));
-      Array<3, float> kernel_for_conv(IndexRange3D(-(kernel_half_length / 2),
-                                                   kernel_half_length / 2,
-                                                   -kernel_half_length,
-                                                   kernel_half_length,
-                                                   -kernel_half_length,
-                                                   kernel_half_length));
+      Array<3,float> kernel_for_conv(IndexRange3D(-(kernel_half_length/2),kernel_half_length/2,
+						  -kernel_half_length,kernel_half_length,
+						  -kernel_half_length,kernel_half_length));
       for (int i = -(kernel_half_length / 2); i < kernel_half_length / 2; ++i)
         for (int j = -kernel_half_length; j < kernel_half_length; ++j)
           for (int k = -kernel_half_length; k < kernel_half_length; ++k)
             {
               Coordinate3D<int> index(i, j, k);
               kernel_for_conv[index] = i * i - 3 * i + 1.F + j * i / 20.F + k;
-              kernel_for_DFT[modulo(index, sizes)] = kernel_for_conv[index];
+	  kernel_for_DFT[modulo(index,sizes)] =
+	    kernel_for_conv[index];
             }
 
+  
       ArrayFilterUsingRealDFTWithPadding<3, float> DFT_filter;
       check(DFT_filter.set_kernel(kernel_for_DFT) == Succeeded::yes, "initialisation DFT filter");
       ArrayFilter3DUsingConvolution<float> conv_filter(kernel_for_conv);
@@ -412,25 +426,25 @@ ArrayFilterTests::run_tests()
       set_tolerance(test.find_max() * kernel_for_conv.sum() * 1.E-6);
       // std::cerr << get_tolerance();
 
-      std::cerr << "Comparing DFT and Convolution with input offset 0\n";
+      cerr <<"Comparing DFT and Convolution with input offset 0\n";
       compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
-      std::cerr << "Comparing DFT and Convolution with input negative offset\n";
+      cerr <<"Comparing DFT and Convolution with input negative offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
-      std::cerr << "Comparing DFT and Convolution with input positive offset\n";
+      cerr <<"Comparing DFT and Convolution with input positive offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
   }
+
 }
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int
-main()
+int main()
 {
   ArrayFilterTests tests;
   tests.run_tests();

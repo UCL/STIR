@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,11 +29,10 @@
 #include "stir/numerics/determinant.h"
 #include "stir/numerics/norm.h"
 #include "stir/Succeeded.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
+
 
 #if 0
 void 
@@ -62,8 +69,11 @@ set_directions_from_Euler_angles(
 }
 #endif
 
+
+
 Shape3DWithOrientation::Shape3DWithOrientation()
 {}
+
 
 Shape3DWithOrientation::Shape3DWithOrientation(const CartesianCoordinate3D<float>& origin,
                                                const Array<2, float>& direction_vectors)
@@ -74,7 +84,8 @@ Shape3DWithOrientation::Shape3DWithOrientation(const CartesianCoordinate3D<float
 }
 
 Succeeded
-Shape3DWithOrientation::set_direction_vectors(const Array<2, float>& directions)
+Shape3DWithOrientation::
+set_direction_vectors(const Array<2,float>& directions)
 {
   this->_directions = directions;
   if (this->_directions.size() != 3)
@@ -92,31 +103,34 @@ Shape3DWithOrientation::set_direction_vectors(const Array<2, float>& directions)
 }
 
 bool
-Shape3DWithOrientation::operator==(const Shape3D& base_s) const
+Shape3DWithOrientation::
+operator==(const Shape3DWithOrientation& s) const
 {
-  auto sptr = dynamic_cast<const Shape3DWithOrientation*>(&base_s);
-  if (!sptr)
-    return false; // not of same type
-  auto& s = *sptr;
   const float tolerance = .001F;
-  return norm(this->_directions[1] - s._directions[1]) < tolerance && norm(this->_directions[2] - s._directions[2]) < tolerance
-         && norm(this->_directions[3] - s._directions[3]) < tolerance && base_type::operator==(s);
+  return 
+    norm(this->get_origin() - s.get_origin()) < tolerance
+    && norm(this->_directions[1] - s._directions[1]) < tolerance
+    && norm(this->_directions[2] - s._directions[2]) < tolerance
+    && norm(this->_directions[3] - s._directions[3]) < tolerance
+    && base_type::operator==(s);
 }
 
 float
-Shape3DWithOrientation::get_volume_of_unit_cell() const
+Shape3DWithOrientation::
+get_volume_of_unit_cell() const
 {
   return std::fabs(determinant(this->get_direction_vectors()));
 }
 
 CartesianCoordinate3D<float>
-Shape3DWithOrientation::transform_to_shape_coords(const CartesianCoordinate3D<float>& coord) const
+Shape3DWithOrientation::
+transform_to_shape_coords(const CartesianCoordinate3D<float>& coord) const
 {
-  return matrix_multiply(this->get_direction_vectors(), coord - this->get_origin());
+  return 
+    matrix_multiply(this->get_direction_vectors(), coord - this->get_origin());
 }
 
-void
-Shape3DWithOrientation::scale(const CartesianCoordinate3D<float>& scale3D)
+void Shape3DWithOrientation::scale(const CartesianCoordinate3D<float>& scale3D)
 {
   this->_directions[1] /= scale3D[1];
   this->_directions[2] /= scale3D[2];
@@ -143,7 +157,8 @@ float Shape3DWithOrientation::get_angle_gamma()const
 #endif
 
 void
-Shape3DWithOrientation::set_defaults()
+Shape3DWithOrientation::
+set_defaults()
 {
   Shape3D::set_defaults();
   this->set_direction_vectors(diagonal_matrix(3, 1.F));
@@ -157,7 +172,8 @@ Shape3DWithOrientation::set_defaults()
 }
 
 void
-Shape3DWithOrientation::initialise_keymap()
+Shape3DWithOrientation::
+initialise_keymap()
 {
   Shape3D::initialise_keymap();
 #if 0
@@ -169,7 +185,8 @@ Shape3DWithOrientation::initialise_keymap()
 }
 
 bool
-Shape3DWithOrientation::post_processing()
+Shape3DWithOrientation::
+post_processing()
 {
 #if 0
   if (alpha_in_degrees != 10000000.F 
@@ -205,7 +222,8 @@ Shape3DWithOrientation::post_processing()
 }
 
 void
-Shape3DWithOrientation::set_key_values()
+Shape3DWithOrientation::
+set_key_values()
 {
   base_type::set_key_values();
 #if 0

@@ -4,7 +4,15 @@
     Copyright (C) 2006 - 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,6 +29,7 @@
 #include "stir/MinimalImageFilter3D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DiscretisedDensity.h"
+
 
 START_NAMESPACE_STIR
 
@@ -45,7 +54,9 @@ MinimalImageFilter3D<elemT>::virtual_set_up(const DiscretisedDensity<3, elemT>& 
 
   /*   if (consistency_check(density) == Succeeded::no)
         return Succeeded::no;*/
-  minimal_filter = MinimalArrayFilter3D<elemT>(Coordinate3D<int>(mask_radius_z, mask_radius_y, mask_radius_x));
+   minimal_filter = 
+     MinimalArrayFilter3D<elemT>(Coordinate3D<int>
+     (mask_radius_z, mask_radius_y, mask_radius_x));
 
   return Succeeded::yes;
 }
@@ -60,8 +71,7 @@ MinimalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density
 
 template <typename elemT>
 void
-MinimalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density,
-                                           const DiscretisedDensity<3, elemT>& in_density) const
+MinimalImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
 {
   // assert(consistency_check(in_density) == Succeeded::yes);
   minimal_filter(out_density, in_density);
@@ -91,7 +101,10 @@ MinimalImageFilter3D<elemT>::initialise_keymap()
 }
 
 template <>
-const char* const MinimalImageFilter3D<float>::registered_name = "Minimal";
+const char * const 
+MinimalImageFilter3D<float>::registered_name =
+  "Minimal";
+
 
 #ifdef _MSC_VER
 // prevent warning message on reinstantiation,

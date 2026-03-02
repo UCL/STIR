@@ -4,7 +4,15 @@
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -14,8 +22,10 @@
   \brief Implementation of functions of class stir::PatlakPlot
 
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
 */
+
 
 #ifndef __stir_modelling_PatlakPlot_H__
 #define __stir_modelling_PatlakPlot_H__
@@ -36,12 +46,11 @@ START_NAMESPACE_STIR
   Model suitable for irreversible tracers such as FDG and FLT. See
 
   - Patlak C S, Blasberg R G, Fenstermacher J D (1985)
-      <i>Graphical evaluation of blood-to-brain transfer constants from multiple-time uptake data,</i> {J Cereb Blood Flow Metab
-  3(1): p. 1-7.
+      <i>Graphical evaluation of blood-to-brain transfer constants from multiple-time uptake data,</i> {J Cereb Blood Flow Metab 3(1): p. 1-7.
 
   - Patlak C S, Blasberg R G (1985)
-    <i>Experimental and Graphical evaluation of blood-to-brain transfer constant from multiple-time uptake data:
-  Generalizations,</i> J Cereb Blood Flow Metab 5: p. 584-90.
+    <i>Experimental and Graphical evaluation of blood-to-brain transfer constant from multiple-time uptake data: Generalizations,</i>
+    J Cereb Blood Flow Metab 5: p. 584-90. 
 
 
   \par Example .par file
@@ -75,7 +84,7 @@ public:
   static const char* const registered_name;
 
   PatlakPlot();           //!< Default constructor (calls set_defaults())
-  ~PatlakPlot() override; //!< default destructor
+   ~PatlakPlot();   //!< default destructor
                           /*! \name Functions to get parameters */
                           //@{
   //! Simply gets model matrix, if it has been already stored.
@@ -85,11 +94,11 @@ public:
                                   const TimeFrameDefinitions& time_frame_definitions,
                                   const unsigned int starting_frame);
   //! Returns the frame that the PatlakPlot linearization is assumed to be valid.
-  unsigned int get_starting_frame() const;
-  //! Returns the number of the last frame available.
-  unsigned int get_ending_frame() const;
+    unsigned int
+      get_starting_frame() const ;
   //! Returns the TimeFrameDefinitions that the PatlakPlot linearization is assumed to be valid: ChT::Check
-  TimeFrameDefinitions get_time_frame_definitions() const;
+    TimeFrameDefinitions 
+      get_time_frame_definitions() const ;
   //!@}
   /*! \name Functions to set parameters*/
   //@{
@@ -102,46 +111,81 @@ public:
 
     \todo Should be a virtual function declared in the KineticModel class.
   */
-  virtual void multiply_dynamic_image_with_model_gradient(ParametricVoxelsOnCartesianGrid& parametric_image,
+    virtual void
+      multiply_dynamic_image_with_model_gradient(ParametricVoxelsOnCartesianGrid & parametric_image,
                                                           const DynamicDiscretisedDensity& dyn_image) const;
   //! Multiplies the dynamic image with the model gradient and add to original \c parametric_image
   /*! \todo Should be a virtual function declared in the KineticModel class.
    */
-  virtual void multiply_dynamic_image_with_model_gradient_and_add_to_input(ParametricVoxelsOnCartesianGrid& parametric_image,
+    virtual void
+      multiply_dynamic_image_with_model_gradient_and_add_to_input(ParametricVoxelsOnCartesianGrid & parametric_image,
                                                                            const DynamicDiscretisedDensity& dyn_image) const;
 
   //! Multiplies the parametric image with the model matrix to get the corresponding dynamic image.
   /*! \todo Should be a virtual function declared in the KineticModel class.
    */
-  virtual void get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity& dyn_image,
+    virtual void
+      get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & dyn_image,
                                                        const ParametricVoxelsOnCartesianGrid& par_image) const;
 
-  //! This is the common method used to estimate the parametric images from the dynamic images.
-  /*! \todo There is currently no check if the time frame definitions from \a dyn_image are
-    the same as the ones encoded in the model.
+	
+	//! Multiplies the dynamic image with the initialization kinetic model gradient. 
+    /*!  For a linear model the model gradient is the transpose of the model matrix. 
+      So, the dynamic image is "projected" from time domain to the parameter domain.
+
+      \todo Should be a virtual function declared in the KineticModel class.
+	  Only intended for the initialization of the Generalized Patlak Model EM update estimates
+	  Currently not used but retained for future potential usage. 
+      The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method 
+    */  
+    virtual void
+      multiply_dynamic_image_with_initialization_model_gradient(GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image,
+						 const DynamicDiscretisedDensity & dyn_image) const;
+						 
+    //! Multiplies the dynamic image with the initialization kinetic model gradient and add to original \c parametric_image 
+    /*! \todo Should be a virtual function declared in the KineticModel class.
+    	Only intended for the initialization of the Generalized Patlak Model EM update estimates
+	    Currently not used but retained for future potential usage. 
+        The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method 
   */
-  void apply_linear_regression(ParametricVoxelsOnCartesianGrid& par_image, const DynamicDiscretisedDensity& dyn_image) const;
+    virtual void
+      multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image,
+						 const DynamicDiscretisedDensity & dyn_image) const;
 
-  void set_defaults() override;
+    //! Multiplies the parametric image with the initialization kinetic model matrix to get the corresponding dynamic image.
+    /*! \todo Should be a virtual function declared in the KineticModel class.
+	    Only intended for the initialization of the Generalized Patlak Model EM update estimates
+	    Currently not used but retained for future potential usage. 
+        The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method 
+    */
+    virtual void
+      get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity & dyn_image,
+					      const GeneralizedPatlakVoxelsOnCartesianGrid & par_image) const;
 
-  Succeeded set_up() override;
+    //! This is the common method used to estimate the parametric images from the dynamic images. 
+    void 
+      apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image) const;
+
+    void set_defaults();
+
+    Succeeded set_up(); 
 
   bool _if_cardiac;             //!< Switches between cardiac and brain data
   unsigned int _starting_frame; //!< Starting frame to apply the model
   float _cal_factor;            //!< Calibration Factor, maybe to be removed.
   float _time_shift;            //!< Shifts the time to fit the timing of Plasma Data with the Projection Data.
-  bool _in_correct_scale; //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale
-                          //!< factor.
-  bool _in_total_cnt;     //!< Switch to choose the values of the model to be in total counts or in mean counts.
-  std::string _blood_data_filename;            //!< Name of file in which the input function is stored
+  bool _in_correct_scale; //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale factor.
+  bool _in_total_cnt;   //!< Switch to choose the image values of the model to be in total counts or in mean counts.
+  bool _plasma_in_total_cnt; //!< Switch to choose the plasma values of the model to be in total counts or in mean counts.
+  string _blood_data_filename;   //!< Name of file in which the input function is stored
   PlasmaData _plasma_frame_data;               //!< Stores the plasma data into frames for brain studies
-  std::string _time_frame_definition_filename; //!< name of file to get frame definitions
+  string _time_frame_definition_filename;   //!< name of file to get frame definitions
   TimeFrameDefinitions _frame_defs;            //!< TimeFrameDefinitions
 
 private:
   void create_model_matrix(); //!< Creates model matrix from private members
-  void initialise_keymap() override;
-  bool post_processing() override;
+  void initialise_keymap();
+  bool post_processing();
   mutable ModelMatrix<2> _model_matrix;
   bool _matrix_is_stored;
   typedef RegisteredParsingObject<PatlakPlot, KineticModel> base_type;

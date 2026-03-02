@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 *//*!
@@ -27,7 +35,9 @@
 START_NAMESPACE_STIR
 
 void
-SymmetryOperation::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation::
+transform_proj_matrix_elems_for_one_bin(
+					ProjMatrixElemsForOneBin& lor) const 
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -43,8 +53,11 @@ SymmetryOperation::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOne
     }
 }
 
+
 void
-SymmetryOperation::transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel& probs) const
+SymmetryOperation::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
   transform_image_coordinates(densel);
@@ -59,5 +72,6 @@ SymmetryOperation::transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsFor
       ++element_ptr;
     }
 }
+
 
 END_NAMESPACE_STIR

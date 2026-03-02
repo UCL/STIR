@@ -17,20 +17,27 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 #include "stir/line.h"
-#include "stir/warning.h"
+
 
 START_NAMESPACE_STIR
 
 const int LINE_ERROR = -1;
 const int LINE_OK = 0;
 
-string
-Line::get_keyword()
+string Line::get_keyword()
 {
   // keyword stops at either := or an index []
   // TODO should check that = follows : to allow keywords with colons in there
@@ -38,8 +45,7 @@ Line::get_keyword()
   return substr(0, eok);
 }
 
-int
-Line::get_index()
+int Line::get_index()
 {
   size_type cp, sok, eok;
   // we take 0 as a default value for the index
@@ -66,8 +72,7 @@ Line::get_index()
   return in;
 }
 
-int
-Line::get_param(string& s)
+int Line::get_param(string& s)
 {
   size_type sok, eok; // start & end pos. of keyword
   size_type cp = 0;   // current index
@@ -90,8 +95,7 @@ Line::get_param(string& s)
   return LINE_ERROR;
 }
 
-int
-Line::get_param(int& i)
+int Line::get_param(int& i)
 {
   string s;
   int r;
@@ -103,8 +107,8 @@ Line::get_param(int& i)
   return r;
 }
 
-int
-Line::get_param(unsigned long& i)
+
+int Line::get_param(unsigned long& i)
 {
   string s;
   int r;
@@ -117,8 +121,8 @@ Line::get_param(unsigned long& i)
   return r;
 }
 
-int
-Line::get_param(double& i)
+
+int Line::get_param(double& i)
 {
   string s;
   int r;
@@ -130,8 +134,9 @@ Line::get_param(double& i)
   return r;
 }
 
-int
-Line::get_param(vector<int>& v)
+
+
+int Line::get_param(vector<int>& v)
 {
   string s;
   size_type cp;
@@ -167,8 +172,8 @@ Line::get_param(vector<int>& v)
   return LINE_OK;
 }
 
-int
-Line::get_param(vector<double>& v)
+
+int Line::get_param(vector<double>& v)
 {
   string s;
   // KT 02/11/98 don't use temporary variable anymore
@@ -206,8 +211,7 @@ Line::get_param(vector<double>& v)
   return LINE_OK;
 }
 
-int
-Line::get_param(vector<string>& v)
+int Line::get_param(vector<string>& v)
 {
   string s;
 
@@ -247,8 +251,7 @@ Line::get_param(vector<string>& v)
   return LINE_OK;
 }
 
-Line&
-Line::operator=(const char* ch)
+Line& Line::operator=(const char* ch)
 {
   string::operator=(ch);
   return *this;

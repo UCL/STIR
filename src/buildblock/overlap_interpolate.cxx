@@ -6,7 +6,15 @@
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -108,8 +116,9 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
   assert(zoom > 0);
 
   // First check trivial case
-  if (zoom == 1.F && offset == 0.F && in_data.get_min_index() == out_data.get_min_index()
-      && in_data.get_max_index() == out_data.get_max_index())
+  if (zoom==1.F && offset==0.F && 
+    in_data.get_min_index()==out_data.get_min_index() &&
+    in_data.get_max_index()==out_data.get_max_index())
     {
       out_data = in_data;
       return;
@@ -130,9 +139,12 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
       // the next variable holds the difference between the coordinates
       // of the right edges of the 'in' bin and the 'out' bin, computed
       // in a coordinate system where the 'out' voxels are unit distance apart
-      double diff_between_right_edges = zoom * (x1 - offset + .5) - (x2 + .5);
+    double diff_between_right_edges = 
+      zoom*(x1-offset+.5) - (x2 + .5);
 
-      for (; x2 <= out_data.get_max_index(); x2++, diff_between_right_edges--)
+    for(; 
+        x2 <= out_data.get_max_index(); 
+        x2++, diff_between_right_edges--)
         {
 
           if (x1 > in_data.get_max_index())
@@ -179,9 +191,7 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
               if (x1 >= in_data.get_min_index())
                 {
                   out_data[x2] = in_data[x1];
-                  out_data[x2] *= static_cast<float>(
-                      1 / diff_between_right_edges
-                      + 1); // note conversion to float to avoid compiler warnings in case that T is float (or a float array)
+	  out_data[x2] *= static_cast<float>(1/diff_between_right_edges + 1); // note conversion to float to avoid compiler warnings in case that T is float (or a float array)
                 }
               else
                 {
@@ -204,6 +214,7 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
               diff_between_right_edges += zoom;
             }
         } // End of for x2
+    
     }
   else
     {
@@ -233,8 +244,10 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
       // lies outside the 'out' bin. In the loop later, this part of the
       // 'in' bin will be added again.
       {
-        const double diff_between_left_edges = diff_between_right_edges - 1 + inverse_zoom;
-        if (diff_between_left_edges < 0 && x1 >= in_data.get_min_index() && x1 <= in_data.get_max_index())
+      const double diff_between_left_edges =
+	diff_between_right_edges-1+inverse_zoom;
+      if (diff_between_left_edges < 0 &&
+	x1 >= in_data.get_min_index() && x1 <= in_data.get_max_index() )
           {
             out_data[x2] = in_data[x1];
             out_data[x2] *= static_cast<float>(diff_between_left_edges);
@@ -246,7 +259,9 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
           }
       }
 
-      for (; x1 <= in_data.get_max_index(); x1++, diff_between_right_edges++)
+    for (;
+         x1 <= in_data.get_max_index(); 
+         x1++, diff_between_right_edges++)
         {
           assert(diff_between_right_edges <= 1 /*+epsilon*/);
           assert(diff_between_right_edges >= -inverse_zoom /*-epsilon*/);
@@ -301,28 +316,40 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
       if (assign_rest_with_zeroes)
         {
           // set rest of out_data to 0
-          for (x2++; x2 <= out_data.get_max_index(); x2++)
+      for (x2++;
+           x2 <= out_data.get_max_index(); 
+           x2++)
             out_data[x2] *= 0;
         }
 #ifdef STIR_OVERLAP_NORMALISATION
-      for (x2 = out_data.get_min_index(); x2 <= out_data.get_max_index(); x2++)
+      for (x2 = out_data.get_min_index();
+           x2 <= out_data.get_max_index(); 
+           x2++)
         out_data[x2] *= static_cast<float>(zoom);
 #endif
 
+    
     } // End of if(zoom>1)
+  
 }
+
+
 
 /************************************************
  Instantiations
  ************************************************/
 
-template void overlap_interpolate<>(VectorWithOffset<float>& out_data,
+template
+void 
+overlap_interpolate<>(VectorWithOffset<float>& out_data, 
                                     const VectorWithOffset<float>& in_data,
                                     const float zoom,
                                     const float offset,
                                     const bool assign_rest_with_zeroes);
 
-template void overlap_interpolate<>(VectorWithOffset<double>& out_data,
+template
+void 
+overlap_interpolate<>(VectorWithOffset<double>& out_data, 
                                     const VectorWithOffset<double>& in_data,
                                     const float zoom,
                                     const float offset,
@@ -334,17 +361,22 @@ END_NAMESPACE_STIR
 
 #  include "stir/Tensor2D.h"
 
-template void overlap_interpolate<>(VectorWithOffset<Tensor1D<float>>& out_data,
+template
+void 
+overlap_interpolate<>(VectorWithOffset<Tensor1D<float> >& out_data, 
                                     const VectorWithOffset<Tensor1D<float>>& in_data,
                                     const float zoom,
                                     const float offset,
                                     const bool assign_rest_with_zeroes);
 
-template void overlap_interpolate<>(VectorWithOffset<Tensor2D<float>>& out_data,
+template
+void 
+overlap_interpolate<>(VectorWithOffset<Tensor2D<float> >& out_data, 
                                     const VectorWithOffset<Tensor2D<float>>& in_data,
                                     const float zoom,
                                     const float offset,
                                     const bool assign_rest_with_zeroes);
+
 
 #else
 
@@ -352,13 +384,17 @@ template void overlap_interpolate<>(VectorWithOffset<Tensor2D<float>>& out_data,
 
 START_NAMESPACE_STIR
 
-template void overlap_interpolate<>(VectorWithOffset<Array<1, float>>& out_data,
+template
+void 
+overlap_interpolate<>(VectorWithOffset<Array<1,float> >& out_data, 
                                     const VectorWithOffset<Array<1, float>>& in_data,
                                     const float zoom,
                                     const float offset,
                                     const bool assign_rest_with_zeroes);
 
-template void overlap_interpolate<>(VectorWithOffset<Array<2, float>>& out_data,
+template
+void 
+overlap_interpolate<>(VectorWithOffset<Array<2,float> >& out_data, 
                                     const VectorWithOffset<Array<2, float>>& in_data,
                                     const float zoom,
                                     const float offset,

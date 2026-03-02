@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -20,11 +28,13 @@
 #ifndef __stir_ChainedDataProcessor_H__
 #define __stir_ChainedDataProcessor_H__
 
+
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
+
 
 /*!
   \ingroup DataProcessor
@@ -59,32 +69,50 @@ START_NAMESPACE_STIR
  */
 
 template <typename DataT>
-class ChainedDataProcessor
-    : public RegisteredParsingObject<ChainedDataProcessor<DataT>, DataProcessor<DataT>, DataProcessor<DataT>>
+class ChainedDataProcessor : 
+  public 
+    RegisteredParsingObject<
+        ChainedDataProcessor<DataT>,
+        DataProcessor<DataT>,
+        DataProcessor<DataT>
+    >
 {
 private:
-  typedef RegisteredParsingObject<ChainedDataProcessor<DataT>, DataProcessor<DataT>, DataProcessor<DataT>> base_type;
-
+  typedef 
+    RegisteredParsingObject<
+        ChainedDataProcessor<DataT>,
+        DataProcessor<DataT>,
+        DataProcessor<DataT>
+    >
+    base_type;
 public:
   static const char* const registered_name;
 
   //! Construct given DataProcessor parameters
-  explicit ChainedDataProcessor(shared_ptr<DataProcessor<DataT>> apply_first = shared_ptr<DataProcessor<DataT>>(),
-                                shared_ptr<DataProcessor<DataT>> apply_second = shared_ptr<DataProcessor<DataT>>());
+  explicit
+  ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > apply_first=
+		       shared_ptr<DataProcessor<DataT> >(),
+		       shared_ptr<DataProcessor<DataT> > apply_second=
+		       shared_ptr<DataProcessor<DataT> >());
 
 private:
+  
   shared_ptr<DataProcessor<DataT>> apply_first;
   shared_ptr<DataProcessor<DataT>> apply_second;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
-  Succeeded virtual_set_up(const DataT& data) override;
+  Succeeded virtual_set_up(const DataT& data);
 
-  void virtual_apply(DataT& out_data, const DataT& in_data) const override;
-  void virtual_apply(DataT& data) const override;
+  void  virtual_apply(DataT& out_data, const DataT& in_data) const;
+  void  virtual_apply(DataT& data) const ;
+
 };
+
 
 END_NAMESPACE_STIR
 
 #endif
+
+

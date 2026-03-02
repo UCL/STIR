@@ -4,7 +4,15 @@
  Copyright (C) 2009 - 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -27,6 +35,12 @@
 #include <vector>
 #include <utility>
 
+#ifndef STIR_NO_NAMESPACES
+using std::string;
+using std::pair;
+using std::vector;
+#endif
+
 START_NAMESPACE_STIR
 /*!
   \ingroup buildblock
@@ -44,9 +58,10 @@ class TimeGateDefinitions
 public:
   //! Default constructor: no time gates at all
   TimeGateDefinitions();
-  TimeGateDefinitions(const std::vector<unsigned int>& gate_num_vector, const std::vector<double>& duration_vector);
-  TimeGateDefinitions(const std::vector<std::pair<unsigned int, double>>& gate_sequence);
-  explicit TimeGateDefinitions(const std::string& gdef_filename);
+  TimeGateDefinitions(const vector<unsigned int>& gate_num_vector, 
+                      const vector<double>& duration_vector);
+  TimeGateDefinitions(const vector<pair<unsigned int, double> >& gate_sequence);
+  explicit TimeGateDefinitions(const string& gdef_filename);
 
   //! Read the gate definitions from a file
   /*!
@@ -61,12 +76,18 @@ public:
     \a gate_num_of_this_duration to 0 allows skipping
     a time period of the corresponding \a duration_in_secs.
   */
-  void read_gdef_file(const std::string& gdef_filename);
+  void read_gdef_file(const string& gdef_filename);
+  
+  // Nicolas A Karakatsanis: Calculate and set the time fraction for each motion/gate relative to the total frame duration
+  void set_gate_relative_durations(const vector<pair<unsigned int, double> >& gate_sequence);
 
   //! \name get info for a gate
   //@{
   double get_gate_duration(unsigned int num) const;
   unsigned int get_gate_num(unsigned int num) const;
+
+  // Get the time fraction for each motion/gate relative to the total acquisition duration
+  float get_gate_relative_duration(unsigned int num) const; //Nicolas A Karakatsanis
 
   //@}
 
@@ -77,7 +98,14 @@ public:
 
 private:
   //! Stores start and end time for each gate
-  std::vector<std::pair<unsigned int, double>> _gate_sequence;
+  vector<pair<unsigned int, double> > _gate_sequence;
+  
+  // Total duration of all gates (total acquisition length) (Nicolas A Karakatsanis)
+  float _acquisition_total_duration;
+  
+  //! Stores the time fractions for all motions/gate (time fraction = gate_duration/acquisition_total_duration)  (Nicolas A Karakatsanis)
+  vector<float> _gate_relative_durations_sequence;
+  
 };
 
 END_NAMESPACE_STIR

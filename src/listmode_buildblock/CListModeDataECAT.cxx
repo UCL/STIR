@@ -3,7 +3,15 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -15,25 +23,30 @@
   \author Kris Thielemans
 */
 
+
 #include "stir/listmode/CListModeDataECAT.h"
 #include "stir/listmode/CListRecordECAT966.h"
 #include "stir/listmode/CListRecordECAT962.h"
-#include "stir/info.h"
-#include "stir/warning.h"
-#include "stir/error.h"
-#include "stir/format.h"
+#include "stir/ExamInfo.h"
+#include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #  include "stir/IO/stir_ecat7.h"
 #else
 #  error Need HAVE_LLN_MATRIX
 #endif
 #include "boost/static_assert.hpp"
+#include <iostream>
+#include <fstream>
+#include <typeinfo>
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ios;
 using std::fstream;
 using std::ifstream;
 using std::istream;
+#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
@@ -46,109 +59,90 @@ BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT962) == 4);
 BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT962) == 4);
 
 template <class CListRecordT>
-CListModeDataECAT<CListRecordT>::CListModeDataECAT(const std::string& listmode_filename_prefix)
+CListModeDataECAT<CListRecordT>::
+CListModeDataECAT(const std::string& listmode_filename_prefix)
     : listmode_filename_prefix(listmode_filename_prefix)
 {
   // initialise scanner_ptr before calling open_lm_file, as it is used in that function
-  shared_ptr<Scanner> scanner_sptr;
-  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-  exam_info_sptr->imaging_modality = ImagingModality::PT;
+
+  this->exam_info_sptr.reset(new ExamInfo);
+  ExamInfo& exam_info(*exam_info_sptr);
+  exam_info.imaging_modality = ImagingModality::PT;
   // attempt to read the .sgl file
   {
-    const std::string singles_filename = listmode_filename_prefix + "_1.sgl";
+    const string singles_filename = listmode_filename_prefix + "_1.sgl";
     ifstream singles_file(singles_filename.c_str(), ios::binary);
     char buffer[sizeof(Main_header)];
     if (!singles_file)
       {
-        warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).",
-                singles_filename.c_str());
-        // This should have been handled by the projdatainfo.
+	warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).", singles_filename.c_str());
         scanner_sptr.reset(new Scanner(Scanner::E962));
-
         // TODO invalidate other fields in singles header
       }
     else
       {
         Main_header singles_main_header;
-        singles_file.read(buffer, sizeof(singles_main_header));
+	singles_file.read(buffer,
+			  sizeof(singles_main_header));
         unmap_main_header(buffer, &singles_main_header);
-        // This should have been handled by the projdatainfo.
         ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
 
-        exam_info_sptr->start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
+        exam_info.start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
 
         switch (singles_main_header.patient_orientation)
           {
           case FeetFirstProne:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFP);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::FFP); break;
           case HeadFirstProne:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFP);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::HFP); break;
           case FeetFirstSupine:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFS);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::FFS); break;
           case HeadFirstSupine:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFS);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::HFS); break;
           case FeetFirstRight:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDR);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::FFDR); break;
           case HeadFirstRight:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDR);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::HFDR); break;
           case FeetFirstLeft:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDL);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::FFDL); break;
           case HeadFirstLeft:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDL);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::HFDL); break;
           case UnknownOrientation:
           default:
-            exam_info_sptr->patient_position = PatientPosition(PatientPosition::unknown_position);
-            break;
+            exam_info.patient_position = PatientPosition(PatientPosition::unknown_position); break;
           }
       }
   }
-  this->set_exam_info(*exam_info_sptr);
 
-  shared_ptr<ProjDataInfo> tmp(ProjDataInfo::construct_proj_data_info(scanner_sptr,
-                                                                      1,
-                                                                      scanner_sptr->get_num_rings() - 1,
-                                                                      scanner_sptr->get_max_num_views(),
-                                                                      scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                                                      /* arc_correction*/ false));
-  this->set_proj_data_info_sptr(tmp);
-
-  if ((this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E966
-       && typeid(CListRecordT) != typeid(CListRecordECAT966))
-      || (this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E962
-          && typeid(CListRecordT) != typeid(CListRecordECAT962)))
+  if ((scanner_sptr->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
+      (scanner_sptr->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))
     {
       error("Data in %s is from a %s scanner, but reading with wrong type of CListModeData",
-            listmode_filename_prefix.c_str(),
-            this->get_proj_data_info_sptr()->get_scanner_ptr()->get_name().c_str());
+            listmode_filename_prefix.c_str(), scanner_sptr->get_name().c_str());
     }
-  else if (this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E966
-           && this->get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E962)
+  else if (scanner_sptr->get_type() != Scanner::E966 && scanner_sptr->get_type() != Scanner::E962)
     {
       error("CListModeDataECAT: Unsupported scanner in %s", listmode_filename_prefix.c_str());
     }
 
   if (open_lm_file(1) == Succeeded::no)
-    error("CListModeDataECAT: error opening the first listmode file for filename %s\n", listmode_filename_prefix.c_str());
+    error("CListModeDataECAT: error opening the first listmode file for filename %s\n",
+	  listmode_filename_prefix.c_str());
 }
 
 template <class CListRecordT>
 std::string
-CListModeDataECAT<CListRecordT>::get_name() const
+CListModeDataECAT<CListRecordT>::
+get_name() const
 {
   return listmode_filename_prefix + "_1.sgl";
 }
 
+
 template <class CListRecordT>
 shared_ptr<CListRecord>
-CListModeDataECAT<CListRecordT>::get_empty_record_sptr() const
+CListModeDataECAT<CListRecordT>::
+get_empty_record_sptr() const
 {
   shared_ptr<CListRecord> sptr(new CListRecordT);
   return sptr;
@@ -156,7 +150,8 @@ CListModeDataECAT<CListRecordT>::get_empty_record_sptr() const
 
 template <class CListRecordT>
 Succeeded
-CListModeDataECAT<CListRecordT>::open_lm_file(unsigned int new_lm_file) const
+CListModeDataECAT<CListRecordT>::
+open_lm_file(unsigned int new_lm_file) const
 {
   // current_lm_file and new_lm_file are 1-based
   assert(new_lm_file > 0);
@@ -170,7 +165,8 @@ CListModeDataECAT<CListRecordT>::open_lm_file(unsigned int new_lm_file) const
           if (current_lm_file >= saved_get_positions_for_each_lm_data.size())
             saved_get_positions_for_each_lm_data.resize(current_lm_file);
 
-          saved_get_positions_for_each_lm_data[current_lm_file - 1] = current_lm_data_ptr->get_saved_get_positions();
+	  saved_get_positions_for_each_lm_data[current_lm_file-1] =
+	    current_lm_data_ptr->get_saved_get_positions();
         }
 
       // now open new file
@@ -178,7 +174,7 @@ CListModeDataECAT<CListRecordT>::open_lm_file(unsigned int new_lm_file) const
       char rest[50];
       sprintf(rest, "_%d.lm", new_lm_file);
       filename += rest;
-      info(format("CListModeDataECAT: opening file {}", filename));
+      cerr << "CListModeDataECAT: opening file " << filename << endl;
       shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
       if (!(*stream_ptr))
         {
@@ -193,8 +189,10 @@ CListModeDataECAT<CListRecordT>::open_lm_file(unsigned int new_lm_file) const
       current_lm_file = new_lm_file;
 
       // now restore saved_get_positions for this file
-      if (!is_null_ptr(current_lm_data_ptr) && current_lm_file < saved_get_positions_for_each_lm_data.size())
-        current_lm_data_ptr->set_saved_get_positions(saved_get_positions_for_each_lm_data[current_lm_file - 1]);
+      if (!is_null_ptr(current_lm_data_ptr) && 
+	  current_lm_file<saved_get_positions_for_each_lm_data.size())
+	current_lm_data_ptr->
+	  set_saved_get_positions(saved_get_positions_for_each_lm_data[current_lm_file-1]);
 
       return Succeeded::yes;
     }
@@ -209,7 +207,8 @@ CListModeDataECAT<CListRecordT>::open_lm_file(unsigned int new_lm_file) const
 */
 template <class CListRecordT>
 Succeeded
-CListModeDataECAT<CListRecordT>::get_next_record(CListRecord& record_of_general_type) const
+CListModeDataECAT<CListRecordT>::
+get_next_record(CListRecord& record_of_general_type) const
 {
   CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
   if (current_lm_data_ptr->get_next_record(record) == Succeeded::yes)
@@ -225,9 +224,12 @@ CListModeDataECAT<CListRecordT>::get_next_record(CListRecord& record_of_general_
     }
 }
 
+
+
 template <class CListRecordT>
 Succeeded
-CListModeDataECAT<CListRecordT>::reset()
+CListModeDataECAT<CListRecordT>::
+reset()
 {
   // current_lm_file and new_lm_file are 1-based
   assert(current_lm_file > 0);
@@ -241,9 +243,11 @@ CListModeDataECAT<CListRecordT>::reset()
     }
 }
 
+
 template <class CListRecordT>
 CListModeData::SavedPosition
-CListModeDataECAT<CListRecordT>::save_get_position()
+CListModeDataECAT<CListRecordT>::
+save_get_position() 
 {
   GetPosition current_pos;
   current_pos.first = current_lm_file;
@@ -254,13 +258,15 @@ CListModeDataECAT<CListRecordT>::save_get_position()
 
 template <class CListRecordT>
 Succeeded
-CListModeDataECAT<CListRecordT>::set_get_position(const typename CListModeDataECAT<CListRecordT>::SavedPosition& pos)
+CListModeDataECAT<CListRecordT>::
+set_get_position(const typename CListModeDataECAT<CListRecordT>::SavedPosition& pos)
 {
   assert(pos < saved_get_positions.size());
   if (open_lm_file(saved_get_positions[pos].first) == Succeeded::no)
     return Succeeded::no;
 
-  return current_lm_data_ptr->set_get_position(saved_get_positions[pos].second);
+  return
+    current_lm_data_ptr->set_get_position(saved_get_positions[pos].second);
 }
 #if 0
 template <class CListRecordT>
@@ -320,6 +326,7 @@ get_num_records() const
 }
 
 #endif
+
 
 // instantiations
 template class CListModeDataECAT<CListRecordECAT966>;

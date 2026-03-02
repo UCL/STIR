@@ -10,10 +10,17 @@
 */
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2023, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,6 +33,10 @@
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
 #include <string>
+
+#ifndef STIR_NO_NAMESPACE
+using std::string;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -44,11 +55,9 @@ START_NAMESPACE_STIR
   End Bin Normalisation From ProjData:=
   \endverbatim
 */
-class BinNormalisationFromProjData : public RegisteredParsingObject<BinNormalisationFromProjData, BinNormalisation>
+class BinNormalisationFromProjData :
+   public RegisteredParsingObject<BinNormalisationFromProjData, BinNormalisation>
 {
-private:
-  using base_type = BinNormalisation;
-
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char* const registered_name;
@@ -62,62 +71,48 @@ public:
   BinNormalisationFromProjData();
 
   //! Constructor that reads the projdata from a file
-  BinNormalisationFromProjData(const std::string& filename);
+  BinNormalisationFromProjData(const string& filename);
 
   //! Constructor that takes the projdata from a shared_pointer
   /*! The projdata object pointed to will \c not be modified. */
   BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr);
 
-  //! check if we could be multiplying with 1 (i.e. do nothing)
-  /*!
-    always return \c false, as the case where the whole ProjData is set to 1
-    will never occur in "real life", so we save ourselves some time/complications
-    by returning \c false
+  //! check if we would be multiplying with 1 (i.e. do nothing)
+  /*! Checks if all data is equal to 1 (up to a tolerance of 1e-4). To do this, it uses ProjData::get_viewgram()
+      and loops over all viewgrams.
   */
-  bool is_trivial() const override;
-
-  //! returns if the object can only handle TOF data
-  /*!
-    Checks if the underlying "projection data" are TOF or not.
-  */
-  virtual bool is_TOF_only_norm() const override;
+  virtual bool is_trivial() const;
 
   //! Checks if we can handle certain projection data.
   /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors
       with the ProjDataInfo supplied. */
-  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
-
-  // import all apply/undo methods from base-class (we'll override some below)
-  using base_type::apply;
-  using base_type::undo;
+  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
 
   //! Normalise some data
   /*!
     This means \c multiply with the data in the projdata object
     passed in the constructor.
   */
-  void apply(RelatedViewgrams<float>& viewgrams) const override;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   //! Undo the normalisation of some data
   /*!
     This means \c divide with the data in the projdata object
     passed in the constructor.
   */
+  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  void undo(RelatedViewgrams<float>& viewgrams) const override;
-  float get_bin_efficiency(const Bin& bin) const override;
-
-  //! Get a shared_ptr to the normalisation proj_data.
-  virtual shared_ptr<ProjData> get_norm_proj_data_sptr() const;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
 
 private:
   shared_ptr<ProjData> norm_proj_data_ptr;
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
-  std::string normalisation_projdata_filename;
+  string normalisation_projdata_filename;
 };
+
 
 END_NAMESPACE_STIR
 

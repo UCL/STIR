@@ -23,7 +23,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -32,10 +40,13 @@
 #include "stir/Coordinate3D.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 
+
 START_NAMESPACE_STIR
 
 void
-SymmetryOperation_PET_CartesianGrid_z_shift::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_z_shift::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -52,8 +63,11 @@ SymmetryOperation_PET_CartesianGrid_z_shift::transform_proj_matrix_elems_for_one
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_z_shift::transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel& probs) const
+SymmetryOperation_PET_CartesianGrid_z_shift::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
   transform_image_coordinates(densel);
@@ -69,8 +83,11 @@ SymmetryOperation_PET_CartesianGrid_z_shift::transform_proj_matrix_elems_for_one
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -86,8 +103,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -104,8 +123,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -121,8 +143,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::transform_proj_matrix_elems_
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -139,8 +163,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::transform_proj_matrix_elems_
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -156,8 +183,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::transform_proj_matrix_elems_f
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -174,8 +203,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::transform_proj_matrix_elems_f
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -191,8 +223,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -209,8 +243,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_yx::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -226,8 +263,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx::transform_proj_matrix_elems_for_
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_yx::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -244,8 +283,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx::transform_proj_matrix_elems_for_
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmx::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -261,8 +303,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx::transform_proj_matrix_elems_for_on
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx::transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel& probs) const
+SymmetryOperation_PET_CartesianGrid_swap_xmx::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
   transform_image_coordinates(densel);
@@ -278,8 +323,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx::transform_proj_matrix_elems_for_on
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_ymy::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_ymy::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -295,8 +343,11 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy::transform_proj_matrix_elems_for_on
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_ymy::transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel& probs) const
+SymmetryOperation_PET_CartesianGrid_swap_ymy::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
   transform_image_coordinates(densel);
@@ -312,13 +363,12 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy::transform_proj_matrix_elems_for_on
     }
 }
 
-void
-SymmetryOperation_PET_CartesianGrid_swap_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
-{
-  Bin bin = lor.get_bin();
-  transform_bin_coordinates(bin);
-  lor.set_bin(bin);
 
+void
+SymmetryOperation_PET_CartesianGrid_swap_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
+{
   ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
   while (element_ptr != lor.end())
     {
@@ -329,8 +379,11 @@ SymmetryOperation_PET_CartesianGrid_swap_zq::transform_proj_matrix_elems_for_one
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_zq::transform_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel& probs) const
+SymmetryOperation_PET_CartesianGrid_swap_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
   transform_image_coordinates(densel);
@@ -346,8 +399,11 @@ SymmetryOperation_PET_CartesianGrid_swap_zq::transform_proj_matrix_elems_for_one
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -363,8 +419,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::transform_proj_matrix_elems
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -381,8 +439,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::transform_proj_matrix_elems
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -398,8 +459,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::transform_proj_matrix_elems_
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -416,8 +479,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::transform_proj_matrix_elems_
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -433,8 +499,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -451,8 +519,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -468,8 +539,10 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::transform_proj_matrix_elems_fo
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -486,8 +559,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::transform_proj_matrix_elems_fo
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -503,8 +579,10 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -521,8 +599,11 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::transform_proj_matrix_elems_for
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -539,7 +620,8 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::transform_proj_matrix_elems_fo
 }
 
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -556,8 +638,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::transform_proj_matrix_elems_fo
     }
 }
 
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
+transform_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -573,8 +658,11 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_proj_matrix_elems
     }
 }
 
+
+
 void
-SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_proj_matrix_elems_for_one_densel(
+SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
+transform_proj_matrix_elems_for_one_densel(
     ProjMatrixElemsForOneDensel& probs) const
 {
   Densel densel = probs.get_densel();
@@ -590,5 +678,6 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_proj_matrix_elems
       ++element_ptr;
     }
 }
+
 
 END_NAMESPACE_STIR

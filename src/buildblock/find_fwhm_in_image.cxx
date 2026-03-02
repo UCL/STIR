@@ -2,7 +2,15 @@
     Copyright (C) 2004- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,7 +29,6 @@
 #include "stir/round.h"
 #include "stir/assign_to_subregion.h"
 #include "stir/extract_line.h"
-#include "stir/error.h"
 #include <algorithm>
 #include <list>
 
@@ -40,16 +47,18 @@ START_NAMESPACE_STIR
 */
 
 template <class RandomAccessIterType>
-static float parabolic_3points_fit(const RandomAccessIterType& begin_iter, const RandomAccessIterType& end_iter);
+static float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
+                                   const RandomAccessIterType& end_iter);
 
 template <class RandomAccessIterType>
-static float parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter, const RandomAccessIterType& end_iter);
+static float parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter,
+                                      const RandomAccessIterType& end_iter) ; 
 
 template <class elemT>
-static float
-find_NEMA_level(const Array<1, elemT>& column, const float level)
+static float find_NEMA_level(const Array<1,elemT>& column, const float level)
 {
-  const float real_maximum_value = parabolic_3points_fit(column.begin(), column.end());
+  const float real_maximum_value = 
+        parabolic_3points_fit(column.begin(),column.end());
   return find_level_width(column.begin(), column.end(), real_maximum_value / level);
 }
 
@@ -64,8 +73,8 @@ find_fwhm_in_image(DiscretisedDensity<3, elemT>& input_image,
   ResolutionIndex<3, float> res_index;
   std::list<ResolutionIndex<3, float>> list_res_index;
 
-  const DiscretisedDensityOnCartesianGrid<3, float>* input_image_cartesian_ptr
-      = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>*>(&input_image);
+  const DiscretisedDensityOnCartesianGrid <3,float>* input_image_cartesian_ptr =
+    dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*> (&input_image);
   if (input_image_cartesian_ptr == 0)
     {
       error("find_fwhm_in_image currently only works with DiscretisedDensityOnCartesianGrid images");
@@ -74,7 +83,8 @@ find_fwhm_in_image(DiscretisedDensity<3, elemT>& input_image,
   if (!input_image.get_regular_range(min_index, max_index))
     error("find_fwhm_in_image works only on regular ranges\n");
 
-  CartesianCoordinate3D<float> grid_spacing = input_image_cartesian_ptr->get_grid_spacing();
+  CartesianCoordinate3D<float> 
+    grid_spacing=input_image_cartesian_ptr->get_grid_spacing();
 
   for (unsigned int maximum_num = 0; maximum_num != num_maxima; ++maximum_num)
     {
@@ -97,27 +107,75 @@ find_fwhm_in_image(DiscretisedDensity<3, elemT>& input_image,
       res_index.voxel_location = max_location;
       res_index.voxel_value = current_maximum;
       for (int i = 1; i <= 3; ++i)
-        res_index.resolution[i]
-            = grid_spacing[i]
-              * (do_direction[i] ? (nema ? find_NEMA_level(extract_line(input_image, max_location, i), level)
-                                         : find_NEMA_level(interpolate_line(input_image, max_location, do_direction, i), level))
-                                 : 0);
+        res_index.resolution[i] = grid_spacing[i]*
+          (do_direction[i] ? (nema?find_NEMA_level(extract_line(input_image,max_location,
+                                                                i), level) : 
+                              find_NEMA_level(interpolate_line(input_image,max_location,
+                                                                do_direction,
+                                                                i), level)): 0); 
       list_res_index.push_back(res_index);
       if (maximum_num + 1 != num_maxima && dimension == 0)
-        assign_to_subregion(
-            input_image, max_location, round(res_index.resolution / grid_spacing / level * 2), input_image.find_min());
+        assign_to_subregion(input_image,max_location,round(res_index.resolution/grid_spacing/level*2), input_image.find_min());
     }
   return list_res_index;
 }
 
+template <class RandomAccessIterType>
+float find_level_width(const RandomAccessIterType& begin_iterator,
+                       const RandomAccessIterType& current_max_iterator,
+                       const RandomAccessIterType& end_iterator,
+                       const float level_height)
+{ 
+  const int max_position = static_cast<int>(current_max_iterator - begin_iterator + 1);
+  RandomAccessIterType current_iter = current_max_iterator;
+  while(current_iter!= end_iterator && *current_iter > level_height)   ++current_iter;
+  if (current_iter==end_iterator)  
+    {
+      warning("find_level_width: level extends beyond border."
+              "Cannot find the real level-width of this point source!");
+      // go 1 back to remain inside the range
+      --current_iter;
+    }
+
+  // do linear interpolation to find position of level_height  
+  float right_level_max = (*current_iter - level_height)/(*current_iter-*(current_iter-1));
+  right_level_max = float(current_iter-(begin_iterator+max_position)) - right_level_max ;
+  
+  current_iter = current_max_iterator;
+  while(current_iter!=begin_iterator && *current_iter > level_height) --current_iter;
+  if (current_iter == begin_iterator && *current_iter > level_height) 
+    {
+      warning("find_level_width: level extends beyond border."
+              "Cannot find the real level-width of this point source!");
+    }
+        
+  float left_level_max = (*current_iter - level_height)/(*current_iter-*(current_iter+1));
+  left_level_max += float(current_iter-(begin_iterator+max_position));
+
+  return right_level_max - left_level_max;   
+} 
+                     
+template <class RandomAccessIterType>
+float find_level_width(const RandomAccessIterType& begin_iterator,
+                       const RandomAccessIterType& end_iterator,
+                       const float level_height)
+{
+  return find_level_width(begin_iterator, 
+                          std::max_element(begin_iterator,end_iterator),
+                          end_iterator,
+                          level_height); 
+}
+
 template <class elemT>
 BasicCoordinate<3, int>
-maximum_location_per_slice(const Array<3, elemT>& input_array, const int slice, const int dimension)
+maximum_location_per_slice(const Array<3,elemT>& input_array,
+                           const int slice, const int dimension)
 {
   BasicCoordinate<3, int> min_index, max_index;
   if (!input_array.get_regular_range(min_index, max_index))
     error("maximum_location_per_slice works only on regular ranges\n");
-  BasicCoordinate<3, int> min_slice_index = min_index, max_slice_index = max_index;
+  BasicCoordinate<3,int> min_slice_index=min_index, 
+    max_slice_index=max_index;
   min_slice_index[dimension] = slice;
   max_slice_index[dimension] = slice;
   const IndexRange<3> slice_range(min_slice_index, max_slice_index);
@@ -147,11 +205,17 @@ interpolate_line(const Array<3, elemT>& input_array,
     error("interpolate_line works only on regular ranges\n");
   Array<1, elemT> line(min_index[dimension], max_index[dimension]);
   {
-    Array<1, elemT> line_z(min_index[1], max_index[1]), line_y(min_index[2], max_index[2]), line_x(min_index[3], max_index[3]),
-        line_000(min_index[dimension], max_index[dimension]), line_001(min_index[dimension], max_index[dimension]),
-        line_010(min_index[dimension], max_index[dimension]), line_100(min_index[dimension], max_index[dimension]),
-        line_011(min_index[dimension], max_index[dimension]), line_101(min_index[dimension], max_index[dimension]),
-        line_110(min_index[dimension], max_index[dimension]), line_111(min_index[dimension], max_index[dimension]);
+    Array<1,elemT> line_z(min_index[1],max_index[1]),
+      line_y(min_index[2],max_index[2]),
+      line_x(min_index[3],max_index[3]),
+      line_000(min_index[dimension],max_index[dimension]),
+      line_001(min_index[dimension],max_index[dimension]),
+      line_010(min_index[dimension],max_index[dimension]),
+      line_100(min_index[dimension],max_index[dimension]),
+      line_011(min_index[dimension],max_index[dimension]),
+      line_101(min_index[dimension],max_index[dimension]),
+      line_110(min_index[dimension],max_index[dimension]),
+      line_111(min_index[dimension],max_index[dimension]);
     line_z = extract_line(input_array, max_location, 1);
     line_y = extract_line(input_array, max_location, 2);
     line_x = extract_line(input_array, max_location, 3);
@@ -159,8 +223,8 @@ interpolate_line(const Array<3, elemT>& input_array,
     float y0 = do_direction[2] ? parabolic_3points_fit_x0(line_y.begin(), line_y.end()) : 0;
     float x0 = do_direction[3] ? parabolic_3points_fit_x0(line_x.begin(), line_x.end()) : 0;
 
-    BasicCoordinate<3, int> location_000, location_001, location_010, location_100, location_011, location_101, location_110,
-        location_111;
+    BasicCoordinate<3,int> location_000,location_001,location_010,location_100,
+      location_011,location_101,location_110,location_111;
     location_000 = max_location;
 
     location_001[1] = max_location[1];
@@ -171,9 +235,11 @@ interpolate_line(const Array<3, elemT>& input_array,
     location_010[2] = y0 > 0 ? max_location[2] + 1 : (y0 < 0 ? max_location[2] - 1 : max_location[2]);
     location_010[3] = max_location[3];
 
+
     location_100[1] = z0 > 0 ? max_location[1] + 1 : (z0 < 0 ? max_location[1] - 1 : max_location[1]);
     location_100[2] = max_location[2];
     location_100[3] = max_location[3];
+
 
     location_011[1] = max_location[1];
     location_011[2] = y0 > 0 ? max_location[2] + 1 : (y0 < 0 ? max_location[2] - 1 : max_location[2]);
@@ -200,21 +266,21 @@ interpolate_line(const Array<3, elemT>& input_array,
 
     line_110 = extract_line(input_array, location_110, dimension);
     line_111 = extract_line(input_array, location_111, dimension);
-    line = line_000 * (1 - std::abs(z0)) * (1 - std::abs(y0)) * (1 - std::abs(x0));
-    line += line_001 * (1 - std::abs(z0)) * (1 - std::abs(y0)) * std::abs(x0);
-    line += line_010 * (1 - std::abs(z0)) * std::abs(y0) * (1 - std::abs(x0));
-    line += line_100 * std::abs(z0) * (1 - std::abs(y0)) * (1 - std::abs(x0));
-    line += line_011 * (1 - std::abs(z0)) * std::abs(y0) * std::abs(x0);
-    line += line_101 * std::abs(z0) * (1 - std::abs(y0)) * std::abs(x0);
-    line += line_110 * std::abs(z0) * std::abs(y0) * (1 - std::abs(x0));
-    line += line_111 * std::abs(z0) * std::abs(y0) * std::abs(x0);
+    line =  line_000*(1-abs(z0))*(1-abs(y0))*(1-abs(x0)) ;
+    line+=  line_001*(1-abs(z0))*(1-abs(y0))*abs(x0)  ;
+    line+=      line_010*(1-abs(z0))*abs(y0)*(1-abs(x0)) ;
+    line+=      line_100*abs(z0)*(1-abs(y0))*(1-abs(x0)) ;
+    line+=      line_011*(1-abs(z0))*abs(y0)*abs(x0) ;
+    line+=      line_101*abs(z0)*(1-abs(y0))*abs(x0) ;
+    line+=      line_110*abs(z0)*abs(y0)*(1-abs(x0)) ;
+    line+=      line_111*abs(z0)*abs(y0)*abs(x0) ;
   }
   return line;
 }
 
 template <class RandomAccessIterType>
-float
-parabolic_3points_fit(const RandomAccessIterType& begin_iter, const RandomAccessIterType& end_iter)
+float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
+                                   const RandomAccessIterType& end_iter)    
 {
   float real_max_value;
   const RandomAccessIterType max_iter = std::max_element(begin_iter, end_iter);
@@ -238,21 +304,22 @@ parabolic_3points_fit(const RandomAccessIterType& begin_iter, const RandomAccess
     */
     const float x0 = 0.5F * (x1 * a1 * (y2 * a3 + y3 * a2) + x2 * a2 * (y1 * a3 + y3 * a1) + x3 * a3 * (y1 * a2 + y2 * a1))
                      / (y1 * a2 * a3 + y2 * a1 * a3 + y3 * a1 * a2);
-    real_max_value = ((x0 - x2) * (x0 - x3) * y1 / a1) + ((x0 - x1) * (x0 - x3) * y2 / a2) + ((x0 - x1) * (x0 - x2) * y3 / a3);
+    real_max_value = ((x0 - x2)*(x0 - x3)*y1/a1) + 
+      ((x0 - x1)*(x0 - x3)*y2/a2) + 
+      ((x0 - x1)*(x0 - x2)*y3/a3) ;
+
   }
   return real_max_value;
 }
 
 template <class RandomAccessIterType>
-float
-parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter, const RandomAccessIterType& end_iter)
+float parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter,
+                                      const RandomAccessIterType& end_iter)  
 {
   //  float real_max_value;
   const RandomAccessIterType max_iter = std::max_element(begin_iter, end_iter);
-  if (max_iter == end_iter - 1)
-    return 0; // In case maximum is at the borders of the image
-  if (max_iter == begin_iter)
-    return 0;
+  if (max_iter==end_iter-1) return 0;           // In case maximum is at the borders of the image     
+  if (max_iter==begin_iter) return 0;
   // else
 
   const float y1 = *(max_iter - 1);
@@ -275,13 +342,17 @@ parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter, const RandomAcc
   return x0;
 }
 
+
 /***************************************************
                  instantiations
 ***************************************************/
-template std::list<ResolutionIndex<3, float>> find_fwhm_in_image<>(DiscretisedDensity<3, float>& input_image,
+template 
+std::list<ResolutionIndex<3,float> > 
+find_fwhm_in_image<>(DiscretisedDensity<3,float> & input_image, 
                                                                    const unsigned int num_maxima,
                                                                    const float level,
                                                                    const int dimension,
                                                                    const bool nema);
 
+  
 END_NAMESPACE_STIR

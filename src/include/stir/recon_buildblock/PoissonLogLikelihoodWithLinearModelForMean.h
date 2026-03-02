@@ -2,7 +2,15 @@
     Copyright (C) 2003 - 2011-01-14, Hammersmith Imanet Ltd
     Copyright (C) 2012, Kris Thielemans
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,6 +29,7 @@
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 
 START_NAMESPACE_STIR
+
 
 /*!
   \ingroup GeneralisedObjectiveFunction
@@ -65,13 +74,14 @@ START_NAMESPACE_STIR
   the <i>sensitivity</i> because (if \f$r=0\f$) it is the total
   probability of detecting a count (in any bin) originating from \f$v\f$.
 
-  This class computes the gradient directly, via \c compute_sub_gradient_without_penalty().
-  This method is utilised by the \c OSSPS algorithm in STIR.
-  However, an additional method (\c compute_sub_gradient_without_penalty_plus_sensitivity())
-  is provided that computes the sum of the subset gradient (without penalty) and the sensitivity.
-  This method is utilised by the \c OSMAPOSL algorithm.
+  This class computes the gradient as a sum of these two terms. The
+  sensitivity has to be computed by the virtual function 
+  \c add_subset_sensitivity(). The sum is computed by
+  \c compute_sub_gradient_without_penalty_plus_sensitivity().
 
-  See also \c PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.
+  The reason for this is that the sensitivity is data-independent, and
+  can be computed only once. See also
+  PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.
 
   \par Relation with Kullback-Leibler distance
 
@@ -99,7 +109,7 @@ START_NAMESPACE_STIR
   ; pattern for filename for reading the subset sensitivities, or writing if recomputed
   ; if use_subset_sensitivities=1
   ; e.g. subsens_%d.hv
-  ; fmt::format is used with the pattern
+  ; boost::format is used with the pattern (which means you can use it like sprintf)
   subset sensitivity filenames:=
   \endverbatim
 
@@ -108,32 +118,35 @@ START_NAMESPACE_STIR
   the mathematical subgradient).
 */
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMean : public GeneralisedObjectiveFunction<TargetT>
+class PoissonLogLikelihoodWithLinearModelForMean: 
+public  GeneralisedObjectiveFunction<TargetT>
 {
 private:
   typedef GeneralisedObjectiveFunction<TargetT> base_type;
 
 public:
+  
   // PoissonLogLikelihoodWithLinearModelForMean();
 
-  //! Compute the subset gradient of the (unregularised) objective function
-  /*!
-   Implementation in terms of actual_compute_sub_gradient_without_penalty()
-   This function is used by OSSPS may be used by other gradient ascent/descent algorithms
+  //! Implementation in terms of compute_sub_gradient_without_penalty_plus_sensitivity()
+  /*! \warning If separate subsensitivities are not used, we just subtract the total 
+    sensitivity divided by the number of subsets.
+    This is fine for some algorithms as the sum over all the subsets is 
+    equal to gradient of the objective function (without prior). 
+    Other algorithms do not behave very stable under this approximation
+    however. So, currently setup() will return an error if
+    <code>!subsets_are_approximately_balanced()</code> and subset sensitivities
+    are not used.
 
-    This computes
-    \f[
-    {\partial L \over \partial \lambda_v} =
-      \sum_b P_{bv} ({y_b \over Y_b} - 1)
-    \f]
-    (see the class general documentation).
-    The sum will however be restricted to a subset.
+    \see get_use_subset_sensitivities()
   */
-  void compute_sub_gradient_without_penalty(TargetT& gradient, const TargetT& current_estimate, const int subset_num) override;
+  virtual void 
+    compute_sub_gradient_without_penalty(TargetT& gradient, 
+                                         const TargetT &current_estimate, 
+                                         const int subset_num); 
 
-  //! This should compute the subset gradient of the (unregularised) objective function plus the subset sensitivity
+  //! This should compute the gradient of the (unregularised) objective function plus the (sub)sensitivity
   /*!
-   Implementation in terms of actual_compute_sub_gradient_without_penalty().
    This function is used for instance by OSMAPOSL.
 
     This computes
@@ -144,7 +157,9 @@ public:
     The sum will however be restricted to a subset.
    */
   virtual void
-  compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, const TargetT& current_estimate, const int subset_num);
+    compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
+                                                          const TargetT &current_estimate, 
+                                                          const int subset_num) =0; 
 
   //! set-up sensitivity etc if possible
   /*! If \c recompute_sensitivity is \c false, we will try to
@@ -159,7 +174,7 @@ public:
 
       Calls set_up_before_sensitivity().
   */
-  Succeeded set_up(shared_ptr<TargetT> const& target_sptr) override;
+  virtual Succeeded set_up(shared_ptr <TargetT> const& target_sptr);
 
   //! Get a const reference to the total sensitivity
   const TargetT& get_sensitivity() const;
@@ -167,7 +182,8 @@ public:
   const TargetT& get_subset_sensitivity(const int subset_num) const;
 
   //! Add subset sensitivity to existing data
-  virtual void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const = 0;
+  virtual void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const = 0;
 
   //! find out if subset_sensitivities are used
   /*! If \c true, the sub_gradient and subset_sensitivity functions use the sensitivity
@@ -180,18 +196,14 @@ public:
   bool get_recompute_sensitivity() const;
 
   //! get filename to read (or write) the total sensitivity
-  /*! will be a zero-length string if not set */
+  /*! will be a zero string if not set */
   std::string get_sensitivity_filename() const;
   //! get filename pattern to read (or write) the subset sensitivities
-  /*! will be a zero-length string if not set.
+  /*! will be a zero string if not set.
   Could be e.g. "subsens_%d.hv"
-  fmt::format is used with the pattern
+  boost::format is used with the pattern (which means you can use it like sprintf)
  */
   std::string get_subsensitivity_filenames() const;
-
-  //!  Return the filename for a particular subset
-  /*! \sa get_subsensitivity_filenames() */
-  std::string get_subsensitivity_filename(const int subset_num) const;
 
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -212,7 +224,7 @@ public:
   //! set filename pattern to read (or write) the subset sensitivities
   /*! set to a zero-length string to avoid reading/writing a file
   Could be e.g. "subsens_%d.hv"
-  fmt::format is used with the pattern (which means you can use it like sprintf)
+  boost::format is used with the pattern (which means you can use it like sprintf)
 
   Calls error() if the pattern is invalid.
  */
@@ -222,9 +234,11 @@ public:
   /*! The implementation checks if the sensitivity of a voxel is zero. If so,
    it will the target voxel will be assigned the desired value.
   */
-  void fill_nonidentifiable_target_parameters(TargetT& target, const float value) const override;
+  void 
+    fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const;
 
 private:
+
   std::string sensitivity_filename;
   std::string subsensitivity_filenames;
   bool recompute_sensitivity;
@@ -234,7 +248,8 @@ private:
   shared_ptr<TargetT> sensitivity_sptr;
 
   //! Get the subset sensitivity sptr
-  shared_ptr<TargetT> get_subset_sensitivity_sptr(const int subset_num) const;
+  shared_ptr<TargetT> 
+    get_subset_sensitivity_sptr(const int subset_num) const;
   //! compute total from subsensitivity or vice versa
   /*! This function will be called by set_up() after reading new images, and/or
       by compute_sensitivities().
@@ -247,7 +262,8 @@ private:
 
 protected:
   //! set-up specifics for the derived class
-  virtual Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr) = 0;
+  virtual Succeeded 
+    set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr) = 0;
 
   //! compute subset and total sensitivity
   /*! This function fills in the sensitivity data by calling add_subset_sensitivity()
@@ -256,34 +272,14 @@ protected:
   */
   void compute_sensitivities();
 
-  //! computes the subset gradient of the objective function without the penalty (optional: add subset sensitivity)
-  /*!
-    If \c add_sensitivity is \c true, this computes
-    \f[ {\partial L \over \partial \lambda_v} + P_v =
-      \sum_b P_{bv} {y_b \over Y_b}
-      \f]
-    (see the class general documentation).
-    The sum will however be restricted to a subset.
-
-    However, if \c add_sensitivity is \c false, this function will instead compute only the gradient
-    \f[
-        {\partial L \over \partial \lambda_v} =
-            \sum_b P_{bv} ({y_b \over Y_b} - 1)
-    \f]
-  */
-  virtual void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
-                                                              const TargetT& current_estimate,
-                                                              const int subset_num,
-                                                              const bool add_sensitivity)
-      = 0;
-
   //! Sets defaults for parsing
   /*! Resets \c sensitivity_filename, \c subset_sensitivity_filenames to empty,
      \c recompute_sensitivity to \c false, and \c use_subset_sensitivities to false.
   */
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+
 };
 
 END_NAMESPACE_STIR

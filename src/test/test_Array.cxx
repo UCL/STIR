@@ -2,11 +2,19 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2013, 2020, 2023, 2024, 2025 University College London
+    Copyright (C) 2013 University College London
 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -30,9 +38,6 @@
 #endif
 
 #include "stir/Array.h"
-#include "stir/type_traits.h"
-#include "stir/assign.h"
-#include "stir/make_array.h"
 #include "stir/Coordinate2D.h"
 #include "stir/Coordinate3D.h"
 #include "stir/Coordinate4D.h"
@@ -45,47 +50,24 @@
 
 #include "stir/ArrayFunction.h"
 #include "stir/array_index_functions.h"
-#include "stir/copy_fill.h"
 #include <functional>
-#include <algorithm>
 
 // for open_read/write_binary
 #include "stir/utilities.h"
-#include "stir/info.h"
-#include "stir/error.h"
-#include "stir/format.h"
 
-#include "stir/HighResWallClockTimer.h"
-
+#include <stdio.h>
 #include <fstream>
 #include <sstream>
+#include <boost/format.hpp>
+#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::ifstream;
 using std::plus;
-using std::cerr;
-using std::endl;
+using std::bind2nd;
+#endif
 
 START_NAMESPACE_STIR
 
-// compile-time checks on type traits
-static_assert(!has_iterator_v<double>);
-static_assert(has_iterator_v<std::vector<int>>);
-static_assert(has_iterator_v<VectorWithOffset<int>>);
-static_assert(has_iterator_v<Array<3, int>>);
-static_assert(!has_full_iterator_v<std::vector<int>>);
-static_assert(has_full_iterator_v<Array<3, int>>);
-static_assert(has_iterator_and_no_full_iterator_v<std::vector<int>>);
-static_assert(!has_iterator_and_no_full_iterator_v<Array<3, int>>);
-
-namespace detail
-{
-
-static Array<2, float>
-test_make_array()
-{
-  return make_array(make_1d_array(1.F, 0.F, 0.F), make_1d_array(0.F, 1.F, 1.F), make_1d_array(0.F, -2.F, 2.F));
-}
-} // namespace detail
 
 /*!
   \brief Tests Array functionality
@@ -100,7 +82,8 @@ private:
   // this function tests the next() function and compare it to using full_iterators
   // sadly needs to be declared in the class for VC 6.0
   template <int num_dimensions, class elemT>
-  void run_tests_on_next(const Array<num_dimensions, elemT>& test)
+  void
+  run_tests_on_next(const Array<num_dimensions, elemT>& test)
   {
     // exit if empty array (as do..while() loop would fail)
     if (test.size() == 0)
@@ -112,7 +95,8 @@ private:
       {
         check(*iter == test[index], "test on next(): element out of sequence?");
         ++iter;
-    } while (next(index, test) && (iter != test.end_all()));
+      }
+    while (next(index, test) && (iter != test.end_all()));
     check(iter == test.end_all(), "test on next() : did we cover all elements?");
   }
 
@@ -168,6 +152,7 @@ private:
     cerr << "\tTests writing as signed chars\n";
     run_IO_tests_mixed(os, is, t1, NumericInfo<signed char>());
 
+
     /* check on failed IO.
        Note: needs to be after the others, as we would have to call os.clear()
        for ostream to be able to write again, but that's not defined for FILE*.
@@ -178,21 +163,18 @@ private:
       check(write_data(os, t1, ByteOrder::swapped) != Succeeded::yes, "write_data with swapped byte order should have failed");
       check_if_equal(t1, copy, "test out with byte-swapping didn't change the array even with failed IO");
     }
+
   }
 
   //! function that runs IO tests with mixed types for array of arbitrary dimension
   // sadly needs to be implemented in the class for VC 6.0
   template <int num_dimensions, typename elemT, class OFSTREAM, class IFSTREAM, class output_type>
-  void run_IO_tests_mixed(OFSTREAM& os,
-                          IFSTREAM& is,
-                          const Array<num_dimensions, elemT>& orig,
-                          NumericInfo<output_type> output_type_info)
+  void run_IO_tests_mixed(OFSTREAM& os, IFSTREAM& is, const Array<num_dimensions, elemT>&orig, NumericInfo<output_type> output_type_info)
   {
     {
       open_write_binary(os, "output.orig");
       elemT scale(1);
-      check(write_data(os, orig, NumericInfo<elemT>(), scale) == Succeeded::yes,
-            "write_data could not write array in original data type");
+        check(write_data(os, orig, NumericInfo<elemT>(), scale)==Succeeded::yes, "write_data could not write array in original data type");
       close_file(os);
       check_if_equal(scale, static_cast<elemT>(1), "test out/in: data written in original data type: scale factor should be 1");
     }
@@ -201,8 +183,7 @@ private:
     {
       ofstream os;
       open_write_binary(os, "output.other");
-      write_data_ok = check(write_data(os, orig, output_type_info, scale) == Succeeded::yes,
-                            "write_data could not write array as other_type");
+        write_data_ok=check(write_data(os,orig, output_type_info, scale)==Succeeded::yes, "write_data could not write array as other_type");
       close_file(os);
     }
 
@@ -219,8 +200,9 @@ private:
 
         // compare with convert()
         {
-          float newscale = static_cast<float>(scale);
-          Array<num_dimensions, output_type> origconverted = convert_array(newscale, orig, NumericInfo<output_type>());
+            float newscale = scale;
+            Array<num_dimensions,output_type> origconverted = 
+              convert_array(newscale, orig, NumericInfo<output_type>());
           check_if_equal(newscale, scale, "test read_data <-> convert : scale factor ");
           check_if_equal(origconverted, data_read_back, "test read_data <-> convert : data");
         }
@@ -228,8 +210,8 @@ private:
         // compare orig/scale with data_read_back
         {
           const Array<num_dimensions, elemT> orig_scaled(orig / scale);
-          this->check_array_equality_with_rounding(
-              orig_scaled, data_read_back, "test out/in: data written as other_type, read as other_type");
+            this->check_array_equality_with_rounding(orig_scaled, data_read_back, 
+                                                     "test out/in: data written as other_type, read as other_type");
         }
 
         // compare data written as original, but read as other_type
@@ -240,12 +222,11 @@ private:
           open_read_binary(is, "output.orig");
 
           elemT in_scale = 0;
-          check(read_data(is, data_read_back2, NumericInfo<elemT>(), in_scale) == Succeeded::yes,
-                "read_data could not read from output.orig");
+            check(read_data(is, data_read_back2, NumericInfo<elemT>(), in_scale)==Succeeded::yes, "read_data could not read from output.orig");
           // compare orig/in_scale with data_read_back2
           const Array<num_dimensions, elemT> orig_scaled(orig / in_scale);
-          this->check_array_equality_with_rounding(
-              orig_scaled, data_read_back2, "test out/in: data written as original_type, read as other_type");
+            this->check_array_equality_with_rounding(orig_scaled, data_read_back2, 
+                                                     "test out/in: data written as original_type, read as other_type");
         }
       } // end of if(write_data_ok)
     remove("output.orig");
@@ -255,9 +236,7 @@ private:
   /*! we check up to .5 if output_type is integer, and up to tolerance otherwise
    */
   template <int num_dimensions, typename elemT, class output_type>
-  bool check_array_equality_with_rounding(const Array<num_dimensions, elemT>& orig,
-                                          const Array<num_dimensions, output_type>& data_read_back,
-                                          const char* const message)
+  bool check_array_equality_with_rounding(const Array<num_dimensions,elemT>& orig, const Array<num_dimensions,output_type>& data_read_back, const char*const message)
   {
     NumericInfo<output_type> output_type_info;
     bool test_failed = false;
@@ -269,39 +248,30 @@ private:
           {
             std::stringstream full_message;
             // construct useful error message even though we use a boolean check
-            full_message << format("unequal values are {} and {}. {}: difference larger than .5",
-                                   static_cast<elemT>(*data_read_back_iter),
-                                   *diff_iter,
-                                   message);
+            full_message << boost::format("unequal values are %2% and %3%. %1%: difference larger than .5")
+              % message % static_cast<elemT>(*data_read_back_iter) % *diff_iter;
             // difference should be maximum .5 (but we test with slightly larger tolerance to accomodate numerical precision)
-            test_failed = check(fabs(*diff_iter - *data_read_back_iter) <= .502, full_message.str().c_str());
+            test_failed = check(fabs(*diff_iter - *data_read_back_iter)<=.502, 
+                                full_message.str().c_str());
           }
         else
           {
             std::string full_message = message;
             full_message += ": difference larger than tolerance";
-            test_failed = check_if_equal(static_cast<elemT>(*data_read_back_iter), *diff_iter, full_message.c_str());
+            test_failed = check_if_equal(static_cast<elemT>(*data_read_back_iter), *diff_iter, 
+                                         full_message.c_str());
           }
         if (test_failed)
           break;
-        diff_iter++;
-        data_read_back_iter++;
+        diff_iter++; data_read_back_iter++;
       }
     return test_failed;
   }
 
 public:
-  void run_tests() override;
+  void run_tests();
 };
 
-// helper function to create a shared_ptr that doesn't delete the data (as it's still owned by the vector)
-template <typename T>
-shared_ptr<T[]>
-vec_to_shared(std::vector<T>& v)
-{
-  shared_ptr<T[]> sptr(v.data(), [](auto) {});
-  return sptr;
-}
 
 void
 ArrayTests::run_tests()
@@ -313,14 +283,10 @@ ArrayTests::run_tests()
 
     {
 
-      {
         Array<1, int> testint(IndexRange<1>(5));
         testint[0] = 2;
         check_if_equal(testint.size(), size_t(5), "test size()");
         check_if_equal(testint.size_all(), size_t(5), "test size_all()");
-        assign(testint, 4);
-        check_if_equal(testint[0], 4, "test assign");
-      }
 
       Array<1, float> test(IndexRange<1>(10));
       check_if_zero(test, "Array1D not initialised to 0");
@@ -343,24 +309,19 @@ ArrayTests::run_tests()
 
       {
         Array<1, float> ref(-1, 2);
-        ref[-1] = 1.F;
-        ref[0] = 3.F;
-        ref[1] = 3.14F;
+        ref[-1]=1.F;ref[0]=3.F;ref[1]=3.14F;
         Array<1, float> test = ref;
 
         test += 1;
         for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i)
           check_if_equal(test[i], ref[i] + 1, "test operator+=(float)");
-        test = ref;
-        test -= 4;
+        test = ref; test -= 4;
         for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i)
           check_if_equal(test[i], ref[i] - 4, "test operator-=(float)");
-        test = ref;
-        test *= 3;
+        test = ref; test *= 3;
         for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i)
           check_if_equal(test[i], ref[i] * 3, "test operator*=(float)");
-        test = ref;
-        test /= 3;
+        test = ref; test /= 3;
         for (int i = ref.get_min_index(); i <= ref.get_max_index(); ++i)
           check_if_equal(test[i], ref[i] / 3, "test operator/=(float)");
       }
@@ -377,59 +338,6 @@ ArrayTests::run_tests()
         check_if_zero(test3[-2], "test growing during operator+");
       }
 
-      // using preallocated memory
-      {
-        std::vector<float> mem(test.get_index_range().size_all());
-        std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
-        Array<1, float> preallocated(test.get_index_range(), vec_to_shared(mem));
-        // shared_ptr<float[]> mem_sptr(new float [test.get_index_range().size_all()]);
-        // auto mem = mem_sptr.get();
-        // std::copy(test.begin_all_const(), test.end_all_const(), mem);
-        // Array<1,float> preallocated(test.get_index_range(), mem_sptr, false);
-        check_if_equal(test, preallocated, "test preallocated: equality");
-        std::copy(test.begin_all_const(), test.end_all_const(), preallocated.begin_all());
-        check_if_equal(test, preallocated, "test preallocated: copy with full_iterator");
-        check(test.is_contiguous(), "test Array1D is contiguous");
-        check(preallocated.is_contiguous(), "test Array1D is contiguous (preallocated)");
-        check(preallocated.get_full_data_ptr() == &mem[0], "test Array1D preallocated pointer access");
-        preallocated.release_full_data_ptr();
-        check(preallocated.get_const_full_data_ptr() == &mem[0], "test Array1D preallocated const pointer access");
-        preallocated.release_const_full_data_ptr();
-        // test memory is shared between the Array and mem
-        mem[0] = *test.begin() + 345;
-        check_if_equal(*preallocated.begin(), mem[0], "test preallocated: direct buffer mod");
-        *(preallocated.begin() + 1) += 4;
-        check_if_equal(*(preallocated.begin() + 1), mem[1], "test preallocated: indirect buffer mod");
-        // test resize
-        {
-          const auto min = preallocated.get_min_index();
-          const auto max = preallocated.get_max_index();
-          // resizing to smaller range will keep pointing to the same memory
-          preallocated.resize(min + 1, max - 1);
-          std::fill(mem.begin(), mem.end(), 12345.F);
-          check_if_equal(preallocated[min + 1], 12345.F, "test preallocated: resize smaller uses same memory");
-          // resizing to non-overlapping range will reallocate
-          preallocated.resize(min - 1, max - 1);
-          std::fill(mem.begin(), mem.end(), 123456.F);
-          check_if_equal(preallocated[min + 1], 12345.F, "test preallocated: grow uses different memory");
-        }
-      }
-
-      // copying from existing memory
-      {
-        std::vector<float> mem(test.get_index_range().size_all());
-        std::copy(test.begin_all_const(), test.end_all_const(), mem.begin());
-        Array<1, float> test_from_mem(test.get_index_range(), reinterpret_cast<const float*>(mem.data()));
-        check(test_from_mem.owns_memory_for_data(), "test preallocated with copy: should own memory");
-        check_if_equal(test, test_from_mem, "test construct from mem: equality");
-        std::copy(test.begin_all_const(), test.end_all_const(), test_from_mem.begin_all());
-        check_if_equal(test, test_from_mem, "test construct from mem: copy with full_iterator");
-        // test memory is not shared between the Array and mem
-        mem[0] = *test.begin() + 345;
-        check_if_equal(*test_from_mem.begin(), *test.begin(), "test construct from mem: direct buffer mod");
-        *(test_from_mem.begin() + 1) += 4;
-        check_if_equal(*(test_from_mem.begin() + 1), mem[1] + 4, "test construct from mem: indirect buffer mod");
-      }
     }
 #if 1
     {
@@ -472,13 +380,8 @@ ArrayTests::run_tests()
 #endif
       // test2.set_offsets(-1,-4);
       // check_if_equal( test2[2][0] , 23.3, "test indexing of Array2D");
-
-      // test for assign and fill
-      assign(test2, 1.F);
-      check_if_equal(*test2.begin_all(), 1.F, "test assign");
-      assign(test2, 4.F);
-      check_if_equal(*test2.begin_all(), 4.F, "test fill()");
     }
+
 
     {
       IndexRange<2> range(Coordinate2D<int>(0, 0), Coordinate2D<int>(3, 3));
@@ -493,41 +396,15 @@ ArrayTests::run_tests()
       t2fp[3][2] = 2.2F;
 #endif
 
-      auto t2 = t2fp + testfp;
-      {
-        // numerical operations
-#if defined __GNUC__
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Waddress" // disable gcc warning that the following will always be satisfied
-#endif
-        check(dynamic_cast<Array<2, float> const*>(&t2) != 0, "test operator +(Array2D) return correct type");
-#if defined __GNUC__
-#  pragma GCC diagnostic pop
-#endif
+      Array<2,float> t2 = t2fp + testfp;
         check_if_equal(t2[3][2], 5.5F, "test operator +(Array2D)");
         t2fp += testfp;
         check_if_equal(t2fp[3][2], 5.5F, "test operator +=(Array2D)");
         check_if_equal(t2, t2fp, "test comparing Array2D+= and +");
-        check_if_zero(t2 - t2fp, "test Array2D-");
-        {
-          const auto tmp = t2 / 2;
-          check_if_equal(t2.sum() / 2, tmp.sum(), "test operator/(float)");
-          const auto tmp2 = tmp * 2;
-          check_if_equal(t2, tmp2, "test operator*(float)");
-        }
-        {
-          const auto tmp = t2 + 1.F;
-          const auto tmp2 = tmp * tmp;
-          check_if_equal(tmp[3][2] * tmp[3][2], tmp2[3][2], "test operator*(array)");
-          const auto tmp3 = tmp2 / tmp;
-          check_if_equal(tmp3, tmp, "test operator/(array)");
-        }
-      }
 
       {
         BasicCoordinate<2, int> c;
-        c[1] = 3;
-        c[2] = 2;
+        c[1]=3; c[2]=2; 
         check_if_equal(t2[c], 5.5F, "test on operator[](BasicCoordinate)");
         t2[c] = 6.;
         check_if_equal(t2[c], 6.F, "test on operator[](BasicCoordinate)");
@@ -560,56 +437,18 @@ ArrayTests::run_tests()
       check_if_equal(t2, t2fp, "test operator=(Array2D)");
 
       {
+        Array<2,float> tmp;
+        tmp = t2 / 2;
+        check_if_equal( t2.sum()/2 , tmp.sum(), "test operator/(float)");
+      }
+
+      {
         // copy constructor;
         Array<2, float> t21(t2);
-        check_if_equal(t21[3][2], 6.F, "test Array2D copy consructor element");
-        check_if_equal(t21, t2, "test Array2D copy constructor all elements");
+        check_if_equal(t21  , t2, "test Array2D copy constructor" );
         // 'assignment constructor' (this simply calls copy constructor)
         Array<2, float> t22 = t2;
         check_if_equal(t22, t2, "test Array2D copy constructor");
-      }
-
-      // using preallocated memory
-      {
-        std::vector<float> mem(t2.get_index_range().size_all());
-        std::copy(t2.begin_all_const(), t2.end_all_const(), mem.begin());
-        {
-          // test iterator access is row-major
-          auto first_min_idx = t2.get_min_index();
-          check_if_equal(t2[3][2],
-                         mem[(3 - first_min_idx) * t2[first_min_idx].size_all() + 2 - t2[first_min_idx].get_min_index()],
-                         "check row-major order in 2D");
-        }
-        // Array<2,float> preallocated(t2.get_index_range(), &mem[0], false);
-        Array<2, float> preallocated(t2.get_index_range(), vec_to_shared(mem));
-        // check(!preallocated.owns_memory_for_data(), "test preallocated without copy: should not own memory");
-        check_if_equal(t2, preallocated, "test preallocated: equality");
-        std::copy(t2.begin_all_const(), t2.end_all_const(), preallocated.begin_all());
-        check_if_equal(t2, preallocated, "test preallocated: copy with full_iterator");
-
-        check(preallocated.is_contiguous(), "test Array2D is contiguous (preallocated)");
-        check(preallocated.get_full_data_ptr() == &mem[0], "test Array2D preallocated pointer access");
-        preallocated.release_full_data_ptr();
-        check(preallocated.get_const_full_data_ptr() == &mem[0], "test Array2D preallocated const pointer access");
-        preallocated.release_const_full_data_ptr();
-        // test memory is shared between the Array and mem
-        mem[0] = *t2.begin_all() + 345;
-        check_if_equal(*preallocated.begin_all(), mem[0], "test preallocated: direct buffer mod");
-        *(preallocated.begin_all()) += 4;
-        check_if_equal(*(preallocated.begin_all()), mem[0], "test preallocated: indirect buffer mod");
-        // test resize
-        {
-          BasicCoordinate<2, int> min, max;
-          preallocated.get_regular_range(min, max);
-          // resizing to smaller range will keep pointing to the same memory
-          preallocated.resize(IndexRange<2>(min + 1, max - 1));
-          std::fill(mem.begin(), mem.end(), 12345.F);
-          check_if_equal(preallocated[min + 1], 12345.F, "test preallocated: resize smaller uses same memory");
-          check(!preallocated.is_contiguous(), "test preallocated: no longer contiguous after resize");
-          preallocated.resize(IndexRange<2>(min - 1, max - 1));
-          std::fill(mem.begin(), mem.end(), 123456.F);
-          check_if_equal(preallocated[min + 1], 12345.F, "test preallocated: grow uses different memory");
-        }
       }
     }
     // size_all with irregular range
@@ -630,7 +469,9 @@ ArrayTests::run_tests()
       Array<2, float> test2(range);
       {
         float value = 1.2F;
-        for (Array<2, float>::full_iterator iter = test2.begin_all(); iter != test2.end_all();)
+        for (Array<2,float>::full_iterator iter = test2.begin_all();
+             iter != test2.end_all(); 
+             )
           *iter++ = value++;
       }
       {
@@ -694,6 +535,7 @@ ArrayTests::run_tests()
     test3[1][0][2] = (float)7.3;
     test3[1][0][1] = -1;
 
+    
     check_if_equal(test3.sum(), 12.9F, "test on sum");
     check_if_equal(test3.find_max(), 7.3F, "test on find_max");
     check_if_equal(test3.find_min(), -1.F, "test on find_min");
@@ -701,9 +543,7 @@ ArrayTests::run_tests()
     {
       Array<3, float> test3copy(test3);
       BasicCoordinate<3, int> c;
-      c[1] = 1;
-      c[2] = 0;
-      c[3] = 2;
+       c[1]=1; c[2]=0; c[3]=2;
       check_if_equal(test3[c], 7.3F, "test on operator[](BasicCoordinate)");
       test3copy[c] = 8.;
       check_if_equal(test3copy[1][0][2], 8.F, "test on operator[](BasicCoordinate)");
@@ -728,10 +568,13 @@ ArrayTests::run_tests()
       check_if_zero(test3.sum() - 2 * tmp2.sum() - tmp.sum(), "test operator-(float)");
     }
 
-    in_place_apply_function(test3ter, std::bind(plus<float>(), std::placeholders::_1, 4.F));
+#if !defined(_MSC_VER) || _MSC_VER>1300
+    // VC 6.0 cannot compile this
+    in_place_apply_function(test3ter, bind2nd(plus<float>(), 4.F));
     test3quat += 4.F;
-    check_if_equal(test3quat, test3ter, "test in_place_apply_function and operator+=(NUMBER)");
-
+    check_if_equal(test3quat  , test3ter, 
+                  "test in_place_apply_function and operator+=(NUMBER)");
+#endif
     // size_all with irregular range
     {
       const IndexRange<3> range(Coordinate3D<int>(-1, 1, 4), Coordinate3D<int>(1, 2, 6));
@@ -750,7 +593,9 @@ ArrayTests::run_tests()
       Array<3, float> test(range);
       {
         float value = 1.2F;
-        for (Array<3, float>::full_iterator iter = test.begin_all(); iter != test.end_all();)
+        for (Array<3,float>::full_iterator iter = test.begin_all();
+             iter != test.end_all(); 
+             )
           *iter++ = value++;
       }
       {
@@ -774,32 +619,10 @@ ArrayTests::run_tests()
       {
         Array<3, float>::full_iterator titer = test.begin_all();
         Array<3, float>::const_full_iterator ctiter = titer; // this should compile
-        check_if_equal(*ctiter, *titer, "test on full/const_full_iterator");
-      }
-    }
-    // fill_from/copy_to
-    {
-      // make data a bit more interesting
-      std::iota(test3.begin_all(), test3.end_all(), 1.5F);
-      // regular
-      {
-        Array<3, float> data_to_fill(test3.get_index_range());
-        fill_from(data_to_fill, test3.begin_all(), test3.end_all());
-        check_if_equal(test3, data_to_fill, "test on 3D fill_from");
-        copy_to(test3, data_to_fill.begin_all());
-        check_if_equal(test3, data_to_fill, "test on 3D copy_to");
-      }
-      // irregular
-      {
-        test3[0][1].resize(-1, 2);
-        Array<3, float> data_to_fill(test3.get_index_range());
-        fill_from(data_to_fill, test3.begin_all(), test3.end_all());
-        check_if_equal(test3, data_to_fill, "test on 3D fill_from, irregular range");
-        copy_to(test3, data_to_fill.begin_all());
-        check_if_equal(test3, data_to_fill, "test on 3D copy_to, irregular range");
       }
     }
   }
+
 
   {
     cerr << "Testing 4D stuff" << endl;
@@ -834,10 +657,7 @@ ArrayTests::run_tests()
     }
     {
       BasicCoordinate<4, int> c;
-      c[1] = -2;
-      c[2] = 1;
-      c[3] = 0;
-      c[4] = 2;
+      c[1]=-2;c[2]=1;c[3]=0;c[4]=2;
       check_if_equal(test4[c], 7.3F, "test on operator[](BasicCoordinate)");
       test4[c] = 1.;
       check_if_equal(test4[c], 1.F, "test on operator[](BasicCoordinate)");
@@ -905,124 +725,8 @@ ArrayTests::run_tests()
       tmp2.fill(1.F);
 
       // KT 20/12/2001 made check_if_zero compare relative to 1 by dividing
-      check_if_zero((test4.sum() + 2 * tmp2.sum() - tmp.sum()) / test4.sum(), "test operator+(float)");
-    }
-
-    // test axpby
-    {
-      Array<4, float> tmp(test4.get_index_range());
-      Array<4, float> tmp2(test4 + 2);
-#if defined __GNUC__
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-      tmp.axpby(2.F, test4, 3.3F, tmp2);
-#if defined __GNUC__
-#  pragma GCC diagnostic pop
-#endif
-      const Array<4, float> by_hand = test4 * 2.F + (test4 + 2) * 3.3F;
-      check_if_equal(tmp, by_hand, "test axpby (Array4D)");
-    }
-
-    // test xapyb, a and b scalar
-    {
-      Array<4, float> tmp(test4.get_index_range());
-      tmp.xapyb(test4, 2.F, test4 + 2, 3.3F);
-
-      const Array<4, float> by_hand = test4 * 2.F + (test4 + 2) * 3.3F;
-      check_if_equal(tmp, by_hand, "test xapyb scalar (Array4D)");
-
-      tmp = test4;
-      tmp.sapyb(2.F, test4 + 2, 3.3F);
-      check_if_equal(tmp, by_hand, "test sapyb scalar (Array4D)");
-    }
-
-    // test xapyb, a and b vector
-    {
-      Array<4, float> tmp(test4.get_index_range());
-      tmp.xapyb(test4, test4 + 4, test4 + 2, test4 + 6);
-
-      const Array<4, float> by_hand = test4 * (test4 + 4) + (test4 + 2) * (test4 + 6);
-      check_if_equal(tmp, by_hand, "test xapyb vector (Array4D)");
-
-      tmp = test4;
-      tmp.sapyb(test4 + 4, test4 + 2, test4 + 6);
-      check_if_equal(tmp, by_hand, "test sapyb vector (Array4D)");
-    }
-
-    {
-      typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
-      typedef NVecArr::iterator NVecArrIter;
-      NVecArr tmp(-1, 2);
-
-      NVecArr x(-1, 2);
-      NVecArr y(-1, 2);
-      NVecArr by_hand(-1, 2);
-
-      NVecArrIter iter_tmp = tmp.begin();
-      NVecArrIter iter_x = x.begin();
-      NVecArrIter iter_y = y.begin();
-      NVecArrIter iter_by_hand = by_hand.begin();
-
-      int i = 0;
-      while (iter_tmp != tmp.end())
-        {
-          *iter_x = test4 + i;
-          *iter_y = (test4 + i + 2);
-          *iter_by_hand = ((test4 + i) * 2.0F + (test4 + i + 2) * 3.3F);
-
-          iter_tmp++;
-          iter_x++;
-          iter_y++;
-          iter_by_hand++;
-        }
-
-      tmp.xapyb(x, 2.0F, y, 3.3F);
-      check_if_equal(tmp, by_hand, "test xapyb scalar (NumericVectorWithOffset<Array4D>)");
-
-      x.sapyb(2.0F, y, 3.3F);
-      check_if_equal(x, by_hand, "test sapyb scalar (NumericVectorWithOffset<Array4D>)");
-    }
-    {
-      typedef NumericVectorWithOffset<Array<4, float>, float> NVecArr;
-      typedef NVecArr::iterator NVecArrIter;
-      NVecArr tmp(-1, 2);
-
-      NVecArr x(-1, 2);
-      NVecArr y(-1, 2);
-      NVecArr a(-1, 2);
-      NVecArr b(-1, 2);
-      NVecArr by_hand(-1, 2);
-
-      NVecArrIter iter_tmp = tmp.begin();
-      NVecArrIter iter_x = x.begin();
-      NVecArrIter iter_y = y.begin();
-      NVecArrIter iter_a = a.begin();
-      NVecArrIter iter_b = b.begin();
-      NVecArrIter iter_by_hand = by_hand.begin();
-
-      int i = 0;
-      while (iter_tmp != tmp.end())
-        {
-          *iter_x = test4 + i;
-          *iter_y = (test4 + i + 2);
-          *iter_a = (test4 + i + 4);
-          *iter_b = (test4 + i + 6);
-          *iter_by_hand = ((test4 + i) * (test4 + i + 4) + (test4 + i + 2) * (test4 + i + 6));
-
-          iter_tmp++;
-          iter_x++;
-          iter_y++;
-          iter_a++;
-          iter_b++;
-          iter_by_hand++;
-        }
-
-      tmp.xapyb(x, a, y, b);
-      check_if_equal(tmp, by_hand, "test xapyb vector (NumericVectorWithOffset<Array4D>)");
-
-      x.sapyb(a, y, b);
-      check_if_equal(x, by_hand, "test sapyb vector (NumericVectorWithOffset<Array4D>)");
+      check_if_zero( (test4.sum() + 2*tmp2.sum() - tmp.sum())/test4.sum(), 
+                     "test operator+(float)");
     }
   }
 
@@ -1057,68 +761,13 @@ ArrayTests::run_tests()
     run_IO_tests(t1);
   }
 #endif
-  {
-    cerr << "Testing make_array" << endl;
-
-    const Array<2, float> arr1
-        = make_array(make_1d_array(1.F, 0.F, 0.F), make_1d_array(0.F, 1.F, 1.F), make_1d_array(0.F, -2.F, 2.F));
-
-    const Array<2, float> arr2(
-        make_array(make_1d_array(1.F, 0.F, 0.F), make_1d_array(0.F, 1.F, 1.F), make_1d_array(0.F, -2.F, 2.F)));
-
-    const Array<2, float> arr3 = detail::test_make_array();
-    const Array<2, float> arr4(detail::test_make_array());
-
-    check_if_equal(arr1[2][1], -2.F, "make_array element comparison");
-    check_if_equal(arr1, arr2, "make_array inline assignment vs constructor");
-    check_if_equal(arr1, arr3, "make_array inline vs function with assignment");
-    check_if_equal(arr1, arr4, "make_array inline constructor from function");
-  }
-  std::cerr << "timings\n";
-  {
-    HighResWallClockTimer t;
-    IndexRange<4> range(Coordinate4D<int>(20, 100, 400, 600));
-    t.start();
-    double create_duration;
-    {
-      Array<4, int> a1(range);
-      t.stop();
-      std::cerr << "creation of non-contiguous 4D Array " << t.value() * 1000 << "ms\n";
-      create_duration = t.value();
-      t.start();
-    }
-    t.stop();
-    std::cerr << "deletion " << (t.value() - create_duration) * 1000 << " ms\n";
-    t.reset();
-    t.start();
-    {
-      const auto s = range.size_all();
-      t.stop();
-      std::cerr << "range size_all " << t.value() * 1000 << "ms\n";
-      t.start();
-      std::vector<int> v(s, 0);
-      t.stop();
-      std::cerr << "vector creation " << t.value() * 1000 << "ms\n";
-      t.start();
-      // Array<4,int> a1(range, v.data(), false);
-      Array<4, int> a1(range, vec_to_shared(v));
-      t.stop();
-      // check(!a1.owns_memory_for_data(), "test preallocated without copy: should not own memory");
-      create_duration = t.value();
-      std::cerr << "contiguous array creation (total) " << t.value() * 1000 << "ms\n";
-      t.start();
-    }
-    t.stop();
-    std::cerr << "deletion " << (t.value() - create_duration) * 1000 << " ms\n";
-  }
 }
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int
-main()
+int main()
 {
   ArrayTests tests;
   tests.run_tests();

@@ -3,13 +3,22 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_recon_buildblock_DistributedWorker_h__
 #  define __stir_recon_buildblock_DistributedWorker_h__
+
 
 /*!
   \file
@@ -60,11 +69,12 @@ template <class TargetT>
 class DistributedWorker : public TimedObject //, public ParsingObject
 {
 private:
+                                
   double* log_likelihood_ptr;
   bool zero_seg0_end_planes;
   shared_ptr<ProjectorByBinPair> proj_pair_sptr;
   shared_ptr<ExamInfo> exam_info_sptr;
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
   shared_ptr<TargetT> target_sptr;
 
   int image_buffer_size; // to save the image_size
@@ -77,7 +87,9 @@ private:
 
   int my_rank; // rank of the worker
 
+                
 public:
+        
   // Default constructor
   DistributedWorker();
 
@@ -90,6 +102,7 @@ public:
   void start();
 
 protected:
+        
   /*!
     \brief sets defaults for this object
   */
@@ -118,7 +131,9 @@ protected:
   void distributable_computation(RPC_process_related_viewgrams_type* RPC_process_related_viewgrams);
 };
 
+
 END_NAMESPACE_STIR
 
 #endif
 // __DistributedWorker_h__
+

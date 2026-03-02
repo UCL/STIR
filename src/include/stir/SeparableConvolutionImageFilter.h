@@ -13,7 +13,15 @@
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,12 +29,18 @@
 #ifndef __stir_SeparableConvolutionImageFilter_H__
 #define __stir_SeparableConvolutionImageFilter_H__
 
+
 #include "stir/SeparableArrayFunctionObject.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VectorWithOffset.h"
 #include <vector>
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+#endif
+
 
 START_NAMESPACE_STIR
 
@@ -77,16 +91,22 @@ START_NAMESPACE_STIR
     The filter is implemented using the class ArrayFilter1DUsingConvolution.
 */
 template <typename elemT>
-class SeparableConvolutionImageFilter : public RegisteredParsingObject<SeparableConvolutionImageFilter<elemT>,
+class SeparableConvolutionImageFilter : 
+  public 
+    RegisteredParsingObject<
+        SeparableConvolutionImageFilter<elemT>,
                                                                        DataProcessor<DiscretisedDensity<3, elemT>>,
-                                                                       DataProcessor<DiscretisedDensity<3, elemT>>>
+        DataProcessor<DiscretisedDensity<3,elemT> >
+    >
 {
 private:
-  typedef RegisteredParsingObject<SeparableConvolutionImageFilter<elemT>,
+  typedef
+    RegisteredParsingObject<
+              SeparableConvolutionImageFilter<elemT>,
                                   DataProcessor<DiscretisedDensity<3, elemT>>,
-                                  DataProcessor<DiscretisedDensity<3, elemT>>>
+              DataProcessor<DiscretisedDensity<3,elemT> >
+	       >
       base_type;
-
 public:
   //! Name for parsing registry
   static const char* const registered_name;
@@ -103,32 +123,27 @@ public:
   */
   SeparableConvolutionImageFilter(const VectorWithOffset<VectorWithOffset<elemT>>& filter_coefficients);
 
-  //! Overloaded get and set methods the filter coefficients for axis or set of filter coefficients
-  //@{
-  VectorWithOffset<VectorWithOffset<elemT>> get_filter_coefficients();
-  void set_filter_coefficients(const VectorWithOffset<VectorWithOffset<elemT>>& v);
-  // These methods are made available as VectorWithOffset<VectorWithOffset<elemT>> is not accessable via swig
-  VectorWithOffset<elemT> get_filter_coefficients(const int axis);
-  void set_filter_coefficients(const int axis, const VectorWithOffset<elemT>& v);
-  //@}
+  //VectorWithOffset<elemT> get_filter_coefficients();
+  
 
 private:
   // silly business because KeyParser supports only LIST_OF_DOUBLES
   // TODO remove
-  std::vector<std::vector<double>> filter_coefficients_for_parsing;
+  vector< vector<double> > filter_coefficients_for_parsing;
 
   VectorWithOffset<VectorWithOffset<elemT>> filter_coefficients;
 
   SeparableArrayFunctionObject<num_dimensions, elemT> filter;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
-  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions, elemT>& image) override;
+  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image);
   void virtual_apply(DiscretisedDensity<num_dimensions, elemT>& out_density,
-                     const DiscretisedDensity<num_dimensions, elemT>& in_density) const override;
-  void virtual_apply(DiscretisedDensity<num_dimensions, elemT>& density) const override;
+		      const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;
+  
 };
 
 #undef num_dimensions
@@ -136,3 +151,5 @@ private:
 END_NAMESPACE_STIR
 
 #endif
+
+

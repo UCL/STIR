@@ -3,7 +3,15 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -16,10 +24,12 @@
   \author Kris Thielemans
 */
 
+
 #ifndef __stir_INTERFILEPDFSHEADERSPECT_H__
 #define __stir_INTERFILEPDFSHEADERSPECT_H__
 
 #include "stir/IO/InterfileHeader.h"
+
 
 START_NAMESPACE_STIR
 
@@ -36,23 +46,24 @@ public:
   InterfilePDFSHeaderSPECT();
 
 protected:
+
   //! Returns false if OK, true if not.
-  bool post_processing() override;
+  virtual bool post_processing();
 
 private:
+
   //! in mm
   std::vector<double> radii_of_rotation;
 
   int num_views;
   int num_bins;
   int start_angle;
-  std::string direction_of_rotation;
+  string direction_of_rotation;
   double extent_of_rotation;
-  std::string orbit;
-
+  string orbit;
 public:
   ProjDataFromStream::StorageOrder storage_order;
-  shared_ptr<const ProjDataInfo> data_info_sptr;
+  shared_ptr<ProjDataInfo> data_info_sptr;
 
 private:
   int num_segments;
@@ -61,7 +72,9 @@ private:
 
   double bin_size_in_cm;
   int num_axial_poss;
+
 };
+
 
 END_NAMESPACE_STIR
 

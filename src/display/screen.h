@@ -21,20 +21,29 @@
     Copyright (C) 2000- 2012, IRSL
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
+
 /* Change November 1997: added next 3 lines */
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #ifdef __STDC__
 #  define ANSI
 #endif
+
 
 #ifndef SC_pixel_t
 #  define SC_pixel_t unsigned char
@@ -46,6 +55,7 @@ extern "C"
   typedef SC_pixel_t huge image_t;
 #  endif
 #endif /* SC_pixel_t */
+
 
 #ifdef SC_XWINDOWS
 #  include <X11/Xlib.h>
@@ -81,7 +91,8 @@ extern "C"
   extern void SCX_START_BIG(void);
   extern void SCX_STOP(int stop);
   extern int SCX_WRITE(int* x, int* y, char* text);
-  extern void SCX_PutImg(image_t*, int x_begin, int y_begin, int lengthX, int lengthY);
+extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
+                                int lengthX, int lengthY);
 
 #  define SCREEN_X_MAX 1024 /* VR299 max ??*/
 #  define SCREEN_Y_MAX 864  /* VR299 max */
@@ -95,75 +106,73 @@ extern "C"
 #  define SC_CHAR_WIDTH 10
 #  define SC_CHAR_HEIGHT 10
 #  define SC_CHAR_SPACING 7
-#  define SC_PutImg(image, x, y, lx, ly) SCX_PutImg(image, x, y, lx, ly)
+#define SC_PutImg(image,x,y,lx,ly) \
+                        SCX_PutImg(image,x,y,lx,ly)
 #  define SC_TJUST(hor, ver)
 #  define SC_TSTYLE(par)
 #  define SC_PRMFIL(par) SC__filled = par
-#  define SC_COLOR(par) XSetForeground(SCX_display, SCX_gc, SC__color = (unsigned long)SCX_color_translation[par])
+#define SC_COLOR(par)   XSetForeground(SCX_display, SCX_gc,\
+                                SC__color = (unsigned long)SCX_color_translation[par])
 #  define SC_TSIZE(par)
-#  define SC_POINT() XDrawPoint(SCX_display, SCX_window, SCX_gc, SC__curPointX, SC__curPointY)
-#  define SC_MOVE(x, y)                                                                                                          \
-    {                                                                                                                            \
-      SC__curPointX = (int)(x);                                                                                                  \
-      SC__curPointY = (int)(y);                                                                                                  \
-    }
-#  define SC_DRAW(x, y)                                                                                                          \
-    {                                                                                                                            \
-      XDrawLine(SCX_display, SCX_window, SCX_gc, SC__curPointX, SC__curPointY, (int)(x), (int)(y));                              \
+#define SC_POINT()      XDrawPoint(SCX_display,SCX_window,SCX_gc,\
+                                SC__curPointX, SC__curPointY)
+#define SC_MOVE(x,y)    { SC__curPointX = (int)(x); SC__curPointY = (int)(y);}
+#define SC_DRAW(x,y)    { XDrawLine(SCX_display,SCX_window,SCX_gc,\
+                                SC__curPointX, SC__curPointY, (int)(x),(int)(y));\
       SC_MOVE(x, y);                                                                                                             \
     }
 #  define SC_LINE(x1, y1, x2, y2)                                                                                                \
-    {                                                                                                                            \
-      XDrawLine(SCX_display, SCX_window, SCX_gc, (int)(x1), (int)(y1), SC__curPointX = (int)(x2), SC__curPointY = (int)(y2));    \
+			{ XDrawLine(SCX_display,SCX_window,SCX_gc,\
+                                (int)(x1), (int)(y1),\
+				SC__curPointX=(int)(x2),\
+				SC__curPointY=(int)(y2));\
     }
-#  define SC_RECT(x, y)                                                                                                          \
-    (SC__filled ? XFillRectangle(SCX_display,                                                                                    \
-                                 SCX_window,                                                                                     \
-                                 SCX_gc,                                                                                         \
-                                 (int)Min(x, SC__curPointX),                                                                     \
-                                 (int)Min(y, SC__curPointY),                                                                     \
-                                 (unsigned int)abs(x - SC__curPointX),                                                           \
-                                 (unsigned int)abs(y - SC__curPointY))                                                           \
-                : XDrawRectangle(SCX_display,                                                                                    \
-                                 SCX_window,                                                                                     \
-                                 SCX_gc,                                                                                         \
-                                 (int)Min(x, SC__curPointX),                                                                     \
-                                 (int)Min(y, SC__curPointY),                                                                     \
-                                 (unsigned int)abs(x - SC__curPointX),                                                           \
-                                 (unsigned int)abs(y - SC__curPointY)))
-#  define SC_RECTR(x, y)                                                                                                         \
-    (SC__filled ? XFillRectangle(SCX_display,                                                                                    \
-                                 SCX_window,                                                                                     \
-                                 SCX_gc,                                                                                         \
+#define SC_RECT(x,y)    ( SC__filled ? \
+                          XFillRectangle(SCX_display, SCX_window, SCX_gc,\
+                                (int)Min(x,SC__curPointX), (int)Min(y,SC__curPointY),\
+                                (unsigned int)abs(x-SC__curPointX), (unsigned int)abs(y-SC__curPointY))\
+                        : XDrawRectangle(SCX_display, SCX_window, SCX_gc,\
+                                (int)Min(x,SC__curPointX), (int)Min(y,SC__curPointY),\
+                                (unsigned int)abs(x-SC__curPointX), (unsigned int)abs(y-SC__curPointY))\
+                        )
+#define SC_RECTR(x,y)   ( SC__filled ? \
+                          XFillRectangle(SCX_display, SCX_window, SCX_gc,\
                                  (x < 0 ? SC__curPointX + x : SC__curPointX),                                                    \
                                  (y < 0 ? SC__curPointY + y : SC__curPointY),                                                    \
-                                 abs(x),                                                                                         \
-                                 abs(y))                                                                                         \
-                : XDrawRectangle(SCX_display,                                                                                    \
-                                 SCX_window,                                                                                     \
-                                 SCX_gc,                                                                                         \
+                                abs(x), abs(y))\
+                        : XDrawRectangle(SCX_display, SCX_window, SCX_gc,\
                                  (x < 0 ? SC__curPointX + x : SC__curPointX),                                                    \
                                  (y < 0 ? SC__curPointY + y : SC__curPointY),                                                    \
-                                 abs(x),                                                                                         \
-                                 abs(y)))
-#  define SC_ELLIPSE(x, y)                                                                                                       \
-    (SC__filled ? XFillArc(SCX_display, SCX_window, SCX_gc, SC__curPointX - x, SC__curPointY - y, 2 * x, 2 * y, 0, 360 * 64)     \
-                : XDrawArc(SCX_display, SCX_window, SCX_gc, SC__curPointX - x, SC__curPointY - y, 2 * x, 2 * y, 0, 360 * 64))
+                                abs(x), abs(y))\
+                        )
+#define SC_ELLIPSE(x,y)  ( SC__filled ? \
+                          XFillArc(SCX_display, SCX_window,SCX_gc, \
+                                SC__curPointX-x,SC__curPointY-y,\
+                                2*x, 2*y, 0, 360*64)\
+                        : XDrawArc(SCX_display, SCX_window,SCX_gc, \
+                                SC__curPointX-x,SC__curPointY-y,\
+                                2*x, 2*y, 0, 360*64)\
+                        )
 #  define SC_CIRCLE(x) SC_ELLIPSE(x, x)
-#  define SC_TEXT(str) XDrawString(SCX_display, SCX_window, SCX_gc, SC__curPointX, SC__curPointY, str, (int)strlen(str))
+#define SC_TEXT(str)    XDrawString(SCX_display, SCX_window,SCX_gc, \
+                                SC__curPointX, SC__curPointY, \
+                                str, (int)strlen(str))
   /* KT 28/11/2002 only enable mask when the visual is PseudoColor */
-#  define SC_MASK(par)                                                                                                           \
-    if (SCX_get_class(SCX_visual_info) == PseudoColor)                                                                           \
-    XSetPlaneMask(SCX_display, SCX_gc, (unsigned long)par)
+#define SC_MASK(par)    if (SCX_get_class(SCX_visual_info)==PseudoColor) \
+                            XSetPlaneMask(SCX_display, SCX_gc, \
+                                (unsigned long)par)
 #  define SC_LINFUN(par) XSetFunction(SCX_display, SCX_gc, par)
 #  define SC_LUTX(par, R, G, B)
 #  define SC_CLEARS(par)
 #  define SC_LUTINT(par)
 #  define SC_CLEAR_BLOCK(color, x_b, x_e, y_b, y_e)                                                                              \
-    XSetForeground(SCX_display, SCX_gc, (unsigned long)SCX_color_translation[color]);                                            \
-    XFillRectangle(                                                                                                              \
-        SCX_display, SCX_window, SCX_gc, Min((x_b), (x_e)), Min((y_b), (y_e)), abs((x_b) - (x_e)), abs((y_b) - (y_e)));          \
-    XSetForeground(SCX_display, SCX_gc, (unsigned long)SC__color);
+			XSetForeground(SCX_display, SCX_gc,\
+                                (unsigned long)SCX_color_translation[color]); \
+  			XFillRectangle(SCX_display, SCX_window, SCX_gc, \
+                                Min((x_b),(x_e)), Min((y_b),(y_e)),\
+                                abs((x_b)-(x_e)), abs((y_b)-(y_e))); \
+			XSetForeground(SCX_display, SCX_gc,\
+                                (unsigned long)SC__color);
 #  define SC_LF_REPLACE GXcopy
 #  define SC_LF_XOR GXxor
 #  define SC_DEPTH SCX_visual_info.depth
@@ -178,12 +187,12 @@ extern "C"
 
 #endif /* SC_XWINDOWS */
 
+
   /* change November 1997: added this function (was SCX_SCALE before) */
   extern void SC_SCALE(int pos_x, int pos_y, int size_x, int size_y);
 
   typedef struct screen_image
-  {
-    image_t* image;
+        { image_t *image;
     int sx, sy;
     char* text;
   } screen_image_t;
@@ -192,9 +201,13 @@ extern "C"
   *****************************************************************************/
   /* KT 01/03/2000 added const */
   extern void put_textstr(int x, int y, const char* str);
-  extern int center_sc_images(
-      int* Pscale, int min_x, int max_x, int min_y, int max_y, int SIZE_X, int SIZE_Y, screen_image_t sc_image[], int nr_sc);
-  extern void draw_sc_images(int size_x, int size_y, screen_image_t sc_image[], int no);
+extern int  center_sc_images(int *Pscale,
+			   int min_x,int max_x,int min_y,int max_y,
+                           int  SIZE_X,int SIZE_Y,
+                           screen_image_t sc_image[], int nr_sc);
+extern void draw_sc_images(int size_x, int size_y,
+                           screen_image_t sc_image[], int no);
+
 
 /* Change November 1997: added next 3 lines: end of extern "C" */
 #ifdef __cplusplus

@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -69,6 +77,7 @@
   delta->-delta   changes dz->1-dz, ds->ds
   */
 
+
 #include "stir/ProjDataInfo.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -76,13 +85,7 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/round.h"
 #include "stir/Succeeded.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #include <math.h>
-
-#include <algorithm>
-using std::min;
-using std::max;
 /*
   KT 22/05/98 drastic revision
 
@@ -163,43 +166,30 @@ static const double epsilon = 1e-10;
    */
 
 // KT 25/09/2001 changed return value
-static Succeeded find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
-                                   const float delta,
-                                   const double cphi,
-                                   const double sphi,
-                                   const int s,
-                                   const int ring0,
+static Succeeded find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+                              const float delta, const double cphi, const double sphi, 
+                              const int s, const int ring0,
                                    const float image_rad,
                                    const double d_sl,
-                                   int& X1,
-                                   int& Y1,
-                                   int& Z1,
-                                   double& ds,
-                                   double& dz,
-                                   double& dzhor,
-                                   double& dzvert,
+                              int&X1, int&Y1, int& Z1,
+                              double& ds, double& dz, double& dzhor, double& dzvert,
                                    const float num_planes_per_axial_pos,
                                    const float axial_pos_to_z_offset);
 
+
 inline void
-check_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
-             const float delta,
-             const double cphi,
-             const double sphi,
-             const int s,
-             const int ring0,
-             const int X1,
-             const int Y1,
-             const int Z1,
-             const double ds,
-             const double dz,
+check_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+	     const float delta, const double cphi, const double sphi, 
+	     const int s, const int ring0,
+	     const int X1, const int Y1, const int Z1,
+	     const double ds, const double dz,
              const float num_planes_per_axial_pos,
              const float axial_pos_to_z_offset)
 {
 #ifdef BPINT_CHECK
-  const double d_xy = proj_data_info_sptr->get_tangential_sampling();
+  const double d_xy = proj_data_info_ptr->get_tangential_sampling();
 
-  const double R2 = square(proj_data_info_sptr->get_ring_radius());
+  const double R2 =square(proj_data_info_ptr->get_ring_radius());
   /* Radius of scanner squared in Pixel^2 */
   const double R2p = R2 / d_xy / d_xy;
   // TODO remove assumption
@@ -212,13 +202,14 @@ check_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_in
   const double new_ds = X1 * cphi + Y1 * sphi - s; // Eq 6.13 in Egger thsis
   const double root = sqrt(R2p - t * t); // CL 26/10/98 Put it back the original formula as before it was root=sqrt(R2p-s*s)
   // Eq 6.15 from Egger Thesis
-  const double z = (Z1 - num_planes_per_physical_ring * delta / 2 * ((-X1 * sphi + Y1 * cphi) / root + 1) - axial_pos_to_z_offset)
-                   / num_planes_per_axial_pos;
+  const double z=( Z1-num_planes_per_physical_ring*delta/2*( (-X1*sphi+Y1*cphi)/root + 1 ) -
+                     axial_pos_to_z_offset)/num_planes_per_axial_pos;
   const double new_dz = z - ring0;
 
   if (fabs(ds - new_ds) > .005 || fabs(dz - new_dz) > .005)
     {
-      warning("Difference ds (%g,%g) dz (%g,%g) at X=%d,Y=%d,Z=%d\n", ds, new_ds, dz, new_dz, X1, Y1, Z1);
+      warning("Difference ds (%g,%g) dz (%g,%g) at X=%d,Y=%d,Z=%d\n",
+	      ds,new_ds,dz,new_dz,X1,Y1,Z1);
     }
 #endif // BPINT_CHECK
 }
@@ -241,12 +232,9 @@ BackProjectorByBinUsingInterpolation::
 #endif
     (Array<4, float> const& Projptr,
      VoxelsOnCartesianGrid<float>& image,
-     const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+                               const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
      float delta,
-     const double cphi,
-     const double sphi,
-     int s,
-     int ring0,
+                               const double cphi, const double sphi, int s, int ring0,
      const int num_planes_per_axial_pos,
      const float axial_pos_to_z_offset)
 {
@@ -254,15 +242,13 @@ BackProjectorByBinUsingInterpolation::
 #if PIECEWISE_INTERPOLATION
   if (num_planes_per_axial_pos == 1 && delta != 0)
     error("This version of the backprojector cannot be used for span>1. \
-Recompile %s with PIECEWISE_INTERPOLATION=0",
-          __FILE__);
+Recompile %s with PIECEWISE_INTERPOLATION=0", __FILE__);
 #else
 #  ifdef ALTERNATIVE
   // TODO
   if (num_planes_per_axial_pos == 1 && delta != 0)
     error("This version of the backprojector cannot be used for span>1. \
-Recompile %s with ALTERNATIVE not #defined",
-          __FILE__);
+Recompile %s with ALTERNATIVE not #defined", __FILE__);
 #  endif
 #endif
 
@@ -275,8 +261,9 @@ Recompile %s with ALTERNATIVE not #defined",
      As this will slow it down, we just abort at the moment.
   */
 
-  if (delta * proj_data_info_sptr_info_cyl_ptr->get_tangential_sampling() / proj_data_info_sptr_info_cyl_ptr->get_ring_radius()
-      > 1)
+
+
+  if (delta * proj_data_info_ptr_info_cyl_ptr->get_tangential_sampling() / proj_data_info_ptr_info_cyl_ptr->get_ring_radius() > 1)
     {
       error("This backprojector cannot handle such oblique segments: delta = %g. Sorry.\n", delta);
     }
@@ -296,11 +283,12 @@ Recompile %s with ALTERNATIVE not #defined",
   // in our current coordinate system, the following constant is always 2
   // TODO remove assumption
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring / proj_data_info_sptr->get_ring_spacing() - 1) < 10E-4);
+  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
 
   /* FOV radius in voxel units */
   // KT 20/06/2001 change calculation of FOV such that even sized image will work
-  const float fovrad_in_mm = min((min(image.get_max_x(), -image.get_min_x())) * image.get_voxel_size().x(),
+  const float fovrad_in_mm   = 
+    min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
                                  (min(image.get_max_y(), -image.get_min_y())) * image.get_voxel_size().y());
   const float image_rad = fovrad_in_mm / image.get_voxel_size().x() - 2;
   // const int image_rad = (int)((image.get_x_size()-1)/2);
@@ -309,24 +297,14 @@ Recompile %s with ALTERNATIVE not #defined",
   const int minplane = image.get_min_z();
   const int maxplane = image.get_max_z();
 
-  if (find_start_values(proj_data_info_sptr,
-                        delta,
-                        cphi,
-                        sphi,
-                        s,
-                        ring0,
-                        image_rad,
-                        image.get_voxel_size().z(),
-                        X,
-                        Y,
-                        Z,
-                        ds,
-                        dz,
-                        dzhor,
-                        dzvert,
+
+  if (find_start_values(proj_data_info_ptr, 
+			delta, cphi, sphi, s, ring0,
+			image_rad, image.get_voxel_size().z(),
+			X, Y, Z,
+			ds, dz, dzhor, dzvert,
                         num_planes_per_axial_pos,
-                        axial_pos_to_z_offset)
-      == Succeeded::no)
+			axial_pos_to_z_offset) == Succeeded::no)
     {
       // no voxels in the beam
       return;
@@ -385,6 +363,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double K1P2n = Projptr[1][2][1][2] - Projptr[1][2][1][1];
   const double K2P2n = Projptr[1][2][1][3] - Projptr[1][2][1][1];
   const double K3P2n = Projptr[1][2][1][4] - Projptr[1][2][1][2] - K2P2n;
+
 
 #if !PIECEWISE_INTERPOLATION
 
@@ -454,6 +433,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double HZP2n = HP2n + ring_unit * K2P2n;
   const double DZP2n = DP2n + ring_unit * K2P2n;
 
+
   // Initial values of update values (Up)
 
   double UpA0 = Projptr[0][0][0][1] + ds * K1A0 + dz * K2A0;
@@ -512,6 +492,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double HP2na0 = -cphi * K1P2n;
   const double DP2na0 = VP2na0 + HP2na0;
 
+
   const double VA0a1 = +sphi * (K1A0 + K3A0);
   const double HA0a1 = -cphi * (K1A0 + K3A0);
   const double DA0a1 = VA0a1 + HA0a1;
@@ -539,6 +520,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double VP2na1 = +sphi * (K1P2n + K3P2n);
   const double HP2na1 = -cphi * (K1P2n + K3P2n);
   const double DP2na1 = VP2na1 + HP2na1;
+
 
   const double VA0 = VA0a0 * 1.5 - VA0a1 / 2 + 2 * dzvert * K2A0;
   const double HA0 = HA0a0 * 1.5 - HA0a1 / 2 + 2 * dzhor * K2A0;
@@ -613,6 +595,7 @@ Recompile %s with ALTERNATIVE not #defined",
   double P2a0 = Projptr[0][2][1][1] + ds * K1P2;
   double P2a1 = Projptr[0][2][1][3] + ds * (K1P2 + K3P2);
 
+
   double UpA0 = 2 * (Projptr[0][0][0][1] + ds * K1A0 + dz * K2A0) - (A0a0 + A0a1) / 2;
   double UpA2 = 2 * (Projptr[0][2][0][1] + ds * K1A2 + dz * K2A2) - (A2a0 + A2a1) / 2;
 
@@ -636,8 +619,10 @@ Recompile %s with ALTERNATIVE not #defined",
   // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
   {
     // first compute it as floating point (although it has to be an int really)
-    const float Qf
-        = (2 * num_planes_per_axial_pos * (ring0 + 0.5) + num_planes_per_physical_ring * delta + 2 * axial_pos_to_z_offset - Z);
+    const float Qf = (2*num_planes_per_axial_pos*(ring0 + 0.5) 
+                      + num_planes_per_physical_ring*delta
+	              + 2*axial_pos_to_z_offset
+	              - Z); 
     // now use rounding to be safe
     Q = (int)floor(Qf + 0.5);
     assert(fabs(Q - Qf) < 10E-4);
@@ -645,6 +630,7 @@ Recompile %s with ALTERNATIVE not #defined",
 
   dzdiag = dzvert + dzhor;
   dsdiag = -cphi + sphi;
+
 
   /* KT 13/05/98 changed loop condition, originally a combination of
      while (X>X2||Y<Y2||Z<Z2) {
@@ -678,43 +664,37 @@ Recompile %s with ALTERNATIVE not #defined",
       const double twodsdz = 2 * ds * dz;
       const double twodsdz2 = 2 * ds * (dz + 0.5);
 
-      if (Z >= minplane && Z <= maxplane)
-        {
+      if (Z>=minplane&&Z<=maxplane) {
           // original image[Z][Y][X]+=UpA0+dsdz*K3A0
           image[Z][Y][X] += (dz <= 0.25) ? A0a0 : UpA0 + twodsdz * K3A0;
           image[Z][X][-Y] += (dz <= 0.25) ? A2a0 : UpA2 + twodsdz * K3A2;
-          if (do_s_symmetry)
-            {
+	if (do_s_symmetry) {
               image[Z][-Y][-X] += (dz <= 0.25) ? P0na0 : UpP0n + twodsdz * K3P0n;
               image[Z][-X][Y] += (dz <= 0.25) ? P2na0 : UpP2n + twodsdz * K3P2n;
             }
+
         }
-      if (Zplus >= minplane && Zplus <= maxplane)
-        {
+      if (Zplus>=minplane&&Zplus<=maxplane) {
           image[Zplus][Y][X] += (dz >= 0.25) ? A0a1 : UpA0 + twodsdz2 * K3A0 + ZplusKorrA0;
           image[Zplus][X][-Y] += (dz >= 0.25) ? A2a1 : UpA2 + twodsdz2 * K3A2 + ZplusKorrA2;
-          if (do_s_symmetry)
-            {
+	if (do_s_symmetry) {
               image[Zplus][-Y][-X] += (dz >= 0.25) ? P0na1 : UpP0n + twodsdz2 * K3P0n + ZplusKorrP0n;
               image[Zplus][-X][Y] += (dz >= 0.25) ? P2na1 : UpP2n + twodsdz2 * K3P2n + ZplusKorrP2n;
             }
+
         }
-      if (Q >= minplane && Q <= maxplane)
-        {
+      if (Q>=minplane&&Q<=maxplane) {
           image[Q][Y][X] += (dz <= 0.25) ? A0na0 : UpA0n + twodsdz * K3A0n;
           image[Q][X][-Y] += (dz <= 0.25) ? A2na0 : UpA2n + twodsdz * K3A2n;
-          if (do_s_symmetry)
-            {
+        if (do_s_symmetry) {
               image[Q][-Y][-X] += (dz <= 0.25) ? P0a0 : UpP0 + twodsdz * K3P0;
               image[Q][-X][Y] += (dz <= 0.25) ? P2a0 : UpP2 + twodsdz * K3P2;
             }
         }
-      if (Qmin >= minplane && Qmin <= maxplane)
-        {
+      if (Qmin>=minplane&&Qmin<=maxplane) {
           image[Qmin][Y][X] += (dz >= 0.25) ? A0na1 : UpA0n + twodsdz2 * K3A0n + ZplusKorrA0n;
           image[Qmin][X][-Y] += (dz >= 0.25) ? A2na1 : UpA2n + twodsdz2 * K3A2n + ZplusKorrA2n;
-          if (do_s_symmetry)
-            {
+        if (do_s_symmetry) {
               image[Qmin][-Y][-X] += (dz >= 0.25) ? P0a1 : UpP0 + twodsdz2 * K3P0 + ZplusKorrP0;
               image[Qmin][-X][Y] += (dz >= 0.25) ? P2a1 : UpP2 + twodsdz2 * K3P2 + ZplusKorrP2;
             }
@@ -729,46 +709,40 @@ Recompile %s with ALTERNATIVE not #defined",
       const double dsdz = ds * dz;
       const double dsdz2 = ds * (dz + ring_unit);
 
-      if (Z >= minplane && Z <= maxplane)
-        {
+      if (Z>=minplane&&Z<=maxplane) {
           image[Z][Y][X] += UpA0 + dsdz * K3A0;
           image[Z][X][-Y] += UpA2 + dsdz * K3A2;
-          if (do_s_symmetry)
-            {
+	if (do_s_symmetry) {
               image[Z][-Y][-X] += UpP0n + dsdz * K3P0n;
               image[Z][-X][Y] += UpP2n + dsdz * K3P2n;
             }
+
         }
       // CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
       // as there is only one voxel in the beam in slice unit
-      if (Zplus >= minplane && Zplus <= maxplane && ring_unit == 0.5)
-        {
+      if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5) {
           image[Zplus][Y][X] += UpA0 + dsdz2 * K3A0 + ZplusKorrA0;
           image[Zplus][X][-Y] += UpA2 + dsdz2 * K3A2 + ZplusKorrA2;
-          if (do_s_symmetry)
-            {
+	if (do_s_symmetry) {
               image[Zplus][-Y][-X] += UpP0n + dsdz2 * K3P0n + ZplusKorrP0n;
               image[Zplus][-X][Y] += UpP2n + dsdz2 * K3P2n + ZplusKorrP2n;
             }
+
         }
-      if (Q >= minplane && Q <= maxplane)
-        {
+      if (Q>=minplane&&Q<=maxplane) {
           image[Q][Y][X] += UpA0n + dsdz * K3A0n;
           image[Q][X][-Y] += UpA2n + dsdz * K3A2n;
-          if (do_s_symmetry)
-            {
+        if (do_s_symmetry) {
               image[Q][-Y][-X] += UpP0 + dsdz * K3P0;
               image[Q][-X][Y] += UpP2 + dsdz * K3P2;
             }
         }
       // CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
       // as there is only one voxel in the beam in slice unit
-      if (Qmin >= minplane && Qmin <= maxplane && ring_unit == 0.5)
-        {
+      if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5) {
           image[Qmin][Y][X] += UpA0n + dsdz2 * K3A0n + ZplusKorrA0n;
           image[Qmin][X][-Y] += UpA2n + dsdz2 * K3A2n + ZplusKorrA2n;
-          if (do_s_symmetry)
-            {
+        if (do_s_symmetry) {
               image[Qmin][-Y][-X] += UpP0 + dsdz2 * K3P0 + ZplusKorrP0;
               image[Qmin][-X][Y] += UpP2 + dsdz2 * K3P2 + ZplusKorrP2;
             }
@@ -815,8 +789,7 @@ Recompile %s with ALTERNATIVE not #defined",
 
       // KT 14/05/98 changed X!=-Y to s!=0 || ds!=0 to make it work for view != view45
       // KT 16/06/98 changed check ds!=0 to fabs(ds)>epsilon for better rounding control
-      if (s != 0 || fabs(ds) > epsilon)
-        {
+      if (s!=0 || fabs(ds) > epsilon) {
           TMP1 = ds * K3P0;
           TMP2 = UpP0 + dz * TMP1;
           if (Q >= minplane && Q <= maxplane)
@@ -856,17 +829,13 @@ Recompile %s with ALTERNATIVE not #defined",
 
       //  Search for next pixel in the beam
 
-      if (ds >= cphi)
-        {
+      if (ds>=cphi) {
           /* horizontal*/
           X -= 1;
           ds -= cphi;
           dz += dzhor;
-          if (dz < epsilon)
-            { /* increment Z */
-              Z++;
-              Q--;
-              dz += ring_unit;
+	if (dz<epsilon) {     /* increment Z */
+	  Z++; Q--; dz+=ring_unit;
               UpA0 += HZA0;
               UpA2 += HZA2;
               UpA0n += HZA0n;
@@ -878,9 +847,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #ifdef MOREZ
               while (dz < epsilon)
                 {
-                  Z++;
-                  Q--;
-                  dz += ring_unit;
+	  Z++; Q--; dz+=ring_unit;
                   UpA0 += HZA0 - HA0;
                   UpA2 += HZA2 - HA2;
                   UpA0n += HZA0n - HA0n;
@@ -893,8 +860,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #endif
             }
 
-          else
-            { /* Z does not change */
+	else {       /* Z does not change */
               UpA0 += HA0;
               UpA2 += HA2;
               UpA0n += HA0n;
@@ -925,17 +891,13 @@ Recompile %s with ALTERNATIVE not #defined",
 #endif // PIECEWISE_INTERPOLATION
         }
       // KT 14/05/98 use < instead of <= (see formula 6.17 in Egger's thesis)
-      else if (ds < 1 - sphi)
-        {
+      else if (ds<1-sphi) {
           /*  vertical*/
           Y += 1;
           ds += sphi;
           dz += dzvert;
-          if (dz < epsilon)
-            { /* increment Z */
-              Z++;
-              Q--;
-              dz += ring_unit;
+	if (dz<epsilon) {       /* increment Z */
+	  Z++; Q--; dz+=ring_unit;
               UpA0 += VZA0;
               UpA2 += VZA2;
               UpA0n += VZA0n;
@@ -948,9 +910,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #ifdef MOREZ
               while (dz < epsilon)
                 {
-                  Z++;
-                  Q--;
-                  dz += ring_unit;
+	  Z++; Q--; dz+=ring_unit;
                   UpA0 += VZA0 - VA0;
                   UpA2 += VZA2 - VA2;
                   UpA0n += VZA0n - VA0n;
@@ -962,8 +922,7 @@ Recompile %s with ALTERNATIVE not #defined",
                 }
 #endif
             }
-          else
-            { /* Z does not change  */
+	else {              /* Z does not change  */
               UpA0 += VA0;
               UpA2 += VA2;
               UpA0n += VA0n;
@@ -993,18 +952,14 @@ Recompile %s with ALTERNATIVE not #defined",
           P2na1 += VP2na1;
 #endif // PIECEWISE_INTERPOLATION
         }
-      else
-        {
+      else {
           /*  diagonal*/
           X -= 1;
           Y += 1;
           ds += dsdiag;
           dz += dzdiag;
-          if (dz < epsilon)
-            { /* increment Z */
-              Z++;
-              Q--;
-              dz += ring_unit;
+	if (dz<epsilon) {      /* increment Z */
+	  Z++; Q--; dz+=ring_unit;
               UpA0 += DZA0;
               UpA2 += DZA2;
               UpA0n += DZA0n;
@@ -1016,9 +971,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #ifdef MOREZ
               while (dz < epsilon)
                 {
-                  Z++;
-                  Q--;
-                  dz += ring_unit;
+	  Z++; Q--; dz+=ring_unit;
                   UpA0 += DZA0 - DA0;
                   UpA2 += DZA2 - DA2;
                   UpA0n += DZA0n - DA0n;
@@ -1031,8 +984,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #endif
             }
 
-          else
-            { /* Z does not change */
+	else {       /* Z does not change */
               UpA0 += DA0;
               UpA2 += DA2;
               UpA0n += DA0n;
@@ -1062,9 +1014,15 @@ Recompile %s with ALTERNATIVE not #defined",
           P2na1 += DP2na1;
 #endif // PIECEWISE_INTERPOLATION
         }
-      check_values(
-          proj_data_info_sptr, delta, cphi, sphi, s, ring0, X, Y, Z, ds, dz, num_planes_per_axial_pos, axial_pos_to_z_offset);
-  } while ((X * X + Y * Y <= image_rad * image_rad) && (Z <= maxplane || Q >= minplane));
+      check_values(proj_data_info_ptr, 
+		   delta, cphi, sphi, s, ring0,
+		   X, Y, Z,
+		   ds, dz, 
+		   num_planes_per_axial_pos,
+		   axial_pos_to_z_offset);
+    }
+  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=minplane));
+
 }
 
 /*****************************************************************************
@@ -1088,12 +1046,10 @@ BackProjectorByBinUsingInterpolation::
 #endif
     (Array<4, float> const& Projptr,
      VoxelsOnCartesianGrid<float>& image,
-     const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
+                                                     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
      float delta,
-     const double cphi,
-     const double sphi,
-     int s,
-     int ring0,
+                                                      const double cphi, const double sphi,
+                                                      int s, int ring0,
      const int num_planes_per_axial_pos,
      const float axial_pos_to_z_offset)
 {
@@ -1101,15 +1057,13 @@ BackProjectorByBinUsingInterpolation::
 #if PIECEWISE_INTERPOLATION
   if (num_planes_per_axial_pos == 1 && delta != 0)
     error("This version of the backprojector cannot be used for span>1. \
-Recompile %s with PIECEWISE_INTERPOLATION=0",
-          __FILE__);
+Recompile %s with PIECEWISE_INTERPOLATION=0", __FILE__);
 #else
 #  ifdef ALTERNATIVE
   // TODO
   if (num_planes_per_axial_pos == 1 && delta != 0)
     error("This version of the backprojector cannot be used for span>1. \
-Recompile %s with ALTERNATIVE not #defined",
-          __FILE__);
+Recompile %s with ALTERNATIVE not #defined", __FILE__);
 #  endif
 #endif
 
@@ -1121,8 +1075,8 @@ Recompile %s with ALTERNATIVE not #defined",
      As this will slow it down, we just abort at the moment.
   */
 
-  if (delta * proj_data_info_sptr_info_cyl_ptr->get_tangential_sampling() / proj_data_info_sptr_info_cyl_ptr->get_ring_radius()
-      > 1)
+ 
+  if (delta * proj_data_info_ptr_info_cyl_ptr->get_tangential_sampling() /proj_data_info_ptr_info_cyl_ptr->get_ring_radius() > 1)
     {
       error("This backprojector cannot handle such oblique segments: delta = %g. Sorry.\n", delta);
     }
@@ -1137,7 +1091,7 @@ Recompile %s with ALTERNATIVE not #defined",
   // CL&KT 21/12/99 new
   // in our current coordinate system, the following constant is always 2
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring / proj_data_info_sptr->get_ring_spacing() - 1) < 10E-4);
+  assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
 
   double dzvert, dzhor, ds;
   double dsdiag, dzdiag, dz;
@@ -1145,7 +1099,8 @@ Recompile %s with ALTERNATIVE not #defined",
 
   /* FOV radius in voxel units */
   // KT 20/06/2001 change calculation of FOV such that even sized image will work
-  const float fovrad_in_mm = min((min(image.get_max_x(), -image.get_min_x())) * image.get_voxel_size().x(),
+  const float fovrad_in_mm   = 
+    min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
                                  (min(image.get_max_y(), -image.get_min_y())) * image.get_voxel_size().y());
   const float image_rad = fovrad_in_mm / image.get_voxel_size().x() - 2;
   // const int image_rad = (int)((image.get_x_size()-1)/2);
@@ -1153,24 +1108,14 @@ Recompile %s with ALTERNATIVE not #defined",
   const int minplane = image.get_min_z();
   const int maxplane = image.get_max_z();
 
-  if (find_start_values(proj_data_info_sptr,
-                        delta,
-                        cphi,
-                        sphi,
-                        s,
-                        ring0,
-                        image_rad,
-                        image.get_voxel_size().z(),
-                        X,
-                        Y,
-                        Z,
-                        ds,
-                        dz,
-                        dzhor,
-                        dzvert,
+
+  if(find_start_values(proj_data_info_ptr, 
+		       delta, cphi, sphi, s, ring0,
+		       image_rad, image.get_voxel_size().z(),
+		       X, Y, Z,
+		       ds, dz, dzhor, dzvert,                    
                         num_planes_per_axial_pos,
-                        axial_pos_to_z_offset)
-      == Succeeded::no)
+		       axial_pos_to_z_offset) == Succeeded::no)
     {
       // no voxels in the beam
       return;
@@ -1231,6 +1176,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double K3P3n = Projptr[1][3][1][4] - Projptr[1][3][1][2] - K2P3n;
 
 #if !PIECEWISE_INTERPOLATION
+
 
   const double ZplusKorrA0 = ring_unit * K2A0;
   const double ZplusKorrA1 = ring_unit * K2A1;
@@ -1354,6 +1300,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double HZP3n = HP3n + ring_unit * K2P3n;
   const double DZP3n = DP3n + ring_unit * K2P3n;
 
+ 
   // Initial values of update values (Up)
 
   double UpA0 = Projptr[0][0][0][1] + ds * K1A0 + dz * K2A0;
@@ -1377,6 +1324,7 @@ Recompile %s with ALTERNATIVE not #defined",
   double UpP3n = Projptr[1][3][1][1] + ds * K1P3n + dz * K2P3n;
 
 #else // PIECEWISE_INTERPOLATION
+
 
   const double ZplusKorrA0 = K2A0;
   const double ZplusKorrA1 = K2A1;
@@ -1452,6 +1400,8 @@ Recompile %s with ALTERNATIVE not #defined",
   const double HP3na0 = -cphi * K1P3n;
   const double DP3na0 = VP3na0 + HP3na0;
 
+
+  
   const double VA0a1 = +sphi * (K1A0 + K3A0);
   const double HA0a1 = -cphi * (K1A0 + K3A0);
   const double DA0a1 = VA0a1 + HA0a1;
@@ -1503,6 +1453,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double VP3na1 = +sphi * (K1P3n + K3P3n);
   const double HP3na1 = -cphi * (K1P3n + K3P3n);
   const double DP3na1 = VP3na1 + HP3na1;
+
 
   const double VA0 = VA0a0 * 1.5 - VA0a1 / 2 + 2 * dzvert * K2A0;
   const double HA0 = HA0a0 * 1.5 - HA0a1 / 2 + 2 * dzhor * K2A0;
@@ -1604,6 +1555,7 @@ Recompile %s with ALTERNATIVE not #defined",
   const double HZP3n = HP3n + K2P3n;
   const double DZP3n = DP3n + K2P3n;
 
+ 
   // Initial values of update values (Up)
 
   double A0a0 = Projptr[0][0][0][1] + ds * K1A0;
@@ -1677,8 +1629,10 @@ Recompile %s with ALTERNATIVE not #defined",
   // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
   {
     // first compute it as floating point (although it has to be an int really)
-    const float Qf
-        = (2 * num_planes_per_axial_pos * (ring0 + 0.5) + num_planes_per_physical_ring * delta + 2 * axial_pos_to_z_offset - Z);
+    const float Qf = (2*num_planes_per_axial_pos*(ring0 + 0.5) 
+                      + num_planes_per_physical_ring*delta
+	              + 2*axial_pos_to_z_offset
+	              - Z); 
     // now use rounding to be safe
     Q = (int)floor(Qf + 0.5);
     assert(fabs(Q - Qf) < 10E-4);
@@ -1686,6 +1640,7 @@ Recompile %s with ALTERNATIVE not #defined",
 
   dzdiag = dzvert + dzhor;
   dsdiag = -cphi + sphi;
+
 
   /* KT 13/05/98 changed loop condition, originally a combination of
      while (X>X2||Y<Y2||Z<Z2) {
@@ -1711,6 +1666,7 @@ Recompile %s with ALTERNATIVE not #defined",
       const int Zplus = Z + 1;
       const int Qmin = Q - 1;
 
+      
 #if PIECEWISE_INTERPOLATION
 
       const double twodsdz = 2 * ds * dz;
@@ -1718,8 +1674,8 @@ Recompile %s with ALTERNATIVE not #defined",
       // KT 16/06/98 changed check ds!=0 to fabs(ds)>epsilon for better rounding control
       const bool do_s_symmetry = (s != 0 || fabs(ds) > epsilon);
 
-      if (Z >= minplane && Z <= maxplane)
-        {
+
+      if (Z>=minplane&&Z<=maxplane) {
           image[Z][Y][X] += (dz <= 0.25) ? A0a0 : UpA0 + twodsdz * K3A0;
           image[Z][X][-Y] += (dz <= 0.25) ? A2a0 : UpA2 + twodsdz * K3A2;
           image[Z][X][Y] += (dz <= 0.25) ? A1na0 : UpA1n + twodsdz * K3A1n;
@@ -1732,8 +1688,7 @@ Recompile %s with ALTERNATIVE not #defined",
               image[Z][-X][Y] += (dz <= 0.25) ? P2na0 : UpP2n + twodsdz * K3P2n;
             }
         }
-      if (Zplus >= minplane && Zplus <= maxplane)
-        {
+      if (Zplus>=minplane&&Zplus<=maxplane) {
           image[Zplus][Y][X] += (dz >= 0.25) ? A0a1 : UpA0 + twodsdz2 * K3A0 + ZplusKorrA0;
           image[Zplus][X][-Y] += (dz >= 0.25) ? A2a1 : UpA2 + twodsdz2 * K3A2 + ZplusKorrA2;
           image[Zplus][X][Y] += (dz >= 0.25) ? A1na1 : UpA1n + twodsdz2 * K3A1n + ZplusKorrA1n;
@@ -1746,8 +1701,7 @@ Recompile %s with ALTERNATIVE not #defined",
               image[Zplus][-X][Y] += (dz >= 0.25) ? P2na1 : UpP2n + twodsdz2 * K3P2n + ZplusKorrP2n;
             }
         }
-      if (Q >= minplane && Q <= maxplane)
-        {
+      if (Q>=minplane&&Q<=maxplane) {
           image[Q][Y][-X] += (dz <= 0.25) ? A3a0 : UpA3 + twodsdz * K3A3;
           image[Q][Y][X] += (dz <= 0.25) ? A0na0 : UpA0n + twodsdz * K3A0n;
           image[Q][X][-Y] += (dz <= 0.25) ? A2na0 : UpA2n + twodsdz * K3A2n;
@@ -1760,8 +1714,7 @@ Recompile %s with ALTERNATIVE not #defined",
               image[Q][-Y][X] += (dz <= 0.25) ? P3na0 : UpP3n + twodsdz * K3P3n;
             }
         }
-      if (Qmin >= minplane && Qmin <= maxplane)
-        {
+      if (Qmin>=minplane&&Qmin<=maxplane) {
           image[Qmin][Y][-X] += (dz >= 0.25) ? A3a1 : UpA3 + twodsdz2 * K3A3 + ZplusKorrA3;
           image[Qmin][Y][X] += (dz >= 0.25) ? A0na1 : UpA0n + twodsdz2 * K3A0n + ZplusKorrA0n;
           image[Qmin][X][-Y] += (dz >= 0.25) ? A2na1 : UpA2n + twodsdz2 * K3A2n + ZplusKorrA2n;
@@ -1781,8 +1734,7 @@ Recompile %s with ALTERNATIVE not #defined",
       // KT 16/06/98 changed check ds!=0 to fabs(ds)>epsilon for better rounding control
       const bool do_s_symmetry = (s != 0 || fabs(ds) > epsilon);
 
-      if (Z >= minplane && Z <= maxplane)
-        {
+      if (Z>=minplane&&Z<=maxplane) {
           image[Z][Y][X] += UpA0 + dsdz * K3A0;
           image[Z][X][-Y] += UpA2 + dsdz * K3A2;
           image[Z][X][Y] += UpA1n + dsdz * K3A1n;
@@ -1795,8 +1747,7 @@ Recompile %s with ALTERNATIVE not #defined",
               image[Z][-X][Y] += UpP2n + dsdz * K3P2n;
             }
         }
-      if (Zplus >= minplane && Zplus <= maxplane)
-        {
+      if (Zplus>=minplane&&Zplus<=maxplane) {
           image[Zplus][Y][X] += UpA0 + dsdz2 * K3A0 + ZplusKorrA0;
           image[Zplus][X][-Y] += UpA2 + dsdz2 * K3A2 + ZplusKorrA2;
           image[Zplus][X][Y] += UpA1n + dsdz2 * K3A1n + ZplusKorrA1n;
@@ -1809,8 +1760,7 @@ Recompile %s with ALTERNATIVE not #defined",
               image[Zplus][-X][Y] += UpP2n + dsdz2 * K3P2n + ZplusKorrP2n;
             }
         }
-      if (Q >= minplane && Q <= maxplane)
-        {
+      if (Q>=minplane&&Q<=maxplane) {
           image[Q][Y][-X] += UpA3 + dsdz * K3A3;
           image[Q][Y][X] += UpA0n + dsdz * K3A0n;
           image[Q][X][-Y] += UpA2n + dsdz * K3A2n;
@@ -1823,8 +1773,7 @@ Recompile %s with ALTERNATIVE not #defined",
               image[Q][-Y][X] += UpP3n + dsdz * K3P3n;
             }
         }
-      if (Qmin >= minplane && Qmin <= maxplane)
-        {
+      if (Qmin>=minplane&&Qmin<=maxplane) {
           image[Qmin][Y][-X] += UpA3 + dsdz2 * K3A3 + ZplusKorrA3;
           image[Qmin][Y][X] += UpA0n + dsdz2 * K3A0n + ZplusKorrA0n;
           image[Qmin][X][-Y] += UpA2n + dsdz2 * K3A2n + ZplusKorrA2n;
@@ -1844,6 +1793,7 @@ Recompile %s with ALTERNATIVE not #defined",
       if (Z >= minplane && Z <= maxplane)
         image[Z][Y][X] += TMP2;
 
+      
       // CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
       // as there is only one voxel in the beam in slice unit
       if (Zplus >= minplane && Zplus <= maxplane && ring_unit == 0.5)
@@ -1858,6 +1808,7 @@ Recompile %s with ALTERNATIVE not #defined",
       if (Qmin >= minplane && Qmin <= maxplane && ring_unit == 0.5)
         image[Qmin][X][Y] += TMP2 + ring_unit * TMP1 + ZplusKorrA1;
 
+       
       TMP1 = ds * K3A2;
       TMP2 = UpA2 + dz * TMP1;
       if (Z >= minplane && Z <= maxplane)
@@ -1983,17 +1934,13 @@ Recompile %s with ALTERNATIVE not #defined",
 
       //  Search for next pixel in the beam
 
-      if (ds >= cphi)
-        {
+      if (ds>=cphi) {
           /* horizontal*/
           X -= 1;
           ds -= cphi;
           dz += dzhor;
-          if (dz < epsilon)
-            { /* increment Z */
-              Z++;
-              Q--;
-              dz += ring_unit;
+	if (dz<epsilon) {     /* increment Z */
+	  Z++; Q--; dz+=ring_unit;
               UpA0 += HZA0;
               UpA1 += HZA1;
               UpA2 += HZA2;
@@ -2013,9 +1960,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #ifdef MOREZ
               while (dz < epsilon)
                 {
-                  Z++;
-                  Q--;
-                  dz += ring_unit;
+	  Z++; Q--; dz+=ring_unit;
                   UpA0 += HZA0 - HA0;
                   UpA1 += HZA1 - HA1;
                   UpA2 += HZA2 - HA2;
@@ -2036,8 +1981,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #endif
             }
 
-          else
-            { /* Z does not change */
+	else {       /* Z does not change */
               UpA0 += HA0;
               UpA1 += HA1;
               UpA2 += HA2;
@@ -2092,17 +2036,13 @@ Recompile %s with ALTERNATIVE not #defined",
 #endif // PIECEWISE_INTERPOLATION
         }
       // KT 14/05/98 use < instead of <= (see formula 6.17 in Egger's thesis)
-      else if (ds < 1 - sphi)
-        {
+      else if (ds<1-sphi) {
           /*  vertical*/
           Y += 1;
           ds += sphi;
           dz += dzvert;
-          if (dz < epsilon)
-            { /* increment Z */
-              Z++;
-              Q--;
-              dz += ring_unit;
+	if (dz<epsilon) {       /* increment Z */
+	  Z++; Q--; dz+=ring_unit;    
               UpA0 += VZA0;
               UpA1 += VZA1;
               UpA2 += VZA2;
@@ -2122,9 +2062,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #ifdef MOREZ
               while (dz < epsilon)
                 {
-                  Z++;
-                  Q--;
-                  dz += ring_unit;
+	  Z++; Q--; dz+=ring_unit;    
                   UpA0 += VZA0 - VA0;
                   UpA1 += VZA1 - VA1;
                   UpA2 += VZA2 - VA2;
@@ -2144,8 +2082,7 @@ Recompile %s with ALTERNATIVE not #defined",
                 }
 #endif
             }
-          else
-            { /* Wenn Z gleich bleibt */
+	else {              /* Wenn Z gleich bleibt */
               UpA0 += VA0;
               UpA1 += VA1;
               UpA2 += VA2;
@@ -2199,18 +2136,14 @@ Recompile %s with ALTERNATIVE not #defined",
           P3na1 += VP3na1;
 #endif // PIECEWISE_INTERPOLATION
         }
-      else
-        {
+      else {
           /*  diagonal*/
           X -= 1;
           Y += 1;
           ds += dsdiag;
           dz += dzdiag;
-          if (dz < epsilon)
-            { /* increment Z */
-              Z++;
-              Q--;
-              dz += ring_unit;
+	if (dz<epsilon) {      /* increment Z */
+	  Z++; Q--; dz+=ring_unit;
               UpA0 += DZA0;
               UpA1 += DZA1;
               UpA2 += DZA2;
@@ -2230,9 +2163,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #ifdef MOREZ
               while (dz < epsilon)
                 {
-                  Z++;
-                  Q--;
-                  dz += ring_unit;
+	  Z++; Q--; dz+=ring_unit;
                   UpA0 += DZA0 - DA0;
                   UpA1 += DZA1 - DA1;
                   UpA2 += DZA2 - DA2;
@@ -2253,8 +2184,7 @@ Recompile %s with ALTERNATIVE not #defined",
 #endif
             }
 
-          else
-            { /* Z does not change */
+	else {       /* Z does not change */
               UpA0 += DA0;
               UpA1 += DA1;
               UpA2 += DA2;
@@ -2307,48 +2237,49 @@ Recompile %s with ALTERNATIVE not #defined",
           P2na1 += DP2na1;
           P3na1 += DP3na1;
 #endif // PIECEWISE_INTERPOLATION
-        }
-      check_values(
-          proj_data_info_sptr, delta, cphi, sphi, s, ring0, X, Y, Z, ds, dz, num_planes_per_axial_pos, axial_pos_to_z_offset);
+                
+      }
+      check_values(proj_data_info_ptr, 
+		   delta, cphi, sphi, s, ring0,
+		   X, Y, Z,
+		   ds, dz, 
+		   num_planes_per_axial_pos,
+		   axial_pos_to_z_offset);
 
-  } while ((X * X + Y * Y <= image_rad * image_rad) && (Z <= maxplane || Q >= minplane));
+        }
+  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=minplane));
+
 }
+
 
 /****************************************************************************************/
 
+
 static Succeeded
-find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_sptr,
-                  const float delta,
-                  const double cphi,
-                  const double sphi,
-                  const int s,
-                  const int ring0,
-                  const float image_rad,
-                  const double d_sl,
-                  int& X1,
-                  int& Y1,
-                  int& Z1,
-                  double& ds,
-                  double& dz,
-                  double& dzhor,
-                  double& dzvert,
+find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+                              const float delta, const double cphi, const double sphi, 
+                              const int s, const int ring0,
+                              const float image_rad, const double d_sl,
+                              int&X1, int&Y1, int& Z1,
+                              double& ds, double& dz, double& dzhor, double& dzvert,			      
                   const float num_planes_per_axial_pos,
                   const float axial_pos_to_z_offset)
 {
   // use notations from Egger's thesis
 
-  const double d_p = proj_data_info_sptr->get_tangential_sampling();
+     
+  const double d_p = proj_data_info_ptr->get_tangential_sampling();
   // d_xy = image.get_voxel_size().x, but we can use the bin_size here as
   // the routines.work only when these 2 are equal
-  const double d_xy = proj_data_info_sptr->get_tangential_sampling();
+  const double d_xy = proj_data_info_ptr->get_tangential_sampling();
 
-  const double R2 = square(proj_data_info_sptr->get_ring_radius());
+  const double R2 =square(proj_data_info_ptr->get_ring_radius());
   /* Radius of scanner squared in Pixel^2 */
   const double R2p = R2 / d_xy / d_xy;
 
   // TODO REMOVE ASSUMPTION
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(d_sl * num_planes_per_physical_ring / proj_data_info_sptr->get_ring_spacing() - 1) < 10E-4);
+  assert(fabs(d_sl * num_planes_per_physical_ring/proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
 
   /* KT 16/06/98
      This code should select a pixel inside the FOV.
@@ -2365,6 +2296,7 @@ find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_da
   int rpix = round(image_rad - 1);             /* Radius of target image in voxel units */
   const double r2 = rpix * rpix * d_xy * d_xy; /* Radius squared of target image in mm^2 */
 
+ 
   // Formula in Eq 6.12 of Egger Matthias PhD
   //  First compute X1, Y1
   //  KT 16/06/98 added const
@@ -2388,6 +2320,7 @@ find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_da
     Y1 = (int)floor(Y1f + 0.5);
     // Y2 = (int) floor(Y2f + 0.5);
   }
+
 
   // Compute ds = difference between s and s-projection of selected voxel
   // KT 22/05/98 we don't need t later on
@@ -2425,8 +2358,7 @@ find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_da
         ds += cphi;
         // Now 0.5 <= (cphi-sphi)/2 + 0.5 <= ds < cphi+epsilon
       }
-    }
-  else if (ds >= 1.)
+    } else if (ds>=1.)
     {
 #if 0
 	if(sphi>epsilon)   
@@ -2452,8 +2384,7 @@ find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_da
   // Note that t=s+.5
   {
     const double t2dp2 = t * t * d_p * d_p; // Eq 6.12 in EGger thesis
-    // const double ttheta =(delta * d_sl / sqrt(R2 - t2dp2));//Equivalent to tan(theta) see Eq 6.10 in Egger thesis except that
-    // d_r/2  has been replaced to d_sl
+    //const double ttheta =(delta * d_sl / sqrt(R2 - t2dp2));//Equivalent to tan(theta) see Eq 6.10 in Egger thesis except that d_r/2  has been replaced to d_sl
 
     if (t2dp2 >= R2 || t2dp2 > r2)
       return Succeeded::no;
@@ -2467,7 +2398,8 @@ find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_da
     // Z1f =  2 * ring0 + 1 + delta * (1 - root2/root1)
     // We convert this to 'general' sizes of planes w.r.t. rings
     // KT&CL 22/12/99 inserted offset
-    const double Z1f = num_planes_per_axial_pos * (ring0 + 0.5) + axial_pos_to_z_offset
+    const double Z1f =  
+      num_planes_per_axial_pos*(ring0 + 0.5) + axial_pos_to_z_offset 
                        + num_planes_per_physical_ring * delta / 2 * (1 - root2 / root1);
     // const double Z2f = (ring0 + 0.5)/ring_unit + (ttheta * (root1 + root2))/d_sl;
     //  TODO possible problem for negative Z1f, use floor() instead
@@ -2480,12 +2412,10 @@ find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_da
     // Compute 'z' (formula 6.15 in Egger's thesis) which is the ring coordinate of the
     // projection of the voxel X1,Y1,Z1
     const double root = sqrt(R2p - t * t); // CL 26/10/98 Put it back the original formula as before it was root=sqrt(R2p-s*s)
-    // const double z=ring_unit*( Z1-delta*( (-X1*sphi+Y1*cphi)/root + 1 ) );// Eq 6.15 from Egger Thesis//CL SPAN 14/09/98
-    // 2*delta
+    //const double z=ring_unit*( Z1-delta*( (-X1*sphi+Y1*cphi)/root + 1 ) );// Eq 6.15 from Egger Thesis//CL SPAN 14/09/98 2*delta
     //  KT&CL 22/12/99 inserted offset
-    const double z
-        = (Z1 - num_planes_per_physical_ring * delta / 2 * ((-X1 * sphi + Y1 * cphi) / root + 1) - axial_pos_to_z_offset)
-          / num_planes_per_axial_pos;
+    const double z=( Z1-num_planes_per_physical_ring*delta/2*( (-X1*sphi+Y1*cphi)/root + 1 ) -
+                     axial_pos_to_z_offset)/num_planes_per_axial_pos;
     dz = z - ring0;
     // Using the same formula (z=...) for X1f, Y1f, Z1f gives zf = ring0+ 0.5
     // As the difference between X1f, Y1f, Z1f and X1,Y1,Y2 is at most 1 in every coordinate,
@@ -2494,6 +2424,7 @@ find_start_values(const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_da
     // As delta < Rpix for most scanners, -1/num_planes_per_axial_pos < dz < 1
     // For some scanners though (e.g. HiDAC) this is not true, so we keep on checking if
     // dz is in the appropriate range
+
 
     /* Push voxel back into beam */
     // KT 01/06/98 added 'else' here for the case when dz=1/num_planes_per_axial_pos, the first step puts it to 0,

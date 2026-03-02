@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,7 +34,8 @@
 START_NAMESPACE_STIR
 
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::FullArrayIterator()
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
+  FullArrayIterator()
     : current_top_level_iter(0),
       last_top_level_iter(0),
       current_rest_iter(),
@@ -34,8 +43,8 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::FullArrayIterato
 {}
 
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::FullArrayIterator(
-    unsigned
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
+  FullArrayIterator(unsigned 
 #ifndef NDEBUG
         param // only give the parameter a name in debug mode to avoid compiler warning
 #endif
@@ -49,7 +58,8 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::FullArrayIterato
 }
 
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::FullArrayIterator(const topleveliterT& top_level_iter,
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
+  FullArrayIterator(const topleveliterT& top_level_iter,
                                                                                   const topleveliterT& last_top_level_iter,
                                                                                   const restiterT& rest_iter,
                                                                                   const restiterT& last_rest_iter)
@@ -60,20 +70,23 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::FullArrayIterato
 {}
 
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::FullArrayIterator(
-    const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2)
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
+FullArrayIterator(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2)
     : current_top_level_iter(iter2.current_top_level_iter),
       last_top_level_iter(iter2.last_top_level_iter),
       current_rest_iter(iter2.current_rest_iter),
       last_rest_iter(iter2.last_rest_iter)
 {}
 
+
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 bool
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator==(
-    const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2) const
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
+  ::operator==(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2) const
 {
-  return current_top_level_iter == iter2.current_top_level_iter && current_rest_iter == iter2.current_rest_iter;
+  return
+    current_top_level_iter == iter2.current_top_level_iter &&
+    current_rest_iter == iter2.current_rest_iter;
 
   /* alternative:
      comparing rest_iter is only necessary when the first iterator is not
@@ -89,8 +102,8 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator==(
 }
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 bool
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator!=(
-    const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2) const
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
+  ::operator!=(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2) const
 {
   return !(*this == iter2);
 }
@@ -144,5 +157,6 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++(int)
   ++(*this);
   return was;
 }
+
 
 END_NAMESPACE_STIR

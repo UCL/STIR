@@ -2,11 +2,18 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2005, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
-    Copyright (C) 2013, 2020, 2022, 2023, 2024 University College London
-    Copyright (C) 2018, University of Hull
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -16,7 +23,6 @@
   \ingroup buildblock
   \brief defines the stir::RunTests class
 
-  \author Nikos Efthimiou
   \author Kris Thielemans
   \author PARAPET project
 */
@@ -25,14 +31,16 @@
 #include "stir/BasicCoordinate.h"
 #include "stir/IndexRange.h"
 #include "stir/stream.h"
-#include "stir/Bin.h"
-#include "stir/DetectionPosition.h"
-#include "stir/ProjDataInMemory.h"
 #include <iostream>
 #include <typeinfo>
 #include <vector>
 #include <complex>
 #include <string>
+
+#ifndef STIR_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -106,7 +114,6 @@ public:
     \see check()
   */
   //@{
-  bool check_if_equal(const std::string& a, const std::string& b, const std::string& str = "");
   bool check_if_equal(const double a, const double b, const std::string& str = "");
   // Note: due to current C++ overloading rules, we need copies for every integer type
   bool check_if_equal(const short a, const short b, const std::string& str = "");
@@ -120,28 +127,22 @@ public:
   bool check_if_equal(const long long a, const long long b, const std::string& str = "");
   bool check_if_equal(const unsigned long long a, const unsigned long long b, const std::string& str = "");
 #endif
-  bool check_if_equal(const Bin& a, const Bin& b, const std::string& str = "")
-  {
-    return this->check_if_equal_generic(a, b, str);
-  }
-  template <class T>
-  bool check_if_equal(const DetectionPosition<T>& a, const DetectionPosition<T>& b, const std::string& str = "")
-  {
-    return this->check_if_equal_generic(a, b, str);
-  }
-
   // VC 6.0 needs definition of template members in the class def unfortunately.
   //! check equality by calling check_if_equal on real and imaginary parts
   template <class T>
   bool check_if_equal(const std::complex<T> a, const std::complex<T> b, const std::string& str = "")
   {
-    return check_if_equal(a.real(), b.real(), str) && check_if_equal(a.imag(), b.imag(), str);
+      return 
+	check_if_equal(a.real(), b.real(), str) &&
+	check_if_equal(a.imag(), b.imag(), str);
   }
   //! check equality by comparing ranges and calling check_if_equal on all elements
   template <class T>
-  bool check_if_equal(const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2, const std::string& str = "")
+    bool check_if_equal(const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2, 
+                        const std::string& str = "")
   {
-    if (t1.get_min_index() != t2.get_min_index() || t1.get_max_index() != t2.get_max_index())
+    if (t1.get_min_index() != t2.get_min_index() ||
+        t1.get_max_index() != t2.get_max_index())
       {
         std::cerr << "Error: unequal ranges. " << str << std::endl;
         return everything_ok = false;
@@ -152,7 +153,7 @@ public:
         if (!check_if_equal(t1[i], t2[i], str))
           {
             std::cerr << "(at VectorWithOffset<" << typeid(T).name() << "> first mismatch at index " << i << ")\n";
-            return everything_ok = false;
+        return false;
           }
       }
     return true;
@@ -160,7 +161,8 @@ public:
   // VC 6.0 needs definition of template members in the class def unfortunately.
   //! check equality by comparing size and calling check_if_equal on all elements
   template <class T>
-  bool check_if_equal(const std::vector<T>& t1, const std::vector<T>& t2, const std::string& str = "")
+	  bool check_if_equal(const std::vector<T>& t1, const std::vector<T>& t2, 
+                        const std::string& str = "")
   {
     if (t1.size() != t2.size())
       {
@@ -180,11 +182,10 @@ public:
     return all_equal;
   }
 
-  bool check_if_equal(const ProjDataInMemory& t1, const ProjDataInMemory& t2, const std::string& str = "");
-
   // VC 6.0 needs definition of template members in the class def unfortunately.
   template <int n>
-  bool check_if_equal(const IndexRange<n>& t1, const IndexRange<n>& t2, const std::string& str = "")
+    bool check_if_equal(const IndexRange<n>& t1, const IndexRange<n>& t2, 
+                        const std::string& str = "")
   {
     if (t1 != t2)
       {
@@ -196,13 +197,15 @@ public:
   }
   //! check equality by comparing norm(a-b) with tolerance
   template <int num_dimensions, class coordT>
-  bool check_if_equal(const BasicCoordinate<num_dimensions, coordT>& a,
+  bool 
+  check_if_equal(const BasicCoordinate<num_dimensions, coordT>& a,
                       const BasicCoordinate<num_dimensions, coordT>& b,
                       const std::string& str = "")
   {
     if (norm(a - b) > tolerance)
       {
-        std::cerr << "Error : Unequal Coordinate value are " << a << " and " << b << ". " << str << std::endl;
+      std::cerr << "Error : Unequal Coordinate value are " 
+           << a << " and " << b << ". " << str  << std::endl;
         everything_ok = false;
         return false;
       }
@@ -246,7 +249,8 @@ public:
 
   //! compare norm with tolerance
   template <int num_dimensions, class coordT>
-  bool check_if_zero(const BasicCoordinate<num_dimensions, coordT>& a, const std::string& str = "")
+  bool 
+  check_if_zero(const BasicCoordinate<num_dimensions, coordT>& a, const std::string& str = "" )
   {
     if (norm(a) > tolerance)
       {
@@ -259,9 +263,6 @@ public:
   }
   //@}
 
-  //! check if a<b
-  template <class T1, class T2>
-  inline bool check_if_less(T1 a, T2 b, const std::string& str = "");
 
 protected:
   //! tolerance for comparisons with real values
@@ -271,11 +272,13 @@ protected:
 
   //! function that is called by some check_if_equal implementations. It just uses operator!=
   template <class T>
-  bool check_if_equal_generic(const T& a, const T& b, const std::string& str)
+  bool
+    check_if_equal_generic(const T& a, const T& b, const std::string& str)
   {
     if (a != b)
       {
-        std::cerr << "Error : unequal values are " << a << " and " << b << ". " << str << std::endl;
+          std::cerr << "Error : unequal values are " << a << " and " << b 
+               << ". " << str<< std::endl;
         everything_ok = false;
         return false;
       }
@@ -285,7 +288,8 @@ protected:
 
   //! function that is called by some check_if_zero implementations. It just uses operator!=
   template <class T>
-  bool check_if_zero_generic(T a, const std::string& str)
+    bool 
+    check_if_zero_generic(T a, const std::string& str)
   {
     if ((a != static_cast<T>(0)))
       {
@@ -296,15 +300,16 @@ protected:
     else
       return true;
   }
+  
 };
 
 END_NAMESPACE_STIR
 
+
 START_NAMESPACE_STIR
 
 RunTests::RunTests(const double tolerance)
-    : tolerance(tolerance),
-      everything_ok(true)
+  : tolerance(tolerance), everything_ok(true)
 {}
 
 RunTests::~RunTests()
@@ -319,32 +324,21 @@ RunTests::~RunTests()
     std::cerr << "\nEnd of tests. Please correct errors !\n\n" << std::endl;
 }
 
-bool
-RunTests::is_everything_ok() const
-{
-  return everything_ok;
-}
+bool RunTests::is_everything_ok() const
+{ return everything_ok ; }
 
-int
-RunTests::main_return_value() const
-{
-  return everything_ok ? EXIT_SUCCESS : EXIT_FAILURE;
-}
+int RunTests::main_return_value() const
+{ return everything_ok ? EXIT_SUCCESS : EXIT_FAILURE; }
 
-void
-RunTests::set_tolerance(const double tolerance_v)
+void RunTests::set_tolerance(const double tolerance_v)
 {
   tolerance = tolerance_v;
 }
 
-double
-RunTests::get_tolerance() const
-{
-  return tolerance;
-}
+double RunTests::get_tolerance() const
+{ return tolerance; }
 
-bool
-RunTests::check(const bool result, const std::string& str)
+bool RunTests::check(const bool result, const std::string& str)
 {
   if (!result)
     {
@@ -354,38 +348,21 @@ RunTests::check(const bool result, const std::string& str)
   return result;
 }
 
-bool
-RunTests::check_if_equal(const std::string& a, const std::string& b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
 
-/*! tolerance is used to account for floating point rounding error. First the absolute difference
- * is checked and afterwards the relative.
+/*! tolerance is used to account for floating point rounding error. Equality is checked using
 \code
-    const double diff = fabs(b-a);
-    if (diff <= tolerance)
-            return true;
-
-    const double largest = (std::max(fabs(b), fabs(a)));
-    if ( diff > tolerance*largest)
-        return false;
-    else
-        return true;
+((fabs(b)>tolerance && fabs(a/b-1) > tolerance)
+      || (fabs(b)<=tolerance && fabs(a-b) > tolerance))
 \endcode
 */
 bool
 RunTests::check_if_equal(const double a, const double b, const std::string& str)
 {
-  const double diff = fabs(b - a);
-  if (diff <= tolerance)
-    return true;
-
-  const double largest = (std::max(fabs(b), fabs(a)));
-
-  if (diff > tolerance * largest)
+  if ((fabs(b)>tolerance && fabs(a/b-1) > tolerance)
+      || (fabs(b)<=tolerance && fabs(a-b) > tolerance))
     {
-      std::cerr << "Error : unequal values are " << a << " and " << b << ". " << str << std::endl;
+    std::cerr << "Error : unequal values are " << a << " and " << b 
+         << ". " << str<< std::endl;
       everything_ok = false;
       return false;
     }
@@ -393,109 +370,43 @@ RunTests::check_if_equal(const double a, const double b, const std::string& str)
     return true;
 }
 
-bool
-RunTests::check_if_equal(const short a, const short b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
-bool
-RunTests::check_if_equal(const unsigned short a, const unsigned short b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
-bool
-RunTests::check_if_equal(const int a, const int b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
-bool
-RunTests::check_if_equal(const unsigned int a, const unsigned int b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
-bool
-RunTests::check_if_equal(const long a, const long b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
-bool
-RunTests::check_if_equal(const unsigned long a, const unsigned long b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
+
+bool RunTests::check_if_equal(const short a, const short b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned short a, const unsigned  short b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const int a, const int b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned int a, const unsigned int b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const long a, const long b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned long a, const unsigned long b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
 #ifdef BOOST_HAS_LONG_LONG
-bool
-RunTests::check_if_equal(const long long a, const long long b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
-bool
-RunTests::check_if_equal(const unsigned long long a, const unsigned long long b, const std::string& str)
-{
-  return this->check_if_equal_generic(a, b, str);
-}
+bool RunTests::check_if_equal(const long long a, const long long b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned long long a, const unsigned long long b, const std::string& str)
+{  return this->check_if_equal_generic(a,b,str);}
 #endif
 
-bool
-RunTests::check_if_equal(const ProjDataInMemory& t1, const ProjDataInMemory& t2, const std::string& str)
-{
-  if (*t1.get_proj_data_info_sptr() != *t2.get_proj_data_info_sptr())
-    {
-      std::cerr << "Error: unequal proj_data_info. " << str << std::endl;
-      return everything_ok = false;
-    }
-
-  for (auto i1 = t1.begin(), i2 = t2.begin(); i1 != t1.end(); ++i1, ++i2)
-    {
-      if (!check_if_equal(*i1, *i2, str))
-        {
-          return everything_ok = false;
-        }
-    }
-  return true;
-}
-
-bool
-RunTests::check_if_zero(const short a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
-bool
-RunTests::check_if_zero(const unsigned short a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
-bool
-RunTests::check_if_zero(const int a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
-bool
-RunTests::check_if_zero(const unsigned int a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
-bool
-RunTests::check_if_zero(const long a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
-bool
-RunTests::check_if_zero(const unsigned long a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
+bool RunTests::check_if_zero(const short a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned short a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const int a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned int a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const long a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned long a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
 #ifdef BOOST_HAS_LONG_LONG
-bool
-RunTests::check_if_zero(const long long a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
-bool
-RunTests::check_if_zero(const unsigned long long a, const std::string& str)
-{
-  return this->check_if_zero_generic(a, str);
-}
+bool RunTests::check_if_zero(const long long a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned long long a, const std::string& str)
+{  return this->check_if_zero_generic(a,str);}
 #endif
 
 /*! check if \code fabs(a)<=tolerance \endcode */
@@ -505,20 +416,6 @@ RunTests::check_if_zero(const double a, const std::string& str)
   if (fabs(a) > tolerance)
     {
       std::cerr << "Error : 0 value is " << a << " ." << str << std::endl;
-      everything_ok = false;
-      return false;
-    }
-  else
-    return true;
-}
-
-template <class T1, class T2>
-bool
-RunTests::check_if_less(T1 a, T2 b, const std::string& str)
-{
-  if (a >= b)
-    {
-      std::cerr << "Error : " << a << " is larger than " << b << ", " << str << std::endl;
       everything_ok = false;
       return false;
     }

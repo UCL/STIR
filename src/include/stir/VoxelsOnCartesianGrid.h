@@ -3,10 +3,17 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2018-2019, 2025, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -31,8 +38,7 @@
 START_NAMESPACE_STIR
 
 class ProjDataInfo;
-template <typename elemT>
-class PixelsOnCartesianGrid;
+template <typename elemT> class PixelsOnCartesianGrid;
 
 /*!
   \ingroup densitydata
@@ -44,15 +50,9 @@ class PixelsOnCartesianGrid;
 template <class elemT>
 class VoxelsOnCartesianGrid : public DiscretisedDensityOnCartesianGrid<3, elemT>
 {
-#ifdef STIR_COMPILING_SWIG_WRAPPER
-  // work-around swig problem. It gets confused when using a private (or protected)
-  // typedef in a definition of a public typedef/member
-public:
-#endif
-  typedef VoxelsOnCartesianGrid<elemT> self_type;
-  typedef DiscretisedDensityOnCartesianGrid<3, elemT> base_type;
 
 public:
+
 #if 0
   //! Asks for filename etc, and returns an image
 static VoxelsOnCartesianGrid ask_parameters();
@@ -62,6 +62,7 @@ static VoxelsOnCartesianGrid ask_parameters();
   VoxelsOnCartesianGrid();
 
   //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
+/*! All elements are set 0. */
   VoxelsOnCartesianGrid(const Array<3, elemT>& v,
                         const CartesianCoordinate3D<float>& origin,
                         const BasicCoordinate<3, float>& grid_spacing);
@@ -69,19 +70,6 @@ static VoxelsOnCartesianGrid ask_parameters();
   //! Construct a VoxelsOnCartesianGrid from an index range
   /*! All elements are set 0. */
   VoxelsOnCartesianGrid(const IndexRange<3>& range,
-                        const CartesianCoordinate3D<float>& origin,
-                        const BasicCoordinate<3, float>& grid_spacing);
-
-  //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
-  VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                        const Array<3, elemT>& v,
-                        const CartesianCoordinate3D<float>& origin,
-                        const BasicCoordinate<3, float>& grid_spacing);
-
-  //! Construct a VoxelsOnCartesianGrid from an index range
-  /*! All elements are set 0. */
-  VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                        const IndexRange<3>& range,
                         const CartesianCoordinate3D<float>& origin,
                         const BasicCoordinate<3, float>& grid_spacing);
 
@@ -115,29 +103,6 @@ static VoxelsOnCartesianGrid ask_parameters();
                         const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F, 0.F, 0.F),
                         const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1, -1, -1));
 
-  //! Constructor from exam_info and proj_data_info
-  /*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,
-                        const float zoom,
-                        const CartesianCoordinate3D<float>&,
-                        const CartesianCoordinate3D<int>& );
-  */
-  VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                        const ProjDataInfo& proj_data_info,
-                        const float zoom = 1.F,
-                        const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F, 0.F, 0.F),
-                        const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1, -1, -1));
-
-  //! Constructor from exam_info and proj_data_info
-  /*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,
-                        const float zoom,
-                        const CartesianCoordinate3D<float>&,
-                        const CartesianCoordinate3D<int>& );
-  */
-  VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr_v,
-                        const ProjDataInfo& proj_data_info,
-                        const CartesianCoordinate3D<float>& zooms,
-                        const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F, 0.F, 0.F),
-                        const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1, -1, -1));
 
 //! Definition of the pure virtual defined in DiscretisedDensity
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
@@ -145,7 +110,7 @@ static VoxelsOnCartesianGrid ask_parameters();
 #else
   VoxelsOnCartesianGrid<elemT>*
 #endif
-  get_empty_copy() const override;
+ get_empty_copy() const;
 
   //! Like get_empty_copy, but returning a pointer to a VoxelsOnCartesianGrid
   VoxelsOnCartesianGrid<elemT>* get_empty_voxels_on_cartesian_grid() const;
@@ -153,9 +118,9 @@ static VoxelsOnCartesianGrid ask_parameters();
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
   virtual DiscretisedDensity<3, elemT>*
 #else
-  VoxelsOnCartesianGrid<elemT>*
+virtual VoxelsOnCartesianGrid<elemT>*
 #endif
-  clone() const override;
+clone() const;
 
   //! Extract a single plane
   PixelsOnCartesianGrid<elemT> get_plane(const int z) const;
@@ -200,101 +165,22 @@ static VoxelsOnCartesianGrid ask_parameters();
 
   //@}
 
-  //! \name Numerical operations
-  //@{
-  // tedious reimplementation to fix return types. This could be avoided by using boost::operators.
-  // However, reimplementing them explicitly helps SWIG.
-  inline self_type& operator+=(const self_type& x)
-  {
-    base_type::operator+=(x);
-    return *this;
-  }
-  inline self_type& operator-=(const self_type& x)
-  {
-    base_type::operator-=(x);
-    return *this;
-  }
-  inline self_type& operator*=(const self_type& x)
-  {
-    base_type::operator*=(x);
-    return *this;
-  }
-  inline self_type& operator/=(const self_type& x)
-  {
-    base_type::operator/=(x);
-    return *this;
-  }
-  inline self_type& operator+=(const elemT x)
-  {
-    base_type::operator+=(x);
-    return *this;
-  }
-  inline self_type& operator-=(const elemT x)
-  {
-    base_type::operator-=(x);
-    return *this;
-  }
-  inline self_type& operator*=(const elemT x)
-  {
-    base_type::operator*=(x);
-    return *this;
-  }
-  inline self_type& operator/=(const elemT x)
-  {
-    base_type::operator/=(x);
-    return *this;
-  }
-  inline self_type operator+(const self_type& x) const
-  {
-    self_type c(*this);
-    return c += x;
-  }
-  inline self_type operator+(const elemT x) const
-  {
-    self_type c(*this);
-    return c += x;
-  }
-  inline self_type operator-(const self_type& x) const
-  {
-    self_type c(*this);
-    return c -= x;
-  }
-  inline self_type operator-(const elemT x) const
-  {
-    self_type c(*this);
-    return c -= x;
-  }
-  inline self_type operator*(const self_type& x) const
-  {
-    self_type c(*this);
-    return c *= x;
-  }
-  inline self_type operator*(const elemT x) const
-  {
-    self_type c(*this);
-    return c *= x;
-  }
-  inline self_type operator/(const self_type& x) const
-  {
-    self_type c(*this);
-    return c /= x;
-  }
-  inline self_type operator/(const elemT x) const
-  {
-    self_type c(*this);
-    return c /= x;
-  }
-  //@}
-
-private:
-  void construct_from_projdata_info(const shared_ptr<const ExamInfo>& exam_info_sptr_v,
-                                    const ProjDataInfo& proj_data_info,
-                                    const CartesianCoordinate3D<float>& zooms,
-                                    const CartesianCoordinate3D<float>& origin,
-                                    const CartesianCoordinate3D<int>& sizes);
 };
+
 
 END_NAMESPACE_STIR
 
 #include "stir/VoxelsOnCartesianGrid.inl"
 #endif
+
+
+
+
+
+
+
+
+
+
+
+

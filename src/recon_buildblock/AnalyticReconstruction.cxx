@@ -1,10 +1,17 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2006,  Hammersmith Imanet Ltd
-    Copyright (C) 2016, 2018 - 2020 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0  AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify 
+    it under the terms of the GNU Lesser General Public License as published by 
+    the Free Software Foundation; either version 2.1 of the License, or 
+    (at your option) any later version. 
+ 
+    This file is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+    GNU Lesser General Public License for more details. 
 
     See STIR/LICENSE.txt for details
 */
@@ -15,25 +22,31 @@
 
   \brief  implementation of the stir::AnalyticReconstruction class
 
-  \author Kris Thielemans
   \author Matthew Jacobson
-  \author Nikos Efthimiou
+  \author Kris Thielemans
+  \author Sanida Mustafovic
   \author PARAPET project
 
 */
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/CartesianCoordinate3D.h"
 #include "stir/Succeeded.h"
+#include "stir/utilities.h"
 #include "stir/is_null_ptr.h"
-#include "stir/info.h"
-#include "stir/warning.h"
-#include "stir/error.h"
-#include "stir/format.h"
 #include <iostream>
 #include "stir/IO/OutputFileFormat.h"
 
+#ifndef STIR_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+using std::ends;
+#endif
+
 START_NAMESPACE_STIR
+
+
 
 // parameters
 
@@ -44,8 +57,14 @@ AnalyticReconstruction::set_defaults()
   input_filename = "";
   max_segment_num_to_process = -1;
   proj_data_ptr.reset();
-  target_parameter_parser.set_defaults();
+  output_image_size_xy=-1;
+  output_image_size_z=-1;
+  zoom=1.F;
+  Xoffset=0.F;
+  Yoffset=0.F;
+  Zoffset=0.F;
 }
+
 
 void
 AnalyticReconstruction::initialise_keymap()
@@ -57,9 +76,16 @@ AnalyticReconstruction::initialise_keymap()
 
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
 
-  this->target_parameter_parser.add_to_keymap(parser);
+  parser.add_key("zoom", &zoom);
+  parser.add_key("XY output image size (in pixels)",&output_image_size_xy);
+  parser.add_key("Z output image size (in pixels)",&output_image_size_z);
+  //parser.add_key("X offset (in mm)", &Xoffset); // KT 10122001 added spaces
+  //parser.add_key("Y offset (in mm)", &Yoffset);
+  
+  parser.add_key("Z offset (in mm)", &Zoffset);
 
   //  parser.add_key("END", &KeyParser::stop_parsing);
+ 
 }
 
 #if 0
@@ -98,19 +124,39 @@ void AnalyticReconstruction::ask_parameters()
 
   output_filename_prefix=output_filename_prefix_char;
 
+  zoom=  ask_num("Specify a zoom factor as magnification effect ? ",0.1,10.,1.);
+
+
+  output_image_size_xy =  
+    ask_num("Final image size (-1 for default)? ",
+	    -1,
+	    4*static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom),
+	    -1);
+    
+#if 0    
+    // This section enables you to position a reconstructed image
+    // along x (horizontal), y (vertical) and/or z (transverse) axes
+    // The default values is in the center of the FOV,
+    // the positve direction is
+    // for x-axis, toward the patient's left side (assuming typical spinal, head first position)
+    // for y-axis, toward the top of the FOV
+    // for z-axis, toward the patient's feet (assuming typical spinal, head first position)
+    
+    cout << endl << "    Enter offset  Xoff, Yoff (in pixels) :";
+    Xoffset = ask_num("   X offset  ",-old_size/2, old_size/2, 0);
+    Yoffset = ask_num("   Y offset  ",-old_size/2, old_size/2, 0);
+#endif
+
 }
 #endif // ask_parameters disabled
 
-bool
-AnalyticReconstruction::post_processing()
+
+bool AnalyticReconstruction::post_processing()
 {
   if (base_type::post_processing())
     return true;
   if (input_filename.length() == 0)
-    {
-      warning("You need to specify an input file\n");
-      return true;
-    }
+  { warning("You need to specify an input file\n"); return true; }
     // KT 20/06/2001 disabled as not functional yet
 #if 0
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
@@ -119,144 +165,72 @@ AnalyticReconstruction::post_processing()
 
   proj_data_ptr = ProjData::read_from_file(input_filename);
 
-  target_parameter_parser.check_values();
+  if (zoom <= 0)
+  { warning("zoom should be positive\n"); return true; }
+  
+  if (output_image_size_xy!=-1 && output_image_size_xy<1) // KT 10122001 appended_xy
+  { warning("output image size xy must be positive (or -1 as default)\n"); return true; }
+  if (output_image_size_z!=-1 && output_image_size_z<1) // KT 10122001 new
+  { warning("output image size z must be positive (or -1 as default)\n"); return true; }
+
 
   return false;
 }
 
+
 //************* other functions *************
 
 DiscretisedDensity<3, float>*
-AnalyticReconstruction::construct_target_image_ptr() const
+AnalyticReconstruction::
+construct_target_image_ptr() const
 {
-  return this->target_parameter_parser.create(this->get_input_data());
+  return
+      new VoxelsOnCartesianGrid<float> (*this->proj_data_ptr->get_proj_data_info_ptr(),
+					static_cast<float>(this->zoom),
+					CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
+								     static_cast<float>(this->Yoffset),
+								     static_cast<float>(this->Xoffset)),
+					CartesianCoordinate3D<int>(this->output_image_size_z,
+                                                                   this->output_image_size_xy,
+                                                                   this->output_image_size_xy)
+                                       );
 }
 
-Succeeded
-AnalyticReconstruction::reconstruct()
+
+
+Succeeded 
+AnalyticReconstruction::
+reconstruct() 
 {
-  this->start_timers();
-  this->target_data_sptr.reset(this->construct_target_image_ptr());
-  if (this->set_up(this->target_data_sptr) == Succeeded::no)
+  shared_ptr<DiscretisedDensity<3,float> > target_image_ptr(construct_target_image_ptr());
+  const Succeeded success = this->reconstruct(target_image_ptr);
+  if (success == Succeeded::yes)
     {
-      this->stop_timers();
-      return Succeeded::no;
-    }
-
-  this->stop_timers();
-
-  const Succeeded success = this->reconstruct(this->target_data_sptr);
-  if (success == Succeeded::yes && !_disable_output)
-    {
-      this->output_file_format_ptr->write_to_file(this->output_filename_prefix, *this->target_data_sptr);
+    this->output_file_format_ptr->
+      write_to_file(this->output_filename_prefix, *target_image_ptr);
     }
   return success;
 }
 
+
 Succeeded
-AnalyticReconstruction::reconstruct(shared_ptr<TargetT> const& target_image_sptr)
+AnalyticReconstruction::
+reconstruct(shared_ptr<TargetT> const& target_image_sptr)
 {
-  this->check(*target_data_sptr);
-#if 0
-  Succeeded success = this->set_up(target_image_sptr);
-  if (success == Succeeded::no)
-    error("AnalyticReconstruction::set_up() failed");
-#endif
-  this->start_timers();
-  Succeeded success = this->actual_reconstruct(target_image_sptr);
+  const Succeeded success = this->actual_reconstruct(target_image_sptr);
   if (success == Succeeded::yes)
     {
       if (!is_null_ptr(this->post_filter_sptr))
         {
-          info("Applying post-filter");
+	std::cerr << "\nApplying post-filter"<<endl;
           this->post_filter_sptr->apply(*target_image_sptr);
 
-          info(format("  min and max after post-filtering {} {}", target_image_sptr->find_min(), target_image_sptr->find_max()));
+	std::cerr << "  min and max after post-filtering " << target_image_sptr->find_min() 
+		  << " " << target_image_sptr->find_max() << std::endl;
         }
     }
-  this->stop_timers();
   return success;
 }
 
-void
-AnalyticReconstruction::set_input_data(const shared_ptr<ExamData>& arg)
-{
-  _already_set_up = false;
-  this->proj_data_ptr = dynamic_pointer_cast<ProjData>(arg);
-}
-
-const ProjData&
-AnalyticReconstruction::get_input_data() const
-{
-  if (is_null_ptr(this->proj_data_ptr))
-    error("calling get_input_data but it hasn't been set yet");
-  return *this->proj_data_ptr;
-}
-
-// forwarding functions for ParseDiscretisedDensityParameters
-int
-AnalyticReconstruction::get_output_image_size_xy() const
-{
-  return target_parameter_parser.get_output_image_size_xy();
-}
-
-void
-AnalyticReconstruction::set_output_image_size_xy(int v)
-{
-  _already_set_up = false;
-  target_parameter_parser.set_output_image_size_xy(v);
-}
-
-int
-AnalyticReconstruction::get_output_image_size_z() const
-{
-  return target_parameter_parser.get_output_image_size_z();
-}
-
-void
-AnalyticReconstruction::set_output_image_size_z(int v)
-{
-  _already_set_up = false;
-  target_parameter_parser.set_output_image_size_z(v);
-}
-
-float
-AnalyticReconstruction::get_zoom_xy() const
-{
-  return target_parameter_parser.get_zoom_xy();
-}
-
-void
-AnalyticReconstruction::set_zoom_xy(float v)
-{
-  _already_set_up = false;
-  target_parameter_parser.set_zoom_xy(v);
-}
-
-float
-AnalyticReconstruction::get_zoom_z() const
-{
-  return target_parameter_parser.get_zoom_z();
-}
-
-void
-AnalyticReconstruction::set_zoom_z(float v)
-{
-  _already_set_up = false;
-  target_parameter_parser.set_zoom_z(v);
-}
-
-const CartesianCoordinate3D<float>&
-AnalyticReconstruction::get_offset() const
-{
-  return target_parameter_parser.get_offset();
-}
-
-void
-AnalyticReconstruction::set_offset(const CartesianCoordinate3D<float>& v)
-{
-  _already_set_up = false;
-  target_parameter_parser.set_offset(v);
-}
-
 END_NAMESPACE_STIR
+

@@ -3,7 +3,15 @@
   Copyright (C) 2013, University College London
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+  
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -17,18 +25,15 @@
 */
 #include "stir/assign.h"
 
-#ifndef __stir_numerics_BSplinesDetail_inl_
-#  define __stir_numerics_BSplinesDetail_inl_
 START_NAMESPACE_STIR
 
-namespace BSpline
-{
+namespace BSpline {
 ///// implementation functions Out Of the Class ////////
-namespace detail
-{
+  namespace detail {
 template <typename constantsT>
 static inline void
-set_BSpline_values(constantsT& z1, constantsT& z2, constantsT& lambda, const BSplineType spline_type)
+    set_BSpline_values(constantsT& z1, constantsT& z2, constantsT& lambda,
+                       const BSplineType spline_type)
 {
   switch (spline_type)
     {
@@ -66,16 +71,17 @@ set_BSpline_values(constantsT& z1, constantsT& z2, constantsT& lambda, const BSp
     lambda *= static_cast<constantsT>((1. - z2) * (1. - (1. / z2)));
 }
 
+                
 // 1d specialisation
 template <typename out_elemT, typename in_elemT, typename constantsT>
 void
-set_coef(Array<1, out_elemT>& coeffs,
-         const Array<1, in_elemT>& input,
+  set_coef(Array<1, out_elemT>& coeffs, const Array<1, in_elemT>& input,
          const BasicCoordinate<1, constantsT>& z1s,
          const BasicCoordinate<1, constantsT>& z2s,
          const BasicCoordinate<1, constantsT>& lambdas)
 {
-  BSplines_coef(coeffs.begin(), coeffs.end(), input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
+    BSplines_coef(coeffs.begin(), coeffs.end(), 
+                  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
 }
 
 template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
@@ -87,11 +93,16 @@ set_coef(Array<num_dimensions, out_elemT>& coeffs,
          const BasicCoordinate<num_dimensions, constantsT>& lambdas)
 {
   Array<num_dimensions, out_elemT> temp(input.get_index_range());
-  BSplines_coef(temp.begin(), temp.end(), input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
+    BSplines_coef(temp.begin(),temp.end(), 
+                  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
 
   for (int i = coeffs.get_min_index(); i <= coeffs.get_max_index(); ++i)
     {
-      set_coef(coeffs[i], temp[i], cut_first_dimension(z1s), cut_first_dimension(z2s), cut_first_dimension(lambdas));
+        set_coef(coeffs[i],
+                 temp[i], 
+                 cut_first_dimension(z1s), 
+                 cut_first_dimension(z2s), 
+                 cut_first_dimension(lambdas));
     }
 }
 
@@ -143,7 +154,8 @@ struct Bder
   but would allows to use e.g. periodic boundary conditions or extrapolation
 */
 template <int num_dimensions, int num_dimensions2, typename T, typename FunctionT, typename SplineFunctionT>
-inline typename SplineFunctionT::result_type
+  inline 
+  typename SplineFunctionT::result_type
 spline_convolution(const Array<num_dimensions, T>& coeffs,
                    const BasicCoordinate<num_dimensions2, pos_type>& relative_positions,
                    const BasicCoordinate<num_dimensions2, BSplineType>& spline_types,
@@ -151,7 +163,8 @@ spline_convolution(const Array<num_dimensions, T>& coeffs,
                    SplineFunctionT g)
 {
   const int current_dimension = num_dimensions2 - num_dimensions + 1;
-  const PieceWiseFunction<pos_type>& bspline = bspline_function(spline_types[current_dimension]);
+    const PieceWiseFunction<pos_type>& bspline =
+      bspline_function(spline_types[current_dimension]);
 
   typename SplineFunctionT::result_type value;
   assign(value, 0);
@@ -172,14 +185,12 @@ spline_convolution(const Array<num_dimensions, T>& coeffs,
   for (; k <= kmax; ++k, --current_pos DECR_P)
     {
       int index;
-      if (k < coeffs.get_min_index())
-        index = 2 * coeffs.get_min_index() - k;
-      else if (k > coeffs.get_max_index())
-        index = 2 * coeffs.get_max_index() - k;
-      else
-        index = k;
+        if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
+        else if (k>coeffs.get_max_index()) index=2*coeffs.get_max_index()-k;
+        else index = k;
       assert(coeffs.get_min_index() <= index && index <= coeffs.get_max_index());
-      value += static_cast<typename SplineFunctionT::result_type>(g(coeffs[index], relative_positions, spline_types) *
+        value += static_cast<typename SplineFunctionT::result_type>(
+          g(coeffs[index], relative_positions, spline_types) *
 #  ifdef NNN
                                                                   f(current_pos, p, bspline)
 #  else
@@ -191,14 +202,16 @@ spline_convolution(const Array<num_dimensions, T>& coeffs,
 }
 
 template <int num_dimensions2, typename T, typename FunctionT>
-inline T
+  inline 
+  T
 spline_convolution(const Array<1, T>& coeffs,
                    const BasicCoordinate<num_dimensions2, pos_type>& relative_positions,
                    const BasicCoordinate<num_dimensions2, BSplineType>& spline_types,
                    FunctionT f)
 {
   const int current_dimension = num_dimensions2;
-  const PieceWiseFunction<pos_type>& bspline = bspline_function(spline_types[current_dimension]);
+    const PieceWiseFunction<pos_type>& bspline =
+      bspline_function(spline_types[current_dimension]);
   T value;
   assign(value, 0);
   // x-1.5<k<x+1.5
@@ -218,14 +231,13 @@ spline_convolution(const Array<1, T>& coeffs,
   for (; k <= kmax; ++k, --current_pos DECR_P)
     {
       int index;
-      if (k < coeffs.get_min_index())
-        index = 2 * coeffs.get_min_index() - k;
-      else if (k > coeffs.get_max_index())
-        index = 2 * coeffs.get_max_index() - k;
-      else
-        index = k;
+        if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
+        else if (k>coeffs.get_max_index()) index=2*coeffs.get_max_index()-k;
+        else index = k;
       assert(coeffs.get_min_index() <= index && index <= coeffs.get_max_index());
-      value += static_cast<T>(coeffs[index] *
+        value += 
+          static_cast<T>(
+                  coeffs[index] *
 #  ifdef NNN
                               f(current_pos, p, bspline)
       //        bspline.function_piece(current_pos, p)
@@ -238,55 +250,65 @@ spline_convolution(const Array<1, T>& coeffs,
 }
 
 template <int num_dimensions, int num_dimensions2, typename T>
-struct compute_BSplines_value
+  struct 
+  compute_BSplines_value
 {
   typedef T result_type;
   T operator()(const Array<num_dimensions, T>& coeffs,
                const BasicCoordinate<num_dimensions2, pos_type>& relative_positions,
                const BasicCoordinate<num_dimensions2, BSplineType>& spline_types) const
   {
-    return spline_convolution(coeffs,
-                              relative_positions,
-                              spline_types,
+      return
+        spline_convolution(coeffs, relative_positions, spline_types,
                               BW<pos_type>(),
                               // BSplineFunction<quadratic,pos_type>(),
                               compute_BSplines_value<num_dimensions - 1, num_dimensions2, T>());
   }
 };
 
+#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+#define T float
+  template <>
+#else
 template <typename T, int num_dimensions2>
-struct compute_BSplines_value<1, num_dimensions2, T>
+#endif
+  struct 
+  compute_BSplines_value<1, num_dimensions2,T>
 {
   typedef T result_type;
   T operator()(const Array<1, T>& coeffs,
                const BasicCoordinate<num_dimensions2, pos_type>& relative_positions,
                const BasicCoordinate<num_dimensions2, BSplineType>& spline_types) const
   {
-    return spline_convolution(coeffs, relative_positions, spline_types, BW<pos_type>()
+      return
+        spline_convolution(coeffs, relative_positions, spline_types,
+                           BW<pos_type>()
                               // BSplineFunction<quadratic,pos_type>()
     );
   }
 };
+#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+#undef T
+#endif                  
 
 template <int num_dimensions, int num_dimensions2, typename T>
-struct compute_BSplines_gradient
+  struct 
+  compute_BSplines_gradient
 {
   typedef BasicCoordinate<num_dimensions, T> result_type;
 
-  BasicCoordinate<num_dimensions, T> operator()(const Array<num_dimensions, T>& coeffs,
+    BasicCoordinate<num_dimensions,T>
+    operator()(const Array<num_dimensions, T>& coeffs,
                                                 const BasicCoordinate<num_dimensions2, pos_type>& relative_positions,
                                                 const BasicCoordinate<num_dimensions2, BSplineType>& spline_types) const
   {
-    const T first_value = spline_convolution(coeffs,
-                                             relative_positions,
-                                             spline_types,
+      const T first_value =
+        spline_convolution(coeffs, relative_positions, spline_types,
                                              Bder<pos_type>(),
                                              // BSplineFunction<quadratic,pos_type>(),
                                              compute_BSplines_value<num_dimensions - 1, num_dimensions2, T>());
-    const BasicCoordinate<num_dimensions - 1, T> rest_value
-        = spline_convolution(coeffs,
-                             relative_positions,
-                             spline_types,
+      const BasicCoordinate<num_dimensions-1,T> rest_value = 
+        spline_convolution(coeffs, relative_positions, spline_types,
                              BW<pos_type>(),
                              // BSplineFunction<quadratic,pos_type>(),
                              compute_BSplines_gradient<num_dimensions - 1, num_dimensions2, T>());
@@ -294,25 +316,38 @@ struct compute_BSplines_gradient
   }
 };
 
+#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+#define T float
+  template <>
+#else
 template <int num_dimensions2, typename T>
-struct compute_BSplines_gradient<1, num_dimensions2, T>
+#endif
+  struct 
+  compute_BSplines_gradient<1,num_dimensions2,T>
 {
   typedef BasicCoordinate<1, T> result_type;
 
-  BasicCoordinate<1, T> operator()(const Array<1, T>& coeffs,
+    BasicCoordinate<1,T>
+    operator()(const Array<1, T>& coeffs,
                                    const BasicCoordinate<num_dimensions2, pos_type>& relative_positions,
                                    const BasicCoordinate<num_dimensions2, BSplineType>& spline_types) const
   {
     BasicCoordinate<1, T> result;
-    result[1] = spline_convolution(coeffs, relative_positions, spline_types, Bder<pos_type>()
+      result[1] = 
+        spline_convolution(coeffs, relative_positions, spline_types,
+                           Bder<pos_type>()
                                    // BSplineFunction<quadratic,pos_type>()
     );
     return result;
   }
 };
+#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+#undef T
+#endif                  
+
+
 
 } // end of namespace detail
 } // end of namespace BSpline
 
 END_NAMESPACE_STIR
-#endif

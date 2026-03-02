@@ -2,10 +2,17 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018 - 2020, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -16,7 +23,7 @@
   \brief Declaration of class stir::ParametricDiscretisedDensity
 
   \author Kris Thielemans
-  \author Richard Brown
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -25,7 +32,6 @@
 #include "boost/lambda/lambda.hpp"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/error.h"
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -38,28 +44,13 @@ START_NAMESPACE_STIR
 /////////////////////////////////////////////////////////////////////////////////////
 TEMPLATE
 unsigned int
-ParamDiscDensity::get_num_params()
+ParamDiscDensity::
+get_num_params()
 {
   // somewhat naughty trick to get elemT of DiscDensityT
   typedef typename DiscDensityT::full_value_type KinParsT;
   const KinParsT dummy;
   return dummy.size();
-}
-
-TEMPLATE
-ParamDiscDensity::ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
-    : base_type(dyn_im.get_density(1).get_index_range(),
-                dyn_im.get_density(1).get_origin(),
-                dynamic_cast<const VoxelsOnCartesianGrid<float>&>(dyn_im.get_density(1)).get_grid_spacing())
-{
-  this->set_exam_info(dyn_im.get_exam_info());
-}
-
-TEMPLATE
-ParamDiscDensity::ParametricDiscretisedDensity(const SingleDiscretisedDensityType& im)
-    : base_type(im.get_index_range(), im.get_origin(), dynamic_cast<const VoxelsOnCartesianGrid<float>&>(im).get_grid_spacing())
-{
-  this->set_exam_info(im.get_exam_info());
 }
 
 #if 0
@@ -131,15 +122,19 @@ update_parametric_image(const VectorWithOffset<shared_ptr<SingleDiscretisedDensi
 
 TEMPLATE
 void
-ParamDiscDensity::update_parametric_image(const SingleDiscretisedDensityType& single_density, const unsigned int param_num)
+ParamDiscDensity::
+update_parametric_image(const SingleDiscretisedDensityType &  single_density, const unsigned int param_num)
 {
   assert(param_num <= this->get_num_params());
   assert(single_density.get_index_range() == this->get_index_range());
 
   const unsigned int f = param_num;
-  typename SingleDiscretisedDensityType::const_full_iterator single_density_iter = single_density.begin_all();
-  const typename SingleDiscretisedDensityType::const_full_iterator end_single_density_iter = single_density.end_all();
-  typename ParamDiscDensity::full_densel_iterator parametric_density_iter = this->begin_all_densel();
+  typename SingleDiscretisedDensityType::const_full_iterator single_density_iter =
+    single_density.begin_all();
+  const typename SingleDiscretisedDensityType::const_full_iterator end_single_density_iter =
+    single_density.end_all();
+  typename ParamDiscDensity::full_densel_iterator parametric_density_iter =
+    this->begin_all_densel();
   while (single_density_iter != end_single_density_iter)
     {
       if (parametric_density_iter == this->end_all_densel())
@@ -147,8 +142,7 @@ ParamDiscDensity::update_parametric_image(const SingleDiscretisedDensityType& si
       //(*parametric_density_iter)[f] = *single_density_iter;
       const float tmp = *single_density_iter;
       (*parametric_density_iter)[f] = tmp;
-      ++single_density_iter;
-      ++parametric_density_iter;
+      ++single_density_iter; ++parametric_density_iter;
     }
   // TODO Currently need this to avoid segmentation fault with 4.1...
   // std::cerr << " Done\n";
@@ -156,19 +150,69 @@ ParamDiscDensity::update_parametric_image(const SingleDiscretisedDensityType& si
 
 TEMPLATE
 ParamDiscDensity*
-ParamDiscDensity::read_from_file(const std::string& filename) // The written image is read in respect to its center as origin!!!
+ParamDiscDensity::
+read_from_file(const std::string& filename)
 {
-  unique_ptr<ParamDiscDensity> param_sptr(stir::read_from_file<ParamDiscDensity>(filename));
-  return param_sptr.release();
+  // TODO this will only work for elemT==float
+  shared_ptr<DynamicDiscretisedDensity > multi_sptr(
+						    stir::read_from_file<DynamicDiscretisedDensity>(filename));
+
+  using namespace boost::lambda;
+  
+  // somewhat naughty trick to get elemT of DiscDensityT
+  typedef typename DiscDensityT::full_value_type KinParsT;
+
+  // check size
+  {
+    KinParsT dummy;
+    const unsigned num_pars = dummy.size();
+
+    if (num_pars != multi_sptr->get_num_time_frames())
+      error("I expect %d 'time frames' when reading %s. Exiting",
+            num_pars, filename.c_str());
+  }
+
+  if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(&(*multi_sptr)[1])==0)
+    error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
+
+  CartesianCoordinate3D<float> grid_spacing =
+    static_cast<const VoxelsOnCartesianGrid<float> *>(&(*multi_sptr)[1])->get_grid_spacing();
+  // TODO this will only work for VoxelsOnCartesianGrid
+  ParamDiscDensity * parametric_density_ptr =
+    new ParamDiscDensity(DiscDensityT((*multi_sptr)[1].get_index_range(),
+                                      (*multi_sptr)[1].get_origin(), 
+                                      grid_spacing));
+  
+  for (unsigned f=1; f<= multi_sptr->get_num_time_frames(); ++f)
+{
+      const SingleDiscretisedDensityType& current_density =
+        dynamic_cast<SingleDiscretisedDensityType const&>((*multi_sptr)[f]);
+      typename SingleDiscretisedDensityType::const_full_iterator single_density_iter =
+        current_density.begin_all();
+      const typename SingleDiscretisedDensityType::const_full_iterator end_single_density_iter =
+        current_density.end_all();
+      typename ParamDiscDensity::full_densel_iterator parametric_density_iter =
+        parametric_density_ptr->begin_all_densel();
+
+      while (single_density_iter!=end_single_density_iter)
+        {
+          (*parametric_density_iter)[f] = *single_density_iter;
+          ++single_density_iter; ++parametric_density_iter;
+        }
+    }
+  return parametric_density_ptr;
 }
+
 
 TEMPLATE
 ParamDiscDensity*
-ParamDiscDensity::get_empty_copy() const
+ParamDiscDensity::
+get_empty_copy() const
 {
   // TODO maybe this can be done smarter by using base_type::get_empty_copy. Doesn't matter too much though.
   ParamDiscDensity* res = this->clone();
-  typename ParamDiscDensity::iterator parametric_density_iter = res->begin();
+  typename ParamDiscDensity::iterator parametric_density_iter =
+    res->begin();
   while (parametric_density_iter != res->end())
     {
       assign(*parametric_density_iter++, 0);
@@ -178,7 +222,8 @@ ParamDiscDensity::get_empty_copy() const
 
 TEMPLATE
 ParamDiscDensity*
-ParamDiscDensity::clone() const
+ParamDiscDensity::
+clone() const
 {
   return new ParamDiscDensity(*this);
 }
@@ -186,28 +231,35 @@ ParamDiscDensity::clone() const
 TEMPLATE
 template <class KPFunctionObject>
 void
-ParamDiscDensity::construct_single_density_using_function(typename ParamDiscDensity::SingleDiscretisedDensityType& density,
-                                                          KPFunctionObject f) const
+ParamDiscDensity::
+construct_single_density_using_function(typename ParamDiscDensity::SingleDiscretisedDensityType& density, KPFunctionObject f) const
 {
-  std::transform(this->begin_all_densel(), this->end_all_densel(), density.begin_all(), f);
+  std::transform(this->begin_all_densel(),
+                 this->end_all_densel(),
+                 density.begin_all(),
+                 f);
 }
+
 
 TEMPLATE
 template <class KPFunctionObject>
 const typename ParamDiscDensity::SingleDiscretisedDensityType
-ParamDiscDensity::construct_single_density_using_function(KPFunctionObject f) const
+ParamDiscDensity::
+construct_single_density_using_function(KPFunctionObject f) const
 {
   // TODO this will only work for VoxelsOnCartesianGrid
-  SingleDiscretisedDensityType density(
-      this->get_exam_info_sptr(), this->get_index_range(), this->get_origin(), this->get_grid_spacing());
+  SingleDiscretisedDensityType
+    density(this->get_index_range(),
+            this->get_origin(), 
+            this->get_grid_spacing());
   this->construct_single_density_using_function(density, f);
   return density;
 }
 
 TEMPLATE
 void
-ParamDiscDensity::construct_single_density(typename ParamDiscDensity::SingleDiscretisedDensityType& density,
-                                           const int index) const
+ParamDiscDensity::
+construct_single_density(typename ParamDiscDensity::SingleDiscretisedDensityType& density, const int index) const
 {
   using namespace boost::lambda;
 
@@ -215,9 +267,11 @@ ParamDiscDensity::construct_single_density(typename ParamDiscDensity::SingleDisc
   this->construct_single_density_using_function(density, ret<float>(_1[index]));
 }
 
+
 TEMPLATE
 const typename ParamDiscDensity::SingleDiscretisedDensityType
-ParamDiscDensity::construct_single_density(const int index) const
+ParamDiscDensity::
+construct_single_density(const int index) const
 {
   using namespace boost::lambda;
   // TODO this will only work for elemT==float
@@ -247,8 +301,7 @@ construct_single_density_using_function(KPFunctionObject f)
 {
   // TODO this will only work for VoxelsOnCartesianGrid
   SingleDiscretisedDensityType
-    density(this->get_exam_info_sptr(),
-            this->get_index_range(),
+    density(this->get_index_range(),
             this->get_origin(), 
             this->get_grid_spacing());
   this->construct_single_density_using_function(density, f);
@@ -278,6 +331,7 @@ construct_single_density(const int index)
 
 #endif
 
+
 #undef ParamDiscDensity
 #undef TEMPLATE
 // instantiations
@@ -285,4 +339,7 @@ construct_single_density(const int index)
 // template class ParametricDiscretisedDensity<3,KineticParameters<NUM_PARAMS,float> >;
 template class ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>;
 
+ template class ParametricDiscretisedDensity<GeneralizedPatlakVoxelsOnCartesianGridBaseType >; 
+
 END_NAMESPACE_STIR
+

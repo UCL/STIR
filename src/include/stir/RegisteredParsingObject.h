@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,10 +29,31 @@
 #ifndef __stir_RegisteredParsingObject_H__
 #define __stir_RegisteredParsingObject_H__
 
+
 #include "stir/ParsingObject.h"
 #include <string>
 
+#ifndef STIR_NO_NAMESPACE
+using std::string;
+#endif
+
+
 START_NAMESPACE_STIR
+
+
+//! Auxiliary class for RegisteredParsingObject
+/*!
+  \ingroup buildblock
+   This class simply makes a class derived from Base and ParsingObject. Its use
+    should be restricted to the default value of the RegisteredParsingObject
+    template.
+*/
+template <typename Base>
+class AddParser : public Base, public ParsingObject
+{};
+
+
+
 /*!
   \brief Parent class for all leaves in a RegisteredObject hierarchy that
   do parsing of parameter files.
@@ -73,16 +102,10 @@ START_NAMESPACE_STIR
   the variables in that file are never referenced, so would not include
   it in the final executable (to try to remove redundant object files).
 */
-template <typename Derived, typename Base, typename Parent = Base>
+template <typename Derived, typename Base, typename Parent = AddParser<Base> >
 class RegisteredParsingObject : public Parent
 {
 public:
-  // import constructors from Parent
-  // Note: disabled for older SWIG as that generates an error before 4.2, and a warning for 4.2
-#if !defined(SWIG) || (SWIG_VERSION >= 0x040300)
-  using Parent::Parent;
-#endif
-
   //! Construct a new object (of type Derived) by parsing the istream
   /*! When the istream * is 0, questions are asked interactively.
 
@@ -91,15 +114,15 @@ public:
       (unsafe) reinterpret_casts to get that to work.
       (TODO find a remedy).
   */
-  inline static Base* read_from_stream(std::istream*);
+  inline static Base* read_from_stream(istream*); 
 
   //! Returns  Derived::registered_name
-  inline std::string get_registered_name() const override;
+  inline string get_registered_name() const;
   //! Returns a string with all parameters and their values, in a form suitable for parsing again
-  inline std::string parameter_info() override;
+  inline string parameter_info();
 
 public:
-#ifndef SWIG
+
   //! A helper class to allow automatic registration.
   struct RegisterIt
   {
@@ -130,11 +153,13 @@ public:
   };
   // RegisterIt needs to be a friend to have access to registry()
   friend struct RegisterIt;
-#endif
+  
 };
+
 
 END_NAMESPACE_STIR
 
 #include "stir/RegisteredParsingObject.inl"
 
 #endif
+

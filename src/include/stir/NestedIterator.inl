@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,7 +32,8 @@
 START_NAMESPACE_STIR
 
 template <class topleveliterT, class GetRestRangeFunctionT>
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::NestedIterator()
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+NestedIterator()
 {}
 
 #if defined __GNUC__
@@ -38,12 +47,15 @@ NestedIterator<topleveliterT, GetRestRangeFunctionT>::NestedIterator()
 #endif
 template <class topleveliterT, class GetRestRangeFunctionT>
 void
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::_set_rest_iters_for_current_top_level_iter()
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+_set_rest_iters_for_current_top_level_iter()
 {
   if (this->_current_top_level_iter != this->_end_top_level_iter)
     {
-      this->_current_rest_iter = GetRestRangeFunctionT().begin(this->_current_top_level_iter);
-      this->_end_rest_iter = GetRestRangeFunctionT().end(this->_current_top_level_iter);
+      this->_current_rest_iter = 
+	GetRestRangeFunctionT().begin(this->_current_top_level_iter);
+      this->_end_rest_iter = 
+	GetRestRangeFunctionT().end(this->_current_top_level_iter);
     }
 }
 #if defined __GNUC__
@@ -53,7 +65,8 @@ NestedIterator<topleveliterT, GetRestRangeFunctionT>::_set_rest_iters_for_curren
 #endif
 
 template <class topleveliterT, class GetRestRangeFunctionT>
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::NestedIterator(const topleveliterT& top_level_iter,
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+NestedIterator(const topleveliterT& top_level_iter,
                                                                      const topleveliterT& end_top_level_iter)
     : _current_top_level_iter(top_level_iter),
       _end_top_level_iter(end_top_level_iter)
@@ -63,11 +76,13 @@ NestedIterator<topleveliterT, GetRestRangeFunctionT>::NestedIterator(const tople
 
 template <class topleveliterT, class GetRestRangeFunctionT>
 bool
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::operator==(
-    const NestedIterator<topleveliterT, GetRestRangeFunctionT>& iter2) const
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+operator==(const NestedIterator<topleveliterT, GetRestRangeFunctionT>& iter2) const
 {
-  return this->_current_top_level_iter == iter2._current_top_level_iter
-         && (this->_current_top_level_iter == this->_end_top_level_iter || this->_current_rest_iter == iter2._current_rest_iter);
+  return
+    this->_current_top_level_iter == iter2._current_top_level_iter &&
+      ( this->_current_top_level_iter == this->_end_top_level_iter ||
+        this->_current_rest_iter == iter2._current_rest_iter); 
   /*
  alternative:
    comparing rest_iter is only necessary when the first iterator is not at the end.
@@ -87,15 +102,16 @@ NestedIterator<topleveliterT, GetRestRangeFunctionT>::operator==(
 }
 template <class topleveliterT, class GetRestRangeFunctionT>
 bool
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::operator!=(
-    const NestedIterator<topleveliterT, GetRestRangeFunctionT>& iter2) const
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+operator!=(const NestedIterator<topleveliterT, GetRestRangeFunctionT>& iter2) const
 {
   return !(*this == iter2);
 }
 
 template <class topleveliterT, class GetRestRangeFunctionT>
 NestedIterator<topleveliterT, GetRestRangeFunctionT>&
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::operator++()
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+operator++()
 {
   // TODO can only do assert for random-access iterators
   // assert(this->_current_top_level_iter < this->_end_top_level_iter);
@@ -118,16 +134,19 @@ NestedIterator<topleveliterT, GetRestRangeFunctionT>::operator++(int)
   return was;
 }
 
+
 template <class topleveliterT, class GetRestRangeFunctionT>
 typename NestedIterator<topleveliterT, GetRestRangeFunctionT>::reference
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::operator*() const
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+operator*() const
 {
   return *this->_current_rest_iter;
 }
 
 template <class topleveliterT, class GetRestRangeFunctionT>
 typename NestedIterator<topleveliterT, GetRestRangeFunctionT>::pointer
-NestedIterator<topleveliterT, GetRestRangeFunctionT>::operator->() const
+NestedIterator<topleveliterT, GetRestRangeFunctionT>::
+operator->() const
 {
   return &(this->operator*());
 }

@@ -16,12 +16,21 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_DataSymmetriesForBins_PET_CartesianGrid_H__
 #define __stir_recon_buildblock_DataSymmetriesForBins_PET_CartesianGrid_H__
+
 
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
 //#include "stir/SymmetryOperations_PET_CartesianGrid.h"
@@ -32,11 +41,8 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT>
-class DiscretisedDensity;
-template <int num_dimensions, typename elemT>
-class DiscretisedDensityOnCartesianGrid;
-class ProjDataInfoCylindrical;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
 
 /*!
   \ingroup symmetries
@@ -53,6 +59,7 @@ private:
   typedef DataSymmetriesForBins_PET_CartesianGrid self_type;
 
 public:
+
   //! Constructor with optional selection of symmetries
   /*! For the azimuthal angle phi, the following angles are symmetry related for a square grid:
       {phi, 180-phi, 90-phi, 90+phi}.
@@ -81,21 +88,22 @@ public:
       The symmetry in phi is automatically reduced for non-square grids or when the number of
       views is not a multiple of 4.
   */
-  DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                                          const shared_ptr<const DiscretisedDensity<3, float>>& image_info_ptr,
+  DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+                                          const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
                                           const bool do_symmetry_90degrees_min_phi = true,
                                           const bool do_symmetry_180degrees_min_phi = true,
                                           const bool do_symmetry_swap_segment = true,
                                           const bool do_symmetry_swap_s = true,
                                           const bool do_symmetry_shift_z = true);
 
+
+  virtual 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
   DataSymmetriesForBins_PET_CartesianGrid
 #else
   DataSymmetriesForViewSegmentNumbers
 #endif
-      *
-      clone() const override;
+    * clone() const;
 
   //! Check equality
   virtual bool operator==(const DataSymmetriesForBins_PET_CartesianGrid&) const;
@@ -107,28 +115,33 @@ public:
     get_basic_bin_index_range() const;
 #endif
 
-  inline void get_related_bins_factorised(std::vector<AxTangPosNumbers>&,
-                                          const Bin& b,
-                                          const int min_axial_pos_num,
-                                          const int max_axial_pos_num,
-                                          const int min_tangential_pos_num,
-                                          const int max_tangential_pos_num) const override;
+  inline void
+    get_related_bins_factorised(vector<AxTangPosNumbers>&, const Bin& b,
+                                const int min_axial_pos_num, const int max_axial_pos_num,
+                                const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
-  inline int num_related_bins(const Bin& b) const override;
+  inline int
+    num_related_bins(const Bin& b) const;
 
-  inline unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_bin(Bin&) const override;
+  inline auto_ptr<SymmetryOperation>
+    find_symmetry_operation_from_basic_bin(Bin&) const;
 
-  inline bool find_basic_bin(Bin& b) const override;
+  inline bool
+    find_basic_bin(Bin& b) const;
 
-  inline int num_related_view_segment_numbers(const ViewSegmentNumbers& vs) const override;
+  inline int
+    num_related_view_segment_numbers(const ViewSegmentNumbers& vs) const;
 
-  inline void get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs,
-                                               const ViewSegmentNumbers& vs) const override;
+  inline void
+    get_related_view_segment_numbers(vector<ViewSegmentNumbers>& rel_vs, const ViewSegmentNumbers& vs) const;
 
-  inline bool find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const override;
+  inline bool
+    find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const;
 
   //! find out how many image planes there are for every scanner ring
   inline float get_num_planes_per_scanner_ring() const;
+
+
 
   //! find correspondence between axial_pos_num and image coordinates
   /*! <tt>z = num_planes_per_axial_pos * axial_pos_num + axial_pos_to_z_offset</tt>
@@ -142,25 +155,15 @@ public:
   //! \name Methods to find out which symmetries are used
   //@{
   inline bool using_symmetry_90degrees_min_phi() const
-  {
-    return do_symmetry_90degrees_min_phi;
-  }
+    { return do_symmetry_90degrees_min_phi; }
   inline bool using_symmetry_180degrees_min_phi() const
-  {
-    return do_symmetry_180degrees_min_phi;
-  }
+    { return do_symmetry_180degrees_min_phi; }
   inline bool using_symmetry_swap_segment() const
-  {
-    return do_symmetry_swap_segment;
-  }
+    { return do_symmetry_swap_segment; }
   inline bool using_symmetry_swap_s() const
-  {
-    return do_symmetry_swap_s;
-  }
+    { return do_symmetry_swap_s; }
   inline bool using_symmetry_shift_z() const
-  {
-    return do_symmetry_shift_z;
-  }
+    { return do_symmetry_shift_z; }
   //@}
 
 private:
@@ -176,32 +179,42 @@ private:
   VectorWithOffset<int> num_planes_per_axial_pos;
   //! a list of values for every segment_num
   VectorWithOffset<float> axial_pos_to_z_offset;
-  //! a list with the average ring difference for every segment_num
-  VectorWithOffset<float> deltas;
-
-  void initialise_deltas(const ProjDataInfoCylindrical*);
 
 #if 0
   // at the moment, we don't need the following 2 members
 
   // TODO somehow store only the info
-  shared_ptr<constDiscretisedDensity<3,float> > image_info_ptr;
+  shared_ptr<DiscretisedDensity<3,float> > image_info_ptr;
 
   // a convenience function that does the dynamic_cast from the above
   inline const DiscretisedDensityOnCartesianGrid<3,float> *
     cartesian_grid_info_ptr() const;
 #endif
 
-  bool blindly_equals(const root_type* const) const override;
+  virtual bool blindly_equals(const root_type * const) const;
+
 
   inline bool
-  find_basic_bin(int& segment_num, int& view_num, int& axial_pos_num, int& tangential_pos_num, int& timing_pos_num) const;
+  find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangential_pos_num) const;
 
-  inline int find_transform_z(const int segment_num, const int axial_pos_num) const;
 
-  inline SymmetryOperation* find_sym_op_general_bin(int s, int seg, int view_num, int axial_pos_num) const;
+  inline int find_transform_z(
+			 const int segment_num, 
+			 const int  axial_pos_num) const;
+  
+  inline SymmetryOperation* 
+    find_sym_op_general_bin(   
+    int s, 
+    int seg, 
+    int view_num, 
+    int axial_pos_num) const;
+  
+  inline SymmetryOperation* 
+    find_sym_op_bin0(   
+    int seg, 
+    int view_num, 
+    int axial_pos_num) const;
 
-  inline SymmetryOperation* find_sym_op_bin0(int seg, int view_num, int axial_pos_num) const;
 };
 
 END_NAMESPACE_STIR

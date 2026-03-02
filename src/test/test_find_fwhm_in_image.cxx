@@ -2,7 +2,15 @@
   Copyright (C) 2004 - 2009-11-03, Hammersmith Imanet Ltd
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+  
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -31,13 +39,14 @@
 #include "stir/Coordinate3D.h"
 #include <iostream>
 #include <string>
-#include <sstream>
+#include <strstream>
 #include <list>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
 using std::istream;
-using std::endl;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -48,15 +57,14 @@ START_NAMESPACE_STIR
 class find_fwhm_in_imageTests : public RunTests
 {
 public:
-  find_fwhm_in_imageTests() {}
-  void run_tests() override;
-
+  find_fwhm_in_imageTests() 
+  {}
+  void run_tests();
 private:
   // istream& in;
 };
 
-void
-set_Gaussian_filter_fwhm(SeparableCartesianMetzImageFilter<float>& filter,
+void set_Gaussian_filter_fwhm(SeparableCartesianMetzImageFilter<float>& filter,
                          const float fwhm_z,
                          const float fwhm_y,
                          const float fwhm_x)
@@ -75,8 +83,8 @@ set_Gaussian_filter_fwhm(SeparableCartesianMetzImageFilter<float>& filter,
   filter.parse(parameterstream);
 }
 
-void
-find_fwhm_in_imageTests::run_tests()
+
+void find_fwhm_in_imageTests::run_tests()
 {
   cerr << "Testing find_fwhm_in_image function..." << endl;
 
@@ -85,7 +93,11 @@ find_fwhm_in_imageTests::run_tests()
   CartesianCoordinate3D<float> origin(0, 1, 2);
   CartesianCoordinate3D<float> grid_spacing(2, 1.4F, 2.5F);
 
-  IndexRange<3> range(CartesianCoordinate3D<int>(0, -65, -64), CartesianCoordinate3D<int>(24, 64, 65));
+  IndexRange<3> 
+    range(CartesianCoordinate3D<int>(0,-65,-64),
+          CartesianCoordinate3D<int>(24,64,65));
+  
+
 
   VoxelsOnCartesianGrid<float> image(range, origin, grid_spacing);
   SeparableCartesianMetzImageFilter<float> filter;
@@ -98,7 +110,8 @@ find_fwhm_in_imageTests::run_tests()
 
     image[location_of_maximum] = 1;
 
-    check_if_equal(image[location_of_maximum], 1.F, "for parameter constant, should be equal");
+    check_if_equal(image[location_of_maximum], 1.F,
+		   "for parameter constant, should be equal");
 
     filter.apply(image);
 #if DO_DISPLAY
@@ -106,16 +119,21 @@ find_fwhm_in_imageTests::run_tests()
     display(image, image.find_max());
 #endif
 
-    const std::list<ResolutionIndex<3, float>> result = find_fwhm_in_image(image, 1, 2, 0, true);
+    const std::list<ResolutionIndex<3,float> >  result =
+      find_fwhm_in_image(image, 1, 2, 0, true);
 
     check(result.size() == 1, "check only 1 maximum for single point source case");
 
-    std::list<ResolutionIndex<3, float>>::const_iterator current_result_iter = result.begin();
+    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+      result.begin();
+    
+    check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+		   "check location of maximum for single point source case");
+    check_if_equal(current_result_iter->resolution, 
+		   Coordinate3D<float>(12,14,12),
+		   "check resolution for single point source case");
 
-    check_if_equal(
-        current_result_iter->voxel_location, location_of_maximum, "check location of maximum for single point source case");
-    check_if_equal(
-        current_result_iter->resolution, Coordinate3D<float>(12, 14, 12), "check resolution for single point source case");
+
   }
 
   {
@@ -129,16 +147,19 @@ find_fwhm_in_imageTests::run_tests()
 #if DO_DISPLAY
     display(image, image.find_max());
 #endif
-    const std::list<ResolutionIndex<3, float>> result = find_fwhm_in_image(image, 1, 2, 0, true);
+    const std::list<ResolutionIndex<3,float> >  result =
+      find_fwhm_in_image(image, 1, 2, 0, true);
 
     check(result.size() == 1, "check only 1 maximum for 2 point sources in 1 slice");
 
-    std::list<ResolutionIndex<3, float>>::const_iterator current_result_iter = result.begin();
+    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+      result.begin();
 
-    check_if_equal(
-        current_result_iter->voxel_location, location_of_maximum, "check location of maximum for 2 point sources in 1 slice");
-    check_if_equal(
-        current_result_iter->resolution, Coordinate3D<float>(12, 14, 12), "check resolution for 2 point sources in 1 slice");
+    check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+		   "check location of maximum for 2 point sources in 1 slice");
+    check_if_equal(current_result_iter->resolution, 
+		   Coordinate3D<float>(12,14,12),
+		   "check resolution for 2 point sources in 1 slice");
   }
 
   {
@@ -154,14 +175,15 @@ find_fwhm_in_imageTests::run_tests()
 #if DO_DISPLAY
     display(image, image.find_max());
 #endif
-    const std::list<ResolutionIndex<3, float>> result = find_fwhm_in_image(image, 1, 2, 0, true);
+    const std::list<ResolutionIndex<3,float> >  result =
+      find_fwhm_in_image(image, 1, 2, 0, true);
 
     check(result.size() == 1, "check only 1 maximum for 2 point sources in different slices");
 
-    std::list<ResolutionIndex<3, float>>::const_iterator current_result_iter = result.begin();
+    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+      result.begin();
 
-    check_if_equal(current_result_iter->voxel_location,
-                   location_of_maximum,
+    check_if_equal(current_result_iter->voxel_location, location_of_maximum,
                    "check location of maximum for 2 point sources in different slices");
     check_if_equal(current_result_iter->resolution,
                    Coordinate3D<float>(13, 14, 11),
@@ -190,27 +212,32 @@ find_fwhm_in_imageTests::run_tests()
     display(image, image.find_max());
 #endif
 
-    const std::list<ResolutionIndex<3, float>> result = find_fwhm_in_image(image, 2, 2, 0, true);
+    const std::list<ResolutionIndex<3,float> >  result =
+      find_fwhm_in_image(image, 2, 2, 0, true);
 
     check(result.size() == 2, "check only 2 maxima from 3 point source case");
 
-    std::list<ResolutionIndex<3, float>>::const_iterator current_result_iter = result.begin();
+    std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+      result.begin();
 
-    check_if_equal(
-        current_result_iter->voxel_location, location_of_maximum1, "check location of 1st maximum for 3 point source case");
-    check_if_equal(
-        current_result_iter->resolution, Coordinate3D<float>(12, 14, 12), "check resolution for 1st maximum 3 point source case");
+    check_if_equal(current_result_iter->voxel_location, location_of_maximum1,
+		   "check location of 1st maximum for 3 point source case");
+    check_if_equal(current_result_iter->resolution, 
+		   Coordinate3D<float>(12,14,12),
+		   "check resolution for 1st maximum 3 point source case");
     ++current_result_iter;
-    check_if_equal(
-        current_result_iter->voxel_location, location_of_maximum2, "check location of 2nd maximum for 3 point source case");
-    check_if_equal(
-        current_result_iter->resolution, Coordinate3D<float>(12, 14, 12), "check resolution for 2nd maximum 3 point source case");
+    check_if_equal(current_result_iter->voxel_location, location_of_maximum2,
+    	   "check location of 2nd maximum for 3 point source case");
+    check_if_equal(current_result_iter->resolution, 
+                   Coordinate3D<float>(12,14,12),
+    	   "check resolution for 2nd maximum 3 point source case");
     //++current_result_iter;
     // check_if_equal(current_result_iter->voxel_location, location_of_maximum3,
     //		   "check location of 3rd maximum for 3 point source case");
     // check_if_equal(current_result_iter->resolution,
     //		   Coordinate3D<float>(4,4,4),
     //		   "check resolution for 3rd maximum 3 point source case");
+
   }
 
   {
@@ -218,28 +245,33 @@ find_fwhm_in_imageTests::run_tests()
     image.fill(0);
     const int z_location = 12;
     const int x_location = 0;
-    for (int y = image[z_location].get_min_index(); y <= image[z_location].get_max_index(); ++y)
+    for (int y=image[z_location].get_min_index(); 
+	 y<=image[z_location].get_max_index();++y)
       image[z_location][y][x_location] = 1;
     set_Gaussian_filter_fwhm(filter, 12, 0, 10);
     filter.apply(image);
-    const std::list<ResolutionIndex<3, float>> result = find_fwhm_in_image(image, image[z_location].get_length(), 2, 2, true);
+    const std::list<ResolutionIndex<3,float> >  result =
+      find_fwhm_in_image(image, image[z_location].get_length(), 2, 2, true);
 #if DO_DISPLAY
     display(image, image.find_max());
 #endif
     check(result.size() == static_cast<unsigned>(image[z_location].get_length()),
           "check number of maxima in line source along y axis");
     int y = image[z_location].get_min_index();
-    for (std::list<ResolutionIndex<3, float>>::const_iterator current_result_iter = result.begin();
+      for(std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+	   result.begin(); 
          current_result_iter != result.end();
          ++current_result_iter)
       {
         Coordinate3D<int> location_of_maximum(z_location, y, x_location);
-        check_if_equal(
-            current_result_iter->voxel_location, location_of_maximum, "check location of maximum in line source along y axis");
-        check_if_equal(
-            current_result_iter->resolution, Coordinate3D<float>(12, 0, 10), "check resolution in line source along y axisXXX");
+	  check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+			 "check location of maximum in line source along y axis");
+	  check_if_equal(current_result_iter->resolution, 
+			 Coordinate3D<float>(12,0,10),
+			 "check resolution in line source along y axisXXX");
         ++y;
       }
+
   }
 
   {
@@ -247,28 +279,32 @@ find_fwhm_in_imageTests::run_tests()
     image.fill(0);
     const int z_location = 9;
     const int y_location = 0;
-    for (int x = image[z_location][y_location].get_min_index(); x <= image[z_location][y_location].get_max_index(); ++x)
+     for (int x=image[z_location][y_location].get_min_index(); 
+          x<=image[z_location][y_location].get_max_index();++x)
       {
         image[z_location][y_location][x] = 1;
       }
     set_Gaussian_filter_fwhm(filter, 12, 10, 0);
     filter.apply(image);
-    const std::list<ResolutionIndex<3, float>> result = find_fwhm_in_image(image, image[z_location].get_length(), 2, 3, true);
+    const std::list<ResolutionIndex<3,float> >  result =
+      find_fwhm_in_image(image, image[z_location].get_length(), 2, 3, true);
 #if DO_DISPLAY
     display(image, image.find_max());
 #endif
     check(result.size() == static_cast<unsigned>(image[z_location][y_location].get_length()),
           "check number of maxima in line source along x axis");
     int x = image[z_location][y_location].get_min_index();
-    for (std::list<ResolutionIndex<3, float>>::const_iterator current_result_iter = result.begin();
+      for(std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+	   result.begin(); 
          current_result_iter != result.end();
          ++current_result_iter)
       {
         Coordinate3D<int> location_of_maximum(z_location, y_location, x);
-        check_if_equal(
-            current_result_iter->voxel_location, location_of_maximum, "check location of maximum in line source along x axis");
-        check_if_equal(
-            current_result_iter->resolution, Coordinate3D<float>(12, 10, 0), "check resolution in line source along x axis");
+	  check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+			 "check location of maximum in line source along x axis");
+	  check_if_equal(current_result_iter->resolution, 
+			 Coordinate3D<float>(12,10,0),
+			 "check resolution in line source along x axis");
         ++x;
       }
   }
@@ -285,21 +321,25 @@ find_fwhm_in_imageTests::run_tests()
       }
     set_Gaussian_filter_fwhm(filter, 12, 11, 10);
     filter.apply(image);
-    const std::list<ResolutionIndex<3, float>> result = find_fwhm_in_image(image, image.get_length(), 2, 1, true);
+    const std::list<ResolutionIndex<3,float> >  result =
+      find_fwhm_in_image(image, image.get_length(), 2, 1, true);
 #if DO_DISPLAY
     display(image, image.find_max());
 #endif
-    check(result.size() == static_cast<unsigned>(image.get_length()), "check number of maxima in line source along z axis");
+      check(result.size() == static_cast<unsigned>(image.get_length()) , 
+	    "check number of maxima in line source along z axis");
     int z = image.get_min_index();
-    for (std::list<ResolutionIndex<3, float>>::const_iterator current_result_iter = result.begin();
+      for(std::list<ResolutionIndex<3,float> >::const_iterator current_result_iter =
+	   result.begin(); 
          current_result_iter != result.end();
          ++current_result_iter)
       {
         Coordinate3D<int> location_of_maximum(z, y_location, x_location);
-        check_if_equal(
-            current_result_iter->voxel_location, location_of_maximum, "check location of maximum in line source along z axis");
-        check_if_equal(
-            current_result_iter->resolution, Coordinate3D<float>(0, 11, 10), "check resolution in line source along z axis");
+	  check_if_equal(current_result_iter->voxel_location, location_of_maximum,
+			 "check location of maximum in line source along z axis");
+	  check_if_equal(current_result_iter->resolution, 
+			 Coordinate3D<float>(0,11,10),
+			 "check resolution in line source along z axis");
         ++z;
       }
   }
@@ -312,12 +352,13 @@ find_fwhm_in_imageTests::run_tests()
   */
 }
 
+
 END_NAMESPACE_STIR
+
 
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   if (argc != 1)
     {

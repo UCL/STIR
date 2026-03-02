@@ -7,10 +7,18 @@
 */
 /*
     Copyright (C) 2003 - 2005-01-17, Hammersmith Imanet Ltd
-    Copyright (C) 2023, University College London
+
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -18,24 +26,20 @@
 #include "stir/round.h"
 #include "stir/modulo.h"
 #include "stir/array_index_functions.h"
-#include "stir/error.h"
 START_NAMESPACE_STIR
 
+
 template <typename T>
-static void
-bitreversal(VectorWithOffset<T>& data)
+static void bitreversal(VectorWithOffset<T>& data)
 {
   const int n = data.get_length();
   int j = 1;
-  for (int i = 0; i < n; ++i)
-    {
-      if (j / 2 > i)
-        {
+  for (int i=0;i<n;++i) {
+    if (j/2 > i) {
           std::swap(data[j / 2], data[i]);
         }
       int m = n;
-      while (m >= 2 && j > m)
-        {
+    while (m >= 2 && j > m) {
           j -= m;
           m >>= 1;
         }
@@ -43,15 +47,41 @@ bitreversal(VectorWithOffset<T>& data)
     }
 }
 
-// internal function to create vector of size pow2k with exparray[i] = exp(sign*i*_PI/pow2k)
-static VectorWithOffset<std::complex<float>>
-get_exparray(const int pow2k, const int sign)
+/* We cache factors exp(i*_PI/pow(2,k)). They will be computed during the first
+   call of the Fourier functions, and then stored in static arrays.
+*/
+// exparray[k][i] = exp(i*_PI/pow(2,k))
+typedef VectorWithOffset<VectorWithOffset<std::complex<float> > > exparray_t;
+static   exparray_t exparray;
+
+static void init_exparray(const int k, const int pow2k)
 {
-  VectorWithOffset<std::complex<float>> a(pow2k);
-  for (int i = 0; i < pow2k; ++i)
-    a[i] = std::exp(std::complex<float>(0, static_cast<float>((sign * i * _PI) / pow2k)));
-  return a;
+  if (exparray.get_max_index() >= k && exparray[k].size()>0)
+    return;
+
+  if (exparray.get_max_index() <k)
+    exparray.grow(0, k);
+  exparray[k].grow(0,pow2k-1);
+  for (int i=0; i< pow2k; ++i)
+    exparray[k][i]= std::exp(std::complex<float>(0, static_cast<float>((i*_PI)/pow2k)));
 }
+
+// expminarray[k][i] = exp(-i*_PI/pow(2,k))
+// obviously just the complex conjugate of exparray
+static   exparray_t expminarray;
+
+static void init_expminarray(const int k, const int pow2k)
+{
+  if (expminarray.get_max_index() >= k && expminarray[k].size()>0)
+    return;
+
+  if (expminarray.get_max_index() <k)
+    expminarray.grow(0, k);
+  expminarray[k].grow(0,pow2k-1);
+  for (int i = 0; i < pow2k; ++i)
+    expminarray[k][i]= std::exp(std::complex<float>(0, static_cast<float>(-(i*_PI)/pow2k)));
+}
+
 
 /* First we define 1D fourier transforms of vectors with almost arbitrary
    element types.
@@ -61,11 +91,9 @@ get_exparray(const int pow2k, const int sign)
 */
 
 template <typename T>
-void
-fourier_1d(T& c, const int sign)
+void fourier_1d(T& c, const int sign)
 {
-  if (c.size() == 0)
-    return;
+  if (c.size()==0) return;
   assert(c.get_min_index() == 0);
   assert(sign == 1 || sign == -1);
   bitreversal(c);
@@ -79,7 +107,12 @@ fourier_1d(T& c, const int sign)
   const int pow2nn = c.get_length(); // ==round(pow(2,nn));
   for (; k < nn; ++k, pow2k *= 2)
     {
-      const auto cur_exparray = get_exparray(pow2k, sign);
+    if (sign==1)
+      init_exparray(k,pow2k);
+    else
+      init_expminarray(k,pow2k);
+    const exparray_t& cur_exparray =
+      sign==1? exparray : expminarray;      
       for (int j = 0; j < pow2nn; j += pow2k * 2)
         for (int i = 0; i < pow2k; ++i)
           {
@@ -89,7 +122,7 @@ fourier_1d(T& c, const int sign)
             typename T::value_type const t1 = c1;
             /* here is what we have to do:
                 typename T::value_type const t2 =
-                  c2*cur_exparray[i];
+              c2*cur_exparray[k][i];
                 c1 = t1+t2; c2 = t1-t2;
              however, this would create an unnecessary copy of t2, which is
              potentially large.
@@ -99,7 +132,7 @@ fourier_1d(T& c, const int sign)
              loops over the same data.
              Using expression templates would speed this up.
             */
-            c2 *= cur_exparray[i];
+        c2 *= cur_exparray[k][i];
             c1 += c2;
             c2 *= -1;
             c2 += t1;
@@ -107,8 +140,7 @@ fourier_1d(T& c, const int sign)
     }
 }
 
-namespace detail
-{
+namespace detail {
 
 /* A class that does the recursion for multi-dimensional arrays.
 
@@ -118,22 +150,53 @@ namespace detail
 template <typename elemT>
 struct fourier_auxiliary
 {
-  static void do_fourier(VectorWithOffset<elemT>& c, const int sign)
+  static void 
+  do_fourier(VectorWithOffset<elemT >& c, const int sign)
   {
     fourier_1d(c, sign);
     const typename VectorWithOffset<elemT>::iterator iter_end = c.end();
-    for (typename VectorWithOffset<elemT>::iterator iter = c.begin(); iter != iter_end; ++iter)
+    for (typename VectorWithOffset<elemT>::iterator iter = c.begin();
+	 iter != iter_end;
+	 ++iter)
       fourier(*iter, sign);
   }
 };
 
 // specialisation for the one-dimensional case
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 template <typename elemT>
 struct fourier_auxiliary<std::complex<elemT>>
 {
-  static void do_fourier(VectorWithOffset<std::complex<elemT>>& c, const int sign) { fourier_1d(c, sign); }
+  static void 
+  do_fourier(VectorWithOffset<std::complex<elemT> >& c, const int sign)
+  {
+    fourier_1d(c, sign);
+  }
 };
+
+
+#else  //no partial template specialisation
+
+// we just list float and double explicitly
+struct fourier_auxiliary<std::complex<float> >
+{
+  static void 
+  do_fourier(VectorWithOffset<std::complex<float> >& c, const int sign)
+  {
+    fourier_1d(c, sign);
+  }
+};
+
+struct fourier_auxiliary<std::complex<double> >
+{
+  static void 
+  do_fourier(VectorWithOffset<std::complex<double> >& c, const int sign)
+  {
+    fourier_1d(c, sign);
+  }
+};
+#endif
 
 } // end of namespace detail
 
@@ -142,14 +205,19 @@ template <typename T>
 void
 fourier(T& c, const int sign)
 {
+#if !defined(_MSC_VER) || _MSC_VER>1200
   detail::fourier_auxiliary<typename T::value_type>::do_fourier(c, sign);
+#else
+  detail::fourier_auxiliary<T::value_type>::do_fourier(c,sign);
+#endif
 }
+
 
 /******************************************************************
  DFT of real data
 *****************************************************************/
 
-// specialisation for the one-dimensional case
+
 
 template <typename T>
 Array<1, std::complex<T>>
@@ -159,8 +227,7 @@ fourier_1d_for_real_data(const Array<1, T>& v, const int sign)
 {
   // typedef std::complex<typename T::value_type> complex_t;
   typedef std::complex<T> complex_t;
-  if (v.size() == 0)
-    return Array<1, complex_t>();
+  if (v.size()==0) return Array<1,complex_t>();
   assert(v.get_min_index() == 0);
   assert(sign == 1 || sign == -1);
   if (v.size() % 2 != 0)
@@ -184,11 +251,14 @@ fourier_1d_for_real_data(const Array<1, T>& v, const int sign)
   c.resize(n + 1);
   for (unsigned int i = 1; i <= n / 2; ++i)
     {
-      const complex_t t1 = (c[i] + std::conj(c[n - i]));
+      const complex_t t1 = 
+	(c[i]+std::conj(c[n-i]));
       // TODO could get exp() from static exparray
       // the nice thing about this code that it works even when the length is not a power of 2
       // (but of course, the call to fourier_1d would currently abort in that case)
-      const complex_t t2 = std::exp(complex_t(0, static_cast<T>(sign * (i * _PI) / n - _PI / 2))) * (c[i] - std::conj(c[n - i]));
+      const complex_t t2 = 			   
+	std::exp(complex_t(0, static_cast<T>(sign*(i*_PI)/n-_PI/2)))*
+	(c[i]-std::conj(c[n-i]));
 
       c[i] = (t1 + t2);
       c[n - i] = std::conj(t1 - t2);
@@ -201,13 +271,13 @@ fourier_1d_for_real_data(const Array<1, T>& v, const int sign)
   return c;
 }
 
+
 template <typename T>
 Array<1, T>
 inverse_fourier_1d_for_real_data_corrupting_input(Array<1, std::complex<T>>& c, const int sign)
 {
   typedef std::complex<T> complex_t;
-  if (c.size() == 0)
-    return Array<1, T>();
+  if (c.size()==0) return Array<1,T>();
   assert(c.get_min_index() == 0);
   assert(sign == 1 || sign == -1);
   const int n = c.get_length() - 1;
@@ -229,13 +299,17 @@ inverse_fourier_1d_for_real_data_corrupting_input(Array<1, std::complex<T>>& c, 
     {
       const complex_t t1 = (c[i] + std::conj(c[n - i]));
       // TODO could get exp() from static exparray
-      const complex_t t2 = std::exp(complex_t(0, static_cast<T>(-sign * (i * _PI) / n + _PI / 2))) * (c[i] - std::conj(c[n - i]));
+      const complex_t t2 = 			   
+	std::exp(complex_t(0, static_cast<T>(-sign*(i*_PI)/n+_PI/2)))*
+	(c[i]-std::conj(c[n-i]));
 
       c[i] = (t1 + t2);
       c[n - i] = std::conj(t1 - t2);
     }
   {
-    c[0] = complex_t((c[0].real() + c[n].real()), (c[0].real() - c[n].real()));
+    c[0]=complex_t((c[0].real() + c[n].real()),
+		   (c[0].real() - c[n].real())
+		   );
   }
 
   // now get rid of c[n]
@@ -260,10 +334,10 @@ inverse_fourier_1d_for_real_data(const Array<1, std::complex<T>>& c, const int s
   return inverse_fourier_1d_for_real_data_corrupting_input(tmp, sign);
 }
 
+
 // multi-dimensional case
 
-namespace detail
-{
+namespace detail {
 /* A class that does the recursion for multi-dimensional arrays.
 
    This is done with a class because partial template specialisation is
@@ -272,8 +346,8 @@ namespace detail
 template <int num_dimensions, typename elemT>
 struct fourier_for_real_data_auxiliary
 {
-  static Array<num_dimensions, std::complex<elemT>> do_fourier_for_real_data(const Array<num_dimensions, elemT>& c,
-                                                                             const int sign)
+  static Array<num_dimensions,std::complex<elemT> >
+  do_fourier_for_real_data(const Array<num_dimensions,elemT >& c, const int sign)
   {
     // complicated business to get index range which is as follows:
     // outer_dimension = outer_dimension of c
@@ -309,34 +383,93 @@ struct fourier_for_real_data_auxiliary
   }
 };
 
+// specialisation for the one-dimensional case
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+
 template <typename elemT>
 struct fourier_for_real_data_auxiliary<1, elemT>
 {
-  static Array<1, std::complex<elemT>> do_fourier_for_real_data(const Array<1, elemT>& c, const int sign)
+  static Array<1,std::complex<elemT> >
+  do_fourier_for_real_data(const Array<1,elemT>& c, const int sign)
   {
-    return fourier_1d_for_real_data(c, sign);
+    return
+      fourier_1d_for_real_data(c, sign);
   }
-  static Array<1, elemT> do_inverse_fourier_for_real_data_corrupting_input(Array<1, std::complex<elemT>>& c, const int sign)
+  static Array<1,elemT>
+  do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<elemT> >& c, const int sign)
   {
-    return inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
+    return
+      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
   }
 };
 
+
+#else  //no partial template specialisation
+
+// we just list float explicitly
+
+struct fourier_for_real_data_auxiliary<1,float>
+{
+  static Array<1,std::complex<float> >
+    do_fourier_for_real_data(const Array<1,float>& c, const int sign)
+  {
+    return
+      fourier_1d_for_real_data(c, sign);
+  }
+  static Array<1,float>
+    do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<float> >& c, const int sign)
+  {
+    return
+      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
+  }
+};
+
+#if 0 
+/* Disabled double for now. 
+ If you want to use double, you will probably have
+ to make sure that Array<1,std::complex<double> > is instantiated.
+ At time of writing, you would do this at the end of Array.h
+ */
+struct fourier_for_real_data_auxiliary<1,double>
+{
+  static Array<1,std::complex<double> >
+    do_fourier_for_real_data(const Array<1,double>& c, const int sign)
+  {
+    return
+      fourier_1d_for_real_data(c, sign);
+  }
+  static Array<1,double>
+    do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<double> >& c, const int sign)
+  {
+    return
+      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
+  }
+};
+#endif // end of double
+
+#endif // end of BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+
 } // end of namespace detail
+
 
 // now the fourier_for_real_data function is easy to define in terms of the class above
 template <int num_dimensions, typename T>
 Array<num_dimensions, std::complex<T>>
 fourier_for_real_data(const Array<num_dimensions, T>& c, const int sign)
 {
-  return detail::fourier_for_real_data_auxiliary<num_dimensions, T>::do_fourier_for_real_data(c, sign);
+  return
+    detail::fourier_for_real_data_auxiliary<num_dimensions,T>::
+    do_fourier_for_real_data(c,sign);
 }
+
 
 template <int num_dimensions, typename T>
 Array<num_dimensions, T>
 inverse_fourier_for_real_data_corrupting_input(Array<num_dimensions, std::complex<T>>& c, const int sign)
 {
-  return detail::fourier_for_real_data_auxiliary<num_dimensions, T>::do_inverse_fourier_for_real_data_corrupting_input(c, sign);
+  return
+  detail::fourier_for_real_data_auxiliary<num_dimensions,T>::
+    do_inverse_fourier_for_real_data_corrupting_input(c,sign);
 }
 
 template <int num_dimensions, typename T>
@@ -366,32 +499,43 @@ pos_frequencies_to_all(const Array<num_dimensions, std::complex<T>>& c)
       result[index] = c[index];
       if (index[num_dimensions] > 0)
         {
-          const BasicCoordinate<num_dimensions, int> related_index = modulo(sizes - index, sizes);
+	  const BasicCoordinate<num_dimensions, int> related_index = 
+	    modulo(sizes-index, sizes);
           result[related_index] = std::conj(c[index]);
         }
-  } while (next(index, c));
+    }
+  while(next(index, c));
   return result;
 }
+
 
 /*****************************************************************
  * INSTANTIATIONS
  * add any you need
  ******************************************************************/
 
-template void fourier<>(Array<3, std::complex<float>>& c, const int sign);
+// note: instantiate the highest dimension you need. That will do all lower dimensions
+template
+void 
+fourier<>(Array<3,std::complex<float> >& c, const int sign);
 
-template void fourier<>(Array<2, std::complex<float>>& c, const int sign);
-
-template void fourier<>(Array<1, std::complex<float>>& c, const int sign);
-
-template void fourier<>(VectorWithOffset<std::complex<float>>& c, const int sign);
+template
+void 
+fourier<>(VectorWithOffset<std::complex<float> >& c, const int sign);
 
 #define INSTANTIATE(d, type)                                                                                                     \
-  template void fourier_1d<>(Array<d, std::complex<type>> & v, const int sign);                                                  \
-  template Array<d, std::complex<type>> fourier_for_real_data<>(const Array<d, type>& v, const int sign);                        \
-  template Array<d, type> inverse_fourier_for_real_data_corrupting_input<>(Array<d, std::complex<type>> & c, const int sign);    \
-  template Array<d, type> inverse_fourier_for_real_data<>(const Array<d, std::complex<type>>& c, const int sign);                \
-  template Array<d, std::complex<type>> pos_frequencies_to_all<>(const Array<d, std::complex<type>>& c);
+ template \
+ Array<d,std::complex<type> > \
+ fourier_for_real_data<>(const Array<d,type>& v, const int sign); \
+ template  \
+ Array<d,type> \
+  inverse_fourier_for_real_data_corrupting_input<>(Array<d,std::complex<type> >& c, const int sign); \
+ template  \
+ Array<d,type> \
+  inverse_fourier_for_real_data<>(const Array<d,std::complex<type> >& c, const int sign); \
+ template \
+ Array<d, std::complex<type> > \
+ pos_frequencies_to_all<>(const Array<d, std::complex<type> >& c);
 
 INSTANTIATE(1, float);
 INSTANTIATE(2, float);

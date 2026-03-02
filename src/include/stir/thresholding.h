@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -18,11 +26,16 @@
   by iterators).
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 
 #include "stir/min_positive_element.h"
 #include <algorithm>
+
+#ifndef STIR_NO_NAMESPACES
+using std::fill;
+#endif
 
 START_NAMESPACE_STIR
 /*!  \ingroup buildblock
@@ -42,14 +55,33 @@ START_NAMESPACE_STIR
 */
 template <typename forw_iterT, typename elemT>
 inline void
-threshold_upper_lower(forw_iterT begin, forw_iterT end, const elemT new_min, const elemT new_max)
+threshold_upper_lower(forw_iterT begin, forw_iterT end,
+		      const elemT new_min, const elemT new_max)
 {
   for (forw_iterT iter = begin; iter != end; ++iter)
     {
       if (*iter > new_max)
         *iter = new_max;
-      else if (new_min > *iter)
+      else
+	if (new_min > *iter)
         *iter = new_min;
+    }
+}
+
+// Nicolas A Karakatsanis: Zero thresholding
+//! Set all values of a sequence exceeding range [low_thresh, upper_thresh] to zero
+template <typename forw_iterT, typename elemT>
+inline void
+zero_threshold_upper_lower(forw_iterT begin, forw_iterT end,
+		                   const elemT new_min, const elemT new_max)
+{
+  for (forw_iterT iter = begin; iter != end; ++iter)
+    {
+      if (*iter > new_max)
+	    *iter = 0;
+      else
+	  if (new_min > *iter)
+	    *iter = 0;
     }
 }
 
@@ -58,7 +90,8 @@ threshold_upper_lower(forw_iterT begin, forw_iterT end, const elemT new_min, con
   \see threshold_upper_lower for type requirements */
 template <typename forw_iterT, typename elemT>
 inline void
-threshold_upper(forw_iterT begin, forw_iterT end, const elemT new_max)
+threshold_upper(forw_iterT begin, forw_iterT end,
+		const elemT new_max)
 {
   for (forw_iterT iter = begin; iter != end; ++iter)
     {
@@ -72,7 +105,8 @@ threshold_upper(forw_iterT begin, forw_iterT end, const elemT new_max)
  \see threshold_upper_lower for type requirements */
 template <typename forw_iterT, typename elemT>
 inline void
-threshold_lower(forw_iterT begin, forw_iterT end, const elemT new_min)
+threshold_lower(forw_iterT begin, forw_iterT end,
+		const elemT new_min)
 {
   for (forw_iterT iter = begin; iter != end; ++iter)
     {
@@ -98,14 +132,16 @@ threshold_lower(forw_iterT begin, forw_iterT end, const elemT new_min)
 */
 template <typename ForwardIter_t, typename elemT>
 void
-threshold_min_to_small_positive_value(ForwardIter_t begin, ForwardIter_t end, const elemT& small_number)
+threshold_min_to_small_positive_value(ForwardIter_t begin, ForwardIter_t end, 
+				      const elemT& small_number)
 {
-  const ForwardIter_t smallest_positive_element_iter = min_positive_element(begin, end);
+  const ForwardIter_t smallest_positive_element_iter =
+    min_positive_element(begin, end);
 
   if (smallest_positive_element_iter != end)
     threshold_lower(begin, end, (*smallest_positive_element_iter) * small_number);
   else
-    std::fill(begin, end, small_number);
+    fill(begin, end, small_number);
 }
 
 //@}
@@ -113,3 +149,4 @@ threshold_min_to_small_positive_value(ForwardIter_t begin, ForwardIter_t end, co
 END_NAMESPACE_STIR
 
 #endif
+

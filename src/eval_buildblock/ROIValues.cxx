@@ -15,7 +15,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,15 +31,21 @@
 #include "stir/evaluation/ROIValues.h"
 #include "stir/NumericInfo.h"
 #include <math.h>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
 #include <sstream>
+#endif
 
+
+#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
+#endif
 
 START_NAMESPACE_STIR
 
-void
-ROIValues::init()
+void ROIValues::init()
 {
 
   NumericInfo<float> float_limits;
@@ -47,8 +61,7 @@ ROIValues::init()
   std_value = 0;
 }
 
-void
-ROIValues::update()
+void ROIValues::update()
 {
   if (roi_volume == 0)
     {
@@ -69,10 +82,15 @@ ROIValues::update()
     }
 }
 
-std::string
-ROIValues::report() const
+string ROIValues::report() const
 {
+#ifdef BOOST_NO_STRINGSTREAM
+  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+  char str[3000];
+  ostrstream s(str, 3000);
+#else
   std::ostringstream s;
+#endif
   s << " Volume of ROI              = " << roi_volume << endl;
   s << " Integral of density        = " << integral << endl;
   s << " Integral of square density = " << integral_of_square << endl;
@@ -112,4 +130,5 @@ return stream;
 
 #endif
 
+    
 END_NAMESPACE_STIR

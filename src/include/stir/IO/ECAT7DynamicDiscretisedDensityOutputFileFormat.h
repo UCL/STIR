@@ -4,7 +4,15 @@
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -28,12 +36,17 @@
 #include "stir/IO/stir_ecat_common.h"
 #include <string>
 
+#ifndef STIR_NO_NAMESPACES
+using std::string;
+#endif
+
 START_NAMESPACE_STIR
 
 class DynamicDiscretisedDensity;
 
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
+
 
 /*!
   \ingroup ECAT
@@ -44,13 +57,16 @@ START_NAMESPACE_ECAT7
   big-endian byte order.
  */
 
-class ECAT7DynamicDiscretisedDensityOutputFileFormat
-    : public RegisteredParsingObject<ECAT7DynamicDiscretisedDensityOutputFileFormat,
+class ECAT7DynamicDiscretisedDensityOutputFileFormat : 
+  public RegisteredParsingObject<
+        ECAT7DynamicDiscretisedDensityOutputFileFormat,
                                      OutputFileFormat<DynamicDiscretisedDensity>,
                                      OutputFileFormat<DynamicDiscretisedDensity>>
 {
 private:
-  typedef RegisteredParsingObject<ECAT7DynamicDiscretisedDensityOutputFileFormat,
+  typedef
+     RegisteredParsingObject<
+        ECAT7DynamicDiscretisedDensityOutputFileFormat,
                                   OutputFileFormat<DynamicDiscretisedDensity>,
                                   OutputFileFormat<DynamicDiscretisedDensity>>
       base_type;
@@ -59,7 +75,8 @@ public:
   //! Name which will be used when parsing an OutputFileFormat object
   static const char* const registered_name;
 
-  ECAT7DynamicDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::SHORT, const ByteOrder& = ByteOrder::native);
+  ECAT7DynamicDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::SHORT, 
+					 const ByteOrder& = ByteOrder::native);
 
   //! Set type of numbers to be used for output
   /*! Currently the return value will always be NumericType::SHORT */
@@ -69,14 +86,18 @@ public:
   virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
   // virtual ByteOrder set_byte_order_and_type_of_numbers(ByteOrder&, NumericType&, const bool warn = false);
 public:
-  std::string default_scanner_name;
+  string default_scanner_name;
 
 protected:
-  virtual Succeeded actual_write_to_file(std::string& output_filename, const DynamicDiscretisedDensity& density) const;
+
+  virtual Succeeded  
+    actual_write_to_file(string& output_filename,
+		  const DynamicDiscretisedDensity & density) const;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
+
 };
 
 END_NAMESPACE_ECAT7

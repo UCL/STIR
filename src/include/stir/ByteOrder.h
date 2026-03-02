@@ -15,7 +15,15 @@
     Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -71,13 +79,18 @@ START_NAMESPACE_STIR
 */
 // TODO put revert_region in own namespace or as private class of ByteOrder
 
+
 template <int size>
 class revert_region
 {
 public:
   inline static void revert(unsigned char* ptr)
   {
+#ifndef STIR_NO_NAMESPACES
     std::swap(ptr[0], ptr[size - 1]);
+#else
+    swap(ptr[0], ptr[size - 1]);
+#endif
     revert_region<size - 2>::revert(ptr + 1);
   }
 };
@@ -86,22 +99,24 @@ template <>
 class revert_region<1>
 {
 public:
-  inline static void revert(unsigned char* ptr) {}
+  inline static void revert(unsigned char* ptr)
+  {}
 };
 
 template <>
 class revert_region<0>
 {
 public:
-  inline static void revert(unsigned char* ptr) {}
+  inline static void revert(unsigned char* ptr)
+  {}
 };
+
 
 class ByteOrder
 {
 public:
   //! enum for specifying the byte-order
-  enum Order
-  {
+  enum Order {
     little_endian, /*!< is like x86, MIPS*/
     big_endian,    /*!< is like PowerPC, Sparc.*/
     native,        /*!< means the same order as the machine the programme is running on*/
@@ -141,18 +156,19 @@ public:
   // Note: Implementation has to be inside the class definition to get
   // this compiled by VC++ 5.0 and 6.0
   //! this swaps only when the order != native order
-  template <class NUMBER>
-  inline void swap_if_necessary(NUMBER& a) const
+  template <class NUMBER> inline void swap_if_necessary(NUMBER& a) const
   {
     if (!is_native_order())
       swap_order(a);
   }
+
 
 private:
   // This static member has to be initialised somewhere (in file scope).
   static const Order native_order;
 
   Order byte_order;
+
 };
 
 END_NAMESPACE_STIR

@@ -15,7 +15,15 @@
 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,7 +31,7 @@
 #define __stir_FBP2D_RampFilter_H__
 
 #ifdef NRFFT
-#  include "stir_experimental/Filter.h"
+#include "local/stir/Filter.h"
 #else
 #  include "stir/ArrayFilterUsingRealDFTWithPadding.h"
 #  include "stir/TimedObject.h"
@@ -60,11 +68,11 @@ private:
   float fc;
   float alpha;
   float sampledist;
-
 public:
   RampFilter(float sampledist_v, int length_v, float alpha_v = 1, float fc_v = .5);
 
   virtual std::string parameter_info() const;
+ 
 };
 
 END_NAMESPACE_STIR

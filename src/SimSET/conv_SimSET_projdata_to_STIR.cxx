@@ -2,7 +2,15 @@
     Copyright (C) 2005-2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -28,20 +36,19 @@
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #define NUMARG 12
 
-int
-main(int argc, char** argv)
+
+int main(int argc,char **argv)
 {
   using namespace stir;
 
-  static const char* const options[] = { "argv[1]  SimSET file\n",
+  static const char * const options[]={
+    "argv[1]  SimSET file\n",
                                          "argv[2]  SimSET file format\n",
                                          "argv[3]  Angles in SimSET file\n",
                                          "argv[4]  Bins in SimSET filele\n",
@@ -50,14 +57,13 @@ main(int argc, char** argv)
                                          "argv[7]  range on Z value in cm as given to simset binning module\n",
                                          "argv[8]  STIR scanner name\n",
                                          "argv[9]  maximum ring difference to use for writing\n",
-                                         "argv[10]  index of 3d-sinogram in file (0-based)\n",
-                                         "argv[11] STIR file name\n" };
-  if (argc != NUMARG)
-    {
+    "argv[10]  index of 3d-sinogram in file (0-based)\n"
+    "argv[11] STIR file name\n"
+  };
+  if (argc!=NUMARG){
       std::cerr << "\n\nConvert SimSET to STIR\n\n";
       std::cerr << "Not enough arguments !!! ..\n";
-      for (int i = 1; i < NUMARG; i++)
-        std::cerr << options[i - 1];
+    for (int i=1;i<NUMARG;i++) std::cerr << options[i-1];
       exit(EXIT_FAILURE);
     }
 
@@ -79,8 +85,7 @@ main(int argc, char** argv)
             "number of tangential positions.\n"
             "Proceed at your own risk (but you will get artifacts in the images");
   FILE* file;
-  if ((file = fopen(simset_filename, "rb")) == NULL)
-    {
+  if( (file=fopen(simset_filename,"rb")) ==NULL){
       error("Cannot open the simset file %s", simset_filename);
     }
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(scanner_name));
@@ -88,36 +93,41 @@ main(int argc, char** argv)
     error("Scanner '%s' is not a valid name", scanner_name);
 
   {
-    const float STIR_scanner_length = scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
+    const float STIR_scanner_length = 
+      scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
     if (fabs(STIR_scanner_length - scanner_length) > 1.0)
       {
         warning("scanner length from SimSET %g does not match STIR scanner length %g.\n"
                 "Continuing anyway, but this is bad.",
-                scanner_length,
-                STIR_scanner_length);
+		scanner_length, STIR_scanner_length);
       }
   }
   scanner_sptr->set_num_rings(num_rings);
   scanner_sptr->set_ring_spacing(scanner_length / num_rings);
   scanner_sptr->set_num_detectors_per_ring(num_views * 2);
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(
+    ProjDataInfo::ProjDataInfoCTI( scanner_sptr,
                                                                              /*span=*/1,
                                                                              /*max_delta=*/max_ring_difference,
                                                                              num_views,
                                                                              num_tangential_poss,
                                                                              /*arc_corrected =*/true));
-  dynamic_cast<ProjDataInfoCylindricalArcCorr&>(*proj_data_info_sptr)
-      .set_tangential_sampling(2 * FOV_radius / num_tangential_poss);
+  dynamic_cast<ProjDataInfoCylindricalArcCorr&>(*proj_data_info_sptr).
+    set_tangential_sampling(2*FOV_radius/num_tangential_poss);
 
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-  ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr, stir_filename, std::ios::out);
+  ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr,
+			      stir_filename, std::ios::out); 
+
 
   if (strncmp(input_data_type, "fl", 2) == 0)
-    {}
+    {
+    }
   else
     {
       error("file format %s not valid. Only fl at present", input_data_type);
     }
+
 
   // skip simset header
   const long offset = 32768 + dataset_num * num_rings * (long(num_rings * nitems * 4));
@@ -168,3 +178,15 @@ main(int argc, char** argv)
 
   return EXIT_SUCCESS;
 }
+
+
+
+
+
+
+
+
+
+
+
+

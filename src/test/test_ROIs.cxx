@@ -4,7 +4,15 @@
     Copyright (C) 2004- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -62,8 +70,7 @@ START_NAMESPACE_STIR
 class ROITests : public RunTests
 {
 public:
-  void run_tests() override;
-
+  void run_tests();
 private:
   //! Run a series of tests for a shape
   /*!
@@ -78,23 +85,21 @@ private:
   */
   void run_tests_one_shape(Shape3D& shape,
                            VoxelsOnCartesianGrid<float>& image,
-                           const bool do_rotated_ROI_test = true,
-                           const bool do_separate_translate_test = true);
+			   const bool do_rotated_ROI_test=true);
 };
 
 void
 ROITests::run_tests_one_shape(Shape3D& shape,
                               VoxelsOnCartesianGrid<float>& image,
-                              const bool do_rotated_ROI_test,
-                              const bool do_separate_translate_test)
+			      const bool do_rotated_ROI_test)
 {
   shape.construct_volume(image, Coordinate3D<int>(1, 1, 1));
 
   if (dynamic_cast<DiscretisedShape3D const*>(&shape) != 0)
     {
 #ifdef test_ROIs_DISPLAY
-      shared_ptr<DiscretisedDensity<3, float>> copy_sptr
-          = static_cast<DiscretisedShape3D&>(shape).get_discretised_density().clone();
+      shared_ptr<DiscretisedDensity<3,float> > copy_sptr =
+	static_cast<DiscretisedShape3D&>(shape).get_discretised_density().clone();
 #endif
       MinimalImageFilter3D<float> erosion_filter(make_coordinate(2, 2, 2));
       erosion_filter.apply(static_cast<DiscretisedShape3D&>(shape).get_discretised_density());
@@ -102,7 +107,9 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       const float max = copy_sptr->find_max();
       *copy_sptr -= static_cast<DiscretisedShape3D&>(shape).get_discretised_density();
       *copy_sptr += max / 2;
-      display(*copy_sptr, max, "Original - erosion");
+      display(*copy_sptr,
+	      max,
+	      "Original - erosion");
 #endif
     }
   const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
@@ -114,7 +121,8 @@ ROITests::run_tests_one_shape(Shape3D& shape,
 #endif
 
   {
-    const ROIValues ROI_values = compute_total_ROI_values(image, shape, Coordinate3D<int>(1, 1, 1));
+      const ROIValues ROI_values =
+	compute_total_ROI_values(image, shape, Coordinate3D<int>(1,1,1));
 
     check_if_equal(ROI_values.get_mean(), 2.F, "ROI mean");
     check_if_equal(ROI_values.get_stddev(), 0.F, "ROI stddev");
@@ -136,7 +144,8 @@ ROITests::run_tests_one_shape(Shape3D& shape,
     const CartesianCoordinate3D<float> translation(3, 1, 20);
     image.set_origin(image.get_origin() + translation);
     shape.translate(translation);
-    const ROIValues ROI_values = compute_total_ROI_values(image, shape, Coordinate3D<int>(1, 1, 1));
+      const ROIValues ROI_values =
+	compute_total_ROI_values(image, shape, Coordinate3D<int>(1,1,1));
 
     check_if_equal(ROI_values.get_mean(), 2.F, "ROI mean after translation");
     check_if_equal(ROI_values.get_stddev(), 0.F, "ROI stddev after translation");
@@ -156,14 +165,15 @@ ROITests::run_tests_one_shape(Shape3D& shape,
     shape.translate(translation * -1);
   }
   // test on translation (image and shape translate separately)
-  if (do_separate_translate_test)
     {
       const CartesianCoordinate3D<float> translation(3, 1, 10);
       image.set_origin(image.get_origin() + translation);
-      const ROIValues ROI_values = compute_total_ROI_values(image, shape, Coordinate3D<int>(1, 1, 1));
+      const ROIValues ROI_values =
+	compute_total_ROI_values(image, shape, Coordinate3D<int>(1,1,1));
       image.set_origin(image.get_origin() - translation);
       shape.translate(translation * -1);
-      const ROIValues ROI_values2 = compute_total_ROI_values(image, shape, Coordinate3D<int>(1, 1, 1));
+      const ROIValues ROI_values2 =
+	compute_total_ROI_values(image, shape, Coordinate3D<int>(1,1,1));
       shape.translate(translation);
 
       check_if_equal(ROI_values.get_mean(), ROI_values2.get_mean(), "ROI mean after translation shape vs. image");
@@ -180,7 +190,8 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       shared_ptr<Shape3D> new_shape_sptr(shape.clone());
       new_shape_sptr->scale_around_origin(scale);
 
-      const ROIValues ROI_values = compute_total_ROI_values(image, *new_shape_sptr, Coordinate3D<int>(1, 1, 1));
+      const ROIValues ROI_values =
+	compute_total_ROI_values(image, *new_shape_sptr, Coordinate3D<int>(1,1,1));
 
       check_if_equal(ROI_values.get_mean(), 2.F, "ROI mean after scale");
       check_if_equal(ROI_values.get_stddev(), 0.F, "ROI stddev after scale");
@@ -212,14 +223,18 @@ ROITests::run_tests_one_shape(Shape3D& shape,
     {
       const float volume_before_scale = shape.get_geometric_volume();
       // rotate over 45 degrees around 1 and scale
-      const Array<2, float> direction_vectors
-          = make_array(make_1d_array(1.F, 0.F, 0.F), make_1d_array(0.F, 1.F, 1.F), make_1d_array(0.F, -2.F, 2.F));
+      const Array<2,float> direction_vectors=
+	make_array(make_1d_array(1.F,0.F,0.F),
+		   make_1d_array(0.F,1.F,1.F),
+		   make_1d_array(0.F,-2.F,2.F));
       const float total_scale = 1 / determinant(direction_vectors);
-      shared_ptr<Shape3DWithOrientation> new_shape_sptr(dynamic_cast<Shape3DWithOrientation*>(shape.clone()));
+      shared_ptr<Shape3DWithOrientation> 
+	new_shape_sptr(dynamic_cast<Shape3DWithOrientation *>(shape.clone()));
       check(new_shape_sptr->set_direction_vectors(direction_vectors) == Succeeded::yes, "set_direction_vectors");
       // std::cerr << new_shape_sptr->parameter_info();
 
-      const ROIValues ROI_values = compute_total_ROI_values(image, *new_shape_sptr, Coordinate3D<int>(1, 1, 1));
+      const ROIValues ROI_values =
+	compute_total_ROI_values(image, *new_shape_sptr, Coordinate3D<int>(1,1,1));
 
       if (do_rotated_ROI_test)
         {
@@ -260,12 +275,15 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       std::stringstream str;
       str << parser.parameter_info();
       // now read it back in and check
-      if (check(parser.parse(str) && !is_null_ptr(shape_sptr), "parsing parameters failed"))
+      if (check(parser.parse(str) && !is_null_ptr(shape_sptr), 
+	       "parsing parameters failed"))
         {
           // check if it's what we expect
-          if (!check(*shape_sptr == shape, "parsed shape not equal to original"))
+	if(!check(*shape_sptr == shape,
+		  "parsed shape not equal to original"))
             {
-              std::cerr << "Original: \n" << shape.parameter_info() << "\nParsed: \n" << shape_sptr->parameter_info();
+	    std::cerr << "Original: \n" << shape.parameter_info()
+		      << "\nParsed: \n" << shape_sptr->parameter_info();
             }
         }
     }
@@ -275,12 +293,14 @@ void
 ROITests::run_tests()
 
 {
-  std::cerr << "Tests for compute_ROI_values and Shape3D hierarchy\n";
+  cerr << "Tests for compute_ROI_values and Shape3D hierarchy\n";
 
   CartesianCoordinate3D<float> origin(0, 0, 0);
   CartesianCoordinate3D<float> grid_spacing(3, 4, 5);
 
-  const IndexRange<3> range(Coordinate3D<int>(0, -45, -44), Coordinate3D<int>(24, 44, 45));
+  const IndexRange<3> 
+    range(Coordinate3D<int>(0,-45,-44),
+          Coordinate3D<int>(24,44,45));
   VoxelsOnCartesianGrid<float> image(range, origin, grid_spacing);
 
   /* WARNING:
@@ -292,8 +312,8 @@ ROITests::run_tests()
   {
     std::cerr << "\tTests with ellipsoidal cylinder.\n";
     // object at centre of image
-    EllipsoidalCylinder cylinder(
-        /*length*/ image.size() * grid_spacing.z() / 3,
+    EllipsoidalCylinder
+      cylinder(/*length*/image.size()*grid_spacing.z()/3, 
         /*radius_x*/ image[0][0].size() * grid_spacing.x() / 4,
         /*radius_y*/ image[0].size() * grid_spacing.y() / 4,
         /*centre*/ CartesianCoordinate3D<float>((image.get_min_index() + image.get_max_index()) / 2 * grid_spacing.z(), 0, 0));
@@ -303,8 +323,8 @@ ROITests::run_tests()
   {
     std::cerr << "\tTests with ellipsoidal cylinder and wedge.\n";
     // object at centre of image
-    EllipsoidalCylinder cylinder(
-        /*length*/ image.size() * grid_spacing.z() / 3,
+    EllipsoidalCylinder
+      cylinder(/*length*/image.size()*grid_spacing.z()/3, 
         /*radius_x*/ image[0][0].size() * grid_spacing.x() / 4,
         /*radius_y*/ image[0].size() * grid_spacing.y() / 4,
         /* theta_1 */ 10.F,
@@ -316,8 +336,8 @@ ROITests::run_tests()
   {
     std::cerr << "\tTests with ellipsoid.\n";
     // object at centre of image
-    Ellipsoid ellipsoid(
-        CartesianCoordinate3D<float>(/*radius_z*/ image.size() * grid_spacing.z() / 3,
+    Ellipsoid
+      ellipsoid(CartesianCoordinate3D<float>(/*radius_z*/image.size()*grid_spacing.z()/3,
                                      /*radius_y*/ image[0].size() * grid_spacing.y() / 5,
                                      /*radius_x*/ image[0][0].size() * grid_spacing.x() / 4),
         /*centre*/ CartesianCoordinate3D<float>((image.get_min_index() + image.get_max_index()) / 2 * grid_spacing.z(), 0, 0));
@@ -326,8 +346,8 @@ ROITests::run_tests()
   {
     std::cerr << "\tTests with Box3D.\n";
     // object at centre of image
-    Box3D box(
-        /*length_x*/ image[0][0].size() * grid_spacing.x() / 4,
+    Box3D
+      box(/*length_x*/image[0][0].size()*grid_spacing.x()/4,
         /*length_y*/ image[0].size() * grid_spacing.y() / 5,
         /*length_z*/ image.size() * grid_spacing.z() / 3,
         /*centre*/ CartesianCoordinate3D<float>((image.get_min_index() + image.get_max_index()) / 2 * grid_spacing.z(), 0, 0));
@@ -336,8 +356,8 @@ ROITests::run_tests()
   {
     std::cerr << "\tTests with DiscretisedShape3D.\n";
     // object at centre of image
-    Ellipsoid ellipsoid(
-        CartesianCoordinate3D<float>(/*radius_z*/ image.size() * grid_spacing.z() / 3,
+    Ellipsoid
+      ellipsoid(CartesianCoordinate3D<float>(/*radius_z*/image.size()*grid_spacing.z()/3,
                                      /*radius_y*/ image[0].size() * grid_spacing.y() / 5,
                                      /*radius_x*/ image[0][0].size() * grid_spacing.x() / 4),
         /*centre*/ CartesianCoordinate3D<float>((image.get_min_index() + image.get_max_index()) / 2 * grid_spacing.z(), 0, 0));
@@ -358,29 +378,24 @@ ROITests::run_tests()
       CartesianCoordinate3D<float> other_origin(2, 4, 9);
       CartesianCoordinate3D<float> other_grid_spacing(3.3, 4.4, 5.5);
 
-      const IndexRange<3> other_range(Coordinate3D<int>(-1, -40, -43), Coordinate3D<int>(25, 45, 47));
+      const IndexRange<3> 
+	other_range(Coordinate3D<int>(-1,-40,-43),
+		    Coordinate3D<int>(25,45,47));
       VoxelsOnCartesianGrid<float> other_image(other_range, other_origin, other_grid_spacing);
       this->run_tests_one_shape(discretised_shape, other_image);
     }
-    // need to fill in image again, as the tests change it
-    ellipsoid.construct_volume(image, make_coordinate(1, 1, 1));
-    {
-      std::cerr << "\t\tlabel image\n";
-      VoxelsOnCartesianGrid<float> other_image(image);
-      other_image += 1;
-      DiscretisedShape3D discretised_shape(other_image);
-      discretised_shape.set_label_index(2);
-      this->run_tests_one_shape(discretised_shape, image, false, false);
-    }
+
   }
+
 }
 
 END_NAMESPACE_STIR
 
+
 USING_NAMESPACE_STIR
 
-int
-main()
+
+int main()
 {
   ROITests tests;
   tests.run_tests();

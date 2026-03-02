@@ -3,7 +3,15 @@
     Copyright (C) 2000-2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -32,6 +40,8 @@ START_NAMESPACE_STIR
 class ProjData;
 class ProjDataInfo;
 
+
+
 /*!
   \brief A class for storing viewgrams which are related by symmetry
   \ingroup projdata
@@ -39,8 +49,9 @@ class ProjDataInfo;
 template <typename elemT>
 class RelatedViewgrams
 {
-#ifdef STIR_COMPILING_SWIG_WRAPPER
-public: // SWIG needs this typedef to be public
+private:
+#ifdef SWIG
+public:  
 #endif
   typedef RelatedViewgrams<elemT> self_type;
 
@@ -58,6 +69,7 @@ public:
   typedef typename std::vector<Viewgram<elemT>>::const_iterator const_iterator;
   //@}
 
+
   // --- constructors ---
 
   //! default constructor (sets everything empty)
@@ -68,8 +80,9 @@ public:
 
   //! a private constructor which simply sets the members
   /*! \todo Currently public for the STIR_MPI version */
-  inline RelatedViewgrams(const std::vector<Viewgram<elemT>>& viewgrams,
+  inline RelatedViewgrams(const vector<Viewgram<elemT> >& viewgrams,
                           const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used);
+
 
   // --- const members returning info ---
 
@@ -79,15 +92,9 @@ public:
   //! get 'basic' segment_num
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
   inline int get_basic_segment_num() const;
-  //! get 'basic' timing_pos_num
-  /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
-  inline int get_basic_timing_pos_num() const;
   //! get 'basic' view_segment_num
-  /*! \deprecated Use get_basic_viewgram_indices() instead. */
-  inline ViewgramIndices get_basic_view_segment_num() const;
-  //! get 'basic' viewgram indices
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
-  inline ViewgramIndices get_basic_viewgram_indices() const;
+  inline ViewSegmentNumbers get_basic_view_segment_num() const;
 
   //! returns the number of viewgrams in this object
   inline int get_num_viewgrams() const;
@@ -98,8 +105,8 @@ public:
   inline int get_min_tangential_pos_num() const;
   inline int get_max_tangential_pos_num() const;
 
-  //! Get shared pointer to proj data info
-  inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
+  //! Get a pointer to the ProjDataInfo of this object
+  inline const ProjDataInfo * get_proj_data_info_ptr() const;
   //! Get a pointer to the symmetries used in constructing this object
   inline const DataSymmetriesForViewSegmentNumbers* get_symmetries_ptr() const;
   //! Get a shared pointer to the symmetries used in constructing this object
@@ -113,6 +120,8 @@ public:
   // TODOvoid zoom(const float zoom, const float Xoffp, const float Yoffp,
   //           const int size, const float itophi);
 
+
+
   // -- basic iterator support --
 
   //! use to initialise an iterator to the first element of the vector
@@ -124,6 +133,8 @@ public:
   //! iterator 'past' the last element of the (const) vector
   inline const_iterator end() const;
 
+
+
   // numeric operators
 
   //! Multiplication of all data elements with a constant
@@ -134,6 +145,7 @@ public:
   RelatedViewgrams& operator+=(const elemT);
   //! Subtraction of all data elements by a constant
   RelatedViewgrams& operator-=(const elemT);
+
 
   //! Element-wise multiplication with another RelatedViewgram object
   RelatedViewgrams& operator*=(const RelatedViewgrams<elemT>&);
@@ -164,12 +176,15 @@ public:
   /*! If they do \c not have the same characteristics, the string \a explanation
       explains why.
   */
-  bool has_same_characteristics(self_type const&, std::string& explanation) const;
+  bool
+    has_same_characteristics(self_type const&,
+			     string& explanation) const;
 
   //! Checks if the 2 objects have the proj_data_info, segment_num etc.
   /*! Use this version if you do not need to know why they do not match.
    */
-  bool has_same_characteristics(self_type const&) const;
+  bool
+    has_same_characteristics(self_type const&) const;
 
   //! check equality (data has to be identical)
   /*! Uses has_same_characteristics() and Array::operator==.
@@ -183,11 +198,12 @@ public:
   //@}
 
 private:
+  
   friend class ProjData;
   friend class ProjDataInfo;
 
   // members
-  std::vector<Viewgram<elemT>> viewgrams;
+  vector<Viewgram<elemT> > viewgrams;
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used;
 
   //! a function which is called internally to see if the object is valid
@@ -196,10 +212,13 @@ private:
 
   //! actual implementation of the above function
   void debug_check_state() const;
+
 };
 
 END_NAMESPACE_STIR
 
 #include "stir/RelatedViewgrams.inl"
 
+
 #endif // __RelatedViewgrams_h__
+

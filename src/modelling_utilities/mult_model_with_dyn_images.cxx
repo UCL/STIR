@@ -4,7 +4,15 @@
   Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -40,8 +48,7 @@
 #include <iostream>
 #include <iomanip>
 
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   USING_NAMESPACE_STIR
 
@@ -66,22 +73,22 @@ main(int argc, char* argv[])
     return EXIT_FAILURE;
   else
     {
-      shared_ptr<ParametricVoxelsOnCartesianGrid> par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
+      shared_ptr<ParametricVoxelsOnCartesianGrid> 
+	par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
       ParametricVoxelsOnCartesianGrid par_image = *par_image_sptr;
 
-      shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
+      shared_ptr<DynamicDiscretisedDensity> 
+	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
       const DynamicDiscretisedDensity& dyn_image = *dyn_image_sptr;
 
-      // NotToDo: Assertion for the dyn-par images, sizes should not be ncessary ONLY WHEN I will create from dyn_image the
-      // par_image...
-      assert(patlak_plot.get_time_frame_definitions().get_num_frames()
-             == dyn_image.get_time_frame_definitions().get_num_frames());
+      //NotToDo: Assertion for the dyn-par images, sizes should not be ncessary ONLY WHEN I will create from dyn_image the par_image...
+      assert(patlak_plot.get_time_frame_definitions().get_num_frames()==dyn_image.get_time_frame_definitions().get_num_frames());
       patlak_plot.multiply_dynamic_image_with_model_gradient(par_image, dyn_image);
 
       // Writing image
       std::cerr << "Writing parametric-image in '" << argv[1] << "'\n";
-      const Succeeded writing_succeeded
-          = OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file(argv[1], par_image);
+      const Succeeded writing_succeeded=OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->  
+	write_to_file(argv[1], par_image); 
 
       if (writing_succeeded == Succeeded::yes)
         return EXIT_SUCCESS;
@@ -89,3 +96,4 @@ main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 }
+

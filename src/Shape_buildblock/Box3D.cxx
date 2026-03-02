@@ -4,7 +4,15 @@
     Copyright (C) 2005- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -19,12 +27,11 @@
 */
 #include "stir/Shape/Box3D.h"
 #include "stir/Succeeded.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
-const char* const Box3D::registered_name = "Box3D";
+const char * const 
+Box3D::registered_name = "Box3D";
 
 void
 Box3D::initialise_keymap()
@@ -47,7 +54,8 @@ Box3D::set_defaults()
 }
 
 bool
-Box3D::post_processing()
+Box3D::
+post_processing()
 {
   if (Shape3DWithOrientation::post_processing() == true)
     return true;
@@ -80,7 +88,8 @@ Box3D::Box3D(const float length_xv,
              const float length_zv,
              const CartesianCoordinate3D<float>& centre_v,
              const Array<2, float>& direction_vectors)
-    : length_x(length_xv),
+  :
+  length_x(length_xv),
       length_y(length_yv),
       length_z(length_zv)
 {
@@ -108,24 +117,28 @@ Box3D::Box3D(const float length_xv,
 
 #endif
 
-bool
-Box3D::is_inside_shape(const CartesianCoordinate3D<float>& coord) const
+bool Box3D::is_inside_shape(const CartesianCoordinate3D<float>& coord) const
 {
-  const CartesianCoordinate3D<float> r = this->transform_to_shape_coords(coord);
+  const CartesianCoordinate3D<float> r = 
+    this->transform_to_shape_coords(coord);
 
   const float distance_along_x_axis = r.x();
   const float distance_along_y_axis = r.y();
   const float distance_along_z_axis = r.z();
 
-  return fabs(distance_along_x_axis) < length_x / 2 && fabs(distance_along_y_axis) < length_y / 2
+  return
+    fabs(distance_along_x_axis)<length_x/2
+    && fabs(distance_along_y_axis)<length_y/2
          && fabs(distance_along_z_axis) < length_z / 2;
 }
 
 float
-Box3D::get_geometric_volume() const
+Box3D:: 
+get_geometric_volume()const
 {
   return static_cast<float>(length_x * length_y * length_z) / this->get_volume_of_unit_cell();
 }
+
 
 #if 0
 // doesn't take scaling into account
@@ -139,24 +152,33 @@ get_geometric_area()const
 #endif
 
 Shape3D*
-Box3D::clone() const
+Box3D:: 
+clone() const
 {
   return static_cast<Shape3D*>(new Box3D(*this));
 }
 
 bool
-Box3D::operator==(const Box3D& box) const
+Box3D:: 
+operator==(const Box3D& box) const
 {
-  const float tolerance = std::min(length_z, std::min(length_x, length_y)) / 1000;
-  return std::fabs(this->length_x - box.length_x) < tolerance && std::fabs(this->length_y - box.length_y) < tolerance
-         && std::fabs(this->length_z - box.length_z) < tolerance && Shape3DWithOrientation::operator==(box);
+  const float tolerance = 
+    std::min(length_z, std::min(length_x, length_y))/1000;
+  return
+    std::fabs(this->length_x - box.length_x) < tolerance
+    && std::fabs(this->length_y - box.length_y) < tolerance
+    && std::fabs(this->length_z - box.length_z) < tolerance
+    && Shape3DWithOrientation::operator==(box);
 }
 
 bool
-Box3D::operator==(const Shape3D& shape) const
+Box3D:: 
+operator==(const Shape3D& shape) const
 {
-  Box3D const* box_ptr = dynamic_cast<Box3D const*>(&shape);
-  return box_ptr != 0 && (*this == *box_ptr);
+  Box3D const * box_ptr =
+    dynamic_cast<Box3D const *>(&shape);
+  return
+    box_ptr != 0 && (*this == *box_ptr);
 }
 
 END_NAMESPACE_STIR

@@ -4,7 +4,15 @@
     Copyright (C) 2007- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -42,6 +50,7 @@
 
 */
 
+
 #include "mpi.h"
 #include "stir/shared_ptr.h"
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
@@ -49,6 +58,7 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/Viewgram.h"
 #include "stir/ProjDataInfo.h"
+#include <cstring>
 #include <iostream>
 #include <fstream>
 
@@ -56,6 +66,7 @@ namespace distributed
 {
 //-----------------------test functions------------------------------------------
 
+	
 void test_viewgram_slave(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr);
 
 void test_viewgram_master(stir::Viewgram<float> viewgram, const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr);
@@ -66,15 +77,15 @@ void test_image_estimate_slave();
 
 void test_related_viewgrams_master(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr,
                                    const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr,
-                                   stir::RelatedViewgrams<float>* y,
-                                   int slave);
+				     stir::RelatedViewgrams<float>* y, int slave);
 
 void test_related_viewgrams_slave(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr,
-                                  const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr);
+				    const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr
+				    );
 
-void test_parameter_info_master(const std::string str, int slave, char const* const text);
+  void test_parameter_info_master(const string str, int slave, char const * const text);
 
-void test_parameter_info_slave(const std::string str);
+  void test_parameter_info_slave(const string str);
 
 void test_bool_value_master(bool value, int slave);
 
@@ -87,6 +98,7 @@ void test_int_value_slave();
 void test_int_values_master(int slave);
 
 void test_int_values_slave();
-} // namespace distributed
+}
 
 #endif
+

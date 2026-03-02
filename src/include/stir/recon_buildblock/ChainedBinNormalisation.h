@@ -4,7 +4,7 @@
   \file
   \ingroup normalisation
 
-  \brief Declaration of class stir::ChainedBinNormalisation
+  \brief Declaration of class ChainedBinNormalisation
 
   \author Kris Thielemans
 */
@@ -12,7 +12,15 @@
     Copyright (C) 2003- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -67,11 +75,9 @@ START_NAMESPACE_STIR
   END Chained Bin Normalisation Parameters :=
   \endverbatim
 */
-class ChainedBinNormalisation : public RegisteredParsingObject<ChainedBinNormalisation, BinNormalisation>
+class ChainedBinNormalisation :
+   public RegisteredParsingObject<ChainedBinNormalisation, BinNormalisation>
 {
-private:
-  using base_type = BinNormalisation;
-
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char* const registered_name;
@@ -84,76 +90,35 @@ public:
   */
   ChainedBinNormalisation();
 
-  ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first, shared_ptr<BinNormalisation> const& apply_second);
+ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
+		        shared_ptr<BinNormalisation> const& apply_second);
 
   //! Checks if we can handle certain projection data.
   /*! Calls set_up for the BinNormalisation members. */
-  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
-
-  // import all apply/undo methods from base-class (we'll override some below)
-  using base_type::apply;
-  using base_type::undo;
+  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
 
   //! Normalise some data
   /*!
     This calls apply() of the 2 BinNormalisation members
   */
-  void apply(RelatedViewgrams<float>& viewgrams) const override;
-#if 0
-  virtual void apply(ProjData&) const override;
-#endif
-
-  virtual void apply_only_first(RelatedViewgrams<float>& viewgrams) const;
-
-  virtual void apply_only_first(ProjData&) const;
-
-  virtual void apply_only_second(RelatedViewgrams<float>& viewgrams) const;
-
-  virtual void apply_only_second(ProjData&) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   //! Undo the normalisation of some data
   /*!
     This calls undo() of the 2 BinNormalisation members.
   */
-  void undo(RelatedViewgrams<float>& viewgrams) const override;
-#if 0
-  virtual void undo(ProjData&) const override;
-#endif
+  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual void undo_only_first(RelatedViewgrams<float>& viewgrams) const;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
 
-  virtual void undo_only_first(ProjData&) const;
-
-  virtual void undo_only_second(RelatedViewgrams<float>& viewgrams) const;
-
-  virtual void undo_only_second(ProjData&) const;
-
-  float get_bin_efficiency(const Bin& bin) const override;
-
-  //! Returns the is_trivial() status of the first normalisation object.
-  //! \warning Currently, if the object has not been set the function throws an error.
-  virtual bool is_first_trivial() const;
-  //! Returns the is_trivial() status of the second normalisation object.
-  //! \warning Currently, if the object has not been set the function throws an error.
-  virtual bool is_second_trivial() const;
-
-  //! returns if the object can only handle TOF data
-  /*!
-    Checks if either of the normalisation objects can only handle TOF.
-  */
-  virtual bool is_TOF_only_norm() const override;
-
-  virtual shared_ptr<BinNormalisation> get_first_norm() const;
-
-  virtual shared_ptr<BinNormalisation> get_second_norm() const;
 
 private:
   shared_ptr<BinNormalisation> apply_first;
   shared_ptr<BinNormalisation> apply_second;
   // parsing stuff
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 };
 
 END_NAMESPACE_STIR

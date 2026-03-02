@@ -13,15 +13,21 @@
     Copyright (C) 2001- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
 #include <utility>
-#include <sstream>
-#include "stir/warning.h"
-#include "stir/error.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -30,8 +36,10 @@ FactoryRegistry<Key, Factory, Compare>::FactoryRegistry()
     : has_defaults(false)
 {}
 
+
 template <class Key, class Factory, class Compare>
-FactoryRegistry<Key, Factory, Compare>::FactoryRegistry(const Key& default_key, const Factory& default_factory)
+FactoryRegistry<Key, Factory, Compare>::FactoryRegistry(const Key& default_key,
+				 const Factory& default_factory)
     : has_defaults(true),
       default_key(default_key),
       default_factory(default_factory)
@@ -51,16 +59,16 @@ FactoryRegistry<Key, Factory, Compare>::~FactoryRegistry()
 
 template <class Key, class Factory, class Compare>
 void
-FactoryRegistry<Key, Factory, Compare>::add_to_registry(const Key& key, Factory const& factory)
+FactoryRegistry<Key, Factory, Compare>::
+add_to_registry(const Key& key, Factory const & factory)
 {
   // cerr << "Adding "<< key << "to registry\n";
 #ifndef NDEBUG
   typename FactoryMap::iterator iter = m.find(key);
   if (iter != m.end())
     {
-      std::ostringstream s;
-      s << "FactoryRegistry:: overwriting previous value of key in registry.\n     key: " << key;
-      warning(s.str());
+    warning(boost::format("FactoryRegistry:: overwriting previous value of key in registry.\n"
+                           "     key: %1%") % key);
     }
 
 #endif
@@ -69,7 +77,8 @@ FactoryRegistry<Key, Factory, Compare>::add_to_registry(const Key& key, Factory 
 
 template <class Key, class Factory, class Compare>
 void
-FactoryRegistry<Key, Factory, Compare>::remove_from_registry(const Key& key)
+FactoryRegistry<Key, Factory, Compare>::
+remove_from_registry(const Key& key)
 {
   // cerr << "Removing "<< key << "to registry\n";
   typename FactoryMap::iterator iter = m.find(key);
@@ -77,18 +86,19 @@ FactoryRegistry<Key, Factory, Compare>::remove_from_registry(const Key& key)
     {
 #ifndef _NDEBUG
       // TODO don't output to cerr, but use only warning()
-      std::ostringstream s;
-      s << "FactoryRegistry:: Attempt to remove key from registry, but it's not in there...\n     key: " << key;
-      warning(s.str());
+    warning(boost::format("FactoryRegistry:: Attempt to remove key from registry, but it's not in there...\n"
+                          "     key: %1%") % key);
 #endif
     }
   else
     m.erase(iter);
+
 }
 
 template <class Key, class Factory, class Compare>
 void
-FactoryRegistry<Key, Factory, Compare>::list_keys(std::ostream& s) const
+FactoryRegistry<Key, Factory, Compare>::
+list_keys(std::ostream& s) const
 {
   for (typename FactoryMap::const_iterator i = m.begin(); i != m.end(); ++i)
     s << i->first << '\n';
@@ -96,7 +106,8 @@ FactoryRegistry<Key, Factory, Compare>::list_keys(std::ostream& s) const
 
 template <class Key, class Factory, class Compare>
 Factory const&
-FactoryRegistry<Key, Factory, Compare>::find_factory(const Key& key) const /*throw(unknown_typename)*/
+FactoryRegistry<Key, Factory, Compare>::
+find_factory(const Key& key) const /*throw(unknown_typename)*/ 
 {
   typename FactoryMap::const_iterator i = m.find(key);
   if (i != m.end())
@@ -106,7 +117,8 @@ FactoryRegistry<Key, Factory, Compare>::find_factory(const Key& key) const /*thr
 
   // throw(unknown_typename(key));
   // TODO don't output to cerr, but use only error()
-  std::cerr << "FactoryRegistry: key " << key << " not found in current registry\n" << m.size() << " possible values are:\n";
+  std::cerr << "FactoryRegistry: key " << key << " not found in current registry\n"
+       << m.size() << " possible values are:\n";
   list_keys(std::cerr);
   std::cerr << '\n';
   if (has_defaults)
@@ -120,6 +132,9 @@ FactoryRegistry<Key, Factory, Compare>::find_factory(const Key& key) const /*thr
       // stupid line to prevent warning messages of good compilers
       return default_factory;
     }
+  
+  
 }
+
 
 END_NAMESPACE_STIR

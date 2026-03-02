@@ -7,7 +7,15 @@
     Copyright (C) 2000 - 2010-06-25, Hammersmith Imanet Ltd
     Copyright (C) 2013-01-01 - 2013, Kris Thielemans
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,8 +30,6 @@
 #include "stir/common.h"
 #include <iostream>
 #include <sstream>
-
-#include "TextWriter.h"
 
 START_NAMESPACE_STIR
 
@@ -46,7 +52,9 @@ START_NAMESPACE_STIR
 
   \deprecated (use 1 argument version instead)
 */
-void error(const char* const s, ...);
+void
+error(const char *const s, ...);
+
 
 //! Use this function for writing error messages and throwing an exception
 /*! \ingroup buildblock
@@ -55,15 +63,15 @@ void error(const char* const s, ...);
   std::ostream::operator\<\< would work.
 
   This function currently first writes a newline, then \c ERROR:, then \c string
-  and then another newline to std::cerr. Then it throws an exception.
+  and then another newline to std::cerr. Then it throws an exception (of type string).
 
   \todo At a later stage, it will also write to a log-file.
 
-  \c stir::format is useful in this context.
+  \c boost::format is useful in this context.
 
   \par Example
   \code
-  error(format("Incorrect number of subsets: {}", num_subsets));
+  error(boost::format("Incorrect number of subsets: %d") % num_subsets);
 
   error("This does not work");
   \endcode
@@ -74,9 +82,11 @@ inline void
 error(const STRING& string)
 {
   std::stringstream sstr;
-  sstr << "\nERROR: " << string << std::endl;
-  writeText(sstr.str().c_str(), ERROR_CHANNEL);
-  throw std::runtime_error(sstr.str());
+  sstr << "\nERROR: "
+	    << string
+	    << std::endl;
+  std::cerr << sstr.str();
+  throw sstr.str();
 }
 
 END_NAMESPACE_STIR

@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -32,41 +40,46 @@
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
 
 #include "stir/recon_buildblock/RelatedBins.h"
-#include "stir/warning.h"
 #include <algorithm>
 //#include <iostream>
 //#include "stir/stream.h"
 
+#ifndef STIR_NO_NAMESPACES
 using std::copy;
+#endif
 
 START_NAMESPACE_STIR
 
-ProjMatrixElemsForOneBin::ProjMatrixElemsForOneBin(const Bin& bin, const int default_capacity)
+
+ProjMatrixElemsForOneBin::
+ProjMatrixElemsForOneBin(const Bin& bin, const int default_capacity)
     : bin(bin)
 {
   elements.reserve(default_capacity);
 }
 
+
 void
-ProjMatrixElemsForOneBin::reserve(size_type max_number)
+ProjMatrixElemsForOneBin::
+reserve(size_type max_number)
 {
   elements.reserve(max_number);
 }
 
-void
-ProjMatrixElemsForOneBin::erase()
+
+void ProjMatrixElemsForOneBin::erase()
 {
   elements.resize(0);
 }
 
 ProjMatrixElemsForOneBin::size_type
-ProjMatrixElemsForOneBin::capacity() const
+ProjMatrixElemsForOneBin::
+capacity() const 
 {
   return elements.capacity();
 }
 
-ProjMatrixElemsForOneBin&
-ProjMatrixElemsForOneBin::operator*=(const float d)
+ProjMatrixElemsForOneBin& ProjMatrixElemsForOneBin::operator*=(const float d)
 {
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
@@ -81,8 +94,7 @@ ProjMatrixElemsForOneBin::operator*=(const float d)
   return *this;
 }
 
-ProjMatrixElemsForOneBin&
-ProjMatrixElemsForOneBin::operator/=(const float d)
+ProjMatrixElemsForOneBin& ProjMatrixElemsForOneBin::operator/=(const float d)
 {
   assert(d != 0);
   // KT 21/02/2002 added check on 1
@@ -98,8 +110,8 @@ ProjMatrixElemsForOneBin::operator/=(const float d)
   return *this;
 }
 
-Succeeded
-ProjMatrixElemsForOneBin::check_state() const
+
+Succeeded ProjMatrixElemsForOneBin::check_state() const
 {
   Succeeded success = Succeeded::yes;
 
@@ -109,20 +121,16 @@ ProjMatrixElemsForOneBin::check_state() const
   ProjMatrixElemsForOneBin lor = *this;
   lor.sort();
 
-  for (ProjMatrixElemsForOneBin::const_iterator lor_iter = lor.begin(); lor_iter != lor.end() - 1; ++lor_iter)
+  for (ProjMatrixElemsForOneBin::const_iterator lor_iter = lor.begin();
+       lor_iter != lor.end()-1; 
+       ++lor_iter)
     {
       if (value_type::coordinates_equal(*lor_iter, *(lor_iter + 1)))
         {
-          warning(
-              "ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d for bin s=%d, tofbin=%d, v=%d, a=%d, t=%d\n",
-              lor_iter->coord1(),
-              lor_iter->coord2(),
-              lor_iter->coord3(),
-              bin.segment_num(),
-              bin.timing_pos_num(),
-              bin.view_num(),
-              bin.axial_pos_num(),
-              bin.tangential_pos_num());
+      warning("ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d for bin s=%d, v=%d, a=%d, t=%d\n",
+	      lor_iter->coord1(), lor_iter->coord2(), lor_iter->coord3(),
+	      bin.segment_num(), bin.view_num(),
+	      bin.axial_pos_num(), bin.tangential_pos_num());
 #if 0
       const_iterator iter = begin();
       while (iter!= end())
@@ -139,14 +147,19 @@ ProjMatrixElemsForOneBin::check_state() const
   return success;
 }
 
-void
-ProjMatrixElemsForOneBin::sort()
+
+void ProjMatrixElemsForOneBin::sort()
 {
-  std::sort(begin(), end(), value_type::coordinates_less);
+  // need explicit std:: here to resolve possible name conflict
+  // this might give you trouble if your compiler does not support namespaces
+#if !defined(STIR_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
+  std::
+#endif                                           
+  sort(begin(), end(), value_type::coordinates_less);
 }
 
-float
-ProjMatrixElemsForOneBin::square_sum() const
+
+float ProjMatrixElemsForOneBin::square_sum() const
 {
   float sq_sum = 0;
   const_iterator element_ptr = begin();
@@ -160,7 +173,8 @@ ProjMatrixElemsForOneBin::square_sum() const
 
 // TODO make sure we can have a const argument
 void
-ProjMatrixElemsForOneBin::merge(ProjMatrixElemsForOneBin& lor2)
+ProjMatrixElemsForOneBin::
+merge( ProjMatrixElemsForOneBin &lor2 )
 {
   assert(check_state() == Succeeded::yes);
   assert(lor2.check_state() == Succeeded::yes);
@@ -207,8 +221,7 @@ ProjMatrixElemsForOneBin::merge(ProjMatrixElemsForOneBin& lor2)
         {
           element_ptr = elements.insert(element_ptr, *element_ptr2);
           assert(*element_ptr == *element_ptr2);
-          ++element_ptr;
-          ++element_ptr2;
+      ++element_ptr; ++element_ptr2;
 #  ifndef NDEBUG
           //++insertions;
 #  endif
@@ -218,6 +231,7 @@ ProjMatrixElemsForOneBin::merge(ProjMatrixElemsForOneBin& lor2)
           ++element_ptr;
         }
     }
+
 
 #else
   // this old version assumed the input arrays were sorted, but its output wasn't
@@ -247,8 +261,7 @@ ProjMatrixElemsForOneBin::merge(ProjMatrixElemsForOneBin& lor2)
           element_ptr2 = lor2.erase(element_ptr2);
           found = false;
         }
-      else
-        {
+    else{            
           ++element_ptr2;
         }
     }
@@ -275,6 +288,7 @@ ProjMatrixElemsForOneBin::merge(ProjMatrixElemsForOneBin& lor2)
 #endif
   assert(check_state() == Succeeded::yes);
 }
+
 
 #if 0
 // todo remove this 
@@ -331,7 +345,9 @@ void ProjMatrixElemsForOneBin::read(   fstream&fst )
 
 /////////////////// projection  operations //////////////////////////////////
 void
-ProjMatrixElemsForOneBin::back_project(DiscretisedDensity<3, float>& density, const Bin& single) const
+ProjMatrixElemsForOneBin::
+back_project(DiscretisedDensity<3,float>& density,   
+             const Bin& single) const
 {
   {
     const float data = single.get_bin_value();
@@ -339,11 +355,11 @@ ProjMatrixElemsForOneBin::back_project(DiscretisedDensity<3, float>& density, co
     if (data == 0)
       return;
 
-    BasicCoordinate<3, int> coords;
-    const_iterator element_ptr = begin();
+    const_iterator element_ptr = 
+      begin();
     while (element_ptr != end())
       {
-        coords = element_ptr->get_coords();
+      const BasicCoordinate<3,int> coords = element_ptr->get_coords();
         if (coords[1] >= density.get_min_index() && coords[1] <= density.get_max_index())
           density[coords[1]][coords[2]][coords[3]] += element_ptr->get_value() * data;
         element_ptr++;
@@ -351,17 +367,19 @@ ProjMatrixElemsForOneBin::back_project(DiscretisedDensity<3, float>& density, co
   }
 }
 
+
 void
-ProjMatrixElemsForOneBin::forward_project(Bin& single, const DiscretisedDensity<3, float>& density) const
+ProjMatrixElemsForOneBin::
+forward_project(Bin& single,
+                const DiscretisedDensity<3,float>& density) const
 {
   {
 
-    BasicCoordinate<3, int> coords;
     const_iterator element_ptr = begin();
 
     while (element_ptr != end())
       {
-        coords = element_ptr->get_coords();
+      const BasicCoordinate<3,int> coords = element_ptr->get_coords();
 
         if (coords[1] >= density.get_min_index() && coords[1] <= density.get_max_index())
           single += density[coords[1]][coords[2]][coords[3]] * element_ptr->get_value();
@@ -370,8 +388,11 @@ ProjMatrixElemsForOneBin::forward_project(Bin& single, const DiscretisedDensity<
   }
 }
 
+
 void
-ProjMatrixElemsForOneBin::back_project(DiscretisedDensity<3, float>& density, const RelatedBins& r_bins) const
+ProjMatrixElemsForOneBin::
+back_project(DiscretisedDensity<3,float>& density,
+             const RelatedBins& r_bins) const                              
 {
   const DataSymmetriesForBins* symmetries = r_bins.get_symmetries_ptr();
 
@@ -386,14 +407,18 @@ ProjMatrixElemsForOneBin::back_project(DiscretisedDensity<3, float>& density, co
       // KT 21/02/2002 added check on 0
       if (symmetric_bin.get_bin_value() == 0)
         return;
-      unique_ptr<SymmetryOperation> symm_ptr = symmetries->find_symmetry_operation_from_basic_bin(symmetric_bin);
+    auto_ptr<SymmetryOperation> symm_ptr = 
+      symmetries->find_symmetry_operation_from_basic_bin(symmetric_bin);
       symm_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
       row_copy.back_project(density, symmetric_bin);
     }
 }
 
+
 void
-ProjMatrixElemsForOneBin::forward_project(RelatedBins& r_bins, const DiscretisedDensity<3, float>& density) const
+ProjMatrixElemsForOneBin::
+forward_project(RelatedBins& r_bins,
+                const DiscretisedDensity<3,float>& density) const
 {
   const DataSymmetriesForBins* symmetries = r_bins.get_symmetries_ptr();
 
@@ -405,14 +430,18 @@ ProjMatrixElemsForOneBin::forward_project(RelatedBins& r_bins, const Discretised
     {
       row_copy = *this;
 
-      unique_ptr<SymmetryOperation> symm_op_ptr = symmetries->find_symmetry_operation_from_basic_bin(*r_bins_iterator);
+    auto_ptr<SymmetryOperation> symm_op_ptr = 
+      symmetries->find_symmetry_operation_from_basic_bin(*r_bins_iterator);
       symm_op_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
       row_copy.forward_project(*r_bins_iterator, density);
     }
+  
 }
 
+
 bool
-ProjMatrixElemsForOneBin::operator==(const ProjMatrixElemsForOneBin& lor) const
+ProjMatrixElemsForOneBin::
+operator==(const ProjMatrixElemsForOneBin& lor) const
 {
   // first determine a tolerance for the floating point comparisons
   // do this by finding the maxumum value in the first lor
@@ -435,29 +464,15 @@ ProjMatrixElemsForOneBin::operator==(const ProjMatrixElemsForOneBin& lor) const
   const_iterator lor_iter = lor.begin();
   while (this_iter != end() && lor_iter != lor.end())
     {
-      if (this_iter->get_coords() == lor_iter->get_coords())
-        {
-          // coordinates are equal, so test for value
-          if (fabs(this_iter->get_value() - lor_iter->get_value()) > tolerance)
-            return false;
-        }
-      else
-        {
-          // coordinates are not equal, so check if value of one of them is small and we should skip it
+      // skip small elements
           if (this_iter->get_value() < tolerance)
-            {
-              ++this_iter;
-              continue;
-            }
+	{ ++this_iter; continue; }
           if (lor_iter->get_value() < tolerance)
-            {
-              ++lor_iter;
-              continue;
-            }
-          // either one is not small
+	{ ++lor_iter; continue; }
+      // compare coordinates and value
+      if (this_iter->get_coords() != lor_iter->get_coords() ||
+	  fabs(this_iter->get_value() - lor_iter->get_value()) > tolerance)
           return false;
-        }
-      // we got here, so comparison was ok
       ++this_iter;
       ++lor_iter;
     }
@@ -472,11 +487,11 @@ ProjMatrixElemsForOneBin::operator==(const ProjMatrixElemsForOneBin& lor) const
         return false;
     }
   return true;
+  
 }
 bool
-ProjMatrixElemsForOneBin::operator!=(const ProjMatrixElemsForOneBin& lor) const
-{
-  return !(*this == lor);
-}
+ProjMatrixElemsForOneBin::
+operator!=(const ProjMatrixElemsForOneBin& lor) const
+{ return !(*this==lor); }
 
 END_NAMESPACE_STIR

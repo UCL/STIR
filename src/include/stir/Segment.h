@@ -1,10 +1,17 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2012 Hammersmith Imanet Ltd
-    Copyright (C) 2023, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -20,24 +27,21 @@
 #ifndef __Segment_H__
 #define __Segment_H__
 
+
 #include "stir/ProjDataInfo.h"
-#include "stir/SegmentIndices.h"
-#include "stir/SinogramIndices.h"
-#include "stir/ViewgramIndices.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
-template <typename elemT>
-class Sinogram;
-template <typename elemT>
-class Viewgram;
+template <typename elemT> class Sinogram;
+template <typename elemT> class Viewgram;
+
 
 /*!
   \brief An (abstract base) class for storing 3d projection data
   \ingroup projdata
 
   This stores a subset of the data accessible via a ProjData object,
-  where the SegmentIndices are fixed.
+  where the segment_num is fixed.
 
   At the moment, 2 'storage modes' are supported (and implemented as
   derived classes).
@@ -49,30 +53,22 @@ class Viewgram;
 template <typename elemT>
 class Segment
 {
-#ifdef STIR_COMPILING_SWIG_WRAPPER
+#ifdef SWIG
   // need to make typedef public for swig
 public:
 #endif
   typedef Segment<elemT> self_type;
-
 public:
-  enum StorageOrder
-  {
-    StorageByView,
-    StorageBySino
-  };
 
-  virtual ~Segment()
-  {}
-  //! Get shared pointer to proj data info
-  inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
+  enum StorageOrder{ StorageByView, StorageBySino };
+  
+  virtual ~Segment() {}
+  //! Get the proj data info pointer
+  inline const ProjDataInfo* get_proj_data_info_ptr() const;
 
   virtual StorageOrder get_storage_order() const = 0;
-  inline SegmentIndices get_segment_indices() const;
   //! Get the segment number
   inline int get_segment_num() const;
-  //! Get the timing position index
-  inline int get_timing_pos_num() const;
   virtual int get_min_axial_pos_num() const = 0;
   virtual int get_max_axial_pos_num() const = 0;
   virtual int get_min_view_num() const = 0;
@@ -89,11 +85,6 @@ public:
   //! return a new viewgram, with data set as in the segment
   virtual Viewgram<elemT> get_viewgram(int view_num) const = 0;
 
-  //! return a new sinogram, with data set as in the segment
-  inline Sinogram<elemT> get_sinogram(const SinogramIndices& s) const;
-  //! return a new viewgram, with data set as in the segment
-  inline Viewgram<elemT> get_viewgram(const ViewgramIndices&) const;
-
   //! set data in segment according to sinogram \c s
   virtual void set_sinogram(const Sinogram<elemT>& s) = 0;
   //! set sinogram at a different axial_pos_num
@@ -107,12 +98,15 @@ public:
   /*! If they do \c not have the same characteristics, the string \a explanation
       explains why.
   */
-  bool has_same_characteristics(self_type const&, std::string& explanation) const;
+  bool
+    has_same_characteristics(self_type const&,
+			     string& explanation) const;
 
   //! Checks if the 2 objects have the proj_data_info, segment_num etc.
   /*! Use this version if you do not need to know why they do not match.
    */
-  bool has_same_characteristics(self_type const&) const;
+  bool
+    has_same_characteristics(self_type const&) const;
 
   //! check equality (data has to be identical)
   /*! Uses has_same_characteristics() and Array::operator==.
@@ -126,10 +120,10 @@ public:
   //@}
 
 protected:
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
-  SegmentIndices _indices;
+  shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  int segment_num;
 
-  inline Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v, const SegmentIndices&);
+  inline Segment(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,const int s_num);
 };
 
 END_NAMESPACE_STIR
@@ -137,3 +131,5 @@ END_NAMESPACE_STIR
 #include "stir/Segment.inl"
 
 #endif
+
+

@@ -20,10 +20,19 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
+
 
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
@@ -81,13 +90,19 @@ void display(const Array<3, elemT>& plane_stack,
 
 //! \brief display for Array<3,elemT> without scale factors and text.
 template <class elemT>
-inline void display(const Array<3, elemT>& plane_stack, double maxi = 0, const char* const title = 0, int zoom = 0);
+inline void display(const Array<3,elemT>& plane_stack,
+	     double maxi = 0,
+	     const char * const title = 0, int zoom = 0);
+
 
 //! \brief display for Array<2,elemT> objects, text==0 means no text.
 template <class elemT>
-inline void display(const Array<2, elemT>& plane, const char* const text = 0, double maxi = 0, int zoom = 0);
+inline void display(const Array<2,elemT>& plane,
+		    const char * const text = 0,
+		    double maxi = 0, int zoom = 0);
 
 #else // !gcc 2.95
+
 
 // VC and gcc 2.8.1 have problems with the defaults in the above declarations.
 // So, we have to do them by hand...
@@ -112,48 +127,61 @@ inline void display(const Array<3, elemT>& plane_stack,
                     const VectorWithOffset<CHARP>& text,
                     double maxi);
 
+
 template <class elemT, class scaleT, class CHARP>
-inline void
-display(const Array<3, elemT>& plane_stack, const VectorWithOffset<scaleT>& scale_factors, const VectorWithOffset<CHARP>& text);
+inline void display(const Array<3,elemT>& plane_stack,
+             const VectorWithOffset<scaleT>& scale_factors,
+             const VectorWithOffset<CHARP>& text);
 
 template <class elemT>
-inline void display(const Array<3, elemT>& plane_stack, double maxi, const char* const title, int zoom);
+inline void display(const Array<3,elemT>& plane_stack,
+             double maxi,
+	     const char * const title,
+	     int zoom);
 
 template <class elemT>
-inline void display(const Array<3, elemT>& plane_stack, double maxi, const char* const title);
+inline void display(const Array<3,elemT>& plane_stack,
+             double maxi,
+	     const char * const title);
 
 template <class elemT>
-inline void display(const Array<3, elemT>& plane_stack, double maxi);
+inline void display(const Array<3,elemT>& plane_stack,
+             double maxi);
 
 template <class elemT>
 inline void display(const Array<3, elemT>& plane_stack);
 
 template <class elemT>
-inline void display(const Array<2, elemT>& plane, const char* const text, double maxi, int zoom);
+inline void display(const Array<2,elemT>& plane,
+		    const char * const text,
+		    double maxi, int zoom);
 
 template <class elemT>
-inline void display(const Array<2, elemT>& plane, const char* const text, double maxi);
+inline void display(const Array<2,elemT>& plane,
+		    const char * const text,
+		    double maxi);
 
 template <class elemT>
-inline void display(const Array<2, elemT>& plane, const char* const text);
+inline void display(const Array<2,elemT>& plane,
+		    const char * const text);
 
 template <class elemT>
 inline void display(const Array<2, elemT>& plane);
 
 #endif
 
-template <typename elemT>
-class RelatedViewgrams;
+
+
+template <typename elemT> class RelatedViewgrams;
 
 //! Convenience function to display all viewgrams in a RelatedViewgrams object
 template <class elemT>
-void display(const RelatedViewgrams<elemT>& v1, double maxi = 0, const char* const title = 0, int zoom = 0);
+void display(const RelatedViewgrams<elemT>& v1,
+             double maxi = 0,
+	     const char * const title = 0,
+             int zoom = 0);
 
-class DetPairData;
-class FanProjData;
 
-void display(const DetPairData&, const char* const);
-void display(const FanProjData&, const char* const);
 
 END_NAMESPACE_STIR
 

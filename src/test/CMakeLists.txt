@@ -1,8 +1,16 @@
 # Copyright (C) 2011-2012, Kris Thielemans
-# Copyright (C) 2013-2022 University College London
+# Copyright (C) 2013, University College London
 # This file is part of STIR.
 #
-# SPDX-License-Identifier: Apache-2.0
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 2.1 of the License, or
+# (at your option) any later version.
+#
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 #
 # See STIR/LICENSE.txt for details
 
@@ -13,115 +21,62 @@ set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
-set(buildblock_simple_tests
-        test_Array.cxx
-        test_VectorWithOffset.cxx
-        )
-      
-if (NOT MINI_STIR)
-
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
-	test_ROIs.cxx
-        test_warp_image.cxx
-	test_DynamicDiscretisedDensity.cxx
-	test_ScatterSimulation.cxx
-        test_ML_norm.cxx
-	test_proj_data_info_subsets_pet.cxx
+	test_ROIs
+        test_warp_image
+	test_DynamicDiscretisedDensity  
 )
 
-set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
-        test_DateTime.cxx
-        test_radionuclide.cxx
+set(${dir_TEST_EXE_SOURCES_NO_REGISTRIES}
+        test_ArrayFilter
+	test_proj_data_info
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
-	test_OutputFileFormat.cxx
-	IO/test_IO_DiscretisedDensity.cxx
-	IO/test_IO_DynamicDiscretisedDensity.cxx
-	IO/test_IO_ParametricDiscretisedDensity.cxx
-	IO/test_IO_ITKMulticomponent.cxx
-	test_linear_regression.cxx
-	test_stir_math.cxx
-	test_time_of_flight.cxx
-	test_proj_data_info_subsets_spect.cxx
+	test_OutputFileFormat
+	test_linear_regression
+	test_stir_math
         # the next 2 are interactive, so we don't add a test for it, but only compile them
-	test_display.cxx
-	test_interpolate.cxx
+	test_display
+	test_interpolate
 )
 
-list (APPEND buildblock_simple_tests
-        test_ArrayFilter.cxx
-        test_SeparableMetzArrayFilter.cxx
-        test_SeparableGaussianArrayFilter.cxx
-        test_NestedIterator.cxx
-        test_convert_array.cxx
-	test_IndexRange.cxx
-	test_coordinates.cxx
-	test_filename_functions.cxx
-        test_KeyParser.cxx
-	test_VoxelsOnCartesianGrid.cxx
-	test_zoom_image.cxx
-	test_ByteOrder.cxx
-        test_ImagingModality.cxx
-	test_Scanner.cxx
-	test_ArcCorrection.cxx
-	test_find_fwhm_in_image.cxx
-        test_DetectionPosition.cxx
-	test_proj_data_info.cxx
-	test_DetectorCoordinateMap.cxx
-	test_proj_data.cxx
-	test_proj_data_maths.cxx
-	test_export_array.cxx
-        test_GeneralisedPoissonNoiseGenerator.cxx
-	test_multiple_proj_data.cxx
-        test_interpolate_projdata.cxx
+set(buildblock_simple_tests
+        test_Array
+        test_NestedIterator
+        test_VectorWithOffset
+        test_convert_array
+	test_IndexRange
+	test_coordinates
+	test_filename_functions
+	test_VoxelsOnCartesianGrid
+	test_zoom_image
+	test_ByteOrder
+	test_Scanner
+	test_ArcCorrection
+	test_find_fwhm_in_image
 )
-
-endif() # MINI_STIR
 
 include(stir_test_exe_targets)
 
-if (MINI_STIR)
-
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "${STIR_RECON_BUILDBLOCK_LIB};" "")
+  create_stir_test(${source} "buildblock;IO;buildblock" "")
 endforeach()
-
-else()
-
-foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "Shape_buildblock;scatter_buildblock" "")
-endforeach()
-#
 
 ### add tests for the "involved" commands
 ### i.e. those that need command line arguments
-
-if (BUILD_TESTING)
-
-# Add test for test_proj_data_info_subsets_spect with arguments
-ADD_TEST(NAME test_proj_data_info_subsets_spect
-			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_proj_data_info_subsets_spect ${CMAKE_SOURCE_DIR}/examples/samples/SPECT_Interfile_header.hs)
-add_STIR_CONFIG_DIR(test_proj_data_info_subsets_spect)
 
 ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in
 )
 
-if (BUILD_EXECUTABLES)
 ## test_stir_math needs to know the location of the stir_math executable
 # Note that we cannot use get_target_property(var stir_math LOCATION) as it doesn't work for Visual Studio.
 # Luckily, the following is simple enough (and in the cmake add_test documentation)
 ADD_TEST(NAME test_stir_math
    COMMAND test_stir_math $<TARGET_FILE:stir_math>
 )
-set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
-
-ADD_TEST(NAME test_time_of_flight COMMAND test_time_of_flight)
-
-# Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
-endif()
-
+# Final note: we could use this to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
 
 ## add tests for OutputFileFormat
 
@@ -145,34 +100,14 @@ if (HAVE_ITK)
 	test_ITKDefaultOutputFileFormat.in
 	test_ITKNiftiOutputFileFormat.in
     )
-    ADD_TEST(test_IO_ITKMulticomponent
-    	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii.gz)
 endif()
 
 # now for each of these, add a test
 foreach(file_format ${file_format_tests})
-	set(test_name test_IO_DiscretisedDensity_${file_format})
+  set(test_name test_OutputFileFormat_${file_format})
   ADD_TEST(${test_name}
-		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
+    ${CMAKE_CURRENT_BINARY_DIR}/test_OutputFileFormat ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format}
+)
 endforeach()
 
-# Parametric tests
-ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
-ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
-ADD_TEST(test_IO_ParametricDiscretisedDensity_Multi
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
-# Dynamic tests
-ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
-ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
-ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
-	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
-
-
-endif(BUILD_TESTING)
-
-endif() # MINI_STIR

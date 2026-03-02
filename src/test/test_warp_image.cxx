@@ -4,7 +4,15 @@
  Copyright (C) 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
 */
@@ -27,8 +35,10 @@
 #include <iostream>
 #include <algorithm>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -39,7 +49,7 @@ START_NAMESPACE_STIR
 class warp_imageTests : public RunTests
 {
 public:
-  void run_tests() override;
+  void run_tests();
 };
 
 void
@@ -50,13 +60,17 @@ warp_imageTests::run_tests()
   CartesianCoordinate3D<float> origin(0, 1, 2);
   CartesianCoordinate3D<float> grid_spacing(3, 4, 5);
 
-  IndexRange<3> range(CartesianCoordinate3D<int>(0, -15, -14), CartesianCoordinate3D<int>(40, 44, 45));
+  IndexRange<3> 
+    range(CartesianCoordinate3D<int>(0,-15,-14),
+          CartesianCoordinate3D<int>(40,44,45));
 
   VoxelsOnCartesianGrid<float> image(range, origin, grid_spacing);
   image.fill(0.F);
 
   const BasicCoordinate<3, int> indices = make_coordinate(10, 22, 23);
   image[indices] = 1.F;
+  const CartesianCoordinate3D<float> coord =
+    image.get_physical_coordinates_for_indices(indices);
 
   VoxelsOnCartesianGrid<float> motion_x(range, origin, grid_spacing);
   VoxelsOnCartesianGrid<float> motion_y(range, origin, grid_spacing);
@@ -71,9 +85,11 @@ warp_imageTests::run_tests()
   const shared_ptr<VoxelsOnCartesianGrid<float>> motion_x_sptr(motion_x.clone());
   const shared_ptr<VoxelsOnCartesianGrid<float>> motion_y_sptr(motion_y.clone());
   const shared_ptr<VoxelsOnCartesianGrid<float>> motion_z_sptr(motion_z.clone());
-  std::vector<std::pair<unsigned int, double>> gate_sequence;
+  vector<pair<unsigned int, double> > gate_sequence;
   gate_sequence.resize(2);
-  for (unsigned int current_gate = 1; current_gate <= 2; ++current_gate)
+  for (unsigned int current_gate = 1; 
+       current_gate <= 2; 
+       ++current_gate)
     {
       gate_sequence[current_gate - 1].first = current_gate;
       gate_sequence[current_gate - 1].second = 1;
@@ -81,8 +97,7 @@ warp_imageTests::run_tests()
 
   TimeGateDefinitions gate_defs(gate_sequence);
 
-  const VoxelsOnCartesianGrid<float> new_image
-      = warp_image(image_sptr, motion_x_sptr, motion_y_sptr, motion_z_sptr, BSpline::BSplineType(1), 0);
+  const  VoxelsOnCartesianGrid<float> new_image=warp_image(image_sptr,motion_x_sptr,motion_y_sptr,motion_z_sptr,BSpline::BSplineType(1),0);
   const BasicCoordinate<3, int> new_indices = make_coordinate(indices[1] - 1, indices[2] - 2, indices[3] - 3);
 
   {
@@ -138,49 +153,29 @@ warp_imageTests::run_tests()
     check_if_equal((gated_image.get_density(1))[new_indices], 0.F, "testing 1st gate at new location of the non-zero point");
     check_if_equal((gated_image.get_density(2))[indices], 0.F, "testing 2nd gate at the original location of non-zero point");
     check_if_equal((gated_image.get_density(2))[new_indices], 1.F, "testing 2nd gate at the new location of the non-zero point");
-    check_if_equal(
-        (int)gated_image.get_time_gate_definitions().get_num_gates(), 2, "testing gate_defs of gated_image are set correctly");
+    check_if_equal((int)gated_image.get_time_gate_definitions().get_num_gates(),2, "testing gate_defs of gated_image are set correctly");
 
     // test if motion vectors have been set correctly
-    check_if_equal(
-        (reverse_gated_motion_z.get_density(2))[indices], -1 * grid_spacing[1], "testing the input to set the motion in z");
-    check_if_equal((mvtest.get_spatial_transformation_z().get_density(2))[indices],
-                   -1 * grid_spacing[1],
-                   "testing GatedSpatialTransformation class get the motion vector z correctly");
-    check_if_equal((mvtest.get_spatial_transformation_z().get_density(2))[new_indices],
-                   -1 * grid_spacing[1],
-                   "testing GatedSpatialTransformation class get the motion vector z correctly");
-    check_if_equal((mvtest.get_spatial_transformation_y().get_density(2))[indices],
-                   -2 * grid_spacing[2],
-                   "testing GatedSpatialTransformation class get the motion vector y correctly");
-    check_if_equal((mvtest.get_spatial_transformation_y().get_density(2))[new_indices],
-                   -2 * grid_spacing[2],
-                   "testing GatedSpatialTransformation class get the motion vector y correctly");
-    check_if_equal((mvtest.get_spatial_transformation_x().get_density(2))[indices],
-                   -3 * grid_spacing[3],
-                   "testing GatedSpatialTransformation class get the motion vector x correctly");
-    check_if_equal((mvtest.get_spatial_transformation_x().get_density(2))[new_indices],
-                   -3 * grid_spacing[3],
-                   "testing GatedSpatialTransformation class get the motion vector x correctly");
+    check_if_equal((reverse_gated_motion_z.get_density(2))[indices],-1*grid_spacing[1], "testing the input to set the motion in z");
+    check_if_equal((mvtest.get_spatial_transformation_z().get_density(2))[indices],-1*grid_spacing[1], "testing GatedSpatialTransformation class get the motion vector z correctly");
+    check_if_equal((mvtest.get_spatial_transformation_z().get_density(2))[new_indices],-1*grid_spacing[1], "testing GatedSpatialTransformation class get the motion vector z correctly");
+    check_if_equal((mvtest.get_spatial_transformation_y().get_density(2))[indices],-2*grid_spacing[2], "testing GatedSpatialTransformation class get the motion vector y correctly");
+    check_if_equal((mvtest.get_spatial_transformation_y().get_density(2))[new_indices],-2*grid_spacing[2], "testing GatedSpatialTransformation class get the motion vector y correctly");
+    check_if_equal((mvtest.get_spatial_transformation_x().get_density(2))[indices],-3*grid_spacing[3], "testing GatedSpatialTransformation class get the motion vector x correctly");
+    check_if_equal((mvtest.get_spatial_transformation_x().get_density(2))[new_indices],-3*grid_spacing[3], "testing GatedSpatialTransformation class get the motion vector x correctly");
     check_if_equal((int)gate_defs.get_num_gates(), 2, "testing gate_defs are set correctly");
-    check_if_equal((int)reverse_gated_motion_z.get_time_gate_definitions().get_num_gates(),
-                   2,
-                   "testing GatedSpatialTransformation class get the motion vector x correctly");
-    check_if_equal((int)(mvtest.get_time_gate_definitions()).get_num_gates(),
-                   2,
-                   "testing GatedSpatialTransformation class time_gate_difinitions");
+    check_if_equal((int)reverse_gated_motion_z.get_time_gate_definitions().get_num_gates(),2, "testing GatedSpatialTransformation class get the motion vector x correctly");
+    check_if_equal((int)(mvtest.get_time_gate_definitions()).get_num_gates(),2, "testing GatedSpatialTransformation class time_gate_difinitions");
     // actual test for accumulate_warp_image
     check_if_equal(accumulated_image[indices], 2.F, "testing the accumulated image at the original location of non-zero point");
-    check_if_equal(
-        accumulated_image[new_indices], 0.F, "testing the accumulated image at the location where the non-zero point had moved");
+    check_if_equal(accumulated_image[new_indices], 0.F, "testing the accumulated image at the location where the non-zero point had moved");
   }
 }
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int
-main()
+int main()
 {
   warp_imageTests tests;
   tests.run_tests();

@@ -3,7 +3,15 @@
  Copyright (C) 2009 - 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -39,7 +47,7 @@ public:
   static const char* const registered_name;
 
   GatedSpatialTransformation();           //!< default constructor
-  ~GatedSpatialTransformation() override; //!< default destructor
+  ~GatedSpatialTransformation(); //!< default destructor
   //!  Construct an empty GatedSpatialTransformation based on a shared_ptr<DiscretisedDensity<3,float> >
   GatedSpatialTransformation(const TimeGateDefinitions& time_gate_definitions,
                              const shared_ptr<DiscretisedDensity<3, float>>& density_sptr);
@@ -61,17 +69,50 @@ public:
   //!@}
 
   //! Warping functions from to gated images. @{
-  void warp_image(GatedDiscretisedDensity& new_gated_image, const GatedDiscretisedDensity& gated_image) const;
-  void warp_image(DiscretisedDensity<3, float>& new_reference_image, const GatedDiscretisedDensity& gated_image) const;
-  void warp_image(GatedDiscretisedDensity& gated_image, const DiscretisedDensity<3, float>& reference_image) const;
-  void accumulate_warp_image(DiscretisedDensity<3, float>& new_reference_image, const GatedDiscretisedDensity& gated_image) const;
-  void set_defaults() override;
-  Succeeded set_up() override;
+  void 
+    warp_image(GatedDiscretisedDensity & new_gated_image,
+               const GatedDiscretisedDensity & gated_image) const ;	
+  void 
+    warp_image(DiscretisedDensity<3, float> & new_reference_image,
+               const GatedDiscretisedDensity & gated_image) const ;
+  void
+    warp_image(GatedDiscretisedDensity & gated_image,
+               const DiscretisedDensity<3, float> & reference_image) const;
+  void 
+    accumulate_warp_image(DiscretisedDensity<3, float> & new_reference_image,
+                          const GatedDiscretisedDensity & gated_image) const ;
+						  
+  // Nicolas A Karakatsanis: After warping of each gate, averaging (instead of accumulation) takes place					  
+   void 
+    average_warp_image(DiscretisedDensity<3, float> & new_reference_image,
+                       const GatedDiscretisedDensity & gated_image) const ;
+
+   // Nicolas A Karakatsanis: After warping of each gate, averaging (instead of accumulation) takes place 
+   // and accumulates over previous calls of the same function						   
+   void 
+    accumulate_average_warp_image(DiscretisedDensity<3, float> & new_reference_image,
+                                  const GatedDiscretisedDensity & gated_image) const ;
+	
   //@}
+  
+  //! Nicolas A Karakatsanis: Warping functions from to non-gated images.
+  // Create a convolved (motion-blurred) image according to the designated motion vectors
+  // Designed for use within Richardson-Lucy deconvolution EM iterative process for intra-gate/frame motion correction
+  void 
+    average_warp_image(DiscretisedDensity<3, float> & avg_warped_image,
+                       const DiscretisedDensity<3, float> & reference_image) const;
+					   
+  void 
+    accumulate_average_warp_image(DiscretisedDensity<3, float> & avg_warped_image,
+                                  const DiscretisedDensity<3, float> & reference_image) const;
+						  
+  void set_defaults();
+  Succeeded set_up(); 
+
 private:
   typedef RegisteredParsingObject<GatedSpatialTransformation, SpatialTransformation> base_type;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  void initialise_keymap();
+  bool post_processing();	
   std::string _transformation_filename_prefix;
   GatedDiscretisedDensity _spatial_transformation_z;
   GatedDiscretisedDensity _spatial_transformation_y;

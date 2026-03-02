@@ -4,7 +4,15 @@
     Copyright (C) 1998- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -36,10 +44,9 @@ static const int MAXPROJBIN = 512;
 static const int CRYSTALRINGSPERDETECTOR = 8;
 
 void
-CListEventDataECAT966::get_sinogram_and_ring_coordinates(int& view_num,
-                                                         int& tangential_pos_num,
-                                                         unsigned int& ring_a,
-                                                         unsigned int& ring_b) const
+CListEventDataECAT966::
+get_sinogram_and_ring_coordinates(
+		   int& view_num, int& tangential_pos_num, unsigned int& ring_a, unsigned int& ring_b) const
 {
   const int NumProjBins = MAXPROJBIN;
   const int NumProjBinsBy2 = MAXPROJBIN / 2;
@@ -55,10 +62,10 @@ CListEventDataECAT966::get_sinogram_and_ring_coordinates(int& view_num,
 }
 
 void
-CListEventDataECAT966::set_sinogram_and_ring_coordinates(const int view_num,
-                                                         const int tangential_pos_num,
-                                                         const int ring_a,
-                                                         const int ring_b)
+CListEventDataECAT966::
+set_sinogram_and_ring_coordinates(
+			const int view_num, const int tangential_pos_num, 
+			const int ring_a, const int ring_b)
 {
   const int NumProjBins = MAXPROJBIN;
   type = 0;
@@ -70,6 +77,8 @@ CListEventDataECAT966::set_sinogram_and_ring_coordinates(const int view_num,
   bin = tangential_pos_num < 0 ? tangential_pos_num + NumProjBins : tangential_pos_num;
   view = view_num;
 }
+
+
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT

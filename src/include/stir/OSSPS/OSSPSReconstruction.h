@@ -5,7 +5,15 @@
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,7 +33,6 @@
 #  include "stir/recon_buildblock/IterativeReconstruction.h"
 #  include "stir/recon_buildblock/BinNormalisation.h"
 #  include "stir/ProjData.h"
-#  include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -83,17 +90,12 @@ START_NAMESPACE_STIR
   the preconditioner.
 */
 template <class TargetT>
-class OSSPSReconstruction
-    : public RegisteredParsingObject<OSSPSReconstruction<TargetT>, Reconstruction<TargetT>, IterativeReconstruction<TargetT>>
-// public IterativeReconstruction<TargetT>
+class OSSPSReconstruction: 
+public IterativeReconstruction<TargetT>
 {
 private:
-  typedef RegisteredParsingObject<OSSPSReconstruction<TargetT>, Reconstruction<TargetT>, IterativeReconstruction<TargetT>>
-      base_type;
-
+  typedef IterativeReconstruction<TargetT > base_type;
 public:
-  //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char* const registered_name;
 
   //! Default constructor (calls set_defaults())
   OSSPSReconstruction();
@@ -102,18 +104,20 @@ public:
   \brief Constructor, initialises everything from parameter file, or (when
   parameter_filename == "") by calling ask_parameters().
   */
-  explicit OSSPSReconstruction(const std::string& parameter_filename);
+  explicit 
+    OSSPSReconstruction(const string& parameter_filename);
 
   //! prompts the user to enter parameter values manually
-  void ask_parameters() override;
+  virtual void ask_parameters();
   //! accessor for the external parameters
   OSSPSReconstruction& get_parameters() { return *this; }
 
   //! accessor for the external parameters
-  const OSSPSReconstruction& get_parameters() const { return *this; }
+  const OSSPSReconstruction& get_parameters() const 
+    {return *this;}
 
   //! gives method information
-  std::string method_info() const override;
+  virtual string method_info() const;
 
   //! Precompute the data-dependent part of the denominator for the preconditioner
   /*!
@@ -122,20 +126,10 @@ public:
       GeneralisedObjectiveFunction::add_multiplication_with_approximate_Hessian_without_penalty
       on a vector filled with ones. For emission and transmission tomography,
       this corresponds to Erdogan and Fessler's approximations.
-
-      This method assumes that the objective function is concave and the output of
-      add_multiplication_with_approximate_Hessian_without_penalty is non-positive.
-
-      The computed denominator is saved to file as output_filename_prefix
-      plus "_precomputed_denominator".
   */
-  Succeeded precompute_denominator_of_conditioner_without_penalty();
+  Succeeded 
+    precompute_denominator_of_conditioner_without_penalty();
 
-  //! operations prior to the iterations
-  Succeeded set_up(shared_ptr<TargetT> const& target_image_ptr) override;
-
-  //! the principal operations for updating the image iterates at each iteration
-  void update_estimate(TargetT& current_image_estimate) override;
 
 protected: // could be private, but this way the doxygen comments are always listed
   //! determines whether non-positive values in the initial image will be set to small positive ones
@@ -149,7 +143,7 @@ protected: // could be private, but this way the doxygen comments are always lis
 
   //! optional name of the file containing the "precomputed denominator" - see Erdogan & Fessler for more info
   /*! If not specified, the corresponding object will be computed. */
-  std::string precomputed_denominator_filename;
+  string precomputed_denominator_filename;
 
 #  if 0
   bool do_line_search;
@@ -160,12 +154,13 @@ protected: // could be private, but this way the doxygen comments are always lis
   //! parameter determining how fast relaxation goes down  (see class documentation)
   float relaxation_gamma;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
   //! used to check acceptable parameter ranges, etc...
-  bool post_processing() override;
+  virtual bool post_processing();
 
 private:
+
   //! pointer to the precomputed denominator
   shared_ptr<TargetT> precomputed_denominator_ptr;
 
@@ -175,12 +170,20 @@ private:
   */
   shared_ptr<ProjData> fwd_ones_sptr;
 
-  GeneralisedPrior<TargetT>* get_prior_ptr() { return this->get_objective_function().get_prior_ptr(); }
+  //! operations prior to the iterations
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+ 
+  //! the principal operations for updating the image iterates at each iteration
+  virtual void update_estimate(TargetT &current_image_estimate);
+
+  GeneralisedPrior<TargetT> * get_prior_ptr()
+    { return this->get_objective_function().get_prior_ptr(); }
 
 #  if 0
   float
     line_search(const TargetT& current_estimate, const TargetT& additive_update);
 #  endif
+
 };
 
 END_NAMESPACE_STIR
@@ -188,3 +191,4 @@ END_NAMESPACE_STIR
 #endif
 
 // __OSSPSReconstruction_h__
+

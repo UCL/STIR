@@ -4,17 +4,24 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2020, 2023, 2025 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup Array
-  \brief inline implementations for stir::NumericVectorWithOffset
+  \brief inline implementations for NumericVectorWithOffset
 
   \author Kris Thielemans
   \author PARAPET project
@@ -23,31 +30,31 @@
 
 // include for min,max definitions
 #include <algorithm>
-#include "stir/error.h"
-#include "stir/assign.h"
 
 START_NAMESPACE_STIR
 
 template <class T, class NUMBER>
-NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const VectorWithOffset<T>& t)
-    : base_type(t)
+inline NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset()
+  : base_type()
 {}
 
 template <class T, class NUMBER>
-NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(NumericVectorWithOffset<T, NUMBER>&& other) noexcept
-    : NumericVectorWithOffset()
-{
-  swap(*this, other);
-}
+inline 
+NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const int hsz)
+  : base_type(hsz)
+{}
 
-// assignment
 template <class T, class NUMBER>
-NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator=(const NumericVectorWithOffset<T, NUMBER>& other)
-{
-  base_type::operator=(other);
-  return *this;
-}
+inline 
+NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const int min_index, const int max_index)   
+  : base_type(min_index, max_index)
+{}
+
+template <class T, class NUMBER>
+NumericVectorWithOffset<T, NUMBER>::
+NumericVectorWithOffset(const VectorWithOffset<T>& t)
+  : base_type(t)
+{}
 
 // addition
 template <class T, class NUMBER>
@@ -129,6 +136,7 @@ NumericVectorWithOffset<T, NUMBER>::operator/(const NUMBER& v) const
   return retval /= v;
 }
 
+
 /*! This will grow the vector automatically if the 2nd argument has
     smaller min_index and/or larger max_index.
     New elements are first initialised with T() before adding.*/
@@ -142,7 +150,11 @@ NumericVectorWithOffset<T, NUMBER>::operator+=(const NumericVectorWithOffset& v)
     {
       return *this = v;
     }
+#ifndef STIR_NO_NAMESPACES
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
+#else
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+#endif
   for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] += v.num[i];
   this->check_state();
@@ -158,14 +170,14 @@ NumericVectorWithOffset<T, NUMBER>::operator-=(const NumericVectorWithOffset& v)
   // first check if *this is empty
   if (this->get_length() == 0)
     {
-      if (v.get_length() == 0)
-        return *this;
-      // else
-      // Note: I cannot implement things like v.num[i] * (-1), as NUMBER can be a
-      // BasicCoordinate, an unsigned int or whatever
-      error("NumericVectorWithOffset-= called with rhs that is larger in size than lhs. This is no longer supported.");
+    *this = v;
+    return *this *= -1;
     }
+#ifndef STIR_NO_NAMESPACES
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
+#else
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+#endif
   for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] -= v.num[i];
   this->check_state();
@@ -181,15 +193,15 @@ NumericVectorWithOffset<T, NUMBER>::operator*=(const NumericVectorWithOffset& v)
   // first check if *this is empty
   if (this->get_length() == 0)
     {
-      if (v.get_length() == 0)
-        return *this;
-      // else
       // we have to return an object of the same dimensions as v, but filled with 0.
       *this = v;
-      assign(*this, 0);
-      return *this;
+    return *this *= 0;
     }
+#ifndef STIR_NO_NAMESPACES
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
+#else
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+#endif
   for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] *= v.num[i];
   this->check_state();
@@ -205,15 +217,15 @@ NumericVectorWithOffset<T, NUMBER>::operator/=(const NumericVectorWithOffset& v)
   // first check if *this is empty
   if (this->get_length() == 0)
     {
-      if (v.get_length() == 0)
-        return *this;
-      // else
       // we have to return an object of the same dimensions as v, but filled with 0.
       *this = v;
-      assign(*this, 0);
-      return *this;
+    return *this *= 0;
     }
+#ifndef STIR_NO_NAMESPACES
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
+#else
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+#endif
   for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] /= v.num[i];
   this->check_state();
@@ -262,72 +274,6 @@ NumericVectorWithOffset<T, NUMBER>::operator/=(const NUMBER& v)
     this->num[i] /= v;
   this->check_state();
   return *this;
-}
-
-template <class T, class NUMBER>
-template <class NUMBER2>
-inline void
-NumericVectorWithOffset<T, NUMBER>::axpby(const NUMBER2 a,
-                                          const NumericVectorWithOffset& x,
-                                          const NUMBER2 b,
-                                          const NumericVectorWithOffset& y)
-{
-  NumericVectorWithOffset<T, NUMBER>::xapyb(x, a, y, b);
-}
-
-template <class T, class NUMBER>
-inline void
-NumericVectorWithOffset<T, NUMBER>::xapyb(const NumericVectorWithOffset& x,
-                                          const NUMBER a,
-                                          const NumericVectorWithOffset& y,
-                                          const NUMBER b)
-{
-  this->check_state();
-  if ((this->get_min_index() != x.get_min_index()) || (this->get_min_index() != y.get_min_index())
-      || (this->get_max_index() != x.get_max_index()) || (this->get_max_index() != y.get_max_index()))
-    error("NumericVectorWithOffset::xapyb: index ranges don't match");
-
-  typename NumericVectorWithOffset::iterator this_iter = this->begin();
-  typename NumericVectorWithOffset::const_iterator x_iter = x.begin();
-  typename NumericVectorWithOffset::const_iterator y_iter = y.begin();
-  while (this_iter != this->end())
-    {
-      *this_iter++ = (*x_iter++) * a + (*y_iter++) * b;
-    }
-}
-
-template <class T, class NUMBER>
-inline void
-NumericVectorWithOffset<T, NUMBER>::xapyb(const NumericVectorWithOffset& x,
-                                          const NumericVectorWithOffset& a,
-                                          const NumericVectorWithOffset& y,
-                                          const NumericVectorWithOffset& b)
-{
-  this->check_state();
-  if ((this->get_min_index() != x.get_min_index()) || (this->get_min_index() != y.get_min_index())
-      || (this->get_min_index() != a.get_min_index()) || (this->get_min_index() != b.get_min_index())
-      || (this->get_max_index() != x.get_max_index()) || (this->get_max_index() != y.get_max_index())
-      || (this->get_max_index() != a.get_max_index()) || (this->get_max_index() != b.get_max_index()))
-    error("NumericVectorWithOffset::xapyb: index ranges don't match");
-
-  typename NumericVectorWithOffset::iterator this_iter = this->begin();
-  typename NumericVectorWithOffset::const_iterator x_iter = x.begin();
-  typename NumericVectorWithOffset::const_iterator y_iter = y.begin();
-  typename NumericVectorWithOffset::const_iterator a_iter = a.begin();
-  typename NumericVectorWithOffset::const_iterator b_iter = b.begin();
-
-  while (this_iter != this->end())
-    {
-      *this_iter++ = (*x_iter++) * (*a_iter++) + (*y_iter++) * (*b_iter++);
-    }
-}
-
-template <class T, class NUMBER>
-template <class T2>
-inline void
-NumericVectorWithOffset<T, NUMBER>::sapyb(const T2& a, const NumericVectorWithOffset& y, const T2& b)
-{
-  this->xapyb(*this, a, y, b);
 }
 
 END_NAMESPACE_STIR

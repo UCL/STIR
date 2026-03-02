@@ -4,7 +4,15 @@
     Copyright (C) 2007- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,8 +33,7 @@
 
 namespace distributed
 {
-void
-test_viewgram_slave(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr)
+  void test_viewgram_slave(const  stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr)
 {
   printf("\n-----Slave startet Test for sending viewgram----------\n");
 
@@ -38,8 +45,7 @@ test_viewgram_slave(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_p
   delete vg;
 }
 
-void
-test_viewgram_master(stir::Viewgram<float> viewgram, const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr)
+  void test_viewgram_master(stir::Viewgram<float> viewgram, const  stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr)
 {
   printf("\n-----Running Test for sending viewgram----------\n");
 
@@ -56,25 +62,18 @@ test_viewgram_master(stir::Viewgram<float> viewgram, const stir::shared_ptr<stir
     for (int ax_pos = viewgram.get_min_axial_pos_num(); ax_pos <= viewgram.get_max_axial_pos_num(); ++ax_pos)
       {
         assert(viewgram[ax_pos][tang_pos] == (*vg)[ax_pos][tang_pos]);
-        if (viewgram[ax_pos][tang_pos] != (*vg)[ax_pos][tang_pos])
-          printf("-----Test sending viewgram failed!!!!-------------\n");
+	  if (viewgram[ax_pos][tang_pos]!=(*vg)[ax_pos][tang_pos]) printf("-----Test sending viewgram failed!!!!-------------\n");
       }
   assert(vg->get_view_num() == viewgram.get_view_num());
-  if (vg->get_view_num() != viewgram.get_view_num())
-    printf("-----Test sending viewgram failed!!!!-------------\n");
+    if (vg->get_view_num()!=viewgram.get_view_num()) printf("-----Test sending viewgram failed!!!!-------------\n");
   assert(vg->get_segment_num() == viewgram.get_segment_num());
-  if (vg->get_segment_num() != viewgram.get_segment_num())
-    printf("-----Test sending viewgram failed!!!!-------------\n");
-  assert(vg->get_timing_pos_num() == viewgram.get_timing_pos_num());
-  if (vg->get_timing_pos_num() != viewgram.get_timing_pos_num())
-    printf("-----Test sending viewgram failed!!!!-------------\n");
+    if (vg->get_segment_num()!=viewgram.get_segment_num()) printf("-----Test sending viewgram failed!!!!-------------\n");
 
   delete vg;
   printf("\n-----Test sending viewgram done-----------\n");
 }
 
-void
-test_image_estimate_master(const stir::DiscretisedDensity<3, float>* input_image_ptr, int slave)
+  void test_image_estimate_master(const stir::DiscretisedDensity<3,float>*  input_image_ptr, int slave)
 {
   printf("\n-----Running Test for sending image estimate-----\n");
 
@@ -107,8 +106,7 @@ test_image_estimate_master(const stir::DiscretisedDensity<3, float>* input_image
   printf("\n-----Test sending image estimate done-----\n");
 }
 
-void
-test_image_estimate_slave()
+  void test_image_estimate_slave()
 {
   printf("\n-----Slave startet Test for sending image estimate-----\n");
 
@@ -122,11 +120,9 @@ test_image_estimate_slave()
   send_image_estimate(received_image_estimate.get(), 0);
 }
 
-void
-test_related_viewgrams_master(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr,
+  void test_related_viewgrams_master(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr, 
                               const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr,
-                              stir::RelatedViewgrams<float>* y,
-                              int slave)
+				     stir::RelatedViewgrams<float>* y, int slave)
 {
   printf("\n-----Running Test for sending related viewgrams-----\n");
 
@@ -134,7 +130,9 @@ test_related_viewgrams_master(const stir::shared_ptr<stir::ProjDataInfo>& proj_d
 
   stir::RelatedViewgrams<float>* received_viewgrams = NULL;
 
-  receive_and_construct_related_viewgrams(received_viewgrams, proj_data_info_ptr, symmetries_sptr, 1);
+    receive_and_construct_related_viewgrams(received_viewgrams, 
+					    proj_data_info_ptr, 
+					    symmetries_sptr, 1);
 
   assert(received_viewgrams != NULL);
   assert(received_viewgrams->has_same_characteristics(*y));
@@ -147,11 +145,8 @@ test_related_viewgrams_master(const stir::shared_ptr<stir::ProjDataInfo>& proj_d
   int pos = 0;
   while (viewgrams_iter != viewgrams_end)
     {
-      for (int tang_pos = (*viewgrams_iter).get_min_tangential_pos_num();
-           tang_pos <= (*viewgrams_iter).get_max_tangential_pos_num();
-           ++tang_pos)
-        for (int ax_pos = (*viewgrams_iter).get_min_axial_pos_num(); ax_pos <= (*viewgrams_iter).get_max_axial_pos_num();
-             ++ax_pos)
+	for ( int tang_pos = (*viewgrams_iter).get_min_tangential_pos_num()  ;tang_pos  <= (*viewgrams_iter).get_max_tangential_pos_num() ;++tang_pos)  
+	  for ( int ax_pos = (*viewgrams_iter).get_min_axial_pos_num(); ax_pos <= (*viewgrams_iter).get_max_axial_pos_num() ;++ax_pos)
           {
             pos++;
             assert(((*viewgrams_iter)[ax_pos][tang_pos]) == (*received_viewgrams_iter)[ax_pos][tang_pos]);
@@ -165,15 +160,17 @@ test_related_viewgrams_master(const stir::shared_ptr<stir::ProjDataInfo>& proj_d
   printf("\n-----Test sending related viewgrams done-----\n");
 }
 
-void
-test_related_viewgrams_slave(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr,
-                             const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr)
+  void test_related_viewgrams_slave(const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr, 
+				    const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr
+				    )
 {
   printf("\n-----Slave startet Test for sending related viewgrams-----\n");
 
   stir::RelatedViewgrams<float>* received_viewgrams = NULL;
 
-  receive_and_construct_related_viewgrams(received_viewgrams, proj_data_info_ptr, symmetries_sptr, 0);
+    receive_and_construct_related_viewgrams(received_viewgrams, 
+					    proj_data_info_ptr, 
+					    symmetries_sptr, 0);
 
   assert(received_viewgrams != NULL);
 
@@ -183,12 +180,11 @@ test_related_viewgrams_slave(const stir::shared_ptr<stir::ProjDataInfo>& proj_da
   delete received_viewgrams;
 }
 
-void
-test_parameter_info_master(const std::string str, int slave, char const* const text)
+  void test_parameter_info_master(const string str, int slave, char const * const text)
 {
   printf("\n-----Running Test for sending %s-----\n", text);
 
-  std::string slave_string = receive_string(88, slave);
+    string slave_string= receive_string(88, slave);
 
   assert(str.compare(slave_string) == 0);
 
@@ -200,15 +196,13 @@ test_parameter_info_master(const std::string str, int slave, char const* const t
   printf("\n-----Test sending %s done-----\n", text);
 }
 
-void
-test_parameter_info_slave(const std::string str)
+  void test_parameter_info_slave(const string str)
 {
   printf("\n-----Slave startet Test for sending parameter_info or string-----\n");
   send_string(str, 88, 0);
 }
 
-void
-test_bool_value_master(bool value, int slave)
+  void test_bool_value_master(bool value, int slave)
 {
   printf("\n-----Running Test for sending bool value-----\n");
 
@@ -220,24 +214,22 @@ test_bool_value_master(bool value, int slave)
   printf("\n-----Test sending bool value done-----\n");
 }
 
-void
-test_bool_value_slave()
+  void test_bool_value_slave()
 {
   printf("\n-----Slave startet Test for sending bool value-----\n");
   bool value = receive_bool_value(66, 0);
   send_bool_value(value, 66, 0);
 }
 
-void
-test_int_value_slave()
+		
+  void test_int_value_slave()
 {
   printf("\n-----Slave startet Test for sending int value-----\n");
   int value = receive_int_value(0);
   send_int_value(value, 0);
 }
 
-void
-test_int_value_master(int value, int slave)
+  void test_int_value_master(int value, int slave)
 {
   printf("\n-----Running Test for sending int value-----\n");
 
@@ -249,8 +241,7 @@ test_int_value_master(int value, int slave)
   printf("\n-----Test sending int value done-----\n");
 }
 
-void
-test_int_values_master(int slave)
+  void test_int_values_master(int slave)
 {
   printf("\n-----Running Test for sending int[] values-----\n");
 
@@ -274,8 +265,7 @@ test_int_values_master(int slave)
   printf("\n-----Test sending int[] values done-----\n");
 }
 
-void
-test_int_values_slave()
+  void test_int_values_slave()
 {
   printf("\n-----Slave startet Test for sending int[] values-----\n");
   int received_int_values[4];
@@ -283,4 +273,4 @@ test_int_values_slave()
   status = receive_int_values(received_int_values, 4, 66);
   send_int_values(received_int_values, 4, 66, 0);
 }
-} // namespace distributed
+}

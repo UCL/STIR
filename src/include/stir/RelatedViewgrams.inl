@@ -16,7 +16,15 @@
     Copyright (C) 2000-2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,13 +33,12 @@
 START_NAMESPACE_STIR
 
 template <typename elemT>
-RelatedViewgrams<elemT>::RelatedViewgrams()
-    : viewgrams(),
-      symmetries_used()
+RelatedViewgrams<elemT>::RelatedViewgrams() :
+     viewgrams(), symmetries_used()
 {}
 
 template <typename elemT>
-RelatedViewgrams<elemT>::RelatedViewgrams(const std::vector<Viewgram<elemT>>& viewgrams,
+RelatedViewgrams<elemT>::RelatedViewgrams(const vector<Viewgram<elemT> >& viewgrams,
                                           const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used)
     : viewgrams(viewgrams),
       symmetries_used(symmetries_used)
@@ -40,8 +47,7 @@ RelatedViewgrams<elemT>::RelatedViewgrams(const std::vector<Viewgram<elemT>>& vi
 }
 
 template <typename elemT>
-void
-RelatedViewgrams<elemT>::check_state() const
+void RelatedViewgrams<elemT>::check_state() const
 {
 #ifndef NDEBUG
   debug_check_state();
@@ -49,16 +55,15 @@ RelatedViewgrams<elemT>::check_state() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_num_viewgrams() const
+int RelatedViewgrams<elemT>::get_num_viewgrams() const
 {
   check_state();
   return static_cast<int>(viewgrams.size());
 }
 
+
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_basic_view_num() const
+int RelatedViewgrams<elemT>::get_basic_view_num() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -66,8 +71,7 @@ RelatedViewgrams<elemT>::get_basic_view_num() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_basic_segment_num() const
+int RelatedViewgrams<elemT>::get_basic_segment_num() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -75,33 +79,14 @@ RelatedViewgrams<elemT>::get_basic_segment_num() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_basic_timing_pos_num() const
+ViewSegmentNumbers RelatedViewgrams<elemT>::
+get_basic_view_segment_num() const
 {
-  assert(viewgrams.size() > 0);
-  check_state();
-  return viewgrams[0].get_timing_pos_num();
+  return ViewSegmentNumbers(get_basic_view_num(), get_basic_segment_num());
 }
 
 template <typename elemT>
-ViewgramIndices
-RelatedViewgrams<elemT>::get_basic_viewgram_indices() const
-{
-  assert(viewgrams.size() > 0);
-  check_state();
-  return viewgrams[0].get_viewgram_indices();
-}
-
-template <typename elemT>
-ViewgramIndices
-RelatedViewgrams<elemT>::get_basic_view_segment_num() const
-{
-  return this->get_basic_viewgram_indices();
-}
-
-template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_num_axial_poss() const
+int RelatedViewgrams<elemT>::get_num_axial_poss() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -109,8 +94,7 @@ RelatedViewgrams<elemT>::get_num_axial_poss() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_num_tangential_poss() const
+int RelatedViewgrams<elemT>::get_num_tangential_poss() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -118,8 +102,7 @@ RelatedViewgrams<elemT>::get_num_tangential_poss() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_min_axial_pos_num() const
+int RelatedViewgrams<elemT>::get_min_axial_pos_num() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -127,8 +110,7 @@ RelatedViewgrams<elemT>::get_min_axial_pos_num() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_max_axial_pos_num() const
+int RelatedViewgrams<elemT>::get_max_axial_pos_num() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -136,8 +118,7 @@ RelatedViewgrams<elemT>::get_max_axial_pos_num() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_min_tangential_pos_num() const
+int RelatedViewgrams<elemT>::get_min_tangential_pos_num() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -145,8 +126,7 @@ RelatedViewgrams<elemT>::get_min_tangential_pos_num() const
 }
 
 template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_max_tangential_pos_num() const
+int RelatedViewgrams<elemT>::get_max_tangential_pos_num() const
 {
   assert(viewgrams.size() > 0);
   check_state();
@@ -154,12 +134,13 @@ RelatedViewgrams<elemT>::get_max_tangential_pos_num() const
 }
 
 template <typename elemT>
-shared_ptr<const ProjDataInfo>
-RelatedViewgrams<elemT>::get_proj_data_info_sptr() const
+const ProjDataInfo * 
+RelatedViewgrams<elemT>::
+get_proj_data_info_ptr() const
 {
   assert(viewgrams.size() > 0);
   check_state();
-  return viewgrams[0].get_proj_data_info_sptr();
+  return viewgrams[0].get_proj_data_info_ptr();
 }
 
 template <typename elemT>
@@ -179,29 +160,22 @@ RelatedViewgrams<elemT>::get_symmetries_sptr() const
 template <typename elemT>
 typename RelatedViewgrams<elemT>::iterator
 RelatedViewgrams<elemT>::begin()
-{
-  return viewgrams.begin();
-}
+{ return viewgrams.begin();}
 
 template <typename elemT>
 typename RelatedViewgrams<elemT>::iterator
 RelatedViewgrams<elemT>::end()
-{
-  return viewgrams.end();
-}
+{return viewgrams.end();}
 
 template <typename elemT>
 typename RelatedViewgrams<elemT>::const_iterator
 RelatedViewgrams<elemT>::begin() const
-{
-  return viewgrams.begin();
-}
+{return viewgrams.begin();}
 
 template <typename elemT>
 typename RelatedViewgrams<elemT>::const_iterator
 RelatedViewgrams<elemT>::end() const
-{
-  return viewgrams.end();
-}
+{return viewgrams.end();}
+
 
 END_NAMESPACE_STIR

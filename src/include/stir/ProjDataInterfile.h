@@ -12,7 +12,15 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,7 +33,9 @@
 #include <iostream>
 #include <string>
 
+
 START_NAMESPACE_STIR
+
 
 /*!
   \ingroup projdata
@@ -38,6 +48,7 @@ START_NAMESPACE_STIR
 class ProjDataInterfile : public ProjDataFromStream
 {
 public:
+    
   //! constructor taking all necessary parameters
   /*!
     \param filename The name to use for the files. See below.
@@ -54,13 +65,12 @@ public:
          will be replaced with .hs for the header file.
     </ul>
 
-    \warning This call will create a new file for the binary data and the Interfile header.
-    Any existing files with the same file names will be overwritten without warning.
+    \warning This call will create a new file for the binary data and the Intefile header.
+    Any existing files with the same file anmes will be overwritten without warning.
   */
-  ProjDataInterfile(shared_ptr<const ExamInfo> const& exam_info_sptr,
-                    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
-                    const std::string& filename,
-                    const std::ios::openmode,
+  ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
+		     shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+		     const std::string& filename, const std::ios::openmode, 
                     const std::vector<int>& segment_sequence_in_stream,
                     StorageOrder o = Segment_View_AxialPos_TangPos,
                     NumericType data_type = NumericType::FLOAT,
@@ -71,19 +81,19 @@ public:
   /*! The default value for segment_sequence_in_stream is a vector with
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
-  ProjDataInterfile(shared_ptr<const ExamInfo> const& exam_info_sptr,
-                    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
+		     shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
                     const std::string& filename,
                     const std::ios::openmode open_mode = std::ios::out,
                     StorageOrder o = Segment_View_AxialPos_TangPos,
                     NumericType data_type = NumericType::FLOAT,
                     ByteOrder byte_order = ByteOrder::native,
                     float scale_factor = 1);
-
 private:
   void create_stream(const std::string& filename, const std::ios::openmode open_mode);
 };
 
 END_NAMESPACE_STIR
+
 
 #endif

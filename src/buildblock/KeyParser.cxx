@@ -2,10 +2,17 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012-01-29, Kris Thielemans
-    Copyright (C) 2020, 2021, 2023, 2024 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,21 +29,25 @@
 
 #include "stir/KeyParser.h"
 #include "stir/Succeeded.h"
-#include "stir/RegisteredObjectBase.h"
+#include "stir/Object.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/stream.h"
 #include "stir/is_null_ptr.h"
-#include "stir/format.h"
-#include "stir/error.h"
 #include <typeinfo>
 #include <fstream>
-#include <sstream>
 #include <cstring>
 #include <cstdlib>
-#include "stir/warning.h"
-#include <strstream>
-#include <sstream>
+# ifdef BOOST_NO_STDC_NAMESPACE
+ namespace std { using ::getenv; }
+# endif
 
+#include <strstream>
+
+#ifndef BOOST_NO_STRINGSTREAM
+#include <sstream>
+#endif
+
+#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::cerr;
 using std::cout;
@@ -44,13 +55,7 @@ using std::cin;
 using std::endl;
 using std::istrstream;
 using std::ostrstream;
-using std::vector;
-using std::string;
-// using std::map;
-using std::list;
-using std::pair;
-using std::istream;
-using std::ostream;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -67,8 +72,8 @@ START_NAMESPACE_STIR
    This function should be moved somewhere else as it
    might be useful to someone else as well. (TODO)
 */
-static void
-read_line(istream& input, string& line, const char continuation_char = '\\')
+static void read_line(istream& input, string& line, 
+		      const char continuation_char = '\\')
 {
   line.resize(0);
   if (!input)
@@ -100,22 +105,24 @@ read_line(istream& input, string& line, const char continuation_char = '\\')
             buf[0] = '\0';
             input.getline(buf, buf_size);
             thisline += buf;
-            if (input.fail() && !input.bad() && !input.eof())
+          if (input.fail() && !input.bad())
               {
-                // either no characters (end-of-line somehow) or buf_size-1 or end-of-file
+            // either no characters (end-of-line somehow) or buf_size-1
                 input.clear();
                 more_chars = strlen(buf) == buf_size - 1;
               }
             else
               more_chars = false;
-        } while (more_chars);
+        }  
+        while (more_chars);
       }
 #endif
       // check if last character is \r,
       // in case this is a DOS file, but not a DOS/Windows host
       if (thisline.size() != 0)
         {
-          string::size_type position_of_last_char = thisline.size() - 1;
+	  string::size_type position_of_last_char = 
+	    thisline.size()-1;
           if (thisline[position_of_last_char] == '\r')
             thisline.erase(position_of_last_char, 1);
         }
@@ -126,7 +133,8 @@ read_line(istream& input, string& line, const char continuation_char = '\\')
       // check for continuation
       if (line.size() != 0)
         {
-          string::size_type position_of_last_char = line.size() - 1;
+	  string::size_type position_of_last_char = 
+	    line.size()-1;
           if (line[position_of_last_char] == continuation_char)
             {
               line.erase(position_of_last_char, 1);
@@ -153,7 +161,8 @@ read_line(istream& input, string& line, const char continuation_char = '\\')
         const string::size_type end_of_env_string = line.find('}', start_of_env_string + 2);
         if (end_of_env_string == string::npos)
           break;
-        const string::size_type size_of_env_string = end_of_env_string - start_of_env_string + 1;
+	const string::size_type size_of_env_string =
+	  end_of_env_string-start_of_env_string+1;
         const string name_of_env_variable = line.substr(start_of_env_string + 2, size_of_env_string - 3);
         const char* const value_of_env_variable = std::getenv(name_of_env_variable.c_str());
         if (value_of_env_variable == 0)
@@ -166,7 +175,9 @@ read_line(istream& input, string& line, const char continuation_char = '\\')
           }
         else
           {
-            line.replace(start_of_env_string, size_of_env_string, value_of_env_variable);
+	    line.replace(start_of_env_string, 
+			 size_of_env_string,
+			 value_of_env_variable);
           }
       }
   }
@@ -175,59 +186,61 @@ read_line(istream& input, string& line, const char continuation_char = '\\')
 // map_element implementation;
 
 map_element::map_element()
-    : type(KeyArgument::NONE),
-      p_object_member(0),
-      p_object_variable(0),
-      vectorised_key_level(0),
-      p_object_list_of_values(0)
-{}
+{
+  type=KeyArgument::NONE;
+  p_object_member=0;
+  p_object_variable=0;
+  p_object_list_of_values=0;
+}
 
 map_element::map_element(KeyArgument::type t,
                          KeyParser::KeywordProcessor pom,
                          void* pov,
-                         const int vectorised_key_level_v,
                          const ASCIIlist_type* list_of_values)
-    : type(t),
-      p_object_member(pom),
-      p_object_variable(pov),
-      vectorised_key_level(vectorised_key_level_v),
-      p_object_list_of_values(list_of_values)
-{}
+{
+  type=t;
+  p_object_member=pom;
+  p_object_variable=pov;
+  p_object_list_of_values=list_of_values;
+}
 
-map_element::map_element(void (KeyParser::*pom)(), RegisteredObjectBase** pov, Parser* parser)
-    : type(KeyArgument::PARSINGOBJECT),
+map_element::map_element(void (KeyParser::*pom)(),
+	      Object** pov, 
+              Parser* parser)
+  :
+  type(KeyArgument::PARSINGOBJECT),
       p_object_member(pom),
       p_object_variable(pov),
-      vectorised_key_level(0),
-      p_object_list_of_values(0),
       parser(parser) // static_cast<Parser *>(parser))
 {}
 
-map_element::map_element(void (KeyParser::*pom)(), shared_ptr<RegisteredObjectBase>* pov, Parser* parser)
-    : type(KeyArgument::SHARED_PARSINGOBJECT),
+map_element::map_element(void (KeyParser::*pom)(),
+	      shared_ptr<Object>* pov, 
+              Parser* parser)
+  :
+  type(KeyArgument::SHARED_PARSINGOBJECT),
       p_object_member(pom),
       p_object_variable(pov),
-      vectorised_key_level(0),
-      p_object_list_of_values(0),
       parser(parser) // static_cast<Parser *>(parser))
 {}
 
 map_element::~map_element()
-{}
+{
+}
 
-map_element&
-map_element::operator=(const map_element& me)
+
+map_element& map_element::operator=(const map_element& me)
 {
   type = me.type;
   p_object_member = me.p_object_member;
   p_object_variable = me.p_object_variable;
-  vectorised_key_level = me.vectorised_key_level;
   p_object_list_of_values = me.p_object_list_of_values;
   parser = me.parser;
   return *this;
 }
 
 // KeyParser implementation
+
 
 KeyParser::KeyParser()
 {
@@ -238,10 +251,10 @@ KeyParser::KeyParser()
 }
 
 KeyParser::~KeyParser()
-{}
+{
+}
 
-bool
-KeyParser::parse(const char* const filename, const bool write_warning)
+bool KeyParser::parse(const char * const filename, const bool write_warning)
 {
   ifstream hdr_stream(filename);
   if (!hdr_stream)
@@ -252,21 +265,14 @@ KeyParser::parse(const char* const filename, const bool write_warning)
   return parse(hdr_stream, write_warning);
 }
 
-bool
-KeyParser::parse(const std::string& s, const bool write_warning)
-{
-  std::stringstream hdr_stream(s);
-  return parse(hdr_stream, write_warning);
-}
-
-bool
-KeyParser::parse(istream& f, const bool write_warning)
+bool KeyParser::parse(istream& f, const bool write_warning)
 {
   // print_keywords_to_stream(cerr);
 
   input = &f;
   return (parse_header(write_warning) == Succeeded::yes && post_processing() == false);
 }
+
 
 // KT 10/07/2000 new function
 /*!
@@ -292,40 +298,22 @@ string
 KeyParser::get_keyword(const string& line) const
 {
   // keyword stops at either := or an index []
-  auto eok = line.find_first_of(":[", 0);
-  // check that = follows : to allow keywords containing colons
-  while (eok != string::npos && line[eok] == ':' && eok + 1 < line.size() && line[eok + 1] != '=')
-    {
-      eok = line.find_first_of(":[", eok + 1);
-    }
+  // TODO should check that = follows : to allow keywords with colons in there
+  const string::size_type eok = line.find_first_of(":[",0);
   return line.substr(0, eok);
 }
 
-map_element*
-KeyParser::find_in_keymap(const string& keyword)
+map_element* KeyParser::find_in_keymap(const string& keyword)
 {
-  for (Keymap::iterator iter = kmap.begin(); iter != kmap.end(); ++iter)
+  for (Keymap::iterator iter = kmap.begin();
+       iter != kmap.end();
+       ++iter)
     {
       if (iter->first == keyword)
         return &(iter->second);
     }
   // it wasn't there
   return 0;
-}
-
-bool
-KeyParser::remove_key(const string& keyword)
-{
-  for (Keymap::iterator iter = kmap.begin(); iter != kmap.end(); ++iter)
-    {
-      if (iter->first == keyword)
-        {
-          kmap.erase(iter);
-          return true;
-        }
-    }
-  // it wasn't there
-  return false;
 }
 
 void
@@ -335,7 +323,7 @@ KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
   map_element* elem_ptr = find_in_keymap(standardised_keyword);
   if (elem_ptr != 0)
     {
-      warning(stir::format("KeyParser: keyword '{}' already registered for parsing, overwriting previous value", keyword));
+    warning("KeyParser: overwriting value of the keyword %s\n", keyword.c_str());
       *elem_ptr = new_element;
     }
   else
@@ -349,27 +337,9 @@ KeyParser::add_key(const string& keyword, float* variable)
 }
 
 void
-KeyParser::add_vectorised_key(const string& keyword, vector<float>* variable)
-{
-  add_key(keyword, KeyArgument::FLOAT, variable, 1);
-}
-
-void
 KeyParser::add_key(const string& keyword, double* variable)
 {
   add_key(keyword, KeyArgument::DOUBLE, variable);
-}
-
-void
-KeyParser::add_vectorised_key(const string& keyword, vector<double>* variable)
-{
-  add_key(keyword, KeyArgument::DOUBLE, variable, 1);
-}
-
-void
-KeyParser::add_vectorised_key(const string& keyword, vector<vector<double>>* variable)
-{
-  add_key(keyword, KeyArgument::LIST_OF_DOUBLES, variable, 1);
 }
 
 void
@@ -379,51 +349,15 @@ KeyParser::add_key(const string& keyword, int* variable)
 }
 
 void
-KeyParser::add_key(const string& keyword, vector<int>* variable)
-{
-  add_key(keyword, KeyArgument::LIST_OF_INTS, variable);
-}
-
-void
-KeyParser::add_vectorised_key(const string& keyword, vector<int>* variable)
-{
-  add_key(keyword, KeyArgument::INT, variable, 1);
-}
-
-void
-KeyParser::add_vectorised_key(const string& keyword, vector<vector<int>>* variable)
-{
-  add_key(keyword, KeyArgument::LIST_OF_INTS, variable, 1);
-}
-
-void
 KeyParser::add_key(const string& keyword, unsigned int* variable)
 {
   add_key(keyword, KeyArgument::UINT, variable);
 }
 
 void
-KeyParser::add_vectorised_key(const string& keyword, vector<unsigned int>* variable)
-{
-  add_key(keyword, KeyArgument::UINT, variable, 1);
-}
-
-void
-KeyParser::add_key(const string& keyword, long int* variable)
-{
-  add_key(keyword, KeyArgument::LONG, variable);
-}
-
-void
 KeyParser::add_key(const string& keyword, unsigned long* variable)
 {
   add_key(keyword, KeyArgument::ULONG, variable);
-}
-
-void
-KeyParser::add_vectorised_key(const string& keyword, vector<unsigned long>* variable)
-{
-  add_key(keyword, KeyArgument::ULONG, variable, 1);
 }
 
 void
@@ -475,21 +409,10 @@ KeyParser::add_key(const string& keyword, string* variable)
 }
 
 void
-KeyParser::add_vectorised_key(const string& keyword, vector<string>* variable)
-{
-  add_key(keyword, KeyArgument::ASCII, variable, 1);
-}
-
-void
-KeyParser::add_key(const string& keyword, int* variable, const ASCIIlist_type* list_of_values_ptr)
+KeyParser::add_key(const string& keyword, int * variable,
+                   const ASCIIlist_type * list_of_values_ptr)
 {
   add_key(keyword, KeyArgument::ASCIIlist, variable, list_of_values_ptr);
-}
-
-void
-KeyParser::ignore_key(const string& keyword)
-{
-  add_key(keyword, KeyArgument::NONE, &KeyParser::do_nothing);
 }
 
 void
@@ -503,52 +426,24 @@ KeyParser::add_stop_key(const string& keyword)
   add_key(keyword, KeyArgument::NONE, &KeyParser::stop_parsing);
 }
 
-void
-KeyParser::add_key(const string& keyword,
+
+  
+
+void KeyParser::add_key(const string& keyword, 
                    KeyArgument::type t,
                    KeywordProcessor function,
                    void* variable,
                    const ASCIIlist_type* const list_of_values)
 {
-  add_in_keymap(keyword, map_element(t, function, variable, 0, list_of_values));
+  add_in_keymap(keyword, map_element(t, function, variable, list_of_values));
 }
 
-void
-KeyParser::add_key(const string& keyword,
-                   KeyArgument::type t,
-                   KeywordProcessor function,
-                   void* variable,
-                   const int vectorised_key_level,
-                   const ASCIIlist_type* const list_of_values)
-{
-  add_in_keymap(keyword, map_element(t, function, variable, vectorised_key_level, list_of_values));
-}
-
-void
-KeyParser::add_key(const string& keyword, KeyArgument::type t, void* variable, const ASCIIlist_type* const list_of_values)
-{
-  add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, 0, list_of_values));
-}
-
-void
-KeyParser::add_key(const string& keyword,
+void KeyParser::add_key(const string& keyword, 
                    KeyArgument::type t,
                    void* variable,
-                   const int vectorised_key_level,
                    const ASCIIlist_type* const list_of_values)
 {
-  add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, vectorised_key_level, list_of_values));
-}
-
-void
-KeyParser::add_alias_key(const std::string& keyword, const std::string& alias, bool deprecated_key)
-{
-  const auto std_alias = standardise_keyword(alias);
-  const auto std_kw = standardise_keyword(keyword);
-  if (deprecated_key)
-    this->deprecated_alias_map[std_alias] = std_kw;
-  else
-    this->alias_map[std_alias] = std_kw;
+  add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, list_of_values));
 }
 
 void
@@ -561,8 +456,8 @@ KeyParser::print_keywords_to_stream(ostream& out) const
   out << endl;
 }
 
-Succeeded
-KeyParser::parse_header(const bool write_warning)
+  
+Succeeded KeyParser::parse_header(const bool write_warning)
 {
 
   if (read_and_parse_line(false) == Succeeded::yes)
@@ -582,7 +477,8 @@ KeyParser::parse_header(const bool write_warning)
         }
       if (start_keyword.length() > 0)
         {
-          warning("KeyParser error: required first keyword \"%s\" not found\n", start_keyword.c_str());
+      warning("KeyParser error: required first keyword \"%s\" not found\n",
+	      start_keyword.c_str());  
         }
       else
         {
@@ -598,42 +494,13 @@ KeyParser::parse_header(const bool write_warning)
     {
       if (read_and_parse_line(write_warning) == Succeeded::yes)
         process_key();
-      if (input->eof())
-        {
-          status = end_parsing;
-        }
     }
 
   return Succeeded::yes;
+
 }
 
-std::string
-KeyParser::resolve_alias(const std::string& kw) const
-{
-  // search in alias_map
-  {
-    auto iter = alias_map.find(kw);
-    if (iter != alias_map.end())
-      {
-        return iter->second;
-      }
-  }
-  // search in deprecated_alias_map
-  {
-    auto iter = deprecated_alias_map.find(kw);
-    if (iter != deprecated_alias_map.end())
-      {
-        warning("KeyParser: found deprecated keyword '" + kw + "'. Replace with '" + iter->second
-                + "' to disable this warning and for future compatibility.");
-        return iter->second;
-      }
-  }
-  // not found: return original
-  return kw;
-}
-
-Succeeded
-KeyParser::read_and_parse_line(const bool write_warning)
+Succeeded KeyParser::read_and_parse_line(const bool write_warning)
 {
   string line;
   // we keep reading a line until it's either non-empty, or we're at the end of the input
@@ -651,15 +518,13 @@ KeyParser::read_and_parse_line(const bool write_warning)
       std::size_t pos = line.find_first_not_of(" \t");
       if (pos != string::npos)
         break;
-      // check if empty line
-      if (line.size() == 0)
-        break;
     }
 
   // gets keyword
-  keyword = resolve_alias(standardise_keyword(get_keyword(line)));
+  keyword=standardise_keyword(get_keyword(line));
   return parse_value_in_line(line, write_warning);
 }
+
 
 // functions that get arbitrary type parameters from a string (after '=')
 // unfortunately, the string type needs special case as istream::operator>> stops a string at white space
@@ -667,7 +532,8 @@ KeyParser::read_and_parse_line(const bool write_warning)
 // they all return Succeeded::yes when there was  a parameter
 
 template <typename T>
-static Succeeded
+static 
+Succeeded
 get_param_from_string(T& param, const string& s)
 {
   const string::size_type cp = s.find('=', 0);
@@ -703,7 +569,8 @@ get_param_from_string(string& param, const string& s)
 // this is currently only used for the matrix_size keywords in InterfileHeader.
 
 template <typename T>
-static Succeeded
+static
+Succeeded
 get_vparam_from_string(vector<T>& param, const string& s)
 {
   const string::size_type cp = s.find('=', 0);
@@ -729,7 +596,8 @@ get_vparam_from_string(vector<T>& param, const string& s)
 }
 
 template <typename T>
-static Succeeded
+static
+Succeeded
 get_vparam_from_string(VectorWithOffset<T>& param, const string& s)
 {
   const string::size_type cp = s.find('=', 0);
@@ -807,8 +675,7 @@ get_vparam_from_string(vector<string>& param, const string& s)
 }
 
 // function that finds the current_index. work to do here!
-static int
-get_index(const string& line)
+static int get_index(const string& line)
 {
   // we take 0 as a default value for the index
   int in = 0;
@@ -822,9 +689,9 @@ get_index(const string& line)
       if (eok == string::npos)
         {
           // TODO do something more graceful
-          warning("Interfile warning: invalid vectorised key in line \n'%s'.\n%s",
+      warning("Interfile warning: invalid vectored key in line \n'%s'.\n%s",
                   line.c_str(),
-                  "Assuming this is not a vectorised key.");
+        "Assuming this is not a vectored key.");
           return 0;
         }
       in = atoi(line.substr(sok, eok - sok).c_str());
@@ -842,25 +709,28 @@ struct Type2Type
 };
 
 template <class T>
-static Succeeded
+static
+Succeeded 
 get_any_param_from_string(boost::any& parameter, Type2Type<T>, const string& s)
 {
   parameter = T();
   // note: don't use cast to reference as it might break VC 6.0
-  return get_param_from_string(*boost::any_cast<T>(&parameter), s);
+  return
+    get_param_from_string(*boost::any_cast<T>(&parameter), s);
 }
 
 template <class T>
-static Succeeded
+static
+Succeeded 
 get_any_vparam_from_string(boost::any& parameter, Type2Type<T>, const string& s)
 {
   parameter = T();
   // note: don't use cast to reference as it might break VC 6.0
-  return get_vparam_from_string(*boost::any_cast<T>(&parameter), s);
+  return
+    get_vparam_from_string(*boost::any_cast<T>(&parameter), s);
 }
 
-Succeeded
-KeyParser::parse_value_in_line(const string& line, const bool write_warning)
+Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_warning)
 {
   // KT 07/10/2002 use return value of get_param to detect if a value was present at all
   current_index = get_index(line);
@@ -878,57 +748,63 @@ KeyParser::parse_value_in_line(const string& line, const bool write_warning)
           // KT 07/02/2001 new
         case KeyArgument::PARSINGOBJECT:
         case KeyArgument::SHARED_PARSINGOBJECT:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<std::string>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<std::string>(), line) == Succeeded::yes; 
           break;
         case KeyArgument::INT:
         case KeyArgument::BOOL:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<int>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<int>(), line) == Succeeded::yes; 
           break;
         case KeyArgument::UINT:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<unsigned int>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<unsigned int>(), line) == Succeeded::yes; 
           break;
         case KeyArgument::ULONG:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<unsigned long>(), line) == Succeeded::yes;
-          break;
-        case KeyArgument::LONG:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<long int>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<unsigned long>(), line) == Succeeded::yes; 
           break;
         case KeyArgument::DOUBLE:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<double>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<double>(), line) == Succeeded::yes; 
           break;
         case KeyArgument::FLOAT:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<float>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<float>(), line) == Succeeded::yes; 
           break;
         case KeyArgument::LIST_OF_INTS:
-          keyword_has_a_value
-              = get_any_vparam_from_string(this->parameter, Type2Type<std::vector<int>>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_vparam_from_string(this->parameter, Type2Type<std::vector<int> >(), line) == Succeeded::yes; 
           break;
         case KeyArgument::LIST_OF_DOUBLES:
-          keyword_has_a_value
-              = get_any_vparam_from_string(this->parameter, Type2Type<std::vector<double>>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_vparam_from_string(this->parameter, Type2Type<std::vector<double> >(), line) == Succeeded::yes; 
           break;
         case KeyArgument::LIST_OF_ASCII:
           // TODO enforce {} by writing get_param_from_string for vector<string>
-          keyword_has_a_value
-              = get_any_vparam_from_string(this->parameter, Type2Type<std::vector<std::string>>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_vparam_from_string(this->parameter, Type2Type<std::vector<std::string> >(), line) == Succeeded::yes; 
           break;
         case KeyArgument::ARRAY2D_OF_FLOATS:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<Array<2, float>>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<Array<2,float> >(), line) == Succeeded::yes; 
           break;
         case KeyArgument::ARRAY3D_OF_FLOATS:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<Array<3, float>>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<Array<3,float> >(), line) == Succeeded::yes; 
           break;
         case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
-          keyword_has_a_value
-              = get_any_param_from_string(this->parameter, Type2Type<BasicCoordinate<3, float>>(), line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<BasicCoordinate<3,float> >(), line) == Succeeded::yes; 
           break;
         case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
-          keyword_has_a_value = get_any_param_from_string(this->parameter, Type2Type<BasicCoordinate<3, Array<3, float>>>(), line)
-                                == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<BasicCoordinate<3,Array<3,float> > >(), line) == Succeeded::yes; 
           break;
         default:
           // KT 07/10/2002 now exit with error
-          error("KeyParser internal error: keyword '%s' has unsupported type of parameters\n", keyword.c_str());
+      error ("KeyParser internal error: keyword '%s' has unsupported type of parameters\n",
+        keyword.c_str());
           return Succeeded::no; // just a line to avoid compiler warnings
         }
       return Succeeded::yes;
@@ -942,95 +818,91 @@ KeyParser::parse_value_in_line(const string& line, const bool write_warning)
   return Succeeded::no;
 }
 
-void
-KeyParser::start_parsing()
+void KeyParser::start_parsing()
 {
   status = parsing;
 }
 
-void
-KeyParser::stop_parsing()
+void KeyParser::stop_parsing()
 {
   status = end_parsing;
 }
 
 // KT 07/02/2001 new
-void
-KeyParser::set_parsing_object()
+void KeyParser::set_parsing_object()
 {
   // KT 07/10/2002 new
   if (!keyword_has_a_value)
     return;
 
-  // TODO this does not handle the vectorised key convention
+  // TODO this does not handle the vectored key convention
 
   // current_index is set to 0 when there was no index
   if (current_index != 0)
-    error("KeyParser::PARSINGOBJECT can't handle vectorised keys yet\n");
+    error("KeyParser::PARSINGOBJECT can't handle vectored keys yet\n");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-  *reinterpret_cast<RegisteredObjectBase**>(current->p_object_variable) = (*current->parser)(input, par_ascii);
+  *reinterpret_cast<Object **>(current->p_object_variable) =
+    (*current->parser)(input, par_ascii);	    
 }
 
+
 // KT 20/08/2001 new
-void
-KeyParser::set_shared_parsing_object()
+void KeyParser::set_shared_parsing_object()
 {
   // KT 07/10/2002 new
   if (!keyword_has_a_value)
     return;
 
-  // TODO this does not handle the vectorised key convention
+  // TODO this does not handle the vectored key convention
 
   // current_index is set to 0 when there was no index
   if (current_index != 0)
-    error("KeyParser::SHARED_PARSINGOBJECT can't handle vectorised keys yet");
+    error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-  reinterpret_cast<shared_ptr<RegisteredObjectBase>*>(current->p_object_variable)->reset((*current->parser)(input, par_ascii));
+  reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable)->
+    reset((*current->parser)(input, par_ascii));
 }
 
 // local function to be used in set_variable below
 template <typename T1, typename T2>
-void static assign_to_list(T1& mylist, const T2& value, const int current_index, const string& keyword)
+void static
+assign_to_list(T1& mylist, const T2& value, const int current_index, 
+	       const string& keyword)
 {
   if (mylist.size() < static_cast<unsigned>(current_index))
     {
       error("KeyParser: the list corresponding to the keyword \"%s\" has to be resized "
             "to size %d. This means you have a problem in the keyword values.",
-            keyword.c_str(),
-            current_index);
+	      keyword.c_str(), current_index);
       // mylist.resize(current_index);
     }
   mylist[current_index - 1] = value;
 }
 
-void
-KeyParser::set_variable()
+void KeyParser::set_variable()
 {
   if (!keyword_has_a_value)
     return;
 
-  // TODO this does not handle the vectorised key convention
+  // TODO this does not handle the vectored key convention
 
   // current_index is set to 0 when there was no index
   if (!current_index)
     {
-      if (current->vectorised_key_level > 0)
-        error(stir::format("Error parsing: expected a vectorised key as in \"{}[1]\", but no bracket found", keyword));
-
       switch (current->type)
         {
 #define KP_case_assign(KeyArgumentValue, type)                                                                                   \
   case KeyArgumentValue:                                                                                                         \
-    *reinterpret_cast<type*>(current->p_object_variable) = *boost::any_cast<type>(&this->parameter);                             \
-    break
+	    *reinterpret_cast<type *>(current->p_object_variable) = \
+				      * boost::any_cast<type >(&this->parameter); break
 
-          case KeyArgument::BOOL: {
+	case KeyArgument::BOOL :
+	  {
             const int par_int = *boost::any_cast<int>(&parameter);
             if (par_int != 0 && par_int != 1)
               warning("KeyParser: keyword %s expects a bool value which should be 0 or 1\n"
                       " (actual value is %d). A non-zero value will be assumed to mean 'true'\n",
-                      keyword.c_str(),
-                      par_int);
+		      keyword.c_str(), par_int);
             bool* p_bool = (bool*)current->p_object_variable; // performs the required casting
             *p_bool = par_int != 0;
             break;
@@ -1038,20 +910,23 @@ KeyParser::set_variable()
           KP_case_assign(KeyArgument::INT, int);
           KP_case_assign(KeyArgument::UINT, unsigned int);
           KP_case_assign(KeyArgument::ULONG, unsigned long);
-          KP_case_assign(KeyArgument::LONG, long);
           KP_case_assign(KeyArgument::DOUBLE, double);
           KP_case_assign(KeyArgument::FLOAT, float);
           KP_case_assign(KeyArgument::ASCII, std::string);
 
-          case KeyArgument::ASCIIlist: {
+	case KeyArgument::ASCIIlist :
+	  {
             const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-            const int index = find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
+	    const int index =
+              find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
             *((int*)current->p_object_variable) = index;
             if (index == -1)
               {
                 // it was not in the list
                 // TODO we should use warning() instead
-                cerr << "KeyParser warning : value of keyword \"" << keyword << "\" is \"" << par_ascii
+              cerr << "KeyParser warning : value of keyword \""
+                   << keyword << "\" is \""
+                   << par_ascii
                      << "\"\n\tshould have been one of:";
                 for (unsigned int i = 0; i < current->p_object_list_of_values->size(); i++)
                   cerr << "\n\t" << (*current->p_object_list_of_values)[i];
@@ -1080,35 +955,34 @@ KeyParser::set_variable()
     }
   else // Sets vector elements using current_index
     {
-      if (current->vectorised_key_level == 0)
-        error(stir::format("Error parsing: encountered unexpected \"vectorisation\" of key: \"{}[{}]\"", keyword, current_index));
-
       switch (current->type)
         {
 #define KP_case_assign(KeyArgumentValue, type)                                                                                   \
   case KeyArgumentValue:                                                                                                         \
     assign_to_list(*reinterpret_cast<std::vector<type>*>(current->p_object_variable),                                            \
-                   *boost::any_cast<type>(&this->parameter),                                                                     \
-                   current_index,                                                                                                \
-                   keyword);                                                                                                     \
+			 * boost::any_cast<type>(&this->parameter), current_index, keyword); \
     break
 
           KP_case_assign(KeyArgument::INT, int);
           KP_case_assign(KeyArgument::UINT, unsigned int);
-          KP_case_assign(KeyArgument::LONG, long);
           KP_case_assign(KeyArgument::ULONG, unsigned long);
           KP_case_assign(KeyArgument::DOUBLE, double);
           KP_case_assign(KeyArgument::FLOAT, float);
           KP_case_assign(KeyArgument::ASCII, std::string);
-          case KeyArgument::ASCIIlist: {
+	case KeyArgument::ASCIIlist :
+	  {
             const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-            const int index_in_asciilist = find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
-            assign_to_list(*(IntVect*)current->p_object_variable, index_in_asciilist, current_index, keyword);
+	    const int index_in_asciilist =
+              find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
+	    assign_to_list(*(IntVect*)current->p_object_variable, 
+			   index_in_asciilist, current_index, keyword);
             if (index_in_asciilist == -1)
               {
                 // it was not in the list
                 // TODO we should use warning() instead
-                cerr << "KeyParser warning : value of keyword \"" << keyword << "\" is \"" << par_ascii
+              cerr << "KeyParser warning : value of keyword \""
+                   << keyword << "\" is \""
+                   << par_ascii
                      << "\"\n\tshould have been one of:";
                 for (unsigned int i = 0; i < current->p_object_list_of_values->size(); i++)
                   cerr << "\n\t" << (*current->p_object_list_of_values)[i];
@@ -1126,8 +1000,7 @@ KeyParser::set_variable()
     }
 }
 
-int
-KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list_of_values)
+int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list_of_values)
 {
   {
     // TODO, once we know for sure type of ASCIIlist_type, we could use STL find()
@@ -1140,15 +1013,15 @@ KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list
   return -1;
 }
 
-Succeeded
-KeyParser::map_keyword(const string& keyword)
+Succeeded KeyParser::map_keyword(const string& keyword)
 {
   current = find_in_keymap(keyword);
   return (current == 0 ? Succeeded::no : Succeeded::yes);
 }
 
-void
-KeyParser::process_key()
+
+
+void KeyParser::process_key()
 {
   // KT 17/05/2001 replaced NULL with 0 to prevent gcc compiler warning
   if (current->p_object_member != 0)
@@ -1177,13 +1050,17 @@ namespace detail
    }
 */
 template <class T>
-static void
-to_stream(ostream& s, const T& var, const char continuation_char = '\\')
+  static void to_stream(ostream& s, const T& var, const char continuation_char = '\\')
 {
   // we will first write everything to a temporary stringstream
   // and then read it back, inserting the backslash
+#ifdef BOOST_NO_STRINGSTREAM
+    // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+    char str[100000];
+    strstream stemp(str, 100000);
+#else
   std::stringstream stemp;
-
+#endif
   // write to stemp
   stemp << var;
 
@@ -1199,50 +1076,65 @@ to_stream(ostream& s, const T& var, const char continuation_char = '\\')
       s << c;
     }
 }
+}
 
-} // namespace detail
+// TODO breaks with vectored keys (as there is no way of finding out if the
+// variable is actually a vector of the relevant type
+string KeyParser::parameter_info() const
+{  
+#ifdef BOOST_NO_STRINGSTREAM
+    // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+    char str[100000];
+    ostrstream s(str, 100000);
+#else
+    std::ostringstream s;
+#endif
 
-void
-KeyParser::value_to_stream(std::ostream& s, const map_element& element)
+    // first find start key
+    for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
 {
-#define KP_case_to_stream(KeyArgumentValue, type)                                                                                \
-  case KeyArgumentValue:                                                                                                         \
-    s << *reinterpret_cast<const type*>(element.p_object_variable);                                                              \
-    break
-  switch (element.type)
+      if (i->second.p_object_member == &KeyParser::start_parsing)
+      s << i->first << " :=\n";
+    }
+
+    for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
     {
-      KP_case_to_stream(KeyArgument::INT, int);
-      KP_case_to_stream(KeyArgument::UINT, unsigned int);
-      KP_case_to_stream(KeyArgument::ULONG, unsigned long);
-      KP_case_to_stream(KeyArgument::LONG, long);
-      KP_case_to_stream(KeyArgument::DOUBLE, double);
-      KP_case_to_stream(KeyArgument::FLOAT, float);
-      KP_case_to_stream(KeyArgument::ASCII, std::string);
-      KP_case_to_stream(KeyArgument::LIST_OF_INTS, IntVect);
-      KP_case_to_stream(KeyArgument::LIST_OF_DOUBLES, DoubleVect);
-      // sigh... macro expansion fails of type contain commas....
-      // Work-around: use typedefs.
-      // typedef Array<2,float> KP_array2d;
-      // typedef Array<3,float> KP_array3d;
-      typedef BasicCoordinate<3, float> KP_coord;
-      typedef BasicCoordinate<3, Array<3, float>> KP_coord_array3d;
-      // KP_case_to_stream(KeyArgument::ARRAY2D_OF_FLOATS, KP_array2d);
-      // KP_case_to_stream(KeyArgument::ARRAY3D_OF_FLOATS, KP_array3d);
-      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_FLOATS, KP_coord);
-      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS, KP_coord_array3d);
-      KP_case_to_stream(KeyArgument::LIST_OF_ASCII, std::vector<std::string>);
+     if (i->second.p_object_member == &KeyParser::start_parsing ||
+         i->second.p_object_member == &KeyParser::stop_parsing)
+         continue;
+
+      s << i->first << " := ";
+      switch(i->second.type)
+      {
+        // TODO will break with vectored keys
+      case KeyArgument::DOUBLE:
+        s << *reinterpret_cast<double*>(i->second.p_object_variable); break;
+      case KeyArgument::FLOAT:
+        s << *reinterpret_cast<float*>(i->second.p_object_variable); break;
+      case KeyArgument::INT:
+        s << *reinterpret_cast<int*>(i->second.p_object_variable); break;
     case KeyArgument::BOOL:
-      s << (*reinterpret_cast<const bool*>(element.p_object_variable) ? 1 : 0);
-      break;
+        s << (*reinterpret_cast<bool*>(i->second.p_object_variable) ? 1 : 0); break;
+      case KeyArgument::UINT:
+        s << *reinterpret_cast<unsigned int*>(i->second.p_object_variable); break;
+      case KeyArgument::ULONG:
+        s << *reinterpret_cast<unsigned long*>(i->second.p_object_variable); break;
     case KeyArgument::NONE:
       break;
-      case KeyArgument::ASCIIlist: {
-        const int index = *reinterpret_cast<const int*>(element.p_object_variable);
-        s << (index == -1 ? "UNALLOWED VALUE" : (*element.p_object_list_of_values)[index]);
+      case KeyArgument::ASCII :
+	 s << *reinterpret_cast<string*>(i->second.p_object_variable); break;	  	  
+      case KeyArgument::ASCIIlist :
+        { 
+	    const int index = *reinterpret_cast<int*>(i->second.p_object_variable);
+            s << (index == -1 ?
+                   "UNALLOWED VALUE" :
+                   (*i->second.p_object_list_of_values)[index]);
         break;
       }
-      case KeyArgument::PARSINGOBJECT: {
-        auto parsing_object_ptr = *reinterpret_cast<RegisteredObjectBase**>(element.p_object_variable);
+      case KeyArgument::PARSINGOBJECT:
+        {
+          Object* parsing_object_ptr =
+            *reinterpret_cast<Object**>(i->second.p_object_variable);
         if (parsing_object_ptr != 0)
           {
             s << parsing_object_ptr->get_registered_name() << endl;
@@ -1252,141 +1144,54 @@ KeyParser::value_to_stream(std::ostream& s, const map_element& element)
           s << "None";
         break;
       }
-      case KeyArgument::SHARED_PARSINGOBJECT: {
-        auto parsing_object_ptr = (*reinterpret_cast<const shared_ptr<RegisteredObjectBase>*>(element.p_object_variable));
+      case KeyArgument::SHARED_PARSINGOBJECT:
+        {
+#if defined(__GNUC__) && __GNUC__ < 3
+
+          s << "COMPILED WITH GNU C++ (prior to version 3.0), CANNOT INSERT VALUE";
+#else
+          shared_ptr<Object> parsing_object_ptr =
+            (*reinterpret_cast<shared_ptr<Object>*>(i->second.p_object_variable));
 
         if (!is_null_ptr(parsing_object_ptr))
           {
+            //std::cerr << "\nBefore *parsing_object_ptr" << endl;	  
+            //std::cerr << "\ntypename *parsing_object_ptr " << typeid(*parsing_object_ptr).name() <<std::endl<<std::endl;
             s << parsing_object_ptr->get_registered_name() << endl;
             s << parsing_object_ptr->parameter_info();
           }
         else
           s << "None";
+#endif
         break;
       }
 
+      case KeyArgument::LIST_OF_DOUBLES:
+        s << *reinterpret_cast<DoubleVect*>(i->second.p_object_variable); break;	  	  
+      case KeyArgument::LIST_OF_INTS:
+        s << *reinterpret_cast<IntVect*>(i->second.p_object_variable); break;	  
     case KeyArgument::ARRAY2D_OF_FLOATS:
-      detail::to_stream(s, *reinterpret_cast<const Array<2, float>*>(element.p_object_variable));
-      break;
+	detail::to_stream(s, *reinterpret_cast<Array<2,float>*>(i->second.p_object_variable)); break;
     case KeyArgument::ARRAY3D_OF_FLOATS:
-      detail::to_stream(s, *reinterpret_cast<const Array<3, float>*>(element.p_object_variable));
-      break;
+	detail::to_stream(s, *reinterpret_cast<Array<3,float>*>(i->second.p_object_variable)); break;
+      case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
+    {
+	    typedef BasicCoordinate<3,float> type;
+	    s << *reinterpret_cast<type*>(i->second.p_object_variable);
+        break;
+      }
+      case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
+          {
+	    typedef BasicCoordinate<3,Array<3,float> > type;
+	    detail::to_stream(s, *reinterpret_cast<type*>(i->second.p_object_variable));
+        break;
+      }
+      case KeyArgument::LIST_OF_ASCII:
+        s << *reinterpret_cast<vector<string>*>(i->second.p_object_variable); break;	  	  
     default:
       warning("KeyParser error: unknown type. Implementation error\n");
       break;
-    }
-#undef KP_case_to_stream
-}
 
-// sadly largely a repetition of the above, but now with a cast to std::vector<type> and a loop
-// Ugly!
-void
-KeyParser::vectorised_value_to_stream(std::ostream& s, const std::string& keyword, const map_element& element)
-{
-#define KP_case_to_stream(KeyArgumentValue, type)                                                                                \
-    case KeyArgumentValue: {                                                                                                     \
-      auto vect = *reinterpret_cast<const std::vector<type>*>(element.p_object_variable);                                        \
-      for (unsigned current_index = 1; current_index <= vect.size(); ++current_index)                                            \
-        s << keyword << '[' << current_index << "] := " << vect[current_index - 1] << '\n';                                      \
-    }                                                                                                                            \
-    break
-  switch (element.type)
-    {
-      KP_case_to_stream(KeyArgument::INT, int);
-      KP_case_to_stream(KeyArgument::UINT, unsigned int);
-      KP_case_to_stream(KeyArgument::ULONG, unsigned long);
-      KP_case_to_stream(KeyArgument::LONG, long);
-      KP_case_to_stream(KeyArgument::DOUBLE, double);
-      KP_case_to_stream(KeyArgument::FLOAT, float);
-      KP_case_to_stream(KeyArgument::ASCII, std::string);
-      KP_case_to_stream(KeyArgument::LIST_OF_INTS, IntVect);
-      KP_case_to_stream(KeyArgument::LIST_OF_DOUBLES, DoubleVect);
-      // sigh... macro expansion fails of type contain commas....
-      // Work-around: use typedefs.
-      // typedef Array<2,float> KP_array2d;
-      // typedef Array<3,float> KP_array3d;
-      typedef BasicCoordinate<3, float> KP_coord;
-      typedef BasicCoordinate<3, Array<3, float>> KP_coord_array3d;
-      // KP_case_to_stream(KeyArgument::ARRAY2D_OF_FLOATS, KP_array2d);
-      // KP_case_to_stream(KeyArgument::ARRAY3D_OF_FLOATS, KP_array3d);
-      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_FLOATS, KP_coord);
-      KP_case_to_stream(KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS, KP_coord_array3d);
-      KP_case_to_stream(KeyArgument::LIST_OF_ASCII, std::vector<std::string>);
-      case KeyArgument::BOOL: {
-        auto vect = *reinterpret_cast<const std::vector<bool>*>(element.p_object_variable);
-        for (unsigned current_index = 1; current_index <= vect.size(); ++current_index)
-          s << keyword << '[' << current_index << "] := " << (vect[current_index - 1] ? 1 : 0) << '\n';
-        break;
-      }
-    case KeyArgument::NONE:
-      break;
-      case KeyArgument::ASCIIlist: {
-        auto vect = *reinterpret_cast<const std::vector<int>*>(element.p_object_variable);
-        for (unsigned current_index = 1; current_index <= vect.size(); ++current_index)
-          {
-            s << keyword << '[' << current_index << "] := ";
-            const int index = vect[current_index - 1];
-            s << (index == -1 ? "UNALLOWED VALUE" : (*element.p_object_list_of_values)[index]) << '\n';
-          }
-        break;
-      }
-      case KeyArgument::PARSINGOBJECT: {
-        warning("KeyParser::parameter_info(): vectorised keyword type PARSINGOBJECT not yet supported");
-        break;
-      }
-      case KeyArgument::SHARED_PARSINGOBJECT: {
-        warning("KeyParser::parameter_info(): vectorised keyword type PARSINGOBJECT not yet supported");
-        break;
-      }
-
-      case KeyArgument::ARRAY2D_OF_FLOATS: {
-        auto vect = *reinterpret_cast<const std::vector<Array<2, float>>*>(element.p_object_variable);
-        for (unsigned current_index = 1; current_index <= vect.size(); ++current_index)
-          {
-            s << keyword << '[' << current_index << "] := ";
-            detail::to_stream(s, vect[current_index - 1]);
-          }
-      }
-      case KeyArgument::ARRAY3D_OF_FLOATS: {
-        auto vect = *reinterpret_cast<const std::vector<Array<3, float>>*>(element.p_object_variable);
-        for (unsigned current_index = 1; current_index <= vect.size(); ++current_index)
-          {
-            s << keyword << '[' << current_index << "] := ";
-            detail::to_stream(s, vect[current_index - 1]);
-          }
-      }
-    default:
-      warning("KeyParser error: unknown type. Implementation error\n");
-      break;
-    }
-#undef KP_case_to_stream
-}
-
-string
-KeyParser::parameter_info() const
-{
-  std::ostringstream s;
-
-  // first find start key
-  for (Keymap::const_iterator i = kmap.begin(); i != kmap.end(); ++i)
-    {
-      if (i->second.p_object_member == &KeyParser::start_parsing)
-        s << i->first << " :=\n";
-    }
-
-  for (Keymap::const_iterator i = kmap.begin(); i != kmap.end(); ++i)
-    {
-      if (i->second.p_object_member == &KeyParser::start_parsing || i->second.p_object_member == &KeyParser::stop_parsing)
-        continue;
-
-      if (i->second.vectorised_key_level > 0)
-        {
-          vectorised_value_to_stream(s, i->first, i->second);
-        }
-      else
-        {
-          s << i->first << " := ";
-          value_to_stream(s, i->second);
         }
       s << endl;
     }
@@ -1400,8 +1205,10 @@ KeyParser::parameter_info() const
   return s.str();
 }
 
-void
-KeyParser::ask_parameters()
+// KT 13/03/2001 new 
+// TODO breaks with vectored keys (as there is no way of finding out if the
+// variable is actually a vector of the relevant type
+void KeyParser::ask_parameters()
 {
   // This is necessary for set_parsing_object. It will allow the
   // 'recursive' parser to see it's being called interactively.
@@ -1413,15 +1220,10 @@ KeyParser::ask_parameters()
       for (Keymap::const_iterator i = kmap.begin(); i != kmap.end(); ++i)
         {
 
-          if (i->second.p_object_member == &KeyParser::do_nothing || i->second.p_object_member == &KeyParser::start_parsing
-              || i->second.p_object_member == &KeyParser::stop_parsing)
+      if (i->second.p_object_member == &KeyParser::do_nothing ||
+          i->second.p_object_member == &KeyParser::start_parsing ||
+          i->second.p_object_member == &KeyParser::stop_parsing)
             continue;
-
-          if (i->second.vectorised_key_level > 0)
-            {
-              warning("KeyParser: cannot handle vectorised key yet"); // TODO
-              continue;
-            }
 
           keyword = i->first;
 

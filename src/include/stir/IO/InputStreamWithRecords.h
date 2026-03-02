@@ -12,7 +12,15 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,6 +34,13 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+#ifndef STIR_NO_NAMESPACES
+using std::istream;
+using std::string;
+using std::streampos;
+using std::vector;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -59,11 +74,12 @@ template <class RecordT, class OptionsT>
 class InputStreamWithRecords
 {
 public:
-  typedef std::vector<std::streampos>::size_type SavedPosition;
+  typedef vector<streampos>::size_type SavedPosition;
   //! Constructor taking a stream
   /*! Data will be assumed to start at the current position reported by seekg().
       If reset() is used, it will go back to this starting position.*/
-  inline InputStreamWithRecords(const shared_ptr<std::istream>& stream_ptr,
+  inline
+    InputStreamWithRecords(const shared_ptr<istream>& stream_ptr,
                                 const std::size_t size_of_record_signature,
                                 const std::size_t max_size_of_record,
                                 const OptionsT& options);
@@ -72,50 +88,54 @@ public:
   /*! File will be opened in binary mode. Data will be assumed to
       start at \a start_of_data.
   */
-  inline InputStreamWithRecords(const std::string& filename,
+  inline
+  InputStreamWithRecords(const string& filename, 
                                 const std::size_t size_of_record_signature,
                                 const std::size_t max_size_of_record,
                                 const OptionsT& options,
-                                const std::streampos start_of_data = 0);
+                          const streampos start_of_data = 0);
 
-  virtual ~InputStreamWithRecords() {}
-
-  inline virtual Succeeded get_next_record(RecordT& record) const;
+  inline
+  virtual 
+    Succeeded get_next_record(RecordT& record) const;
 
   //! go back to starting position
-  inline Succeeded reset();
+  inline
+    Succeeded reset();
 
   //! save current "get" position in an internal array
   /*! \return an "index" into the array that allows you to go back.
       \see set_get_position
   */
-  inline SavedPosition save_get_position();
+  inline
+  SavedPosition save_get_position();
 
   //! set current "get" position to previously saved value
-  inline Succeeded set_get_position(const SavedPosition&);
+  inline
+  Succeeded set_get_position(const SavedPosition&);
 
   //! Function that enables the user to store the saved get_positions
   /*! Together with set_saved_get_positions(), this allows
       reinstating the saved get_positions when
       reopening the same stream.
   */
-  inline std::vector<std::streampos> get_saved_get_positions() const;
+  inline
+  vector<streampos> get_saved_get_positions() const;
   //! Function that sets the saved get_positions
   /*! Normally, the argument results from a call to
       get_saved_get_positions() on the same stream.
       \warning There is no check if the argument actually makes sense
       for the current stream.
   */
-  inline void set_saved_get_positions(const std::vector<std::streampos>&);
-
-  inline std::istream& get_stream() { return *this->stream_ptr; }
+  inline
+  void set_saved_get_positions(const vector<streampos>& );
 
 private:
-  shared_ptr<std::istream> stream_ptr;
-  const std::string filename;
 
-  std::streampos starting_stream_position;
-  std::vector<std::streampos> saved_get_positions;
+  const string filename;
+  shared_ptr<istream> stream_ptr;
+  streampos starting_stream_position;
+  vector<streampos> saved_get_positions;
 
   const std::size_t size_of_record_signature;
   const std::size_t max_size_of_record;

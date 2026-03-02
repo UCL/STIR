@@ -4,7 +4,15 @@
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details.
 */
@@ -22,15 +30,22 @@
 /* Modification history
  */
 
+
 #include "stir/RegisteredObject.h"
 #include "stir/TimedObject.h"
 #include "stir/ParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
-#include "stir/error.h"
 #include <string>
 
+
+#ifndef STIR_NO_NAMESPACES
+using std::string;
+#endif
+
+
 START_NAMESPACE_STIR
+
 
 class Succeeded;
 
@@ -68,14 +83,17 @@ class Succeeded;
   \todo there should be a method to rebin the data without writing the result to disk
 */
 
-class ProjDataRebinning : public TimedObject, public RegisteredObject<ProjDataRebinning>
+
+class ProjDataRebinning : 
+  public TimedObject, public ParsingObject ,
+  public RegisteredObject<ProjDataRebinning >
 {
 public:
   //! virtual destructor
-  ~ProjDataRebinning() override;
+  virtual ~ProjDataRebinning();
 
   //! gives method information
-  virtual std::string method_info() const = 0;
+  virtual string method_info() const = 0;
 
   //! executes the rebinning
   /*!
@@ -83,7 +101,8 @@ public:
     output_filename_prefix.
     \return Succeeded::yes if everything was alright.
    */
-  virtual Succeeded rebin() = 0;
+  virtual Succeeded 
+    rebin()=0;
 
   /*! \name get/set the number of segments to process
 
@@ -96,8 +115,8 @@ public:
   /*! get/set file name for output projdata (should be without extension)
    */
   //@{
-  void set_output_filename_prefix(const std::string& s);
-  std::string get_output_filename_prefix() const;
+  void set_output_filename_prefix(const string& s);
+  string get_output_filename_prefix() const;
   //@}
 
   //! set projection data that will be rebinned
@@ -114,10 +133,11 @@ public:
 
   // parameters
 protected:
+
   //! file name for output projdata (should be without extension)
-  std::string output_filename_prefix;
+  string output_filename_prefix; 
   //! file name for input projdata
-  std::string input_filename;
+  string input_filename; 
   //! the maximum absolute segment number to use in the reconstruction
   /*! convention: if -1, use get_max_segment_num()*/
   int max_segment_num_to_process;
@@ -134,18 +154,21 @@ protected:
   initialised, and ask_parameters() will be the appropriate virtual
   function, such that questions are asked for all parameters.
   */
-  void initialise(const std::string& parameter_filename);
+  void initialise(const string& parameter_filename);
 #endif
 
   //! used to check acceptable parameter ranges, etc...
-  bool post_processing() override;
-  void set_defaults() override;
-  void initialise_keymap() override;
+  virtual bool post_processing();  
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
 protected: // members
+
   shared_ptr<ProjData> proj_data_sptr;
 };
 
 END_NAMESPACE_STIR
 
+    
 #endif
+

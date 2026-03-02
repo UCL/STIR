@@ -4,7 +4,15 @@
     Copyright (C) 2005 - 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,10 +33,8 @@
 
 START_NAMESPACE_STIR
 
-//! A class for storing plasma and blood samples of a single study.
+//! A class for storing plasma samples of a single study.
 /*! \ingroup modelling
-
-  \see PlasmaSample
  */
 class PlasmaData
 {
@@ -58,9 +64,9 @@ public:
                               const RadioactivityUnits input_radioactivity_units ) ;
   */
 
-  /*! Implementation to read the input function from ONLY a 3-columns data file
-    (Time-InputFunctionRadioactivity-TotalBloodRadioactivity). \warning Assumes that the input function is not corrected for
-    decay.
+
+ /*! Implementation to read the input function from ONLY a 3-columns data file (Time-InputFunctionRadioactivity-TotalBloodRadioactivity).
+   \warning Assumes that the input function is not corrected for decay.
   */
   inline void read_plasma_data(const std::string input_string);
 
@@ -79,16 +85,13 @@ public:
 
   //! \name Functions to get parameters @{
   inline double get_time_shift();
-  inline bool get_is_decay_corrected() const;
+  inline bool get_if_decay_corrected() const ;
   inline double get_isotope_halflife() const;
   inline TimeFrameDefinitions get_time_frame_definitions() const; //!@}
   //! \name Functions to set parameters
   //!@{
-  inline void set_time_frame_definitions(
-      const TimeFrameDefinitions& plasma_fdef); //!<\note The set_time_frame_definitions() is prefered than giving directly the
-                                                //!< Scan TimeFrameDefinitions since the sample may not be measured for all the
-                                                //!< frames \n For example at the beginning or at the end of the scan.
-  inline void set_is_decay_corrected(const bool is_decay_corrected);
+  inline void set_time_frame_definitions(const TimeFrameDefinitions & plasma_fdef);   //!<\note The set_time_frame_definitions() is prefered than giving directly the Scan TimeFrameDefinitions since the sample may not be measured for all the frames \n For example at the beginning or at the end of the scan.
+  inline void set_if_decay_corrected(const bool is_decay_corrected);
   inline void set_isotope_halflife(const double isotope_halflife);
   inline void shift_time(const double time_shift);
   //!@}

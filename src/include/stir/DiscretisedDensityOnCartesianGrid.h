@@ -5,10 +5,17 @@
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
  */
@@ -44,8 +51,9 @@ template <int num_dimensions, typename elemT>
 class DiscretisedDensityOnCartesianGrid : public DiscretisedDensity<num_dimensions, elemT>
 {
 private:
-  typedef DiscretisedDensity<num_dimensions, elemT> base_type;
-
+  typedef 
+    DiscretisedDensity<num_dimensions,elemT>
+    base_type;
 public:
   //! Construct an empty DiscretisedDensityOnCartesianGrid
   inline DiscretisedDensityOnCartesianGrid();
@@ -55,21 +63,17 @@ public:
                                            const CartesianCoordinate3D<float>& origin,
                                            const BasicCoordinate<num_dimensions, float>& grid_spacing);
 
-  //! Constructor given exam_info, range, grid spacing and origin
-  inline DiscretisedDensityOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                           const IndexRange<num_dimensions>& range,
-                                           const CartesianCoordinate3D<float>& origin,
-                                           const BasicCoordinate<num_dimensions, float>& grid_spacing);
-
   //! Return the grid_spacing
   inline const BasicCoordinate<num_dimensions, float>& get_grid_spacing() const;
 
   //! Set the grid_spacing
   inline void set_grid_spacing(const BasicCoordinate<num_dimensions, float>& grid_spacing_v);
 
+
 protected:
-  inline bool actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&,
-                                              std::string& explanation) const override;
+  virtual inline bool
+    actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&, 
+				    string& explanation) const;
 
   //! Return the relative coordinates of the centre of the basis-function corresponding to \c indices.
   /*! The return value is relative to the origin.
@@ -80,8 +84,9 @@ protected:
 
       \todo cope with non-standard orientations
   */
-  inline CartesianCoordinate3D<float>
-  actual_get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const override;
+  virtual inline
+    CartesianCoordinate3D<float> 
+    actual_get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const;
 
   //! Return the indices of the basis-function closest to the given point.
   /*! The input argument should be relative to the origin.
@@ -92,8 +97,9 @@ protected:
 
       \todo cope with non-standard orientations
   */
-  inline BasicCoordinate<num_dimensions, float>
-  actual_get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const override;
+  virtual inline
+    BasicCoordinate<num_dimensions,float> 
+    actual_get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const; 
 
 private:
   BasicCoordinate<num_dimensions, float> grid_spacing;

@@ -3,7 +3,15 @@
 /*
     Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,7 +31,6 @@
 #include "stir/IO/InputFileFormatRegistry.h"
 #include "stir/IO/FileSignature.h"
 #include "stir/utilities.h" // for open_read_binary
-#include "stir/error.h"
 #include <utility> // for make_pair
 #include <typeinfo>
 
@@ -47,7 +54,8 @@ InputFileFormatRegistry<DataT>::default_sptr()
      Note that this function cannot be inline because the static member
      should be initialised in one translation unit only.
   */
-  static shared_ptr<InputFileFormatRegistry<DataT>> _default_sptr(new InputFileFormatRegistry<DataT>);
+  static shared_ptr<InputFileFormatRegistry<DataT> > 
+    _default_sptr(new InputFileFormatRegistry<DataT>);
 
   // std::cerr<< "\ndefault_sptr value " << _default_sptr.get() << std::endl;
   return _default_sptr;
@@ -55,14 +63,16 @@ InputFileFormatRegistry<DataT>::default_sptr()
 
 template <class DataT>
 void
-InputFileFormatRegistry<DataT>::add_to_registry(FactorySPtr const& factory, const unsigned ranking)
+InputFileFormatRegistry<DataT>::
+add_to_registry(FactorySPtr const & factory, const unsigned ranking)
 {
   this->_registry.insert(std::make_pair(ranking, factory));
 }
 
 template <class DataT>
 void
-InputFileFormatRegistry<DataT>::remove_from_registry(const Factory& factory)
+InputFileFormatRegistry<DataT>::
+remove_from_registry(const Factory& factory)
 {
   iterator iter = this->_registry.begin();
   iterator const end = this->_registry.end();
@@ -79,7 +89,9 @@ InputFileFormatRegistry<DataT>::remove_from_registry(const Factory& factory)
 
 template <class DataT>
 typename InputFileFormatRegistry<DataT>::Factory const&
-InputFileFormatRegistry<DataT>::find_factory(const FileSignature& signature, std::istream& input) const
+InputFileFormatRegistry<DataT>::
+find_factory(const FileSignature& signature,
+	     std::istream& input) const
 {
   const_iterator iter = this->_actual_find_factory(signature, input);
   if (this->_valid(iter))
@@ -97,7 +109,9 @@ InputFileFormatRegistry<DataT>::find_factory(const FileSignature& signature, std
 
 template <class DataT>
 typename InputFileFormatRegistry<DataT>::Factory const&
-InputFileFormatRegistry<DataT>::find_factory(const FileSignature& signature, const std::string& filename) const
+InputFileFormatRegistry<DataT>::
+find_factory(const FileSignature& signature,
+	     const std::string& filename) const
 {
   const_iterator iter = this->_actual_find_factory(signature, filename);
   if (this->_valid(iter))
@@ -115,21 +129,24 @@ InputFileFormatRegistry<DataT>::find_factory(const FileSignature& signature, con
 
 template <class DataT>
 typename InputFileFormatRegistry<DataT>::Factory const&
-InputFileFormatRegistry<DataT>::find_factory(const std::string& filename) const
+InputFileFormatRegistry<DataT>::
+find_factory(const std::string& filename) const
 {
   return this->find_factory(FileSignature(filename), filename);
 }
 
 template <class DataT>
 typename InputFileFormatRegistry<DataT>::Factory const&
-InputFileFormatRegistry<DataT>::find_factory(std::istream& input) const
+InputFileFormatRegistry<DataT>::
+find_factory(std::istream& input) const
 {
   return this->find_factory(FileSignature(input), input);
 }
 
 template <class DataT>
 void
-InputFileFormatRegistry<DataT>::list_registered_names(std::ostream& stream) const
+InputFileFormatRegistry<DataT>::
+list_registered_names(std::ostream& stream) const
 {
   const_iterator iter = this->_registry.begin();
   const_iterator const end = this->_registry.end();
@@ -141,3 +158,4 @@ InputFileFormatRegistry<DataT>::list_registered_names(std::ostream& stream) cons
 }
 
 END_NAMESPACE_STIR
+

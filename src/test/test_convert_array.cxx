@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,8 +35,6 @@
 #include <vector>
 #include <iostream>
 #include <math.h>
-using std::cerr;
-using std::endl;
 
 START_NAMESPACE_STIR
 
@@ -36,14 +42,16 @@ START_NAMESPACE_STIR
 class convert_array_Tests : public RunTests
 {
 public:
-  void run_tests() override;
+  void run_tests();
 };
+
 
 void
 convert_array_Tests::run_tests()
 {
 
-  cerr << "Test program for 'convert_array'." << endl << "Everything is fine when there is no output below." << endl;
+  cerr << "Test program for 'convert_array'." << endl 
+    << "Everything is fine when there is no output below." << endl;
 
   // 1D
   {
@@ -62,6 +70,7 @@ convert_array_Tests::run_tests()
       check_if_equal(ti1, ti2, "test convert_array float->short 1D");
     }
 
+    
     {
       // float -> short with automatic scale factor
       float scale_factor = 0;
@@ -82,6 +91,7 @@ convert_array_Tests::run_tests()
       check(fabs(NumericInfo<short>().max_value() / 1.01 / ti2[1] - 1) < 1E-4);
       for (int i = 1; i <= 20; i++)
         check(fabs(double(ti2[i]) * scale_factor / tf1[i] - 1) < 1E-4);
+      
     }
 
     {
@@ -90,6 +100,7 @@ convert_array_Tests::run_tests()
       Array<1, float> tf2 = convert_array(scale_factor, ti1, NumericInfo<float>());
       Array<1, short> ti2(1, 20);
 
+      
       check(scale_factor == float(1));
       check(tf2[1] == 100.F);
       for (int i = 1; i <= 20; i++)
@@ -127,7 +138,8 @@ convert_array_Tests::run_tests()
 
       // negative float -> unsigned short with a preferred scale factor
       float scale_factor = 1;
-      Array<1, unsigned short> ti2 = convert_array(scale_factor, tf1, NumericInfo<unsigned short>());
+      Array<1,unsigned short> ti2 =
+	convert_array(scale_factor, tf1, NumericInfo<unsigned short>());
 
       check(scale_factor == float(1));
       check(ti3 == ti2);
@@ -158,7 +170,9 @@ convert_array_Tests::run_tests()
 #ifndef DO_TIMING_ONLY
       check(fabs(NumericInfo<short>().max_value() / 1.01 / (*ti2.begin_all()) - 1) < 1E-4);
       const Array<3, short>::full_iterator iter_end = ti2.end_all();
-      for (Array<3, short>::full_iterator iter = ti2.begin_all(); iter != iter_end; ++iter)
+      for (Array<3,short>::full_iterator iter= ti2.begin_all();
+           iter != iter_end;
+	   ++iter)
         *iter = short(double((*iter)) * scale_factor);
       check(ti1 == ti2);
 #endif
@@ -175,7 +189,9 @@ convert_array_Tests::run_tests()
       Array<3, short>::full_iterator iter_ti2 = ti2.begin_all();
       const Array<3, short>::full_iterator iter_ti2_end = ti2.end_all();
       Array<3, float>::full_iterator iter_tf1 = tf1.begin_all();
-      for (; iter_ti2 != iter_ti2_end; ++iter_ti2, ++iter_tf1)
+      for (;
+           iter_ti2 != iter_ti2_end;
+	   ++iter_ti2, ++iter_tf1)
         check(fabs(double(*iter_ti2) * scale_factor / *iter_tf1 - 1) < 1E-4);
 #endif
     }
@@ -189,8 +205,11 @@ convert_array_Tests::run_tests()
     {
       std::vector<int>::const_iterator iter_out = vout.begin();
       std::vector<signed char>::const_iterator iter_in = vin.begin();
-      for (; iter_out != vout.end(); ++iter_in, ++iter_out)
-        check(fabs(double(*iter_out) * scale_factor / *iter_in - 1) < 1E-4, "convert_range signed char->int");
+      for (;
+	   iter_out != vout.end();
+	   ++iter_in, ++iter_out)
+	check(fabs(double(*iter_out) *scale_factor / *iter_in - 1) < 1E-4,
+	      "convert_range signed char->int") ;
     }
   }
   // equal type
@@ -203,18 +222,24 @@ convert_array_Tests::run_tests()
       check_if_equal(scale_factor, 1.F, "scale_factor should be 1 when using equal types");
       std::vector<int>::const_iterator iter_out = vout.begin();
       std::vector<int>::const_iterator iter_in = vin.begin();
-      for (; iter_out != vout.end(); ++iter_in, ++iter_out)
-        check(fabs(double(*iter_out) * scale_factor / *iter_in - 1) < 1E-4, "convert_range equal types");
+      for (;
+	   iter_out != vout.end();
+	   ++iter_in, ++iter_out)
+	check(fabs(double(*iter_out) *scale_factor / *iter_in - 1) < 1E-4,
+	      "convert_range equal types") ;
     }
   }
 }
 
 END_NAMESPACE_STIR
 
+
+
 USING_NAMESPACE_STIR
 
-int
-main()
+
+
+int main()
 {
   convert_array_Tests tests;
   tests.run_tests();

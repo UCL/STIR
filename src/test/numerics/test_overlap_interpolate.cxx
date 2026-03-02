@@ -2,7 +2,15 @@
     Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
    See STIR/LICENSE.txt for details
 */
@@ -27,6 +35,7 @@
 
 START_NAMESPACE_STIR
 
+
 /*!
   \brief Test class for stir::overlap_interpolate
   \ingroup numerics_test
@@ -35,12 +44,15 @@ START_NAMESPACE_STIR
 class overlap_interpolateTests : public RunTests
 {
 public:
-  void run_tests() override;
-
+  void run_tests();
 private:
 #ifndef STIR_OVERLAP_NORMALISATION
   template <class ValueT, class BoundaryT>
-  static void divide_by_out_size(ValueT& outvalues, const BoundaryT& outboundaries)
+  static 
+  void
+  divide_by_out_size(
+		     ValueT& outvalues,
+		     const BoundaryT& outboundaries)
   {
     typename ValueT::iterator iter = outvalues.begin();
     typename BoundaryT::const_iterator bound_iter = outboundaries.begin();
@@ -52,21 +64,18 @@ private:
 #endif
 
   template <class ValueT, class BoundaryT>
-  Succeeded test_case(const ValueT& invalues,
+  Succeeded
+  test_case(const ValueT& invalues,
                       const BoundaryT& inboundaries,
                       const ValueT& outvalues,
                       const BoundaryT& outboundaries,
                       const char* const description)
   {
     ValueT my_outvalues = outvalues;
-    overlap_interpolate(my_outvalues.begin(),
-                        my_outvalues.end(),
-                        outboundaries.begin(),
-                        outboundaries.end(),
-                        invalues.begin(),
-                        invalues.end(),
-                        inboundaries.begin(),
-                        inboundaries.end());
+    overlap_interpolate(my_outvalues.begin(), my_outvalues.end(),
+			outboundaries.begin(), outboundaries.end(),
+			invalues.begin(), invalues.end(),
+			inboundaries.begin(), inboundaries.end());
 #ifndef STIR_OVERLAP_NORMALISATION
     divide_by_out_size(my_outvalues, outboundaries);
 #endif
@@ -74,27 +83,35 @@ private:
     const bool ret = check_if_equal(my_outvalues, outvalues, description);
     if (!ret)
       std::cerr << "\nres: " << my_outvalues << "should be " << outvalues;
-    return ret ? Succeeded::yes : Succeeded::no;
+    return 
+      ret  ? Succeeded::yes : Succeeded::no;
   }
 
   template <class ValueT>
-  Succeeded uniform_test_case(
-      const ValueT& invalues, const float zoom, const float offset, const ValueT& outvalues, const char* const description)
+  Succeeded
+  uniform_test_case(const ValueT& invalues,
+		    const float zoom, const float offset,
+		    const ValueT& outvalues,
+		    const char * const description)
   {
     using namespace boost::lambda;
 
     ValueT my_outvalues = outvalues;
-    overlap_interpolate(my_outvalues, invalues, zoom, offset);
+    overlap_interpolate(my_outvalues,
+			invalues, zoom, offset);
 #ifndef STIR_OVERLAP_NORMALISATION
     std::for_each(my_outvalues.begin(), my_outvalues.end(), _1 *= zoom);
 #endif
     const bool ret = check_if_equal(my_outvalues, outvalues, description);
     if (!ret)
       std::cerr << "\nres: " << my_outvalues << "should be " << outvalues << '\n';
-    return ret ? Succeeded::yes : Succeeded::no;
+    return 
+      ret  ? Succeeded::yes : Succeeded::no;
   }
 
-  Succeeded test_case_1d(const char* const input, const char* const description)
+  Succeeded
+  test_case_1d(const char * const input, 
+	       const char * const description)
   {
     std::istringstream s(input);
     VectorWithOffset<float> invalues, inboundaries, outvalues, outboundaries;
@@ -102,7 +119,10 @@ private:
     return test_case(invalues, inboundaries, outvalues, outboundaries, description);
   }
 
-  Succeeded uniform_test_case_1d(const char* const input, const char* const description)
+
+  Succeeded
+  uniform_test_case_1d(const char * const input, 
+		       const char * const description)
   {
     std::istringstream s(input);
     VectorWithOffset<float> invalues, outvalues;
@@ -110,7 +130,10 @@ private:
     float zoom, offset;
     char out[10000];
 
-    s >> invalues >> instartindex >> outstartindex >> outendindex >> zoom >> offset >> outvalues;
+    s >> invalues 
+      >> instartindex >> outstartindex >> outendindex
+      >> zoom >> offset
+      >> outvalues;
     invalues.set_min_index(instartindex);
     VectorWithOffset<float> inboundaries(invalues.get_min_index(), invalues.get_max_index() + 1);
     for (int i = inboundaries.get_min_index(); i <= inboundaries.get_max_index(); ++i)
@@ -132,6 +155,7 @@ private:
       return Succeeded::no;
     return Succeeded::yes;
   }
+
 };
 
 void
@@ -190,7 +214,7 @@ overlap_interpolateTests::run_tests()
 0.0874235}"
                "{0,0.0778616,0.809312,1.41487,1.47699,1.69054,1.78416,2.4433,2.86767}"
                "{0.256752,0.925738,0.493403,0.387417,0.0874235,0.00196432,0.,0.,0.}"
-               "{0,0.764837,1.3928,2.13089,2.55935,2.85087,3.59851,3.85628,4.15325,5.00828}",
+	       "{0,0.764837,1.3928,2.13089,2.55935,2.85087,3.59851,3.85628,4.15325,5.00828}",\
 
                "random case 2");
   test_case_1d("{0.511261,0.27949,0.759702,0.351098,0.205432,0.780642,0.672278,\
@@ -267,12 +291,12 @@ overlap_interpolateTests::run_tests()
                        "uniform test case 3");
 }
 
+
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int
-main()
+int main()
 {
   overlap_interpolateTests tests;
   tests.run_tests();

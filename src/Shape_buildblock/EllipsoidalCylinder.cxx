@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,14 +32,13 @@
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/numerics/MatrixFunction.h"
 #include "stir/Succeeded.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #include <algorithm>
 #include <cmath>
 
 START_NAMESPACE_STIR
 
-const char* const EllipsoidalCylinder::registered_name = "Ellipsoidal Cylinder";
+const char * const 
+EllipsoidalCylinder::registered_name = "Ellipsoidal Cylinder";
 
 void
 EllipsoidalCylinder::initialise_keymap()
@@ -58,7 +65,8 @@ EllipsoidalCylinder::set_defaults()
 }
 
 bool
-EllipsoidalCylinder::post_processing()
+EllipsoidalCylinder::
+post_processing()
 {
   if (Shape3DWithOrientation::post_processing() == true)
     return true;
@@ -91,6 +99,8 @@ EllipsoidalCylinder::post_processing()
   return false;
 }
 
+
+
 EllipsoidalCylinder::EllipsoidalCylinder()
 {
   set_defaults();
@@ -101,12 +111,14 @@ EllipsoidalCylinder::EllipsoidalCylinder(const float length_v,
                                          const float radius_yv,
                                          const CartesianCoordinate3D<float>& centre_v,
                                          const Array<2, float>& direction_vectors)
-    : length(length_v),
+                    :
+                     length(length_v),
       radius_x(radius_xv),
       radius_y(radius_yv),
       theta_1(0.0F),
       theta_2(360.0F)
 
+		    
 {
   assert(length > 0);
   assert(radius_x > 0);
@@ -123,12 +135,14 @@ EllipsoidalCylinder::EllipsoidalCylinder(const float length_v,
                                          const float theta_2v,
                                          const CartesianCoordinate3D<float>& centre_v,
                                          const Array<2, float>& direction_vectors)
-    : length(length_v),
+                    :
+                     length(length_v),
       radius_x(radius_xv),
       radius_y(radius_yv),
       theta_1(theta_1v),
       theta_2(theta_2v)
 
+		    
 {
   assert(length > 0);
   assert(radius_x > 0);
@@ -139,31 +153,36 @@ EllipsoidalCylinder::EllipsoidalCylinder(const float length_v,
 }
 
 void
-EllipsoidalCylinder::set_length(const float new_length)
+EllipsoidalCylinder::
+set_length(const float new_length)
 {
   assert(new_length > 0);
   length = new_length;
 }
 
 void
-EllipsoidalCylinder::set_radius_x(const float new_radius_x)
+EllipsoidalCylinder::
+set_radius_x(const float new_radius_x)
 {
   assert(new_radius_x > 0);
   radius_x = new_radius_x;
 }
 
 void
-EllipsoidalCylinder::set_radius_y(const float new_radius_y)
+EllipsoidalCylinder::
+set_radius_y(const float new_radius_y)
 {
   assert(new_radius_y > 0);
   radius_y = new_radius_y;
 }
 
-bool
-EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& coord) const
+
+
+bool EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& coord) const
 
 {
-  const CartesianCoordinate3D<float> r = this->transform_to_shape_coords(coord);
+  const CartesianCoordinate3D<float> r = 
+    this->transform_to_shape_coords(coord);
 
   const float distance_along_axis = r.z();
 
@@ -171,26 +190,31 @@ EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& coord) 
     {
       if (square(r.x() / radius_x) + square(r.y() / radius_y) <= 1)
         {
-          const float x_pos = r.x();
-          const float y_pos = r.y();
-          const float phi_1 = static_cast<float>(_PI * theta_1 / 180.0);
-          const float phi_2 = static_cast<float>(_PI * theta_2 / 180.0);
+	const float x_pos=
+	  r.x();
+	const float y_pos=
+	  r.y();
+	const float phi_1 = 
+	  static_cast<float>(_PI*theta_1/180.0);
+	const float phi_2 = 
+	  static_cast<float>(_PI*theta_2/180.0);
           // Adding theta cuts for partial cylinders from theta_1 to theta_2
           float theta_r = atan2(y_pos, x_pos);
           if (theta_r < 0.0)
             theta_r = static_cast<float>(2.0 * _PI + theta_r);
-          return (((phi_1 < phi_2) && ((theta_r >= phi_1) && (theta_r <= phi_2)))
-                  || ((phi_1 > phi_2) && ((theta_r >= phi_1) || (theta_r <= phi_2))));
+	return
+	  (((phi_1 < phi_2)&&((theta_r >= phi_1)&&(theta_r <= phi_2))) ||
+	   ((phi_1 > phi_2)&&((theta_r >= phi_1)||(theta_r <= phi_2))));
         }
       else
         return false;
     }
-  else
-    return false;
+  else return false;
 }
 
 float
-EllipsoidalCylinder::get_geometric_volume() const
+EllipsoidalCylinder:: 
+get_geometric_volume()const
 {
   const float volume_of_unit_cell = this->get_volume_of_unit_cell();
   float A1 = 0, A2 = 0;
@@ -201,10 +225,8 @@ EllipsoidalCylinder::get_geometric_volume() const
       T1 = 0.0;
       T2 = 360.0;
     }
-  if (theta_1 == 360.0)
-    T1 = 0.0;
-  if (theta_2 == 0.0)
-    T2 = 360.0;
+   if (theta_1 == 360.0) T1 = 0.0;
+   if (theta_2 ==   0.0) T2 = 360.0;
   const float phi_1 = static_cast<float>(T1 * _PI / 180.0);
   const float phi_2 = static_cast<float>(T2 * _PI / 180.0);
 
@@ -214,31 +236,34 @@ EllipsoidalCylinder::get_geometric_volume() const
   if (radius_x == radius_y)
     {
       if (T1 < T2)
-        return static_cast<float>(_PI * radius_x * radius_y * length * (T2 - T1) / 360.0 / volume_of_unit_cell);
+	 return static_cast<float>(_PI*radius_x*radius_y*length*
+				   (T2-T1)/360.0/volume_of_unit_cell);
       else
-        return static_cast<float>(_PI * radius_x * radius_y * length * (360.0 - T1 + T2) / 360.0 / volume_of_unit_cell);
+	 return static_cast<float>(_PI*radius_x*radius_y*length*
+				   (360.0-T1+T2)/360.0/volume_of_unit_cell);
     }
 
   if (T2 >= 0.0 && T2 < 90.0) // branch one
-    A2 = static_cast<float>(atan2(radius_x / radius_y * fabs(tan(phi_2)), 1));
+     A2 = atan2(radius_x/radius_y * fabs(tan(phi_2)),1);
   if (T2 >= 90.0 && T2 < 180.0) // branch two
-    A2 = static_cast<float>(atan2(radius_x / radius_y * fabs(tan(phi_2)), -1));
+     A2 = atan2(radius_x/radius_y * fabs(tan(phi_2)),-1);
   if (T2 >= 180.0 && T2 < 270.0) // branch three
     A2 = static_cast<float>(2 * _PI + atan2(-radius_x / radius_y * fabs(tan(phi_2)), -1));
   if (T2 >= 270.0 && T2 <= 360.0) // branch four
     A2 = static_cast<float>(2 * _PI + atan2(-radius_x / radius_y * fabs(tan(phi_2)), 1));
 
   if (T1 >= 0.0 && T1 < 90.0) // branch one
-    A1 = static_cast<float>(atan2(radius_x / radius_y * fabs(tan(phi_1)), 1));
+     A1 = atan2(radius_x/radius_y * fabs(tan(phi_1)),1);
   if (T1 >= 90.0 && T1 < 180.0) // branch two
-    A1 = static_cast<float>(atan2(radius_x / radius_y * fabs(tan(phi_1)), -1));
+     A1 = atan2(radius_x/radius_y * fabs(tan(phi_1)),-1);
   if (T1 >= 180.0 && T1 < 270.0) // branch three
     A1 = static_cast<float>(2 * _PI + atan2(-radius_x / radius_y * fabs(tan(phi_1)), -1));
   if (T1 >= 270.0 && T1 <= 360.0) // branch four
     A1 = static_cast<float>(2 * _PI + atan2(-radius_x / radius_y * fabs(tan(phi_1)), 1));
 
   if (T1 > T2)
-    return static_cast<float>(radius_x * radius_y / 2.0 * (2.0 * _PI - A2 + A1) * length / volume_of_unit_cell);
+     return static_cast<float>(radius_x*radius_y/2.0*
+			       (2.0*_PI - A2 + A1)*length/volume_of_unit_cell);
 
   return static_cast<float>(radius_x * radius_y / 2.0 * (A2 - A1) * length / volume_of_unit_cell);
 }
@@ -316,27 +341,37 @@ get_geometric_area()const
 #endif
 
 Shape3D*
-EllipsoidalCylinder::clone() const
+EllipsoidalCylinder:: 
+clone() const
 {
   return static_cast<Shape3D*>(new EllipsoidalCylinder(*this));
 }
 
 bool
-EllipsoidalCylinder::operator==(const EllipsoidalCylinder& cylinder) const
+EllipsoidalCylinder:: 
+operator==(const EllipsoidalCylinder& cylinder) const
 {
-  const float tolerance = std::min(length, std::min(radius_x, radius_y)) / 1000;
-  return std::fabs(this->length - cylinder.length) < tolerance && std::fabs(this->radius_x - cylinder.radius_x) < tolerance
-         && std::fabs(this->radius_y - cylinder.radius_y) < tolerance && std::fabs(theta_1 - cylinder.theta_1) < .1F
-         && std::fabs(theta_2 - cylinder.theta_2) < .1F && Shape3DWithOrientation::operator==(cylinder);
+  const float tolerance = 
+    std::min(length, std::min(radius_x, radius_y))/1000;
+  return
+    std::fabs(this->length - cylinder.length) < tolerance
+    && std::fabs(this->radius_x - cylinder.radius_x) < tolerance
+    && std::fabs(this->radius_y - cylinder.radius_y) < tolerance
+    && std::fabs(theta_1 - cylinder.theta_1) < .1F
+    && std::fabs(theta_2 - cylinder.theta_2) < .1F
+    && Shape3DWithOrientation::operator==(cylinder);
 
   ;
 }
 
 bool
-EllipsoidalCylinder::operator==(const Shape3D& shape) const
+EllipsoidalCylinder:: 
+operator==(const Shape3D& shape) const
 {
-  EllipsoidalCylinder const* cylinder_ptr = dynamic_cast<EllipsoidalCylinder const*>(&shape);
-  return cylinder_ptr != 0 && (*this == *cylinder_ptr);
+  EllipsoidalCylinder const * cylinder_ptr =
+    dynamic_cast<EllipsoidalCylinder const *>(&shape);
+  return
+    cylinder_ptr != 0 && (*this == *cylinder_ptr);
 }
 
 END_NAMESPACE_STIR

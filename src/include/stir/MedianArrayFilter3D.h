@@ -14,7 +14,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,10 +32,10 @@
 
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 
+
 START_NAMESPACE_STIR
 
-template <typename coordT>
-class Coordinate3D;
+template <typename coordT> class Coordinate3D;
 
 /*!
   \ingroup Array
@@ -55,21 +63,25 @@ class MedianArrayFilter3D : public ArrayFunctionObject_2ArgumentImplementation<3
 public:
   explicit MedianArrayFilter3D(const Coordinate3D<int>& mask_radius);
   MedianArrayFilter3D();
-  bool is_trivial() const override;
+  bool is_trivial() const;
 
 private:
   int mask_radius_x;
   int mask_radius_y;
   int mask_radius_z;
 
-  void do_it(Array<3, elemT>& out_array, const Array<3, elemT>& in_array) const override;
+  virtual void do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const;
 
   //! extract all neighbours and put them in a 1D array
   /*! \return the number of neighbours within the image range
    */
   int extract_neighbours(Array<1, elemT>&, const Array<3, elemT>& array, const Coordinate3D<int>&) const;
+
 };
 
 END_NAMESPACE_STIR
 
 #endif
+
+
+

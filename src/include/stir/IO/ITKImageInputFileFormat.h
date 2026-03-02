@@ -3,10 +3,16 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) 2014, University College London
-    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
-                        Australian eHealth Research Centre
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -17,10 +23,10 @@
 
   \author Berta Marti Fuster
   \author Kris Thielemans
-  \author Ashley Gillman
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
 START_NAMESPACE_STIR
 
@@ -40,26 +46,39 @@ START_NAMESPACE_STIR
 
     \warning This translation currently ignores orientation and direction (e.g. of slice order).
 */
-template <typename STIRImageType = DiscretisedDensity<3, float>>
-class ITKImageInputFileFormat : public InputFileFormat<STIRImageType>
+class ITKImageInputFileFormat :
+public InputFileFormat<DiscretisedDensity<3,float> >
 {
 
 public:
-  //! This function always returns \c false as ITK cannot read from istream
-  bool can_read(const FileSignature& signature, std::istream& input) const override;
-  //! Use ITK reader to check if it can read the file (by seeing if it throws an exception or not)
-  bool can_read(const FileSignature& signature, const std::string& filename) const override;
 
-  const std::string get_name() const override { return "ITK"; }
+  //! This function always returns \c false as ITK cannot read from istream
+  virtual bool
+    can_read(const FileSignature& signature,
+	std::istream& input) const;
+  //! Use ITK reader to check if it can read the file (by seeing if it throws an exception or not)
+  virtual bool 
+    can_read(const FileSignature& signature,
+	     const std::string& filename) const;
+ 
+  virtual const std::string
+    get_name() const
+  {  return "ITK"; }
 
 protected:
-  bool actual_can_read(const FileSignature& signature, std::istream& input) const override;
+  virtual 
+    bool 
+    actual_can_read(const FileSignature& signature,
+		    std::istream& input) const;
 
   //! This function always calls error() as ITK cannot read from istream
-  unique_ptr<STIRImageType> read_from_file(std::istream& input) const override;
+  virtual std::auto_ptr<data_type>
+    read_from_file(std::istream& input) const;
 
   //! This function uses ITK for reading and does the translation to STIR
-  unique_ptr<STIRImageType> read_from_file(const std::string& filename) const override;
+  virtual std::auto_ptr<data_type>
+    read_from_file(const std::string& filename) const;
+
 };
 END_NAMESPACE_STIR
 

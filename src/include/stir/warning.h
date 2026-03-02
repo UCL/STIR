@@ -5,7 +5,15 @@
 /*
     Copyright (C) 2010- 2013, Hammersmith Imanet Ltd
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -17,9 +25,8 @@
   \author Kris Thielemans
 
 */
-#include "stir/Verbosity.h"
-#include "stir/TextWriter.h"
-#include <sstream>
+#include "stir/common.h"
+#include <iostream>
 
 START_NAMESPACE_STIR
 
@@ -36,7 +43,9 @@ START_NAMESPACE_STIR
 
   \deprecated (use 1 argument version instead)
 */
-void warning(const char* const s, ...);
+void
+warning(const char *const s, ...);
+
 
 //! Use this function for writing warning messages
 /*! \ingroup buildblock
@@ -49,11 +58,11 @@ void warning(const char* const s, ...);
 
   \todo At a later stage, it will also write to a log-file.
 
-  \c stir::format is useful in this context.
+  \c boost::format is useful in this context.
 
   \par Example
   \code
-  warning(format("Type is like this: {}. Not sure if that will work.", projdata_info.parameter_info()));
+  warning(boost::format("Type is like this: %1%. Not sure if that will work.") % projdata_info.parameter_info());
 
   warning("This might not work");
   \endcode
@@ -61,14 +70,11 @@ void warning(const char* const s, ...);
 
 template <class STRING>
 inline void
-warning(const STRING& string, const int verbosity_level = 1)
-{
-  if (Verbosity::get() >= verbosity_level)
+warning(const STRING& string)
     {
-      std::stringstream sstr;
-      sstr << "\nWARNING: " << string << std::endl;
-      writeText(sstr.str().c_str(), WARNING_CHANNEL);
-    }
+  std::cerr << "\nWARNING: "
+	    << string
+	    << std::endl;
 }
 END_NAMESPACE_STIR
 #endif

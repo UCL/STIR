@@ -4,7 +4,15 @@
     Copyright (C) 2011- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -40,8 +48,7 @@
 
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 
   if (argc != 6)
@@ -49,6 +56,7 @@ main(int argc, char* argv[])
       std::cerr << "Usage: " << argv[0] << " scanner_name crystal1 crystal2 ring1 ring2\n";
       std::cerr << "\nLists detection and bin info for non-arccorrected projection data without any compression.\n";
       return EXIT_FAILURE;
+
     }
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(argv[1]));
   if (scanner_sptr->get_type() == Scanner::Unknown_scanner)
@@ -57,13 +65,17 @@ main(int argc, char* argv[])
       return (EXIT_FAILURE);
     }
 
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr
+    (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
+     (
       ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                                    1,
-                                    scanner_sptr->get_num_rings() - 1,
+                                   1, scanner_sptr->get_num_rings()-1,
                                     scanner_sptr->get_num_detectors_per_ring() / 2,
-                                    scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                    false)));
+                                   scanner_sptr->get_default_num_arccorrected_bins(), 
+                                   false)
+      ));
+
+
 
   {
     using std::cout;
@@ -77,15 +89,19 @@ main(int argc, char* argv[])
     DetectionPositionPair<> det_pos;
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 
-    const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(det_num_a, ring_a), DetectionPosition<>(det_num_b, ring_b));
-    proj_data_info_sptr->get_bin_for_det_pos_pair(bin, det_pos_pair);
-    cout << "bin: (segment " << bin.segment_num() << ", axial pos " << bin.axial_pos_num() << ", view = " << bin.view_num()
+    proj_data_info_sptr->get_bin_for_det_pair (bin,
+                                               det_num_a, ring_a, det_num_b, ring_b);
+    cout << "bin: (segment " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
+         << ", view = " << bin.view_num() 
          << ", tangential_pos_num = " << bin.tangential_pos_num() << ")\n";
-    cout << "bin coordinates: (tantheta: " << proj_data_info_sptr->get_tantheta(bin) << ", m: " << proj_data_info_sptr->get_m(bin)
-         << ", phi: " << proj_data_info_sptr->get_phi(bin) << ", s: " << proj_data_info_sptr->get_s(bin) << ")\n";
+    cout << "bin coordinates: (tantheta: " << proj_data_info_sptr->get_tantheta(bin)
+         << ", m: " << proj_data_info_sptr->get_m(bin)
+         << ", phi: " << proj_data_info_sptr->get_phi(bin)
+         << ", s: " << proj_data_info_sptr->get_s(bin)
+         << ")\n";
     proj_data_info_sptr->get_LOR(lor, bin);
-    cout << "LOR cylindrical: (z1: " << lor.z1() << ", z2: " << lor.z2() << ", phi: " << lor.phi() << ", beta: " << lor.beta()
-         << " (= s: " << lor.s() << ")"
+    cout << "LOR cylindrical: (z1: " << lor.z1() << ", z2: " << lor.z2()
+         << ", phi: " << lor.phi() << ", beta: " << lor.beta() << " (= s: " << lor.s() << ")"
          << ")\n";
 
     LORAs2Points<float> lor_points;
@@ -94,10 +110,14 @@ main(int argc, char* argv[])
 
     proj_data_info_sptr->get_det_pos_pair_for_bin(det_pos, bin);
     cout << "Detection position index "
-         << "(c:" << det_pos.pos1().tangential_coord() << ",r:" << det_pos.pos1().axial_coord()
-         << ",l:" << det_pos.pos1().radial_coord() << ")-"
-         << "(c:" << det_pos.pos2().tangential_coord() << ",r:" << det_pos.pos2().axial_coord()
-         << ",l:" << det_pos.pos2().radial_coord() << ")";
+         <<"(c:" << det_pos.pos1().tangential_coord()
+         << ",r:" << det_pos.pos1().axial_coord()
+         << ",l:" << det_pos.pos1().radial_coord()
+         << ")-"
+         << "(c:" << det_pos.pos2().tangential_coord()
+         << ",r:" << det_pos.pos2().axial_coord()
+         << ",l:" << det_pos.pos2().radial_coord()
+         << ")";
 
 #if 0
     {

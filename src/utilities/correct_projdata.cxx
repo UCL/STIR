@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -73,8 +81,6 @@ correct_projdata Parameters :=
 
   ; scatter term to be subtracted AFTER norm+atten correction
   ; defaults to 0
-  ; - scatter which should NOT be used here (it would need to be added to randoms and used above)
-  ; - additive_term which should be used here BUT already included the randoms
   ;scatter projdata filename := scatter.hs
 
   ; to interpolate to uniform sampling in 's', set value to 1
@@ -91,8 +97,7 @@ The following gives a brief explanation of the non-obvious parameters.
 
 <ul>
 <li> use data (1) or set to one (0):<br>
-Use the data in the input file, or substitute data with all 1's. This is useful to get correction factors only. Its value defaults
-to 1.
+Use the data in the input file, or substitute data with all 1's. This is useful to get correction factors only. Its value defaults to 1.
 </li>
 <li>
 apply (1) or undo (0) correction:<br>
@@ -138,8 +143,6 @@ This parameter will be removed.
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ArrayFunction.h"
 #include "stir/TimeFrameDefinitions.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #ifndef USE_PMRT
 #  include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #else
@@ -152,15 +155,18 @@ This parameter will be removed.
 #include <fstream>
 #include <algorithm>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::fstream;
 using std::ifstream;
 using std::cout;
 using std::string;
-using std::vector;
+#endif
 
 START_NAMESPACE_STIR
+
+
 
 // TODO most of this is identical to ReconstructionParameters, so make a common class
 /*! \ingroup utilities
@@ -172,6 +178,7 @@ START_NAMESPACE_STIR
 class CorrectProjDataApplication : public ParsingObject
 {
 public:
+
   CorrectProjDataApplication(const char* const par_filename);
 
   //! set-up variables before processing
@@ -198,11 +205,11 @@ public:
   TimeFrameDefinitions frame_defs;
 
   bool do_arc_correction;
-
 private:
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
   string input_filename;
   string output_filename;
   string scatter_projdata_filename;
@@ -212,10 +219,13 @@ private:
   string frame_definition_filename;
 
   shared_ptr<ArcCorrection> arc_correction_sptr;
+
 };
 
+
 Succeeded
-CorrectProjDataApplication::run() const
+CorrectProjDataApplication::
+run() const
 {
   ProjData& output_projdata = *output_projdata_ptr;
   const ProjData& input_projdata = *input_projdata_ptr;
@@ -223,18 +233,19 @@ CorrectProjDataApplication::run() const
   const bool do_scatter = !is_null_ptr(scatter_projdata_ptr);
   const bool do_randoms = !is_null_ptr(randoms_projdata_ptr);
 
+
   // TODO
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr(is_null_ptr(forward_projector_ptr)
-                                                                     ? new TrivialDataSymmetriesForViewSegmentNumbers
-                                                                     : forward_projector_ptr->get_symmetries_used()->clone());
-  for (int timing_pos_num = output_projdata.get_min_tof_pos_num(); timing_pos_num <= output_projdata.get_max_tof_pos_num();
-       timing_pos_num++)
-    for (int segment_num = output_projdata.get_min_segment_num(); segment_num <= output_projdata.get_max_segment_num();
-         segment_num++)
-      {
-        cerr << endl
-             << "Processing segment # " << segment_num << "(and any related segments) of timing position index # "
-             << timing_pos_num << endl;
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_ptr(
+		   is_null_ptr(forward_projector_ptr) ?
+		   new TrivialDataSymmetriesForViewSegmentNumbers
+		   :
+		   forward_projector_ptr->get_symmetries_used()->clone()
+		   );
+
+  for (int segment_num = output_projdata.get_min_segment_num(); segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
+  {
+    cerr<<endl<<"Processing segment # "<<segment_num << "(and any related segments)"<<endl;
         for (int view_num = input_projdata.get_min_view_num(); view_num <= input_projdata.get_max_view_num(); ++view_num)
           {
             const ViewSegmentNumbers view_seg_nums(view_num, segment_num);
@@ -242,11 +253,14 @@ CorrectProjDataApplication::run() const
               continue;
 
             // ** first fill in the data **
-            RelatedViewgrams<float> viewgrams
-                = input_projdata.get_empty_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+      RelatedViewgrams<float> 
+        viewgrams = input_projdata.get_empty_related_viewgrams(view_seg_nums,
+							       symmetries_ptr);
             if (use_data_or_set_to_1)
               {
-                viewgrams += input_projdata.get_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+        viewgrams += 
+          input_projdata.get_related_viewgrams(view_seg_nums,
+					       symmetries_ptr);
               }
             else
               {
@@ -262,12 +276,16 @@ CorrectProjDataApplication::run() const
 
             if (do_scatter && !apply_or_undo_correction)
               {
-                viewgrams += scatter_projdata_ptr->get_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+        viewgrams += 
+          scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
+	                                              symmetries_ptr);
               }
 
             if (do_randoms && apply_or_undo_correction)
               {
-                viewgrams -= randoms_projdata_ptr->get_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+        viewgrams -= 
+          randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
+	                                              symmetries_ptr);
               }
 #if 0
 		  if (frame_num==-1)
@@ -297,23 +315,29 @@ CorrectProjDataApplication::run() const
 		  else
 #endif
             {
+	const double start_frame = frame_defs.get_start_time(frame_num);
+	const double end_frame = frame_defs.get_end_time(frame_num);
               if (apply_or_undo_correction)
                 {
-                  normalisation_ptr->apply(viewgrams);
+	  normalisation_ptr->apply(viewgrams,start_frame,end_frame);
                 }
               else
                 {
-                  normalisation_ptr->undo(viewgrams);
+	  normalisation_ptr->undo(viewgrams,start_frame,end_frame);
                 }
             }
             if (do_scatter && apply_or_undo_correction)
               {
-                viewgrams -= scatter_projdata_ptr->get_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+        viewgrams -= 
+          scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
+	                                              symmetries_ptr);
               }
 
             if (do_randoms && !apply_or_undo_correction)
               {
-                viewgrams += randoms_projdata_ptr->get_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+        viewgrams += 
+          randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
+	                                              symmetries_ptr);
               }
 
             if (do_arc_correction && apply_or_undo_correction)
@@ -329,8 +353,10 @@ CorrectProjDataApplication::run() const
               // So, we need an extra viewgrams object to take this into account.
               // The trick relies on calling Array::operator+= instead of
               // RelatedViewgrams::operator=
-              RelatedViewgrams<float> output_viewgrams
-                  = output_projdata.get_empty_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+	RelatedViewgrams<float> 
+	  output_viewgrams = 
+	  output_projdata.get_empty_related_viewgrams(view_seg_nums,
+						    symmetries_ptr);
               output_viewgrams += viewgrams;
 
               if (!(output_projdata.set_related_viewgrams(viewgrams) == Succeeded::yes))
@@ -339,13 +365,17 @@ CorrectProjDataApplication::run() const
                   return Succeeded::no;
                 }
             }
+      
           }
+        
       }
   return Succeeded::yes;
 }
 
+
 void
-CorrectProjDataApplication::set_defaults()
+CorrectProjDataApplication::
+set_defaults()
 {
   input_projdata_ptr.reset();
   max_segment_num_to_process = -1;
@@ -372,7 +402,8 @@ CorrectProjDataApplication::set_defaults()
 }
 
 void
-CorrectProjDataApplication::initialise_keymap()
+CorrectProjDataApplication::
+initialise_keymap()
 {
   parser.add_start_key("correct_projdata Parameters");
   parser.add_key("input file", &input_filename);
@@ -393,8 +424,10 @@ CorrectProjDataApplication::initialise_keymap()
   parser.add_stop_key("END");
 }
 
+
 bool
-CorrectProjDataApplication::post_processing()
+CorrectProjDataApplication::
+post_processing()
 {
   if (is_null_ptr(normalisation_ptr))
     {
@@ -408,7 +441,7 @@ CorrectProjDataApplication::post_processing()
   else
     {
       // make a single frame starting from 0 to 1.
-      std::vector<std::pair<double, double>> frame_times(1, std::pair<double, double>(0, 1));
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
       frame_defs = TimeFrameDefinitions(frame_times);
     }
 
@@ -420,7 +453,8 @@ CorrectProjDataApplication::post_processing()
 
   if (static_cast<unsigned>(frame_num) > frame_defs.get_num_frames())
     {
-      warning("frame_num is %d, but should be less than the number of frames %d.\n", frame_num, frame_defs.get_num_frames());
+      warning("frame_num is %d, but should be less than the number of frames %d.\n",
+	      frame_num, frame_defs.get_num_frames());
       return true;
     }
   input_projdata_ptr = ProjData::read_from_file(input_filename);
@@ -435,24 +469,30 @@ CorrectProjDataApplication::post_processing()
 }
 
 Succeeded
-CorrectProjDataApplication::set_up()
+CorrectProjDataApplication::
+set_up()
 {
-  const int max_segment_num_available = input_projdata_ptr->get_max_segment_num();
-  // Set default or upper bound of data to process (if out of bounds)
-  if (max_segment_num_to_process < 0 || max_segment_num_to_process > max_segment_num_available)
+  const int max_segment_num_available =
+    input_projdata_ptr->get_max_segment_num();
+  if (max_segment_num_to_process<0 ||
+      max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
-  shared_ptr<ProjDataInfo> input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_sptr()->clone());
+  shared_ptr<ProjDataInfo>  
+    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_ptr()->clone());
   shared_ptr<ProjDataInfo> output_proj_data_info_sptr;
 
   if (!do_arc_correction)
     output_proj_data_info_sptr = input_proj_data_info_sptr;
   else
     {
-      arc_correction_sptr = shared_ptr<ArcCorrection>(new ArcCorrection);
+      arc_correction_sptr = 
+	shared_ptr<ArcCorrection>(new ArcCorrection);
       arc_correction_sptr->set_up(input_proj_data_info_sptr);
-      output_proj_data_info_sptr = arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
+      output_proj_data_info_sptr =
+	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
     }
-  output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, max_segment_num_to_process);
+  output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
+					  max_segment_num_to_process);
 
   // construct output_projdata
   {
@@ -482,20 +522,24 @@ CorrectProjDataApplication::set_up()
           output_filename_with_ext += ext;
         }
 #endif
-      output_projdata_ptr.reset(
-          new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), output_proj_data_info_sptr, output_filename_with_ext));
-    } // output_projdata block
+	output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+							output_proj_data_info_sptr,output_filename_with_ext));
+      }
 
-  } // output_projdata block
+  }
 
   // read attenuation image and add it to the normalisation object
   if (atten_image_filename != "0" && atten_image_filename != "")
     {
 
-      shared_ptr<BinNormalisation> atten_sptr(
-          new BinNormalisationFromAttenuationImage(atten_image_filename, forward_projector_ptr));
-
-      normalisation_ptr = shared_ptr<BinNormalisation>(new ChainedBinNormalisation(normalisation_ptr, atten_sptr));
+      shared_ptr<BinNormalisation> atten_sptr
+	(new BinNormalisationFromAttenuationImage(atten_image_filename,
+						  forward_projector_ptr));
+      
+      normalisation_ptr = 
+	shared_ptr<BinNormalisation>
+	( new ChainedBinNormalisation(normalisation_ptr,
+				      atten_sptr));
     }
   else
     {
@@ -506,42 +550,49 @@ CorrectProjDataApplication::set_up()
     }
 
   // set up normalisation object
-  if (normalisation_ptr->set_up(input_projdata_ptr->get_exam_info_sptr(), input_proj_data_info_sptr) != Succeeded::yes)
+  if (
+      normalisation_ptr->set_up(input_proj_data_info_sptr)
+      != Succeeded::yes)
     {
       warning("correct_projdata: set-up of normalisation failed\n");
       return Succeeded::no;
     }
 
   return Succeeded::yes;
+  
 }
 
-CorrectProjDataApplication::CorrectProjDataApplication(const char* const par_filename)
+CorrectProjDataApplication::
+CorrectProjDataApplication(const char * const par_filename)
 {
   set_defaults();
   if (par_filename != 0)
     parse(par_filename);
   else
     ask_parameters();
+
 }
 
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 
   if (argc != 2)
     {
-      cerr << "Usage: " << argv[0] << " par_file\n" << endl;
+    cerr<<"Usage: " << argv[0] << " par_file\n"
+       	<< endl; 
     }
   CorrectProjDataApplication correct_proj_data_application(argc == 2 ? argv[1] : 0);
 
   if (argc != 2)
     {
-      cerr << "Corresponding .par file input \n" << correct_proj_data_application.parameter_info() << endl;
+      cerr << "Corresponding .par file input \n"
+	   << correct_proj_data_application.parameter_info() << endl;
     }
+
 
   CPUTimer timer;
   timer.start();
@@ -549,8 +600,11 @@ main(int argc, char* argv[])
   if (correct_proj_data_application.set_up() == Succeeded::no)
     return EXIT_FAILURE;
 
-  Succeeded success = correct_proj_data_application.run();
+  Succeeded success =
+    correct_proj_data_application.run();
   timer.stop();
   cerr << "CPU time : " << timer.value() << "secs" << endl;
-  return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+  return success==Succeeded::yes ?
+    EXIT_SUCCESS : EXIT_FAILURE;
+
 }

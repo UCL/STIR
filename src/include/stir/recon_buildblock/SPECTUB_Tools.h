@@ -3,7 +3,15 @@
     Copyright (c) 2013, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 
@@ -13,11 +21,12 @@
 #ifndef _WM_SPECTUB_H
 #define _WM_SPECTUB_H
 
-#include <string>
+#include <iostream>
 #include <vector>
 
-namespace SPECTUB
-{
+#include <string>
+
+namespace SPECTUB {
 
 //::: srtuctures ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -75,6 +84,7 @@ typedef struct
 
 } volume_type;
 
+
 //! structure for projection information
 typedef struct
 {
@@ -86,8 +96,8 @@ typedef struct
   float thcm; // slice thickness in cm
 
   int Nang;                  // number of projection angles
-  std::vector<float> angles; // projection angles. degrees from upper detection plane (parallel to table). Negative for CW
-                             // rotations (see manual)
+	float ang0;     // initial projection angle. degrees from upper detection plane (parallel to table). Negative for CW rotacions (see manual) 
+	float incr;     // angle increment between two consecutive projection angles. Degrees. Negative for CW, Positive for CCW
 
   int NOS;    // number of subsets in which to split the matrix
   int NangOS; // Number of angles in each subset = Nang/NOS
@@ -161,8 +171,7 @@ typedef struct
   int NbOS;    // dimension 1 (rows) of the weight matrix (NbOS or NBt)
   int Nvox;    // dimension 2 (columns) of the weight matrix (Nvox)
   float** val; // double array to store weights (index of the projection element, number of weight for that element)
-  int** col;   // double array to store column indexs of the above element  (index of the projection element, number of weight for
-               // that element)
+	int **col;         // double array to store column indexs of the above element  (index of the projection element, number of weight for that element)
   int* ne;     // array indicating how many elements has been stored for each element of projection
 
   //... filename .............................................
@@ -258,6 +267,7 @@ typedef struct
 
 } angle_type;
 
+
 //! structure for voxel information
 typedef struct
 {
@@ -310,32 +320,84 @@ typedef struct
 
 } attpth_type;
 
+
 //::: functions :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 
 //... functions from wmtools_SPECT.cpp .........................................
 
-void index_calc(int* indexs, const wmh_type& wmh); // to calculate projection index order in subsets
+
+void write_wm_FC ();                               // to write double array weight matrix 
+
+void write_wm_hdr ();                              // to write header of a matrix
+
+void write_wm_STIR ();                             // to write matrix in STIR format
+
+
+void index_calc ( int *indexs );                   // to calculate projection index order in subsets 
+
+void read_Rrad ();								   // to read variable rotation radius from a text file (1 radius per line)
 
 //
 // void col_params ( collim_type *COL );              // to fill collimator structure
+//
+//void read_col_params ( collim_type *COL);          // to read collimator parameters from a file
 
-void fill_ang(angle_type* ang, const wmh_type& wmh, const float* Rrad); // to fill angle structure
 
-void generate_msk(bool* msk_3d,
-                  bool* msk_2d,
-                  const float* att,
-                  const volume_type* vol,
-                  const wmh_type& wmh); // to create a boolean mask for wm (no weights outside the msk)
+void fill_ang ( angle_type *ang );				   // to fill angle structure
 
-int max_psf_szb(const angle_type* ang, const wmh_type& wmh);
+void generate_msk ( bool *msk_3d, bool *msk_2d, float *att, volume_type *vol); // to create a boolean mask for wm (no weights outside the msk)
+
+void read_msk_file ( bool * msk );                 // to read mask from a file
+
+
+void read_att_map ( float *attmap );               // to read attenuation map from a file
+
+
+int  max_psf_szb ( angle_type *ang );
 
 float calc_sigma_h(voxel_type vox, collim_type COL);
 
 float calc_sigma_v(voxel_type vox, collim_type COL);
 
+
+char *itoa ( int n, char *s);                      // to conver integer to ascii
+
 void free_wm(wm_type* f); // to free weight_mat
 
 void free_wm_da(wm_da_type* f); // to free weight_mat_da
+
+
+void error_wmtools_SPECT(int nerr, std::string txt);    // error messages in wm_SPECT
+
+
+//... functions from wm_SPECT.2.0............................
+
+//int wm_SPECT( std::string inputFile);
+
+// void error_wm_SPECT( int nerr, std::string txt);      //list of error messages
+
+////void wm_inputs( std::string fileName, proj_type * prj, volume_type *vol, voxel_type *vox, bin_type *bin );
+//void wm_inputs(char **argv, 
+//			   int argc, 
+//			   proj_type *prj,
+//			   volume_type *vol,
+//			   voxel_type *vox,
+//	       bin_type *bin);
+//
+//
+////void read_inputs( std::string param, proj_type * prj, volume_type *vol, voxel_type *vox, bin_type *bin );
+//void read_inputs(vector<std::string> param, 
+//				 proj_type *prj,
+//				 volume_type *vol,
+//				 voxel_type *vox,
+////		 bin_type *bin);
+//
+//extern wmh_type wmh;           // weight matrix header. Global variable
+//
+//extern wm_da_type wm;          // double array weight matrix structure. Global variable
+//
+//extern float * Rrad;           // variable projection radius (in acquisition order)
 
 } // namespace SPECTUB
 

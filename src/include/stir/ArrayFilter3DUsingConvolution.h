@@ -18,18 +18,20 @@
 #ifndef __stir_ArrayFilter3DUsingConvolution_H__
 #define __stir_ArrayFilter3DUsingConvolution_H__
 
+
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 //#include "stir/VectorWithOffset.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-class VectorWithOffset;
+template <typename elemT> class VectorWithOffset;
 
 template <typename elemT>
-class ArrayFilter3DUsingConvolution : public ArrayFunctionObject_2ArgumentImplementation<3, elemT>
+class ArrayFilter3DUsingConvolution : 
+  public ArrayFunctionObject_2ArgumentImplementation<3,elemT>
 {
 public:
+
   //! Construct the filter given the kernel coefficients
   /*!
     All kernel coefficients have to be passed.
@@ -38,21 +40,28 @@ public:
 
   ArrayFilter3DUsingConvolution(const Array<3, float>& filter_kernel);
 
-  bool is_trivial() const override;
+  bool is_trivial() const;
 
-#if 0
-  // commented out as it does not make sense to have a 1D IndexRange for a 2D filter
-  virtual Succeeded get_influencing_indices(IndexRange<1>& influencing_indices, const IndexRange<1>& output_indices) const;
+ virtual Succeeded 
+    get_influencing_indices(IndexRange<1>& influencing_indices, 
+                            const IndexRange<1>& output_indices) const;
 
-  virtual Succeeded get_influenced_indices(IndexRange<1>& influenced_indices, const IndexRange<1>& input_indices) const;
-#endif
+  virtual Succeeded 
+    get_influenced_indices(IndexRange<1>& influenced_indices, 
+                           const IndexRange<1>& input_indices) const;
 
 private:
   Array<3, float> filter_coefficients;
-  void do_it(Array<3, elemT>& out_array, const Array<3, elemT>& in_array) const override;
+  void do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const;
   void do_it_2d(Array<2, elemT>& out_array, const Array<2, elemT>& in_array) const;
+
 };
+
+
 
 END_NAMESPACE_STIR
 
+
 #endif // ArrayFilter3DUsingConvolution
+
+

@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,12 +33,13 @@
 
 */
 
-#include "stir/ArrayFwd.h"
+#include "stir/common.h"
 
 START_NAMESPACE_STIR
 
-template <class T>
-class NumericInfo;
+template <class T> class NumericInfo;
+template <int num_dimensions, class elemT> class Array;
+
 
 /*!
   \ingroup Array
@@ -63,7 +72,9 @@ class NumericInfo;
 */
 template <int num_dimensions, class T1, class T2, class scaleT>
 inline void
-find_scale_factor(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in, const NumericInfo<T2> info_for_out_type);
+find_scale_factor(scaleT& scale_factor,
+		  const Array<num_dimensions,T1>& data_in, 
+		  const NumericInfo<T2> info_for_out_type);
 
 /*!
   \ingroup Array
@@ -98,12 +109,14 @@ find_scale_factor(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in
 
 */
 template <int num_dimensions, class T1, class T2, class scaleT>
-inline Array<num_dimensions, T2>
-convert_array(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in, const NumericInfo<T2> info2);
+inline 
+Array<num_dimensions, T2>
+convert_array(scaleT& scale_factor,
+	      const Array<num_dimensions, T1>& data_in, 
+	      const NumericInfo<T2> info2);
 /*!
   \ingroup Array
-  \brief Converts the \c data_in Array to \c data_out (with elements of different types) such that \c data_in == \c data_out * \c
-  scale_factor
+  \brief Converts the \c data_in Array to \c data_out (with elements of different types) such that \c data_in == \c data_out * \c scale_factor
 
   \par example
   \code
@@ -114,10 +127,15 @@ convert_array(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in, co
 */
 
 template <int num_dimensions, class T1, class T2, class scaleT>
-inline void convert_array(Array<num_dimensions, T2>& data_out, scaleT& scale_factor, const Array<num_dimensions, T1>& data_in);
+inline void
+convert_array(Array<num_dimensions, T2>& data_out,
+	      scaleT& scale_factor,
+	      const Array<num_dimensions, T1>& data_in);
+
 
 END_NAMESPACE_STIR
 
 #include "stir/convert_array.inl"
 
 #endif
+

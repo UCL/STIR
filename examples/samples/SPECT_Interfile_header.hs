@@ -5,25 +5,18 @@
 !imaging modality := nucmed
 
 ; name of file with binary data
-; Note: we are "self-referring" to the header here such that this file can be read by STIR as a "template".
-; (This is used in one of our tests.)
-; Obviously, this would normally not be the case.
-name of data file := SPECT_Interfile_header.hs
+name of data file := somefile.s
 
 !version of keys := 3.3
 !GENERAL DATA :=
 !GENERAL IMAGE DATA :=
 !type of data := Tomographic
 
-; optional keywords specifying patient position
+; optional keywords specifying patient position (currently ignored)
 ; patient rotation := prone
 ; patient orientation := feet_in
 
 imagedata byte order := LITTLEENDIAN
-
-number of energy windows:=1
-energy window lower level[1]:=120
-energy window upper level[1]:=160
 
 !SPECT STUDY (General) :=
 ; specify how the data are stored on disk
@@ -46,7 +39,7 @@ Radius := 150
 ; or
 ; orbit := Non-circular
 ; give a list of "radii", one for every position
-; Radii := {150, 151, 153, ....}
+; Radius := {150, 151, 153, ....}
 
 ; pixel sizes in the acquired data, first in "transverse" direction, then in "axial" direction
 !matrix size [1] := 128

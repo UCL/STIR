@@ -13,7 +13,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -23,37 +31,40 @@
 #include "stir/recon_buildblock/SymmetryOperation.h"
 #include "stir/recon_buildblock/DataSymmetriesForDensels.h"
 #include "stir/recon_buildblock/RelatedDensels.h"
-#include "stir/warning.h"
 
 #include <fstream>
 
 START_NAMESPACE_STIR
 
-ProjMatrixElemsForOneDensel::ProjMatrixElemsForOneDensel(const Densel& densel, const int default_capacity)
+
+ProjMatrixElemsForOneDensel::
+ProjMatrixElemsForOneDensel(const Densel& densel, const int default_capacity)
     : densel(densel)
 {
   elements.reserve(default_capacity);
 }
 
-ProjMatrixElemsForOneDensel::ProjMatrixElemsForOneDensel()
+ProjMatrixElemsForOneDensel::
+ProjMatrixElemsForOneDensel()
 {
   elements.reserve(300);
 }
 
+
 void
-ProjMatrixElemsForOneDensel::reserve(size_type max_number)
+ProjMatrixElemsForOneDensel::
+reserve(size_type max_number)
 {
   elements.reserve(max_number);
 }
 
-void
-ProjMatrixElemsForOneDensel::erase()
+
+void ProjMatrixElemsForOneDensel::erase()
 {
   elements.resize(0);
 }
 
-ProjMatrixElemsForOneDensel&
-ProjMatrixElemsForOneDensel::operator*=(const float d)
+ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator*=(const float d)
 {
   // KT 21/02/2002 added check on 1
   if (d != 1.F)
@@ -68,8 +79,7 @@ ProjMatrixElemsForOneDensel::operator*=(const float d)
   return *this;
 }
 
-ProjMatrixElemsForOneDensel&
-ProjMatrixElemsForOneDensel::operator/=(const float d)
+ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator/=(const float d)
 {
   assert(d != 0);
   // KT 21/02/2002 added check on 1
@@ -85,8 +95,8 @@ ProjMatrixElemsForOneDensel::operator/=(const float d)
   return *this;
 }
 
-Succeeded
-ProjMatrixElemsForOneDensel::check_state() const
+
+Succeeded ProjMatrixElemsForOneDensel::check_state() const
 {
   Succeeded success = Succeeded::yes;
 
@@ -96,29 +106,34 @@ ProjMatrixElemsForOneDensel::check_state() const
   ProjMatrixElemsForOneDensel lor = *this;
   lor.sort();
 
-  for (ProjMatrixElemsForOneDensel::const_iterator lor_iter = lor.begin(); lor_iter != lor.end() - 1; ++lor_iter)
+  for (ProjMatrixElemsForOneDensel::const_iterator lor_iter = lor.begin();
+       lor_iter != lor.end()-1; 
+       ++lor_iter)
     {
       if (value_type::coordinates_equal(*lor_iter, *(lor_iter + 1)))
         {
           warning("ProjMatrixElemsForOneDensel: coordinates occur more than once %d,%d,%d,%d\n",
-                  lor_iter->segment_num(),
-                  lor_iter->view_num(),
-                  lor_iter->axial_pos_num(),
-                  lor_iter->tangential_pos_num());
+	      lor_iter->segment_num(), lor_iter->view_num(), 
+	      lor_iter->axial_pos_num(), lor_iter->tangential_pos_num());
           success = Succeeded::no;
         }
     }
   return success;
 }
 
-void
-ProjMatrixElemsForOneDensel::sort()
+
+void ProjMatrixElemsForOneDensel::sort()
 {
-  std::sort(begin(), end(), value_type::coordinates_less);
+  // need explicit std:: here to resolve possible name conflict
+  // this might give you trouble if your compiler does not support namespaces
+#if !defined(STIR_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
+  std::
+#endif                                           
+  sort(begin(), end(), value_type::coordinates_less);
 }
 
-float
-ProjMatrixElemsForOneDensel::square_sum() const
+
+float ProjMatrixElemsForOneDensel::square_sum() const
 {
   float sq_sum = 0;
   const_iterator element_ptr = begin();
@@ -133,7 +148,8 @@ ProjMatrixElemsForOneDensel::square_sum() const
 // TODO make sure we can have a const argument
 // not calling lor2.erase() would probably speed it up anyway
 void
-ProjMatrixElemsForOneDensel::merge(ProjMatrixElemsForOneDensel& lor2)
+ProjMatrixElemsForOneDensel::
+merge( ProjMatrixElemsForOneDensel &lor2 )
 {
   assert(check_state() == Succeeded::yes);
   assert(lor2.check_state() == Succeeded::yes);
@@ -168,8 +184,7 @@ ProjMatrixElemsForOneDensel::merge(ProjMatrixElemsForOneDensel& lor2)
           element_ptr2 = lor2.erase(element_ptr2);
           found = false;
         }
-      else
-        {
+    else{            
           ++element_ptr2;
         }
     }
@@ -182,6 +197,7 @@ ProjMatrixElemsForOneDensel::merge(ProjMatrixElemsForOneDensel& lor2)
     }
   assert(check_state() == Succeeded::yes);
 }
+
 
 #if 0
 // todo remove this 
@@ -295,7 +311,7 @@ back_project(DiscretisedDensity<3,float>& density,
     row_copy = *this;
     
     Densel symmetric_densel = *r_densels_iterator;
-    unique_ptr<SymmetryOperation> symm_ptr = 
+    auto_ptr<SymmetryOperation> symm_ptr = 
       symmetries->find_symmetry_operation_to_basic_densel(symmetric_densel);
     symm_ptr->transform_proj_matrix_elems_for_one_densel(row_copy);
     row_copy.back_project(density,symmetric_densel);
@@ -318,7 +334,7 @@ forward_project(RelatedDensels& r_densels,
   {    
     row_copy = *this;
     
-    unique_ptr<SymmetryOperation> symm_op_ptr = 
+    auto_ptr<SymmetryOperation> symm_op_ptr = 
       symmetries->find_symmetry_operation_to_basic_densel(*r_densels_iterator);
     symm_op_ptr->transform_proj_matrix_elems_for_one_densel(row_copy);
     row_copy.forward_project(*r_densels_iterator,density);

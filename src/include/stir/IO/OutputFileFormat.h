@@ -3,7 +3,15 @@
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
 
     See STIR/LICENSE.txt for details
@@ -22,13 +30,19 @@
 #define __stir_IO_OutputFileFormat_H__
 
 #include "stir/RegisteredObject.h"
+#include "stir/ParsingObject.h"
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include <string>
 
+#ifndef STIR_NO_NAMESPACES
+using std::string;
+#endif
+
 START_NAMESPACE_STIR
 
 class Succeeded;
+
 
 /*!
   \ingroup IO
@@ -52,13 +66,18 @@ class Succeeded;
   supports_different_xy_pixel_size() etc.
  */
 template <typename DataT>
-class OutputFileFormat : public RegisteredObject<OutputFileFormat<DataT>>
+class OutputFileFormat : 
+  public RegisteredObject<OutputFileFormat<DataT> >,
+  public ParsingObject
 {
 public:
   //! A function to return a default output file format
-  static shared_ptr<OutputFileFormat<DataT>> default_sptr();
+  static 
+    shared_ptr<OutputFileFormat<DataT> >
+    default_sptr();
 
-  OutputFileFormat(const NumericType& = NumericType::FLOAT, const ByteOrder& = ByteOrder::native);
+  OutputFileFormat(const NumericType& = NumericType::FLOAT, 
+                   const ByteOrder& = ByteOrder::native);
 
   //! Write a single image to file
   /*!
@@ -77,13 +96,18 @@ public:
        <strong>recommended</strong> to
        <strong>not</strong> use an extension for the output filename.
   */
-  Succeeded write_to_file(std::string& filename, const DataT& data) const;
+  Succeeded  
+    write_to_file(string& filename, 
+                  const DataT& data) const;
 
   //! write a single image to file
   /*! See the version with non-const \a filename. This version does not return the
       filename used.
   */
-  Succeeded write_to_file(const std::string& filename, const DataT& density) const;
+  Succeeded  
+    write_to_file(const string& filename, 
+                  const DataT& density) const;
+
 
   //! get type used for outputting numbers
   NumericType get_type_of_numbers() const;
@@ -93,6 +117,7 @@ public:
   /*! \see set_scale_to_write_data
    */
   float get_scale_to_write_data() const;
+
 
   //! set type used for outputting numbers
   /*! Returns type actually used.
@@ -149,22 +174,24 @@ protected:
       the non-virtual write_to_file() call the virtual actual_write_to_file() solves
       this problem.
   */
-  virtual Succeeded actual_write_to_file(std::string& filename, const DataT& density) const = 0;
+  virtual Succeeded  
+    actual_write_to_file(string& filename, 
+                  const DataT& density) const = 0;
 
   // parsing stuff
 
   //! sets value for output data type
   /*! Has to be called by set_defaults() in the leaf-class */
-  void set_defaults() override;
+  virtual void set_defaults();
   //! sets keys for output data type for parsing
   /*! Has to be called by initialise_keymap() in the leaf-class */
-  void initialise_keymap() override;
+  virtual void initialise_keymap();
   //! Checks if parameters have sensible values after parsing
   /*! Has to be called by post_processing() in the leaf-class */
-  bool post_processing() override;
+  virtual bool post_processing();
   //! overloaded member for ParsingObject::set_key_values()
   /*! Has to be called by set_key_values() in the leaf-class (if it redefines it) */
-  void set_key_values() override;
+  virtual void set_key_values();
 
 private:
   static shared_ptr<OutputFileFormat<DataT>> _default_sptr;
@@ -179,6 +206,9 @@ private:
   int bytes_per_pixel;
 };
 
+
+
 END_NAMESPACE_STIR
+
 
 #endif

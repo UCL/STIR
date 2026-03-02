@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -14,6 +22,7 @@
   \brief Implementations for class stir::ChainedDataProcessor
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 #include "stir/ChainedDataProcessor.h"
@@ -22,13 +31,18 @@
 #include "stir/modelling/KineticParameters.h"
 #include "stir/is_null_ptr.h"
 #include <memory>
-#include "stir/unique_ptr.h"
+
+#ifndef STIR_NO_NAMESPACES
+using std::auto_ptr;
+#endif
 
 START_NAMESPACE_STIR
 
+  
 template <typename DataT>
 Succeeded
-ChainedDataProcessor<DataT>::virtual_set_up(const DataT& data)
+ChainedDataProcessor<DataT>::
+virtual_set_up(const DataT& data)
 {
   if (!is_null_ptr(this->apply_first))
     {
@@ -42,9 +56,11 @@ ChainedDataProcessor<DataT>::virtual_set_up(const DataT& data)
     return Succeeded::yes;
 }
 
+
 template <typename DataT>
 void
-ChainedDataProcessor<DataT>::virtual_apply(DataT& data) const
+ChainedDataProcessor<DataT>::
+virtual_apply(DataT& data) const
 {
   if (!is_null_ptr(this->apply_first))
     this->apply_first->apply(data);
@@ -52,28 +68,35 @@ ChainedDataProcessor<DataT>::virtual_apply(DataT& data) const
     this->apply_second->apply(data);
 }
 
+
 template <typename DataT>
 void
-ChainedDataProcessor<DataT>::virtual_apply(DataT& out_data, const DataT& in_data) const
+ChainedDataProcessor<DataT>::
+virtual_apply(DataT& out_data, 
+	  const DataT& in_data) const
 {
   if (!is_null_ptr(this->apply_first))
     {
       if (!is_null_ptr(this->apply_second))
         {
           // a bit complicated because we need a temporary data copy
-          unique_ptr<DataT> temp_data_ptr(in_data.get_empty_copy());
+	  auto_ptr< DataT> temp_data_ptr =
+	    auto_ptr< DataT>(in_data.get_empty_copy());      
           this->apply_first->apply(*temp_data_ptr, in_data);
           this->apply_second->apply(out_data, *temp_data_ptr);
         }
       else
         this->apply_first->apply(out_data, in_data);
     }
-  else if (!is_null_ptr(this->apply_second))
+  else
+      if (!is_null_ptr(this->apply_second))
     this->apply_second->apply(out_data, in_data);
+
 }
 
 template <typename DataT>
-ChainedDataProcessor<DataT>::ChainedDataProcessor(shared_ptr<DataProcessor<DataT>> apply_first_v,
+ChainedDataProcessor<DataT>::
+ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > apply_first_v,
                                                   shared_ptr<DataProcessor<DataT>> apply_second_v)
     : apply_first(apply_first_v),
       apply_second(apply_second_v)
@@ -83,14 +106,16 @@ ChainedDataProcessor<DataT>::ChainedDataProcessor(shared_ptr<DataProcessor<DataT
 
 template <typename DataT>
 void
-ChainedDataProcessor<DataT>::set_defaults()
+ChainedDataProcessor<DataT>::
+set_defaults()
 {
   base_type::set_defaults();
 }
 
 template <typename DataT>
 void
-ChainedDataProcessor<DataT>::initialise_keymap()
+ChainedDataProcessor<DataT>::
+initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key("Chained Data Processor Parameters");
@@ -99,8 +124,13 @@ ChainedDataProcessor<DataT>::initialise_keymap()
   this->parser.add_stop_key("END Chained Data Processor Parameters");
 }
 
+
+
 template <class DataT>
-const char* const ChainedDataProcessor<DataT>::registered_name = "Chained Data Processor";
+const char * const 
+ChainedDataProcessor<DataT>::registered_name =
+  "Chained Data Processor";
+
 
 #ifdef _MSC_VER
 // prevent warning message on reinstantiation,
@@ -114,4 +144,10 @@ const char* const ChainedDataProcessor<DataT>::registered_name = "Chained Data P
 
 template class ChainedDataProcessor<DiscretisedDensity<3, float>>;
 template class ChainedDataProcessor<ParametricVoxelsOnCartesianGrid>;
+template class ChainedDataProcessor<GeneralizedPatlakVoxelsOnCartesianGrid >;  
 END_NAMESPACE_STIR
+
+
+
+
+

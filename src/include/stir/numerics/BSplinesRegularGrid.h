@@ -3,7 +3,15 @@
   Copyright (C) 2013, University College London
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+  
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -23,8 +31,7 @@
 #include "stir/numerics/BSplines.h"
 START_NAMESPACE_STIR
 
-namespace BSpline
-{
+namespace BSpline {
 
 /*! \ingroup BSpline
     \brief A class for n-dimensional BSpline interpolation when the input samples
@@ -55,17 +62,24 @@ class BSplinesRegularGrid
 
 public:
   // only there for tests
-  Array<num_dimensions, out_elemT> get_coefficients() const { return this->_coeffs; }
+      Array<num_dimensions,out_elemT> get_coefficients() const
+        { return this->_coeffs;  }
+        
+        
 
   //! constructor given an array of samples and the spline type
-  inline explicit BSplinesRegularGrid(const Array<num_dimensions, in_elemT>& input, const BSplineType& this_type = cubic)
+      inline
+        explicit
+        BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
+                            const BSplineType & this_type = cubic)
   {
     this->set_private_values(this_type);
     this->set_coef(input);
   }
 
   //! constructor given an array of samples and a different spline type for every dimension
-  inline BSplinesRegularGrid(const Array<num_dimensions, in_elemT>& input,
+      inline 
+        BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
                              const BasicCoordinate<num_dimensions, BSplineType>& this_type)
   {
     this->set_private_values(this_type);
@@ -74,11 +88,19 @@ public:
 
   //! constructor that only sets the spline type
   /*! You need to call set_coef() first before you will get a sensible result.*/
-  inline explicit BSplinesRegularGrid(const BSplineType& this_type = cubic) { this->set_private_values(this_type); }
+      inline 
+        explicit
+        BSplinesRegularGrid(
+                            const BSplineType & this_type = cubic)
+        {
+          this->set_private_values(this_type);    
+        }       
 
   //! constructor that only sets a different spline type for every dimension
   /*! You need to call set_coef() first before you will get a sensible result.*/
-  inline explicit BSplinesRegularGrid(const BasicCoordinate<num_dimensions, BSplineType>& this_type)
+      inline 
+        explicit
+        BSplinesRegularGrid(const BasicCoordinate<num_dimensions, BSplineType> & this_type)     
   {
     this->set_private_values(this_type);
   }
@@ -92,7 +114,9 @@ public:
       for further use.
       \todo rename
   */
-  inline void set_coef(const Array<num_dimensions, in_elemT>& input);
+      inline
+        void
+        set_coef(const Array<num_dimensions,in_elemT> & input);
 
   //! Compute value of the interpolator
   /*! \param relative_positions
@@ -104,7 +128,9 @@ public:
 
       \todo should probably be templated in pos_type.
   */
-  inline const out_elemT operator()(const BasicCoordinate<num_dimensions, pos_type>& relative_positions) const;
+      inline
+        const out_elemT 
+        operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;
 
   //! Compute gradient of the interpolator
   /*! \param relative_positions
@@ -115,10 +141,12 @@ public:
 
       \todo should probably be templated in pos_type.
   */
-  inline const BasicCoordinate<num_dimensions, out_elemT>
+      inline
+        const BasicCoordinate<num_dimensions, out_elemT> 
   gradient(const BasicCoordinate<num_dimensions, pos_type>& relative_positions) const;
 
 private:
+
   // variables that store numbers for the spline type
   // TODO these coefficients and the spline type could/should be integrated into 1 class
   BasicCoordinate<num_dimensions, BSplineType> _spline_types;
@@ -128,11 +156,14 @@ private:
   //! coefficients for B-splines
   Array<num_dimensions, out_elemT> _coeffs;
 
-  inline void set_private_values(const BasicCoordinate<num_dimensions, BSplineType>& this_type);
-  inline void set_private_values(const BSplineType& this_type);
+      inline void 
+        set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type);
+      inline void 
+        set_private_values(const BSplineType & this_type);
+        
 };
 
-} // namespace BSpline
+} // end BSpline namespace
 
 END_NAMESPACE_STIR
 

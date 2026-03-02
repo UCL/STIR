@@ -9,10 +9,18 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2020, University College London
+
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
     See STIR/LICENSE.txt for details.
 */
@@ -77,8 +85,6 @@
 #include "stir/IndexRange3D.h"
 #include "stir/Coordinate3D.h"
 #include "stir/Succeeded.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 
 #include "stir/analytic/FBP3DRP/ColsherFilter.h"
 #include "stir/display.h"
@@ -102,29 +108,29 @@
 // for asctime()
 #include <ctime>
 
-#include <algorithm>
-using std::min;
-using std::max;
+#ifndef STIR_NO_NAMESPACE
 using std::cerr;
 using std::endl;
 using std::ofstream;
 using std::ios;
+#endif
 
 START_NAMESPACE_STIR
+
+
 
 // should be private member, TODO
 static ofstream full_log;
 
 // terribly ugly. can be replaced using LORCoordinates stuff (TODO)
-static void
-find_rmin_rmax(int& rmin,
-               int& rmax,
+static void find_rmin_rmax(int& rmin, int& rmax, 
                const ProjDataInfoCylindrical& proj_data_info_cyl,
                const int seg_num,
                const VoxelsOnCartesianGrid<float>& image)
 {
 
-  const float fovrad = proj_data_info_cyl.get_s(Bin(0, 0, 0, proj_data_info_cyl.get_num_tangential_poss() / 2 - 1));
+  const float fovrad = 
+    proj_data_info_cyl.get_s(Bin(0,0,0,proj_data_info_cyl.get_num_tangential_poss()/2 - 1));
   // Compute minimum and maximum rings of 'missing' projections
 
   const float delta = proj_data_info_cyl.get_average_ring_difference(seg_num);
@@ -135,17 +141,18 @@ find_rmin_rmax(int& rmin,
   // in the 2 coordinate systems
   // TODO get all this from ProjDataInfo or so
 
-  const int num_planes_per_virtual_ring
-      = (proj_data_info_cyl.get_max_ring_difference(seg_num) == proj_data_info_cyl.get_min_ring_difference(seg_num)) ? 2 : 1;
-  const int num_virtual_rings_per_physical_ring
-      = (proj_data_info_cyl.get_max_ring_difference(seg_num) == proj_data_info_cyl.get_min_ring_difference(seg_num)) ? 1 : 2;
+  const int num_planes_per_virtual_ring =
+    (proj_data_info_cyl.get_max_ring_difference(seg_num) == proj_data_info_cyl.get_min_ring_difference(seg_num)) ? 2 : 1;
+  const int num_virtual_rings_per_physical_ring =
+    (proj_data_info_cyl.get_max_ring_difference(seg_num) == proj_data_info_cyl.get_min_ring_difference(seg_num)) ? 1 : 2;
+  
 
-  const float virtual_ring_offset
-      = (image.get_max_z() + image.get_min_z()) / 2.F
+   const float virtual_ring_offset = 
+    (image.get_max_z() + image.get_min_z())/2.F
         - num_planes_per_virtual_ring
               * (proj_data_info_cyl.get_max_axial_pos_num(seg_num) + num_virtual_rings_per_physical_ring * delta
-                 + proj_data_info_cyl.get_min_axial_pos_num(seg_num))
-              / 2;
+    + proj_data_info_cyl.get_min_axial_pos_num(seg_num))/2;
+  
 
   // we first consider the LOR at s=0, phi=0 which goes through z=0,y=0, x=fovrad
   // later on, we will shift it to the 'left'most edge of the FOV.
@@ -153,26 +160,31 @@ find_rmin_rmax(int& rmin,
   // find z position of intersection of this LOR with the detector radius
   // (i.e. y=0, x=-ring_radius)
   // use image coordinates first
-  float z_in_image_coordinates = -fabs(delta) * num_planes_per_virtual_ring * num_virtual_rings_per_physical_ring
-                                 * (fovrad + proj_data_info_cyl.get_ring_radius()) / (2 * proj_data_info_cyl.get_ring_radius());
+  float z_in_image_coordinates =
+    -delta*num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring*
+    (fovrad + proj_data_info_cyl.get_ring_radius())/(2*proj_data_info_cyl.get_ring_radius());
   // now shift it to the edge of the FOV
   // (taking into account that z==get_min_z() is in the middle of the voxel)
   z_in_image_coordinates += image.get_min_z() - .5F;
 
   // now convert to virtual_ring_coordinates using z = num_planes_per_virtual_ring * ring + virtual_ring_offset
-  const float z_in_virtual_ring_coordinates = (z_in_image_coordinates - virtual_ring_offset) / num_planes_per_virtual_ring;
+  const float z_in_virtual_ring_coordinates = 
+    (z_in_image_coordinates - virtual_ring_offset)/num_planes_per_virtual_ring;
 
   // finally find the 'ring' number
   rmin = static_cast<int>(floor(z_in_virtual_ring_coordinates));
 
+  
   // rmax is determined by using symmetry: at both ends there are just as many missing rings
   rmax = proj_data_info_cyl.get_max_axial_pos_num(seg_num) + (proj_data_info_cyl.get_min_axial_pos_num(seg_num) - rmin);
 }
 
-const char* const FBP3DRPReconstruction::registered_name = "FBP3DRP";
+
+
 
 void
-FBP3DRPReconstruction::set_defaults()
+FBP3DRPReconstruction::
+set_defaults()
 {
   base_type::set_defaults();
 
@@ -194,8 +206,10 @@ FBP3DRPReconstruction::set_defaults()
   display_level = 0;
   save_intermediate_files = 0;
 
-  forward_projector_sptr.reset(new ForwardProjectorByBinUsingRayTracing);
-  back_projector_sptr.reset(new BackProjectorByBinUsingInterpolation(
+  forward_projector_sptr.
+    reset(new ForwardProjectorByBinUsingRayTracing);
+  back_projector_sptr.
+    reset(new BackProjectorByBinUsingInterpolation(
       /*use_piecewise_linear_interpolation = */ false,
       /*use_exact_Jacobian = */ false));
 }
@@ -220,12 +234,18 @@ FBP3DRPReconstruction::initialise_keymap()
   parser.add_key("Transaxial extension for FFT", &PadS);
   parser.add_key("Axial extension for FFT", &PadZ);
 
-  parser.add_key("Alpha parameter for Colsher filter in axial direction", &alpha_colsher_axial);
-  parser.add_key("Cut-off for Colsher filter in axial direction (in cycles)", &fc_colsher_axial);
-  parser.add_key("Alpha parameter for Colsher filter in planar direction", &alpha_colsher_planar);
-  parser.add_key("Cut-off for Colsher filter in planar direction (in cycles)", &fc_colsher_planar);
-  parser.add_key("Stretch factor for Colsher filter definition in axial direction", &colsher_stretch_factor_axial);
-  parser.add_key("Stretch factor for Colsher filter definition in planar direction", &colsher_stretch_factor_planar);
+  parser.add_key("Alpha parameter for Colsher filter in axial direction", 
+     &alpha_colsher_axial);
+  parser.add_key("Cut-off for Colsher filter in axial direction (in cycles)",
+    &fc_colsher_axial);
+  parser.add_key("Alpha parameter for Colsher filter in planar direction",
+    &alpha_colsher_planar);
+  parser.add_key("Cut-off for Colsher filter in planar direction (in cycles)",
+    &fc_colsher_planar);
+  parser.add_key("Stretch factor for Colsher filter definition in axial direction",
+		 &colsher_stretch_factor_axial);
+  parser.add_key("Stretch factor for Colsher filter definition in planar direction",
+		 &colsher_stretch_factor_planar);
 
   parser.add_parsing_key("Back projector type", &back_projector_sptr);
   parser.add_parsing_key("Forward projector type", &forward_projector_sptr);
@@ -233,6 +253,8 @@ FBP3DRPReconstruction::initialise_keymap()
   parser.add_key("Save intermediate images", &save_intermediate_files);
   parser.add_key("Display level", &display_level);
 }
+
+
 
 void
 FBP3DRPReconstruction::ask_parameters()
@@ -243,14 +265,15 @@ FBP3DRPReconstruction::ask_parameters()
   // bool on_disk =  !ask("(1) Read data into memory all at once ?", false);
   // TODO move to Reconstruction
 
+    
   // PARAMETERS => DISPLAY_LEVEL
 
-  display_level = ask_num(
-      "Which images would you like to display \n\t(0: None, 1: Final, 2: intermediate, 3: after each view) ? ", 0, 3, 0);
+    display_level = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: intermediate, 3: after each view) ? ", 0,3,0);
 
   save_intermediate_files = ask_num("Would you like to save all the intermediate images ? ", 0, 1, 0);
 
-  image_for_reprojection_filename = ask_string("filename of image to be reprojected (empty for using FBP):");
+    image_for_reprojection_filename =
+      ask_string("filename of image to be reprojected (empty for using FBP):");
 
   // PARAMETERS => ZEROES-PADDING IN FFT (PADS, PADZ)
   cerr << "\nFilter parameters for 2D and 3D reconstruction";
@@ -262,8 +285,7 @@ FBP3DRPReconstruction::ask_parameters()
   // PARAMETERS => 2D RECONSTRUCTION RAMP FILTER (ALPHA, FC)
   cerr << endl << "For 2D reconstruction filtering (Ramp filter) : ";
 
-  num_segments_to_combine = ask_num(
-      "num_segments_to_combine (must be odd).\nDefault means 1 or 3 depending on axial compression of input", -1, 101, -1);
+    num_segments_to_combine = ask_num("num_segments_to_combine (must be odd).\nDefault means 1 or 3 depending on axial compression of input",-1,101,-1);
   // TODO check odd
   alpha_ramp = ask_num(" Alpha parameter for Ramp filter ? ", 0., 1., 1.);
 
@@ -276,9 +298,11 @@ FBP3DRPReconstruction::ask_parameters()
 
   fc_colsher_axial = ask_num(" Cut-off frequency for Colsher filter in axial direction ? ", 0., .5, 0.5);
 
+    
   alpha_colsher_planar = ask_num(" Alpha parameter for Colsher filter in planar direction ? ", 0., 1., 1.);
 
   fc_colsher_planar = ask_num(" Cut-off frequency fo Colsher filter in planar direction ? ", 0., .5, 0.5);
+
 
 #if 0
     // do not ask the user for the projectors to prevent entering silly things
@@ -297,11 +321,10 @@ FBP3DRPReconstruction::ask_parameters()
 #endif
 }
 
-std::string
-FBP3DRPReconstruction::method_info() const
-{
-  return ("FBP3DRP");
-}
+string
+FBP3DRPReconstruction::
+method_info() const
+{ return("FBP3DRP"); }
 
 FBP3DRPReconstruction::~FBP3DRPReconstruction()
 {}
@@ -321,10 +344,13 @@ FBP3DRPReconstruction::estimated_image() const
 const ProjDataInfoCylindrical&
 FBP3DRPReconstruction::input_proj_data_info_cyl() const
 {
-  return static_cast<ProjDataInfoCylindrical const&>(*proj_data_ptr->get_proj_data_info_sptr());
+  return 
+    static_cast<ProjDataInfoCylindrical const&> 
+    (*proj_data_ptr->get_proj_data_info_ptr());
 }
 
-FBP3DRPReconstruction::FBP3DRPReconstruction(const std::string& parameter_filename)
+FBP3DRPReconstruction::
+FBP3DRPReconstruction(const string& parameter_filename)
 {
   initialise(parameter_filename);
 }
@@ -335,16 +361,25 @@ FBP3DRPReconstruction::FBP3DRPReconstruction()
 }
 
 Succeeded
-FBP3DRPReconstruction::set_up(shared_ptr<DiscretisedDensity<3, float>> const& target_image_sptr)
+FBP3DRPReconstruction::
+actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
 {
-  if (base_type::set_up(target_image_sptr) == Succeeded::no)
-    return Succeeded::no;
+  VoxelsOnCartesianGrid<float>& image =
+    dynamic_cast<VoxelsOnCartesianGrid<float> &>(*target_image_ptr);
+  // set default values such that it will work also in the case of already_2D_recon
+  alpha_fit = 1.0F;
+  beta_fit = 0.0F;
 
-  if (dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_ptr->get_proj_data_info_sptr().get()) == 0)
-    error("FBP3DRP currently needs cylindrical projection data. Sorry");
+  // TODO move to post_processing()
+  {
+    if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_ptr()) == 0)
+      error("FBP3DRP currently needs cylindrical projection data. Sorry\n");
 
   if (colsher_stretch_factor_planar < 1 || colsher_stretch_factor_axial < 1)
-    error("stretch factors for Colsher filter have to be at least 1");
+      {
+	warning("stretch factors for Colsher filter have to be at least 1");
+	return Succeeded::no;
+      }
 
   if (PadS < 1 || PadZ < 1)
     warning("Transaxial extension for FFT:=0 (or axial) should \n"
@@ -352,26 +387,22 @@ FBP3DRPReconstruction::set_up(shared_ptr<DiscretisedDensity<3, float>> const& ta
             "occupy only half of the FOV. Otherwise aliasing will occur!");
 
   if (is_null_ptr(back_projector_sptr))
-    error("Back projector not set.");
-
-  if (is_null_ptr(forward_projector_sptr))
-    error("Forward projector not set.");
-  return Succeeded::yes;
+      {
+	warning("Back projector not set.\n");
+	return Succeeded::no;
 }
-
-Succeeded
-FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float>> const& target_image_ptr)
+    if (is_null_ptr(forward_projector_sptr))
 {
-  this->check(*target_image_ptr);
-  VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*target_image_ptr);
-  // set default values such that it will work also in the case of already_2D_recon
-  alpha_fit = 1.0F;
-  beta_fit = 0.0F;
+	warning("Forward projector not set.\n");
+	return Succeeded::no;
+      }
 
+  }
+  start_timers();
   {
     // char file[max_filename_length];
     // sprintf(file,"%s.full_log",output_filename_prefix.c_str());
-    std::string file = output_filename_prefix;
+    string file = output_filename_prefix;
     file += ".full_log";
     full_log.open(file.c_str(), ios::out);
     if (!full_log)
@@ -395,13 +426,14 @@ FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float
     }
 
 #ifndef NRFFT
-  const float theta_max = atan(proj_data_ptr->get_proj_data_info_sptr()->get_tantheta(Bin(max_segment_num_to_process, 0, 0, 0)));
-
-  colsher_filter = ColsherFilter(theta_max,
-                                 static_cast<float>(alpha_colsher_axial),
-                                 static_cast<float>(fc_colsher_axial),
-                                 static_cast<float>(alpha_colsher_planar),
-                                 static_cast<float>(fc_colsher_planar),
+  const float theta_max =
+    atan(proj_data_ptr->get_proj_data_info_ptr()->
+	 get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
+  
+  colsher_filter = 
+    ColsherFilter(theta_max, 
+		  static_cast<float>(alpha_colsher_axial), static_cast<float>(fc_colsher_axial),
+		  static_cast<float>(alpha_colsher_planar), static_cast<float>(fc_colsher_planar),
                                  colsher_stretch_factor_planar,
                                  colsher_stretch_factor_axial);
 #else
@@ -440,7 +472,7 @@ FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float
         
         //Now forward only on this plane
         Sinogram<float> sino_fwd_pos = 
-          direct_sinos_ptr->get_proj_data_info_sptr()->get_empty_sinogram(plane_with_max_activity, 0);
+          direct_sinos_ptr->get_proj_data_info_ptr()->get_empty_sinogram(plane_with_max_activity, 0);
         
         full_log << "    Forward projection on one ring which contains maximum activity from seg0" << endl;
         //KTTODO forward_project_2D(estimated_image(),sino_fwd_pos, plane_with_max_activity);
@@ -464,29 +496,34 @@ FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float
   // find out if arc-correction if necessary
   // and initialise proj_data_info_with_missing_data_sptr accordingly
   {
-    if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(proj_data_ptr->get_proj_data_info_sptr())))
+    if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
+	(proj_data_ptr->get_proj_data_info_ptr()) != 0)
       {
         // it's already arc-corrected
         arc_correction_sptr.reset(); // just rest to make sure in case we run the reconstruction twice
-        proj_data_info_with_missing_data_sptr = proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
+	proj_data_info_with_missing_data_sptr =
+	  proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
       }
     else
       {
         arc_correction_sptr.reset(new ArcCorrection);
         // TODO arc-correct to voxel_size
-        if (arc_correction_sptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) == Succeeded::no)
+	if (arc_correction_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone()) ==
+	    Succeeded::no)
           return Succeeded::no;
 
         full_log << "FBP3DRP will arc-correct data first\n";
         // warning: need to use clone() as we're modifying it later on
-        proj_data_info_with_missing_data_sptr
-            = arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
+	proj_data_info_with_missing_data_sptr =
+	  arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
       }
   }
 
   // make space for missing data
   {
-    proj_data_info_with_missing_data_sptr->reduce_segment_range(-max_segment_num_to_process, max_segment_num_to_process);
+    proj_data_info_with_missing_data_sptr->
+      reduce_segment_range(-max_segment_num_to_process,
+			   max_segment_num_to_process);
     for (int segment_num = proj_data_info_with_missing_data_sptr->get_min_segment_num();
          segment_num <= proj_data_info_with_missing_data_sptr->get_max_segment_num();
          ++segment_num)
@@ -495,16 +532,21 @@ FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float
         // but will be set by find_rmin_rmax
         int new_min_axial_pos_num = 0;
         int new_max_axial_pos_num = 0;
-        find_rmin_rmax(new_min_axial_pos_num, new_max_axial_pos_num, input_proj_data_info_cyl(), segment_num, image);
-        proj_data_info_with_missing_data_sptr->set_min_axial_pos_num(new_min_axial_pos_num, segment_num);
-        proj_data_info_with_missing_data_sptr->set_max_axial_pos_num(new_max_axial_pos_num, segment_num);
+	find_rmin_rmax(new_min_axial_pos_num, new_max_axial_pos_num,
+		       input_proj_data_info_cyl(), segment_num, image); 
+	proj_data_info_with_missing_data_sptr->
+	  set_min_axial_pos_num(new_min_axial_pos_num, segment_num);
+	proj_data_info_with_missing_data_sptr->
+	  set_max_axial_pos_num(new_max_axial_pos_num, segment_num);
       }
   }
 
   {
     // set projectors to be used for the calculations
-    forward_projector_sptr->set_up(proj_data_info_with_missing_data_sptr, image_estimate_density_ptr);
-    back_projector_sptr->set_up(proj_data_info_with_missing_data_sptr, target_image_ptr);
+    forward_projector_sptr->set_up(proj_data_info_with_missing_data_sptr,
+				   image_estimate_density_ptr);
+    back_projector_sptr->set_up(proj_data_info_with_missing_data_sptr,
+				target_image_ptr);
 #if 0
     do when enabling callbacks
     set_projectors_and_symmetries(forward_projector_sptr, 
@@ -524,6 +566,7 @@ FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float
   if (display_level > 0)
     display(image, image.find_max(), "Final image");
 
+  stop_timers();
   do_log_file(image);
 
   full_log.close();
@@ -535,34 +578,38 @@ FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float
   return Succeeded::yes;
 }
 
-void
-FBP3DRPReconstruction::do_2D_reconstruction()
+
+
+
+void FBP3DRPReconstruction::do_2D_reconstruction()
 { // SSRB+2D FBP with ramp filter
 
   full_log << "\n---------------------------------------------------------\n";
   full_log << "2D FBP OF  DIRECT SINOGRAMS (=> IMAGE_ESTIMATE)\n" << endl;
 
+  
   // image_estimate should have 'default' dimensions, origin and voxel_size
-  image_estimate_density_ptr.reset(new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_sptr()));
+  image_estimate_density_ptr.
+    reset(new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_ptr()));
 
   {
-    FBP2DReconstruction recon2d(proj_data_ptr, alpha_ramp, fc_ramp, PadS, num_segments_to_combine);
+    FBP2DReconstruction recon2d(proj_data_ptr, 
+				alpha_ramp, fc_ramp, PadS,
+				num_segments_to_combine);
     full_log << "Parameters of the 2D FBP reconstruction" << endl;
     full_log << recon2d.parameter_info() << endl;
-    recon2d.set_up(image_estimate_density_ptr);
     recon2d.reconstruct(image_estimate_density_ptr);
   }
 
-  full_log << "  - min and max in SSRB+FBP image " << estimated_image().find_min() << " " << estimated_image().find_max()
-           << " SUM= " << estimated_image().sum() << endl;
+  full_log << "  - min and max in SSRB+FBP image " << estimated_image().find_min()
+	   << " " << estimated_image().find_max() << " SUM= " << estimated_image().sum() << endl;
 
-  if (display_level > 1)
-    {
+  if(display_level>1) {
       full_log << "  - Displaying estimated image" << endl;
       display(estimated_image(), estimated_image().find_max(), "Image estimate");
     }
 
-  if (save_intermediate_files && !_disable_output)
+  if (save_intermediate_files)
     {
       char file[max_filename_length];
       sprintf(file, "%s_estimated", output_filename_prefix.c_str());
@@ -570,26 +617,34 @@ FBP3DRPReconstruction::do_2D_reconstruction()
     }
 }
 
-void
-FBP3DRPReconstruction::do_save_img(const char* file, const VoxelsOnCartesianGrid<float>& data) const
+
+ 
+
+void FBP3DRPReconstruction::do_save_img(const char *file, const VoxelsOnCartesianGrid<float> &data) const
 {
   full_log << "  - Saving " << file << endl;
   output_file_format_ptr->write_to_file(file, data);
-  full_log << "    Min= " << data.find_min() << " Max = " << data.find_max() << " Sum = " << data.sum() << endl;
+    full_log << "    Min= " << data.find_min()
+         << " Max = " << data.find_max()
+         << " Sum = " << data.sum() << endl;
+
 }
 
-void
-FBP3DRPReconstruction::do_read_image2D()
+void FBP3DRPReconstruction::do_read_image2D()
 {
   full_log << "  - Reading  estimated image : " << image_for_reprojection_filename << endl;
 
-  image_estimate_density_ptr = read_from_file<DiscretisedDensity<3, float>>(image_for_reprojection_filename.c_str());
+        image_estimate_density_ptr =
+          read_from_file<DiscretisedDensity<3,float> >(image_for_reprojection_filename.c_str() );
 
   // TODO do scale checks
+          
 }
 
-void
-FBP3DRPReconstruction::do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image)
+ 
+
+void FBP3DRPReconstruction::do_3D_Reconstruction(
+    VoxelsOnCartesianGrid<float> &image)
 {
 
   full_log << "\n---------------------------------------------------------\n";
@@ -598,10 +653,8 @@ FBP3DRPReconstruction::do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image)
   do_byview_initialise(image);
 
   // TODO check if forward projector and back projector have compatible symmetries
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
-
-  forward_projector_sptr->set_input(estimated_image());
-  back_projector_sptr->start_accumulating_in_new_target();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
+								  back_projector_sptr->get_symmetries_used()->clone());
 
   for (int seg_num = -max_segment_num_to_process; seg_num <= max_segment_num_to_process; seg_num++)
     {
@@ -612,38 +665,43 @@ FBP3DRPReconstruction::do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image)
       const int orig_min_axial_pos_num = proj_data_ptr->get_min_axial_pos_num(seg_num);
       const int orig_max_axial_pos_num = proj_data_ptr->get_max_axial_pos_num(seg_num);
 
-      for (int view_num = proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num)
-        {
+    for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) {         
           const ViewSegmentNumbers vs_num(view_num, seg_num);
           if (!symmetries_sptr->is_basic(vs_num))
             continue;
 
-          const int new_min_axial_pos_num = proj_data_info_with_missing_data_sptr->get_min_axial_pos_num(seg_num);
-          const int new_max_axial_pos_num = proj_data_info_with_missing_data_sptr->get_max_axial_pos_num(seg_num);
+    const int new_min_axial_pos_num = 
+      proj_data_info_with_missing_data_sptr->get_min_axial_pos_num(seg_num);
+    const int new_max_axial_pos_num = 
+      proj_data_info_with_missing_data_sptr->get_max_axial_pos_num(seg_num);
 
           if (first_view_in_segment)
             {
               full_log << "\n--------------------------------\n";
               full_log << "PROCESSING SEGMENT  No " << seg_num << endl;
 
-              full_log << "Average delta= " << input_proj_data_info_cyl().get_average_ring_difference(seg_num) << " with span= "
-                       << input_proj_data_info_cyl().get_max_ring_difference(seg_num)
-                              - input_proj_data_info_cyl().get_min_ring_difference(seg_num) + 1
-                       << " and extended axial position numbers: min= " << new_min_axial_pos_num
-                       << " and max= " << new_max_axial_pos_num << endl;
+	  full_log << "Average delta= " <<  input_proj_data_info_cyl().get_average_ring_difference(seg_num)
+		   << " with span= " << input_proj_data_info_cyl().get_max_ring_difference(seg_num) - input_proj_data_info_cyl().get_min_ring_difference(seg_num) +1
+		   << " and extended axial position numbers: min= " << new_min_axial_pos_num << " and max= " << new_max_axial_pos_num  <<endl;
 
               first_view_in_segment = false;
             }
 
           full_log << "\n*************************************************************";
-          full_log << "\n        Processing view " << vs_num.view_num() << " of segment " << vs_num.segment_num() << endl;
+      full_log << "\n        Processing view " << vs_num.view_num()
+	       << " of segment " << vs_num.segment_num() << endl;
 
           full_log << "\n  - Getting related viewgrams" << endl;
 
-          RelatedViewgrams<float> viewgrams = proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);
+      RelatedViewgrams<float> viewgrams = 
+	proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);
 
           do_process_viewgrams(
-              viewgrams, new_min_axial_pos_num, new_max_axial_pos_num, orig_min_axial_pos_num, orig_max_axial_pos_num);
+			   viewgrams,
+			   new_min_axial_pos_num, new_max_axial_pos_num, orig_min_axial_pos_num, orig_max_axial_pos_num,
+			   image);
+ 
+                 
         }
       // do some logging etc, but only when this segment had any processing
       // (some segment_nums might not because of the symmetries)
@@ -651,37 +709,35 @@ FBP3DRPReconstruction::do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image)
         {
           full_log << "\n*************************************************************";
           full_log << "\nEnd of this segment. Current image values:\n"
-                   << "Min= " << image.find_min() << " Max = " << image.find_max() << " Sum = " << image.sum() << endl;
+		 << "Min= " << image.find_min()
+		 << " Max = " << image.find_max()
+		 << " Sum = " << image.sum() << endl;
 #ifndef PARALLEL
-          if (save_intermediate_files && !_disable_output)
-            {
+	if(save_intermediate_files){ 
               char* file = new char[output_filename_prefix.size() + 20];
               sprintf(file, "%s_afterseg%d", output_filename_prefix.c_str(), seg_num);
-              back_projector_sptr->get_output(image);
               do_save_img(file, image);
               delete[] file;
             }
         }
 #endif
     }
-
-  back_projector_sptr->get_output(image);
-
   // Normalise the image
   if (dynamic_cast<BackProjectorByBinUsingInterpolation const*>(back_projector_sptr.get()) == 0)
     {
       // TODO remove magic, is a scale factor in the interpolating backprojector (for which we compensate in the Colsher filter)
-      const float magic_number = 2 * input_proj_data_info_cyl().get_ring_radius() * input_proj_data_info_cyl().get_num_views()
-                                 / input_proj_data_info_cyl().get_ring_spacing();
+      const float magic_number=2*input_proj_data_info_cyl().get_ring_radius()*input_proj_data_info_cyl().get_num_views()/input_proj_data_info_cyl().get_ring_spacing();
       image /= magic_number;
     }
 
   do_byview_finalise(image);
+        
+
 }
 
+
 // CL 010699 NEW function
-void
-FBP3DRPReconstruction::do_best_fit(const Sinogram<float>& sino_measured, const Sinogram<float>& sino_calculated)
+void FBP3DRPReconstruction::do_best_fit(const Sinogram<float> &sino_measured,const Sinogram<float> &sino_calculated)
 {
   float meas_calc = 0.F;
   float meas_square = 0.F;
@@ -690,15 +746,13 @@ FBP3DRPReconstruction::do_best_fit(const Sinogram<float>& sino_measured, const S
   full_log << "  - Fitting estimated sinograms with the measured ones (Max in measured sino = " << sino_measured.find_max()
            << " Max in fwd sino = " << sino_calculated.find_max() << ")" << endl;
 
-  for (int view = sino_measured.get_min_view_num(); view <= sino_measured.get_max_view_num(); view++)
-    {
-      for (int bin = sino_measured.get_min_tangential_pos_num(); bin <= sino_measured.get_max_tangential_pos_num(); bin++)
-        {
+  for (int view=sino_measured.get_min_view_num();view <= sino_measured.get_max_view_num();view++){
+    for (int bin=sino_measured.get_min_tangential_pos_num();bin <= sino_measured.get_max_tangential_pos_num();bin++){
           meas_calc += (sino_calculated[view][bin] * sino_measured[view][bin]);
           meas_square += (sino_measured[view][bin] * sino_measured[view][bin]);
           calc_square += (sino_calculated[view][bin] * sino_calculated[view][bin]);
-          sigma_square += ((sino_measured[view][bin] - sino_calculated[view][bin])
-                           * (sino_measured[view][bin] - sino_calculated[view][bin]));
+      sigma_square +=((sino_measured[view][bin] - sino_calculated[view][bin])* (sino_measured[view][bin] - sino_calculated[view][bin]));
+        
         }
     }
   const float meas_sum = sino_measured.sum();
@@ -706,8 +760,7 @@ FBP3DRPReconstruction::do_best_fit(const Sinogram<float>& sino_measured, const S
   const int num_voxels = sino_measured.get_num_views() * sino_measured.get_num_tangential_poss();
   const float determinant = num_voxels * calc_square - (calc_sum * calc_sum);
 
-  if (determinant == 0)
-    {
+  if (determinant == 0) {
       warning("\nwarning: unable to fit sinograms. resorting to no fitting.\n");
       return;
     }
@@ -720,8 +773,8 @@ FBP3DRPReconstruction::do_best_fit(const Sinogram<float>& sino_measured, const S
            << endl;
 }
 
-void
-FBP3DRPReconstruction::do_arc_correction(RelatedViewgrams<float>& viewgrams) const
+          
+void FBP3DRPReconstruction::do_arc_correction(RelatedViewgrams<float> & viewgrams) const
 {
 
   if (is_null_ptr(arc_correction_sptr))
@@ -730,44 +783,49 @@ FBP3DRPReconstruction::do_arc_correction(RelatedViewgrams<float>& viewgrams) con
   viewgrams = arc_correction_sptr->do_arc_correction(viewgrams);
 }
 
-void
-FBP3DRPReconstruction::do_grow3D_viewgram(RelatedViewgrams<float>& viewgrams,
-                                          int new_min_axial_pos_num,
-                                          int new_max_axial_pos_num)
+void FBP3DRPReconstruction::do_grow3D_viewgram(RelatedViewgrams<float> & viewgrams,
+                                                 int new_min_axial_pos_num, int new_max_axial_pos_num)
 {
   // we have to grow the viewgrams along axial direction in the (normal)
   // case that new_min_axial_pos_num<get_min_axial_pos_num()
   const int new_min_axial_pos_num_grow = min(new_min_axial_pos_num, viewgrams.get_min_axial_pos_num());
   const int new_max_axial_pos_num_grow = max(new_max_axial_pos_num, viewgrams.get_max_axial_pos_num());
-  const IndexRange2D new_range(new_min_axial_pos_num_grow,
+  const IndexRange2D 
+    new_range(new_min_axial_pos_num_grow, 
                                new_max_axial_pos_num_grow,
                                viewgrams.get_min_tangential_pos_num(),
                                viewgrams.get_max_tangential_pos_num());
   viewgrams.grow(new_range);
 }
 
-void
-FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float>& viewgrams,
-                                               int new_min_axial_pos_num,
-                                               int new_max_axial_pos_num,
-                                               int orig_min_axial_pos_num,
-                                               int orig_max_axial_pos_num) const
+
+void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & viewgrams,
+                                                      int new_min_axial_pos_num, int new_max_axial_pos_num,
+                                                      int orig_min_axial_pos_num, int orig_max_axial_pos_num) const 
 {
 
   // do not forward project if we don't need to...
   if (new_min_axial_pos_num <= orig_min_axial_pos_num - 1)
     {
-      full_log << "  - Forward projection of missing data first from ring No " << new_min_axial_pos_num << " to "
+      full_log << "  - Forward projection of missing data first from ring No " 
+	       << new_min_axial_pos_num
+	       << " to "
                << orig_min_axial_pos_num - 1 << endl;
 
-      forward_projector_sptr->forward_project(viewgrams, new_min_axial_pos_num, orig_min_axial_pos_num - 1);
+      forward_projector_sptr->forward_project(viewgrams, estimated_image(),
+					     new_min_axial_pos_num ,orig_min_axial_pos_num-1);	    
+
     }
 
   if (orig_max_axial_pos_num + 1 <= new_max_axial_pos_num)
     {
-      full_log << "  - Forward projection from ring No " << orig_max_axial_pos_num + 1 << " to " << new_max_axial_pos_num << endl;
+      full_log << "  - Forward projection from ring No "
+	       << orig_max_axial_pos_num+1
+	       << " to " << new_max_axial_pos_num << endl;
+    
+      forward_projector_sptr->forward_project(viewgrams, estimated_image(),
+					     orig_max_axial_pos_num+1, new_max_axial_pos_num);
 
-      forward_projector_sptr->forward_project(viewgrams, orig_max_axial_pos_num + 1, new_max_axial_pos_num);
     }
 #if 0
   if (fit_projections)
@@ -785,20 +843,20 @@ FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float>& viewgram
     }
 #endif
 
-  if (display_level > 2)
-    {
+  if(display_level>2) {
       display(viewgrams, viewgrams.find_max(), "Original+Forward projected");
     }
 }
 
-void
-FBP3DRPReconstruction::do_colsher_filter_view(RelatedViewgrams<float>& viewgrams)
+	
+void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & viewgrams)
 {
 
-  assert(!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(viewgrams.get_proj_data_info_sptr())));
+  assert(dynamic_cast<ProjDataInfoCylindricalArcCorr const *>
+	 (viewgrams.get_proj_data_info_ptr()));
 
   // TODO make into object member instead of static
-  static int prev_seg_num = viewgrams.get_proj_data_info_sptr()->get_min_segment_num() - 1;
+  static int prev_seg_num = viewgrams.get_proj_data_info_ptr()->get_min_segment_num()-1;  
 #ifdef NRFFT
   static ColsherFilter colsher_filter(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 #endif
@@ -814,28 +872,34 @@ FBP3DRPReconstruction::do_colsher_filter_view(RelatedViewgrams<float>& viewgrams
       const int width = (int)pow(2., ((int)ceil(log((PadS + 1.) * nprojs) / log(2.))));
       const int height = (int)pow(2., ((int)ceil(log((PadZ + 1.) * nrings) / log(2.))));
 
-      const float theta_max = atan(viewgrams.get_proj_data_info_sptr()->get_tantheta(Bin(max_segment_num_to_process, 0, 0, 0)));
 
-      const float theta = static_cast<float>(atan(viewgrams.get_proj_data_info_sptr()->get_tantheta(Bin(seg_num, 0, 0, 0))));
+    const float theta_max = atan(viewgrams.get_proj_data_info_ptr()->get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
+    
+    const float theta = 
+      static_cast<float>(atan(viewgrams.get_proj_data_info_ptr()->get_tantheta(Bin(seg_num,0,0,0))));
 
-      const float sampling_in_s = viewgrams.get_proj_data_info_sptr()->get_sampling_in_s(Bin(seg_num, 0, 0, 0));
-      const float sampling_in_t = viewgrams.get_proj_data_info_sptr()->get_sampling_in_t(Bin(seg_num, 0, 0, 0));
-      full_log << "Colsher filter theta_max = " << theta_max << " theta = " << theta << " d_a = " << sampling_in_s
+    const float sampling_in_s =
+      viewgrams.get_proj_data_info_ptr()->get_sampling_in_s(Bin(seg_num,0,0,0));
+    const float sampling_in_t =
+      viewgrams.get_proj_data_info_ptr()->get_sampling_in_t(Bin(seg_num,0,0,0));
+    full_log << "Colsher filter theta_max = " << theta_max << " theta = " << theta
+      << " d_a = " << sampling_in_s
                << " d_b = " << sampling_in_t << endl;
 
+    
 #ifdef NRFFT
-      colsher_filter = ColsherFilter(height,
-                                     width,
-                                     _PI / 2 - theta,
-                                     theta_max,
+    colsher_filter = 
+      ColsherFilter(height, width, _PI/2 - theta, theta_max, 
                                      sampling_in_s,
                                      sampling_in_t,
-                                     alpha_colsher_axial,
-                                     fc_colsher_axial,
-                                     alpha_colsher_planar,
-                                     fc_colsher_planar);
+                    alpha_colsher_axial, fc_colsher_axial,
+                    alpha_colsher_planar, fc_colsher_planar);
 #else
-        if (colsher_filter.set_up(height, width, theta, sampling_in_s, sampling_in_t) != Succeeded::yes)
+    if (colsher_filter.set_up(height, width, 
+			      theta, 
+			      sampling_in_s, 
+			      sampling_in_t)
+	!= Succeeded::yes)
           error("Exiting");
 #endif
     }
@@ -848,7 +912,9 @@ FBP3DRPReconstruction::do_colsher_filter_view(RelatedViewgrams<float>& viewgrams
   RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
 
   for (; viewgram_iter != viewgrams.end(); viewgram_iter += 2)
-    Filter_proj_Colsher(*viewgram_iter, *(viewgram_iter + 1), colsher_filter, PadS, PadZ);
+    Filter_proj_Colsher(*viewgram_iter, *(viewgram_iter+1),
+                        colsher_filter,
+                        PadS, PadZ); 
 
 #else
 
@@ -869,42 +935,44 @@ FBP3DRPReconstruction::do_colsher_filter_view(RelatedViewgrams<float>& viewgrams
      TODO: should this be put in the backprojector itself ?
                          */
   {
-    const int num_ring_differences = input_proj_data_info_cyl().get_max_ring_difference(seg_num)
-                                     - input_proj_data_info_cyl().get_min_ring_difference(seg_num) + 1;
+	const int num_ring_differences = 
+	  input_proj_data_info_cyl().get_max_ring_difference(seg_num) - 
+	  input_proj_data_info_cyl().get_min_ring_difference(seg_num) + 1;
     full_log << "  - Multiplying filtered projections by " << num_ring_differences << endl;
-    if (num_ring_differences != 1)
-      {
+	if (num_ring_differences != 1){
         viewgrams *= static_cast<float>(num_ring_differences);
       }
+      
   }
-  if (display_level > 2)
-    {
+    if(display_level>2) {
       display(viewgrams, viewgrams.find_max(), "Colsher filtered");
     }
 }
 
-void
-FBP3DRPReconstruction::do_3D_backprojection_view(const RelatedViewgrams<float>& viewgrams,
-                                                 int new_min_axial_pos_num,
-                                                 int new_max_axial_pos_num)
+
+void FBP3DRPReconstruction::do_3D_backprojection_view(const RelatedViewgrams<float> & viewgrams,
+                                                        VoxelsOnCartesianGrid<float> &image,
+                                                        int new_min_axial_pos_num, int new_max_axial_pos_num)
 {
   full_log << "  - Backproject the filtered Colsher complete sinograms" << endl;
 
-  back_projector_sptr->back_project(viewgrams, new_min_axial_pos_num, new_max_axial_pos_num);
+    back_projector_sptr->back_project(image, viewgrams,new_min_axial_pos_num, new_max_axial_pos_num);
+        
 }
 
-void
-FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float>& image)
+
+        
+void FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float> &image)
 {
   char file[max_filename_length];
   sprintf(file, "%s.log", output_filename_prefix.c_str());
 
-  full_log << endl << "- WRITE LOGFILE (" << file << ")" << endl;
+    full_log << endl << "- WRITE LOGFILE ("
+         << file << ")" << endl;
 
   ofstream logfile(file);
 
-  if (logfile.fail() || logfile.bad())
-    {
+    if (logfile.fail() || logfile.bad()) {
       warning("Error opening log file\n");
       return;
     }
@@ -912,7 +980,9 @@ FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float>& image)
 
   const time_t now = time(NULL);
 
-  logfile << "Date of the image reconstruction : " << asctime(localtime(&now)) << parameter_info();
+    logfile << "Date of the image reconstruction : " << asctime(localtime(&now))
+             << parameter_info() ;
+             
 
 #ifndef PARALLEL
   logfile << "\n\n TIMING RESULTS :\n"
@@ -926,21 +996,22 @@ FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float>& image)
 #endif
 }
 
-void
-FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float>& viewgrams,
-                                            int new_min_axial_pos_num,
-                                            int new_max_axial_pos_num,
-                                            int orig_min_axial_pos_num,
-                                            int orig_max_axial_pos_num)
+
+void FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float> & viewgrams, 
+                                                   int new_min_axial_pos_num, int new_max_axial_pos_num,
+                                                   int orig_min_axial_pos_num, int orig_max_axial_pos_num,
+                                                   VoxelsOnCartesianGrid<float> &image)
 {
   do_arc_correction(viewgrams);
 
   do_grow3D_viewgram(viewgrams, new_min_axial_pos_num, new_max_axial_pos_num);
 
-  do_forward_project_view(
-      viewgrams, new_min_axial_pos_num, new_max_axial_pos_num, orig_min_axial_pos_num, orig_max_axial_pos_num);
+	do_forward_project_view(viewgrams,
+                                new_min_axial_pos_num, new_max_axial_pos_num, orig_min_axial_pos_num, orig_max_axial_pos_num); 
 
   do_colsher_filter_view(viewgrams);
+
+	
 
   /* The backprojection here is really an approximation of a continuous integral
   over delta and phi, where
@@ -958,7 +1029,11 @@ FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float>& viewgrams,
       viewgrams /= 2;
     }
 
-  do_3D_backprojection_view(viewgrams, new_min_axial_pos_num, new_max_axial_pos_num);
+        do_3D_backprojection_view(viewgrams,
+                                  image,
+                                  new_min_axial_pos_num, new_max_axial_pos_num);
+    
 }
+
 
 END_NAMESPACE_STIR

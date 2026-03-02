@@ -4,7 +4,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,8 +35,8 @@
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-class VoxelsOnCartesianGrid;
+template <typename elemT> class VoxelsOnCartesianGrid;
+
 
 /*!
   \ingroup Shape
@@ -62,10 +70,14 @@ class VoxelsOnCartesianGrid;
   origin (in mm):= <float> ;defaults to {0,0,0}
   \endverbatim
 */
-class Shape3D : public RegisteredObject<Shape3D>
+class Shape3D :
+   public RegisteredObject<Shape3D>,
+   public ParsingObject
 {
 public:
-  ~Shape3D() override {}
+
+  
+  virtual ~Shape3D() {}
 
   //! Compare shapes
   /*!
@@ -75,7 +87,8 @@ public:
       However, Shape3D::operator== has an implementation that checks equality of the
       origin (up-to a tolerance of .001). Derived classes can call this implementation.
       */
-  virtual inline bool operator==(const Shape3D&) const = 0;
+  virtual 
+    inline bool operator==(const Shape3D&) const = 0;
 
   //! Compare shapes
   inline bool operator!=(const Shape3D&) const;
@@ -97,10 +110,12 @@ public:
     intersection volume for very large \a num_samples, or when the
     voxel is completely inside the shape.
   */
-  virtual float get_voxel_weight(const CartesianCoordinate3D<float>& voxel_centre,
+  virtual float get_voxel_weight(
+    const CartesianCoordinate3D<float>& voxel_centre,
                                  const CartesianCoordinate3D<float>& voxel_size,
                                  const CartesianCoordinate3D<int>& num_samples) const;
 
+  
   //! determine if a point is inside the shape or not (up to floating point errors)
   /*!
     \param coord is a cartesian coordinate in 'absolute' coordinates,
@@ -179,8 +194,9 @@ public:
   //! Allocate a new Shape3D object which is a copy of the current one.
   virtual Shape3D* clone() const = 0;
 
+
   // need to overload this to avoid ambiguity between Object::parameter_info and ParsingObject::parameter_info()
-  std::string parameter_info() override;
+  virtual std::string parameter_info();
 
 protected:
   inline Shape3D();
@@ -188,12 +204,13 @@ protected:
 
   //! \name Parsing functions
   //@{
-  void set_defaults() override;
-  void initialise_keymap() override;
+  virtual void set_defaults();  
+  virtual void initialise_keymap();
   //@}
 private:
   //! origin of the shape
   CartesianCoordinate3D<float> origin;
+
 };
 
 END_NAMESPACE_STIR

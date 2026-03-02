@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -85,13 +93,12 @@ public:
   inline IndexRange(const IndexRange<num_dimensions>& range);
 
   //! Construct a regular range given by all minimum indices and all maximum indices.
-  inline IndexRange(const BasicCoordinate<num_dimensions, int>& min, const BasicCoordinate<num_dimensions, int>& max);
+  inline IndexRange(
+		    const BasicCoordinate<num_dimensions, int>& min,
+		    const BasicCoordinate<num_dimensions, int>& max);
 
   //! Construct a regular range given by sizes (minimum indices will be 0)
   inline IndexRange(const BasicCoordinate<num_dimensions, int>& sizes);
-
-  //! return the total number of elements in this range
-  inline size_t size_all() const;
 
   // these are derived from VectorWithOffset
   //  TODO these should be overloaded, to set regular_range as well.
@@ -111,20 +118,31 @@ public:
   inline bool is_regular() const;
 
   //! find regular range, returns false if the range is not regular
-  bool get_regular_range(BasicCoordinate<num_dimensions, int>& min, BasicCoordinate<num_dimensions, int>& max) const;
+  bool get_regular_range(
+			 BasicCoordinate<num_dimensions, int>& min,
+			 BasicCoordinate<num_dimensions, int>& max) const;
+
+#ifdef STIR_NO_MUTABLE
+  //! checks if the range is 'regular'
+  inline bool is_regular();
+
+  //! find regular range
+  bool get_regular_range(
+			 BasicCoordinate<num_dimensions, int>& min,
+			 BasicCoordinate<num_dimensions, int>& max);
+#endif
 
 private:
   //! enum to encode the current knowledge about regularity
-  enum is_regular_type
-  {
-    regular_true,
-    regular_false,
-    regular_to_do
-  };
+  enum is_regular_type {regular_true, regular_false, regular_to_do};
 
   //! variable storing the current knowledge about regularity
-  mutable is_regular_type is_regular_range;
+#ifndef STIR_NO_MUTABLE
+  mutable 
+#endif
+    is_regular_type is_regular_range;
 };
+
 
 //! The (simple) 1 dimensional specialisation of IndexRange
 template <>
@@ -134,7 +152,8 @@ public:
   inline IndexRange();
   inline IndexRange(const int min, const int max);
 
-  inline IndexRange(const BasicCoordinate<1, int>& min, const BasicCoordinate<1, int>& max);
+  inline IndexRange(const BasicCoordinate<1,int>& min, 
+		    const BasicCoordinate<1,int>& max);
 
   inline IndexRange(const int length);
   inline IndexRange(const BasicCoordinate<1, int>& size);
@@ -142,8 +161,6 @@ public:
   inline int get_min_index() const;
   inline int get_max_index() const;
   inline int get_length() const;
-  //! return the total number of elements in this range
-  inline size_t size_all() const;
 
   inline bool operator==(const IndexRange<1>& range2) const;
 
@@ -151,7 +168,9 @@ public:
   inline bool is_regular() const;
 
   //! fills in min and max, and returns true
-  inline bool get_regular_range(BasicCoordinate<1, int>& min, BasicCoordinate<1, int>& max) const;
+  inline bool get_regular_range(
+				BasicCoordinate<1, int>& min,
+				BasicCoordinate<1, int>& max) const;
   //! resets to new index range
   inline void resize(const int min_index, const int max_index);
 
@@ -160,8 +179,11 @@ private:
   int max;
 };
 
+
 END_NAMESPACE_STIR
 
 #include "stir/IndexRange.inl"
 
 #endif
+
+

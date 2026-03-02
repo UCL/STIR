@@ -2,7 +2,15 @@
     Copyright (C) 2005 - 2007-10-08, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,7 +29,6 @@
 #include "stir/numerics/norm.h"
 #include "stir/more_algorithms.h"
 #include "stir/Succeeded.h"
-#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
@@ -67,7 +74,8 @@ START_NAMESPACE_STIR
 
 */
 template <class elemT>
-inline Succeeded
+inline 
+Succeeded 
 absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
                                             Array<1, elemT>& max_eigenvector,
                                             const Array<2, elemT>& m,
@@ -77,11 +85,7 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
 {
   assert(m.is_regular());
   if (m.size() == 0)
-    {
-      max_eigenvalue = 0;
-      max_eigenvector = start;
-      return Succeeded::yes;
-    }
+    { max_eigenvalue=0; max_eigenvector=start; return Succeeded::yes; }
 
   const double tolerance_squared = square(tolerance);
   Array<1, elemT> current = start;
@@ -97,12 +101,15 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
       change = norm_squared(max_eigenvector - current);
       current = max_eigenvector;
       --remaining_num_iterations;
-  } while (change > tolerance_squared && remaining_num_iterations != 0);
+    }
+  while (change > tolerance_squared && remaining_num_iterations!=0);
 
   current /= static_cast<elemT>(norm(current));
   max_eigenvector = matrix_multiply(m, current);
   // compute eigenvalue using Rayleigh quotient
-  max_eigenvalue = static_cast<elemT>(inner_product(current, max_eigenvector) / norm_squared(current));
+  max_eigenvalue = 
+    static_cast<elemT>(inner_product(current,max_eigenvector) /
+                       norm_squared(current));
   max_eigenvector /= static_cast<elemT>(norm(max_eigenvector));
 
   return remaining_num_iterations == 0 ? Succeeded::no : Succeeded::yes;
@@ -126,7 +133,8 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
   eigenvalue by shifting with the maximum eigenvalue.
   */
 template <class elemT>
-inline Succeeded
+inline 
+Succeeded 
 absolute_max_eigenvector_using_shifted_power_method(elemT& max_eigenvalue,
                                                     Array<1, elemT>& max_eigenvector,
                                                     const Array<2, elemT>& m,
@@ -139,8 +147,8 @@ absolute_max_eigenvector_using_shifted_power_method(elemT& max_eigenvalue,
     error("absolute_max_eigenvector_using_shifted_power_method:\n"
           "  implementation needs work for indices that don't start from 0. sorry");
 
-  Succeeded success
-      = absolute_max_eigenvector_using_power_method(max_eigenvalue,
+  Succeeded success =
+    absolute_max_eigenvector_using_power_method(max_eigenvalue,
                                                     max_eigenvector,
                                                     // sadly need to explicitly convert result of subtraction back to Array
                                                     Array<2, elemT>(m - diagonal_matrix(static_cast<unsigned>(m.size()), shift)),
@@ -150,6 +158,7 @@ absolute_max_eigenvector_using_shifted_power_method(elemT& max_eigenvalue,
   max_eigenvalue += shift;
   return success;
 }
+
 
 /*!
   \ingroup numerics
@@ -171,7 +180,8 @@ absolute_max_eigenvector_using_shifted_power_method(elemT& max_eigenvalue,
   \todo the algorithm would work with hermitian matrices, but the code needs one small adjustment.
 */
 template <class elemT>
-inline Succeeded
+inline 
+Succeeded 
 max_eigenvector_using_power_method(elemT& max_eigenvalue,
                                    Array<1, elemT>& max_eigenvector,
                                    const Array<2, elemT>& m,
@@ -180,8 +190,13 @@ max_eigenvector_using_power_method(elemT& max_eigenvalue,
                                    const unsigned long max_num_iterations = 10000UL)
 {
 
-  Succeeded success
-      = absolute_max_eigenvector_using_power_method(max_eigenvalue, max_eigenvector, m, start, tolerance, max_num_iterations);
+  Succeeded success =
+    absolute_max_eigenvector_using_power_method(max_eigenvalue,
+						max_eigenvector,
+						m,
+						start,
+						tolerance,
+						max_num_iterations);
   if (success == Succeeded::no)
     return Succeeded::no;
 
@@ -194,8 +209,14 @@ max_eigenvector_using_power_method(elemT& max_eigenvalue,
   // power method iterations
   // also it will make all eigenvalues positive (as we subtract the
   // smallest negative eigenvalue)
-  success = absolute_max_eigenvector_using_shifted_power_method(
-      max_eigenvalue, max_eigenvector, m, start, max_eigenvalue, tolerance, max_num_iterations);
+  success =
+    absolute_max_eigenvector_using_shifted_power_method(max_eigenvalue,
+							max_eigenvector,
+							m,
+							start,
+							max_eigenvalue,
+							tolerance,
+							max_num_iterations);
   if (success == Succeeded::no)
     return Succeeded::no;
 

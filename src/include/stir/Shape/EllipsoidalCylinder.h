@@ -2,7 +2,15 @@
     Copyright (C) 2000-2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -37,7 +45,7 @@ START_NAMESPACE_STIR
   \f]
   and
   \f[
-  {(r.dir_x)^2 \over R_x^2} + {(r.dir_y)^2 \over R_y^2} <= 1
+  {(r.dir_x)^2 \over R_y^2} + {(r.dir_y)^2 \over R_y^2} <= 1
   \f]
   and
   \f[
@@ -64,7 +72,8 @@ START_NAMESPACE_STIR
      End:=
   \endverbatim
 */
-class EllipsoidalCylinder : public RegisteredParsingObject<EllipsoidalCylinder, Shape3D, Shape3DWithOrientation>
+class EllipsoidalCylinder: 
+   public RegisteredParsingObject<EllipsoidalCylinder, Shape3D, Shape3DWithOrientation>
 {
 
 public:
@@ -94,41 +103,38 @@ public:
                       const CartesianCoordinate3D<float>& centre,
                       const Array<2, float>& direction_vectors = diagonal_matrix(3, 1.F));
 
-  Shape3D* clone() const override;
+  Shape3D* clone() const; 
 
   //! Compare cylinders
   /*! Uses a tolerance determined by the smallest dimension of the object divided by 1000.*/
-  bool operator==(const EllipsoidalCylinder& cylinder) const;
+  bool
+    operator==(const EllipsoidalCylinder& cylinder) const;
 
-  bool operator==(const Shape3D& shape) const override;
+  virtual bool
+    operator==(const Shape3D& shape) const;
 
   //! get volume
-  float get_geometric_volume() const override;
+  float get_geometric_volume() const;
 #if 0
   //! Get approximate geometric area
   float get_geometric_area() const;
 #endif
 
-  bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const override;
+  bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
 
   inline float get_length() const
-  {
-    return length;
-  }
+    { return length; }
   inline float get_radius_x() const
-  {
-    return radius_x;
-  }
+    { return radius_x; }
   inline float get_radius_y() const
-  {
-    return radius_y;
-  }
+    { return radius_y; }
   // TODOXXX add theta_1,2
   void set_length(const float);
   void set_radius_x(const float);
   void set_radius_y(const float);
 
 protected:
+
   //! Length of the cylinder
   float length;
   //! Radius in x-direction if the shape is not rotated
@@ -142,9 +148,9 @@ protected:
 
   //! set defaults before parsing
   /*! sets radii and length to 0, theta_1=0, theta_2=360 and calls Shape3DWithOrientation::set_defaults() */
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();  
+  virtual void initialise_keymap();    
+  virtual bool post_processing();
 };
 
 END_NAMESPACE_STIR

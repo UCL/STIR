@@ -3,7 +3,15 @@
 /*
     Copyright (C) 2002-2011, Hammersmith Imanet Ltd
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -17,6 +25,8 @@
 
 */
 
+#ifdef HAVE_LLN_MATRIX
+
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #include "stir/NumericType.h"
 #include "stir/IO/stir_ecat7.h"
@@ -27,9 +37,12 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-const char* const ECAT7OutputFileFormat::registered_name = "ECAT7";
+const char * const 
+ECAT7OutputFileFormat::registered_name = "ECAT7";
 
-ECAT7OutputFileFormat::ECAT7OutputFileFormat(const NumericType& type, const ByteOrder& byte_order)
+ECAT7OutputFileFormat::
+ECAT7OutputFileFormat(const NumericType& type, 
+                   const ByteOrder& byte_order) 
 {
   base_type::set_defaults();
   set_type_of_numbers(type);
@@ -37,7 +50,8 @@ ECAT7OutputFileFormat::ECAT7OutputFileFormat(const NumericType& type, const Byte
 }
 
 void
-ECAT7OutputFileFormat::initialise_keymap()
+ECAT7OutputFileFormat::
+initialise_keymap()
 {
   parser.add_start_key("ECAT7 Output File Format Parameters");
   parser.add_stop_key("End ECAT7 Output File Format Parameters");
@@ -46,7 +60,8 @@ ECAT7OutputFileFormat::initialise_keymap()
 }
 
 void
-ECAT7OutputFileFormat::set_defaults()
+ECAT7OutputFileFormat::
+set_defaults()
 {
   default_scanner_name = "ECAT 962";
   base_type::set_defaults();
@@ -54,10 +69,12 @@ ECAT7OutputFileFormat::set_defaults()
   type_of_numbers = NumericType::SHORT;
 
   set_key_values();
+
 }
 
 bool
-ECAT7OutputFileFormat::post_processing()
+ECAT7OutputFileFormat::
+post_processing()
 {
   if (base_type::post_processing())
     return true;
@@ -66,7 +83,8 @@ ECAT7OutputFileFormat::post_processing()
 
   if (find_ECAT_system_type(*scanner_ptr) == 0)
     {
-      warning("ECAT7OutputFileFormat: default_scanner_name %s is not supported\n", default_scanner_name.c_str());
+      warning("ECAT7OutputFileFormat: default_scanner_name %s is not supported\n",
+	      default_scanner_name.c_str());
       return true;
     }
 
@@ -74,9 +92,11 @@ ECAT7OutputFileFormat::post_processing()
 }
 
 NumericType
-ECAT7OutputFileFormat::set_type_of_numbers(const NumericType& new_type, const bool warn)
+ECAT7OutputFileFormat::
+set_type_of_numbers(const NumericType& new_type, const bool warn)
 {
-  const NumericType supported_type_of_numbers = NumericType("signed integer", 2);
+ const NumericType supported_type_of_numbers = 
+     NumericType("signed integer", 2);
   if (new_type != supported_type_of_numbers)
     {
       if (warn)
@@ -86,10 +106,12 @@ ECAT7OutputFileFormat::set_type_of_numbers(const NumericType& new_type, const bo
   else
     type_of_numbers = new_type;
   return type_of_numbers;
+
 }
 
 ByteOrder
-ECAT7OutputFileFormat::set_byte_order(const ByteOrder& new_byte_order, const bool warn)
+ECAT7OutputFileFormat::
+set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 {
   if (new_byte_order != ByteOrder::big_endian)
     {
@@ -103,7 +125,9 @@ ECAT7OutputFileFormat::set_byte_order(const ByteOrder& new_byte_order, const boo
 }
 
 Succeeded
-ECAT7OutputFileFormat::actual_write_to_file(std::string& filename, const DiscretisedDensity<3, float>& density) const
+ECAT7OutputFileFormat::
+    actual_write_to_file(string& filename, 
+                  const DiscretisedDensity<3,float>& density) const
 {
   shared_ptr<Scanner> scanner_ptr(Scanner::get_scanner_from_name(default_scanner_name));
 
@@ -112,16 +136,19 @@ ECAT7OutputFileFormat::actual_write_to_file(std::string& filename, const Discret
   Main_header mhead;
   make_ECAT7_main_header(mhead, *scanner_ptr, "", density);
   mhead.num_frames = 1;
-  mhead.acquisition_type = mhead.num_frames > 1 ? DynamicEmission : StaticEmission;
+  mhead.acquisition_type =
+    mhead.num_frames>1 ? DynamicEmission : StaticEmission;
 
   MatrixFile* mptr = matrix_create(filename.c_str(), MAT_CREATE, &mhead);
   if (mptr == 0)
     {
-      warning("ECAT7OutputFileFormat::write_to_file: error opening output file %s\n", filename.c_str());
+    warning("ECAT7OutputFileFormat::write_to_file: error opening output file %s\n",
+      filename.c_str());
       return Succeeded::no;
     }
 
-  Succeeded success = DiscretisedDensity_to_ECAT7(mptr, density, 1 /*frame_num*/);
+  Succeeded success =
+    DiscretisedDensity_to_ECAT7(mptr, density, 1 /*frame_num*/);
   matrix_close(mptr);
 
   return success;
@@ -130,3 +157,6 @@ ECAT7OutputFileFormat::actual_write_to_file(std::string& filename, const Discret
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
+
+
+#endif // #ifdef HAVE_LLN_MATRIX

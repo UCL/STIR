@@ -13,7 +13,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -25,16 +33,16 @@ CombinedShape3D<operation>::CombinedShape3D(shared_ptr<Shape3D> object1_v, share
       object2_ptr(object2_v)
 {}
 
+
 template <class operation>
-bool
-CombinedShape3D<operation>::is_inside_shape(const CartesianCoordinate3D<float>& index) const
+bool CombinedShape3D<operation>::is_inside_shape(const CartesianCoordinate3D<float>& index) const
 {
-  return operation()(object1_ptr->is_inside_shape(index), object2_ptr->is_inside_shape(index));
+   return operation()(object1_ptr->is_inside_shape(index),
+                      object2_ptr->is_inside_shape(index));
 }
 
 template <class operation>
-Shape3D*
-CombinedShape3D<operation>::clone() const
+Shape3D* CombinedShape3D<operation>::clone() const
 {
   // TODO alright ?
 #if 0
@@ -48,8 +56,7 @@ CombinedShape3D<operation>::clone() const
 }
 
 template <class operation>
-void
-CombinedShape3D<operation>::translate(const CartesianCoordinate3D<float>& direction)
+void CombinedShape3D<operation>::translate(const CartesianCoordinate3D<float>& direction)
 {
   // TODO alright ?
   shared_ptr<Shape3D> new_object1_ptr = object1_ptr->clone();
@@ -60,9 +67,9 @@ CombinedShape3D<operation>::translate(const CartesianCoordinate3D<float>& direct
   object2_ptr->translate(direction);
 }
 
+
 template <class operation>
-void
-CombinedShape3D<operation>::scale(const CartesianCoordinate3D<float>& scale3D)
+void CombinedShape3D<operation>::scale(const CartesianCoordinate3D<float>& scale3D)
 {
   // TODO alright ?
 #if 0

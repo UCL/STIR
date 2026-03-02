@@ -3,10 +3,17 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2023, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -92,34 +99,28 @@ SegmentBySinogram<elemT>::get_max_tangential_pos_num() const
 
 template <typename elemT>
 typename SegmentBySinogram<elemT>::StorageOrder
-SegmentBySinogram<elemT>::get_storage_order() const
-{
-  return Segment<elemT>::StorageBySino;
-}
+SegmentBySinogram<elemT>::
+get_storage_order() const
+  { return Segment<elemT>::StorageBySino; }
 
 template <typename elemT>
 Sinogram<elemT>
-SegmentBySinogram<elemT>::get_sinogram(int axial_pos_num) const
-{
-  return Sinogram<elemT>(Array<3, elemT>::operator[](axial_pos_num),
-                         Segment<elemT>::proj_data_info_sptr,
-                         axial_pos_num,
-                         Segment<elemT>::get_segment_num(),
-                         Segment<elemT>::get_timing_pos_num());
-}
+SegmentBySinogram<elemT>::
+get_sinogram(int axial_pos_num) const
+{ return Sinogram<elemT>(Array<3,elemT>::operator[](axial_pos_num), 
+                         Segment<elemT>::proj_data_info_ptr, axial_pos_num, 
+                         Segment<elemT>::get_segment_num()); }
 
 template <typename elemT>
 void
-SegmentBySinogram<elemT>::set_sinogram(Sinogram<elemT> const& s, int axial_pos_num)
-{
-  Array<3, elemT>::operator[](axial_pos_num) = s;
-}
+SegmentBySinogram<elemT>::
+set_sinogram(Sinogram<elemT> const &s, int axial_pos_num)
+{ Array<3,elemT>::operator[](axial_pos_num) = s; }
 
 template <typename elemT>
 void
-SegmentBySinogram<elemT>::set_sinogram(const Sinogram<elemT>& s)
-{
-  set_sinogram(s, s.get_axial_pos_num());
-}
+SegmentBySinogram<elemT>::
+set_sinogram(const Sinogram<elemT>& s)
+  { set_sinogram(s, s.get_axial_pos_num()); }
 
 END_NAMESPACE_STIR

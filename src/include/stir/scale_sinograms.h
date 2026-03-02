@@ -4,7 +4,15 @@
     Copyright (C) 2004 - 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -31,8 +39,9 @@ class Succeeded;
        corresponds to segments, the second to axial positions.
   \return indicates if writing failed or not
 */
-Succeeded
-scale_sinograms(ProjData& output_proj_data, const ProjData& input_proj_data, const Array<2, float> scale_factors_per_sinogram);
+Succeeded scale_sinograms(ProjData& output_proj_data, 		
+			  const ProjData& input_proj_data, 
+			  const Array<2,float> scale_factors_per_sinogram);
 
 //! find scale factors between two different sinograms
 /*! \ingroup projdata
@@ -47,10 +56,10 @@ scale_sinograms(ProjData& output_proj_data, const ProjData& input_proj_data, con
     scale_factor = sum(numerator * weights) / sum(denominator * weights)
   \endcode
 
-  Currently this function sets the scale factor or a sinogram to 1 (and calls warning())
-  when the denominator gets too small.
+  \todo currently this function calls error() when the denominator gets too small
 */
-Array<2, float> get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
+Array<2,float>
+  get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
                                                const ProjData& denominator_proj_data,
                                                const ProjData& weights_proj_data);
 

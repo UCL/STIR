@@ -4,7 +4,15 @@
     Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -30,7 +38,8 @@ START_NAMESPACE_STIR
   This function using stir::norm_squared(), so works for complex numbers as well.
 */
 template <class iterT>
-inline iterT abs_max_element(iterT start, iterT end);
+inline
+iterT abs_max_element(iterT start, iterT end);
 
 /*!
   \ingroup buildblock
@@ -42,7 +51,9 @@ inline iterT abs_max_element(iterT start, iterT end);
   that calls operator+=.
 */
 template <class IterT, class elemT>
-inline elemT sum(IterT start, IterT end, elemT init);
+inline 
+elemT
+sum(IterT start, IterT end, elemT init);
 
 /*!
   \ingroup buildblock
@@ -60,7 +71,9 @@ inline elemT sum(IterT start, IterT end, elemT init);
   std::iterator_traits.
 */
 template <class IterT>
-inline typename std::iterator_traits<IterT>::value_type sum(IterT start, IterT end);
+inline 
+typename std::iterator_traits<IterT>::value_type
+sum(IterT start, IterT end);
 
 /*!
   \ingroup buildblock
@@ -69,7 +82,9 @@ inline typename std::iterator_traits<IterT>::value_type sum(IterT start, IterT e
   std::iterator_traits.
 */
 template <class IterT>
-inline typename std::iterator_traits<IterT>::value_type average(IterT start, IterT end);
+inline 
+typename std::iterator_traits<IterT>::value_type
+average(IterT start, IterT end);
 
 END_NAMESPACE_STIR
 

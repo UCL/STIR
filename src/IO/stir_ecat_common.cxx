@@ -4,7 +4,7 @@
   \file
   \ingroup ECAT
 
-  \brief Implementation of routines which convert ECAT6, ECAT7 and ECAT8 things into our  building blocks and vice versa.
+  \brief Implementation of routines which convert ECAT6 and ECAT7 things into our  building blocks and vice versa. 
 
   \author Kris Thielemans
   \author PARAPET project
@@ -13,10 +13,17 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2020, 2023 University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,16 +31,13 @@
 #include "stir/ByteOrder.h"
 #include "stir/NumericType.h"
 #include "stir/Scanner.h"
-#include "stir/ProjDataInfo.h"
 #include "stir/IO/stir_ecat_common.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 
-void
-find_type_from_ECAT_data_type(NumericType& type, ByteOrder& byte_order, const short data_type)
+
+void find_type_from_ECAT_data_type(NumericType& type, ByteOrder& byte_order, const short data_type)
 {
   switch (data_type)
     {
@@ -72,8 +76,7 @@ find_type_from_ECAT_data_type(NumericType& type, ByteOrder& byte_order, const sh
     }
 }
 
-short
-find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order)
+short find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order)
 {
   if (!type.signed_type())
     warning("find_ecat_data_type: ecat data support only signed types. Using the signed equivalent\n");
@@ -87,7 +90,8 @@ find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order)
           return byte_order == ByteOrder::big_endian ? ECAT_I2_big_endian_data_type : ECAT_I2_little_endian_data_type;
         case 4:
           return byte_order == ByteOrder::big_endian ? ECAT_I4_big_endian_data_type : ECAT_I4_little_endian_data_type;
-          default: {
+    default:
+      {
             // write error message below
           }
         }
@@ -98,21 +102,22 @@ find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order)
         {
         case 4:
           return byte_order == ByteOrder::big_endian ? ECAT_R4_IEEE_big_endian_data_type : ECAT_R4_VAX_data_type;
-          default: {
+    default:
+      {
             // write error message below
           }
         }
     }
-  std::string number_format;
-  std::size_t size_in_bytes;
+  string number_format;
+  size_t size_in_bytes;
   type.get_Interfile_info(number_format, size_in_bytes);
-  error("find_ecat_data_type: ecat does not support data type '%s' of %d bytes.\n", number_format.c_str(), size_in_bytes);
+  error("find_ecat_data_type: ecat does not support data type '%s' of %d bytes.\n",
+    number_format.c_str(), size_in_bytes);
   // just to satisfy compilers
   return short(0);
 }
 
-short
-find_ECAT_system_type(const Scanner& scanner)
+short find_ECAT_system_type(const Scanner& scanner)
 {
   switch (scanner.get_type())
     {
@@ -146,13 +151,13 @@ find_ECAT_system_type(const Scanner& scanner)
       return 42;
 
     default:
-      warning("\nfind_ecat_system_type: scanner \"%s\" currently unsupported. Returning 0.\n", scanner.get_name().c_str());
+    warning("\nfind_ecat_system_type: scanner \"%s\" currently unsupported. Returning 0.\n", 
+      scanner.get_name().c_str());
       return 0;
     }
 }
 
-Scanner*
-find_scanner_from_ECAT_system_type(const short system_type)
+Scanner* find_scanner_from_ECAT_system_type(const short system_type)
 {
   switch (system_type)
     {
@@ -180,37 +185,6 @@ find_scanner_from_ECAT_system_type(const short system_type)
     default:
       return new Scanner(Scanner::Unknown_scanner);
     }
-}
-
-std::vector<int>
-find_segment_sequence(const ProjDataInfo& pdi)
-{
-  const int max_segment_num = pdi.get_max_segment_num();
-  std::vector<int> segment_sequence(2 * max_segment_num + 1);
-  // KT 25/10/2000 swapped segment order
-  // ECAT 7 always stores segments as 0, -1, +1, ...
-  segment_sequence[0] = 0;
-  for (int segment_num = 1; segment_num <= max_segment_num; ++segment_num)
-    {
-      segment_sequence[2 * segment_num - 1] = -segment_num;
-      segment_sequence[2 * segment_num] = segment_num;
-    }
-  return segment_sequence;
-}
-
-std::vector<int>
-find_timing_poss_sequence(const ProjDataInfo& pdi)
-{
-  const int max_timing_pos_num = pdi.get_num_tof_poss() / 2;
-  std::vector<int> timing_pos_sequence(2 * max_timing_pos_num + 1);
-  // Siemens always stores timing_poss as 0, -1, +1, ...
-  timing_pos_sequence[0] = 0;
-  for (int timing_pos_num = 1; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
-    {
-      timing_pos_sequence[2 * timing_pos_num - 1] = timing_pos_num;
-      timing_pos_sequence[2 * timing_pos_num] = -timing_pos_num;
-    }
-  return timing_pos_sequence;
 }
 
 END_NAMESPACE_ECAT

@@ -4,7 +4,15 @@
  Copyright (C) 2009- 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -26,20 +34,23 @@
 #include "stir/IO/interfile.h"
 #include "stir/IO/OutputFileFormat.h"
 
+#ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::cerr;
 using std::istringstream;
-using std::string;
+#endif
 
 START_NAMESPACE_STIR
 
-GatedDiscretisedDensity::GatedDiscretisedDensity(const GatedDiscretisedDensity& argument)
+GatedDiscretisedDensity::
+GatedDiscretisedDensity(const GatedDiscretisedDensity& argument)
 {
   (*this) = argument;
 }
 
 GatedDiscretisedDensity&
-GatedDiscretisedDensity::operator=(const GatedDiscretisedDensity& argument)
+GatedDiscretisedDensity::
+operator=(const GatedDiscretisedDensity& argument)
 {
   this->_time_gate_definitions = argument._time_gate_definitions;
   this->_densities.resize(argument._densities.size());
@@ -48,7 +59,8 @@ GatedDiscretisedDensity::operator=(const GatedDiscretisedDensity& argument)
   return *this;
 }
 
-GatedDiscretisedDensity::GatedDiscretisedDensity(const string& filename)
+GatedDiscretisedDensity::
+GatedDiscretisedDensity(const string& filename)
 {
   const string gdef_filename = filename + ".gdef";
   std::cout << "GatedDiscretisedDensity: Reading gate definitions " << gdef_filename.c_str() << std::endl;
@@ -65,7 +77,8 @@ GatedDiscretisedDensity::GatedDiscretisedDensity(const string& filename)
     }
 }
 
-GatedDiscretisedDensity::GatedDiscretisedDensity(const shared_ptr<DiscretisedDensity<3, float>>& density_sptr,
+GatedDiscretisedDensity::
+GatedDiscretisedDensity(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
                                                  const unsigned int num_gates)
 {
   this->_densities.resize(num_gates);
@@ -73,47 +86,43 @@ GatedDiscretisedDensity::GatedDiscretisedDensity(const shared_ptr<DiscretisedDen
     this->_densities[num - 1].reset(density_sptr->get_empty_discretised_density());
 }
 
+
 void
-GatedDiscretisedDensity::set_density_sptr(const shared_ptr<DiscretisedDensity<3, float>>& density_sptr,
+GatedDiscretisedDensity::
+set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
                                           const unsigned int gate_num)
-{
-  this->_densities[gate_num - 1] = density_sptr;
-}
+{  this->_densities[gate_num-1]=density_sptr; }  
 
 const std::vector<shared_ptr<DiscretisedDensity<3, float>>>&
-GatedDiscretisedDensity::get_densities() const
-{
-  return this->_densities;
-}
+GatedDiscretisedDensity::
+get_densities() const 
+{  return this->_densities ; }
 
 const DiscretisedDensity<3, float>&
-GatedDiscretisedDensity::get_density(const unsigned int gate_num) const
-{
-  return *this->_densities[gate_num - 1];
-}
+GatedDiscretisedDensity::
+get_density(const unsigned int gate_num) const 
+{  return *this->_densities[gate_num-1] ; }
 
 DiscretisedDensity<3, float>&
-GatedDiscretisedDensity::get_density(const unsigned int gate_num)
-{
-  return *this->_densities[gate_num - 1];
-}
+GatedDiscretisedDensity::
+get_density(const unsigned int gate_num)
+{  return *this->_densities[gate_num-1] ; }
 
 const TimeGateDefinitions&
-GatedDiscretisedDensity::get_time_gate_definitions() const
-{
-  return this->_time_gate_definitions;
-}
+GatedDiscretisedDensity::
+get_time_gate_definitions() const
+{ return this->_time_gate_definitions; }
 
-void
-GatedDiscretisedDensity::fill_with_zero()
+void GatedDiscretisedDensity::
+fill_with_zero()
 {
   for (unsigned int gate_num = 0; gate_num < this->_time_gate_definitions.get_num_gates(); ++gate_num)
     this->_densities[gate_num].reset((this->_densities[gate_num])->get_empty_discretised_density());
 }
 
 GatedDiscretisedDensity*
-GatedDiscretisedDensity::read_from_files(
-    const string& filename) // The written image is read in respect to its center as origin!!!
+GatedDiscretisedDensity::
+read_from_files(const string& filename) // The written image is read in respect to its center as origin!!!
 {
   const string gdef_filename = filename + ".gdef";
   std::cout << "GatedDiscretisedDensity: Reading gate definitions " << gdef_filename.c_str() << std::endl;
@@ -134,8 +143,8 @@ GatedDiscretisedDensity::read_from_files(
 }
 
 GatedDiscretisedDensity*
-GatedDiscretisedDensity::read_from_files(const string& filename,
-                                         const string& suffix) // The written image is read in respect to its center as origin!!!
+GatedDiscretisedDensity::
+read_from_files(const string& filename,const string& suffix) // The written image is read in respect to its center as origin!!!
 {
   const string gdef_filename = filename + ".gdef";
   std::cout << "GatedDiscretisedDensity: Reading gate definitions " << gdef_filename.c_str() << std::endl;
@@ -156,7 +165,8 @@ GatedDiscretisedDensity::read_from_files(const string& filename,
 }
 
 Succeeded
-GatedDiscretisedDensity::write_to_files(const string& filename) const
+GatedDiscretisedDensity::
+write_to_files(const string& filename) const 
 {
   for (unsigned int num = 1; num <= (_time_gate_definitions).get_num_gates(); ++num)
     {
@@ -174,7 +184,8 @@ GatedDiscretisedDensity::write_to_files(const string& filename) const
 }
 
 Succeeded
-GatedDiscretisedDensity::write_to_files(const string& filename, const string& suffix) const
+GatedDiscretisedDensity::
+write_to_files(const string& filename,const string& suffix) const
 {
   for (unsigned int num = 1; num <= (_time_gate_definitions).get_num_gates(); ++num)
     {

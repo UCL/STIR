@@ -11,13 +11,22 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_ArrayFunctionObject_2ArgumentImplementation_H__
 #define __stir_ArrayFunctionObject_2ArgumentImplementation_H__
+
 
 #include "stir/ArrayFunctionObject.h"
 #include "stir/Array.h"
@@ -38,24 +47,28 @@ START_NAMESPACE_STIR
   \see ArrayFunctionObject_1ArgumentImplementation
 */
 template <int num_dimensions, typename elemT>
-class ArrayFunctionObject_2ArgumentImplementation : public ArrayFunctionObject<num_dimensions, elemT>
+class ArrayFunctionObject_2ArgumentImplementation :
+  public ArrayFunctionObject<num_dimensions,elemT>
 {
 public:
   //! in-place modification of array, implemented inline
-  inline void operator()(Array<num_dimensions, elemT>& array) const override
+  virtual inline void operator() (Array<num_dimensions,elemT>& array) const
   {
     Array<num_dimensions, elemT> copy_array(array);
     (*this)(array, copy_array);
   }
 
-  void operator()(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const override
+  virtual void operator() (Array<num_dimensions,elemT>& out_array, 
+                           const Array<num_dimensions,elemT>& in_array) const
   {
     do_it(out_array, in_array);
   }
-
 protected:
-  virtual void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const = 0;
+  virtual void do_it(Array<num_dimensions,elemT>& out_array, 
+                     const Array<num_dimensions,elemT>& in_array) const = 0;
 };
+
+
 
 END_NAMESPACE_STIR
 

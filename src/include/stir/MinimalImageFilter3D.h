@@ -4,7 +4,15 @@
     Copyright (C) 2006 - 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,6 +29,7 @@
 #ifndef __stir_MinimalImageFilter3D_H__
 #define __stir_MinimalImageFilter3D_H__
 
+
 #include "stir/DataProcessor.h"
 #include "stir/MinimalArrayFilter3D.h"
 #include "stir/DiscretisedDensity.h"
@@ -28,8 +37,9 @@
 
 START_NAMESPACE_STIR
 
-template <typename coordT>
-class CartesianCoordinate3D;
+template <typename coordT> class CartesianCoordinate3D;
+
+
 
 /*!
   \ingroup ImageProcessor
@@ -40,16 +50,22 @@ class CartesianCoordinate3D;
   necessary things to parse parameter files etc.
  */
 template <typename elemT>
-class MinimalImageFilter3D : public RegisteredParsingObject<MinimalImageFilter3D<elemT>,
+class MinimalImageFilter3D:
+  public 
+      RegisteredParsingObject<
+	      MinimalImageFilter3D<elemT>,
                                                             DataProcessor<DiscretisedDensity<3, elemT>>,
-                                                            DataProcessor<DiscretisedDensity<3, elemT>>>
+              DataProcessor<DiscretisedDensity<3,elemT> >
+	       >
 {
 private:
-  typedef RegisteredParsingObject<MinimalImageFilter3D<elemT>,
+  typedef
+    RegisteredParsingObject<
+	      MinimalImageFilter3D<elemT>,
                                   DataProcessor<DiscretisedDensity<3, elemT>>,
-                                  DataProcessor<DiscretisedDensity<3, elemT>>>
+              DataProcessor<DiscretisedDensity<3,elemT> >
+	       >
       base_type;
-
 public:
   static const char* const registered_name;
 
@@ -63,14 +79,17 @@ private:
   int mask_radius_y;
   int mask_radius_z;
 
-  void set_defaults() override;
-  void initialise_keymap() override;
 
-  Succeeded virtual_set_up(const DiscretisedDensity<3, elemT>& density) override;
-  void virtual_apply(DiscretisedDensity<3, elemT>& density, const DiscretisedDensity<3, elemT>& in_density) const override;
-  void virtual_apply(DiscretisedDensity<3, elemT>& density) const override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+
+  Succeeded virtual_set_up (const DiscretisedDensity< 3,elemT>& density);
+  void virtual_apply(DiscretisedDensity<3,elemT>& density, const DiscretisedDensity<3,elemT>& in_density) const; 
+  void virtual_apply(DiscretisedDensity<3,elemT>& density) const; 
 };
 
+
 END_NAMESPACE_STIR
+
 
 #endif // MinimalImageFilter3D

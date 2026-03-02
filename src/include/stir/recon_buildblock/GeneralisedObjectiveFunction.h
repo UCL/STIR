@@ -2,11 +2,17 @@
 //
 /*
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2018, 2020, 2024 University College London
-    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -15,26 +21,22 @@
   \ingroup GeneralisedObjectiveFunction
   \brief Declaration of class stir::GeneralisedObjectiveFunction
 
-  \author Nikos Efthimiou
   \author Kris Thielemans
-  \author Robert Twyman Skelly
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
 
 */
 #ifndef __stir_recon_buildblock_GeneralisedObjectiveFunction_H__
 #define __stir_recon_buildblock_GeneralisedObjectiveFunction_H__
+
 
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
 #include "stir/shared_ptr.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include <string>
-
-#include "stir/ExamData.h"
-#include "stir/ProjData.h"
-#include "stir/recon_buildblock/BinNormalisation.h"
-
 START_NAMESPACE_STIR
+
 
 class Succeeded;
 
@@ -80,27 +82,27 @@ class Succeeded;
   \endverbatim
 */
 template <typename TargetT>
-class GeneralisedObjectiveFunction : public RegisteredObject<GeneralisedObjectiveFunction<TargetT>>
+class GeneralisedObjectiveFunction: 
+   public RegisteredObject<GeneralisedObjectiveFunction<TargetT> >,
+   public ParsingObject
 {
 public:
-  GeneralisedObjectiveFunction()
-      : already_set_up(false)
-  {}
 
-  ~GeneralisedObjectiveFunction() override;
+  //GeneralisedObjectiveFunction(); 
+
+  virtual ~GeneralisedObjectiveFunction(); 
+
 
   //! Creates a suitable target as determined by the parameters
-  /*!
-    \warning This should <b>not</b> check \c already_set_up (unfortunately),
-    as it is currently called in Reconstruction::reconstruct() before calling set_up().
-  */
-  virtual TargetT* construct_target_ptr() const = 0;
+  virtual TargetT *
+    construct_target_ptr() const = 0; 
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<TargetT> const& target_sptr);
+  virtual Succeeded 
+    set_up(shared_ptr<TargetT> const& target_sptr);
 
-  //! Compute the subset-gradient of the objective function at \a current_estimate
-  /*! The subset-gradient is the gradient of the objective function restricted to the
+  //! This should compute the sub-gradient of the objective function at the \a current_estimate
+  /*! The subgradient is the gradient of the objective function restricted to the
       subset specified. What this means depends on how this function is implemented later
       on in the hierarchy.
 
@@ -111,40 +113,31 @@ public:
 
     \warning Any data in \a gradient will be overwritten.
   */
-  virtual void compute_sub_gradient(TargetT& gradient, const TargetT& current_estimate, const int subset_num);
+  virtual void 
+    compute_sub_gradient(TargetT& gradient, 
+			 const TargetT &current_estimate, 
+			 const int subset_num); 
 
-  //! This should compute the subset-gradient of the unregularised objective function at \a current_estimate
+  //! This should compute the sub-gradient of the unregularised objective function at the \a current_estimate
   /*!
     \warning The derived class should overwrite any data in \a gradient.
   */
-  virtual void compute_sub_gradient_without_penalty(TargetT& gradient, const TargetT& current_estimate, const int subset_num) = 0;
-
-  //! Compute the gradient of the objective function at the \a current_estimate
-  /*! Computed as the <i>difference</i> of
-      <code>compute_gradient_without_penalty</code>
-      and
-      <code>get_prior_ptr()-&gt;compute_gradient()</code>.
-
-    \warning Any data in \a gradient will be overwritten.
-  */
-  virtual void compute_gradient(TargetT& gradient, const TargetT& current_estimate);
-
-  //! Compute the gradient of the unregularised objective function at the \a current_estimate
-  /*!
-    Computed by summing subset-gradients.
-
-    \warning Any data in \a gradient will be overwritten.
-  */
-  virtual void compute_gradient_without_penalty(TargetT& gradient, const TargetT& current_estimate);
+  virtual void 
+    compute_sub_gradient_without_penalty(TargetT& gradient, 
+					 const TargetT &current_estimate, 
+					 const int subset_num) =0; 
 
   //! Compute the value of the unregularised sub-objective function at the \a current_estimate
   /*! Implemented in terms of actual_compute_objective_function_without_penalty. */
-  virtual double compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num);
+  virtual double
+    compute_objective_function_without_penalty(const TargetT& current_estimate,
+					       const int subset_num);
 
   //! Compute the value of the unregularised objective function at the \a current_estimate
   /*! Computed by summing over all subsets.
    */
-  virtual double compute_objective_function_without_penalty(const TargetT& current_estimate);
+  virtual double
+    compute_objective_function_without_penalty(const TargetT& current_estimate);
 
   //! Compute the value of the sub-penalty at the \a current_estimate
   /*! As each subset contains the same penalty, this function returns
@@ -155,10 +148,13 @@ public:
       Implemented in terms of GeneralisedPrior::compute_value.
       \see compute_objective_function(const TargetT&) for sign conventions.
   */
-  double compute_penalty(const TargetT& current_estimate, const int subset_num);
+  double
+    compute_penalty(const TargetT& current_estimate,
+		    const int subset_num);
   //! Compute the value of the penalty at the \a current_estimate
   /*! Implemented in terms of GeneralisedPrior::compute_value. */
-  double compute_penalty(const TargetT& current_estimate);
+  double
+    compute_penalty(const TargetT& current_estimate);
 
   //! Compute the value of the sub-objective function at the \a current_estimate
   /*! Computed as the <i>difference</i> of
@@ -166,7 +162,9 @@ public:
       and
       <code>compute_penalty</code>.
   */
-  double compute_objective_function(const TargetT& current_estimate, const int subset_num);
+  double
+    compute_objective_function(const TargetT& current_estimate,
+			       const int subset_num);
 
   //! Compute the value of the objective function at the \a current_estimate
   /*! Computed as the <i>difference</i> of
@@ -174,10 +172,8 @@ public:
       and
       <code>compute_penalty</code>.
   */
-  double compute_objective_function(const TargetT& current_estimate);
-
-  //! Alias for compute_objective_function(const TargetT&)
-  double compute_value(const TargetT& current_estimate) { return compute_objective_function(current_estimate); }
+  double
+    compute_objective_function(const TargetT& current_estimate);
 
   //! Fill any elements that we cannot estimate with a fixed value
   /*! In many cases, it is easier to use a larger target than what we can
@@ -193,64 +189,41 @@ public:
 
     \todo The type of the value should really be derived from e.g. TargetT::full_iterator.
   */
-  virtual void fill_nonidentifiable_target_parameters(TargetT& target, const float value) const {}
+  virtual void 
+    fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const
+  {}
 
-  //! \name multiplication with approximate (sub)Hessian
-  /*! \brief Functions that multiply the approximate (sub)Hessian with a \'vector\'.
+  //! \name multiplication with (sub)Hessian
+  /*! \brief Functions that multiply the (sub)Hessian with a \'vector\'.
 
       All these functions add their result to any existing data in \a output.
 
       They all call actual_add_multiplication_with_approximate_sub_Hessian_without_penalty.
   */
   //@{
-  Succeeded add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
+  Succeeded 
+      add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                             const TargetT& input,
                                                                             const int subset_num) const;
-  Succeeded add_multiplication_with_approximate_sub_Hessian(TargetT& output, const TargetT& input, const int subset_num) const;
-  Succeeded add_multiplication_with_approximate_Hessian_without_penalty(TargetT& output, const TargetT& input) const;
-  Succeeded add_multiplication_with_approximate_Hessian(TargetT& output, const TargetT& input) const;
-  //@}
-
-  //! \name multiplication (sub)Hessian times input
-  /*! \brief Functions that multiply the True (sub)Hessian with a \'vector\'.
-
-      All these functions add their result to any existing data in \a output.
-
-      They all call actual_accumulate_sub_Hessian_times_input_without_penalty.
-  */
-  //@{
-  Succeeded accumulate_Hessian_times_input(TargetT& output, const TargetT& current_image_estimate, const TargetT& input) const;
-
-  Succeeded accumulate_Hessian_times_input_without_penalty(TargetT& output,
-                                                           const TargetT& current_image_estimate,
-                                                           const TargetT& input) const;
-
-  Succeeded accumulate_sub_Hessian_times_input(TargetT& output,
-                                               const TargetT& current_image_estimate,
-                                               const TargetT& input,
-                                               const int subset_num) const;
-  Succeeded accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
-                                                               const TargetT& current_image_estimate,
+  Succeeded 
+    add_multiplication_with_approximate_sub_Hessian(TargetT& output,
                                                                const TargetT& input,
                                                                const int subset_num) const;
-
+  Succeeded 
+    add_multiplication_with_approximate_Hessian_without_penalty(TargetT& output,
+								const TargetT& input) const;
+  Succeeded 
+    add_multiplication_with_approximate_Hessian(TargetT& output,
+						const TargetT& input) const;
   //@}
 
   //! Construct a string with info on the value of objective function with and without penalty
-  std::string get_objective_function_values_report(const TargetT& current_estimate);
+  std::string
+    get_objective_function_values_report(const TargetT& current_estimate);
 
   //! Return the number of subsets in-use
   int get_num_subsets() const;
 
-  //  //! Virtual get normalisation, it will be defined by the derived class
-  //  virtual const shared_ptr<BinNormalisation> &
-  //  get_normalisation_sptr() const =0;
-
-  virtual std::unique_ptr<ExamInfo> get_exam_info_uptr_for_target() const
-  {
-    auto exam_info_uptr = unique_ptr<ExamInfo>(new ExamInfo(*(this->get_input_data().get_exam_info_sptr())));
-    return exam_info_uptr;
-  }
 
   //! Attempts to change the number of subsets.
   /*! \return The number of subsets that will be used later, which is not
@@ -279,53 +252,61 @@ public:
   //! check if the prior is set (or the penalisation factor is 0)
   bool prior_is_zero() const;
 
+  //! check if the objective function is nested
+  bool is_nested() const;
+  
+  // Nicolas A. Karakatsanis: Sets the file name prefix for the nested images estimated within a global iteration.
+  // Useful for nested obj function when storing multiple files of nested image updates belonging to the same global iteration.
+  void set_nested_output_filename_prefix(std::string& filename_prefix,
+                                         int global_subiterations_num);
+  
+  // A string variable to save the filename prefix of the nested image estimates, 
+  // can be utilized if the obj function is nested 
+  std::string nested_output_filename_prefix;
+  
+  //Number of nested iterations
+  int num_nested_subiterations;
+  
+  //Number of nested iterations for proper initialization of the estimates
+  //with another kinetic model prior to the application of the expected model
+  int num_nested_initialization_subiterations;
+  
+  //Number of required complete initial (sub)iterations required to initialize the 4D reconstruction 
+  int num_initialization_subiterations;
+  
+  //Counter of the number of global (not nested) (sub)iterations performed under initialization mode only
+  //Utilized to determine whether the current (sub)iteration is performed under initialization mode
+  int initialization_subiterations_counter;
+  
+  //Counter of the total number of global (not nested) (sub)iterations performed (initialization + regular reconstruction mode)
+  //Utilized to determine whether the current (sub)iteration is performed under initialization mode
+  int subiterations_counter;
+
+  //Define a shared pointer for the estimate image from the last update of the nested iterations  
+  shared_ptr<TargetT> last_nested_estimate_sptr;
+
   //! Read-only access to the prior
   /*! \todo It would be nicer to not return a pointer.
    */
-  GeneralisedPrior<TargetT>* const get_prior_ptr() const;
-
-  shared_ptr<GeneralisedPrior<TargetT>> get_prior_sptr();
+  GeneralisedPrior<TargetT> * const
+    get_prior_ptr() const;
 
   //! Change the prior
   /*! \warning You should call set_up() again after using this function.
    */
   void set_prior_sptr(const shared_ptr<GeneralisedPrior<TargetT>>&);
 
-  //! \brief set_input_data
-  //! \author Nikos Efthimiou
-  //! \details It can be used to set the data to be reconstructed
-  //!  within some other code, as opposed to via parsing.
-  virtual void set_input_data(const shared_ptr<ExamData>&) = 0;
-
-  //! \brief get input data
-  /*! Will throw an exception if it wasn't set first */
-  virtual const ExamData& get_input_data() const = 0;
-
-  //! \brief set_additive_proj_data_sptr
-  //! \author Nikos Efthimiou
-  //! \details In the case the reconstruction process is called from another
-  //! piece of code, the user should be able to set any additive sinogram
-  //!
-  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) = 0;
-
-  //! \brief set_normalisation_sptr
-  //! \author Nikos Efthimiou
-  //! \details In the case the reconstruction process is called from another
-  //! piece of code, the user should be able to set any additive sinogram
-  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) = 0;
-
 protected:
   int num_subsets;
-  bool already_set_up;
 
   shared_ptr<GeneralisedPrior<TargetT>> prior_sptr;
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
-  void set_defaults() override;
+  virtual void set_defaults();
   //! sets parsing keys
   /*! Has to be called by initialise_keymap in the leaf-class */
-  void initialise_keymap() override;
+  virtual void initialise_keymap();
 
   // virtual bool post_processing();
 
@@ -351,9 +332,11 @@ protected:
      in a derived class, hides all functions of the
      same name.
   */
-  virtual double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) = 0;
+  virtual double
+    actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
+						      const int subset_num) = 0;
 
-  //! Implementation of the function that multiplies the approximate sub-Hessian with a vector.
+  //! Implementation of the function that multiplies the sub-Hessian with a vector.
   /*!
      \see multiplication_with_approximate_sub_Hessian_without_penalty(TargetT&,const TargetT&, const int).
 
@@ -366,28 +349,12 @@ protected:
      in a derived class, hides all functions of the
      same name.
   */
-  virtual Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-                                                                                           const TargetT& input,
-                                                                                           const int subset_num) const;
-
-  //! Implementation of the function computes the sub-Hessian and multiplies by a vector.
-  /*!
-     \see accumulate_sub_Hessian_times_input_without_penalty(TargetT&,const TargetT&, TargetT&, const int).
-
-     \warning The default implementation just calls error(). This behaviour has to be
-     overloaded by the derived classes.
-
-     \par Developer\'s note
-
-     The reason we have this function is that overloading a function
-     in a derived class, hides all functions of the
-     same name.
-  */
-  virtual Succeeded actual_accumulate_sub_Hessian_times_input_without_penalty(TargetT& output,
-                                                                              const TargetT& current_image_estimate,
+  virtual Succeeded 
+      actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
                                                                               const TargetT& input,
                                                                               const int subset_num) const;
 };
+
 END_NAMESPACE_STIR
 
 #endif

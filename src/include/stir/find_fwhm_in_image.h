@@ -4,7 +4,15 @@
     Copyright (C) 2004- 2009, Hammersmith Imanet
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -18,9 +26,6 @@
 
 
  */
-#ifndef __find_fwhm_in_image_H__
-#define __find_fwhm_in_image_H__
-
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -47,7 +52,7 @@ START_NAMESPACE_STIR
    is estimated using linear extrapolation.
 */
 template <class RandomAccessIterType>
-inline float find_level_width(const RandomAccessIterType& begin_iterator,
+float find_level_width(const RandomAccessIterType& begin_iterator,
                               const RandomAccessIterType& max_iterator,
                               const RandomAccessIterType& end_iterator,
                               const float level_height);
@@ -66,8 +71,9 @@ inline float find_level_width(const RandomAccessIterType& begin_iterator,
                        const float level_height)
 */
 template <class RandomAccessIterType>
-inline float
-find_level_width(const RandomAccessIterType& begin_iterator, const RandomAccessIterType& end_iterator, const float level_height);
+float find_level_width(const RandomAccessIterType& begin_iterator,
+                       const RandomAccessIterType& end_iterator,
+                       const float level_height);  
 /*!
    \ingroup resolution
    \brief
@@ -76,7 +82,9 @@ find_level_width(const RandomAccessIterType& begin_iterator, const RandomAccessI
    (only 3D implementation).
 */
 template <class elemT>
-BasicCoordinate<3, int> maximum_location_per_slice(const Array<3, elemT>& input_array, const int slice, const int dimension);
+BasicCoordinate<3,int>
+maximum_location_per_slice(const Array<3,elemT>& input_array,
+                           const int slice, const int dimension);
 
 /*!
    \ingroup resolution
@@ -87,7 +95,8 @@ BasicCoordinate<3, int> maximum_location_per_slice(const Array<3, elemT>& input_
   intersects the voxel which has in its center the point with the real maximum_value.
 */
 template <class elemT>
-Array<1, elemT> interpolate_line(const Array<3, elemT>& input_array,
+Array<1,elemT>
+interpolate_line(const Array<3,elemT>& input_array,    
                                  const BasicCoordinate<3, int>& max_location,
                                  const BasicCoordinate<3, bool>& do_direction,
                                  const int dimension);
@@ -120,8 +129,8 @@ struct ResolutionIndex
    For line sources, \a num_maxima slices are sampled (from first to last slice, with steps given by num_slices/(num_maxima+1)
 
    For point sources, if \a num_maxima is larger than 1, after finding a maximum and the resolution, the data is masked out in
-   a neigbhourhood of half-size (resolution*2/level). This will only ork properly if the point sources are not too close to
-   eachother and have roughly the maximum.
+   a neigbhourhood of half-size (resolution*2/level). This will only ork properly if the point sources are not too close to eachother
+   and have roughly the maximum.
 
    The value of the maximum is computed using a parabolic fit through the 3 points around the maximum as specified
    in NEMA 2001.
@@ -130,13 +139,8 @@ struct ResolutionIndex
 */
 
 template <class elemT>
-std::list<ResolutionIndex<3, float>> find_fwhm_in_image(DiscretisedDensity<3, elemT>& input_image,
-                                                        const unsigned int num_maxima,
-                                                        const float level,
-                                                        const int dimension,
-                                                        const bool nema);
+std::list<ResolutionIndex<3,float> > 
+find_fwhm_in_image(DiscretisedDensity<3,elemT> & input_image,
+                   const unsigned int num_maxima, const float level, 
+                   const int dimension, const bool nema);
 END_NAMESPACE_STIR
-
-#include "stir/find_fwhm_in_image.inl"
-
-#endif // __find_fwhm_in_image_H__

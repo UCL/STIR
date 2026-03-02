@@ -15,7 +15,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -28,6 +36,7 @@
 #include "stir/ByteOrder.h"
 
 START_NAMESPACE_STIR
+
 
 /* A somewhat complicated way to determine the byteorder.
    The advantage is that it doesn't need ntohs (and so any
@@ -44,11 +53,14 @@ START_NAMESPACE_STIR
    zero (or less) elements.
  */
 
-typedef char assert_unsigned_long_size[sizeof(unsigned long) - sizeof(unsigned char)];
+typedef char 
+  assert_unsigned_long_size[sizeof(unsigned long) - sizeof(unsigned char)];
 
 static const unsigned long magic = 1;
 
-const ByteOrder::Order ByteOrder::native_order
-    = *(reinterpret_cast<const unsigned char*>(&magic)) == 1 ? little_endian : big_endian;
+const ByteOrder::Order ByteOrder::native_order =
+  *(reinterpret_cast<const unsigned char*>(&magic) ) == 1 ?
+      little_endian : big_endian;
+
 
 END_NAMESPACE_STIR

@@ -2,7 +2,15 @@
     Copyright (C) 2004 - 2011-12-31, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -49,11 +57,12 @@
 #include <list>
 #include <algorithm>
 #include <string>
+#ifndef STIR_NO_NAMESPACES
 using std::setw;
+#endif
 
 /***********************************************************/
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])                                  
 {
   USING_NAMESPACE_STIR
   if (argc < 2 || argc > 6)
@@ -73,9 +82,11 @@ main(int argc, char* argv[])
   const int dimension = argc >= 5 ? atoi(argv[4]) : 0;
   const bool nema = argc >= 6 ? (atoi(argv[5]) != 0) : true;
   std::cerr << "Finding " << num_maxima << " maxima\n";
-  shared_ptr<DiscretisedDensity<3, float>> input_image_sptr(read_from_file<DiscretisedDensity<3, float>>(argv[1]));
+  shared_ptr< DiscretisedDensity<3,float> >  
+    input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
   DiscretisedDensity<3, float>& input_image = *input_image_sptr;
-  std::list<ResolutionIndex<3, float>> list_res_index = find_fwhm_in_image(input_image, num_maxima, level, dimension, nema);
+  std::list<ResolutionIndex<3,float> > list_res_index = 
+    find_fwhm_in_image(input_image,num_maxima,level,dimension,nema);    
   std::list<ResolutionIndex<3, float>>::iterator current_iter = list_res_index.begin();
   if (dimension != 0)
     {
@@ -83,7 +94,9 @@ main(int argc, char* argv[])
       std::string input_string(argv[1]);
       std::string slices_string(argv[2]);
       std::string::iterator string_iter;
-      for (string_iter = input_string.begin(); string_iter != input_string.end() && *string_iter != '.'; ++string_iter)
+      for(string_iter=input_string.begin(); 
+          string_iter!=input_string.end() && *string_iter!='.' ;
+          ++string_iter)  
         output_string.push_back(*string_iter);
       if (argc >= 4)
         {
@@ -102,10 +115,14 @@ main(int argc, char* argv[])
       out << "Slice\t Z\tY\t X\tResZ(mm) ResY(mm) ResX(mm) Value\n";
       for (short counter = 0; counter != num_maxima; ++counter)
         {
-          out << setw(3) << counter + 1 << "\t" << setw(3) << current_iter->voxel_location[1] << "\t" << setw(3)
-              << current_iter->voxel_location[2] << "\t" << setw(3) << current_iter->voxel_location[3] << "\t" << setw(6)
-              << current_iter->resolution[1] << "\t" << setw(6) << current_iter->resolution[2] << "\t" << setw(6)
-              << current_iter->resolution[3] << "\t" << setw(9) << current_iter->voxel_value << "\n";
+          out << setw(3) << counter+1 << "\t" 
+              << setw(3) << current_iter->voxel_location[1] << "\t"
+              << setw(3) << current_iter->voxel_location[2] << "\t"
+              << setw(3) << current_iter->voxel_location[3] << "\t" 
+              << setw(6) << current_iter->resolution[1]<< "\t"
+              << setw(6) << current_iter->resolution[2]<< "\t"
+              << setw(6) << current_iter->resolution[3]<< "\t"
+              << setw(9) << current_iter->voxel_value << "\n" ;
           ++current_iter;
         }
       out.close();
@@ -113,12 +130,16 @@ main(int argc, char* argv[])
   else
     for (short counter = 0; counter != num_maxima; ++counter)
       {
-        std::cout << counter + 1 << ". max: " << setw(6) << current_iter->voxel_value << " at: " << setw(3)
-                  << current_iter->voxel_location[1] << " (Z) ," << setw(3) << current_iter->voxel_location[2] << " (Y) ,"
-                  << setw(3) << current_iter->voxel_location[3] << " (X) \n";
-        std::cout << "  \n The resolution in z axis is " << setw(6) << (current_iter->resolution[1])
-                  << ", \n The resolution in y axis is " << setw(6) << (current_iter->resolution[2])
-                  << ", \n The resolution in x axis is " << setw(6) << (current_iter->resolution[3])
+        std::cout << counter+1 << ". max: " << setw(6)  <<  current_iter->voxel_value     
+                  << " at: "  << setw(3) << current_iter->voxel_location[1]
+                  << " (Z) ," << setw(3) << current_iter->voxel_location[2]
+                  << " (Y) ," << setw(3) << current_iter->voxel_location[3] << " (X) \n" ;
+        std::cout << "  \n The resolution in z axis is "
+                  << setw(6) << (current_iter->resolution[1])
+                  << ", \n The resolution in y axis is "
+                  << setw(6) << (current_iter->resolution[2])
+                  << ", \n The resolution in x axis is "
+                  << setw(6) << (current_iter->resolution[3])
                   << ", in mm relative to origin. \n \n";
         ++current_iter;
       }

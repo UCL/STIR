@@ -1,11 +1,18 @@
 #
 #
 # Copyright 2011-07-01 - 2013 Kris Thielemans
-# Copyright 2016, 2019, 2020, 2025 University College London
 
 # This file is part of STIR.
 #
-# SPDX-License-Identifier: Apache-2.0
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 2.1 of the License, or
+# (at your option) any later version.
+#
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 #
 # See STIR/LICENSE.txt for details
 
@@ -14,19 +21,6 @@
 # to its sources
 
 add_library(${dir} ${${dir_LIB_SOURCES}}    )
-target_include_directories(${dir} PUBLIC 
-  $<BUILD_INTERFACE:${STIR_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${STIR_INCLUDE_INSTALL_DIR}>)
-
-# make sure that if you use STIR, the compiler will be set to what was set via UseCXX
-target_compile_features(${dir} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_include_directories(${dir} PUBLIC ${Boost_INCLUDE_DIR})
-if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
-  # currently no stir::format in .h, such that we can make this PRIVATE
-  # (although it probably doesn't matter)
-  target_include_directories(${dir} PRIVATE ${FMT_INCLUDE_DIRS})
-endif()
-
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 
-install(TARGETS ${dir} EXPORT STIRTargets DESTINATION lib)
+install(TARGETS ${dir} DESTINATION lib)

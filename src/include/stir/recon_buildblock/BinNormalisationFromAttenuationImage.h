@@ -12,7 +12,15 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,6 +34,10 @@
 #include "stir/shared_ptr.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include <string>
+
+#ifndef STIR_NO_NAMESPACE
+using std::string;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -53,12 +65,9 @@ START_NAMESPACE_STIR
   End Bin Normalisation From Attenuation Image :=
   \endverbatim
 */
-class BinNormalisationFromAttenuationImage
-    : public RegisteredParsingObject<BinNormalisationFromAttenuationImage, BinNormalisation>
+class BinNormalisationFromAttenuationImage :
+   public RegisteredParsingObject<BinNormalisationFromAttenuationImage, BinNormalisation>
 {
-private:
-  using base_type = BinNormalisation;
-
 public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char* const registered_name;
@@ -73,54 +82,49 @@ public:
 
   //! Constructor that reads the image from a file
   /*! Default forward projector is ForwardProjectorByBinUsingRayTracing. */
-  BinNormalisationFromAttenuationImage(const std::string& filename,
-                                       shared_ptr<ForwardProjectorByBin> const& = shared_ptr<ForwardProjectorByBin>());
+  BinNormalisationFromAttenuationImage(const string& filename, shared_ptr<ForwardProjectorByBin> const& =shared_ptr<ForwardProjectorByBin>());
 
   //! Constructor that takes the image as an argument
   /*! Default forward projector is ForwardProjectorByBinUsingRayTracing.
       The image pointed to by attenuation_image_ptr is NOT modified.
   */
-  BinNormalisationFromAttenuationImage(const shared_ptr<const DiscretisedDensity<3, float>>& attenuation_image_ptr,
+  BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr,
                                        shared_ptr<ForwardProjectorByBin> const& = shared_ptr<ForwardProjectorByBin>());
 
   //! Checks if we can handle certain projection data.
   /*! This test is essentially checking if the forward projector can handle the data
       by calling ForwardProjectorByBin::set_up().
   */
-  Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
-
-  // import all apply/undo methods from base-class (we'll override some below)
-  using base_type::apply;
-  using base_type::undo;
+  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
 
   //! Normalise some data
   /*!
     This means \c multiply with the data in the projdata object
     passed in the constructor.
   */
-  void apply(RelatedViewgrams<float>& viewgrams) const override;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   //! Undo the normalisation of some data
   /*!
     This means \c divide with the data in the projdata object
     passed in the constructor.
   */
+  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  void undo(RelatedViewgrams<float>& viewgrams) const override;
-
-  float get_bin_efficiency(const Bin& bin) const override;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const; 
 
 private:
-  shared_ptr<const DiscretisedDensity<3, float>> attenuation_image_ptr;
+  shared_ptr<DiscretisedDensity<3,float> > attenuation_image_ptr;
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
 
   // parsing stuff
-  void set_defaults() override;
-  void initialise_keymap() override;
-  bool post_processing() override;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
-  std::string attenuation_image_filename;
+  string attenuation_image_filename;
 };
+
 
 END_NAMESPACE_STIR
 

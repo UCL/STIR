@@ -5,7 +5,15 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,17 +35,24 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ProjDataInfo.h" // is used in .inl
 #include "stir/shared_ptr.h"
-#include "stir/unique_ptr.h"
 #include <vector>
 #include <memory>
 
 #include "stir/Coordinate2D.h"
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+#ifndef STIR_NO_AUTO_PTR
+using std::auto_ptr;
+#endif
+#endif
 
 START_NAMESPACE_STIR
 
 class Bin;
 class SymmetryOperation;
 class ProjDataInfo;
+
 
 #if 0
 class BinIndexRange;
@@ -50,6 +65,7 @@ class BinIndexRange;
   TODO? something more sofisticated than a typedef
 */
 typedef Coordinate2D<int> AxTangPosNumbers;
+
 
 /*!
   \ingroup symmetries
@@ -71,11 +87,17 @@ private:
   typedef DataSymmetriesForBins self_type;
 
 public:
-  DataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
+  DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
 
-  ~DataSymmetriesForBins() override;
+  virtual ~DataSymmetriesForBins();
 
-  DataSymmetriesForBins* clone() const override = 0;
+  virtual 
+#ifndef STIR_NO_COVARIANT_RETURN_TYPES
+    DataSymmetriesForBins 
+#else
+    DataSymmetriesForViewSegmentNumbers
+#endif
+    * clone() const = 0;
 
 #if 0
   TODO!
@@ -91,19 +113,16 @@ public:
   */
   // next return value could be a RelatedBins ???
   // however, both Bin and RelatedBins have data in there (which is not needed here)
-  inline void get_related_bins(std::vector<Bin>&, const Bin& b) const;
+  inline void
+    get_related_bins(vector<Bin>&, const Bin& b) const;
 
   //! fills in a vector with all the bins (within the range) that are related to 'b'
   /*! \warning \c b has to be a 'basic' bin
    */
-  virtual void get_related_bins(std::vector<Bin>&,
-                                const Bin& b,
-                                const int min_axial_pos_num,
-                                const int max_axial_pos_num,
-                                const int min_tangential_pos_num,
-                                const int max_tangential_pos_num,
-                                const int min_timing_pos_num,
-                                const int max_timing_pos_num) const;
+  virtual void
+    get_related_bins(vector<Bin>&, const Bin& b,
+                      const int min_axial_pos_num, const int max_axial_pos_num,
+                      const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
   //! fills in a vector with the axial and tangential position numbers related to this bin
   /*! range for axial_pos_num and tangential_pos_num is taken from the ProjDataInfo object
@@ -111,7 +130,8 @@ public:
       \warning \c b has to be a 'basic' bin
       \see 6 argument version of get_related_bins_factorised()
   */
-  inline void get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b) const;
+  inline void
+    get_related_bins_factorised(vector<AxTangPosNumbers>&, const Bin& b) const;
 
   //! fills in a vector with the axial and tangential position numbers related to this bin
   /*!
@@ -125,49 +145,55 @@ public:
 
      \warning \c b has to be a 'basic' bin
   */
-  virtual void get_related_bins_factorised(std::vector<AxTangPosNumbers>&,
-                                           const Bin& b,
-                                           const int min_axial_pos_num,
-                                           const int max_axial_pos_num,
-                                           const int min_tangential_pos_num,
-                                           const int max_tangential_pos_num) const = 0;
+  virtual void
+    get_related_bins_factorised(vector<AxTangPosNumbers>&, const Bin& b,
+                                const int min_axial_pos_num, const int max_axial_pos_num,
+                                const int min_tangential_pos_num, const int max_tangential_pos_num) const = 0;
 
   //! returns the number of bins related to 'b'
-  virtual int num_related_bins(const Bin& b) const;
+  virtual int
+    num_related_bins(const Bin& b) const;
 
   /*! \brief given an arbitrary bin 'b', find the basic bin and the corresponding symmetry operation
 
   sets 'b' to the corresponding 'basic' bin and returns the symmetry
   transformation from 'basic' to 'b'.
   */
-  virtual unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_bin(Bin&) const = 0;
+  virtual auto_ptr<SymmetryOperation>
+    find_symmetry_operation_from_basic_bin(Bin&) const = 0;
 
   /*! \brief given an arbitrary bin 'b', find the basic bin
 
   sets 'b' to the corresponding 'basic' bin and returns true if
   'b' is changed (i.e. it was NOT a basic bin).
   */
-  virtual bool find_basic_bin(Bin& b) const;
+  virtual bool
+    find_basic_bin(Bin& b) const;
 
   /*! \brief test if a bin is 'basic'
 
   The default implementation uses find_basic_bin
   */
-  virtual bool is_basic(const Bin& v_s) const;
+  virtual bool
+    is_basic(const Bin& v_s) const;
 
   //! default implementation in terms of find_symmetry_operation_from_basic_bin
-  virtual unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
+  virtual auto_ptr<SymmetryOperation>
+    find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
+
 
 protected:
   //! Member storing the info needed by get_related_bins() et al
-  const shared_ptr<const ProjDataInfo> proj_data_info_ptr;
+  const shared_ptr<ProjDataInfo> proj_data_info_ptr;
 
   //! Check equality
-  bool blindly_equals(const root_type* const) const override = 0;
+  virtual bool blindly_equals(const root_type * const) const = 0;
 };
 
 END_NAMESPACE_STIR
 
 #include "stir/recon_buildblock/DataSymmetriesForBins.inl"
 
+
 #endif
+

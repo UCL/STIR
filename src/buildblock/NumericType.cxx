@@ -11,7 +11,15 @@
     Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,8 +32,10 @@
 #include "stir/NumericType.h"
 #include "stir/NumericInfo.h"
 
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::string;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -69,48 +79,49 @@ NumericType::NumericType(const string& number_format, const size_t size_in_bytes
   for (int t = 1; t < (int)UNKNOWN_TYPE; t++)
     {
       const NumericType type = (Type)t;
-      if (it_is_signed == type.signed_type() && it_is_integral == type.integer_type() && size_in_bytes == type.size_in_bytes())
+    if (it_is_signed == type.signed_type() &&
+        it_is_integral == type.integer_type() &&
+        size_in_bytes == type.size_in_bytes())
         {
           id = (Type)t;
           return;
         }
     }
+  
 }
 
+
 void
-NumericType::get_Interfile_info(string& number_format, size_t& size_in_bytes_v) const
+NumericType::get_Interfile_info(string& number_format, 
+				size_t& size_in_bytes_v) const
 {
   size_in_bytes_v = size_in_bytes();
 
   switch (id)
     {
     case BIT:
-      number_format = "bit";
-      break;
+    number_format = "bit"; break;
     case SCHAR:
     case SHORT:
     case INT:
     case LONG:
-      number_format = "signed integer";
-      break;
+    number_format = "signed integer"; break;
     case UCHAR:
     case USHORT:
     case UINT:
     case ULONG:
-      number_format = "unsigned integer";
-      break;
+    number_format = "unsigned integer"; break;
     case FLOAT:
     case DOUBLE:
-      number_format = "float";
-      break;
+    number_format = "float"; break;
     case UNKNOWN_TYPE:
-      number_format = "unknown";
-      break;
+    number_format = "unknown"; break;
     }
 }
 
-size_t
-NumericType::size_in_bytes() const
+
+
+size_t NumericType::size_in_bytes() const
 {
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch (id)
@@ -141,14 +152,10 @@ NumericType::size_in_bytes() const
   return 0;
 }
 
-size_t
-NumericType::size_in_bits() const
-{
-  return CHAR_BIT * size_in_bytes();
-}
+size_t NumericType::size_in_bits() const
+    { return CHAR_BIT * size_in_bytes(); }
 
-bool
-NumericType::signed_type() const
+bool NumericType::signed_type() const
 {
   switch (id)
     {
@@ -177,8 +184,7 @@ NumericType::signed_type() const
   return false;
 }
 
-bool
-NumericType::integer_type() const
+bool NumericType::integer_type() const
 {
   switch (id)
     {
@@ -202,6 +208,7 @@ NumericType::integer_type() const
 #undef CASE
     case UNKNOWN_TYPE:
       return false;
+
     }
   // we never get here, but VC++ wants a return nevertheless
   return false;

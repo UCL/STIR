@@ -2,7 +2,15 @@
  Copyright (C) 2010 - 2013, King's College London
  This file is part of STIR.
 
- SPDX-License-Identifier: Apache-2.0
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.3 of the License, or
+ (at your option) any later version.
+ 
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
 
  See STIR/LICENSE.txt for details
  */
@@ -21,14 +29,11 @@
 
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char** argv)
-{
-  if (argc < 6 || argc > 8)
+
+int main(int argc, char **argv)
     {
-      std::cerr << "Usage: " << argv[0]
-                << " <output image filename> <input image filename> [x-motion-field] [y-motion-field] [z-motion-field] "
-                   "[spline_type] [extend_borders]\n"
+  if(argc<6 || argc>8) {
+    std::cerr<<"Usage: " << argv[0] << " <output image filename> <input image filename> [x-motion-field] [y-motion-field] [z-motion-field] [spline_type] [extend_borders]\n"
                 << "all shifts are in mm\n"
                 << "x, y, z are in STIR conventions\n"
                 << "extend borders is either 1 or 0, defaults to 0\n";
@@ -49,14 +54,18 @@ main(int argc, char** argv)
   std::cerr << "Interpolating using with splines level: " << spline_type << "\n";
   // read image
   const shared_ptr<DiscretisedDensity<3, float>> density_sptr(read_from_file<DiscretisedDensity<3, float>>(input_filename));
-  const shared_ptr<DiscretisedDensity<3, float>> motion_x_sptr(read_from_file<DiscretisedDensity<3, float>>(motion_x_filename));
-  const shared_ptr<DiscretisedDensity<3, float>> motion_y_sptr(read_from_file<DiscretisedDensity<3, float>>(motion_y_filename));
-  const shared_ptr<DiscretisedDensity<3, float>> motion_z_sptr(read_from_file<DiscretisedDensity<3, float>>(motion_z_filename));
+  const shared_ptr<DiscretisedDensity<3,float> > motion_x_sptr(
+                                                               read_from_file<DiscretisedDensity<3,float> >(motion_x_filename));
+  const shared_ptr<DiscretisedDensity<3,float> > motion_y_sptr(
+                                                               read_from_file<DiscretisedDensity<3,float> >(motion_y_filename));
+  const shared_ptr<DiscretisedDensity<3,float> > motion_z_sptr(
+                                                               read_from_file<DiscretisedDensity<3,float> >(motion_z_filename));
 
-  const VoxelsOnCartesianGrid<float> out_density
-      = warp_image(density_sptr, motion_x_sptr, motion_y_sptr, motion_z_sptr, spline_type, extend_borders);
+  const VoxelsOnCartesianGrid<float> out_density=warp_image(density_sptr, motion_x_sptr, motion_y_sptr, motion_z_sptr, spline_type, extend_borders);
 
   // write image
-  Succeeded res = OutputFileFormat<DiscretisedDensity<3, float>>::default_sptr()->write_to_file(output_filename, out_density);
+  Succeeded res = 
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    write_to_file(output_filename, out_density);
   return res == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }

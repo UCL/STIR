@@ -14,11 +14,18 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2023, 2024 University College London
 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,9 +34,6 @@
 
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
-#include "stir/Bin.h"
-#include "stir/DetectionPosition.h"
-#include "stir/DetectionPositionPair.h"
 #include <iostream>
 #include <vector>
 
@@ -48,8 +52,11 @@ START_NAMESPACE_STIR
   will be on its own line.
 */
 
+
 template <typename elemT>
-inline std::ostream& operator<<(std::ostream& str, const VectorWithOffset<elemT>& v);
+inline 
+std::ostream& 
+operator<<(std::ostream& str, const VectorWithOffset<elemT>& v);
 
 /*!
   \brief Outputs a BasicCoordinate to a stream.
@@ -61,7 +68,10 @@ inline std::ostream& operator<<(std::ostream& str, const VectorWithOffset<elemT>
   with no endl at the end.
   */
 template <int num_dimensions, typename coordT>
-inline std::ostream& operator<<(std::ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
+inline 
+std::ostream& 
+operator<<(std::ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
+
 
 /*!
   \brief Outputs a vector to a stream.
@@ -75,58 +85,9 @@ inline std::ostream& operator<<(std::ostream& str, const BasicCoordinate<num_dim
   For each element of the vector std::ostream::operator<<() will be called.
 */
 template <typename elemT>
-inline std::ostream& operator<<(std::ostream& str, const std::vector<elemT>& v);
-
-/*!
-  \brief Outputs a Bin to a stream.
-  \ingroup projdata
-
-  Output is of the form
-  \verbatim
-  [segment_num=xx,....., value=..]
-  \endverbatim
-*/
-inline std::ostream&
-operator<<(std::ostream& out, const Bin& bin)
-{
-  return out << "[segment_num=" << bin.segment_num() << ", axial_pos_num=" << bin.axial_pos_num()
-             << ", view_num=" << bin.view_num() << ", tangential_pos_num=" << bin.tangential_pos_num()
-             << ", timing_pos_num=" << bin.timing_pos_num() << ", time_frame_num=" << bin.time_frame_num()
-             << ", value=" << bin.get_bin_value() << "]";
-}
-
-/*!
-  \brief Outputs a DetectionPosition to a stream.
-  \ingroup projdata
-
-  Output is of the form
-  \verbatim
-  [tangential=..., axial=..., radial=...]
-  \endverbatim
-*/
-template <class T>
-inline std::ostream&
-operator<<(std::ostream& out, const DetectionPosition<T>& det_pos)
-{
-  return out << "[tangential=" << det_pos.tangential_coord() << ", axial=" << det_pos.axial_coord()
-             << ", radial=" << det_pos.radial_coord() << "]";
-}
-
-/*!
-  \brief Outputs a DetectionPosition to a stream.
-  \ingroup projdata
-
-  Output is of the form
-  \verbatim
-  [pos1=..., pos2=..., timing_pos=...]
-  \endverbatim
-*/
-template <class T>
-inline std::ostream&
-operator<<(std::ostream& out, const DetectionPositionPair<T>& det_pos)
-{
-  return out << "[pos1=" << det_pos.pos1() << ", pos2=" << det_pos.pos2() << ", timing_pos=" << det_pos.timing_pos() << "]";
-}
+inline 
+std::ostream& 
+operator<<(std::ostream& str, const std::vector<elemT>& v);
 
 /*!
   \brief Inputs a vector from a stream.
@@ -145,7 +106,9 @@ operator<<(std::ostream& out, const DetectionPositionPair<T>& det_pos)
   elemT needs to have a default constructor.
 */
 template <typename elemT>
-inline std::istream& operator>>(std::istream& str, std::vector<elemT>& v);
+inline 
+std::istream& 
+operator>>(std::istream& str, std::vector<elemT>& v);
 
 /*!
   \brief Inputs a VectorWithOffset from a stream.
@@ -172,7 +135,9 @@ inline std::istream& operator>>(std::istream& str, std::vector<elemT>& v);
   elemT needs to have a default constructor.
 */
 template <typename elemT>
-inline std::istream& operator>>(std::istream& str, VectorWithOffset<elemT>& v);
+inline 
+std::istream& 
+operator>>(std::istream& str, VectorWithOffset<elemT>& v);
 
 /*!
   \brief Inputs a coordinate from a stream.
@@ -191,10 +156,13 @@ inline std::istream& operator>>(std::istream& str, VectorWithOffset<elemT>& v);
   elemT needs to have a default constructor.
 */
 template <int num_dimensions, typename coordT>
-inline std::istream& operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v);
+inline 
+std::istream& 
+operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v);
 
 END_NAMESPACE_STIR
 
 #include "stir/stream.inl"
 
 #endif
+

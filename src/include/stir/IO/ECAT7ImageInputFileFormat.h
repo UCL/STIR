@@ -5,7 +5,15 @@
 /*
     Copyright (C) 2006- 2013, Hammersmith Imanet Ltd
     This file is part of STIR.
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -21,9 +29,9 @@
 #include "stir/IO/InputFileFormat.h"
 #include "stir/utilities.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/error.h"
 #include <fstream>
 #include <string>
+
 
 #ifndef HAVE_LLN_MATRIX
 #  error HAVE_LLN_MATRIX not define: you need the lln ecat library.
@@ -39,13 +47,19 @@ START_NAMESPACE_ECAT7
     \preliminary
 
 */
-class ECAT7ImageInputFileFormat : public InputFileFormat<DiscretisedDensity<3, float>>
+class ECAT7ImageInputFileFormat :
+public InputFileFormat<DiscretisedDensity<3,float> >
 {
 public:
-  virtual const std::string get_name() const { return "ECAT7"; }
+  virtual const std::string
+    get_name() const
+  {  return "ECAT7"; }
 
 protected:
-  virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const
+  virtual 
+    bool 
+    actual_can_read(const FileSignature& signature,
+		    std::istream& input) const
   {
     if (strncmp(signature.get_signature(), "MATRIX", 6) != 0)
       return false;
@@ -55,28 +69,33 @@ protected:
     return true;
   }
 
-  virtual unique_ptr<data_type> read_from_file(std::istream& input) const
+  virtual std::auto_ptr<data_type>
+    read_from_file(std::istream& input) const
   {
     // TODO
-    error("read_from_file for ECAT7 with istream not implemented %s:%d. Sorry", __FILE__, __LINE__);
-    return unique_ptr<data_type>();
+    error("read_from_file for ECAT7 with istream not implemented %s:%d. Sorry",
+	  __FILE__, __LINE__);
+    return
+      std::auto_ptr<data_type>
+      (0);
   }
-  virtual unique_ptr<data_type> read_from_file(const std::string& filename) const
+  virtual std::auto_ptr<data_type>
+    read_from_file(const std::string& filename) const
   {
 
     if (is_ECAT7_image_file(filename))
       {
-        warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n", filename.c_str());
-        return unique_ptr<data_type>(ECAT7_to_VoxelsOnCartesianGrid(filename,
-                                                                    /*frame_num, gate_num, data_num, bed_num*/ 1,
-                                                                    1,
-                                                                    0,
-                                                                    0));
+	warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
+		filename.c_str());
+	return std::auto_ptr<data_type>
+	  (
+	   ECAT7_to_VoxelsOnCartesianGrid(filename,
+					  /*frame_num, gate_num, data_num, bed_num*/1,1,0,0));
       }
     else
       {
-        error("ECAT7 file %s is not an image file", filename.c_str());
-        return unique_ptr<data_type>();
+	warning("ECAT7 file %s is not an image file", filename.c_str());
+	return std::auto_ptr<data_type>(0);
       }
   }
 };

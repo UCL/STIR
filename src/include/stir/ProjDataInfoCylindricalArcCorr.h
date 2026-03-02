@@ -6,7 +6,15 @@
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -26,6 +34,7 @@
 #ifndef __stir_ProjDataInfoCylindricalArcCorr_H__
 #define __stir_ProjDataInfoCylindricalArcCorr_H__
 
+
 #include "stir/ProjDataInfoCylindrical.h"
 
 START_NAMESPACE_STIR
@@ -40,7 +49,7 @@ START_NAMESPACE_STIR
 class ProjDataInfoCylindricalArcCorr : public ProjDataInfoCylindrical
 {
   typedef ProjDataInfoCylindrical base_type;
-#ifdef STIR_COMPILING_SWIG_WRAPPER
+#ifdef SWIG
   // SWIG needs this typedef to be public
 public:
 #endif
@@ -49,37 +58,35 @@ public:
 public:
   //! Constructors
   ProjDataInfoCylindricalArcCorr();
-  ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner> scanner_ptr,
-                                 float bin_size,
+  ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner> scanner_ptr,float bin_size,
                                  const VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const VectorWithOffset<int>& min_ring_diff_v,
                                  const VectorWithOffset<int>& max_ring_diff_v,
-                                 const int num_views,
-                                 const int num_tangential_poss,
-                                 const int tof_mash_factor = 0);
+    const int num_views,const int num_tangential_poss);
 
-  ProjDataInfo* clone() const override;
+  ProjDataInfo* clone() const;
 
   bool operator==(const self_type&) const;
 
-  inline float get_s(const Bin&) const override;
+  inline virtual float get_s(const Bin&) const;
   //! Set tangential sampling
   void set_tangential_sampling(const float bin_size);
   //! Get tangential sampling
   inline float get_tangential_sampling() const;
-  float get_sampling_in_s(const Bin&) const override
-  {
-    return bin_size;
-  }
+  virtual float get_sampling_in_s(const Bin&) const
+  {return bin_size; }
 
-  Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
+  virtual 
+    Bin
+    get_bin(const LOR<float>&) const;
 
-  std::string parameter_info() const override;
-
+  virtual string parameter_info() const;
 private:
+  
   float bin_size;
 
-  bool blindly_equals(const root_type* const) const override;
+  virtual bool blindly_equals(const root_type * const) const;
+
 };
 
 END_NAMESPACE_STIR

@@ -13,7 +13,15 @@
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -61,22 +69,22 @@ main()
   int scale = 0;
   int max_mode = 0;
 
+
   if (!ask("Accept defaults ?", true))
     {
 
       scale = ask_num("Enlargement (0 means maximum possible)", 0, 999, scale);
-      max_mode = ask_num("Choose : Same scaling for all images (maximum self determined) (0)\
+    max_mode=ask_num(
+ "Choose : Same scaling for all images (maximum self determined) (0)\
 \n         All images scaled with given maximum                  (1)\
-\n         Independent scaling of the images                     (2)",
-                         0,
-                         2,
-                         max_mode);
+\n         Independent scaling of the images                     (2)",0,2,max_mode);
       switch (max_mode)
-        {
-        case 0: /* maximum self determined      */
+    { case 0 :                          /* maximum self determined      */
           break;
         case 1: /* given maximum                */
-          maxi = ask_num("Maximum value (will correspond to highest color value)", 0.0, 1e30, maxi);
+        maxi =
+         ask_num("Maximum value (will correspond to highest color value)",
+                0.0,1e30,maxi);
           break;
         case 2: /* independent                  */
           maxi = 0.0;
@@ -95,6 +103,7 @@ main()
 
   for (int i = t.get_min_index(); i <= t.get_max_index(); i++)
     delete[] text[i];
+
 
   display(*t.begin(), "Test display 2D, 2 args");
   return EXIT_SUCCESS;

@@ -4,7 +4,15 @@
     Copyright (C) 2007- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -90,6 +98,7 @@ public:
   bool get_unprocessed_vs_num(ViewSegmentNumbers& vs_num, int proc);
 
 private:
+
   //! Number of processors available
   int num_workers;
 
@@ -127,6 +136,7 @@ private:
    */
   bool get_oldest_unprocessed_vs_num(ViewSegmentNumbers& vs_num, int proc) const;
 
+	
   /*! \brief gets a vs_num of the processor, which has the most work left
    * \param proc processor that will not be checked (i.e. the one for which
    *      we are trying to find some work)
@@ -152,6 +162,7 @@ private:
    * Also returns false if the \a vs_num is not in the list to process at all.
    */
   bool is_still_to_be_processed(const ViewSegmentNumbers& vs_num) const;
+
 };
 
 END_NAMESPACE_STIR

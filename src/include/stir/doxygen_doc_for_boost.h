@@ -18,7 +18,15 @@
     Copyright (C) 2001 - 2004-09-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -40,31 +48,25 @@
 
 namespace boost
 {
-namespace detail
-{
+  namespace detail {
 /*! \ingroup boost
 \brief Boost class for chaining of operators (see operators.hpp)
 */
-class empty_base
-{
-};
-} // namespace detail
+    class empty_base {};
+  }
 
 /*! \ingroup boost
   \brief Boost class to define all comparison operators given only 2 (see operators.hpp)
   */
 template <class T, class B = ::boost::detail::empty_base>
-struct partially_ordered
-{
-};
+  struct partially_ordered  {};
 
 /*! \ingroup boost
   \brief Boost class to define operator!= in terms of operator== (see operators.hpp)
   */
 template <class T, class B = ::boost::detail::empty_base>
-struct equality_comparable
-{
-};
+  struct equality_comparable {};
+
 
 /*! \ingroup boost
   \brief A smart pointer class: multiple shared_ptr's refer to one object
@@ -95,7 +97,7 @@ struct equality_comparable
     // ok
     shared_ptr<int> i_ptr1(new int (2));
     shared_ptr<int> i_ptr2(i_ptr1);
-    unique_ptr<int> a_ptr(new int(3));
+    std::auto_ptr<int> a_ptr(new int(3));
     shared_ptr<int> i_ptr3(a_ptr);
     // now never use a_ptr anymore
     {
@@ -113,8 +115,7 @@ struct equality_comparable
   \endcode
 */
 template <class T>
-class shared_ptr
-{
-};
+  class shared_ptr {};
 
-} // namespace boost
+
+}

@@ -19,17 +19,27 @@
 
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/analytic/FBP2D/RampFilter.h"
 #include <math.h>
-#include "stir/error.h"
 #include <iostream>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
 #include <sstream>
-#include <algorithm>
+#endif
 
 /* Note: #ifdef NRFFT, then the Numerical Recipes version is used (if you have it...) */
 
@@ -42,20 +52,34 @@ START_NAMESPACE_STIR
 // times a Hamming window.
 
 static inline float
-ramp_filter_in_space(const int n, const float sampledist, const int length, const float alpha, const float fc)
+ramp_filter_in_space(const int n, 
+			   const float sampledist, 
+			   const int length, 
+			   const float alpha, 
+			   const float fc)
 {
   const double x = n * 2 * fc;
   // KT&Darren Hogg 17/05/2000 removed square(sampledist) as this introduced a scaling factor in the reconstructions
   if (n == 0)
-    return static_cast<float>((2 * square(fc) * (-4 + alpha * (4 + square(_PI)))) / (_PI /* *square(sampledist) */));
+    return
+      static_cast<float>((2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */));
   else if (fabs(fabs(x) - 1) < 1E-6)
-    return static_cast<float>(-(square(2 * fc) * (8 * alpha + (-1 + alpha) * square(_PI))) / (4 * _PI /* *square(sampledist) */));
+    return
+        static_cast<float>(
+			   -(square(2*fc)*(8*alpha + (-1 + alpha)*square(_PI)))/
+			   (4*_PI/* *square(sampledist) */));
   else
-    return static_cast<float>(square(2 * fc)
-                              * (-alpha - square(x) + 3 * alpha * square(x) - square(square(x))
-                                 + _PI * x * sin(_PI * x) * (-1 + square(x)) * (-alpha + (-1 + 2 * alpha) * square(x))
-                                 + cos(_PI * x) * (alpha - (1 + alpha) * square(x) + (-1 + 2 * alpha) * square(square(x))))
-                              / (_PI /* *square(sampledist) */ * square(-1 + x) * square(x) * square(1 + x)));
+    return
+      static_cast<float>(
+        square(2*fc)*(
+	   -alpha - square(x) + 3*alpha*square(x) - square(square(x)) + 
+           _PI*x*sin(_PI*x)*(-1 + square(x))*
+                  (-alpha + (-1 + 2*alpha)*square(x)) + 
+           cos(_PI*x)*(alpha - (1 + alpha)*square(x) + 
+                      (-1 + 2*alpha)*square(square(x)))
+        )/
+        (_PI/* *square(sampledist) */*square(-1 + x)*square(x)*square(1 + x))
+	);
 }
 
 // KT&CL 03/08/99 insert max value for fc
@@ -64,9 +88,7 @@ RampFilter::RampFilter(float sampledist_v, int length, float alpha_v, float fc_v
 #ifdef NRFFT
       Filter1D<float>(length),
 #endif
-      fc(std::min(fc_v, .5F)),
-      alpha(alpha_v),
-      sampledist(sampledist_v)
+  fc(min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)
 {
 
   start_timers();
@@ -90,8 +112,7 @@ RampFilter::RampFilter(float sampledist_v, int length, float alpha_v, float fc_v
      */
   float f = 0.0;
 
-  for (Int i = 1; i <= length - 1; i += 2)
-    {
+  for (Int i = 1; i <= length - 1; i += 2) {
       f = (float)((float)0.5 * (i - 1) / length);
       float nu_a = f;
       if (f <= fc)
@@ -147,12 +168,20 @@ RampFilter::RampFilter(float sampledist_v, int length, float alpha_v, float fc_v
 #  endif
 #endif
   stop_timers();
+
+
 };
 
-std::string
-RampFilter::parameter_info() const
+
+std::string RampFilter:: parameter_info() const
 {
+#ifdef BOOST_NO_STRINGSTREAM
+  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+  char str[1000];
+  ostrstream s(str, 1000);
+#else
   std::ostringstream s;
+#endif  
   s << "RampFilter :="
     << "\nFilter length := "
 #ifdef NRFFT
@@ -160,9 +189,13 @@ RampFilter::parameter_info() const
 #else
     << (kernel_in_frequency_space.size() - 1) * 2
 #endif
-    << "\nCut-off in cycles := " << fc << "\nAlpha parameter := " << alpha << "\nSample dist := " << sampledist;
+      << "\nCut-off in cycles := "<< fc
+      << "\nAlpha parameter := "<<alpha
+      << "\nSample dist := "<< sampledist;
 
   return s.str();
 }
+
+
 
 END_NAMESPACE_STIR

@@ -5,7 +5,15 @@
   Copyright (C) 2005- 2012, Hammersmith Imanet Ltd
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+  
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -75,18 +83,20 @@
 #include "stir/Succeeded.h"
 #include <iostream>
 /***********************************************************/
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])                                  
 {
   USING_NAMESPACE_STIR;
   if (argc != 3)
     {
-      std::cerr << "Usage:" << argv[0] << " SimSET_image_filename original_image\n";
+      std::cerr << "Usage:" << argv[0]  
+		<< " SimSET_image_filename original_image\n";                               
       return EXIT_FAILURE;
     }
-  shared_ptr<DiscretisedDensity<3, float>> input_image_sptr(read_from_file<DiscretisedDensity<3, float>>(argv[2]));
-  std::string output_image_filename(argv[1]);
-  shared_ptr<DiscretisedDensity<3, float>> output_image_sptr(input_image_sptr->clone());
+  shared_ptr< DiscretisedDensity<3,float> >  
+    input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
+  string output_image_filename(argv[1]);
+  shared_ptr<DiscretisedDensity<3,float> > 
+    output_image_sptr(input_image_sptr->clone());
   bool is_implemented = true;
   DiscretisedDensity<3, float>::full_iterator out_iter = output_image_sptr->begin_all();
   DiscretisedDensity<3, float>::const_full_iterator in_iter = input_image_sptr->begin_all_const();
@@ -112,8 +122,7 @@ main(int argc, char* argv[])
           is_implemented = false;
           std::cerr << "\t" << *in_iter;
         }
-      ++in_iter;
-      ++out_iter;
+      ++in_iter; ++out_iter;
     }
 
   if (is_implemented == false)
@@ -123,6 +132,9 @@ main(int argc, char* argv[])
               << "HINT: If produced by generate_image set the subsampling parameters to 1, \n."
               << "when small voxels sizes are used.\n";
   // write to file as 1 byte without changing the scale
-  Succeeded success = write_basic_interfile(output_image_filename, *output_image_sptr, NumericType::UCHAR, 1.F);
+  Succeeded success = 
+    write_basic_interfile(output_image_filename, *output_image_sptr,
+			  NumericType::UCHAR, 1.F);
   return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+

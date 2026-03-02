@@ -13,19 +13,36 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
+
 
 #ifndef __stir_SeparableArrayFunctionObject_H__
 #define __stir_SeparableArrayFunctionObject_H__
 
 #include "stir/ArrayFunctionObject_1ArgumentImplementation.h"
 #include "stir/shared_ptr.h"
+#include <vector>
 #include "stir/VectorWithOffset.h"
 
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+#endif
+
+
 START_NAMESPACE_STIR
+
+
 
 /*!
   \ingroup Array
@@ -38,7 +55,8 @@ START_NAMESPACE_STIR
 
  */
 template <int num_dimensions, typename elemT>
-class SeparableArrayFunctionObject : public ArrayFunctionObject_1ArgumentImplementation<num_dimensions, elemT>
+class SeparableArrayFunctionObject : 
+   public ArrayFunctionObject_1ArgumentImplementation<num_dimensions,elemT>
 {
 public:
   //! Default constructor, results in a trivial ArrayFunctionObject
@@ -52,13 +70,18 @@ public:
    */
   SeparableArrayFunctionObject(const VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>>&);
 
-  bool is_trivial() const override;
+  bool is_trivial() const;
 
 protected:
+ 
   VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>> all_1d_array_filters;
-  void do_it(Array<num_dimensions, elemT>& array) const override;
+  virtual void do_it(Array<num_dimensions,elemT>& array) const;
+
 };
+
 
 END_NAMESPACE_STIR
 
+
 #endif // SeparableArrayFunctionObject
+

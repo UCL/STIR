@@ -3,7 +3,15 @@
   Copyright (C) 2013, University College London
   This file is part of STIR.
 
-  SPDX-License-Identifier: Apache-2.0
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+  
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
   See STIR/LICENSE.txt for details
 */
@@ -23,8 +31,7 @@
 
 START_NAMESPACE_STIR
 
-namespace BSpline
-{
+namespace BSpline {
 
 /*! \brief The type used for relative positions between the grid points.
   \ingroup BSpline
@@ -35,15 +42,7 @@ typedef double pos_type;
   \ingroup BSpline
 */
 enum BSplineType
-{
-  near_n,
-  linear,
-  quadratic,
-  cubic,
-  quartic,
-  quintic,
-  oMoms
-};
+    {near_n, linear, quadratic, cubic, quartic, quintic, oMoms} ;
 
 /*! \brief compute BSpline coefficients that gives the BSpline that interpolates the given data
 \internal
@@ -51,28 +50,33 @@ enum BSplineType
 You should never have to use this function yourself.
 */
 template <class RandIterOut, class IterT, class constantsT>
-inline void BSplines_coef(RandIterOut c_begin_iterator,
+    inline  
+    void
+    BSplines_coef(RandIterOut c_begin_iterator, 
                           RandIterOut c_end_iterator,
                           IterT input_begin_iterator,
                           IterT input_end_iterator,
-                          const constantsT z1,
-                          const constantsT z2,
-                          const constantsT lambda); // to be taken from the class
+                  const constantsT z1, const constantsT z2, const constantsT lambda); // to be taken from the class
 
 /*! \brief return value of the first derivative of the spline
     \ingroup BSpline
 */
 template <typename pos_type>
-inline pos_type BSplines_1st_der_weight(const pos_type relative_position, const BSplineType spline_type);
+    inline 
+    pos_type 
+    BSplines_1st_der_weight(const pos_type relative_position, const BSplineType spline_type) ;
 
 /*! \brief return spline value
     \ingroup BSpline
 */
 template <typename pos_type>
-inline pos_type BSplines_weights(const pos_type relative_position, const BSplineType spline_type);
+    inline
+    pos_type 
+    BSplines_weights(const pos_type relative_position, const BSplineType spline_type);
+
 
 //*/
-} // namespace BSpline
+} // end BSpline namespace
 
 END_NAMESPACE_STIR
 

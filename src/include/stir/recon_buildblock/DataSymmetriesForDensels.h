@@ -4,7 +4,15 @@
     Copyright (C) 2001- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -24,17 +32,28 @@
 #include "stir/Densel.h"
 #include <vector>
 #include <memory>
-#include "stir/unique_ptr.h"
+
 #include "stir/Coordinate2D.h"
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+#ifndef STIR_NO_AUTO_PTR
+using std::auto_ptr;
+#endif
+#endif
+
 
 START_NAMESPACE_STIR
 
 // class Densel;
 class SymmetryOperation;
 
+
 #if 0
 class DenselIndexRange;
 #endif
+
+
 
 /*!
   \ingroup symmetries
@@ -54,7 +73,9 @@ public:
 
   virtual ~DataSymmetriesForDensels(){};
 
-  virtual DataSymmetriesForDensels* clone() const = 0;
+  virtual 
+    DataSymmetriesForDensels 
+    * clone() const = 0;
 
   bool operator==(const DataSymmetriesForDensels&) const;
 
@@ -72,42 +93,49 @@ public:
       \warning \c b has to be a 'basic' Densel
   */
   // next return value could be a RelatedDensels ???
-  virtual void get_related_densels(std::vector<Densel>&, const Densel& b) const = 0;
+  virtual  void
+    get_related_densels(vector<Densel>&, const Densel& b) const = 0;
 
 #if 0
   //! fills in a vector with all the Densels (within the range) that are related to 'b'
   /*! \warning \c b has to be a 'basic' Densel
   */
   virtual void
-    get_related_densels(std::vector<Densel>&, const Densel& b,
+    get_related_densels(vector<Densel>&, const Densel& b,
                       const int min_axial_pos_num, const int max_axial_pos_num) const;
 #endif
 
   //! returns the number of Densels related to 'b'
-  virtual int num_related_densels(const Densel& b) const;
+  virtual int
+    num_related_densels(const Densel& b) const;
 
   /*! \brief given an arbitrary Densel 'b', find the basic Densel
 
   sets 'b' to the corresponding 'basic' Densel and returns the symmetry
   transformation from 'basic' to 'b'.
   */
-  virtual unique_ptr<SymmetryOperation> find_symmetry_operation_from_basic_densel(Densel&) const = 0;
+  virtual auto_ptr<SymmetryOperation>
+    find_symmetry_operation_from_basic_densel(Densel&) const = 0;
 
   /*! \brief given an arbitrary Densel 'b', find the basic Densel
 
   sets 'b' to the corresponding 'basic' Densel and returns true if
   'b' is changed (i.e. it was NOT a basic Densel).
   */
-  virtual bool find_basic_densel(Densel& b) const;
+  virtual bool
+    find_basic_densel(Densel& b) const;
 
 protected:
   typedef DataSymmetriesForDensels root_type;
 
   virtual bool blindly_equals(const root_type* const) const = 0;
+
 };
 
 END_NAMESPACE_STIR
 
 //#include "stir/recon_buildblock/DataSymmetriesForDensels.inl"
 
+
 #endif
+

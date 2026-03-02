@@ -2,7 +2,15 @@
     Copyright (C) 2002 - 2011-12-31, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -28,18 +36,17 @@
   \author Kris Thielemans
 */
 
+
 #include "stir/ProjData.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/Viewgram.h"
 #include "stir/ArrayFunction.h"
 #include "stir/thresholding.h"
-#include "stir/warning.h"
 #include <iostream>
 
 USING_NAMESPACE_STIR
 
-static void
-print_usage_and_exit()
+static void print_usage_and_exit()
 {
   std::cerr << "\nUsage:\nattenuation_coefficients_to_projections\n\t"
             << " --AF|--ACF <output filename > <input proj_data file name>  \n";
@@ -64,22 +71,23 @@ main(int argc, char* argv[])
   else
     print_usage_and_exit();
 
-  ++argv;
-  --argc;
+  ++argv; --argc;
 
-  shared_ptr<ProjData> attenuation_proj_data_ptr = ProjData::read_from_file(argv[2]);
+  shared_ptr <ProjData> attenuation_proj_data_ptr =
+    ProjData::read_from_file(argv[2]);
 
-  const std::string output_file_name = argv[1];
+  const string output_file_name = argv[1];
 
-  shared_ptr<ProjData> out_proj_data_ptr(
-      new ProjDataInterfile(attenuation_proj_data_ptr->get_exam_info_sptr(),
-                            attenuation_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
+  shared_ptr<ProjData> 
+    out_proj_data_ptr(new ProjDataInterfile(attenuation_proj_data_ptr->get_exam_info_sptr(),
+					    attenuation_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
                             output_file_name));
 
   for (int segment_num = attenuation_proj_data_ptr->get_min_segment_num();
        segment_num <= attenuation_proj_data_ptr->get_max_segment_num();
        ++segment_num)
-    for (int view_num = attenuation_proj_data_ptr->get_min_view_num(); view_num <= attenuation_proj_data_ptr->get_max_view_num();
+    for ( int view_num = attenuation_proj_data_ptr->get_min_view_num();
+	  view_num<=attenuation_proj_data_ptr->get_max_view_num(); 
          ++view_num)
       {
         Viewgram<float> viewgram = attenuation_proj_data_ptr->get_viewgram(view_num, segment_num);
@@ -100,10 +108,13 @@ main(int argc, char* argv[])
 
         if (out_proj_data_ptr->set_viewgram(viewgram) != Succeeded::yes)
           {
-            warning("Error setting output viewgram at segment %d view %d. Exiting", segment_num, view_num);
+	  warning("Error setting output viewgram at segment %d view %d. Exiting",
+		  segment_num, view_num);
             return EXIT_FAILURE;
           }
       }
 
+  
   return EXIT_SUCCESS;
 }
+

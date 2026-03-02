@@ -1,10 +1,17 @@
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
-    Copyright (C) 2020, University College London
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -58,18 +65,6 @@
 /*! \namespace stir::ecat::ecat6
   \brief Namespace for the ECAT6 IO part of the STIR library (and some/most of its applications)
   */
-
-/*! \namespace stir::GE
-  \brief Namespace for the part of the STIR library that handles GE data (and some/most of its applications)
-
-  This namespace contains all routines that are common to all GE formats
-*/
-/*! \namespace stir::GE:RDF_HDF5
-  \brief Namespace for the part of the STIR library that handles GE data with HDF5-based file formats
-
-  This namespace contains all routines that are used for GE RDF10 etc
-*/
-
 /*!
 \defgroup STIR STIR
 All of STIR.
@@ -112,16 +107,11 @@ projection data,...
 \defgroup Coordinate Items relating to coordinates
 \ingroup buildblock
 */
-
 /*!
 \defgroup geometry Items related to simple geometric calculations
 \ingroup buildblock
 Functions to compute distances between lines etc.
 */
-/*!
-\defgroup ancillary Items related to ancillary information such as radionuclide, patient info etc
-\ingroup buildblock
- */
 /*!
 \defgroup projdata Items related to projection data
 \ingroup buildblock
@@ -160,20 +150,7 @@ for parsing are provided such that different image processors can
 be selected at run-time.
 
 */
-/*!
-\defgroup date_time Items related to date/time processing
-\ingroup buildblock
-*/
 
-/*!
-\defgroup threads Items relating to threading of certain STIR functions.
-\ingroup buildblock
-*/
-
-/*!
-\defgroup CUDA Items relating to CUDA and STIR buildblock objects.
-\ingroup buildblock
-*/
 
 /*!
 \defgroup data_buildblock Acquisition data building blocks
@@ -209,14 +186,10 @@ from/to file.
 \ingroup IO
 */
 /*!
-\defgroup ECAT ECAT6 ... ECAT8 support in the IO library
+\defgroup ECAT ECAT6 and ECAT7 support in the IO library
 \ingroup IO
 */
 
-/*!
-\defgroup GE support for GE data
-\ingroup IO
-*/
 
 /*!
 \defgroup listmode Support classes for reading list mode data
@@ -291,80 +264,33 @@ Everything related to priors, which are used for MAP-type (also knows as
 Classes and functions that are used to make a common interface for the serial
 and parallel implementation of the reconstruction algorithms.
 */
-/*!
-\defgroup NiftyPET Wrapped NiftyPET functionality in STIR
-\ingroup recon_buildblock
-Classes and functions that are used to provide an interface to NiftyPET
-functionality. This includes projectors, unlisting and norms and randoms
-estimation. Currently only available for the mMR scanner, and requires CUDA.
-*/
-/*!
-\defgroup Parallelproj Wrapped Parallelproj functionality in STIR
-\ingroup recon_buildblock
-Classes and functions that are used to provide an interface to parallelproj
-(https://github.com/gschramm/parallelproj)
-functionality. This includes a forward and back projector, and uses either OpenMP or CUDA.
-*/
+
 
 /*!
 \defgroup reconstructors Reconstruction classes
 \ingroup STIR_library
 */
 /*!
-\defgroup iterativereconstructors Iterative reconstructors
-\ingroup reconstructors
-Iterative (statistical) reconstruction algorithms.
-*/
-/*!
 \defgroup OSMAPOSL OSMAPOSL
-\ingroup iterativereconstructors
-Implementation of the OSMAP One-Step-Late reconstruction algorithm.
-*/
-/*!
-\defgroup KOSMAPOSL KOSMAPOSL
-\ingroup OSMAPOSL
-Implementation of the kernel-based OSMAP One-Step-Late reconstruction algorithm.
+\ingroup reconstructors
+Implementation of the OSMAP One-Step-Late reconstruction algorithm
 */
 /*!
 \defgroup OSSPS OSSPS
-\ingroup iterativereconstructors
-Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorithm.
-*/
-/*!
-\defgroup analyticreconstructors Analytic reconstructors
 \ingroup reconstructors
-Analytic (direct, closed-form) reconstruction methods.
+Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorithm
 */
 /*!
 \defgroup FBP2D FBP2D
-\ingroup analyticreconstructors
-Implementation of the 2D Filtered Back Projection algorithm.
+\ingroup reconstructors
+Implementation of the 2D Filtered Back Projection algorithm
 */
 /*!
 \defgroup FBP3DRP FBP3DRP
-\ingroup analyticreconstructors
-Implementation of the 3D Reprojection Filtered Back Projection algorithm.
+\ingroup reconstructors
+Implementation of the 3D Reprojection Filtered Back Projection algorithm
 */
-/*!
-\defgroup SRT2D SRT2D
-\ingroup analyticreconstructors
-Implementation of the 2D PET Spline Reconstruction Technique algorithm.
-*/
-/*!
-\defgroup SRT2DSPECT SRT2DSPECT
-\ingroup analyticreconstructors
-Implementation of the 2D SPECT Spline Reconstruction Technique algorithm.
-*/
-/*!
-\defgroup GRD2D GRD2D
-\ingroup analyticreconstructors
-Implementation of the 2D PET GRiDding algorithm.
-*/
-/*!
-\defgroup DDSR2D DDSR2D
-\ingroup analyticreconstructors
-Implementation of the 2D Direct Differentiation SPECT Reconstruction algorithm.
-*/
+
 /*!
 \defgroup modelling Kinetic modelling building blocks
 \ingroup STIR_library
@@ -409,6 +335,9 @@ Library for displaying of images
 \ingroup alltest
 */
 
+
+
+
 /*!
 \defgroup main_programs Executables
 \ingroup STIR
@@ -427,6 +356,8 @@ Almost all programs that can be executed by the user.
 \ingroup utilities
 Includes conversion programs etc.
 */
+
+
 
 /*!
 \defgroup examples Example files

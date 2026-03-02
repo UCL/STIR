@@ -4,7 +4,15 @@
     Copyright (C) 2004- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -27,29 +35,32 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
 #include "stir/round.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include <algorithm>
 #include <math.h>
 
 START_NAMESPACE_STIR
 
-ProjMatrixByBinUsingInterpolation::JacobianForIntBP::JacobianForIntBP(const ProjDataInfoCylindrical* proj_data_info_ptr,
-                                                                      bool exact)
+ProjMatrixByBinUsingInterpolation::JacobianForIntBP::
+JacobianForIntBP(const ProjDataInfoCylindrical* proj_data_info_ptr, bool exact)
 
     : R2(square(proj_data_info_ptr->get_ring_radius())),
       ring_spacing2(square(proj_data_info_ptr->get_ring_spacing())),
       arccor(dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(proj_data_info_ptr) != 0),
-      backprojection_normalisation(proj_data_info_ptr->get_ring_spacing() / 2 / proj_data_info_ptr->get_num_views()),
+       backprojection_normalisation 
+      (proj_data_info_ptr->get_ring_spacing()/2/proj_data_info_ptr->get_num_views()),
       use_exact_Jacobian_now(exact)
 {
-  assert(arccor || dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_ptr) != 0);
+  assert(arccor ||
+	 dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_ptr)!=0);
 }
 
-const char* const ProjMatrixByBinUsingInterpolation::registered_name = "Interpolation";
+const char * const 
+ProjMatrixByBinUsingInterpolation::registered_name =
+  "Interpolation";
 
-ProjMatrixByBinUsingInterpolation::ProjMatrixByBinUsingInterpolation()
+ProjMatrixByBinUsingInterpolation::
+ProjMatrixByBinUsingInterpolation()
 {
   set_defaults();
 }
@@ -69,6 +80,7 @@ ProjMatrixByBinUsingInterpolation::initialise_keymap()
   parser.add_stop_key("End Interpolation Matrix Parameters");
 }
 
+
 void
 ProjMatrixByBinUsingInterpolation::set_defaults()
 {
@@ -83,6 +95,7 @@ ProjMatrixByBinUsingInterpolation::set_defaults()
   use_exact_Jacobian_now = true;
 }
 
+
 bool
 ProjMatrixByBinUsingInterpolation::post_processing()
 {
@@ -91,17 +104,18 @@ ProjMatrixByBinUsingInterpolation::post_processing()
   return false;
 }
 
+
 void
-ProjMatrixByBinUsingInterpolation::set_up(
-    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
+ProjMatrixByBinUsingInterpolation::
+set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
 )
 {
-  ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
-
   proj_data_info_ptr = proj_data_info_ptr_v;
 
-  const VoxelsOnCartesianGrid<float>* image_info_ptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(density_info_ptr.get());
+  const VoxelsOnCartesianGrid<float> * image_info_ptr =
+    dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
   if (image_info_ptr == NULL)
     error("ProjMatrixByBinUsingInterpolation initialised with a wrong type of DiscretisedDensity\n");
@@ -109,10 +123,12 @@ ProjMatrixByBinUsingInterpolation::set_up(
   densel_range = image_info_ptr->get_index_range();
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
-  const float z_to_middle = (densel_range.get_max_index() + densel_range.get_min_index()) * voxel_size.z() / 2.F;
+  const float z_to_middle =
+    (densel_range.get_max_index() + densel_range.get_min_index())*voxel_size.z()/2.F;
   origin.z() -= z_to_middle;
 
-  symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
+  symmetries_ptr.reset(
+    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                                     density_info_ptr,
                                                                     do_symmetry_90degrees_min_phi,
                                                                     do_symmetry_180degrees_min_phi,
@@ -126,7 +142,9 @@ ProjMatrixByBinUsingInterpolation::set_up(
 
   // TODO assumes that all segments have span or not
   {
-    const float relative_vox_sampling = voxel_size.z() / proj_data_info_ptr->get_sampling_in_m(Bin(0, 0, 0, 0));
+    const float relative_vox_sampling = 
+      voxel_size.z() /
+      proj_data_info_ptr->get_sampling_in_m(Bin(0,0,0,0));
     if (use_piecewise_linear_interpolation_now)
       {
         if (fabs(relative_vox_sampling - .5) < .01)
@@ -141,22 +159,20 @@ ProjMatrixByBinUsingInterpolation::set_up(
       }
   }
 }
-
-ProjMatrixByBinUsingInterpolation*
-ProjMatrixByBinUsingInterpolation::clone() const
-{
-  return new ProjMatrixByBinUsingInterpolation(*this);
-}
-
 // point should be w.r.t. middle of the scanner!
-static inline void
-find_s_m_of_voxel(
-    float& s, float& m, const CartesianCoordinate3D<float>& point, const float cphi, const float sphi, const float tantheta)
+static inline 
+void 
+find_s_m_of_voxel(float& s, float& m,
+		  const CartesianCoordinate3D<float>& point,
+		  const float cphi, const float sphi,
+		  const float tantheta)
 {
   s = (point.x() * cphi + point.y() * sphi);
 
-  m = point.z() - tantheta * (-point.x() * sphi + point.y() * cphi);
+  m =
+    point.z()- tantheta*(-point.x()*sphi+point.y()*cphi);
 }
+
 
 /*
 
@@ -169,7 +185,8 @@ interpolationkernel[s_,ssize_,xsize_]  \
 */
 // piecewise_linear interpolation for bin between -1 and 1
 // vox
-static inline float
+static inline
+float 
 piecewise_linear_interpolate(const float s, const float vox_size)
 {
   if (fabs(s) < fabs(2 - vox_size) / 2)
@@ -181,7 +198,8 @@ piecewise_linear_interpolate(const float s, const float vox_size)
 }
 
 // linear interpolation between -1 and 1
-static inline float
+static inline
+float 
 linear_interpolate(const float t)
 {
   const float abst = fabs(t);
@@ -191,14 +209,18 @@ linear_interpolate(const float t)
     return 1 - abst;
 }
 
-static inline float
+static inline
+float 
 interpolate_tang_pos(const float tang_pos_diff)
 {
   return linear_interpolate(tang_pos_diff);
 }
 
+
 float
-ProjMatrixByBinUsingInterpolation::get_element(const Bin& bin, const CartesianCoordinate3D<float>& densel_ctr) const
+ProjMatrixByBinUsingInterpolation::
+get_element(const Bin& bin, 
+	    const CartesianCoordinate3D<float>& densel_ctr) const
 {
   const float phi = proj_data_info_ptr->get_phi(bin);
   const float cphi = cos(phi);
@@ -206,10 +228,16 @@ ProjMatrixByBinUsingInterpolation::get_element(const Bin& bin, const CartesianCo
   const float tantheta = proj_data_info_ptr->get_tantheta(bin);
 
   float s_densel, m_densel;
-  find_s_m_of_voxel(s_densel, m_densel, densel_ctr, cphi, sphi, tantheta);
-  const float s_diff = s_densel - proj_data_info_ptr->get_s(bin);
+  find_s_m_of_voxel(s_densel, m_densel,
+		    densel_ctr,
+		    cphi, sphi,
+		    tantheta);
+  const float s_diff =
+    s_densel - proj_data_info_ptr->get_s(bin);
 
-  const float m_diff = m_densel - proj_data_info_ptr->get_m(bin);
+  const float m_diff =  
+    m_densel -
+    proj_data_info_ptr->get_m(bin); 
 
 #if 0
   // alternative way to get m_diff using other code
@@ -240,24 +268,40 @@ ProjMatrixByBinUsingInterpolation::get_element(const Bin& bin, const CartesianCo
 	 < .001*proj_data_info_ptr->get_sampling_in_m(bin));
 #endif
 
-  const float s_max = std::max(cphi > sphi ? voxel_size.x() : voxel_size.y(), proj_data_info_ptr->get_sampling_in_s(bin));
+  const float s_max =
+    std::max(cphi>sphi? voxel_size.x() : voxel_size.y(),
+	     proj_data_info_ptr->get_sampling_in_s(bin));
   float result = interpolate_tang_pos(s_diff / s_max);
   if (result == 0)
     return 0;
-  const float m_max = std::max(voxel_size.z(), proj_data_info_ptr->get_sampling_in_m(bin));
+  const float m_max =
+    std::max(voxel_size.z(),
+	     proj_data_info_ptr->get_sampling_in_m(bin));
 
-  result *= (use_piecewise_linear_interpolation_now ? piecewise_linear_interpolate(
-                 m_diff / m_max, std::min(voxel_size.z(), proj_data_info_ptr->get_sampling_in_m(bin)) / m_max)
-                                                    : linear_interpolate(m_diff / m_max));
+  result *=
+    (use_piecewise_linear_interpolation_now?
+     piecewise_linear_interpolate(m_diff/m_max, 
+				  std::min(voxel_size.z(),
+					   proj_data_info_ptr->get_sampling_in_m(bin))
+				  /m_max)
+     :
+     linear_interpolate(m_diff/m_max)
+     );
 
   if (result == 0)
     return 0;
 
-  return result * jacobian(proj_data_info_cyl().get_average_ring_difference(bin.segment_num()), proj_data_info_ptr->get_s(bin));
+  return
+    result *
+    jacobian(proj_data_info_cyl().get_average_ring_difference(bin.segment_num()), 
+	     proj_data_info_ptr->get_s(bin));
 }
 
+  
 void
-ProjMatrixByBinUsingInterpolation::calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor) const
+ProjMatrixByBinUsingInterpolation::
+calculate_proj_matrix_elems_for_one_bin(
+                                        ProjMatrixElemsForOneBin& lor) const
 {
   const Bin& bin = lor.get_bin();
   assert(bin.segment_num() >= proj_data_info_ptr->get_min_segment_num());
@@ -307,16 +351,30 @@ ProjMatrixByBinUsingInterpolation::calculate_proj_matrix_elems_for_one_bin(ProjM
     */
     min1 = densel_range.get_min_index();
     // find radius of cylinder around all of the image
-    const float max_radius
-        = std::max(std::max(-densel_range[min1].get_min_index(), densel_range[min1].get_max_index()) * voxel_size[2],
-                   std::max(-densel_range[min1][0].get_min_index(), densel_range[min1][0].get_max_index()) * voxel_size[1]);
+    const float max_radius = 
+      std::max(
+	       std::max(-densel_range[min1].get_min_index(),
+			densel_range[min1].get_max_index()
+			)*voxel_size[2],
+	       std::max(-densel_range[min1][0].get_min_index(),
+			densel_range[min1][0].get_max_index()
+			)*voxel_size[1]
+	       );
     // find width of the 'tube of response'
-    const float z_width_of_TOR = proj_data_info_ptr->get_sampling_in_m(bin);
+    const float z_width_of_TOR =
+      proj_data_info_ptr->get_sampling_in_m(bin);
     // now find where tube enters/leaves image
     // we use a safety margin here as we could probably use z_width_of_LOR/2
-    const float z_middle_LOR = proj_data_info_ptr->get_m(bin) - origin.z();
-    const float min_z_LOR = z_middle_LOR - fabs(proj_data_info_ptr->get_tantheta(bin)) * max_radius - z_width_of_TOR;
-    const float max_z_LOR = z_middle_LOR + fabs(proj_data_info_ptr->get_tantheta(bin)) * max_radius + z_width_of_TOR;
+    const float z_middle_LOR =
+      proj_data_info_ptr->get_m(bin) - origin.z();
+    const float min_z_LOR =
+      z_middle_LOR - 
+      fabs(proj_data_info_ptr->get_tantheta(bin))*max_radius -
+      z_width_of_TOR;
+    const float max_z_LOR =
+      z_middle_LOR + 
+      fabs(proj_data_info_ptr->get_tantheta(bin))*max_radius +
+      z_width_of_TOR;
 
     min1 = round(floor(min_z_LOR / voxel_size[1]));
     max1 = round(ceil(max_z_LOR / voxel_size[1]));
@@ -334,8 +392,9 @@ ProjMatrixByBinUsingInterpolation::calculate_proj_matrix_elems_for_one_bin(ProjM
       // in principle trouble getting the min_index() for c[2].
       // We'll assume that it is the same as for a(ny) c[1] within the range.
       // That's of course ok for VoxelsOnCartesianGrid
-      const IndexRange<2>& range2d
-          = densel_range[std::min(std::max(c[1], densel_range.get_min_index()), densel_range.get_max_index())];
+        const IndexRange<2>& range2d =
+	  densel_range[std::min(std::max(c[1],densel_range.get_min_index()),
+				densel_range.get_max_index())];
 
 #if 0
       const int min2=range2d.get_min_index();
@@ -371,9 +430,13 @@ ProjMatrixByBinUsingInterpolation::calculate_proj_matrix_elems_for_one_bin(ProjM
           for (c[3] = min3; c[3] <= max3; ++c[3])
             {
               // TODO call a virtual function of DiscretisedDensity?
-              const CartesianCoordinate3D<float> coords
-                  = CartesianCoordinate3D<float>(c[1] * voxel_size[1], c[2] * voxel_size[2], c[3] * voxel_size[3]) + origin;
-              const float element_value = get_element(bin, coords);
+	      const CartesianCoordinate3D<float> coords = 
+		CartesianCoordinate3D<float>(c[1]*voxel_size[1],
+					     c[2]*voxel_size[2],
+					     c[3]*voxel_size[3])
+		+origin;
+	      const float element_value =
+		get_element(bin, coords);
               if (element_value > 0)
                 {
                   found_nonzero3 = true;

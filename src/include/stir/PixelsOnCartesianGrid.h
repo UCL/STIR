@@ -4,7 +4,15 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -41,6 +49,7 @@ class PixelsOnCartesianGrid : public DiscretisedDensityOnCartesianGrid<2, elemT>
 {
 
 public:
+
   //! Construct an empty PixelsOnCartesianGrid
   inline PixelsOnCartesianGrid();
 
@@ -70,25 +79,26 @@ PixelsOnCartesianGrid(const ProjDataInfo * proj_data_info_ptr,
 		      const int xy_size);
 #endif
 
+
 //! Definition of the pure virtual defined in DiscretisedDensity
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
   DiscretisedDensity<2, elemT>*
 #else
   PixelsOnCartesianGrid<elemT>*
 #endif
-  get_empty_copy() const override;
+ get_empty_copy() const;
 
   //! Like get_empty_discretised_density, but returning a pointer to a PixelsOnCartesianGrid
   PixelsOnCartesianGrid<elemT>* get_empty_pixels_on_cartesian_grid() const;
 
   // TODO covariant return types
-
+virtual
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
   DiscretisedDensity<2, elemT>*
 #else
   PixelsOnCartesianGrid<elemT>*
 #endif
-  clone() const override;
+clone() const;
 
   inline int get_x_size() const;
 
@@ -107,9 +117,24 @@ PixelsOnCartesianGrid(const ProjDataInfo * proj_data_info_ptr,
 
   //! is the same as set_grid_spacing()
   inline void set_pixel_size(const BasicCoordinate<2, float>&) const;
+
+  
 };
+
 
 END_NAMESPACE_STIR
 
 #include "stir/PixelsOnCartesianGrid.inl"
 #endif
+
+
+
+
+
+
+
+
+
+
+
+

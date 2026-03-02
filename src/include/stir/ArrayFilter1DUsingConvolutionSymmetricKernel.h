@@ -14,7 +14,15 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -22,12 +30,12 @@
 #ifndef __stir_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
 #define __stir_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
 
+
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-class VectorWithOffset;
+template <typename elemT> class VectorWithOffset;
 
 /*!
   \ingroup Array
@@ -44,9 +52,11 @@ class VectorWithOffset;
   have the same index range
   */
 template <typename elemT>
-class ArrayFilter1DUsingConvolutionSymmetricKernel : public ArrayFunctionObject_2ArgumentImplementation<1, elemT>
+class ArrayFilter1DUsingConvolutionSymmetricKernel : 
+  public ArrayFunctionObject_2ArgumentImplementation<1,elemT>
 {
 public:
+
   //! Construct the filter given the kernel coefficients
   /*!
     Only one half of the kernel coefficients has to be passed. The implementation
@@ -60,13 +70,19 @@ public:
   /*!
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
-  bool is_trivial() const override;
+  bool is_trivial() const;
 
 private:
   VectorWithOffset<elemT> filter_coefficients;
-  void do_it(Array<1, elemT>& out_array, const Array<1, elemT>& in_array) const override;
+  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
+
 };
+
+
 
 END_NAMESPACE_STIR
 
+
 #endif // ArrayFilter1DUsingConvolutionSymmetricKernel
+
+

@@ -5,7 +5,15 @@
     Copyright (C) 2000 - 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -55,43 +63,27 @@ namespace
 */
 
 template <class T>
-inline bool
-is_negative(const T x)
-{
-  return x < 0;
-}
+  inline bool is_negative(const T x)
+  { return x<0; }
 
-inline bool
-is_negative(const unsigned char x)
-{
-  return false;
-}
+  inline bool is_negative(const unsigned char x)
+  { return false; }
 
-inline bool
-is_negative(const unsigned short x)
-{
-  return false;
-}
+  inline bool is_negative(const unsigned short x)
+  { return false; }
 
-inline bool
-is_negative(const unsigned int x)
-{
-  return false;
-}
+  inline bool is_negative(const unsigned int x)
+  { return false; }
 
-inline bool
-is_negative(const unsigned long x)
-{
-  return false;
-}
+  inline bool is_negative(const unsigned long x)
+  { return false; }
 
-} // namespace
+}
 
 template <class InputIteratorT, class T2, class scaleT>
 inline void
 find_scale_factor(scaleT& scale_factor,
-                  const InputIteratorT& begin,
-                  const InputIteratorT& end,
+		  const InputIteratorT& begin, const InputIteratorT& end,
                   const NumericInfo<T2> info_for_out_type)
 {
   typedef typename boost::iterator_value<InputIteratorT>::type T1;
@@ -105,12 +97,18 @@ find_scale_factor(scaleT& scale_factor,
     }
 
   // find the scale factor to use when converting to the maximum range in T2
-  const double data_in_max = *std::max_element(begin, end);
-  double tmp_scale = data_in_max / static_cast<double>(info_for_out_type.max_value());
+  const double data_in_max =
+    *std::max_element(begin, end);
+  double tmp_scale = 
+    data_in_max /
+    static_cast<double>(info_for_out_type.max_value());
   if (info_for_out_type.signed_type() && info1.signed_type())
     {
-      const double data_in_min = *std::min_element(begin, end);
-      tmp_scale = std::max(tmp_scale, data_in_min / static_cast<double>(info_for_out_type.min_value()));
+    const double data_in_min =
+    *std::min_element(begin, end);
+    tmp_scale = 
+      std::max(tmp_scale, 
+	       data_in_min /static_cast<double>(info_for_out_type.min_value()));
     }
   // use an extra factor of 1.01. Otherwise, rounding errors can
   // cause data_in.find_max() / scale_factor to be bigger than the
@@ -124,12 +122,12 @@ find_scale_factor(scaleT& scale_factor,
     }
 }
 
+
 template <class OutputIteratorT, class InputIteratorT, class scaleT>
 void
 convert_range(const OutputIteratorT& out_begin,
               scaleT& scale_factor,
-              const InputIteratorT& in_begin,
-              const InputIteratorT& in_end)
+		const InputIteratorT& in_begin, const InputIteratorT& in_end)
 {
   typedef typename boost::iterator_value<OutputIteratorT>::type OutType;
 
@@ -139,7 +137,9 @@ convert_range(const OutputIteratorT& out_begin,
       // data_in contains only 0
       OutputIteratorT out_iter = out_begin;
       InputIteratorT in_iter = in_begin;
-      for (; in_iter != in_end; ++in_iter, ++out_iter)
+      for (;
+	   in_iter != in_end;
+	   ++in_iter, ++out_iter)
         {
           *out_iter = static_cast<OutType>(0);
         }
@@ -151,19 +151,25 @@ convert_range(const OutputIteratorT& out_begin,
   InputIteratorT in_iter = in_begin;
   if (!std::numeric_limits<OutType>::is_integer)
     {
-      for (; in_iter != in_end; ++in_iter, ++out_iter)
+	for (;
+	     in_iter != in_end;
+	     ++in_iter, ++out_iter)
         {
-          *out_iter = static_cast<OutType>(*in_iter / scale_factor);
+	      *out_iter = 
+		static_cast<OutType>(*in_iter / scale_factor);
         }
     }
   else
     {
-      for (; in_iter != in_end; ++in_iter, ++out_iter)
+	for (;
+	     in_iter != in_end;
+	     ++in_iter, ++out_iter)
         {
           // KT coded the checks on the data types in the loop.
           // This is presumably slow, but all these conditionals can be
           // resolved at compile time, so a good compiler does the work for me.
-          if (!std::numeric_limits<OutType>::is_signed && is_negative(*in_iter))
+	    if (!std::numeric_limits<OutType>::is_signed
+		&& is_negative(*in_iter))
             {
               // truncate negatives
               *out_iter = 0;
@@ -171,21 +177,27 @@ convert_range(const OutputIteratorT& out_begin,
           else
             {
               // convert using rounding
-              *out_iter = static_cast<OutType>(round(*in_iter / scale_factor));
+		*out_iter = 
+		  static_cast<OutType>(round(*in_iter / scale_factor));
             }
         }
     }
 }
 
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 // specialisation for equal Iterator types
 // In fact, we could do better and test for boost::iterator_value<InIteratorT>::type
 // etc, but that requires some template trickery
 template <class IteratorT, class scaleT>
 void
-convert_range(const IteratorT& out_begin, scaleT& scale_factor, const IteratorT& in_begin, const IteratorT& in_end)
+  convert_range(const IteratorT& out_begin,
+		scaleT& scale_factor,
+		const IteratorT& in_begin, const IteratorT& in_end)
 {
   scale_factor = scaleT(1);
   std::copy(in_begin, in_end, out_begin);
 }
+#endif
+
 
 END_NAMESPACE_STIR

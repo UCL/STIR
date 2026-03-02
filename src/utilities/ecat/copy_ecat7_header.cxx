@@ -5,7 +5,15 @@
     Copyright 2011 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -32,30 +40,30 @@ To copy a subheader (but keeping essential info)
 \author Kris Thielemans
 */
 
+
 #include "stir/Succeeded.h"
 #include "stir/utilities.h"
 #include "stir/IO/stir_ecat7.h"
-#include "stir/warning.h"
-#include "stir/error.h"
 
 #include <iostream>
 #include <string>
 #include <stdio.h>
 #include <errno.h>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::cout;
 using std::string;
 using std::ostream;
+#endif
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 #define STIR_DO_IT(x) out_sh.x = in_sh.x;
 
-void
-copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
+void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
 {
   /*
         short data_type;
@@ -87,9 +95,7 @@ copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
       if (fabs(in_sh.recon_zoom - out_sh.recon_zoom) < .05)
         warning("recon_zoom field in template (%g) and output (%g) is different.\n"
                 "Keeping original value for zoom (%g) (also keeping the original voxel sizes)",
-                out_sh.recon_zoom,
-                in_sh.recon_zoom,
-                in_sh.recon_zoom);
+		out_sh.recon_zoom, in_sh.recon_zoom, in_sh.recon_zoom);
     }
 
   STIR_DO_IT(frame_duration);
@@ -139,8 +145,8 @@ copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
   STIR_DO_IT(recon_views);
 }
 
-void
-copy_subheader(Image_subheader& out_sh, const Scan3D_subheader& in_sh)
+
+void copy_subheader(Image_subheader& out_sh, const Scan3D_subheader& in_sh)
 {
   warning("Copying only timing and gating info from scan to image subheader\n");
   /*
@@ -222,8 +228,7 @@ copy_subheader(Image_subheader& out_sh, const Scan3D_subheader& in_sh)
   STIR_DO_IT(num_accepted_beats);
 }
 
-void
-copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
+void copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
 {
   /*
         short data_type;
@@ -261,8 +266,7 @@ copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
     STIR_DO_IT(uncor_singles[i]);
 }
 
-void
-copy_subheader(Attn_subheader& out_sh, const Attn_subheader& in_sh)
+void copy_subheader(Attn_subheader& out_sh, const Attn_subheader& in_sh)
 {
   /*
         short data_type;
@@ -294,8 +298,8 @@ copy_subheader(Attn_subheader& out_sh, const Attn_subheader& in_sh)
     STIR_DO_IT(additional_atten_coeff[i]);
 }
 
-void
-copy_subheader(MatrixData* data_out, const MatrixData* data_in)
+void copy_subheader(MatrixData * data_out,
+	            const MatrixData * data_in)
 {
   MatrixFile* mptr = data_out->matfile;
   switch (mptr->mhptr->file_type)
@@ -314,19 +318,22 @@ copy_subheader(MatrixData* data_out, const MatrixData* data_in)
 #endif
     case PetImage:
     case ByteVolume:
-      case PetVolume: {
+    case PetVolume:
+      {
         switch (data_in->matfile->mhptr->file_type)
           {
           case Byte3dSinogram:
           case Short3dSinogram:
           case Float3dSinogram:
-            copy_subheader(*reinterpret_cast<Image_subheader*>(data_out->shptr),
+	    copy_subheader(
+			   *reinterpret_cast<Image_subheader *>(data_out->shptr),
                            *reinterpret_cast<Scan3D_subheader*>(data_in->shptr));
             break;
           case PetImage:
           case ByteVolume:
           case PetVolume:
-            copy_subheader(*reinterpret_cast<Image_subheader*>(data_out->shptr),
+	    copy_subheader(
+			   *reinterpret_cast<Image_subheader *>(data_out->shptr),
                            *reinterpret_cast<Image_subheader*>(data_in->shptr));
             break;
           default:
@@ -335,12 +342,16 @@ copy_subheader(MatrixData* data_out, const MatrixData* data_in)
         break;
       }
     case AttenCor:
-      copy_subheader(*reinterpret_cast<Attn_subheader*>(data_out->shptr), *reinterpret_cast<Attn_subheader*>(data_in->shptr));
+      copy_subheader(
+		     *reinterpret_cast<Attn_subheader *>(data_out->shptr),
+		     *reinterpret_cast<Attn_subheader *>(data_in->shptr));
       break;
     case Byte3dSinogram:
     case Short3dSinogram:
     case Float3dSinogram:
-      copy_subheader(*reinterpret_cast<Scan3D_subheader*>(data_out->shptr), *reinterpret_cast<Scan3D_subheader*>(data_in->shptr));
+      copy_subheader(
+		     *reinterpret_cast<Scan3D_subheader *>(data_out->shptr),
+		     *reinterpret_cast<Scan3D_subheader *>(data_in->shptr));
       break;
     default:
     case ByteProjection:
@@ -349,8 +360,7 @@ copy_subheader(MatrixData* data_out, const MatrixData* data_in)
     }
 }
 
-void
-update_main_header(Main_header& mh_out, const Main_header& mh_in)
+void update_main_header(Main_header& mh_out, const Main_header& mh_in)
 {
   Main_header mh = mh_in;
   mh.num_planes = mh_out.num_planes;
@@ -385,59 +395,68 @@ public:
   int gate_num;
   int data_num;
   int bed_pos_num;
-
 private:
+
   void decode_spec(const char* const spec);
   void set_defaults();
 };
 
 void
-ECAT_dataset_spec::set_defaults()
+ECAT_dataset_spec::
+set_defaults()
 {
   frame_num = 1;
   gate_num = 1;
   data_num = 0;
   bed_pos_num = 0;
-  plane_num = 0;
 }
 
 void
-ECAT_dataset_spec::decode_spec(const char* const spec)
+ECAT_dataset_spec::
+decode_spec(const char * const spec)
 {
   set_defaults();
-  sscanf(spec, "%d,%d,%d,%d", &frame_num, &gate_num, &data_num, &bed_pos_num);
+  sscanf(spec, "%d,%d,%d,%d",
+                   &frame_num, &gate_num, &data_num, &bed_pos_num);
 }
 
-ECAT_dataset_spec::ECAT_dataset_spec()
+ECAT_dataset_spec::
+ECAT_dataset_spec()
 {
   set_defaults();
 }
 
-ECAT_dataset_spec::ECAT_dataset_spec(const char* const spec)
+ECAT_dataset_spec::
+ECAT_dataset_spec(const char * const spec)
 {
   decode_spec(spec);
 }
 
-ECAT_dataset_spec::ECAT_dataset_spec(const string& spec)
+ECAT_dataset_spec::
+ECAT_dataset_spec(const string& spec)
 {
   decode_spec(spec.c_str());
 }
 
 int
-ECAT_dataset_spec::matnum() const
+ECAT_dataset_spec::
+matnum() const
 {
   return mat_numcod(frame_num, 1, gate_num, data_num, bed_pos_num);
 }
 
-ostream&
-operator<<(ostream& s, const ECAT_dataset_spec& spec)
+ostream& operator<<(ostream& s, const ECAT_dataset_spec& spec)
 {
-  s << spec.frame_num << ',' << spec.gate_num << ',' << spec.data_num << ',' << spec.bed_pos_num;
+  s << spec.frame_num << ','
+    << spec.gate_num << ','
+    << spec.data_num << ','
+    << spec.bed_pos_num;
   return s;
 }
 
 Succeeded
-mat_write_any_subheader(MatrixData* data)
+mat_write_any_subheader(
+               MatrixData * data)
 {
   struct MatDir matdir;
 
@@ -455,12 +474,9 @@ mat_write_any_subheader(MatrixData* data)
       matrix_errno = MAT_READ_FROM_NILFPTR;
       return Succeeded::no;
     }
-  else if (mptr->mhptr == NULL)
-    matrix_errno = MAT_NOMHD_FILE_OBJECT;
-  else if (data->shptr == NULL)
-    matrix_errno = MAT_NIL_SHPTR;
-  if (matrix_errno != MAT_OK)
-    return Succeeded::no;
+  else if (mptr->mhptr == NULL) matrix_errno = MAT_NOMHD_FILE_OBJECT ;
+  else if (data->shptr == NULL) matrix_errno = MAT_NIL_SHPTR ;
+  if (matrix_errno != MAT_OK) return Succeeded::no ;
 
   if (matrix_find(mptr, data->matnum, &matdir) != 0)
     return Succeeded::no;
@@ -471,24 +487,28 @@ mat_write_any_subheader(MatrixData* data)
   switch (mptr->mhptr->file_type)
     {
     case CTISinogram:
-      return_value = mat_write_scan_subheader(mptr->fptr, mptr->mhptr, strtblk, reinterpret_cast<Scan_subheader*>(data->shptr));
+	return_value = mat_write_scan_subheader (mptr->fptr, mptr->mhptr, strtblk, 
+           reinterpret_cast<Scan_subheader *>(data->shptr));
       break;
     case PetImage:
     case ByteVolume:
     case PetVolume:
-      return_value = mat_write_image_subheader(mptr->fptr, mptr->mhptr, strtblk, reinterpret_cast<Image_subheader*>(data->shptr));
+	return_value = mat_write_image_subheader (mptr->fptr, mptr->mhptr, strtblk,
+           reinterpret_cast<Image_subheader *>(data->shptr));
       break;
     case AttenCor:
-      return_value = mat_write_attn_subheader(mptr->fptr, mptr->mhptr, strtblk, reinterpret_cast<Attn_subheader*>(data->shptr));
+	return_value = mat_write_attn_subheader (mptr->fptr, mptr->mhptr, strtblk,
+           reinterpret_cast<Attn_subheader *>(data->shptr));
       break;
     case Normalization:
-      return_value = mat_write_norm_subheader(mptr->fptr, mptr->mhptr, strtblk, reinterpret_cast<Norm_subheader*>(data->shptr));
+	return_value = mat_write_norm_subheader (mptr->fptr, mptr->mhptr, strtblk, 
+           reinterpret_cast<Norm_subheader *>(data->shptr));
       break;
     case Byte3dSinogram:
     case Short3dSinogram:
     case Float3dSinogram:
-      return_value
-          = mat_write_Scan3D_subheader(mptr->fptr, mptr->mhptr, strtblk, reinterpret_cast<Scan3D_subheader*>(data->shptr));
+	return_value = mat_write_Scan3D_subheader (mptr->fptr, mptr->mhptr, strtblk, 
+           reinterpret_cast<Scan3D_subheader *>(data->shptr));
 
       break;
     default:
@@ -506,18 +526,20 @@ mat_write_any_subheader(MatrixData* data)
     }
   else
     return Succeeded::yes;
+
 }
 
-int
-main(int argc, char* argv[])
+
+
+
+int main(int argc, char *argv[])
 {
 
   bool update = true; // switch between update and straight copy
   if (argc > 1 && strcmp(argv[1], "--copy") == 0)
     {
       update = false;
-      --argc;
-      ++argv;
+      --argc; ++ argv;
     }
 
   if (argc != 3 && argc != 5)
@@ -543,12 +565,14 @@ main(int argc, char* argv[])
       FILE* in_fptr = fopen(input_name.c_str(), "rb");
       if (!in_fptr)
         {
-          error("Error opening '%s' for reading: %s", input_name.c_str(), strerror(errno));
+	  error("Error opening '%s' for reading: %s", 
+		input_name.c_str(), strerror(errno));
         }
       FILE* out_fptr = fopen(output_name.c_str(), "rb+");
       if (!out_fptr)
         {
-          error("Error opening '%s' for reading and writing: %s", output_name.c_str(), strerror(errno));
+	  error("Error opening '%s' for reading and writing: %s", 
+		output_name.c_str(), strerror(errno));
         }
       Main_header mh_in;
       if (mat_read_main_header(in_fptr, &mh_in) != 0)
@@ -573,15 +597,15 @@ main(int argc, char* argv[])
     }
 #endif
 
-  MatrixFile* min_ptr = matrix_open(input_name.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
-  if (!min_ptr)
-    {
+  MatrixFile *min_ptr=
+    matrix_open( input_name.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  if (!min_ptr) {
       matrix_perror(input_name.c_str());
       exit(EXIT_FAILURE);
     }
-  MatrixFile* mout_ptr = matrix_open(output_name.c_str(), MAT_OPEN_EXISTING, MAT_UNKNOWN_FTYPE);
-  if (!mout_ptr)
-    {
+  MatrixFile *mout_ptr=
+    matrix_open( output_name.c_str(), MAT_OPEN_EXISTING, MAT_UNKNOWN_FTYPE);
+  if (!mout_ptr) {
       matrix_perror(output_name.c_str());
       exit(EXIT_FAILURE);
     }
@@ -599,14 +623,17 @@ main(int argc, char* argv[])
 
   const ECAT_dataset_spec out_spec(argv[2]);
   const ECAT_dataset_spec in_spec(argv[4]);
-  cerr << "Attempting to read in '" << in_spec << "' and out '" << out_spec << "'" << endl;
-  MatrixData* mindata_ptr = matrix_read(min_ptr, in_spec.matnum(), MAT_SUB_HEADER);
+  cerr << "Attempting to read in '" << in_spec <<"' and out '"
+       << out_spec << "'" << endl;
+  MatrixData * mindata_ptr =
+    matrix_read(min_ptr, in_spec.matnum(), MAT_SUB_HEADER);
   if (mindata_ptr == NULL)
     {
       matrix_perror("Error reading input subheader");
       return EXIT_FAILURE;
     }
-  MatrixData* moutdata_ptr = matrix_read(mout_ptr, out_spec.matnum(), MAT_SUB_HEADER);
+  MatrixData * moutdata_ptr =
+    matrix_read(mout_ptr, out_spec.matnum(), MAT_SUB_HEADER);
   if (moutdata_ptr == NULL)
     {
       matrix_perror("Error reading output subheader");

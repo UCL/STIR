@@ -23,7 +23,15 @@ if the files are identical or not.
     Copyright (C) 2011-12-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
 */
@@ -37,25 +45,29 @@ if the files are identical or not.
 #include "stir/recon_array_functions.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
-#include "stir/warning.h"
 #include <numeric>
 #include <stdlib.h>
 
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
+#endif
+
+
 
 //********************** main
 
+
+
 USING_NAMESPACE_STIR
 
-int
-main(int argc, char* argv[])
+
+int main(int argc, char *argv[])
 {
   if (argc < 3 || argc > 7)
     {
-      cerr << "Usage: \n"
-           << argv[0] << "\n\t"
+    cerr << "Usage: \n" << argv[0] << "\n\t"
            << "[-r rimsize] \n\t"
            << "[-t tolerance] \n\t"
            << "old_image new_image \n\t"
@@ -78,48 +90,38 @@ main(int argc, char* argv[])
       if (strcmp(argv[0], "-r") == 0)
         {
           if (argc < 2)
-            {
-              cerr << "Option '-r' expects a nonnegative (integer) argument\n";
-              exit(EXIT_FAILURE);
-            }
+ 	    { cerr << "Option '-r' expects a nonnegative (integer) argument\n"; exit(EXIT_FAILURE); }
           rim_truncation_image = atoi(argv[1]);
-          argc -= 2;
-          argv += 2;
+	      argc-=2; argv+=2;	    
         }
       if (strcmp(argv[0], "-t") == 0)
         {
           if (argc < 2)
-            {
-              cerr << "Option '-t' expects a (float) argument\n";
-              exit(EXIT_FAILURE);
-            }
+	    { cerr << "Option '-t' expects a (float) argument\n"; exit(EXIT_FAILURE); }
           tolerance = static_cast<float>(atof(argv[1]));
-          argc -= 2;
-          argv += 2;
+	  argc-=2; argv+=2;
         }
     }
 
-  shared_ptr<DiscretisedDensity<3, float>> first_operand(read_from_file<DiscretisedDensity<3, float>>(argv[0]));
+  shared_ptr< DiscretisedDensity<3,float> >  
+    first_operand(read_from_file<DiscretisedDensity<3,float> >(argv[0]));
 
   if (is_null_ptr(first_operand))
-    {
-      cerr << "Could not read first file\n";
-      exit(EXIT_FAILURE);
-    }
+    { cerr << "Could not read first file\n"; exit(EXIT_FAILURE); }
 
-  shared_ptr<DiscretisedDensity<3, float>> second_operand(read_from_file<DiscretisedDensity<3, float>>(argv[1]));
+  shared_ptr< DiscretisedDensity<3,float> >  
+    second_operand(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
   if (is_null_ptr(second_operand))
-    {
-      cerr << "Could not read 2nd file\n";
-      exit(EXIT_FAILURE);
-    }
+    { cerr << "Could not read 2nd file\n"; exit(EXIT_FAILURE); }
 
   // check if images are compatible
   {
-    std::string explanation;
-    if (!first_operand->has_same_characteristics(*second_operand, explanation))
+    string explanation;
+    if (!first_operand->has_same_characteristics(*second_operand, 
+						 explanation))
       {
-        warning("input images do not have the same characteristics.\n%s", explanation.c_str());
+	warning("input images do not have the same characteristics.\n%s",
+		explanation.c_str());
         return EXIT_FAILURE;
       }
   }
@@ -133,7 +135,8 @@ main(int argc, char* argv[])
   float reference_max = first_operand->find_max();
   float reference_min = first_operand->find_min();
 
-  float amplitude = fabs(reference_max) > fabs(reference_min) ? fabs(reference_max) : fabs(reference_min);
+  float amplitude=fabs(reference_max)>fabs(reference_min)?
+    fabs(reference_max):fabs(reference_min);
 
   *first_operand -= *second_operand;
   const float max_error = first_operand->find_max();
@@ -143,7 +146,8 @@ main(int argc, char* argv[])
 
   const bool same = (max_abs_error / amplitude <= tolerance);
 
-  cout << "\nMaximum absolute error = " << max_abs_error << "\nMaximum in (1st - 2nd) = " << max_error
+  cout << "\nMaximum absolute error = "<<max_abs_error
+       << "\nMaximum in (1st - 2nd) = "<<max_error
        << "\nMinimum in (1st - 2nd) = " << min_error << endl;
   cout << "Error relative to sup-norm of first image = " << (max_abs_error / amplitude) * 100 << " %" << endl;
 
@@ -151,7 +155,8 @@ main(int argc, char* argv[])
 
   if (same)
     {
-      cout << (max_abs_error == 0 ? "are " : "deemed ") << "identical\n";
+    cout << (max_abs_error == 0 ? "are " : "deemed ")
+         << "identical\n";
     }
   else
     {
