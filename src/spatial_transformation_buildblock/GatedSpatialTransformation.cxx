@@ -139,7 +139,7 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity & new_gated_image
                           const GatedDiscretisedDensity & gated_image) const 
 {
   std::string explanation;
-  if (!(gated_image.get_densities()[0])->has_same_characteristics(*(gated_image.get_densities()[0]), explanation)){
+  if (!(new_gated_image.get_densities()[0])->has_same_characteristics(*(gated_image.get_densities()[0]), explanation)){
         error(boost::format("GatedSpatialTransformation::warp_image needs the same sizes for input and output images: %1%") % explanation);
   }
   new_gated_image.set_time_gate_definitions(this->_gate_defs);
@@ -178,6 +178,39 @@ GatedSpatialTransformation::accumulate_warp_image(DiscretisedDensity<3, float> &
 }
 
 void 
+GatedSpatialTransformation::average_warp_image(DiscretisedDensity<3, float> & new_reference_image,
+                                               const GatedDiscretisedDensity & gated_image) const 
+{
+  new_reference_image.fill(0.F);
+  this->accumulate_average_warp_image(new_reference_image, gated_image);
+}
+
+void
+GatedSpatialTransformation::accumulate_average_warp_image(DiscretisedDensity<3, float> & new_reference_image,
+                                               const GatedDiscretisedDensity & gated_image) const 
+{
+  GatedDiscretisedDensity new_gated_image(gated_image);
+  new_gated_image.fill_with_zero();
+  this->warp_image(new_gated_image,gated_image);
+  //!todo This is not implemented as sum (or should it be the average?)
+  for(unsigned int gate_num = 1;gate_num<=gated_image.get_time_gate_definitions().get_num_gates() ; ++gate_num)
+    { 
+	 float gate_relative_duration=new_gated_image.get_time_gate_definitions().get_gate_relative_duration(gate_num);
+	 
+	 DiscretisedDensity<3,float>::full_iterator new_gated_image_iter = new_gated_image[gate_num].begin_all();
+     DiscretisedDensity<3,float>::full_iterator end_new_gated_image_iter = new_gated_image[gate_num].end_all();
+     DiscretisedDensity<3,float>::full_iterator new_reference_image_iter = new_reference_image.begin_all();	 
+	 
+	 while (new_gated_image_iter!=end_new_gated_image_iter) 
+	   { 
+	    *new_gated_image_iter *= gate_relative_duration;    //Nicolas K. : Scalar multiplication of current gate with the relative duration
+        *new_reference_image_iter += *new_gated_image_iter; //Nicolas K. : Scaled value accumulated over all motions/gates	
+	    ++new_gated_image_iter, ++new_reference_image_iter; 
+	   }	
+	}
+}
+
+void 
 GatedSpatialTransformation::warp_image(GatedDiscretisedDensity & gated_image,
                           const DiscretisedDensity<3, float> & reference_image) const 
 {
@@ -205,6 +238,44 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity & gated_image,
       }
   else
     error("The transformation fields haven't been set properly yet.");	
+}
+
+void
+GatedSpatialTransformation::average_warp_image(DiscretisedDensity<3, float> & avg_warped_image,
+                                               const DiscretisedDensity<3, float> & reference_image) const 
+{
+  avg_warped_image.fill(0.F);
+  this->accumulate_average_warp_image(avg_warped_image, reference_image);
+}
+
+void 
+GatedSpatialTransformation::accumulate_average_warp_image(DiscretisedDensity<3, float> & avg_warped_image,
+                                                          const DiscretisedDensity<3, float> & reference_image) const 
+{
+
+  // Creation of a copy a gated image to temporarily store the motion transformed images of each motion/gate
+  const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr(reference_image.get_empty_copy());
+  GatedDiscretisedDensity gated_image = GatedDiscretisedDensity(this->_gate_defs, density_template_sptr);
+  
+  this->warp_image(gated_image,reference_image);
+  
+  // The relative durations for each motion/gate when applied as weights in the following weighted sum operation 
+  // effectively produced a time-weighted average warped image
+  for(unsigned int gate_num = 1;gate_num<=gated_image.get_time_gate_definitions().get_num_gates() ; ++gate_num)
+    { 
+	 float gate_relative_duration=gated_image.get_time_gate_definitions().get_gate_relative_duration(gate_num);
+	 
+	 DiscretisedDensity<3,float>::full_iterator gated_image_iter = gated_image[gate_num].begin_all();
+     DiscretisedDensity<3,float>::full_iterator end_gated_image_iter = gated_image[gate_num].end_all();
+     DiscretisedDensity<3,float>::full_iterator avg_warped_image_iter = avg_warped_image.begin_all();	 
+	 
+	 while (gated_image_iter!=end_gated_image_iter) 
+	   { 
+	    *gated_image_iter *= gate_relative_duration; //Nicolas K. : Scalar multiplication of current gate with the relative duration
+        *avg_warped_image_iter += *gated_image_iter; //Nicolas K. : Scaled value accumulated over all motions/gates	
+	    ++gated_image_iter, ++avg_warped_image_iter; 
+	   }	
+	}
 }
 
 void

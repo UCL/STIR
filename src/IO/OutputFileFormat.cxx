@@ -21,6 +21,7 @@
   
   \brief  Instantiations of the stir::OutputFileFormat class 
   \author Kris Thielemans      
+  \author Nicolas A Karakatsanis 
 */
 
 #include "stir/IO/OutputFileFormat.txx"
@@ -39,6 +40,8 @@ START_NAMESPACE_STIR
 template class OutputFileFormat<DiscretisedDensity<3,float> >; 
 template class OutputFileFormat<DynamicDiscretisedDensity >; 
 template class OutputFileFormat<ParametricVoxelsOnCartesianGrid >;  
+template class OutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGrid >;
 
 END_NAMESPACE_STIR
+
 

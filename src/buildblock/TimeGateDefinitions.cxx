@@ -45,6 +45,14 @@ get_gate_duration(unsigned int num) const
   return this->_gate_sequence[num-1].second;
 }
 
+// Nicolas A Karakatsanis
+float
+TimeGateDefinitions::
+get_gate_relative_duration(unsigned int num) const
+{ 
+  return this->_gate_relative_durations_sequence[num-1];
+}
+
 unsigned int
 TimeGateDefinitions::
 get_gate_num(unsigned int num) const
@@ -66,6 +74,33 @@ get_num_time_gates() const
   return static_cast<unsigned int>(this->_gate_sequence.size());
 }
 
+// Set function (Nicolas A Karakatsanis)
+void
+TimeGateDefinitions::
+set_gate_relative_durations(const vector<pair<unsigned int, double> >& gate_sequence)
+{
+  std::cout << std::endl << "Setting the time fractions for each motion/gate relative to the total acquisition length of the current frame " << std::endl << std::endl;
+  if (gate_sequence.size() == 0)
+    error("TimeGateDefinitions::set_gate_relative_durations: Designated input gate_sequence has no gates");
+  //Initialization	for the total frame duration (of all motion/gates)
+  this->_acquisition_total_duration = 0;
+  
+  for (unsigned int current_gate = 1; current_gate <= gate_sequence.size(); ++current_gate)	  
+	  this->_acquisition_total_duration += gate_sequence[current_gate-1].second;
+
+  if (this->_acquisition_total_duration !=0)
+    {
+	 std::cout << std::endl << "Motion/Gate index	Time fraction (relative to total frame duration):" << std::endl;
+     for (unsigned int current_gate = 1; current_gate <= gate_sequence.size(); ++current_gate)
+       {
+	    float relative_duration = gate_sequence[current_gate-1].second/this->_acquisition_total_duration;
+		std::cout << current_gate << "				" << relative_duration << std::endl;
+	    this->_gate_relative_durations_sequence.push_back(relative_duration);
+	    
+	   }
+	}  
+}
+
 TimeGateDefinitions::
 TimeGateDefinitions()
 {}
@@ -81,6 +116,7 @@ void
 TimeGateDefinitions::
 read_gdef_file(const string& gdef_filename)
 {
+  this->_acquisition_total_duration = 0;
   ifstream in(gdef_filename.c_str());
   if (!in)
     {
@@ -110,6 +146,9 @@ read_gdef_file(const string& gdef_filename)
 	  "3 50.5\n1 10\n10 7\n\n"
 	  "for 3rd gate of 50.5 secs, 1st gate of 10 secs, 10th gate of 7 secs.",
 	  gdef_filename.c_str());
+
+   // Nicolas A Karakatsanis: Calculate and set the time fraction for each motion/gate relative to the total frame duration
+   this->set_gate_relative_durations(this->_gate_sequence);
 }
 
 TimeGateDefinitions::
@@ -121,6 +160,8 @@ TimeGateDefinitions(const vector<pair<unsigned int, double> >& gate_sequence)
   return;
 	
   this->_gate_sequence.resize(gate_sequence.size());
+  this->_acquisition_total_duration = 0;
+  
   for (unsigned int current_gate = 1; 
        current_gate <= this->_gate_sequence.size(); 
        ++current_gate)
@@ -130,6 +171,9 @@ TimeGateDefinitions(const vector<pair<unsigned int, double> >& gate_sequence)
       this->_gate_sequence[current_gate-1].second = 
         gate_sequence[current_gate-1].second;
     }
+	
+   // Nicolas A Karakatsanis: Calculate and set the time fraction for each motion/gate relative to the total frame duration
+   this->set_gate_relative_durations(this->_gate_sequence);
 }
 
 TimeGateDefinitions::
@@ -149,6 +193,9 @@ TimeGateDefinitions(const vector<unsigned int>& gate_num_vector,
       this->_gate_sequence[current_gate-1].second = 
         duration_vector[current_gate-1];
     }
+	
+   // Nicolas A Karakatsanis: Calculate and set the time fraction for each motion/gate relative to the total frame duration
+   this->set_gate_relative_durations(this->_gate_sequence);
 }
 
 END_NAMESPACE_STIR

@@ -1,8 +1,6 @@
 //
-//
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011 Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,7 +28,10 @@
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
+  \author Nicolas A Karakatsanis
 
+  $Date: 2013-07-12 10:34:00 $
+  $Revision: 1.14 $
 */
 
 #include "stir/common.h"
@@ -110,6 +111,12 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 //! compute the log term of the loglikelihood function for given part of the projection space
 void accumulate_loglikelihood(Viewgram<float>& projection_data, 
 			 const Viewgram<float>& estimated_projections,
+			 const int rim_truncation_sino,
+			 double* accum);
+
+//! compute the log term of the loglikelihood function for given part of the image space
+void accumulate_loglikelihood(DiscretisedDensity<3,float>& outer_loop_dyn_image_estimate, 
+			 const DiscretisedDensity<3,float>& nested_loop_dyn_image_estimate,
 			 const int rim_truncation_sino,
 			 double* accum);
 

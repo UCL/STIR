@@ -21,6 +21,7 @@
   \brief Instantiations for class stir::InputFileFormatRegistry
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -36,6 +37,7 @@ START_NAMESPACE_STIR
 // instantiations
 template class InputFileFormatRegistry<DiscretisedDensity<3,float> >;
 template class InputFileFormatRegistry<ParametricVoxelsOnCartesianGrid >;
+template class InputFileFormatRegistry<GeneralizedPatlakVoxelsOnCartesianGrid >;
 template class InputFileFormatRegistry<DynamicDiscretisedDensity>;
 template class InputFileFormatRegistry<CListModeData>;
 

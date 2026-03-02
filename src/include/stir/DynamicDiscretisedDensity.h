@@ -6,6 +6,7 @@
   \brief Declaration of class stir::DynamicDiscretisedDensity
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Nicolas Karakatsanis
   
 */
 /*
@@ -96,6 +97,25 @@ class DynamicDiscretisedDensity
         this->_densities[frame_num].reset(density_sptr->get_empty_discretised_density()); 
     }  
 
+  //!  Construct an empty DynamicDiscretisedDensity based on a shared_ptr<DiscretisedDensity<3,float> >
+  DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
+                            const unsigned int& num_conv_params,
+                            const double scan_start_time_in_secs_since_1970,
+                            const shared_ptr<Scanner>& scanner_sptr,
+                            const shared_ptr<singleDiscDensT >& density_sptr)
+    {  
+      _densities.resize(num_conv_params);
+      _time_frame_definitions=time_frame_definitions;
+      _start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
+      _calibration_factor=-1.F;
+      _isotope_halflife=-1.F;
+      _scanner_sptr=scanner_sptr;
+    
+      for (unsigned int conv_point=0; conv_point<num_conv_params; ++conv_point)
+        this->_densities[conv_point].reset(density_sptr->get_empty_discretised_density()); 
+    }
+
+
   DynamicDiscretisedDensity&
     operator=(const DynamicDiscretisedDensity& argument);
 
@@ -164,6 +184,13 @@ class DynamicDiscretisedDensity
 
   void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
   {this->_time_frame_definitions=time_frame_definitions;}
+
+  void resize_densities(const TimeFrameDefinitions& time_frame_definitions) 
+  {
+   this->set_time_frame_definitions(time_frame_definitions);
+   unsigned int num_densities=this->_time_frame_definitions.get_num_time_frames();
+   this->_densities.resize(num_densities);
+  }
 
   const TimeFrameDefinitions & 
     get_time_frame_definitions() const ;

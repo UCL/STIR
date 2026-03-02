@@ -61,7 +61,9 @@ set(${dir_EXE_SOURCES}
         shift_image
         shift_image_origin
         warp_and_accumulate_gated_images
+  warp_gated_images
         warp_image
+  apply_RL_deconvolution
         zeropad_planes
 )
 

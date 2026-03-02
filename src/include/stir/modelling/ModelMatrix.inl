@@ -22,6 +22,7 @@
   \brief Implementations of inline functions of class stir::ModelMatrix
 
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -167,6 +168,11 @@ set_if_in_correct_scale(const bool in_correct_scale)
 
 template <int num_param> 
 void ModelMatrix<num_param>::
+set_matrix_in_total_frame_counts(const bool is_converted_to_total_counts) 
+{  this->_is_converted_to_total_counts=is_converted_to_total_counts; }
+
+template <int num_param> 
+void ModelMatrix<num_param>::
 uncalibrate(const float cal_factor)
 {           
   if(this->_is_uncalibrated)
@@ -208,7 +214,7 @@ template <int num_param>
 void ModelMatrix<num_param>::
 convert_to_total_frame_counts(const TimeFrameDefinitions& time_frame_definitions) 
 {
-  if (ModelMatrix<num_param>::_is_converted_to_total_counts==true)
+  if (this->_is_converted_to_total_counts==true)
     warning("ModelMatrix is already converted to total counts, so it will not be re-converted. ");
   else
     {
@@ -357,14 +363,158 @@ normalise_parametric_image_with_model_sum( ParametricVoxelsOnCartesianGrid & par
           const int max_i_index = (parametric_image.construct_single_density(num_param))[k][j].get_max_index();
           for ( int i = min_i_index; i<= max_i_index; ++i)
             {
-              parametric_image_out[k][j][i][1]=parametric_image[k][j][i][1]/((this->get_model_array_sum())[2]);  
-              parametric_image_out[k][j][i][2]=parametric_image[k][j][i][2]/((this->get_model_array_sum())[1]);
+              parametric_image_out[k][j][i][1]=parametric_image[k][j][i][1]/((this->get_model_array_sum())[1]);  
+              parametric_image_out[k][j][i][2]=parametric_image[k][j][i][2]/((this->get_model_array_sum())[2]);
             }
         }
     }
 }
  
 
+
+ 
+ 
+ 
+template<int num_param>
+void 
+ModelMatrix<num_param>::
+multiply_dynamic_image_with_initialization_model_and_add_to_input(GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image,
+                                                   const DynamicDiscretisedDensity & dynamic_image ) const
+{
+  BasicCoordinate<2,int> model_array_min, model_array_max;
+  if(!this->_model_array.get_regular_range(model_array_min,model_array_max))
+    error("Model array has not regular range");
+
+  // Assert that the sizes of the one frame of the dynamic image is equal with the parametric image size.
+  // ChT::ToDo::Might be better to assert that each of the dimensions sizes with their voxle sizes are equal.
+  // Could probably use has_same_characteristics()?
+  assert(dynamic_image[1].size_all()==parametric_image.size_all());
+  assert(dynamic_image.get_time_frame_definitions().get_num_frames()==static_cast<unsigned int> (model_array_max[2]));
+  assert(model_array_max[1]-model_array_min[1]+1==num_param);
+
+  const int min_k_index = dynamic_image[1].get_min_index(); 
+  const int max_k_index = dynamic_image[1].get_max_index();
+  for ( int k = min_k_index; k<= max_k_index; ++k)
+    {
+      const int min_j_index = dynamic_image[1][k].get_min_index(); 
+      const int max_j_index = dynamic_image[1][k].get_max_index();
+      for ( int j = min_j_index; j<= max_j_index; ++j)
+        {
+          const int min_i_index = dynamic_image[1][k][j].get_min_index(); 
+          const int max_i_index = dynamic_image[1][k][j].get_max_index();
+          for ( int i = min_i_index; i<= max_i_index; ++i)
+            for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
+              {
+                float sum_over_frames=0.F;
+                for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
+                  sum_over_frames+=this->_model_array[param_num][frame_num]*dynamic_image[frame_num][k][j][i]; 
+                if (param_num==2)
+				  {
+				    parametric_image[k][j][i][param_num]+=0;
+				    parametric_image[k][j][i][param_num+1]+=sum_over_frames;
+				  }
+				else
+				  parametric_image[k][j][i][param_num]+=sum_over_frames;
+              }
+        }
+    }
+}
+
+template<int num_param>
+void 
+ModelMatrix<num_param>::
+multiply_dynamic_image_with_initialization_model(GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image,
+                                  const DynamicDiscretisedDensity & dynamic_image ) const
+{
+  std::fill(parametric_image.begin_all(), parametric_image.end_all(), 0.F);
+  this->multiply_dynamic_image_with_initialization_model_and_add_to_input(parametric_image,dynamic_image );
+}
+
+template<int num_param>
+void 
+ModelMatrix<num_param>::
+multiply_parametric_image_with_initialization_model_and_add_to_input(DynamicDiscretisedDensity & dynamic_image,  
+                                                      const GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image ) const
+{
+  BasicCoordinate<2,int> model_array_min, model_array_max;
+  if(!(this->_model_array).get_regular_range(model_array_min,model_array_max))
+    error("Model array does not have a regular range");
+
+  // Assert that the sizes of the one frame of the dynamic image is equal with the parametric image size.
+  // ChT::ToDo::Might be better to assert that each of the dimensions sizes with their voxle sizes are equal.
+  // Maybe this will be easier if I clone the single images for the two and then compare them.
+  assert(dynamic_image[1].size_all()==parametric_image.size_all());
+  assert(dynamic_image.get_time_frame_definitions().get_num_frames()==static_cast<unsigned int> (model_array_max[2]));
+  assert(model_array_max[1]-model_array_min[1]+1==num_param);
+
+  const int min_k_index = dynamic_image[1].get_min_index(); 
+  const int max_k_index = dynamic_image[1].get_max_index();
+  for ( int k = min_k_index; k<= max_k_index; ++k)
+    {
+      const int min_j_index = dynamic_image[1][k].get_min_index(); 
+      const int max_j_index = dynamic_image[1][k].get_max_index();
+      for ( int j = min_j_index; j<= max_j_index; ++j)
+        {
+          const int min_i_index = dynamic_image[1][k][j].get_min_index(); 
+          const int max_i_index = dynamic_image[1][k][j].get_max_index();
+          for ( int i = min_i_index; i<= max_i_index; ++i)
+            for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)  
+          {
+            float sum_over_param=0.F;
+            for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
+			  if (param_num==2)
+				sum_over_param+=parametric_image[k][j][i][param_num+1]*this->_model_array[param_num][frame_num];
+              else				
+                sum_over_param+=parametric_image[k][j][i][param_num]*this->_model_array[param_num][frame_num]; 
+            dynamic_image[frame_num][k][j][i]=sum_over_param;
+          }
+        }
+    }
+}
+
+template<int num_param>
+void 
+ModelMatrix<num_param>::
+multiply_parametric_image_with_initialization_model(DynamicDiscretisedDensity & dynamic_image,  
+                                     const GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image ) const
+{
+  std::fill(dynamic_image.begin_all(), dynamic_image.end_all(), 0.F);
+  this->multiply_parametric_image_with_initialization_model_and_add_to_input(dynamic_image, parametric_image);
+}
+
+template<int num_param>
+void 
+ModelMatrix<num_param>::
+normalise_parametric_image_with_initialization_model_sum( GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image_out,
+                                     const GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image ) const
+{
+  BasicCoordinate<2,int> model_array_min, model_array_max;
+  if(!(this->_model_array).get_regular_range(model_array_min,model_array_max))
+    error("Model array has not regular range");
+
+  assert(parametric_image_out.size_all()==parametric_image.size_all());
+  assert(model_array_max[1]-model_array_min[1]+1==num_param);
+
+  const int min_k_index = parametric_image.construct_single_density(num_param).get_min_index(); 
+  const int max_k_index = parametric_image.construct_single_density(num_param).get_max_index();
+  for ( int k = min_k_index; k<= max_k_index; ++k)
+    {
+      const int min_j_index = (parametric_image.construct_single_density(num_param))[k].get_min_index(); 
+      const int max_j_index = (parametric_image.construct_single_density(num_param))[k].get_max_index();
+      for ( int j = min_j_index; j<= max_j_index; ++j)
+        {
+          const int min_i_index = (parametric_image.construct_single_density(num_param))[k][j].get_min_index(); 
+          const int max_i_index = (parametric_image.construct_single_density(num_param))[k][j].get_max_index();
+          for ( int i = min_i_index; i<= max_i_index; ++i)
+            {
+              parametric_image_out[k][j][i][1]=parametric_image[k][j][i][1]/((this->get_model_array_sum())[1]);  
+              parametric_image_out[k][j][i][2]=0;
+			  parametric_image_out[k][j][i][3]=parametric_image[k][j][i][3]/((this->get_model_array_sum())[2]);
+            }
+        }
+    }
+} 
+ 
 
 END_NAMESPACE_STIR
 

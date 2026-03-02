@@ -27,6 +27,7 @@
   \author Matthew Jacobson
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
   \author PARAPET project
       
 */
@@ -621,6 +622,7 @@ get_subset_num()
 
 template class IterativeReconstruction<DiscretisedDensity<3,float> >;
 template class IterativeReconstruction<ParametricVoxelsOnCartesianGrid >; 
+template class IterativeReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
 

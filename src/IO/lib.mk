@@ -8,6 +8,7 @@ $(dir)_LIB_SOURCES := \
   InputFileFormatRegistry.cxx \
   InterfileDynamicDiscretisedDensityOutputFileFormat.cxx \
   InterfileParametricDensityOutputFileFormat.cxx \
+  InterfileDynamicDiscretisedDensityInputFileFormat.cxx \
   GIPL_ImageFormat.cxx
 
 ifeq ($(HAVE_ITK),1)

@@ -23,6 +23,8 @@ EXEDIRS += utilities recon_test \
 	utilities/ecat \
 	iterative/OSMAPOSL \
 	iterative/POSMAPOSL \
+	iterative/NESTPOSMAPOSL \
+	iterative/NESTGPOSMAPOSL \
 	iterative/OSSPS \
 	iterative/POSSPS \
 	analytic/FBP2D \

@@ -478,6 +478,7 @@ fill_nonidentifiable_target_parameters(TargetT& target, const float value) const
 
 template class PoissonLogLikelihoodWithLinearModelForMean<DiscretisedDensity<3,float> >;
 template class PoissonLogLikelihoodWithLinearModelForMean<ParametricVoxelsOnCartesianGrid >; 
+template class PoissonLogLikelihoodWithLinearModelForMean<GeneralizedPatlakVoxelsOnCartesianGrid >;
 
 END_NAMESPACE_STIR
 

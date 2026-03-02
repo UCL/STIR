@@ -28,6 +28,7 @@
   \author Matthew Jacobson
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
   \author PARAPET project
       
 */
@@ -373,6 +374,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
         }
 
     }
+  
   return Succeeded::yes;
 }
 
@@ -396,6 +398,13 @@ update_estimate(TargetT &current_image_estimate)
   timerSubset.Start();
 #endif // PARALLEL
   
+  // Nicolas A Karakatsanis: Pass the name and the subiteration number to the obj function 
+  // as a new output filename prefix for the multiple nested images within the same global iteration
+  // This can be utilized by nested obj functions for many purposes
+  this->objective_function().
+    set_nested_output_filename_prefix(this->output_filename_prefix,
+	                                  this->subiteration_num);
+  
   // TODO make member parameter to avoid reallocation all the time
   auto_ptr< TargetT > multiplicative_update_image_ptr =
     auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
@@ -408,7 +417,17 @@ update_estimate(TargetT &current_image_estimate)
                                                           current_image_estimate,
                                                           subset_num); 
   
-  // divide by subset sensitivity  
+  if (this->objective_function_sptr->is_nested())
+  {
+  // If nested EM algorithm has been selected a new estimate is already computed 
+  // from method: compute_sub_gradient_without_penalty_plus_sensitivity
+    cerr << endl << "Update mechanism is nested" << endl;
+    current_image_estimate=*this->objective_function_sptr->last_nested_estimate_sptr;
+  }
+	
+  else
+  // divide subset gradient by subset sensitivity to obtain update image
+  // and multuply previous estimate with update image to obtain new estimate  
   {
     const TargetT& sensitivity =
       this->objective_function().get_subset_sensitivity(subset_num);
@@ -485,7 +504,7 @@ update_estimate(TargetT &current_image_estimate)
     
     cerr<<"Number of (cancelled) singularities in Sensitivity division: "
       <<count<<endl;
-  }
+
   
     
   if(this->inter_update_filter_interval>0 &&
@@ -543,11 +562,13 @@ update_estimate(TargetT &current_image_estimate)
     typename TargetT::const_full_iterator multiplicative_update_image_iter = multiplicative_update_image_ptr->begin_all_const(); 
     const typename TargetT::const_full_iterator end_multiplicative_update_image_iter = multiplicative_update_image_ptr->end_all_const(); 
     typename TargetT::full_iterator current_image_estimate_iter = current_image_estimate.begin_all(); 
+	
     while (multiplicative_update_image_iter!=end_multiplicative_update_image_iter) 
       { 
         *current_image_estimate_iter *= (*multiplicative_update_image_iter); 
         ++current_image_estimate_iter; ++multiplicative_update_image_iter; 
       } 
+  }
   }
   
 #ifndef PARALLEL
@@ -561,6 +582,7 @@ update_estimate(TargetT &current_image_estimate)
 
 template class OSMAPOSLReconstruction<DiscretisedDensity<3,float> >;
 template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >; 
+template class OSMAPOSLReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid >;
 
 
 END_NAMESPACE_STIR

@@ -142,6 +142,8 @@ public:
   virtual Succeeded 
     reconstruct(shared_ptr<TargetT > const& target_data_sptr);
 
+
+
   //! A utility function that creates a filename_prefix by appending the current subiteration number
   /*! Only works when no extension is present.
   */

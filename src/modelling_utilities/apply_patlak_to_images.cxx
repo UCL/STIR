@@ -21,6 +21,7 @@
   \ingroup utilities
   \brief Apply the Patlak linear fit using Dynamic Images
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
 
   \par Usage:
@@ -59,6 +60,7 @@
 int main(int argc, char *argv[])
 { 
 USING_NAMESPACE_STIR
+  warning("About to begin Patlak application");
   PatlakPlot indirect_patlak;
 
   if (argc==4)
@@ -66,6 +68,7 @@ USING_NAMESPACE_STIR
       if (indirect_patlak.parse(argv[3]) == false)
 	return EXIT_FAILURE;
     }
+  
   if (argc!=3 && argc!=4)
     {
       std::cerr << "Usage:" << argv[0] << " output_parametric_image input_dynamic_image [par_file] \n";

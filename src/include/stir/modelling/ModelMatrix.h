@@ -21,6 +21,7 @@
   \ingroup modelling
   \brief Declaration of class stir::ModelMatrix<num_param>
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
  
 */
 
@@ -67,6 +68,7 @@ public:
   //! Function to set _is_calibrated boolean true or false
    inline void set_if_uncalibrated(const bool is_uncalibrated);
    inline void set_if_in_correct_scale(const bool in_correct_scale);
+   inline void set_matrix_in_total_frame_counts(const bool is_converted_to_total_counts);
   //!@}
 
   //! Function to give the threshold_value to the all elements of the model_array which lower value than the threshold_value.  
@@ -118,6 +120,39 @@ public:
    inline void 
      normalise_parametric_image_with_model_sum( ParametricVoxelsOnCartesianGrid & parametric_image_out,
                                            const ParametricVoxelsOnCartesianGrid & parametric_image ) const ; 
+										   
+ 
+ /*! Multiplications of the initialization kinetic model matrix with the dynamic or the parametric images. 
+     /todo Maybe it will be better to lie in a linear models class.
+   */
+   //@{
+   //! multiply (transpose) initialization kinetic model-matrix with dynamic image and add result to original \c parametric_image
+   inline void 
+    multiply_dynamic_image_with_initialization_model_and_add_to_input(GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image,
+                                                       const DynamicDiscretisedDensity & dynamic_image) const ;
+   //! multiply (transpose) initialization kinetic model-matrix with dynamic image (overwriting original content of \c parametric_image)
+   /*! \todo current implementation first fills first argument with 0 and then calls 
+    multiply_dynamic_image_with_initialization kinetic model_and_add_to_input(). This is somewhat inefficient.
+   */
+   inline void 
+    multiply_dynamic_image_with_initialization_model(GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image,
+                                      const DynamicDiscretisedDensity & dynamic_image) const ;
+   //! multiply initialization kinetic model-matrix with parametric image and add result to original \c dynamic_image
+   inline void
+     multiply_parametric_image_with_initialization_model_and_add_to_input(DynamicDiscretisedDensity & dynamic_image,
+                                                          const GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image ) const ; 
+   //! multiply initialization kinetic model-matrix with parametric image (overwriting original content of \c dynamic_image)
+   /*! \todo current implementation first fills first argument with 0 and then calls 
+    multiply_dynamic_image_with_initialization_model_and_add_to_input(). This is somewhat inefficient.
+   */
+   inline void
+    multiply_parametric_image_with_initialization_model(DynamicDiscretisedDensity & dynamic_image,
+                                         const GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image ) const ; 
+
+   inline void 
+     normalise_parametric_image_with_initialization_model_sum( GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image_out,
+                                           const GeneralizedPatlakVoxelsOnCartesianGrid & parametric_image ) const ; 							
+
   //@}
 private:
 
@@ -134,3 +169,4 @@ END_NAMESPACE_STIR
 #include "stir/modelling/ModelMatrix.inl"
 
 #endif //__stir_modelling_ModelMatrix_H__
+

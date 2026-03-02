@@ -24,6 +24,7 @@
 
   \author Matthew Jacobson
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
   \author PARAPET project
   
 
@@ -393,6 +394,46 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
   *accum += result;
 }
 
+void accumulate_loglikelihood(DiscretisedDensity<3,float>& outer_loop_dyn_image_estimate, 
+			 const DiscretisedDensity<3,float>& nested_loop_dyn_image_estimates,
+			 double* accum)
+{
+
+  assert(outer_loop_dyn_image_estimate.get_index_range() == nested_loop_dyn_image_estimates.get_index_range());  
+
+  /* note for implementation:
+     First compute result for this image slice in a local variable,
+     then add to accum.
+     This avoids problems with adding small numbers to large numbers
+     For instance if there are a large number of bins in the image,
+     each with about the same contribution. After about 1e6 bins, the value of
+     accum would no longer change because of the finite precision.
+  */
+  double result = 0;
+  const float small_value= 
+    max(outer_loop_dyn_image_estimate.find_max()*SMALL_NUM, 0.F);
+  const float max_quotient = 10000.F;
+
+  for (int z=outer_loop_dyn_image_estimate.get_min_index(); z<=outer_loop_dyn_image_estimate.get_max_index(); z++)
+  {
+    double sub_result=0; // use this for total result for this r, reducing numerical error  
+
+	for (int y=outer_loop_dyn_image_estimate[z].get_min_index(); y<=outer_loop_dyn_image_estimate[z].get_max_index(); y++)
+      for (int x=outer_loop_dyn_image_estimate[z][y].get_min_index(); x<=outer_loop_dyn_image_estimate[z][y].get_max_index(); x++)
+      {
+	    const float new_estimate =
+	      max(nested_loop_dyn_image_estimates[z][y][x], 
+		  outer_loop_dyn_image_estimate[z][y][x]/max_quotient);
+	    if (outer_loop_dyn_image_estimate[z][y][x]<=small_value)
+	      sub_result += - double(new_estimate);
+	    else
+	      sub_result += double(outer_loop_dyn_image_estimate[z][y][x]*log(new_estimate) - new_estimate);
+	  }
+    result += sub_result;
+  }
+  
+  *accum += result;   
+}
 
 
 void multiply_and_add(DiscretisedDensity<3,float> &image_res, const DiscretisedDensity<3,float> &image_scaled, float scalar)

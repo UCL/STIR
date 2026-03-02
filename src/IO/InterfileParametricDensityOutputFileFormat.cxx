@@ -23,10 +23,12 @@
   \brief Implementation of class stir::InterfileParametricDensityOutputFileFormat
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 
 #include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
+#include "stir/IO/interfile.h"
 #include "stir/modelling/KineticParameters.h" 
 #include "stir/modelling/ParametricDiscretisedDensity.h" 
 #include "stir/NumericType.h"
@@ -105,18 +107,42 @@ TEMPLATE
 Succeeded  
 InterfileParamDiscDensity::
     actual_write_to_file(string& filename, 
-			 const ParametricDiscretisedDensity<DiscDensityT>& density) const
+			 const ParametricDiscretisedDensity<DiscDensityT>& parametric_density) const
 {
   // TODO modify write_basic_interfile to return filename
   
-  error("InterfileParametricDensityOutputFileFormat TODO");
-  return Succeeded::no;
+  //error("InterfileParametricDensityOutputFileFormat TODO");
+  //return Succeeded::no;
+  
+  
+  // somewhat naughty trick to get elemT of DiscretisedDensityT
+  typedef typename DiscDensityT::full_value_type KinParsT;
+  
+  typedef
+    typename ParametricDiscretisedDensity<DiscDensityT>::SingleDiscretisedDensityType
+    SingleDensityType;
+
+  SingleDensityType single_density = parametric_density.construct_single_density(1);
+  
+  for (unsigned int f=1; f<=KinParsT::size(); ++f)
+    {
+      string param_filename=filename;	
+      parametric_density.construct_single_density(single_density,f);
+      Succeeded success = write_basic_interfile(param_filename, single_density, f);
+      if (success == Succeeded::no) return success;
+    }
+  
+  return Succeeded::yes;
+  
+  
+  
 };
 
 #undef ParamDiscDensity
 #undef TEMPLATE
 
 template class InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;  
+template class InterfileParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>;  
 
 
 END_NAMESPACE_STIR

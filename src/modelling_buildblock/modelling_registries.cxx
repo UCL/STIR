@@ -27,13 +27,16 @@
   \brief File that registers all stir::RegisterObject children in modelling
 
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
   
 */
 #include "stir/modelling/PatlakPlot.h"
+#include "stir/modelling/GeneralizedPatlakPlot.h"
 
 START_NAMESPACE_STIR
 
 static PatlakPlot::RegisterIt dummy113;
+static GeneralizedPatlakPlot::RegisterIt dummysss;
 
 END_NAMESPACE_STIR
 

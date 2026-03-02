@@ -27,6 +27,7 @@
 
   \author Kris Thielemans
   \author Berta Marti Fuster
+  \author Nicolas A Karakatsanis
 */
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
@@ -46,6 +47,7 @@
 #if 1
 #include "stir/IO/InputFileFormatRegistry.h"
 #include "stir/IO/InterfileImageInputFileFormat.h"
+#include "stir/IO/InterfileDynamicDiscretisedDensityInputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6ImageInputFileFormat.h"
 #include "stir/IO/ECAT7ImageInputFileFormat.h"
@@ -67,6 +69,8 @@ static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
 static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+static InterfileParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>::RegisterIt dummyGenPatIntfIn;
+
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
@@ -77,11 +81,12 @@ START_NAMESPACE_ECAT7
 static ECAT7OutputFileFormat::RegisterIt dummy3;
 static ECAT7DynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynecat7In;
 static ECAT7ParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparecat7In;
+static ECAT7ParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>::RegisterIt dummyGenPatecat7In;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
 
-
+static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dynidummy0(0);
 static RegisterInputFileFormat<InterfileImageInputFileFormat> idummy0(0);
 #ifdef HAVE_LLN_MATRIX
 static RegisterInputFileFormat<ecat::ecat7::ECAT7ImageInputFileFormat> idummy2(4);

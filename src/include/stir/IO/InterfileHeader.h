@@ -23,6 +23,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
   \author PARAPET project
 
   See http://stir.sourceforge.net for a description of the full
@@ -38,6 +39,7 @@
 #include "stir/KeyParser.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ExamInfo.h"
+#include "stir/TimeFrameDefinitions.h"
 
 START_NAMESPACE_STIR
 
@@ -133,6 +135,10 @@ public :
   std::vector<double>	pixel_sizes;
   std::vector<std::vector<double> > image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
+  
+  //Added for old implementations relying on time_frame_definitions variable
+  TimeFrameDefinitions time_frame_definitions;
+  
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;

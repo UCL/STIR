@@ -23,6 +23,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
 
 */
 #ifndef __stir_recon_buildblock_GeneralisedObjectiveFunction_H__
@@ -250,6 +251,39 @@ public:
 
   //! check if the prior is set (or the penalisation factor is 0)
   bool prior_is_zero() const;
+
+  //! check if the objective function is nested
+  bool is_nested() const;
+  
+  // Nicolas A. Karakatsanis: Sets the file name prefix for the nested images estimated within a global iteration.
+  // Useful for nested obj function when storing multiple files of nested image updates belonging to the same global iteration.
+  void set_nested_output_filename_prefix(std::string& filename_prefix,
+                                         int global_subiterations_num);
+  
+  // A string variable to save the filename prefix of the nested image estimates, 
+  // can be utilized if the obj function is nested 
+  std::string nested_output_filename_prefix;
+  
+  //Number of nested iterations
+  int num_nested_subiterations;
+  
+  //Number of nested iterations for proper initialization of the estimates
+  //with another kinetic model prior to the application of the expected model
+  int num_nested_initialization_subiterations;
+  
+  //Number of required complete initial (sub)iterations required to initialize the 4D reconstruction 
+  int num_initialization_subiterations;
+  
+  //Counter of the number of global (not nested) (sub)iterations performed under initialization mode only
+  //Utilized to determine whether the current (sub)iteration is performed under initialization mode
+  int initialization_subiterations_counter;
+  
+  //Counter of the total number of global (not nested) (sub)iterations performed (initialization + regular reconstruction mode)
+  //Utilized to determine whether the current (sub)iteration is performed under initialization mode
+  int subiterations_counter;
+
+  //Define a shared pointer for the estimate image from the last update of the nested iterations  
+  shared_ptr<TargetT> last_nested_estimate_sptr;
 
   //! Read-only access to the prior
   /*! \todo It would be nicer to not return a pointer.

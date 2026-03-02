@@ -54,6 +54,11 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
 
+#include "stir/recon_buildblock/PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
+#include "stir/recon_buildblock/PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData.h"
+#include "stir/recon_buildblock/PoissonNestedLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
+#include "stir/recon_buildblock/PoissonNestedLogLikelihoodWithLinearModelForMeanAndConvolvedProjDataWithMotion.h"
+
 #ifdef HAVE_LLN_MATRIX
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
@@ -89,8 +94,14 @@ static TrivialBinNormalisation::RegisterIt dummy91;
 static ChainedBinNormalisation::RegisterIt dummy92;
 static BinNormalisationFromProjData::RegisterIt dummy93;
 static BinNormalisationFromAttenuationImage::RegisterIt dummy94;
+
 static PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyxxx;
 static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt Dummyxxxzz;
+
+static PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyzzz;
+static PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<GeneralizedPatlakVoxelsOnCartesianGrid>::RegisterIt Dummykkk;
+static PoissonNestedLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt Dummyxxxzz1;
+static PoissonNestedLogLikelihoodWithLinearModelForMeanAndConvolvedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt Dummyxxxzz2;
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT

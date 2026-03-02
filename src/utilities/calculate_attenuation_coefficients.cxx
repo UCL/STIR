@@ -25,13 +25,10 @@
   \par Usage
   \verbatim
      calculate_attenuation_coefficients
-             [--PMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>
+             --AF|--ACF <output filename > <input image file name> <template_proj_data> [forwardprojector-parfile]
   \endverbatim
   <tt>--ACF</tt>  calculates the attenuation correction factors, <tt>--AF</tt>  calculates
   the attenuation factor (i.e. the inverse of the ACFs).
-
-  The option <tt>--PMRT</tt> forces forward projection using the Probability Matrix Using Ray Tracing 
-  (stir::ProjMatrixByBinUsingRayTracing).
 
   The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
   to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
@@ -41,6 +38,7 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 */
 
 #include "stir/ProjDataInterfile.h"
@@ -117,7 +115,7 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
 
 static void print_usage_and_exit()
 {
-    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>\n"
+    std::cerr<<"\nUsage: calculate_attenuation_coefficients  --AF|--ACF <output filename > <input image file name> <template_proj_data> [forwardprojector-parfile ]\n"
 	     <<"\t--ACF  calculates the attenuation correction factors\n"
 	     <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n"
              <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n";
@@ -132,15 +130,7 @@ int
 main (int argc, char * argv[])
 {
 
-  // variable to decide to use the ray-tracing projection matrix or not
-  bool use_PMRT=false;
-
-  if (argc>1 && strcmp(argv[1],"--PMRT")==0)
-    {
-      use_PMRT=true; 
-      --argc; ++argv;
-    }
-  if (argc!=5 )
+  if (argc!=5 && argc!=6 )
     print_usage_and_exit();
 
   bool doACF=true;// initialise to avoid compiler warning
@@ -180,10 +170,13 @@ main (int argc, char * argv[])
     ProjData::read_from_file(argv[3]);
 
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
-  if (use_PMRT)
+  if (argc==5)
     {
-      shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-      forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
+      KeyParser parser;
+      parser.add_start_key("Forward Projector parameters");
+      parser.add_parsing_key("type", &forw_projector_ptr);
+      parser.add_stop_key("END"); 
+      parser.parse(argv[4]);
     }
   else
   {
