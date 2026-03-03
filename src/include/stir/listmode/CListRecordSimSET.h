@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 class CListEventSimSET : public CListEventCylindricalScannerWithDiscreteDetectors
 {
 public:
-  CListEventSimSET(const shared_ptr<ProjDataInfo>& proj_data_info);
+  CListEventSimSET(const shared_ptr<const ProjDataInfo>& proj_data_info);
 
   //! This routine returns the corresponding detector pair
   virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -49,8 +49,8 @@ public:
   virtual void set_detection_position(const DetectionPositionPair<>&);
 
   //! \details This is the main function which transform GATE coordinates to STIR
-  void init_from_data(const PHG_DetectedPhoton* _blue,
-                      const PHG_DetectedPhoton* _pink,
+  void init_from_data(const PHG_DetectedPhoton* const _blue,
+                      const PHG_DetectedPhoton* const _pink,
                       const float _weight,
                       const float _tofDifference = 0.0);
 
@@ -71,15 +71,17 @@ private:
   bool swapped;
   //! TOF time difference between the two photons
   float tofDifference;
+  //! The weight of the event, as given by SimSET. This is used for weighted listmode data.
+  float weight;
 };
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeSimSET : public CListTime
+class CListTimeSimSET : public ListTime
 {
 public:
-  inline void init_from_data(const PHG_DetectedPhoton* _blue, const PHG_DetectedPhoton* _pink)
+  inline void init_from_data(const PHG_DetectedPhoton* const _blue, const PHG_DetectedPhoton* const _pink)
   {
     timeA = _blue->time_since_creation;
     timeB = _pink->time_since_creation;
@@ -143,7 +145,7 @@ public:
            && this->time().get_time_in_secs() == this->time().get_time_in_secs();
   }
 
-  CListRecordSimSET(const shared_ptr<ProjDataInfo>& proj_data_info)
+  CListRecordSimSET(const shared_ptr<const ProjDataInfo>& proj_data_info)
       : event_data(proj_data_info)
   {}
 

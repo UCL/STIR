@@ -87,7 +87,8 @@ public:
   //! Must be called before calling for the first event.
   //! The function will try to set up first assuming that the history file
   //! is standard. Upon failure it will try with a custom set up.
-  Succeeded set_up(const std::string historyFileName, PHG_BinParamsTy* _binParams, const float lowEnWin, const float highEnWin);
+  Succeeded
+  set_up(const std::string historyFileName, PHG_BinParamsTy const& _binParams, const float lowEnWin, const float highEnWin);
   //! Check if the file is a standard history file. The code
   //! was adapted from bin.phg.c::phgrdhstStandard(char *argv[]).
   Succeeded set_up_standard_hist_file();
@@ -95,21 +96,21 @@ public:
   //! was adapted from bin.phg.c::phgrdhstCustom(char *argv[]).
   Succeeded set_up_custom_hist_file();
   //! Get the next available record, depending on conditions.
-  inline Succeeded get_next_record(CListRecordSimSET& record);
+  Succeeded get_next_record(CListRecordSimSET& record);
 
   //! go back to starting position
-  inline Succeeded reset();
+  Succeeded reset();
 
   //! save current "get" position in an internal array
-  inline SavedPosition save_get_position();
+  SavedPosition save_get_position();
   //! set current "get" position to previously saved value
-  inline Succeeded set_get_position(const SavedPosition&);
+  Succeeded set_get_position(const SavedPosition&);
   //! Function that enables the user to store the saved get_positions
-  inline std::vector<std::streampos> get_saved_get_positions() const;
+  std::vector<std::streampos> get_saved_get_positions() const;
   //! Function that sets the saved get_positions
-  inline void set_saved_get_positions(const std::vector<std::streampos>&);
+  void set_saved_get_positions(const std::vector<std::streampos>&);
 
-  inline unsigned long get_total_number_of_events() const;
+  unsigned long get_total_number_of_events() const;
 
 protected:
   void set_defaults();
@@ -141,7 +142,7 @@ private:
   PHG_Decay curDecay;
   //! Binning parameters. They are used to get energy window,
   //! randoms and scattered exclusion/inclusion.
-  PHG_BinParamsTy* binParams;
+  PHG_BinParamsTy const* binParams = nullptr;
   //! Save positions in the history file
   std::vector<std::streampos> saved_get_positions;
   //! Number of scatters for current blue photon
@@ -170,7 +171,5 @@ private:
 };
 
 END_NAMESPACE_STIR
-
-#include "stir/IO/InputStreamFromSimSET.inl"
 
 #endif
