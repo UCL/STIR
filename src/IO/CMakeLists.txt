@@ -73,7 +73,7 @@ list(APPEND ${dir_LIB_SOURCES}
 	InputStreamWithRecordsFromUPENNtxt.cxx)
 endif()
 
-if (SIMSET_FOUND)
+if (HAVE_SIMSET)
 	list(APPEND ${dir_LIB_SOURCES}
 		InputStreamFromSimSET.cxx
 	)
@@ -133,8 +133,14 @@ if (UPENN_FOUND)
 ${UPENN_libimagio} ${UPENN_libimagio++})
 endif()
 
-if (SIMSET_FOUND)
-  target_link_libraries(${TARGET} PUBLIC ${SIMSET_LIBRARY})
+if (HAVE_SIMSET)
+  target_include_directories(${TARGET} PRIVATE ${SIMSET_INCLUDE_DIRS})
+  # Link against SimSET
+  if(TARGET SIMSET::simset)
+    target_link_libraries(${TARGET} PRIVATE SIMSET::simset)
+  else()
+    target_link_libraries(${TARGET} PRIVATE ${SIMSET_LIBRARY})
+  endif()
 endif()
 
 if (HAVE_JSON)

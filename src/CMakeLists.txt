@@ -76,7 +76,6 @@ endif()
 if (SIMSET_FOUND) 
   message(STATUS "SimSET libraries added.")
   set(HAVE_SIMSET ON)
-  include_directories(${SIMSET_INCLUDE_DIRS})
 else()
   message(STATUS "SimSET support disabled.")
   set(HAVE_SIMSET OFF)
@@ -295,6 +294,17 @@ endif()
 
 if (HAVE_PETSIRD)
   target_link_libraries(stir_registries PUBLIC PETSIRD::petsird)
+endif()
+
+if (SIMSET_FOUND)
+  target_include_directories(stir_registries PRIVATE ${SIMSET_INCLUDE_DIRS})
+  
+  if(TARGET SIMSET::simset)
+    target_link_libraries(stir_registries PRIVATE SIMSET::simset)
+  else()
+    target_link_libraries(stir_registries PRIVATE ${SIMSET_LIBRARY})
+  endif()
+  # target_compile_definitions(stir_registries PRIVATE DARWIN MAC_10 GEN_UNIX arm64)
 endif()
 
 # go and look for CMakeLists.txt files in all those directories
