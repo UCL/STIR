@@ -50,12 +50,13 @@
 #ifndef __stir_listmode_CListModeDataSimSET_H__
 #define __stir_listmode_CListModeDataSimSET_H__
 
-#include "stir/IO/InputStreamFromSimSET.h"
+#include "stir/listmode/CListModeData.h"
 #include "stir/KeyParser.h"
 
 START_NAMESPACE_STIR
-class CListModeDataSimSET;
+
 class CListRecordSimSET;
+class InputStreamFromSimSET;
 
 class CListModeDataSimSET : public CListModeData
 {

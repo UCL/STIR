@@ -22,9 +22,10 @@
   \author Nikos Efthimiou
 */
 
-#include "stir/listmode/CListModeData.h"
+// #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListRecordSimSET.h"
 #include "stir/listmode/CListModeDataSimSET.h"
+#include "stir/IO/InputStreamFromSimSET.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
 #include "stir/FilePath.h"

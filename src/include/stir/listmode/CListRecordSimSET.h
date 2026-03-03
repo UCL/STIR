@@ -49,8 +49,8 @@ public:
   virtual void set_detection_position(const DetectionPositionPair<>&);
 
   //! \details This is the main function which transform GATE coordinates to STIR
-  void init_from_data(const PHG_DetectedPhoton* _blue,
-                      const PHG_DetectedPhoton* _pink,
+  void init_from_data(const PHG_DetectedPhoton* const _blue,
+                      const PHG_DetectedPhoton* const _pink,
                       const float _weight,
                       const float _tofDifference = 0.0);
 
@@ -81,7 +81,7 @@ private:
 class CListTimeSimSET : public ListTime
 {
 public:
-  inline void init_from_data(const PHG_DetectedPhoton* _blue, const PHG_DetectedPhoton* _pink)
+  inline void init_from_data(const PHG_DetectedPhoton* const _blue, const PHG_DetectedPhoton* const _pink)
   {
     timeA = _blue->time_since_creation;
     timeB = _pink->time_since_creation;

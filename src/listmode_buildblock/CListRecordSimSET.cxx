@@ -49,8 +49,8 @@ CListEventSimSET::set_detection_position(const DetectionPositionPair<>&)
 }
 
 void
-CListEventSimSET::init_from_data(const PHG_DetectedPhoton* _blue,
-                                 const PHG_DetectedPhoton* _pink,
+CListEventSimSET::init_from_data(const PHG_DetectedPhoton* const _blue,
+                                 const PHG_DetectedPhoton* const _pink,
                                  const float _weight,
                                  const float _tofDifference)
 {
