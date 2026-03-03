@@ -66,9 +66,9 @@ if (CERN_ROOT_FOUND)
  )
 endif()
 
-if (SIMSET_FOUND)
+if (HAVE_SIMSET)
 	list(APPEND ${dir_LIB_SOURCES}
-		InputStreamFromSimSET
+		InputStreamFromSimSET.cxx
 	)
 endif()
 
@@ -128,8 +128,17 @@ if (UPENN_FOUND)
 ${UPENN_libimagio} ${UPENN_libimagio++})
 endif()
 
-if (SIMSET_FOUND)
-  target_link_libraries(IO ${SIMSET_LIBRARY})
+if (HAVE_SIMSET AND TARGET stir_registries)
+  target_include_directories(${TARGET} PUBLIC ${SIMSET_INCLUDE_DIRS})
+  # Link against SimSET
+  if(TARGET SIMSET::simset)
+    target_link_libraries(${TARGET} PUBLIC SIMSET::simset)
+  else()
+    target_link_libraries(${TARGET} PUBLIC ${SIMSET_LIBRARY})
+  endif()
+
+  # If you really need these legacy SimSET compile defs:
+  target_compile_definitions(${TARGET} PRIVATE DARWIN MAC_10 GEN_UNIX)
 endif()
 
 

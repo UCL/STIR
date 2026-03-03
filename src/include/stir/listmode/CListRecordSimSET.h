@@ -31,7 +31,7 @@
 
 extern "C"
 {
-#include <LbTypes.h>
+#include "LbTypes.h"
 #include <Photon.h>
 }
 
@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 class CListEventSimSET : public CListEventCylindricalScannerWithDiscreteDetectors
 {
 public:
-  CListEventSimSET(const shared_ptr<ProjDataInfo>& proj_data_info);
+  CListEventSimSET(const shared_ptr<const ProjDataInfo>& proj_data_info);
 
   //! This routine returns the corresponding detector pair
   virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -71,12 +71,14 @@ private:
   bool swapped;
   //! TOF time difference between the two photons
   float tofDifference;
+  //! The weight of the event, as given by SimSET. This is used for weighted listmode data.
+  float weight;
 };
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeSimSET : public CListTime
+class CListTimeSimSET : public ListTime
 {
 public:
   inline void init_from_data(const PHG_DetectedPhoton* _blue, const PHG_DetectedPhoton* _pink)
@@ -143,7 +145,7 @@ public:
            && this->time().get_time_in_secs() == this->time().get_time_in_secs();
   }
 
-  CListRecordSimSET(const shared_ptr<ProjDataInfo>& proj_data_info)
+  CListRecordSimSET(const shared_ptr<const ProjDataInfo>& proj_data_info)
       : event_data(proj_data_info)
   {}
 

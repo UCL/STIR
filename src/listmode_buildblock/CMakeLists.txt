@@ -53,9 +53,8 @@ endif()
 
 if (HAVE_SIMSET)
 	list(APPEND ${dir_LIB_SOURCES}
-		CListModeDataSimSET
-        CListRecordSimSET
-	)
+		CListModeDataSimSET.cxx
+        CListRecordSimSET.cxx)
 endif()
 
 
@@ -72,5 +71,14 @@ if (HAVE_HDF5)
   else()
     # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
     target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
+  endif()
+endif()
+
+if (HAVE_SIMSET)
+  target_include_directories(${TARGET} PRIVATE ${SIMSET_INCLUDE_DIRS})
+  if(TARGET SIMSET::simset)
+    target_link_libraries(${TARGET} PRIVATE SIMSET::simset)
+  else()
+    target_link_libraries(${TARGET} PRIVATE ${SIMSET_LIBRARY})
   endif()
 endif()

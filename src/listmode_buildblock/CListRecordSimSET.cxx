@@ -27,7 +27,7 @@
 
 START_NAMESPACE_STIR
 
-CListEventSimSET::CListEventSimSET(const shared_ptr<ProjDataInfo>& proj_data_info)
+CListEventSimSET::CListEventSimSET(const shared_ptr<const ProjDataInfo>& proj_data_info)
     : CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
 {}
 
@@ -39,7 +39,7 @@ CListEventSimSET::get_detection_position(DetectionPositionPair<>& _det_pos) cons
 
   _det_pos.pos1() = det1;
   _det_pos.pos2() = det2;
-  _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_unmashed_tof_bin(tofDifference);
+  _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(tofDifference);
 }
 
 void

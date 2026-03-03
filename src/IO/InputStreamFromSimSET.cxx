@@ -23,7 +23,7 @@ extern "C"
 {
 //#include <LbFile.h>
 //#include <PhgHdr.h>
-//#include <PhoHFile.h>
+#include <PhoHFile.h>
 #include <print.header.h>
 }
 
@@ -158,7 +158,7 @@ InputStreamFromSimSET::set_up_standard_hist_file()
   //        error("InputStreamFromSimSET: Expected first event to be decay, and it wasn't.");
   //    }
 
-  display(&phgrdhstHdrParams);
+  //    display(&phgrdhstHdrParams);
 
   return Succeeded::yes;
 }

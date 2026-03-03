@@ -22,6 +22,8 @@
   \author Nikos Efthimiou
 */
 
+#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/CListRecordSimSET.h"
 #include "stir/listmode/CListModeDataSimSET.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
@@ -271,13 +273,15 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
   // later bed positions etc might need to be parsed here.
 
   // ExamInfo initialisation
-  this->exam_info_sptr.reset(new ExamInfo);
+  shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
 
   // Only PET scanners supported
-  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
-  this->exam_info_sptr->originating_system = this->originating_system;
-  this->exam_info_sptr->set_low_energy_thres(static_cast<float>(PhgBinParams->minE));
-  this->exam_info_sptr->set_high_energy_thres(static_cast<float>(PhgBinParams->maxE));
+  _exam_info_sptr->imaging_modality = ImagingModality::PT;
+  _exam_info_sptr->originating_system = this->originating_system;
+  _exam_info_sptr->set_low_energy_thres(static_cast<float>(PhgBinParams->minE));
+  _exam_info_sptr->set_high_energy_thres(static_cast<float>(PhgBinParams->maxE));
+
+  this->exam_info_sptr = _exam_info_sptr;
 
   // initialise ProjData.
   shared_ptr<ProjDataInfo> tmp(ProjDataInfo::construct_proj_data_info(tmpl_scanner,
