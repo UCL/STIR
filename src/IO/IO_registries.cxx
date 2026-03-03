@@ -68,7 +68,7 @@
 
 #  ifdef HAVE_SIMSET
 #    include "stir/IO/SimSETListmodeInputFileFormat.h"
-#    include "stir/IO/InputStreamFromSimSET.h"
+// #    include "stir/IO/InputStreamFromSimSET.h"
 #  endif
 
 #  ifdef HAVE_UPENN
