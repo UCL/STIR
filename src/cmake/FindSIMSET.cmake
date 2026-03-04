@@ -1,4 +1,4 @@
-# FindSeimSET.cmake
+# FindSimSET.cmake
 # 
 # Variables set: 
 # SIMSET_FOUND - True if SimSET library found.

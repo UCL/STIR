@@ -57,7 +57,6 @@ if (HAVE_SIMSET)
         CListRecordSimSET.cxx)
 endif()
 
-
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 

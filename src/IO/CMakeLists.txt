@@ -136,9 +136,6 @@ if (HAVE_SIMSET AND TARGET stir_registries)
   else()
     target_link_libraries(${TARGET} PUBLIC ${SIMSET_LIBRARY})
   endif()
-
-  # If you really need these legacy SimSET compile defs:
-  target_compile_definitions(${TARGET} PRIVATE DARWIN MAC_10 GEN_UNIX)
 endif()
 
 

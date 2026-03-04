@@ -64,40 +64,50 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
   double SubObjCurTimeBinDuration = 0.0;
 
   // The dirty trick we did in SimSETListmodeInputFileFormat::is_SimSET_signature()
-  char** argv = new char*[3];
-  argv[0] = nullptr;
-  argv[1] = nullptr;
-  argv[2] = nullptr;
+  // char** argv = new char*[3];
+  // argv[0] = nullptr;
+  // argv[1] = nullptr;
+  // argv[2] = nullptr;
 
-  char* pseudo_binary = new char[7];
-  memset(pseudo_binary, 0, 7);
-  strcpy(pseudo_binary, "phgbin\0");
-  argv[0] = pseudo_binary;
+  char pseudo_binary[] = "phgbin";
 
-  char* flag = new char[4];
-  memset(flag, 0, 4);
-  strcpy(flag, "-d");
-  flag[3] = '\0';
-  argv[1] = flag;
+  // memset(pseudo_binary, 0, 7);
+  // strcpy(pseudo_binary, "phgbin\0");
+  // argv[0] = pseudo_binary;
 
-  char* argv_c = new char[phg_filename.size() + 1];
-  memset(argv_c, 0, phg_filename.size() + 1);
-  phg_filename.copy(argv_c, phg_filename.size());
-  argv_c[phg_filename.size()] = '\0';
-  argv[2] = argv_c;
+  char flag[] = "-d";
+  // char* flag = new char[4];
+  // memset(flag, 0, 4);
+  // strcpy(flag, "-d");
+  // flag[3] = '\0';
+  // argv[1] = flag;
+
+  std::vector<char> filename(phg_filename.begin(), phg_filename.end());
+  filename.push_back('\0');
+
+  // char* argv_c = new char[phg_filename.size() + 1];
+  // memset(argv_c, 0, phg_filename.size() + 1);
+  char* argv[] = { pseudo_binary, flag, filename.data() };
+  int argc = 3;
+
+  // phg_filename.copy(argv_c, phg_filename.size());
+  // argv_c[phg_filename.size()] = '\0';
+  // argv[2] = argv_c;
 
   char* knownOptions = new char[4];
   strcpy(knownOptions, "pcd");
   knownOptions[3] = '\0';
+  char knowOptions[] = "pcd";
+  char* optStr = knownOptions;
 
-  char optArgs[PHGRDHST_NumFlags][LBEnMxArgLen];
-  LbUsFourByte optArgFlags = (LBFlag0);
-  LbUsFourByte phgrdhstArgIndex;
+  char optArgs[PHGRDHST_NumFlags][LBEnMxArgLen]{};
+  LbUsFourByte optArgFlags = LBFlag0;
+  LbUsFourByte firstArg = 0;
 
   /* Perform initialization tasks */
 
   /* Get our options */
-  if (!LbEnGetOptions(3, argv, &knownOptions, &PhgOptions, optArgs, optArgFlags, &phgrdhstArgIndex))
+  if (!LbEnGetOptions(argc, argv, &knownOptions, &PhgOptions, optArgs, optArgFlags, &firstArg))
     {
       error("CListModeDataSimSET: Unable to get options.");
     }
@@ -304,15 +314,15 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
   history_file_sptr.reset(new InputStreamFromSimSET());
 
   if (history_file_sptr->set_up(
-          tmpString, &PhgBinParams[0], exam_info_sptr->get_low_energy_thres(), exam_info_sptr->get_high_energy_thres())
+          tmpString, PhgBinParams[0], exam_info_sptr->get_low_energy_thres(), exam_info_sptr->get_high_energy_thres())
       == Succeeded::no)
     error("CListModeDataSimSET: Unable to set up input.");
 
   // Clean up.
-  delete[] argv;
-  delete[] pseudo_binary;
-  delete[] argv_c;
-  delete[] flag;
+  // delete[] argv;
+  // delete[] pseudo_binary;
+  // delete[] argv_c;
+  // delete[] flag;
   delete[] knownOptions;
 }
 
