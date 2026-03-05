@@ -49,7 +49,7 @@ START_NAMESPACE_STIR
 class SimSETListmodeInputFileFormat : public InputFileFormat<ListModeData>
 {
 public:
-  virtual const std::string get_name() const { return "SimSET"; }
+  virtual const std::string get_name() const { return "SimSET history input"; }
 
   virtual unique_ptr<data_type> read_from_file(std::istream& input) const
   {

@@ -128,13 +128,13 @@ if (UPENN_FOUND)
 ${UPENN_libimagio} ${UPENN_libimagio++})
 endif()
 
-if (HAVE_SIMSET AND TARGET stir_registries)
-  target_include_directories(${TARGET} PUBLIC ${SIMSET_INCLUDE_DIRS})
+if (HAVE_SIMSET)
+  target_include_directories(${TARGET} PRIVATE ${SIMSET_INCLUDE_DIRS})
   # Link against SimSET
   if(TARGET SIMSET::simset)
-    target_link_libraries(${TARGET} PUBLIC SIMSET::simset)
+    target_link_libraries(${TARGET} PRIVATE SIMSET::simset)
   else()
-    target_link_libraries(${TARGET} PUBLIC ${SIMSET_LIBRARY})
+    target_link_libraries(${TARGET} PRIVATE ${SIMSET_LIBRARY})
   endif()
 endif()
 

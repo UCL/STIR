@@ -31,7 +31,7 @@
 
 extern "C"
 {
-#include "LbTypes.h"
+#include <LbTypes.h>
 #include <Photon.h>
 }
 

@@ -299,7 +299,6 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
     {
       int i = 0;
       bool found = false;
-      float tofDifference;
       for (; i < buffer.size(); i++)
         {
           if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy < binParams->minE))
@@ -320,6 +319,7 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
 
       if (found)
         {
+      //float tofDifference;
           PHG_DetectedPhoton blue = *buffer.at(i).first;
           PHG_DetectedPhoton pink = *buffer.at(i).second;
 
@@ -342,7 +342,7 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
           //            std::cout << buffer.size() << std::endl;
 
           /* tofDifference is in nanoseconds, hence '1E9*' */
-          tofDifference = 1.0E12 * (pink.time_since_creation - blue.time_since_creation);
+          float tofDifference = 1.0E12 * (pink.time_since_creation - blue.time_since_creation);
 
           /* make sure that positive TOF is always oriented in the same direction,
                                   +TOF equating to +x. */
@@ -353,12 +353,12 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
           //                tofDifference = -tofDifference;
           //            }
 
-          if (tofDifference < 0.0)
-            {
-              tofDifference *= -1;
+          //if (tofDifference < 0.0)
+            // {
+              // tofDifference *= -1;
               return record.init_from_data(pink, blue, coincidenceWeight, tofDifference);
-            }
-          return record.init_from_data(blue, pink, coincidenceWeight, tofDifference);
+            // }
+          // return record.init_from_data(blue, pink, coincidenceWeight, tofDifference);
         }
     }
 
@@ -449,14 +449,14 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
                 //                        tofDifference = -tofDifference;
                 //                    }
 
-                if (tofDifference < 0.0)
-                  {
-                    tofDifference *= -1;
+                //if (tofDifference < 0.0)
+                  // {
+                    //tofDifference *= -1;
                     return record.init_from_data(pinkPhotons.at(0), bluePhotons.at(0), coincidenceWeight, tofDifference);
                     //                       std::cout <<tofDifference << std::endl;
-                  }
+                  // }
 
-                return record.init_from_data(bluePhotons.at(0), pinkPhotons.at(0), coincidenceWeight, tofDifference);
+                // return record.init_from_data(bluePhotons.at(0), pinkPhotons.at(0), coincidenceWeight, tofDifference);
               }
             else if (bluePhotons.size() == 0 || pinkPhotons.size() == 0)
               {
