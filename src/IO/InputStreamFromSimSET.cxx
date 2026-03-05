@@ -319,7 +319,7 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
 
       if (found)
         {
-      //float tofDifference;
+          // float tofDifference;
           PHG_DetectedPhoton blue = *buffer.at(i).first;
           PHG_DetectedPhoton pink = *buffer.at(i).second;
 
@@ -353,11 +353,11 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
           //                tofDifference = -tofDifference;
           //            }
 
-          //if (tofDifference < 0.0)
-            // {
-              // tofDifference *= -1;
-              return record.init_from_data(pink, blue, coincidenceWeight, tofDifference);
-            // }
+          // if (tofDifference < 0.0)
+          //  {
+          //  tofDifference *= -1;
+          return record.init_from_data(pink, blue, coincidenceWeight, tofDifference);
+          // }
           // return record.init_from_data(blue, pink, coincidenceWeight, tofDifference);
         }
     }
@@ -449,12 +449,12 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
                 //                        tofDifference = -tofDifference;
                 //                    }
 
-                //if (tofDifference < 0.0)
-                  // {
-                    //tofDifference *= -1;
-                    return record.init_from_data(pinkPhotons.at(0), bluePhotons.at(0), coincidenceWeight, tofDifference);
-                    //                       std::cout <<tofDifference << std::endl;
-                  // }
+                // if (tofDifference < 0.0)
+                //  {
+                // tofDifference *= -1;
+                return record.init_from_data(pinkPhotons.at(0), bluePhotons.at(0), coincidenceWeight, tofDifference);
+                //                       std::cout <<tofDifference << std::endl;
+                // }
 
                 // return record.init_from_data(bluePhotons.at(0), pinkPhotons.at(0), coincidenceWeight, tofDifference);
               }
