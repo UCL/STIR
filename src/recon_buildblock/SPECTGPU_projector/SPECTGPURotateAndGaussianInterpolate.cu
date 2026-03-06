@@ -227,7 +227,7 @@ __global__ void rotateKernel_push(const float* __restrict__ in_im,
 
         // Pushing the weighted counts to NN
         float g = expf(-1. * ((delta_x*delta_x) + (delta_y*delta_y) + (delta_z*delta_z)) / (2*sigma*sigma));
-        atomic_add(&out_im[i_idx], in_im[idx]*g/G); 
+        atomicAdd(&out_im[i_idx], in_im[idx]*g/G); 
                               
          };
     };
