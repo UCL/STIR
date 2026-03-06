@@ -59,6 +59,11 @@ __global__ void backwardKernel(const float* __restrict__ in_sino,
                              float3 origin,
                              float angle_rad)
                              {
-
-
-                             }                             
+                            int idz = blockIdx.zblockDim.z + threadIdx.z;
+                            int idy = blockIdx.yblockDim.y + threadIdx.y;
+                            int idx = blockIdx.xblockDim.x + threadIdx.x;
+                            if ( idz < dim.z && idy < dim.y && idx < dim.x)
+                            {
+                              out_im[(idz dim.y + idy) * dim.x + idx] += sinogram[idz * dim.y + idy] * spacing.x;
+                            }
+}                          
