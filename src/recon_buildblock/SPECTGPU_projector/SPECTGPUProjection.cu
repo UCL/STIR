@@ -35,10 +35,22 @@ __global__ void forwardKernel(const float* __restrict__ in_im,
                              float3 origin,
                              float angle_rad)
                              {
+                            //1. define position in the detector, x horizontal, z vertical, y is the depth.
+              
+                            int det_x = blockIdx.x * blockDim.x + threadIdx.x;
+                            int det_y = blockIdx.y * blockDim.y + threadIdx.y;
+                            int det_z = blockIdx.z * blockDim.z + threadIdx.z;
+                            
+                            if (det_x >= dim.x || det_y >= dim.y || det_z >= dim.z) {
+                                return;
+                            }
+                            int sino_idx = det_z * dim.x + det_x;
 
-
-                             }
-
+                        // Sum voxel values along the y-axis (depth) for this detector pixel
+                            int voxel_idx = det_y * dim.x * dim.z + det_z * dim.x + det_x;
+                            out_sino[sino_idx] += in_im[voxel_idx];
+                            
+                          }
 // the following is the adjoint operation (push)
 __global__ void backwardKernel(const float* __restrict__ in_sino,
                              float* __restrict__ out_im,
