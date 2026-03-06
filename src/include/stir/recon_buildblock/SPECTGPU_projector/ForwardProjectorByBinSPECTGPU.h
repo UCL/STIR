@@ -94,8 +94,19 @@ protected:
                                       const int min_tangential_pos_num,
                                       const int max_tangential_pos_num);
 
+protected:
+  struct cppdim3
+  {
+    int x;
+    int y;
+    int z;
+  };
+
+  int z_dim, y_dim, x_dim;
+  cppdim3 block_dim;
+  cppdim3 grid_dim;
+
 private:
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   shared_ptr<ProjDataInMemory> _projected_data_sptr;
   SPECTGPUHelper _helper;
   int _cuda_device;

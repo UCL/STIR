@@ -120,11 +120,11 @@ BackProjectorByBinSPECTGPU::start_accumulating_in_new_target()
 }
 
 void
-BackProjectorByBinSPECTGPU::actual_back_project(
+BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float> &stir_image,
     const RelatedViewgrams<float>& related_viewgrams, const int, const int, const int, const int)
 {
-  for (stir::RelatedViewgrams<float>::const_iterator iter = related_viewgrams.begin(); iter != related_viewgrams.end(); ++iter)
-    _helper.convert_viewgram_stir_to_SPECTGPU(_np_sino_w_gaps, *iter);
+
+//    call the kernels for backward
 }
 
 END_NAMESPACE_STIR

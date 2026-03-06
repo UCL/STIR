@@ -31,91 +31,57 @@
 #include "stir/IO/stir_ecat_common.h"
 #include "stir/error.h"
 #include "stir/format.h"
+#include "stir/cuda_utilities.h"
 // Non-STIR includes
 #include <fstream>
 #include <math.h>
 #include "driver_types.h"
 // SPECTGPU includes
-#include "def.h"
-#include "auxmath.h"
-#include "prjb.h"
-#include "prjf.h"
-#include "recon.h"
-#include "lmproc.h"
-#include "scanner_0.h"
-#include "rnd.h"
-#include "norm.h"
 
 START_NAMESPACE_STIR
 
 SPECTGPUHelper::~SPECTGPUHelper()
 {}
 
-// static void
-// delete_axialLUT(axialLUT* axlut_ptr)
-// {
-//   if (!axlut_ptr)
-//     return;
-//   delete[] axlut_ptr->li2rno;
-//   delete[] axlut_ptr->li2sn;
-//   delete[] axlut_ptr->li2nos;
-//   delete[] axlut_ptr->sn1_rno;
-//   delete[] axlut_ptr->sn1_sn11;
-//   delete[] axlut_ptr->sn1_ssrb;
-//   delete[] axlut_ptr->sn1_sn11no;
-// }
 
-static shared_ptr<Cnst>
-get_cnst(const Scanner& scanner, const bool cuda_verbose, const char cuda_device)
-{
-  shared_ptr<Cnst> cnt_sptr = MAKE_SHARED<Cnst>();
+//static shared_ptr<Cnst>
+//get_cnst(const Scanner& scanner, const bool cuda_verbose, const char cuda_device)
+//{
+//  shared_ptr<Cnst> cnt_sptr = MAKE_SHARED<Cnst>();
 
-  cnt_sptr->DEVID = cuda_device; // device (GPU) ID.  allows choosing the device on which to perform calculations
-  cnt_sptr->VERBOSE = cuda_verbose;
+//  cnt_sptr->DEVID = cuda_device; // device (GPU) ID.  allows choosing the device on which to perform calculations
+//  cnt_sptr->VERBOSE = cuda_verbose;
      
-  cnt_sptr->A = NSANGLES; // sino angles
-  cnt_sptr->W = NSBINS;   // sino bins for any angular index
-  cnt_sptr->aw = AW;      // sino bins (active only)
+//  cnt_sptr->A = NSANGLES; // sino angles
+//  cnt_sptr->W = NSBINS;   // sino bins for any angular index
+//  cnt_sptr->aw = AW;      // sino bins (active only)
 
-  cnt_sptr->NCRS = nCRS;   // number of crystals
-  cnt_sptr->NRNG = NRINGS; // number of axial positions
-  cnt_sptr->D = -1;        // number of linear indexes along Michelogram diagonals                         /*unknown*/
-  cnt_sptr->Bt = -1;       // number of buckets transaxially                                               /*unknown*/
+//  cnt_sptr->NCRS = nCRS;   // number of crystals
+//  cnt_sptr->NRNG = NRINGS; // number of axial positions
+//  cnt_sptr->D = -1;        // number of linear indexes along Michelogram diagonals                         /*unknown*/
+//  cnt_sptr->Bt = -1;       // number of buckets transaxially                                               /*unknown*/
 
-  cnt_sptr->B = NBUCKTS; // number of buckets (total)
-  cnt_sptr->Cbt = 32552; // number of crystals in bucket transaxially                                /*unknown*/
-  cnt_sptr->Cba = 3;     // number of crystals in bucket axially                                         /*unknown*/
+//  cnt_sptr->B = NBUCKTS; // number of buckets (total)
+//  cnt_sptr->Cbt = 32552; // number of crystals in bucket transaxially                                /*unknown*/
+//  cnt_sptr->Cba = 3;     // number of crystals in bucket axially                                         /*unknown*/
 
-  cnt_sptr->NSN1 = NSINOS;           // number of sinos 
-  cnt_sptr->NSN64 = NRINGS * NRINGS; // with no MRD limit
-  cnt_sptr->NSEG0 = SEG0;
+//  cnt_sptr->NSN1 = NSINOS;           // number of sinos
+//  cnt_sptr->NSN64 = NRINGS * NRINGS; // with no MRD limit
+//  cnt_sptr->NSEG0 = SEG0;
 
-  cnt_sptr->RNG_STRT = 0;
-  cnt_sptr->RNG_END = NRINGS;
+//  cnt_sptr->RNG_STRT = 0;
+//  cnt_sptr->RNG_END = NRINGS;
 
-  cnt_sptr->ALPHA = aLPHA;  // angle subtended by a crystal
-  float R = 32.8f;          // ring radius
-  cnt_sptr->RE = R + 0.67f; // effective ring radius accounting for the depth of interaction
-  cnt_sptr->AXR = SZ_RING;  // axial crystal dim
+//  cnt_sptr->ALPHA = aLPHA;  // angle subtended by a crystal
+//  float R = 32.8f;          // ring radius
+//  cnt_sptr->RE = R + 0.67f; // effective ring radius accounting for the depth of interaction
+//  cnt_sptr->AXR = SZ_RING;  // axial crystal dim
 
-  float CLGHT = 29979245800.f;                   // speed of light [cm/s]
-  return cnt_sptr;
-}
+//  float CLGHT = 29979245800.f;                   // speed of light [cm/s]
+//  return cnt_sptr;
+//}
 
-static inline unsigned
-to_1d_idx(const unsigned nrow, const unsigned ncol, const unsigned row, const unsigned col)
-{
-  return col + ncol * row;
-}
 
-template <class dataType>
-dataType*
-create_heap_array(const unsigned numel, const dataType val = dataType(0))
-{
-  dataType* array = new dataType[numel];
-  std::fill(array, array + numel, val);
-  return array;
-}
 
 void
 SPECTGPUHelper::set_up()
@@ -124,14 +90,14 @@ SPECTGPUHelper::set_up()
     throw std::runtime_error("SPECTGPUHelper::set_up() "
                              "emission or transmission mode (att) not set.");
 
-  // Get consts
-  _cnt_sptr = get_cnst(_scanner_type, _verbose, _devid);
+//  // Get consts
+//  _cnt_sptr = get_cnst(_scanner_type, _verbose, _devid);
 
 
-  // isub
-  _isub = std::vector<int>(unsigned(AW));
-  for (unsigned i = 0; i < unsigned(AW); i++)
-    _isub[i] = int(i);
+//  // isub
+//  _isub = std::vector<int>(unsigned(AW));
+//  for (unsigned i = 0; i < unsigned(AW); i++)
+//    _isub[i] = int(i);
 
   _already_set_up = true;
 }
@@ -196,53 +162,6 @@ SPECTGPUHelper::convert_SPECTGPU_proj_3d_to_1d_idx(const unsigned ang, const uns
 }
 
 void
-SPECTGPUHelper::permute(std::vector<float>& output_array,
-                        const std::vector<float>& orig_array,
-                        const unsigned output_dims[3],
-                        const unsigned permute_order[3]) const
-{
-#ifndef NDEBUG
-  // Check that in the permute order, each number is between 0 and 2 (can't be <0 because it's unsigned)
-  for (unsigned i = 0; i < 3; ++i)
-    if (permute_order[i] > 2)
-      throw std::runtime_error("Permute order values should be between 0 and 2.");
-  // Check that each number is unique
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = i + 1; j < 3; ++j)
-      if (permute_order[i] == permute_order[j])
-        throw std::runtime_error("Permute order values should be unique.");
-  // Check that size of output_dims==arr.size()
-  assert(orig_array.size() == output_dims[0] * output_dims[1] * output_dims[2]);
-  // Check that output array is same size as input array
-  assert(orig_array.size() == output_array.size());
-#endif
-
-  // Calculate old dimensions
-  unsigned old_dims[3];
-  for (unsigned i = 0; i < 3; ++i)
-    old_dims[permute_order[i]] = output_dims[i];
-
-  // Loop over all elements
-  for (unsigned old_1d_idx = 0; old_1d_idx < orig_array.size(); ++old_1d_idx)
-    {
-
-      // From the 1d index, generate the old 3d index
-      unsigned old_3d_idx[3]
-          = { old_1d_idx / (old_dims[2] * old_dims[1]), (old_1d_idx / old_dims[2]) % old_dims[1], old_1d_idx % old_dims[2] };
-
-      // Get the corresponding new 3d index
-      unsigned new_3d_idx[3];
-      for (unsigned i = 0; i < 3; ++i)
-        new_3d_idx[i] = old_3d_idx[permute_order[i]];
-
-      // Get the new 1d index from the new 3d index
-      const unsigned new_1d_idx
-          = new_3d_idx[0] * output_dims[2] * output_dims[1] + new_3d_idx[1] * output_dims[2] + new_3d_idx[2];
-
-      // Fill the data
-      output_array[new_1d_idx] = orig_array[old_1d_idx];
-    }
-}
 
 void
 SPECTGPUHelper::back_project(std::vector<float>& image, const std::vector<float>& sino_no_gaps) const
@@ -262,11 +181,13 @@ SPECTGPUHelper::back_project(std::vector<float>& image, const std::vector<float>
 }
 
 void
-SPECTGPUHelper::forward_project(std::vector<float>& sino, const std::vector<float>& image) const
+SPECTGPUHelper::forward_project(Array<3, elemT>& sino, const Array<3, elemT>& image) const
 {
   check_set_up();
   assert(!sino.empty());
-
+//  prjdatainmemory
+  cudaMalloc(&this->cuda_image, stir_image_sptr->size_all() * sizeof(elemT));
+  array_to_device(this->cuda_image, *stir_image_sptr);
   // Permute the data (as this is done on the SPECTGPU python side before forward projection
   // unsigned output_dims[3] = { 320, 320, 127 };
   // unsigned permute_order[3] = { 1, 2, 0 };

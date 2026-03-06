@@ -82,6 +82,13 @@ protected:
                                    const int min_tangential_pos_num,
                                    const int max_tangential_pos_num);
 
+  virtual void actual_back_project(DiscretisedDensity<3, float>& stir_image,
+                                   const RelatedViewgrams<float>&,
+                                   const int min_axial_pos_num,
+                                   const int max_axial_pos_num,
+                                   const int min_tangential_pos_num,
+                                   const int max_tangential_pos_num);
+
 private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   SPECTGPUHelper _helper;

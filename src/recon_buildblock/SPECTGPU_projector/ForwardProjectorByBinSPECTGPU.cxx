@@ -61,7 +61,35 @@ ForwardProjectorByBinSPECTGPU::set_up(const shared_ptr<const ProjDataInfo>& proj
 {
   ForwardProjectorByBin::set_up(proj_data_info_sptr, density_info_sptr);
   check(*proj_data_info_sptr, *_density_sptr);
-  _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
+
+  auto& target_cast = dynamic_cast<const VoxelsOnCartesianGrid<elemT>&>(*target_sptr);
+  auto sizes = target_cast.get_lengths();
+
+  this->z_dim = sizes[1];
+  this->y_dim = sizes[2];
+  this->x_dim = sizes[3];
+
+  // Set the thread block and grid dimensions using std::tuple
+  this->block_dim.x = 8;
+  this->block_dim.y = 8;
+  this->block_dim.z = 8;
+
+  this->grid_dim.x = (this->x_dim + this->block_dim.x - 1) / this->block_dim.x;
+  this->grid_dim.y = (this->y_dim + this->block_dim.y - 1) / this->block_dim.y;
+  this->grid_dim.z = (this->z_dim + this->block_dim.z - 1) / this->block_dim.z;
+
+  //  Check if z_dim is 1 or only 2D is true and return an error if it is
+  if (this->z_dim == 1 || this->only_2D)
+    {
+      error(" requires a 3D image and only works for a 3x3x3 neighbourhood");
+      return Succeeded::no;
+    }
+
+//  {
+//    if (this->d_kappa_data)
+//      cudaFree(this->d_kappa_data);
+//    auto kappa_ptr = this->get_kappa_sptr();
+//    const bool do_kappa = !is_null_ptr(kappa_ptr);
 
   
   // Initialise projected_data_sptr from this->_proj_data_info_sptr
@@ -78,20 +106,76 @@ ForwardProjectorByBinSPECTGPU::set_up(const shared_ptr<const ProjDataInfo>& proj
 
 void
 ForwardProjectorByBinSPECTGPU::actual_forward_project(
-    RelatedViewgrams<float>&, const DiscretisedDensity<3, float>&, const int, const int, const int, const int)
+    RelatedViewgrams<float>& stir_sino,
+        const DiscretisedDensity<3, float>& stir_image,
+        const int min_ax,
+        const int max_ax,
+        const int min_tg,
+        const int max_tg)
 {
-  throw std::runtime_error("Need to use set_input() if wanting to use ForwardProjectorByBinSPECTGPU.");
+    //for all views in relateViewgram call the kernels
+    dim3 cuda_block_dim(this->block_dim.x, this->block_dim.y, this->block_dim.z);
+    dim3 cuda_grid_dim(this->grid_dim.x, this->grid_dim.y, this->grid_dim.z);
+    viewgrams = _projected_data_sptr->get_related_viewgrams(viewgrams.get_basic_view_segment_num(), _symmetries_sptr);
+
+    for (auto view=0; view<viewgram.get_num_viewgrams(),view++)
+    {
+        float* dev_image;
+        cudaMalloc(&dev_image, stir_image.size_all() * sizeof(float));
+        array_to_device(dev_image, stir_image);
+
+        float* out_im;// need to copy on device?
+        BasicCoordinate<3, int> min_ind, max_ind;
+
+        stir_image.get_regular_range(min_ind, max_ind);
+
+        const int min_z = min_ind[1];
+        const int max_z = max_ind[1];
+
+        const int min_y = min_ind[2];
+        const int max_y = max_ind[2];
+
+        const int min_x = min_ind[3];
+        const int max_x = max_ind[3];
+
+        int3 dim(max_x - min_x + 1, max_y - min_y + 1, max_z - min_z + 1 );
+
+        float angle_rad; //todo
+        float3 spacing(,,);
+        float3 origin(,,);
+
+        rotateKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(dev_image,
+                                       out_im,
+                                       dim);
+
+        forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(out_im,
+                                     viewgrams[view],
+                                     dim);
+
+      }
+      //  cudaMalloc(&this->cuda_image, stir_image_sptr->size_all() * sizeof(elemT));
+    //  array_to_device(this->cuda_image, *stir_image_sptr);
+    }
+
+
 }
 
 void
 ForwardProjectorByBinSPECTGPU::actual_forward_project(
     RelatedViewgrams<float>& viewgrams, const int, const int, const int, const int)
 {
-  //    if (min_axial_pos_num != _proj_data_info_sptr->get_min_axial_pos_num() ||
+      if (min_axial_pos_num != _proj_data_info_sptr->get_min_axial_pos_num() ||
   //         ... )
   //       error();
+//for all views in relateViewgram call the kernels
 
   viewgrams = _projected_data_sptr->get_related_viewgrams(viewgrams.get_basic_view_segment_num(), _symmetries_sptr);
+  for (auto view=0; view<viewgram.get_num_viewgrams(),view++)
+  {
+      cudaMalloc(&this->cuda_image, stir_image_sptr->size_all() * sizeof(elemT));
+  }
+  //  cudaMalloc(&this->cuda_image, stir_image_sptr->size_all() * sizeof(elemT));
+//  array_to_device(this->cuda_image, *stir_image_sptr);
 }
 
 void
