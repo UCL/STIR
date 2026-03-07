@@ -30,11 +30,13 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/LORCoordinates.h"
 #include "stir/recon_array_functions.h"
-#ifdef parallelproj_built_with_CUDA
-#  include "parallelproj_cuda.h"
-#else
-#  include "parallelproj_c.h"
-#endif
+
+//#ifdef parallelproj_built_with_CUDA
+//#  include "parallelproj_cuda.h"
+//#else
+//#  include "parallelproj_c.h"
+//#endif
+#  include "parallelproj.h"
 // for debugging, remove later
 #include "stir/info.h"
 #include "stir/error.h"
@@ -248,7 +250,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
 
       TOF_transpose(mem_for_PP_back, STIR_mem, _helper, 0);
 
-      joseph3d_back_tof_sino(_helper->xend.data(),
+      joseph3d_tof_sino_back(_helper->xend.data(),
                              _helper->xstart.data(),
                              image_ptr,
                              _helper->origin.data(),
