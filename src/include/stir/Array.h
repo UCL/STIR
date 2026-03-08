@@ -3,7 +3,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023 - 2025, University College London
+    Copyright (C) 2023 - 2026, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -201,6 +201,8 @@ public:
   //@}
 
   inline IndexRange<num_dimensions, indexT> get_index_range() const;
+
+  inline bool empty() const override;
 
   //! return the total number of elements in this array
   inline size_t size_all() const;

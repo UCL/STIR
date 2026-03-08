@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2013, 2020, 2023, 2024, 2025 University College London
+    Copyright (C) 2013, 2020, 2023-2026 University College London
 
     This file is part of STIR.
 
@@ -108,7 +108,7 @@ private:
   void run_tests_on_next(const Array<num_dimensions, elemT, indexT>& test)
   {
     // exit if empty array (as do..while() loop would fail)
-    if (test.size() == 0)
+    if (test.empty())
       return;
 
     auto index = get_min_indices(test);
@@ -331,26 +331,29 @@ ArrayTests<indexT>::run_tests()
       check_if_zero(test, "Array1D not initialised to 0");
 
       test[1] = (float)10.5;
-      test.set_offset(-1);
+      const indexT offset = std::is_signed_v<indexT> ? -1 : 10;
+      test.set_offset(offset);
       check_if_equal(test.size(), size_t(10), "test size() with non-zero offset");
       check_if_equal(test.size_all(), size_t(10), "test size_all() with non-zero offset");
-      check_if_equal(test[0], 10.5F, "test indexing of Array1D");
+      check_if_equal(test[offset + 1], 10.5F, "test indexing of Array1D");
       test += 1;
-      check_if_equal(test[0], 11.5F, "test operator+=(float)");
+      check_if_equal(test[offset + 1], 11.5F, "test operator+=(float)");
       check_if_equal(test.sum(), 20.5F, "test operator+=(float) and sum()");
       check_if_zero(test - test, "test operator-(Array1D)");
 
       BasicCoordinate<1, indexT> c;
-      c[1] = 0;
-      check_if_equal(test[c], 11.5F, "test operator[](BasicCoordinate)");
+      c[1] = offset + 1;
+      check_if_equal(test[c], 11.5F, "test operator[](BasicCoordinate) 1");
       test[c] = 12.5;
-      check_if_equal(test[c], 12.5F, "test operator[](BasicCoordinate)");
+      check_if_equal(test[c], 12.5F, "test operator[](BasicCoordinate) 2");
 
       {
-        Array<1, float, indexT> ref(-1, 2);
-        ref[-1] = 1.F;
-        ref[0] = 3.F;
-        ref[1] = 3.14F;
+        const indexT offset
+            = std::is_signed_v<indexT> ? -1 : 10; // note: for unsigned, has to be larger than 1 for tests below to work
+        Array<1, float, indexT> ref(offset, offset + 3);
+        ref[offset] = 1.F;
+        ref[offset + 1] = 3.F;
+        ref[offset + 2] = 3.14F;
         Array<1, float, indexT> test = ref;
 
         test += 1;
@@ -372,14 +375,14 @@ ArrayTests<indexT>::run_tests()
       {
         Array<1, float, indexT> test2;
         test2 = test * 2;
-        check_if_equal(2 * test[0], test2[0], "test operator*(float)");
+        check_if_equal(2 * test[offset + 1], test2[offset + 1], "test operator*(float)");
       }
 
       {
         Array<1, float, indexT> test2 = test;
-        test.grow(-2, test.get_max_index());
+        test.grow(offset - 1, test.get_max_index());
         Array<1, float, indexT> test3 = test2 + test;
-        check_if_zero(test3[-2], "test growing during operator+");
+        check_if_zero(test3[offset - 1], "test growing during operator+");
       }
 
       // using preallocated memory
@@ -439,11 +442,12 @@ ArrayTests<indexT>::run_tests()
 #if 1
     {
       // tests on log/exp
-      Array<1, float, indexT> test(-3, 10);
+      const indexT offset = std::is_signed_v<indexT> ? -3 : 20;
+      Array<1, float, indexT> test(offset, offset + 13);
       test.fill(1.F);
       in_place_log(test);
       {
-        Array<1, float, indexT> testeq(-3, 10);
+        Array<1, float, indexT> testeq(test.get_index_range());
         check_if_equal(test, testeq, "test in_place_log of Array1D");
       }
       {
@@ -462,10 +466,11 @@ ArrayTests<indexT>::run_tests()
   {
     cerr << "Testing 2D stuff" << endl;
     {
-      const IndexRange<2, indexT> range(Coordinate2D<indexT>(0, 0), Coordinate2D<indexT>(9, 9));
+      const IndexRange<2, indexT> range(Coordinate2D<indexT>(2, 2),
+                                        Coordinate2D<indexT>(9, 9)); // Note: for unsigned, min needs to be >= 2 for test below
       Array<2, float, indexT> test2(range);
-      check_if_equal(test2.size(), size_t(10), "test size()");
-      check_if_equal(test2.size_all(), size_t(100), "test size_all()");
+      check_if_equal(test2.size(), size_t(8), "test size()");
+      check_if_equal(test2.size_all(), size_t(64), "test size_all()");
       // KT 17/03/98 added check on initialisation
       check_if_zero(test2, "test Array<2,float> not initialised to 0");
 
@@ -486,7 +491,7 @@ ArrayTests<indexT>::run_tests()
     }
 
     {
-      IndexRange<2, indexT> range(Coordinate2D<indexT>(0, 0), Coordinate2D<indexT>(3, 3));
+      IndexRange<2, indexT> range(Coordinate2D<indexT>(1, 0), Coordinate2D<indexT>(3, 3));
       Array<2, float, indexT> testfp(range);
       Array<2, float, indexT> t2fp(range);
 #if 0
@@ -539,13 +544,13 @@ ArrayTests<indexT>::run_tests()
       }
 
       // assert should break on next line (in Debug build) if uncommented
-      // t2[-4][3]=1.F;
+      // t2[t2.get_max_index() + 3][3]=1.F;
       // at() should throw error
       {
         bool exception_thrown = false;
         try
           {
-            t2.at(-4).at(3);
+            t2.at(t2.get_max_index() + 3).at(3);
           }
         catch (...)
           {
@@ -554,10 +559,10 @@ ArrayTests<indexT>::run_tests()
         check(exception_thrown, "out-of-range index should throw an exception");
       }
 
-      // t2.grow_height(-5,5);
-      IndexRange<2, indexT> larger_range(Coordinate2D<indexT>(-5, 0), Coordinate2D<indexT>(5, 3));
+      const indexT offset = std::is_signed_v<indexT> ? -5 : 1; // Note: for unsigned, needs to be >= 1 for test below
+      IndexRange<2, indexT> larger_range(Coordinate2D<indexT>(offset, offset), Coordinate2D<indexT>(5, 3));
       t2.grow(larger_range);
-      t2[-4][3] = 1.F;
+      t2[5][3] = 1.F;
       check_if_equal(t2[3][2], 6.F, "test on grow");
 
       // test assignment
@@ -619,15 +624,15 @@ ArrayTests<indexT>::run_tests()
     }
     // size_all with irregular range
     {
-      const IndexRange<2, indexT> range(Coordinate2D<indexT>(-1, 1), Coordinate2D<indexT>(1, 2));
+      const IndexRange<2, indexT> range(Coordinate2D<indexT>(1, 1), Coordinate2D<indexT>(3, 2));
       Array<2, float, indexT> test2(range);
       check(test2.is_regular(), "test is_regular() with regular");
       check_if_equal(test2.size(), size_t(3), "test size() with non-zero offset");
       check_if_equal(test2.size_all(), size_t(6), "test size_all() with non-zero offset");
-      test2[0].resize(-1, 2);
+      test2[2].resize(1, 5);
       check(!test2.is_regular(), "test is_regular() with irregular");
       check_if_equal(test2.size(), size_t(3), "test size() with irregular range");
-      check_if_equal(test2.size_all(), size_t(6 + 2), "test size_all() with irregular range");
+      check_if_equal(test2.size_all(), size_t(6 + 3), "test size_all() with irregular range");
     }
     // full iterator
     {
@@ -655,7 +660,7 @@ ArrayTests<indexT>::run_tests()
     }
     // tests for next()
     {
-      const IndexRange<2, indexT> range(Coordinate2D<indexT>(-1, 1), Coordinate2D<indexT>(1, 2));
+      const IndexRange<2, indexT> range(Coordinate2D<indexT>(1, 1), Coordinate2D<indexT>(3, 2));
       Array<2, int, indexT> test(range);
       // fill array with numbers in sequence
       {
@@ -668,16 +673,16 @@ ArrayTests<indexT>::run_tests()
       std::cerr << "\tTest on next() with regular array\n";
       this->run_tests_on_next(test);
       // now do test with irregular array
-      test[0].resize(0, 2);
-      test[0][2] = 10;
+      test[2].resize(0, 2);
+      test[2][2] = 10;
       std::cerr << "\tTest on next() with irregular array, case 1\n";
       this->run_tests_on_next(test);
-      test[1].resize(-2, 2);
-      test[1][-2] = 20;
+      test[1].resize(0, 2);
+      test[1][0] = 20;
       std::cerr << "\tTest on next() with irregular array, case 2\n";
       this->run_tests_on_next(test);
-      test[-1].resize(-2, 0);
-      test[-1][-2] = 30;
+      test[1].resize(0, 0);
+      test[1][0] = 30;
       std::cerr << "\tTest on next() with irregular array, case 3\n";
       this->run_tests_on_next(test);
     }
@@ -686,18 +691,18 @@ ArrayTests<indexT>::run_tests()
   {
     cerr << "Testing 3D stuff" << endl;
 
-    IndexRange<3, indexT> range(Coordinate3D<indexT>(0, -1, 1), Coordinate3D<indexT>(3, 3, 3));
+    IndexRange<3, indexT> range(Coordinate3D<indexT>(0, 1, 1), Coordinate3D<indexT>(3, 5, 3));
     Array<3, float, indexT> test3(range);
     check_if_equal(test3.size(), size_t(4), "test size()");
     check_if_equal(test3.size_all(), size_t(60), "test size_all() with non-zero offset");
     // KT 06/04/98 removed operator()
 #if 0
-    test3(1,2,1) = (float)6.6;
+    test3(1,4,1) = (float)6.6;
 #else
-    test3[1][2][1] = (float)6.6;
+    test3[1][4][1] = (float)6.6;
 #endif
-    test3[1][0][2] = (float)7.3;
-    test3[1][0][1] = -1;
+    test3[1][2][2] = (float)7.3;
+    test3[1][2][1] = -1;
 
     check_if_equal(test3.sum(), 12.9F, "test on sum");
     check_if_equal(test3.find_max(), 7.3F, "test on find_max");
@@ -707,20 +712,20 @@ ArrayTests<indexT>::run_tests()
       Array<3, float, indexT> test3copy(test3);
       BasicCoordinate<3, indexT> c;
       c[1] = 1;
-      c[2] = 0;
+      c[2] = 2;
       c[3] = 2;
       check_if_equal(test3[c], 7.3F, "test on operator[](BasicCoordinate)");
       test3copy[c] = 8.;
-      check_if_equal(test3copy[1][0][2], 8.F, "test on operator[](BasicCoordinate)");
+      check_if_equal(test3copy[1][2][2], 8.F, "test on operator[](BasicCoordinate)");
     }
 
     Array<3, float, indexT> test3bis(range);
-    test3bis[1][2][1] = (float)6.6;
-    test3bis[1][0][1] = (float)1.3;
+    test3bis[1][4][1] = (float)6.6;
+    test3bis[1][2][1] = (float)1.3;
     Array<3, float, indexT> test3ter = test3bis;
 
     test3ter += test3;
-    check_if_equal(test3ter[1][0][1], .3F, "test on operator+=(Array3D)");
+    check_if_equal(test3ter[1][2][1], .3F, "test on operator+=(Array3D)");
 
     Array<3, float, indexT> test3quat = test3 + test3bis;
     check_if_equal(test3quat, test3ter, "test summing Array3D");
@@ -739,12 +744,12 @@ ArrayTests<indexT>::run_tests()
 
     // size_all with irregular range
     {
-      const IndexRange<3, indexT> range(Coordinate3D<indexT>(-1, 1, 4), Coordinate3D<indexT>(1, 2, 6));
+      const IndexRange<3, indexT> range(Coordinate3D<indexT>(1, 1, 4), Coordinate3D<indexT>(3, 2, 6));
       Array<3, float, indexT> test(range);
       check(test.is_regular(), "test is_regular() with regular");
       check_if_equal(test.size(), size_t(3), "test size() with non-zero offset");
       check_if_equal(test.size_all(), size_t(3 * 2 * 3), "test size_all() with non-zero offset");
-      test[0][1].resize(-1, 2);
+      test[2][1].resize(1, 4);
       check(!test.is_regular(), "test is_regular() with irregular");
       check_if_equal(test.size(), size_t(3), "test size() with irregular range");
       check_if_equal(test.size_all(), size_t(3 * 2 * 3 + 4 - 3), "test size_all() with irregular range");
@@ -796,7 +801,7 @@ ArrayTests<indexT>::run_tests()
       }
       // irregular
       {
-        test3[0][1].resize(-1, 2);
+        test3[0][1].resize(1, 2);
         Array<3, float, indexT> data_to_fill(test3.get_index_range());
         fill_from(data_to_fill, test3.begin_all(), test3.end_all());
         check_if_equal(test3, data_to_fill, "test on 3D fill_from, irregular range");
@@ -808,40 +813,40 @@ ArrayTests<indexT>::run_tests()
 
   {
     cerr << "Testing 4D stuff" << endl;
-    const IndexRange<4, indexT> range(Coordinate4D<indexT>(-3, 0, -1, 1), Coordinate4D<indexT>(-2, 3, 3, 3));
+    const IndexRange<4, indexT> range(Coordinate4D<indexT>(3, 0, 6, 1), Coordinate4D<indexT>(4, 3, 10, 3));
     Array<4, float, indexT> test4(range);
     test4.fill(1.);
-    test4[-3][1][2][1] = (float)6.6;
+    test4[3][1][9][1] = (float)6.6;
 #if 0
-    test4(-2,1,0,2) = (float)7.3;
+    test4(4,1,7,2) = (float)7.3;
 #else
-    test4[-2][1][0][2] = (float)7.3;
+    test4[4][1][7][2] = (float)7.3;
 #endif
     {
       float sum = test4.sum();
       check_if_equal(sum, 131.9F, "test on sum()");
     }
-    const IndexRange<4, indexT> larger_range(Coordinate4D<indexT>(-3, 0, -1, 1), Coordinate4D<indexT>(-1, 3, 3, 5));
+    const IndexRange<4, indexT> larger_range(Coordinate4D<indexT>(3, 0, 6, 1), Coordinate4D<indexT>(5, 3, 10, 5));
     test4.grow(larger_range);
     check_if_equal(test4.get_index_range(), larger_range, "test Array4D grow index range");
     check_if_equal(test4.sum(), 131.9F, "test Array4D grow sum");
     {
       const Array<4, float, indexT> test41 = test4;
       check_if_equal(test4, test41, "test Array4D copy constructor");
-      check_if_equal(test41[-3][1][2][1], 6.6F, "test on indexing after grow");
+      check_if_equal(test41[3][1][9][1], 6.6F, "test on indexing after grow");
     }
     {
       Array<4, float, indexT> test41 = test4;
-      const IndexRange<4, indexT> mixed_range(Coordinate4D<indexT>(-4, 1, 0, 1), Coordinate4D<indexT>(-2, 3, 3, 6));
+      const IndexRange<4, indexT> mixed_range(Coordinate4D<indexT>(2, 1, 7, 1), Coordinate4D<indexT>(4, 3, 10, 6));
       test41.resize(mixed_range);
       check_if_equal(test41.get_index_range(), mixed_range, "test Array4D resize index range");
-      check_if_equal(test41[-3][1][2][1], 6.6F, "test on indexing after resize");
+      check_if_equal(test41[3][1][9][1], 6.6F, "test on indexing after resize");
     }
     {
       BasicCoordinate<4, indexT> c;
-      c[1] = -2;
+      c[1] = 4;
       c[2] = 1;
-      c[3] = 0;
+      c[3] = 7;
       c[4] = 2;
       check_if_equal(test4[c], 7.3F, "test on operator[](BasicCoordinate)");
       test4[c] = 1.;
@@ -849,12 +854,12 @@ ArrayTests<indexT>::run_tests()
     }
     {
       Array<4, float, indexT> test4bis(range);
-      test4bis[-2][1][2][1] = (float)6.6;
-      test4bis[-3][1][0][1] = (float)1.3;
+      test4bis[4][1][9][1] = (float)6.6;
+      test4bis[3][1][7][1] = (float)1.3;
       Array<4, float, indexT> test4ter = test4bis;
 
       test4ter += test4;
-      check_if_equal(test4ter[-3][1][0][1], 2.3F, "test on operator+=(Array4D)");
+      check_if_equal(test4ter[3][1][7][1], 2.3F, "test on operator+=(Array4D)");
       check(test4ter.get_index_range() == larger_range, "test range for operator+=(Array4D) with grow");
 
       // Note that test4 is bigger in size than test4bis.
@@ -884,15 +889,15 @@ ArrayTests<indexT>::run_tests()
 
       // Note that test4 is bigger than test4bis, so it will grow with the *=
       // new elements in test4bis will remain 0 because we're using multiplication
-      test4[-1].fill(666);
+      test4[5].fill(666);
       test4bis *= test4;
-      check_if_zero(test4bis[-1], "test operator *=(Array4D) grows ok");
+      check_if_zero(test4bis[5], "test operator *=(Array4D) grows ok");
 
       check(test4.get_index_range() == test4bis.get_index_range(), "test operator *=(Array4D) grows ok: range");
       // compute the new sum.
       {
         float sum_check = 0;
-        for (auto i = test4.get_min_index(); i <= indexT(-2); i++) // note: up to -2, as that was the original size
+        for (auto i = test4.get_min_index(); i <= indexT(4); i++) // note: up to 4, as that was the original size
           sum_check += test4[i].sum() * (i + 10.F);
         check_if_equal(test4bis.sum(), sum_check, "test operator *=(Array4D)");
       }
@@ -958,11 +963,11 @@ ArrayTests<indexT>::run_tests()
     {
       typedef NumericVectorWithOffset<Array<4, float, indexT>, float, indexT> NVecArr;
       typedef typename NVecArr::iterator NVecArrIter;
-      NVecArr tmp(-1, 2);
+      NVecArr tmp(5, 8);
 
-      NVecArr x(-1, 2);
-      NVecArr y(-1, 2);
-      NVecArr by_hand(-1, 2);
+      NVecArr x(5, 8);
+      NVecArr y(5, 8);
+      NVecArr by_hand(5, 8);
 
       NVecArrIter iter_tmp = tmp.begin();
       NVecArrIter iter_x = x.begin();
@@ -991,13 +996,13 @@ ArrayTests<indexT>::run_tests()
     {
       typedef NumericVectorWithOffset<Array<4, float, indexT>, float, indexT> NVecArr;
       typedef typename NVecArr::iterator NVecArrIter;
-      NVecArr tmp(-1, 2);
+      NVecArr tmp(5, 8);
 
-      NVecArr x(-1, 2);
-      NVecArr y(-1, 2);
-      NVecArr a(-1, 2);
-      NVecArr b(-1, 2);
-      NVecArr by_hand(-1, 2);
+      NVecArr x(5, 8);
+      NVecArr y(5, 8);
+      NVecArr a(5, 8);
+      NVecArr b(5, 8);
+      NVecArr by_hand(5, 8);
 
       NVecArrIter iter_tmp = tmp.begin();
       NVecArrIter iter_x = x.begin();
@@ -1034,14 +1039,14 @@ ArrayTests<indexT>::run_tests()
 #if 1
   {
     cerr << "Testing 1D float IO" << endl;
-    Array<1, float, indexT> t1(IndexRange<1, indexT>(-1, 10));
+    Array<1, float, indexT> t1(IndexRange<1, indexT>(1, 10));
     for (auto i = t1.get_min_index(); i <= t1.get_max_index(); i++)
       t1[i] = static_cast<float>(sin(i * _PI / 15.));
     run_IO_tests(t1);
   }
   {
     cerr << "Testing 2D double IO" << endl;
-    IndexRange<2, indexT> range(Coordinate2D<indexT>(-1, 11), Coordinate2D<indexT>(10, 20));
+    IndexRange<2, indexT> range(Coordinate2D<indexT>(1, 11), Coordinate2D<indexT>(10, 20));
     Array<2, double, indexT> t1(range);
     for (auto i = t1.get_min_index(); i <= t1.get_max_index(); i++)
       for (auto j = t1[i].get_min_index(); j <= t1[i].get_max_index(); j++)
@@ -1053,7 +1058,7 @@ ArrayTests<indexT>::run_tests()
 
     // construct test array which has rows of very different magnitudes,
     // numbers in last rows do not fit into short integers
-    IndexRange<3, indexT> range(Coordinate3D<indexT>(-1, 11, 21), Coordinate3D<indexT>(10, 20, 30));
+    IndexRange<3, indexT> range(Coordinate3D<indexT>(1, 11, 21), Coordinate3D<indexT>(10, 20, 30));
     Array<3, float, indexT> t1(range);
     for (auto i = t1.get_min_index(); i <= t1.get_max_index(); i++)
       for (auto j = t1[i].get_min_index(); j <= t1[i].get_max_index(); j++)

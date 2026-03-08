@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-01 - 2012, Kris Thielemans
-    Copyright (C) 2023 - 2025, University College London
+    Copyright (C) 2023 - 2026, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -260,7 +260,7 @@ public:
   inline const T& at(indexT i) const;
 
   //! checks if the vector is empty
-  inline bool empty() const;
+  inline virtual bool empty() const;
 
   //! \name comparison operators
   //@{

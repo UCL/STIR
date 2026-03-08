@@ -113,6 +113,7 @@ public:
 
   //! checks if the range is 'regular'
   inline bool is_regular() const;
+  inline bool empty() const override;
 
   //! find regular range, returns false if the range is not regular
   inline bool get_regular_range(BasicCoordinate<num_dimensions, indexT>& min, BasicCoordinate<num_dimensions, indexT>& max) const;
@@ -147,8 +148,10 @@ public:
   inline indexT get_min_index() const;
   inline indexT get_max_index() const;
   inline size_type get_length() const;
+  inline size_type size() const { return get_length(); }
   //! return the total number of elements in this range
   inline size_t size_all() const;
+  inline bool empty() const;
 
   inline bool operator==(const IndexRange<1, indexT>& range2) const;
 
@@ -163,6 +166,7 @@ public:
 private:
   indexT min;
   indexT max;
+  inline void recycle();
 };
 
 END_NAMESPACE_STIR

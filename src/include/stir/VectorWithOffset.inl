@@ -132,7 +132,7 @@ template <class T, class indexT>
 indexT
 VectorWithOffset<T, indexT>::get_max_index() const
 {
-  assert(std::is_signed_v<indexT> || length > 0);
+  assert(std::is_signed_v<indexT> || (length > 0));
   return start + length - 1;
 }
 

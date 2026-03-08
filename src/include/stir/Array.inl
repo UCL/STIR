@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-01-11, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023 - 2025, University College London
+    Copyright (C) 2023 - 2026, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -72,6 +72,11 @@ template <int num_dimensions, typename elemT, typename indexT>
 void
 Array<num_dimensions, elemT, indexT>::init(const IndexRange<num_dimensions, indexT>& range, elemT* const data_ptr, bool copy_data)
 {
+  if (range.empty())
+    {
+      this->recycle();
+      return;
+    }
   base_type::resize(range.get_min_index(), range.get_max_index());
   auto iter = this->begin();
   auto range_iter = range.begin();
@@ -87,6 +92,11 @@ template <int num_dimensions, typename elemT, typename indexT>
 void
 Array<num_dimensions, elemT, indexT>::init_with_copy(const IndexRange<num_dimensions, indexT>& range, elemT const* const data_ptr)
 {
+  if (range.empty())
+    {
+      this->recycle();
+      return;
+    }
   base_type::resize(range.get_min_index(), range.get_max_index());
   auto iter = this->begin();
   auto range_iter = range.begin();
@@ -212,11 +222,8 @@ template <int num_dimensions, typename elemT, typename indexT>
 typename Array<num_dimensions, elemT, indexT>::full_iterator
 Array<num_dimensions, elemT, indexT>::begin_all()
 {
-  if (this->begin() == this->end())
-    {
-      // empty array
-      return end_all();
-    }
+  if (this->empty())
+    return end_all();
   else
     return full_iterator(this->begin(), this->end(), this->begin()->begin_all(), this->begin()->end_all());
 }
@@ -225,11 +232,8 @@ template <int num_dimensions, typename elemT, typename indexT>
 typename Array<num_dimensions, elemT, indexT>::const_full_iterator
 Array<num_dimensions, elemT, indexT>::begin_all_const() const
 {
-  if (this->begin() == this->end())
-    {
-      // empty array
-      return end_all();
-    }
+  if (this->empty())
+    return end_all();
   else
     return const_full_iterator(this->begin(), this->end(), this->begin()->begin_all_const(), this->begin()->end_all_const());
 }
@@ -271,6 +275,20 @@ Array<num_dimensions, elemT, indexT>::size_all() const
   for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].size_all();
   return acc;
+}
+
+template <int num_dimensions, typename elemT, typename indexT>
+bool
+Array<num_dimensions, elemT, indexT>::empty() const
+{
+  this->check_state();
+  if (base_type::empty())
+    return true;
+  // else
+  for (auto i : *this)
+    if (i.empty())
+      return true;
+  return false;
 }
 
 /*!
@@ -614,7 +632,7 @@ Array<1, elemT, indexT>::resize(const indexT min_index, const indexT max_index, 
 
   base_type::resize(min_index, max_index);
 
-  if (!initialise_with_0)
+  if (!initialise_with_0 || this->size() == 0)
     {
       this->check_state();
       return;
@@ -622,8 +640,8 @@ Array<1, elemT, indexT>::resize(const indexT min_index, const indexT max_index, 
 
   if (oldlength == 0)
     {
-      for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
-        assign(this->num[i], 0);
+      for (auto& i : *this)
+        assign(i, 0);
     }
   else
     {

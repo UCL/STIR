@@ -69,11 +69,28 @@ IndexRange<num_dimensions, indexT>::IndexRange(const BasicCoordinate<num_dimensi
 }
 
 template <int num_dimensions, typename indexT>
+bool
+IndexRange<num_dimensions, indexT>::empty() const
+{
+  this->check_state();
+  if (base_type::empty())
+    return true;
+  if (this->is_regular_range == regular_true)
+    return this->begin()->empty();
+  // else
+  for (auto i : *this)
+    if (i.empty())
+      return true;
+  return false;
+}
+template <int num_dimensions, typename indexT>
 std::size_t
 IndexRange<num_dimensions, indexT>::size_all() const
 {
   this->check_state();
-  if (this->is_regular_range == regular_true && this->get_length() > 0)
+  if (this->empty())
+    return std::size_t(0);
+  if (this->is_regular_range == regular_true)
     return this->get_length() * this->begin()->size_all();
   // else
   size_t acc = 0;
@@ -102,12 +119,11 @@ bool
 IndexRange<num_dimensions, indexT>::get_regular_range(BasicCoordinate<num_dimensions, indexT>& min,
                                                       BasicCoordinate<num_dimensions, indexT>& max) const
 {
-  // check if empty range
-  if (base_type::begin() == base_type::end())
+  if (base_type::empty())
     {
-      constexpr bool signed_type = std::is_signed_v<indexT>;
-      std::fill(min.begin(), min.end(), signed_type ? 0 : 1);
-      std::fill(max.begin(), max.end(), signed_type ? -1 : 0);
+      // use empty range (suitable for unsigned indexT)
+      std::fill(min.begin(), min.end(), 1);
+      std::fill(max.begin(), max.end(), 0);
       return true;
     }
 
@@ -179,21 +195,40 @@ IndexRange<num_dimensions, indexT>::is_regular() const
  ***************************************/
 
 template <typename indexT>
+bool
+IndexRange<1, indexT>::empty() const
+{
+  return max < min;
+}
+
+template <typename indexT>
+void
+IndexRange<1, indexT>::recycle()
+{
+  // note: max - min + 1 needs to be 0 (as we don't do a check in size())
+  // note: use (1,0) as opposed to (0,-1) to avoid problem with unsigned indexT
+  this->min = indexT(1);
+  this->max = indexT(0);
+}
+
+template <typename indexT>
 IndexRange<1, indexT>::IndexRange()
-    : min(0),
-      max(0)
-{}
+{
+  this->recycle();
+}
 
 template <typename indexT>
 IndexRange<1, indexT>::IndexRange(const indexT min_v, const indexT max_v)
     : min(min_v),
       max(max_v)
-{}
+{
+  if (max_v < min_v)
+    this->recycle();
+}
 
 template <typename indexT>
 IndexRange<1, indexT>::IndexRange(const BasicCoordinate<1, indexT>& min_v, const BasicCoordinate<1, indexT>& max_v)
-    : min(min_v[1]),
-      max(max_v[1])
+    : IndexRange<1, indexT>(min_v[1], max_v[1])
 {}
 
 template <typename indexT>
@@ -225,7 +260,7 @@ template <typename indexT>
 typename IndexRange<1, indexT>::size_type
 IndexRange<1, indexT>::get_length() const
 {
-  return static_cast<size_type>(max - min + 1);
+  return static_cast<size_type>((max + 1) - min); // note: this order of calculation avoids problems with unsigned indexT
 }
 
 template <typename indexT>
@@ -267,6 +302,11 @@ template <typename indexT>
 void
 IndexRange<1, indexT>::resize(const indexT min_index, const indexT max_index)
 {
+  if (max_index < min_index)
+    {
+      this->recycle();
+      return;
+    }
   min = min_index;
   max = max_index;
 }
