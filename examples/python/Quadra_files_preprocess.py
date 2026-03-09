@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 ##  set cmd= %cmd% -d ./Debug
 ##  set cmd= %cmd% --os scatter_520_2D.mhdr
 ##
-## the e7tools provide the prompts sinogram in a compressed file-format.
-## STIR can't read that, so you'll have to uncompress it first:
+## the e7tools provide the prompts sinogram in a compressed file-format by default.
+## STIR can't read that, so you'll have to either uncompress or run the initial histogramming without the --compr flag:
 ## VR20 may not always work for uncompressing, you need to try more versions (VG80).
 ## C:\Siemens\PET\bin.win64-VR20\intfcompr.exe -e path\to\compressed\sinogram\filename.mhdr --oe path\to\UNcompressed\sinogram\NEWfilename.mhdr
 
