@@ -58,15 +58,6 @@ def DOI_adaption(projdata, DOI_new):
     proj_info.get_scanner().set_average_depth_of_interaction(DOI_new)
     DOI = proj_info.get_scanner().get_average_depth_of_interaction()
     print('New Depth of interaction:', DOI)
-
-def view_offset_adaption(projdata, view_offset):
-    proj_info = projdata.get_proj_data_info()
-
-    VO = proj_info.get_scanner().get_intrinsic_azimuthal_tilt()
-    print('Current view offset (rad):', VO)
-    proj_info.get_scanner().set_intrinsic_azimuthal_tilt(view_offset)
-    VO = proj_info.get_scanner().get_intrinsic_azimuthal_tilt()
-    print('New view offset (rad):', VO)
     
 def check_if_compressed(header_filename):
     with open(header_filename) as f:
@@ -261,8 +252,6 @@ prompts_from_e7 = stir.ProjData.read_from_file(prompts_header_to_read_withSTIR)
 ## after comparing e7tools and STIR forward projections, we've found out we have to change
 ## the crystal depth of interaction (DOI) from 7mm to 10mm to minimize the differences.
 if apply_DOI_adaption: DOI_adaption(prompts_from_e7, 10)
-###################### View Offset ADAPTION ####################
-view_offset_adaption(prompts_from_e7, 0.0324) # the view offset is very small, but it does have an influence on the forward projection, so we'll set it to 0.002 rad, which is the value for the Siemens Biograph Vision (same crystal size and geometry as the Quadra)
 # Directly read as numpy array
 prompts_arr = stirextra.to_numpy(prompts_from_e7)
 # Write on the disk
