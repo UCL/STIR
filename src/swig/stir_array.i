@@ -282,18 +282,18 @@ namespace stir
 
   // Todo need to instantiate with name?
   // TODO Swig doesn't see that Array<2,float> is derived from it anyway becuse of num_dimensions bug
-%template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float>, float>;
+  %template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float, int>, float, int>;
 
   %template(FloatArray2D) stir::Array<2,float, int>;
-  %apply const stir::Array<2,float>& { const stir::ArrayType<2,float>& };
-  %apply stir::Array<2,float>& { stir::ArrayType<2,float>& };
-  %apply stir::Array<2,float>* { stir::ArrayType<2,float>* };
+  %apply const stir::Array<2,float, int>& { const stir::ArrayType<2,float, int>& };
+  %apply stir::Array<2,float, int>& { stir::ArrayType<2,float, int>& };
+  %apply stir::Array<2,float, int>* { stir::ArrayType<2,float, int>* };
 
   // TODO name
-  %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float>, float>;
+  %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float, int>, float, int>;
   %template(FloatArray3D) stir::Array<3,float, int>;
 #if 0
-  %ADD_indexaccess(int,%arg(stir::Array<2,float>),%arg(stir::Array<3,float>));
+  %ADD_indexaccess(int,%arg(stir::Array<2,float, int>),%arg(stir::Array<3,float, int>));
 #endif
-  %template (FloatNumericVectorWithOffset4D) stir::NumericVectorWithOffset<stir::Array<3,float>, float>;
+  %template (FloatNumericVectorWithOffset4D) stir::NumericVectorWithOffset<stir::Array<3,float, int>, float, int>;
   %template(FloatArray4D) stir::Array<4,float, int>;
