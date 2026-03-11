@@ -24,6 +24,7 @@
 #include "stir/cuda_utilities.h"
 #include "stir/recon_buildblock/GibbsPenalty.h"
 
+#include "cuvec.cuh"
 #include "stir/shared_ptr.h"
 #include <string>
 
@@ -62,7 +63,7 @@ protected:
   int threads_per_block;
   size_t shared_mem_bytes;
 
-  elemT* d_image_data = nullptr;
+  CuVec<elemT> d_image_data;
   // Currently stir:CartesianCoordinate3D<int> is not supported on GPU, we need a simple structure to store boundaries.
   cuda_int3 d_image_dim;
   cuda_int3 d_image_max_indices;
