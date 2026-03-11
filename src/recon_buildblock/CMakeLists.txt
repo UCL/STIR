@@ -182,3 +182,6 @@ endif()
 if (STIR_WITH_CUDA)
   target_link_libraries(${TARGET} PRIVATE CUDA::cudart)
 endif()
+
+target_link_libraries(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/cuvec/cuvec/include)
+

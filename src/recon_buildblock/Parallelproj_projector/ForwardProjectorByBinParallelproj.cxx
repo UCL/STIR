@@ -36,7 +36,7 @@
 //#else
 //#  include "parallelproj_c.h"
 //#endif
-#  include "parallelproj.h"
+#include "parallelproj.h"
 //#endif
 
 START_NAMESPACE_STIR

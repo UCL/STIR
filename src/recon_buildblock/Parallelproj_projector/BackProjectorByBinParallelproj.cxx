@@ -36,7 +36,7 @@
 //#else
 //#  include "parallelproj_c.h"
 //#endif
-#  include "parallelproj.h"
+#include "parallelproj.h"
 // for debugging, remove later
 #include "stir/info.h"
 #include "stir/error.h"
