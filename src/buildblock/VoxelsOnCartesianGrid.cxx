@@ -258,7 +258,9 @@ VoxelsOnCartesianGrid<elemT>::construct_from_projdata_info(const shared_ptr<cons
                      -(x_size_used / 2),
                      -(x_size_used / 2) + x_size_used - 1);
 
-  this->grow(range);
+  // Keep storage contiguous for array views: grow()/resize() usually breaks the
+  // single-block allocation that Array(range) provides.
+  Array<3, elemT>::operator=(Array<3, elemT>(range));
 }
 
 /*!
