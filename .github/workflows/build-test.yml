@@ -140,7 +140,7 @@ jobs:
           compiler: clang
           compiler_version: 21
           cuda_version: "0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
           parallelproj: "OFF"
           BUILD_TYPE: "Release"
           ROOT: "OFF"
