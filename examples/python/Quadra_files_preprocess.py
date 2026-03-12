@@ -58,7 +58,16 @@ def DOI_adaption(projdata, DOI_new):
     proj_info.get_scanner().set_average_depth_of_interaction(DOI_new)
     DOI = proj_info.get_scanner().get_average_depth_of_interaction()
     print('New Depth of interaction:', DOI)
-    
+
+def view_offset_adaption(projdata, view_offset):
+    proj_info = projdata.get_proj_data_info()
+
+    VO = proj_info.get_scanner().get_intrinsic_azimuthal_tilt()
+    print('Current view offset (rad):', VO)
+    proj_info.get_scanner().set_intrinsic_azimuthal_tilt(view_offset)
+    VO = proj_info.get_scanner().get_intrinsic_azimuthal_tilt()
+    print('New view offset (rad):', VO)
+
 def check_if_compressed(header_filename):
     with open(header_filename) as f:
         data = f.read()
