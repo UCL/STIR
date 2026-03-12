@@ -143,6 +143,17 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const Array<3, elemT>& v,
 }
 
 template <class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(Array<3, elemT>&& v,
+                                                    const CartesianCoordinate3D<float>& origin,
+                                                    const BasicCoordinate<3, float>& grid_spacing)
+    : DiscretisedDensityOnCartesianGrid<3, elemT>()
+{
+  Array<3, elemT>::operator=(std::move(v));
+  this->set_origin(origin);
+  this->set_grid_spacing(grid_spacing);
+}
+
+template <class elemT>
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const IndexRange<3>& range,
                                                     const CartesianCoordinate3D<float>& origin,
                                                     const BasicCoordinate<3, float>& grid_spacing)
@@ -157,6 +168,19 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr<const ExamI
     : DiscretisedDensityOnCartesianGrid<3, elemT>(exam_info_sptr, v.get_index_range(), origin, grid_spacing)
 {
   Array<3, elemT>::operator=(v);
+}
+
+template <class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
+                                                    Array<3, elemT>&& v,
+                                                    const CartesianCoordinate3D<float>& origin,
+                                                    const BasicCoordinate<3, float>& grid_spacing)
+    : DiscretisedDensityOnCartesianGrid<3, elemT>()
+{
+  Array<3, elemT>::operator=(std::move(v));
+  this->set_exam_info_sptr(exam_info_sptr);
+  this->set_origin(origin);
+  this->set_grid_spacing(grid_spacing);
 }
 
 template <class elemT>
