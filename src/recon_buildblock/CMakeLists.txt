@@ -180,7 +180,7 @@ if (HAVE_HDF5)
 endif()
 
 if (STIR_WITH_CUDA)
-  target_link_libraries(${TARGET} PRIVATE CUDA::cudart)
+  target_link_libraries(${TARGET} PUBLIC CUDA::cudart)
 endif()
 
 target_include_directories(${TARGET} PUBLIC #${CUVEC_INCLUDE_DIR})

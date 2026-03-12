@@ -277,6 +277,8 @@ target_include_directories(stir_registries PUBLIC
   $<INSTALL_INTERFACE:include>)
 if (NOT STIR_WITH_CUDA)
   target_compile_definitions(stir_registries PUBLIC CUVEC_DISABLE_CUDA)
+else()
+  target_link_libraries(stir_registries PUBLIC CUDA::cudart)
 endif()
 
 # go and look for CMakeLists.txt files in all those directories
