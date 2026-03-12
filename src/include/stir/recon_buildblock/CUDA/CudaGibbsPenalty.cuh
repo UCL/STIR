@@ -460,12 +460,6 @@ CudaGibbsPenalty<elemT, PotentialT>::CudaGibbsPenalty(const bool only_2D, float 
 {}
 
 template <typename elemT, typename PotentialT>
-CudaGibbsPenalty<elemT, PotentialT>::~CudaGibbsPenalty()
-{
-  // Device vectors will automatically free their memory when they go out of scope
-}
-
-template <typename elemT, typename PotentialT>
 double
 CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
 {

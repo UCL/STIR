@@ -87,7 +87,6 @@ protected:
 public:
   CudaGibbsPenalty();
   CudaGibbsPenalty(const bool only_2D, float penalization_factor);
-  ~CudaGibbsPenalty();
 
   //! Override CPU version to set up CUDA resources on GPU and call parent set_up
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;
