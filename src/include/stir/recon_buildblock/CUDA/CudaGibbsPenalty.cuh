@@ -753,8 +753,10 @@ CudaGibbsPenalty<elemT, PotentialT>::set_kappa_sptr(const shared_ptr<const Discr
       array_to_device(d_kappa_data, *k);
     }
   else
+    {
     d_kappa_data.resize(0);
     d_kappa_data.shrink_to_fit();
+    }
 }
 
 END_NAMESPACE_STIR
