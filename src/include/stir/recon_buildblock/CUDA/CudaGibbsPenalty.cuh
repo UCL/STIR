@@ -490,7 +490,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, e
                                                                                             this->potential);
 
   checkCudaError("compute_value kernel");
-
+  cudaDeviceSynchronize();
   double prior_value;
   prior_value = d_scalar[0];
 
@@ -622,7 +622,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
                                                                                      this->potential);
 
   checkCudaError("compute_hessian_diagonal kernel");
-
+  cudaDeviceSynchronize();
   array_to_host(Hessian_diag, d_output_data);
 }
 
@@ -666,7 +666,7 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
                                                                                         this->potential);
 
   checkCudaError("accumulate_Hessian_times_input kernel");
-
+  cudaDeviceSynchronize();
   array_to_host(output, d_output_data);
 }
 
