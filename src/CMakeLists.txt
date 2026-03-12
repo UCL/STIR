@@ -262,6 +262,9 @@ if (STIR_ENABLE_EXPERIMENTAL)
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
+set(CUVEC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/cuvec/cuvec/include")
+
+install(FILES "${CUVEC_INCLUDE_DIR}/cuvec.cuh" DESTINATION "${STIR_INCLUDE_INSTALL_DIR}/")
 # create an object library with all the "registries"
 # Warning: dependencies for object libraries are not transitive!
 add_library(stir_registries OBJECT ${STIR_REGISTRIES})
@@ -269,7 +272,9 @@ target_link_libraries(stir_registries)
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
-target_include_directories(stir_registries PRIVATE ${CMAKE_SOURCE_DIR}/cuvec/cuvec/include)
+target_include_directories(stir_registries PUBLIC
+  $<BUILD_INTERFACE:${CUVEC_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:include>)
 if (NOT STIR_WITH_CUDA)
   target_compile_definitions(stir_registries PUBLIC CUVEC_DISABLE_CUDA)
 endif()

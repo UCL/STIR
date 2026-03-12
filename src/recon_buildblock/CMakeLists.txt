@@ -183,7 +183,13 @@ if (STIR_WITH_CUDA)
   target_link_libraries(${TARGET} PRIVATE CUDA::cudart)
 endif()
 
-target_include_directories(${TARGET} PUBLIC ${CMAKE_SOURCE_DIR}/cuvec/cuvec/include)
+get_target_property(CHECK_CUVEC ${TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "INC ${CHECK_CUVEC}")
+
+# TODO really should be PUBLIC
+target_include_directories(${TARGET} PRIVATE ${CUVEC_INCLUDE_DIR})
+
+get_target_property(CHECK_CUVEC ${TARGET} INTERFACE_INCLUDE_DIRECTORIES)
 if (NOT STIR_WITH_CUDA)
   target_compile_definitions(${TARGET} PUBLIC CUVEC_DISABLE_CUDA)
 endif()
