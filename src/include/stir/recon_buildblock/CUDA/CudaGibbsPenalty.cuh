@@ -462,10 +462,7 @@ CudaGibbsPenalty<elemT, PotentialT>::CudaGibbsPenalty(const bool only_2D, float 
 template <typename elemT, typename PotentialT>
 CudaGibbsPenalty<elemT, PotentialT>::~CudaGibbsPenalty()
 {
-  if (d_output_data)
-    cudaFree(d_output_data);
-  if (d_input_data)
-    cudaFree(d_input_data);
+  // Device vectors will automatically free their memory when they go out of scope
 }
 
 template <typename elemT, typename PotentialT>
@@ -529,7 +526,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elem
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPenalty_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data.data(),
                                                                              d_image_data.data(),
                                                                              d_weights_data.data(),
                                                                              do_kappa ? d_kappa_data.data() : nullptr,
@@ -575,7 +572,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const Discreti
 
   CudaGibbsPenalty_gradient_dot_input_kernel<elemT, PotentialT>
       <<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar.data(),
-                                                  d_input_data,
+                                                  d_input_data.data(),
                                                   d_image_data.data(),
                                                   d_weights_data.data(),
                                                   do_kappa ? d_kappa_data.data() : nullptr,
@@ -617,7 +614,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPenalty_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data.data(),
                                                                                      d_image_data.data(),
                                                                                      d_weights_data.data(),
                                                                                      do_kappa ? d_kappa_data.data() : nullptr,
@@ -660,9 +657,9 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPenalty_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data.data(),
                                                                                         d_image_data.data(),
-                                                                                        d_input_data,
+                                                                                        d_input_data.data(),
                                                                                         d_weights_data.data(),
                                                                                         do_kappa ? d_kappa_data.data() : nullptr,
                                                                                         do_kappa,
@@ -713,18 +710,12 @@ CudaGibbsPenalty<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<
   d_image_data.resize(target_sptr->size_all());
 
   // Pre-allocate GPU memory for input data
-  if (d_input_data)
-    cudaFree(d_input_data);
-  cudaMalloc(&d_input_data, target_sptr->size_all() * sizeof(elemT));
-  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_input_data");
+  d_input_data.resize(target_sptr->size_all());
 
   // Pre-allocate GPU memory for outputs
   d_scalar.resize(1);
 
-  if (d_output_data)
-    cudaFree(d_output_data);
-  cudaMalloc(&d_output_data, target_sptr->size_all() * sizeof(elemT));
-  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_output_data");
+  d_output_data.resize(target_sptr->size_all());
 
   // Copy CPU weights to GPU (weights should already be set up by parent)
   if (this->weights.get_length() > 0)
