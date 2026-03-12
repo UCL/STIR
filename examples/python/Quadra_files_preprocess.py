@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 ##  set cmd= %cmd% -d ./Debug
 ##  set cmd= %cmd% --os scatter_520_2D.mhdr
 ##
-## the e7tools provide the prompts sinogram in a compressed file-format.
-## STIR can't read that, so you'll have to uncompress it first:
+## the e7tools provide the prompts sinogram in a compressed file-format by default.
+## STIR can't read that, so you'll have to either uncompress or run the initial histogramming without the --compr flag:
 ## VR20 may not always work for uncompressing, you need to try more versions (VG80).
 ## C:\Siemens\PET\bin.win64-VR20\intfcompr.exe -e path\to\compressed\sinogram\filename.mhdr --oe path\to\UNcompressed\sinogram\NEWfilename.mhdr
 
@@ -287,7 +287,7 @@ norm_sino_arr = stirextra.to_numpy(norm_sino)
 ##### In case there were bad miniblocks during your measurement, the norm-file
 ##### might contain negative values. We'll set them to a very high value here, such
 ##### that the detection efficiencies (1/norm-value) will be 0 (numerically)
-norm_sino_arr[norm_sino_arr<=0.] = 10^37
+norm_sino_arr[norm_sino_arr<=0.] = 10**37
 #### this is the data STIR needs in an Acquisition Sensitivity model, so we'll write it out
 #%%
 norm_sino_STIR = stir.ProjDataInterfile(prompts_from_e7.get_exam_info(), proj_info, os.path.join(STIR_output_folder,norm_filename_fSTIR))

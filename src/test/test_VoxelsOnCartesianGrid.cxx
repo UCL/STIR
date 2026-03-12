@@ -232,6 +232,7 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size() / zoom),
                    "test on grid spacing");
     check_if_equal(ob4.get_origin(), origin);
+    check(ob4.is_contiguous(), "test default ProjDataInfo constructor keeps contiguous storage");
   }
   {
 
@@ -260,6 +261,7 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size() / zoom),
                    "test on grid spacing");
     check_if_equal(ob5.get_origin(), origin);
+    check(ob5.is_contiguous(), "test sized ProjDataInfo constructor keeps contiguous storage");
 
     {
       // with different zooms
@@ -272,6 +274,7 @@ VoxelsOnCartesianGridTests::run_tests()
                                                   scanner_ptr->get_default_bin_size() / zooms[3]),
                      "test on grid spacing (3 different zooms)");
       check_if_equal(ob6.get_origin(), origin);
+      check(ob6.is_contiguous(), "test multi-zoom ProjDataInfo constructor keeps contiguous storage");
     }
 
     {
