@@ -72,8 +72,8 @@ protected:
   cuda_int3 d_weight_min_indices;
 
   // GPU pointers to weights and kappa data
-  float* d_weights_data = nullptr;
-  elemT* d_kappa_data = nullptr;
+  CuVec<float> d_weights_data;
+  CuVec<elemT> d_kappa_data;
 
   // Buffers for GPU input/output to avoid reallocating memory on each call see usage in set_up() and ~CudaGibbsPenalty()
   mutable double* d_scalar = nullptr;
