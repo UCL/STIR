@@ -63,7 +63,7 @@ protected:
   int threads_per_block;
   size_t shared_mem_bytes;
 
-  CuVec<elemT> d_image_data;
+  mutable CuVec<elemT> d_image_data;
   // Currently stir:CartesianCoordinate3D<int> is not supported on GPU, we need a simple structure to store boundaries.
   cuda_int3 d_image_dim;
   cuda_int3 d_image_max_indices;
