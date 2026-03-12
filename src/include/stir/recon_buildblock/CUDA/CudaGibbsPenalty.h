@@ -76,7 +76,7 @@ protected:
   CuVec<elemT> d_kappa_data;
 
   // Buffers for GPU input/output to avoid reallocating memory on each call see usage in set_up() and ~CudaGibbsPenalty()
-  mutable double* d_scalar = nullptr;
+  mutable CuVec<double> d_scalar;
   // d_scalar is used for compute_value and compute_gradient_times_input as output variable
   mutable elemT* d_input_data = nullptr;
   // d_input_data is used for storing input image for compute_gradient_times_input and accumulate_Hessian_times_input
