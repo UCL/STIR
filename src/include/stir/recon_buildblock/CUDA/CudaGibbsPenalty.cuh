@@ -460,17 +460,6 @@ CudaGibbsPenalty<elemT, PotentialT>::CudaGibbsPenalty(const bool only_2D, float 
 {}
 
 template <typename elemT, typename PotentialT>
-CudaGibbsPenalty<elemT, PotentialT>::~CudaGibbsPenalty()
-{
-  if (d_scalar)
-    cudaFree(d_scalar);
-  if (d_output_data)
-    cudaFree(d_output_data);
-  if (d_input_data)
-    cudaFree(d_input_data);
-}
-
-template <typename elemT, typename PotentialT>
 double
 CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
@@ -481,14 +470,14 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, e
   if (this->_already_set_up == false)
     error("CudaGibbsPenalty: set_up has not been called");
 
-  cudaMemset(d_scalar, 0, sizeof(double));
+  d_scalar[0] = 0.0;
   array_to_device(d_image_data, current_image_estimate);
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPenalty_value_kernel<elemT, PotentialT><<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar,
+  CudaGibbsPenalty_value_kernel<elemT, PotentialT><<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar.data(),
                                                                                               d_image_data.data(),
                                                                                             d_weights_data.data(),
                                                                                             do_kappa ? d_kappa_data.data() : nullptr,
@@ -501,9 +490,9 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, e
                                                                                             this->potential);
 
   checkCudaError("compute_value kernel");
-
+  cudaDeviceSynchronize();
   double prior_value;
-  cudaMemcpy(&prior_value, d_scalar, sizeof(double), cudaMemcpyDeviceToHost);
+  prior_value = d_scalar[0];
 
   return this->penalisation_factor * prior_value;
 }
@@ -531,7 +520,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elem
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPenalty_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data.data(),
                                                                              d_image_data.data(),
                                                                              d_weights_data.data(),
                                                                              do_kappa ? d_kappa_data.data() : nullptr,
@@ -566,7 +555,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const Discreti
   if (this->penalisation_factor == 0)
     return 0.;
 
-  cudaMemset(d_scalar, 0, sizeof(double));
+  d_scalar[0] = 0.0;
 
   array_to_device(d_image_data, current_image_estimate);
   array_to_device(d_input_data, input);
@@ -576,8 +565,8 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const Discreti
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
   CudaGibbsPenalty_gradient_dot_input_kernel<elemT, PotentialT>
-      <<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar,
-                                                  d_input_data,
+      <<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar.data(),
+                                                  d_input_data.data(),
                                                   d_image_data.data(),
                                                   d_weights_data.data(),
                                                   do_kappa ? d_kappa_data.data() : nullptr,
@@ -592,7 +581,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const Discreti
   checkCudaError("compute_gradient_times_input kernel");
   cudaDeviceSynchronize();
   double result;
-  cudaMemcpy(&result, d_scalar, sizeof(double), cudaMemcpyDeviceToHost);
+  result = d_scalar[0];
 
   return this->penalisation_factor * result;
 }
@@ -619,7 +608,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPenalty_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data.data(),
                                                                                      d_image_data.data(),
                                                                                      d_weights_data.data(),
                                                                                      do_kappa ? d_kappa_data.data() : nullptr,
@@ -633,7 +622,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
                                                                                      this->potential);
 
   checkCudaError("compute_hessian_diagonal kernel");
-
+  cudaDeviceSynchronize();
   array_to_host(Hessian_diag, d_output_data);
 }
 
@@ -662,9 +651,9 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  CudaGibbsPenalty_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data,
+  CudaGibbsPenalty_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(d_output_data.data(),
                                                                                         d_image_data.data(),
-                                                                                        d_input_data,
+                                                                                        d_input_data.data(),
                                                                                         d_weights_data.data(),
                                                                                         do_kappa ? d_kappa_data.data() : nullptr,
                                                                                         do_kappa,
@@ -677,7 +666,7 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
                                                                                         this->potential);
 
   checkCudaError("accumulate_Hessian_times_input kernel");
-
+  cudaDeviceSynchronize();
   array_to_host(output, d_output_data);
 }
 
@@ -715,21 +704,12 @@ CudaGibbsPenalty<elemT, PotentialT>::set_up(shared_ptr<const DiscretisedDensity<
   d_image_data.resize(target_sptr->size_all());
 
   // Pre-allocate GPU memory for input data
-  if (d_input_data)
-    cudaFree(d_input_data);
-  cudaMalloc(&d_input_data, target_sptr->size_all() * sizeof(elemT));
-  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_input_data");
+  d_input_data.resize(target_sptr->size_all());
 
   // Pre-allocate GPU memory for outputs
-  if (d_scalar)
-    cudaFree(d_scalar);
-  cudaMalloc(&d_scalar, sizeof(double));
-  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_scalar");
+  d_scalar.resize(1);
 
-  if (d_output_data)
-    cudaFree(d_output_data);
-  cudaMalloc(&d_output_data, target_sptr->size_all() * sizeof(elemT));
-  checkCudaError("CudaGibbsPenalty: cudaMalloc for d_output_data");
+  d_output_data.resize(target_sptr->size_all());
 
   // Copy CPU weights to GPU (weights should already be set up by parent)
   if (this->weights.get_length() > 0)
@@ -773,8 +753,10 @@ CudaGibbsPenalty<elemT, PotentialT>::set_kappa_sptr(const shared_ptr<const Discr
       array_to_device(d_kappa_data, *k);
     }
   else
+    {
     d_kappa_data.resize(0);
     d_kappa_data.shrink_to_fit();
+    }
 }
 
 END_NAMESPACE_STIR
