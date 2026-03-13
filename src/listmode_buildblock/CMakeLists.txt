@@ -51,6 +51,11 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
   )
 endif()
 
+if (HAVE_SIMSET)
+	list(APPEND ${dir_LIB_SOURCES}
+		CListModeDataSimSET.cxx
+        CListRecordSimSET.cxx)
+endif()
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
@@ -65,5 +70,14 @@ if (HAVE_HDF5)
   else()
     # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
     target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
+  endif()
+endif()
+
+if (HAVE_SIMSET)
+  target_include_directories(${TARGET} PUBLIC ${SIMSET_INCLUDE_DIRS})
+  if(TARGET SIMSET::simset)
+    target_link_libraries(${TARGET} PUBLIC SIMSET::simset)
+  else()
+    target_link_libraries(${TARGET} PUBLIC ${SIMSET_LIBRARY})
   endif()
 endif()

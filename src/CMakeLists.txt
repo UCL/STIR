@@ -72,6 +72,14 @@ else()
   message(STATUS "ITK support disabled.")
 endif()
 
+if (SIMSET_FOUND) 
+  message(STATUS "SimSET libraries added.")
+  set(HAVE_SIMSET ON)
+else()
+  message(STATUS "SimSET support disabled.")
+  set(HAVE_SIMSET OFF)
+endif()
+
 #### Swig related
 option(BUILD_SWIG_PYTHON
        "Use SWIG to generate python bindings for STIR (experimental)" OFF)
@@ -269,6 +277,17 @@ target_link_libraries(stir_registries)
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
+
+if (SIMSET_FOUND)
+  target_include_directories(stir_registries PRIVATE ${SIMSET_INCLUDE_DIRS})
+  
+  if(TARGET SIMSET::simset)
+    target_link_libraries(stir_registries PRIVATE SIMSET::simset)
+  else()
+    target_link_libraries(stir_registries PRIVATE ${SIMSET_LIBRARY})
+  endif()
+  # target_compile_definitions(stir_registries PRIVATE DARWIN MAC_10 GEN_UNIX arm64)
+endif()
 
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})

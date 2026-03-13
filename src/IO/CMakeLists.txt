@@ -66,6 +66,12 @@ if (CERN_ROOT_FOUND)
  )
 endif()
 
+if (HAVE_SIMSET)
+	list(APPEND ${dir_LIB_SOURCES}
+		InputStreamFromSimSET.cxx
+	)
+endif()
+
 if (UPENN_FOUND)
 list(APPEND ${dir_LIB_SOURCES}
 	InputStreamWithRecordsFromUPENN.cxx
@@ -121,6 +127,17 @@ if (UPENN_FOUND)
         ${UPENN_liblor} ${UPENN_liblist} ${UPENN_libmhdr} ${JANSSON_LIBRARY} ${ZLIB_LIBRARY_RELEASE}
 ${UPENN_libimagio} ${UPENN_libimagio++})
 endif()
+
+if (HAVE_SIMSET)
+  target_include_directories(${TARGET} PRIVATE ${SIMSET_INCLUDE_DIRS})
+  # Link against SimSET
+  if(TARGET SIMSET::simset)
+    target_link_libraries(${TARGET} PRIVATE SIMSET::simset)
+  else()
+    target_link_libraries(${TARGET} PRIVATE ${SIMSET_LIBRARY})
+  endif()
+endif()
+
 
 if (HAVE_JSON)
   # Add the header-only nlohman_json header-only library
