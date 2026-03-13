@@ -31,6 +31,8 @@
 #include "stir/Bin.h"
 #include "stir/is_null_ptr.h"
 #include "stir/numerics/norm.h"
+#include "stir/format.h"
+#include "stir/error.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -61,9 +63,8 @@ ProjDataInMemory::ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_s
       segment_sequence(ProjData::standard_segment_sequence(*proj_data_info_ptr))
 {
   if (this->buffer.size_all() != this->size_all())
-    error("ProjDataInMemory: supplied buffer has wrong size (%d instead of %d)",
-          static_cast<int>(this->buffer.size_all()),
-          static_cast<int>(this->size_all()));
+    error(
+        format("ProjDataInMemory: supplied buffer has wrong size ({} instead of {})", this->buffer.size_all(), this->size_all()));
   this->initialise_layout_metadata();
 }
 
