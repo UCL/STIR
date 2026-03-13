@@ -61,6 +61,7 @@ echo "Using `command -v SRT2D`"
 echo "Using `command -v SRT2DSPECT`"
 echo "Using `command -v GRD2D`"
 echo "Using `command -v DDSR2D`"
+echo "Using `command -v DFM3D`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
@@ -97,6 +98,14 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+## 3D data (for DFM3D test)
+D3_suffix=_D3
+./simulate_data_for_tests.sh --D3 --suffix "$D3_suffix"
+if [ $? -ne 0 ]; then
+  echo "Error running simulation"
+  exit 1
+fi
+
 error_log_files=""
 
 input_image=my_uniform_cylinder.hv
@@ -109,7 +118,7 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # warning: currently OSMAPOSL needs to be run before OSSPS as
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
-for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
+for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D DFM3D OSMAPOSL OSSPS ; do
   echo "========== Testing `command -v ${recon}`"
   # Check if we have CUDA code and parallelproj.
   # If so, check for test files in CUDA/*
@@ -140,10 +149,12 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
         is_analytic=1
       elif expr "$recon" : DDSR > /dev/null; then
         is_analytic=1
+      elif expr "$recon" : DFM > /dev/null; then
+        is_analytic=1
       fi
       if [ $is_analytic = 1 ]; then
         if expr "$dataSuffix" : '.*TOF.*' > /dev/null; then
-          echo "Skipping TOF as not yet supported for FBP, SRT, GRD and DDSR."
+          echo "Skipping TOF as not yet supported for FBP, SRT, GRD, DDSR and DFM."
           break
         fi
         if expr "$recon" : SRT2DSPECT > /dev/null; then
@@ -152,6 +163,16 @@ for recon in FBP2D FBP3DRP SRT2D SRT2DSPECT GRD2D DDSR2D OSMAPOSL OSSPS ; do
         elif expr "$recon" : DDSR2D > /dev/null; then
           suffix=$SPECT_suffix
           export suffix
+        elif expr "$recon" : DFM3D > /dev/null; then
+          suffix=$D3_suffix
+          export suffix
+          echo "Running precorrection"
+          correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
+          if [ $? -ne 0 ]; then
+            echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+            error_log_files="${error_log_files} my_correct_projdata_simulation.log"
+            break
+          fi
         else
           suffix=$zero_view_suffix
           export suffix
