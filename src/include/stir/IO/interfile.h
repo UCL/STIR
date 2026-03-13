@@ -37,12 +37,8 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions>
-class IndexRange;
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity;
-template <typename elemT>
-class VectorWithOffset;
 template <typename elemT>
 class CartesianCoordinate3D;
 template <typename elemT>
@@ -53,8 +49,6 @@ class ProjDataFromStream;
 class DynamicDiscretisedDensity;
 template <typename elemT>
 class ParametricDiscretisedDensity;
-template <typename elemT>
-class VoxelsOnCartesianGrid;
 template <int num_dimensions, typename elemT>
 class KineticParameters;
 
