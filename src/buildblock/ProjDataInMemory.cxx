@@ -31,6 +31,8 @@
 #include "stir/Bin.h"
 #include "stir/is_null_ptr.h"
 #include "stir/numerics/norm.h"
+#include "stir/format.h"
+#include "stir/error.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -50,7 +52,25 @@ ProjDataInMemory::ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_s
       segment_sequence(ProjData::standard_segment_sequence(*proj_data_info_ptr))
 {
   this->create_buffer(initialise_with_0);
+  this->initialise_layout_metadata();
+}
 
+ProjDataInMemory::ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
+                                   shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
+                                   Array<1, float>&& buffer_v)
+    : ProjData(exam_info_sptr, proj_data_info_ptr),
+      buffer(std::move(buffer_v)),
+      segment_sequence(ProjData::standard_segment_sequence(*proj_data_info_ptr))
+{
+  if (this->buffer.size_all() != this->size_all())
+    error(
+        format("ProjDataInMemory: supplied buffer has wrong size ({} instead of {})", this->buffer.size_all(), this->size_all()));
+  this->initialise_layout_metadata();
+}
+
+void
+ProjDataInMemory::initialise_layout_metadata()
+{
   int sum = 0;
   for (int segment_num = proj_data_info_sptr->get_min_segment_num(); segment_num <= proj_data_info_sptr->get_max_segment_num();
        ++segment_num)
