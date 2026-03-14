@@ -95,6 +95,9 @@ public:
 
   BackProjectorByBinParallelproj* clone() const override;
 
+  bool get_restrict_to_cylindrical_FOV() const;
+  void set_restrict_to_cylindrical_FOV(bool val);
+
 protected:
   void actual_back_project(const RelatedViewgrams<float>&,
                            const int min_axial_pos_num,
@@ -111,6 +114,7 @@ private:
   void set_helper(shared_ptr<detail::ParallelprojHelper>);
   bool _cuda_verbosity;
   int _num_gpu_chunks;
+  bool _restrict_to_cylindrical_FOV;
 };
 
 END_NAMESPACE_STIR
