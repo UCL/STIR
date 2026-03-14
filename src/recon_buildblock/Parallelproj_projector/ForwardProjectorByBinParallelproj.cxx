@@ -30,11 +30,14 @@
 #include "stir/utilities.h"
 #include "stir/TOF_conversions.h"
 #include <algorithm>
-#ifdef parallelproj_built_with_CUDA
-#  include "parallelproj_cuda.h"
-#else
-#  include "parallelproj_c.h"
-#endif
+//#if 0
+//#ifdef parallelproj_built_with_CUDA
+//#  include "parallelproj_cuda.h"
+//#else
+//#  include "parallelproj_c.h"
+//#endif
+#include "parallelproj.h"
+//#endif
 
 START_NAMESPACE_STIR
 
@@ -257,7 +260,7 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
     {
 
       std::vector<float> mem_for_PP(_helper->num_lors * _helper->num_tof_bins);
-      joseph3d_fwd_tof_sino(_helper->xend.data(),
+      joseph3d_tof_sino_fwd(_helper->xend.data(),
                             _helper->xstart.data(),
                             image_ptr,
                             _helper->origin.data(),
