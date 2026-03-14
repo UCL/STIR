@@ -57,6 +57,7 @@
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+#include "stir/analytic/DFM3D/DFM3DReconstruction.h"
 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/KOSMAPOSL/KOSMAPOSLReconstruction.h"
@@ -133,6 +134,7 @@ static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<Disc
 
 static FBP2DReconstruction::RegisterIt dummy601;
 static FBP3DRPReconstruction::RegisterIt dummy602;
+static DFM3DReconstruction::RegisterIt dummy602b;
 
 static OSMAPOSLReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummy603;
 static KOSMAPOSLReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummyK;
