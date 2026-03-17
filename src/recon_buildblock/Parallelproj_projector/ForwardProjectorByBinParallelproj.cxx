@@ -25,19 +25,14 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/info.h"
+#include "stir/format.h"
 #include "stir/error.h"
 #include "stir/recon_array_functions.h"
 #include "stir/utilities.h"
 #include "stir/TOF_conversions.h"
 #include <algorithm>
-//#if 0
-//#ifdef parallelproj_built_with_CUDA
-//#  include "parallelproj_cuda.h"
-//#else
-//#  include "parallelproj_c.h"
-//#endif
+
 #include "parallelproj.h"
-//#endif
 
 START_NAMESPACE_STIR
 
@@ -88,14 +83,6 @@ ForwardProjectorByBinParallelproj::set_up(const shared_ptr<const ProjDataInfo>& 
   check(*proj_data_info_sptr, *_density_sptr);
   _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
 
-#if 0
-    shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
-            proj_data_info_cy_no_ar_cor_sptr(
-                dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(
-                    proj_data_info_sptr));
-    if (is_null_ptr(proj_data_info_cy_no_ar_cor_sptr))
-        error("ForwardProjectorByBinParallelproj: Failed casting to ProjDataInfoCylindricalNoArcCorr");
-#endif
   // Initialise projected_data_sptr from this->_proj_data_info_sptr
   _projected_data_sptr.reset(new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
   if (!this->_do_not_setup_helper)
@@ -170,14 +157,7 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
       image_ptr = image_vec.data();
     }
 
-#if 0
-    // needed to set output to zero as parallelproj accumulates but is no longer the case
-    _projected_data_sptr->fill(0.F);
-#endif
-
-#ifdef parallelproj_built_with_CUDA
-
-  info("Calling parallelproj forward (CUDA)", 2);
+  info(format("Calling parallelproj forward with {} chunks", _num_gpu_chunks), 2);
 
   long long num_lors_per_chunk_floor
       = _helper->num_lors
@@ -187,10 +167,7 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
   long long num_lors_per_chunk;
   long long offset = 0;
 
-  // send image to all visible CUDA devices
-  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_ptr, _helper->num_image_voxel);
-
-  // do (chuck-wise) projection on the CUDA devices
+  // do (chunk-wise) projection on the CUDA devices
   for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
     {
       if (chunk_num < remainder)
@@ -206,22 +183,21 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
         {
 
           std::vector<float> mem_for_PP(num_lors_per_chunk * _helper->num_tof_bins);
-          joseph3d_fwd_tof_sino_cuda(_helper->xend.data() + 3 * offset,
-                                     _helper->xstart.data() + 3 * offset,
-                                     image_on_cuda_devices,
-                                     _helper->origin.data(),
-                                     _helper->voxsize.data(),
-                                     mem_for_PP.data(),  // this is where the data is written to
-                                     num_lors_per_chunk, // PP docu: "number of geometrical LORs";
-                                     _helper->imgdim.data(),
-                                     _helper->tofbin_width,
-                                     &_helper->sigma_tof,
-                                     &_helper->tofcenter_offset,
-                                     4,                     // float n_sigmas
-                                     _helper->num_tof_bins, // short n_tofbins
-                                     0,                     // unsigned char lor_dependent_sigma_tof
-                                     0,                     // unsigned char lor_dependent_tofcenter_offset
-                                     64                     // threadsperblock
+          joseph3d_tof_sino_fwd(_helper->xend.data() + 3 * offset,
+                                _helper->xstart.data() + 3 * offset,
+                                image_ptr,
+                                _helper->origin.data(),
+                                _helper->voxsize.data(),
+                                mem_for_PP.data(),  // this is where the data is written to
+                                num_lors_per_chunk, // PP docu: "number of geometrical LORs";
+                                _helper->imgdim.data(),
+                                _helper->tofbin_width,
+                                &_helper->sigma_tof,
+                                &_helper->tofcenter_offset,
+                                4,                     // float n_sigmas
+                                _helper->num_tof_bins, // short n_tofbins
+                                0,                     // unsigned char lor_dependent_sigma_tof
+                                0                      // unsigned char lor_dependent_tofcenter_offset
           );
 
           float* STIR_mem = _projected_data_sptr->get_data_ptr();
@@ -230,70 +206,24 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
 
           if (chunk_num != _num_gpu_chunks - 1)
             _projected_data_sptr->release_data_ptr();
-          info("current proj max: "
-               + std::to_string(*std::max_element(_projected_data_sptr->begin(), _projected_data_sptr->end())));
         }
       else
         {
-          joseph3d_fwd_cuda(_helper->xstart.data() + 3 * offset,
-                            _helper->xend.data() + 3 * offset,
-                            image_on_cuda_devices,
-                            _helper->origin.data(),
-                            _helper->voxsize.data(),
-                            _projected_data_sptr->get_data_ptr() + offset,
-                            num_lors_per_chunk,
-                            _helper->imgdim.data(),
-                            /*threadsperblock*/ 64);
+          joseph3d_fwd(_helper->xstart.data() + 3 * offset,
+                       _helper->xend.data() + 3 * offset,
+                       image_ptr,
+                       _helper->origin.data(),
+                       _helper->voxsize.data(),
+                       _projected_data_sptr->get_data_ptr() + offset,
+                       num_lors_per_chunk,
+                       _helper->imgdim.data());
           if (chunk_num != _num_gpu_chunks - 1)
             _projected_data_sptr->release_data_ptr();
         }
       offset += num_lors_per_chunk;
     }
 
-  // free image array from CUDA devices
-  free_float_array_on_all_devices(image_on_cuda_devices);
-
-#else
-  info("Calling parallelproj forward (CPU)", 2);
-
-  if (this->_proj_data_info_sptr->is_tof_data() == 1)
-    {
-
-      std::vector<float> mem_for_PP(_helper->num_lors * _helper->num_tof_bins);
-      joseph3d_tof_sino_fwd(_helper->xend.data(),
-                            _helper->xstart.data(),
-                            image_ptr,
-                            _helper->origin.data(),
-                            _helper->voxsize.data(),
-                            mem_for_PP.data(),
-                            _helper->num_lors,
-                            _helper->imgdim.data(),
-                            _helper->tofbin_width,
-                            &_helper->sigma_tof,
-                            &_helper->tofcenter_offset,
-                            4, // float n_sigmas,
-                            _helper->num_tof_bins,
-                            0, //  unsigned char lor_dependent_sigma_tof
-                            0  // unsigned char lor_dependent_tofcenter_offset
-      );
-
-      float* STIR_mem = _projected_data_sptr->get_data_ptr();
-      TOF_transpose(STIR_mem, mem_for_PP, _helper, 0, _helper->num_lors);
-    }
-  else
-    {
-      joseph3d_fwd(_helper->xstart.data(),
-                   _helper->xend.data(),
-                   image_ptr,
-                   _helper->origin.data(),
-                   _helper->voxsize.data(),
-                   _projected_data_sptr->get_data_ptr(),
-                   static_cast<long long>(_projected_data_sptr->get_proj_data_info_sptr()->size_all()),
-                   _helper->imgdim.data());
-    }
-#endif
-  info("done", 2);
-
+  cudaDeviceSynchronize();
   if (_density_sptr->is_contiguous())
     {
       _density_sptr->release_full_data_ptr();
