@@ -217,7 +217,6 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
       offset += num_lors_per_chunk;
     }
 
-  cudaDeviceSynchronize();
   p.release_const_data_ptr();
 
   // --------------------------------------------------------------- //

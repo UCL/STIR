@@ -223,7 +223,6 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
       offset += num_lors_per_chunk;
     }
 
-  cudaDeviceSynchronize();
   if (_density_sptr->is_contiguous())
     {
       _density_sptr->release_full_data_ptr();
