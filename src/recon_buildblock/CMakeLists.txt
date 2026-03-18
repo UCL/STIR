@@ -167,7 +167,18 @@ endif()
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)
-  target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj)
+  if (PARALLELPROJ_VERSION VERSION_LESS 2.0)
+    # variable to enable work-arounds in .cxx
+    target_compile_definitions(${TARGET} PRIVATE parallelproj1)
+    target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_c)
+    if (parallelproj_built_with_CUDA)
+      target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_cuda)
+      # variable to enable work-arounds in .cxx
+      target_compile_definitions(${TARGET} PRIVATE parallelproj1_CUDA)
+    endif()
+  else()
+    target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj)
+  endif()
 endif()
 
 if (HAVE_HDF5)

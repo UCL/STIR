@@ -9,8 +9,10 @@
   \author Richard Brown
   \author Kris Thielemans
   \author Nicole Jurjew
+  \author Markus Jehl
 
-    Copyright (C) 2019, 2021, 2024 University College London
+    Copyright (C) 2019, 2021, 2024, 2026 University College London
+    Copyright (C) 2026 Positrigo
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -31,7 +33,19 @@
 #include "stir/LORCoordinates.h"
 #include "stir/recon_array_functions.h"
 
-#include "parallelproj.h"
+#ifdef parallelproj1
+#  ifdef parallelproj_built_with_CUDA
+#    include "parallelproj_cuda.h"
+#    define parallelproj1_CUDA
+#    define joseph3d_back joseph3d_back_cuda
+#    define joseph3d_tof_sino_back joseph3d_back_tof_sino_cuda
+#  else
+#    include "parallelproj_c.h"
+#    define joseph3d_tof_sino_back joseph3d_back_tof_sino
+#  endif
+#else
+#  include "parallelproj.h"
+#endif
 
 #include "stir/info.h"
 #include "stir/format.h"
@@ -165,7 +179,12 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   long long num_lors_per_chunk;
   long long offset = 0;
 
-  // do (chuck-wise) back projection on the CUDA devices
+#ifdef parallelproj1_CUDA
+  // send image to all visible CUDA devices
+  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_ptr, _helper->num_image_voxel);
+#endif
+
+  // do (chunck-wise) back projection
   for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
     {
       if (chunk_num < remainder)
@@ -185,7 +204,11 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
 
           joseph3d_tof_sino_back(_helper->xend.data() + 3 * offset,
                                  _helper->xstart.data() + 3 * offset,
+#ifdef parallelproj1_CUDA
+                                 image_on_cuda_devices,
+#else
                                  image_ptr,
+#endif
                                  _helper->origin.data(),
                                  _helper->voxsize.data(),
                                  mem_for_PP_back.data(),
@@ -198,6 +221,10 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
                                  _helper->num_tof_bins,
                                  0, // unsigned char lor_dependent_sigma_tof
                                  0  // unsigned char lor_dependent_tofcenter_offset
+#ifdef parallelproj1_CUDA
+                                 ,
+                                 /* num_threads_per_block */ 64
+#endif
           );
           if (chunk_num != _num_gpu_chunks - 1)
             p.release_const_data_ptr();
@@ -206,16 +233,36 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
         {
           joseph3d_back(_helper->xstart.data() + 3 * offset,
                         _helper->xend.data() + 3 * offset,
+#ifdef parallelproj1_CUDA
+                        image_on_cuda_devices,
+#else
                         image_ptr,
+#endif
                         _helper->origin.data(),
                         _helper->voxsize.data(),
                         p.get_const_data_ptr() + offset,
                         num_lors_per_chunk,
-                        _helper->imgdim.data());
+                        _helper->imgdim.data()
+#ifdef parallelproj1_CUDA
+                            ,
+                        /* num_threads_per_block */ 64
+#endif
+          );
         }
       info("done", 2);
       offset += num_lors_per_chunk;
     }
+
+#ifdef parallelproj1_CUDA
+  // sum backprojected images on the first CUDA device
+  sum_float_arrays_on_first_device(image_on_cuda_devices, _helper->num_image_voxel);
+
+  // copy summed image back to host
+  get_float_array_from_device(image_on_cuda_devices, _helper->num_image_voxel, 0, image_ptr);
+
+  // free image array from CUDA devices
+  free_float_array_on_all_devices(image_on_cuda_devices);
+#endif
 
   p.release_const_data_ptr();
 

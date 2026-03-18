@@ -10,7 +10,10 @@
   \author Richard Brown
   \author Kris Thielemans
   \author Nicole Jurjew
-    Copyright (C) 2019, 2021, 2024 University College London
+  \author Markus Jehl
+
+    Copyright (C) 2019, 2021, 2024, 2026 University College London
+    Copyright (C) 2026 Positrigo
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -32,7 +35,18 @@
 #include "stir/TOF_conversions.h"
 #include <algorithm>
 
-#include "parallelproj.h"
+#ifdef parallelproj1
+#  ifdef parallelproj_built_with_CUDA
+#    include "parallelproj_cuda.h"
+#    define joseph3d_fwd joseph3d_fwd_cuda
+#    define joseph3d_tof_sino_fwd joseph3d_fwd_tof_sino_cuda
+#  else
+#    include "parallelproj_c.h"
+#    define joseph3d_tof_sino_fwd joseph3d_fwd_tof_sino
+#  endif
+#else
+#  include "parallelproj.h"
+#endif
 
 START_NAMESPACE_STIR
 
@@ -167,7 +181,12 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
   long long num_lors_per_chunk;
   long long offset = 0;
 
-  // do (chunk-wise) projection on the CUDA devices
+#ifdef parallelproj1_CUDA
+  // send image to all visible CUDA devices
+  float** image_on_cuda_devices = copy_float_array_to_all_devices(image_ptr, _helper->num_image_voxel);
+#endif
+
+  // do (chunk-wise) projection
   for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
     {
       if (chunk_num < remainder)
@@ -185,7 +204,11 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
           std::vector<float> mem_for_PP(num_lors_per_chunk * _helper->num_tof_bins);
           joseph3d_tof_sino_fwd(_helper->xend.data() + 3 * offset,
                                 _helper->xstart.data() + 3 * offset,
+#ifdef parallelproj1_CUDA
+                                image_on_cuda_devices,
+#else
                                 image_ptr,
+#endif
                                 _helper->origin.data(),
                                 _helper->voxsize.data(),
                                 mem_for_PP.data(),  // this is where the data is written to
@@ -198,6 +221,10 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
                                 _helper->num_tof_bins, // short n_tofbins
                                 0,                     // unsigned char lor_dependent_sigma_tof
                                 0                      // unsigned char lor_dependent_tofcenter_offset
+#ifdef parallelproj1_CUDA
+                                ,
+                                64 // threadsperblock
+#endif
           );
 
           float* STIR_mem = _projected_data_sptr->get_data_ptr();
@@ -211,17 +238,31 @@ ForwardProjectorByBinParallelproj::set_input(const DiscretisedDensity<3, float>&
         {
           joseph3d_fwd(_helper->xstart.data() + 3 * offset,
                        _helper->xend.data() + 3 * offset,
+#ifdef parallelproj1_CUDA
+                       image_on_cuda_devices,
+#else
                        image_ptr,
+#endif
                        _helper->origin.data(),
                        _helper->voxsize.data(),
                        _projected_data_sptr->get_data_ptr() + offset,
                        num_lors_per_chunk,
-                       _helper->imgdim.data());
+                       _helper->imgdim.data()
+#ifdef parallelproj1_CUDA
+                           ,
+                       64 // threadsperblock
+#endif
+          );
           if (chunk_num != _num_gpu_chunks - 1)
             _projected_data_sptr->release_data_ptr();
         }
       offset += num_lors_per_chunk;
     }
+
+#ifdef parallelproj1_CUDA
+  // free image array from CUDA devices
+  free_float_array_on_all_devices(image_on_cuda_devices);
+#endif
 
   if (_density_sptr->is_contiguous())
     {
