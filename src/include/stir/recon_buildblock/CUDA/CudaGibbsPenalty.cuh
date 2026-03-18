@@ -534,7 +534,6 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elem
                                                                              this->potential);
 
   checkCudaError("compute_gradient kernel");
-  cudaDeviceSynchronize();
   array_to_host(prior_gradient, d_output_data);
 
   // Optional: write gradient to file
@@ -622,7 +621,6 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
                                                                                      this->potential);
 
   checkCudaError("compute_hessian_diagonal kernel");
-  cudaDeviceSynchronize();
   array_to_host(Hessian_diag, d_output_data);
 }
 
@@ -666,7 +664,6 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
                                                                                         this->potential);
 
   checkCudaError("accumulate_Hessian_times_input kernel");
-  cudaDeviceSynchronize();
   array_to_host(output, d_output_data);
 }
 

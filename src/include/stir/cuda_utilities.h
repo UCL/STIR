@@ -54,6 +54,11 @@ typedef int3 cuda_int3;
 #endif
 
 #ifdef __CUDACC__
+
+//! copy an `Array` to pre-allocated device memory
+/*!
+  \ingroup CUDA
+*/
 template <int num_dimensions, typename elemT>
 inline void
 array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
@@ -74,6 +79,10 @@ array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
     }
 }
 
+//! copy an `Array` to pre-allocated CuVec
+/*!
+  \ingroup CUDA
+*/
 template <int num_dimensions, typename elemT>
 inline void
 array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array)
@@ -81,9 +90,14 @@ array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir
   std::copy(stir_array.begin_all(), stir_array.end_all(), dev_data.begin());
 }
 
+//! copy CUDA pointer to `Array`
+/*!
+  \ingroup CUDA
+  The third argument is ignored, as `cudaMemcpy` always syncs device and host.
+*/
 template <int num_dimensions, typename elemT>
 inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
+array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true)
 {
   if (stir_array.is_contiguous())
     {
@@ -102,10 +116,17 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
     }
 }
 
+//! copy CuVec to `Array`
+/*!
+  \ingroup CUDA
+  If \a sync = \c true, the function will call `cudaDeviceSynchronize()` before copying.
+*/
 template <int num_dimensions, typename elemT>
 inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data)
+array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true)
 {
+  if (sync)
+    cudaDeviceSynchronize();
   std::copy(dev_data.begin(), dev_data.end(), stir_array.begin_all());
 }
 
