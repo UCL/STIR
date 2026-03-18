@@ -262,9 +262,6 @@ if (STIR_ENABLE_EXPERIMENTAL)
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
-set(CUVEC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/cuvec/cuvec/include")
-
-install(FILES "${CUVEC_INCLUDE_DIR}/cuvec.cuh" DESTINATION "${STIR_INCLUDE_INSTALL_DIR}/")
 # create an object library with all the "registries"
 # Warning: dependencies for object libraries are not transitive!
 add_library(stir_registries OBJECT ${STIR_REGISTRIES})
