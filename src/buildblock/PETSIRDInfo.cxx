@@ -29,10 +29,8 @@ Coincidence LM Data Class for PETSIRD: Implementation
 #include "stir/PETSIRDInfo.h"
 #include "stir/detail/PETSIRDInfo_helpers.h"
 #include "stir/Succeeded.h"
-#include <fmt/format.h>
-#include "stir/info.h"
+
 #include "stir/warning.h"
-#include "stir/error.h"
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"
@@ -113,7 +111,7 @@ PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique
               warning("Inconsistent rotation axis detected between modules.");
           }
       }
-  info(fmt::format("Rotation axis of blocks inferred as axis index {}", detected_axis));
+  info(format("Rotation axis of blocks inferred as axis index {}", detected_axis));
   return detected_axis;
 }
 
@@ -139,7 +137,6 @@ PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_di
                                                       int& radius_index,
                                                       const int rotation_axis)
 {
-
   auto insert_translation = [&](const petsird::RigidTransformation& trans) {
     unique_dim1_values.insert(trans.matrix.at(0, 3));
     unique_dim2_values.insert(trans.matrix.at(1, 3));
@@ -162,9 +159,7 @@ PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_di
     return false;
   };
 
-  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list
-      = petsird_scanner_info_sptr->scanner_geometry.replicated_modules;
-  for (const auto& module : replicated_module_list)
+  for (const auto& module : petsird_scanner_info_sptr->scanner_geometry.replicated_modules)
     {
       for (const auto& el_trans : module.object.detecting_elements.transforms)
         {
@@ -191,9 +186,8 @@ PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_di
 void
 PETSIRDInfo::figure_out_block_angles(std::set<float>& unique_angle_modules, const int rot_axis)
 {
-  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list
-      = petsird_scanner_info_sptr->scanner_geometry.replicated_modules;
-  for (const auto& module : replicated_module_list)
+
+  for (const auto& module : petsird_scanner_info_sptr->scanner_geometry.replicated_modules)
     for (const auto& transform : module.transforms)
       {
         if (rot_axis == 0)
@@ -536,14 +530,14 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   // const int num_ax = blocks_per_bucket_axial * num_axial_crystals_per_block;
   // const int num_tang = blocks_per_bucket_transaxial * num_trans_crystals_per_block;
 
-  std::cerr << "Tile size (groupSize) = " << groupSize << "\n";
+  info(fmt::format("Tile size (groupSize) = {}", groupSize));
 
-  const uint32_t num_rings = static_cast<uint32_t>(stir_scanner_sptr->get_num_rings());
-  const uint32_t num_det = static_cast<uint32_t>(stir_scanner_sptr->get_num_detectors_per_ring());
+  // const uint32_t num_rings = static_cast<uint32_t>(stir_scanner_sptr->get_num_rings());
+  // const uint32_t num_det = static_cast<uint32_t>(stir_scanner_sptr->get_num_detectors_per_ring());
   const uint32_t axial_blocks = static_cast<uint32_t>(stir_scanner_sptr->get_num_axial_blocks());
   const uint32_t trans_crys = static_cast<uint32_t>(stir_scanner_sptr->get_num_transaxial_crystals_per_block());
   const uint32_t axial_crys = static_cast<uint32_t>(stir_scanner_sptr->get_num_axial_crystals_per_block());
-  const uint32_t layers = static_cast<uint32_t>(stir_scanner_sptr->get_num_detector_layers());
+  // const uint32_t layers = static_cast<uint32_t>(stir_scanner_sptr->get_num_detector_layers());
 
   for (uint32_t module = 0; module < numberOfModules; ++module)
     for (uint32_t elem = 0; elem < numberOfElementsIndices; ++elem)
@@ -603,9 +597,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
   if (petsird_to_stir->size() != stir_to_petsird->size())
     {
-      std::cerr << "Map size mismatch!\n"
-                << "Forward size: " << petsird_to_stir->size() << "\n"
-                << "Reverse size: " << stir_to_petsird->size() << std::endl;
+      info(fmt::format("PETSIRDInfo: Map size mismatch! Forward size: {0}\n Reverse size: {1}", 
+        petsird_to_stir->size(), stir_to_petsird->size()));
+
       error("Forward and reverse maps differ in size");
     }
 

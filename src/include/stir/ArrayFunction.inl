@@ -348,4 +348,24 @@ transform_array_from_periodic_indices(Array<num_dimensions, elemT>& out_array, c
   } while (next(index, out_array));
 }
 
+template <typename elemT>
+inline void
+find_unique_values(std::set<elemT>& values, const Array<1, elemT>& input)
+{
+  for (int i = input.get_min_index(); i <= input.get_max_index(); ++i)
+    {
+      values.insert(input[i]);
+    }
+}
+
+template <int num_dim, typename elemT>
+inline void
+find_unique_values(std::set<elemT>& values, const Array<num_dim, elemT>& input)
+{
+  for (int i = input.get_min_index(); i <= input.get_max_index(); ++i)
+    {
+      find_unique_values(values, input[i]);
+    }
+}
+
 END_NAMESPACE_STIR

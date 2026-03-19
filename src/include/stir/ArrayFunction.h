@@ -59,6 +59,7 @@
 #include "stir/Array.h"
 #include "stir/shared_ptr.h"
 #include "stir/ArrayFunctionObject.h"
+#include <set>
 
 START_NAMESPACE_STIR
 
@@ -266,6 +267,24 @@ template <int num_dim, typename elemT>
 inline void transform_array_to_periodic_indices(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array);
 template <int num_dim, typename elemT>
 inline void transform_array_from_periodic_indices(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array);
+
+template <typename elemT>
+inline void find_unique_values(std::set<elemT>& values, const Array<1, elemT>& input);
+
+template <int num_dim, typename elemT>
+inline void find_unique_values(std::set<elemT>& values, const Array<num_dim, elemT>& input);
+
+// inline bool
+// get_spacing_uniform(std::vector<float>& spacing, const std::set<float>& unsorted_block_poss, double epsilon = 1e-4)
+// {
+//   std::vector<float> sorted_z(unsorted_block_poss.begin(), unsorted_block_poss.end());
+//   for (size_t i = 1; i < sorted_z.size(); ++i)
+//     {
+//       spacing.push_back(std::abs(sorted_z[i] - sorted_z[i - 1]));
+//     }
+
+//   return std::all_of(spacing.begin(), spacing.end(), [&](float s) { return std::abs(s - spacing.front()) <= epsilon; });
+// }
 
 END_NAMESPACE_STIR
 

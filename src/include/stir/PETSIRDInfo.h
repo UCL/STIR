@@ -37,8 +37,7 @@ Coincidence LM Data Class for PETSIRD
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/ProjDataInfo.h"
 #include <set>
-#include <boost/format.hpp>
-
+#include "stir/format.h"
 #include "stir/info.h"
 #include "stir/error.h"
 
@@ -116,7 +115,9 @@ public:
     const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
 
     if (!detection_bin_efficiencies)
+    {
       return 1.f; // no efficiencies available
+    }
 
       DetectionPosition<> temp_dp1; 
       DetectionPosition<> temp_dp2; 
@@ -135,11 +136,7 @@ public:
     auto it0 = stir_to_petsird->find(temp_dp1);
     if (it0 == stir_to_petsird->end())
       {
-        info(boost::format("DetectionPosition pos1(): "
-                           "tangential %1%, "
-                           "axial %2%, "
-                           "radial %3%")
-             % dp.pos1().tangential_coord() % dp.pos1().axial_coord() % dp.pos1().radial_coord());
+        info(format("DetectionPosition pos1(): tangential {}, axial {},radial {}", dp.pos1().tangential_coord(), dp.pos1().axial_coord(), dp.pos1().radial_coord()));
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
     
@@ -147,11 +144,7 @@ public:
 
     if (it1 == stir_to_petsird->end())
       {
-        info(boost::format("DetectionPosition pos2(): "
-                           "tangential %1%, "
-                           "axial %2%, "
-                           "radial %3%")
-             % dp.pos2().tangential_coord() % dp.pos2().axial_coord() % dp.pos2().radial_coord());
+        info(format("DetectionPosition pos2(): tangential {}, axial {}, radial {}", dp.pos2().tangential_coord(), dp.pos2().axial_coord(), dp.pos2().radial_coord()));
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
 
@@ -231,7 +224,6 @@ private:
   shared_ptr<Scanner> stir_scanner_sptr;
 
   shared_ptr<const petsird::Header> petsird_header_sptr;
-
   //! Number of replicated modules.
   uint32_t numberOfModules;
   //! Number of element indices per module.
@@ -260,7 +252,6 @@ private:
   shared_ptr<PETSIRDToSTIRDetectorIndexMap> petsird_to_stir;
 
   shared_ptr<STIRToPETSIRDDetectorIndexMap> stir_to_petsird;
-
   //! Mapping from STIR detection positions to PETSIRD coordinates.
   shared_ptr<DetectorCoordinateMap::det_pos_to_coord_type> petsird_map_sptr;
 };
