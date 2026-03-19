@@ -55,13 +55,14 @@ PETSIRDTests::test_find_unique_values_1D()
   std::vector<float> input = { 1.0f, 2.0f, 3.0f, 2.0f, 4.0f, 1.0f, 5.0f };
   std::set<float> expected = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f };
   std::set<float> result;
-  
+
   stir::Array<1, float> _input(IndexRange<1>(7)); //{ 1.0f, 2.0f, 3.0f, 2.0f, 4.0f, 1.0f, 5.0f };
 
-  for (size_t i = 0; i < input.size(); ++i){
-    _input[i] = input[i];
-    std::cout << _input[i] << std::endl;
-  }
+  for (size_t i = 0; i < input.size(); ++i)
+    {
+      _input[i] = input[i];
+      std::cout << _input[i] << std::endl;
+    }
 
   find_unique_values<float>(result, _input);
   for (const auto& val : expected)
@@ -76,16 +77,16 @@ PETSIRDTests::test_find_unique_values_2D()
   std::vector<std::vector<float>> input = { { 1.0f, 2.0f, 3.0f }, { 4.0f, 2.0f, 6.0f }, { 1.0f, 8.0f, 9.0f } };
   std::set<float> expected = { 1.0f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f, 9.0f };
   std::set<float> result;
-  
+
   const IndexRange<2> range(Coordinate2D<int>(0, 0), Coordinate2D<int>(2, 2));
-  stir::Array<2, float> _input(range); //{ { 1.0f, 2.0f, 3.0f }, { 4.0f, 2.0f, 6.0f }, { 1.0f, 8.0f, 9.0f } };  
+  stir::Array<2, float> _input(range); //{ { 1.0f, 2.0f, 3.0f }, { 4.0f, 2.0f, 6.0f }, { 1.0f, 8.0f, 9.0f } };
 
   for (size_t i = 0; i < input.size(); ++i)
     for (size_t j = 0; j < input[i].size(); ++j)
       _input[i][j] = input[i][j];
 
-  find_unique_values<2, float>(result, _input); 
-  
+  find_unique_values<2, float>(result, _input);
+
   for (const auto& val : expected)
     {
       this->check(result.find(val) != result.end(), fmt::format("Value {} should be in the unique set", val));

@@ -115,36 +115,42 @@ public:
     const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
 
     if (!detection_bin_efficiencies)
-    {
-      return 1.f; // no efficiencies available
-    }
+      {
+        return 1.f; // no efficiencies available
+      }
 
-      DetectionPosition<> temp_dp1; 
-      DetectionPosition<> temp_dp2; 
+    DetectionPosition<> temp_dp1;
+    DetectionPosition<> temp_dp2;
 
-      if (dp.timing_pos() < 0)
+    if (dp.timing_pos() < 0)
       {
         temp_dp1 = dp.pos2();
         temp_dp2 = dp.pos1();
       }
-      else
+    else
       {
         temp_dp1 = dp.pos1();
         temp_dp2 = dp.pos2();
       }
-     
+
     auto it0 = stir_to_petsird->find(temp_dp1);
     if (it0 == stir_to_petsird->end())
       {
-        info(format("DetectionPosition pos1(): tangential {}, axial {},radial {}", dp.pos1().tangential_coord(), dp.pos1().axial_coord(), dp.pos1().radial_coord()));
+        info(format("DetectionPosition pos1(): tangential {}, axial {},radial {}",
+                    dp.pos1().tangential_coord(),
+                    dp.pos1().axial_coord(),
+                    dp.pos1().radial_coord()));
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
-    
-      auto it1 = stir_to_petsird->find(temp_dp2);
+
+    auto it1 = stir_to_petsird->find(temp_dp2);
 
     if (it1 == stir_to_petsird->end())
       {
-        info(format("DetectionPosition pos2(): tangential {}, axial {}, radial {}", dp.pos2().tangential_coord(), dp.pos2().axial_coord(), dp.pos2().radial_coord()));
+        info(format("DetectionPosition pos2(): tangential {}, axial {}, radial {}",
+                    dp.pos2().tangential_coord(),
+                    dp.pos2().axial_coord(),
+                    dp.pos2().radial_coord()));
         error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
       }
 
@@ -154,7 +160,6 @@ public:
     const auto det1 = petsird_helpers::make_detection_bin(*petsird_scanner_info_sptr, type_of_module, it1->second);
 
     return petsird_helpers::get_detection_efficiency(*petsird_scanner_info_sptr.get(), module_pair, det0, det1);
-
   }
 
   float get_lower_energy_threshold() const
@@ -245,7 +250,7 @@ private:
 
   petsird::TypeOfModule type_of_module;
 
-  petsird::TypeOfModulePair module_pair; 
+  petsird::TypeOfModulePair module_pair;
 
   std::string forced_geometry = "";
   //! Mapping from PETSIRD expanded bins to STIR detection positions.

@@ -127,7 +127,7 @@ public:
   Succeeded reopen_and_prime()
   {
     // ensure PETSIRD state machine is satisfied
-    std::cout << "1 nikos" << std::endl; 
+    std::cout << "1 nikos" << std::endl;
     if (current_lm_data_ptr)
       {
         try
@@ -138,14 +138,14 @@ public:
           {}
       }
     // current_lm_data_ptr.reset();
-      std::cout << "2 nikos" << std::endl; 
+    std::cout << "2 nikos" << std::endl;
     if (use_hdf5)
       current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(this->listmode_filename));
     else
       current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
 
-      petsird::Header header;
-      current_lm_data_ptr->ReadHeader(header);
+    petsird::Header header;
+    current_lm_data_ptr->ReadHeader(header);
     // m_eof_reached = false;
     curr_event_in_event_block = 0;
     curr_is_prompt = true;
@@ -154,18 +154,18 @@ public:
     // read until first EventTimeBlock
     while (true)
       {
-        std::cout << "4 nikos" << std::endl; 
+        std::cout << "4 nikos" << std::endl;
         if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
           {
-            std::cout << "5 nikos" << std::endl; 
+            std::cout << "5 nikos" << std::endl;
             // m_eof_reached = true;
             current_lm_data_ptr->Close();
             return Succeeded::no;
           }
-          std::cout << "55 nikos" << std::endl; 
+        std::cout << "55 nikos" << std::endl;
         if (std::holds_alternative<petsird::EventTimeBlock>(this->curr_time_block))
           {
-            std::cout << "6 nikos" << std::endl; 
+            std::cout << "6 nikos" << std::endl;
             this->curr_event_block = std::get<petsird::EventTimeBlock>(this->curr_time_block);
             return Succeeded::yes;
           }
@@ -200,7 +200,7 @@ public:
   {
     if (pos >= m_saved_positions.size())
       return Succeeded::no;
-std::cout << "---1 nikos" << std::endl; 
+    std::cout << "---1 nikos" << std::endl;
     const auto& c = m_saved_positions[pos];
 
     // If you cached the actual blocks, you STILL must ensure the reader state
@@ -208,7 +208,7 @@ std::cout << "---1 nikos" << std::endl;
     // then overwrite curr_* with cached data.
     if (reopen_and_prime() == Succeeded::no)
       return Succeeded::no;
-std::cout << "---2 nikos" << std::endl; 
+    std::cout << "---2 nikos" << std::endl;
     if (seek_to_event_block_index(c.time_block_index) == Succeeded::no)
       return Succeeded::no;
 
@@ -216,13 +216,13 @@ std::cout << "---2 nikos" << std::endl;
     curr_is_prompt = c.is_prompt;
     curr_event_in_event_block = c.event_in_block;
     m_time_block_index = c.time_block_index;
-    std::cout << "---3 nikos" << std::endl; 
+    std::cout << "---3 nikos" << std::endl;
     if (c.has_cached_blocks)
       {
         this->curr_time_block = c.time_block;
         this->curr_event_block = c.event_block;
       }
-std::cout << "---4 nikos" << std::endl; 
+    std::cout << "---4 nikos" << std::endl;
     return Succeeded::yes;
   }
 
