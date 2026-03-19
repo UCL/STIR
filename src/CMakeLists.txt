@@ -271,6 +271,14 @@ target_link_libraries(stir_registries)
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
+target_include_directories(stir_registries PUBLIC
+  $<BUILD_INTERFACE:${CUVEC_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:include>)
+if (NOT STIR_WITH_CUDA)
+  target_compile_definitions(stir_registries PUBLIC CUVEC_DISABLE_CUDA)
+else()
+  target_link_libraries(stir_registries PUBLIC CUDA::cudart)
+endif()
 
 if (HAVE_PETSIRD)
   target_link_libraries(stir_registries PUBLIC PETSIRD::petsird)

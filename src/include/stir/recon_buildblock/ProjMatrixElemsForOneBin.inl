@@ -73,6 +73,30 @@ ProjMatrixElemsForOneBin::end() const
   return elements.end();
 };
 
+ProjMatrixElemsForOneBin::reverse_iterator
+ProjMatrixElemsForOneBin::rbegin()
+{
+  return elements.rbegin();
+}
+
+ProjMatrixElemsForOneBin::const_reverse_iterator
+ProjMatrixElemsForOneBin::rbegin() const
+{
+  return elements.rbegin();
+};
+
+ProjMatrixElemsForOneBin::reverse_iterator
+ProjMatrixElemsForOneBin::rend()
+{
+  return elements.rend();
+};
+
+ProjMatrixElemsForOneBin::const_reverse_iterator
+ProjMatrixElemsForOneBin::rend() const
+{
+  return elements.rend();
+};
+
 ProjMatrixElemsForOneBin::iterator
 ProjMatrixElemsForOneBin::erase(iterator it)
 {

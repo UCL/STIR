@@ -1453,35 +1453,65 @@ make_fan_sum_data_help(Array<2, float>& data_fan_sums,
   const int half_fan_size = fan_size / 2;
   data_fan_sums.fill(0);
 
-  shared_ptr<SegmentBySinogram<float>> segment_ptr;
+  const auto non_tof_proj_data_info_sptr = std::dynamic_pointer_cast<TProjDataInfo>(proj_data_info.create_non_tof_clone());
   Bin bin;
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();
        ++bin.segment_num())
     {
-      // for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++
-      // bin.timing_pos_num())
-      {
-        segment_ptr.reset(
-            new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num() /*,bin.timing_pos_num()*/)));
+      for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+           bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+           ++bin.axial_pos_num())
+        {
+          const auto sinogram = proj_data.get_sinogram(bin);
+#ifdef STIR_OPENMP
+#  if _OPENMP >= 200711
+#    pragma omp parallel for collapse(2) // OpenMP 3.1
+#  else
+#    pragma omp parallel for // older versions
+#  endif
+#endif
+          for (int view_num = proj_data.get_min_view_num(); view_num <= proj_data.get_max_view_num(); ++view_num)
+            {
+              for (int tangential_pos_num = -half_fan_size; tangential_pos_num <= half_fan_size; ++tangential_pos_num)
+                {
+                  // Construct bin with appropriate values
+                  // Sadly cannot be done in the loops above for OpenMP 2.0 compatibility
+                  Bin parallel_bin(bin);
+                  parallel_bin.view_num() = view_num;
+                  parallel_bin.tangential_pos_num() = tangential_pos_num;
 
-        for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-             bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
-             ++bin.axial_pos_num())
-          for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
-            for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num())
-              {
-                int ra = 0, a = 0;
-                int rb = 0, b = 0;
-
-                proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
-
-                const float value = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-                data_fan_sums[ra][a] += value;
-                data_fan_sums[rb][b] += value;
-              }
-      }
+                  std::vector<DetectionPositionPair<>> det_pos_pairs;
+                  non_tof_proj_data_info_sptr->get_all_det_pos_pairs_for_bin(
+                      det_pos_pairs, parallel_bin); // using the default argument to ignore TOF here
+                  for (const auto& dp_pair : det_pos_pairs)
+                    {
+                      const auto& p1 = dp_pair.pos1();
+                      const auto& p2 = dp_pair.pos2();
+                      const auto count = sinogram[parallel_bin.view_num()][parallel_bin.tangential_pos_num()];
+#if defined(STIR_OPENMP)
+#  if _OPENMP >= 201012
+#    pragma omp atomic update
+#  else
+#    pragma omp critical(STIRCREATEPROMPTHISTOGRAM)
+                      {
+#  endif
+#endif
+                      data_fan_sums[p1.axial_coord()][p1.tangential_coord()] += count;
+#if defined(STIR_OPENMP)
+#  if _OPENMP >= 201012
+#    pragma omp atomic update
+#  endif
+#endif
+                      data_fan_sums[p2.axial_coord()][p2.tangential_coord()] += count;
+#if defined(STIR_OPENMP) && _OPENMP < 201012
+                    }
+#endif
+                }
+            }
+        }
     }
+}
 }
 
 void

@@ -39,3 +39,11 @@ else()
   set(FMT_INCLUDE_DIRS ${FMT_INCLUDE_DIRS} PARENT_SCOPE)
 endif()
 
+################ CuVec
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CuVec/Makefile")
+  message(FATAL_ERROR "The CuVec submodule was not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+endif()
+set(CUVEC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CuVec/cuvec/include")
+set(CUVEC_INCLUDE_DIR ${CUVEC_INCLUDE_DIR} PARENT_SCOPE)
+
+install(FILES "${CUVEC_INCLUDE_DIR}/cuvec.cuh" DESTINATION "${STIR_INCLUDE_INSTALL_DIR}/")

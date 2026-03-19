@@ -152,6 +152,7 @@ public:
     Siemens_mMR,
     Siemens_mCT,
     Siemens_Vision_600,
+    Siemens_Quadra,
     RPT,
     HiDAC,
     Advance,

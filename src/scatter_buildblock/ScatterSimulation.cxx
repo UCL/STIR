@@ -742,6 +742,13 @@ ScatterSimulation::set_template_proj_data_info(const std::string& filename)
 void
 ScatterSimulation::set_template_proj_data_info(std::shared_ptr<const ProjDataInfo> arg)
 {
+  shared_ptr<const ProjDataInfo> sptr(arg.create_shared_clone());
+  this->set_template_proj_data_info(sptr);
+}
+
+void
+ScatterSimulation::set_template_proj_data_info(shared_ptr<const ProjDataInfo> arg)
+{
   this->_already_set_up = false;
   if (auto p = std::dynamic_pointer_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr>(arg))
     {

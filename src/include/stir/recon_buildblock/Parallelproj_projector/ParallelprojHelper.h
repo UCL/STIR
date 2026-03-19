@@ -21,6 +21,7 @@
 #define __stir_recon_buildblock_ParallelprojHelper_h__
 
 #include "stir/common.h"
+#include "cuvec.cuh"
 #include <vector>
 #include <array>
 
@@ -47,8 +48,8 @@ public:
   std::array<float, 3> voxsize;
   std::array<int, 3> imgdim;
   std::array<float, 3> origin;
-  std::vector<float> xstart;
-  std::vector<float> xend;
+  CuVec<float> xstart;
+  CuVec<float> xend;
 
   long long num_image_voxel;
   long long num_lors;
