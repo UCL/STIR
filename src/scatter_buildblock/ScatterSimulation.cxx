@@ -740,7 +740,7 @@ ScatterSimulation::set_template_proj_data_info(const std::string& filename)
 }
 
 void
-ScatterSimulation::set_template_proj_data_info(std::shared_ptr<const ProjDataInfo> arg)
+ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
 {
   shared_ptr<const ProjDataInfo> sptr(arg.create_shared_clone());
   this->set_template_proj_data_info(sptr);
