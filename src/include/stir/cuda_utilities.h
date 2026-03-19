@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2024, University College London
+    Copyright (C) 2024, 2026, University College London
     Copyright (C) 2025, University of Milano-Bicocca
     This file is part of STIR.
 
@@ -22,6 +22,10 @@
 #include "stir/Array.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#ifdef __CUDACC__
+#  include <cuda_runtime.h>
+#  include "cuvec.cuh"
+#endif
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -45,12 +49,16 @@ struct cuda_int3
   int x = 0, y = 0, z = 0;
 };
 #else
-#  include <cuda_runtime.h>
 typedef dim3 cuda_dim3;
 typedef int3 cuda_int3;
 #endif
 
 #ifdef __CUDACC__
+
+//! copy an `Array` to pre-allocated device memory
+/*!
+  \ingroup CUDA
+*/
 template <int num_dimensions, typename elemT>
 inline void
 array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
@@ -71,9 +79,25 @@ array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
     }
 }
 
+//! copy an `Array` to pre-allocated CuVec
+/*!
+  \ingroup CUDA
+*/
 template <int num_dimensions, typename elemT>
 inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
+array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array)
+{
+  std::copy(stir_array.begin_all(), stir_array.end_all(), dev_data.begin());
+}
+
+//! copy CUDA pointer to `Array`
+/*!
+  \ingroup CUDA
+  The third argument is ignored, as `cudaMemcpy` always syncs device and host.
+*/
+template <int num_dimensions, typename elemT>
+inline void
+array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true)
 {
   if (stir_array.is_contiguous())
     {
@@ -90,6 +114,20 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data)
       // Copy the data to the stir_array
       std::copy(tmp_data.begin(), tmp_data.end(), stir_array.begin_all());
     }
+}
+
+//! copy CuVec to `Array`
+/*!
+  \ingroup CUDA
+  If \a sync = \c true, the function will call `cudaDeviceSynchronize()` before copying.
+*/
+template <int num_dimensions, typename elemT>
+inline void
+array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true)
+{
+  if (sync)
+    cudaDeviceSynchronize();
+  std::copy(dev_data.begin(), dev_data.end(), stir_array.begin_all());
 }
 
 //! \brief Performs a parallel reduction sum on shared memory within a CUDA thread block, final value stored in shared_mem[0].

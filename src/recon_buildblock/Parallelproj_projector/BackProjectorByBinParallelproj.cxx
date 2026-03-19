@@ -9,8 +9,10 @@
   \author Richard Brown
   \author Kris Thielemans
   \author Nicole Jurjew
+  \author Markus Jehl
 
-    Copyright (C) 2019, 2021, 2024 University College London
+    Copyright (C) 2019, 2021, 2024, 2026 University College London
+    Copyright (C) 2026 Positrigo
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -30,13 +32,23 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/LORCoordinates.h"
 #include "stir/recon_array_functions.h"
-#ifdef parallelproj_built_with_CUDA
-#  include "parallelproj_cuda.h"
+
+#ifdef parallelproj1
+#  ifdef parallelproj_built_with_CUDA
+#    include "parallelproj_cuda.h"
+#    define parallelproj1_CUDA
+#    define joseph3d_back joseph3d_back_cuda
+#    define joseph3d_tof_sino_back joseph3d_back_tof_sino_cuda
+#  else
+#    include "parallelproj_c.h"
+#    define joseph3d_tof_sino_back joseph3d_back_tof_sino
+#  endif
 #else
-#  include "parallelproj_c.h"
+#  include "parallelproj.h"
 #endif
-// for debugging, remove later
+
 #include "stir/info.h"
+#include "stir/format.h"
 #include "stir/error.h"
 #include "stir/stream.h"
 #include <iostream>
@@ -120,11 +132,12 @@ static void
 TOF_transpose(std::vector<float>& mem_for_PP_back,
               const float* STIR_mem,
               const shared_ptr<const detail::ParallelprojHelper> _helper,
-              const long long offset)
+              const long long offset,
+              const long long num_lors_per_chunk)
 {
   const auto num_tof_bins = static_cast<unsigned>(_helper->num_tof_bins);
   for (unsigned tof_idx = 0; tof_idx < num_tof_bins; ++tof_idx)
-    for (long long lor_idx = 0; lor_idx < _helper->num_lors; ++lor_idx)
+    for (long long lor_idx = 0; lor_idx < num_lors_per_chunk; ++lor_idx)
       {
         mem_for_PP_back[lor_idx * num_tof_bins + tof_idx] = STIR_mem[offset + tof_idx * _helper->num_lors + lor_idx];
       }
@@ -158,9 +171,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   // create an alias for the projection data
   const ProjDataInMemory& p(*_proj_data_to_backproject_sptr);
 
-  info("Calling parallelproj backprojector", 2);
-
-#ifdef parallelproj_built_with_CUDA
+  info(format("Calling parallelproj backprojector with {} chunks", _num_gpu_chunks), 2);
 
   long long num_lors_per_chunk_floor = _helper->num_lors / _num_gpu_chunks;
   long long remainder = _helper->num_lors % _num_gpu_chunks;
@@ -168,10 +179,12 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
   long long num_lors_per_chunk;
   long long offset = 0;
 
+#ifdef parallelproj1_CUDA
   // send image to all visible CUDA devices
   float** image_on_cuda_devices = copy_float_array_to_all_devices(image_ptr, _helper->num_image_voxel);
+#endif
 
-  // do (chuck-wise) back projection on the CUDA devices
+  // do (chunck-wise) back projection
   for (int chunk_num = 0; chunk_num < _num_gpu_chunks; chunk_num++)
     {
       if (chunk_num < remainder)
@@ -184,52 +197,63 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
         }
       if (p.get_proj_data_info_sptr()->is_tof_data())
         {
-          info("running the CUDA version of parallelproj, about to call function joseph3d_back_tof_sino_cuda for one chunk", 2);
-
           std::vector<float> mem_for_PP_back(num_lors_per_chunk * _helper->num_tof_bins);
           const float* STIR_mem = p.get_const_data_ptr();
 
-          TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset);
+          TOF_transpose(mem_for_PP_back, STIR_mem, _helper, offset, num_lors_per_chunk);
 
-          // info("created object mem_for_PP_img", 2);
-          joseph3d_back_tof_sino_cuda(_helper->xend.data() + 3 * offset,
-                                      _helper->xstart.data() + 3 * offset,
-                                      image_on_cuda_devices,
-                                      _helper->origin.data(),
-                                      _helper->voxsize.data(),
-                                      mem_for_PP_back.data(), // p.get_const_data_ptr() + offset* num_tof_bins,
-                                      num_lors_per_chunk,
-                                      _helper->imgdim.data(),
-                                      _helper->tofbin_width,
-                                      &_helper->sigma_tof,
-                                      &_helper->tofcenter_offset,
-                                      4, // float n_sigmas
-                                      _helper->num_tof_bins,
-                                      0, // unsigned char lor_dependent_sigma_tof
-                                      0, // unsigned char lor_dependent_tofcenter_offset
-                                      64 // threadsperblock
+          joseph3d_tof_sino_back(_helper->xend.data() + 3 * offset,
+                                 _helper->xstart.data() + 3 * offset,
+#ifdef parallelproj1_CUDA
+                                 image_on_cuda_devices,
+#else
+                                 image_ptr,
+#endif
+                                 _helper->origin.data(),
+                                 _helper->voxsize.data(),
+                                 mem_for_PP_back.data(),
+                                 num_lors_per_chunk,
+                                 _helper->imgdim.data(),
+                                 _helper->tofbin_width,
+                                 &_helper->sigma_tof,
+                                 &_helper->tofcenter_offset,
+                                 4, // float n_sigmas
+                                 _helper->num_tof_bins,
+                                 0, // unsigned char lor_dependent_sigma_tof
+                                 0  // unsigned char lor_dependent_tofcenter_offset
+#ifdef parallelproj1_CUDA
+                                 ,
+                                 /* num_threads_per_block */ 64
+#endif
           );
           if (chunk_num != _num_gpu_chunks - 1)
             p.release_const_data_ptr();
         }
       else
         {
-          info("running the CUDA version of parallelproj, about to call function joseph3d_back_cuda for one chunk", 2);
-
-          joseph3d_back_cuda(_helper->xstart.data() + 3 * offset,
-                             _helper->xend.data() + 3 * offset,
-                             image_on_cuda_devices,
-                             _helper->origin.data(),
-                             _helper->voxsize.data(),
-                             p.get_const_data_ptr() + offset,
-                             num_lors_per_chunk,
-                             _helper->imgdim.data(),
-                             /*threadsperblock*/ 64);
+          joseph3d_back(_helper->xstart.data() + 3 * offset,
+                        _helper->xend.data() + 3 * offset,
+#ifdef parallelproj1_CUDA
+                        image_on_cuda_devices,
+#else
+                        image_ptr,
+#endif
+                        _helper->origin.data(),
+                        _helper->voxsize.data(),
+                        p.get_const_data_ptr() + offset,
+                        num_lors_per_chunk,
+                        _helper->imgdim.data()
+#ifdef parallelproj1_CUDA
+                            ,
+                        /* num_threads_per_block */ 64
+#endif
+          );
         }
       info("done", 2);
       offset += num_lors_per_chunk;
     }
 
+#ifdef parallelproj1_CUDA
   // sum backprojected images on the first CUDA device
   sum_float_arrays_on_first_device(image_on_cuda_devices, _helper->num_image_voxel);
 
@@ -238,46 +262,7 @@ BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density
 
   // free image array from CUDA devices
   free_float_array_on_all_devices(image_on_cuda_devices);
-
-#else
-  info("Calling parallelproj backprojector (CPU)", 2);
-  if (this->_proj_data_info_sptr->is_tof_data() == 1)
-    {
-      std::vector<float> mem_for_PP_back(_helper->num_lors * _helper->num_tof_bins);
-      const float* STIR_mem = p.get_const_data_ptr();
-
-      TOF_transpose(mem_for_PP_back, STIR_mem, _helper, 0);
-
-      joseph3d_back_tof_sino(_helper->xend.data(),
-                             _helper->xstart.data(),
-                             image_ptr,
-                             _helper->origin.data(),
-                             _helper->voxsize.data(),
-                             mem_for_PP_back.data(),
-                             _helper->num_lors,
-                             _helper->imgdim.data(),
-                             _helper->tofbin_width,
-                             &_helper->sigma_tof,
-                             &_helper->tofcenter_offset,
-                             4, // float n_sigmas,
-                             _helper->num_tof_bins,
-                             0, //  unsigned char lor_dependent_sigma_tof
-                             0  // unsigned char lor_dependent_tofcenter_offset
-      );
-    }
-  else
-    {
-      joseph3d_back(_helper->xstart.data(),
-                    _helper->xend.data(),
-                    image_ptr,
-                    _helper->origin.data(),
-                    _helper->voxsize.data(),
-                    p.get_const_data_ptr(),
-                    static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
-                    _helper->imgdim.data());
-    }
 #endif
-  info("PP backprojecting done. Finishing up", 2);
 
   p.release_const_data_ptr();
 
