@@ -35,7 +35,7 @@ include(src/cmake/SetC++Version.cmake)
 
 # minimum C++ version required (you can still ask for a more recent one
 # by setting CMAKE_CXX_STANDARD)
-UseCXX(20)
+UseCXX(17)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -292,23 +292,18 @@ if(NOT DISABLE_PETSIRD)
     # Inspect PETSIRD transitive dependencies
     if(TARGET PETSIRD::petsird)
       get_target_property(_petsird_libs PETSIRD::petsird INTERFACE_LINK_LIBRARIES)
-
-      # --- HDF5 ---
-      # if(_petsird_libs MATCHES "HDF5::")
-      #   if(DISABLE_HDF5)
-      #     message(STATUS "PETSIRD was built with HDF5 → forcing DISABLE_HDF5=OFF")
-      #     set(DISABLE_HDF5 OFF CACHE BOOL "disable use of HDF5 libraries" FORCE)
-      #   endif()
-      # endif()
-
-      # # --- nlohmann_json (optional but recommended) ---
-      # if(_petsird_libs MATCHES "nlohmann_json::")
-      #   if(DISABLE_NLOHMANN_JSON)
-      #     message(STATUS "PETSIRD was built with nlohmann_json → forcing DISABLE_NLOHMANN_JSON=OFF")
-      #     set(DISABLE_NLOHMANN_JSON OFF CACHE BOOL "disable use of nlohmann JSON libraries" FORCE)
-      #   endif()
-      # endif()
-
+      
+      get_target_property(_petsird_features PETSIRD::petsird INTERFACE_COMPILE_FEATURES)
+      get_target_property(_petsird_libs PETSIRD::petsird INTERFACE_LINK_LIBRARIES)
+      message(STATUS "PETSIRD::petsird dependencies: ${_petsird_libs}")
+      message(STATUS "PETSIRD::petsird compile features: ${_petsird_features}")
+      
+      # I have to give credit to AI for the following line. 
+      string(REGEX MATCH "cxx_std_([0-9]+)" _petsird_std_match "${_petsird_features}")
+      if(CMAKE_MATCH_1)
+          UseCXX(${CMAKE_MATCH_1})
+      endif()
+      
     else()
       message(FATAL_ERROR "PETSIRD::petsird target not found after find_package(PETSIRD)")
     endif()

@@ -1,6 +1,5 @@
 /*
         Copyright 2026, UMCG
-        Copyright 2025 A.A. Martinos Center for Biomedical Imaging, MGH / HST
         Copyright 2020 Positrigo AG, Zurich
 
     SPDX-License-Identifier: Apache-2.0
