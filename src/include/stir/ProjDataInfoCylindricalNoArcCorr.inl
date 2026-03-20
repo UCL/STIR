@@ -124,7 +124,7 @@ ProjDataInfoCylindricalNoArcCorr::get_bin_for_det_pair(
     }
   else
     {
-      bin.timing_pos_num() = -timing_pos_num;
+      bin.timing_pos_num() = -timing_pos_num - (get_num_tof_poss() % 2 == 0);
       return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num2, ring_num1);
     }
 }
