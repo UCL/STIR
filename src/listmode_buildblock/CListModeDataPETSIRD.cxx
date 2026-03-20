@@ -18,9 +18,6 @@
 #include "stir/info.h"
 #include "stir/error.h"
 
-// #include "petsird_helpers/create.h"
-// #include "petsird_helpers/geometry.h"
-
 #include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/CListRecordPETSIRD.h"
 
@@ -37,7 +34,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   else
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
 
-  m_has_delayeds = false;
+  m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   current_lm_data_ptr->ReadHeader(header);
 
@@ -75,11 +72,6 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   _exam_info_sptr->set_high_energy_thres(petsird_info_sptr->get_upper_energy_threshold());
 
   this->exam_info_sptr = _exam_info_sptr;
-
-  if (this->open_lm_file() == Succeeded::no)
-    {
-      error("CListModeDataPETSIRD: Could not open listmode file " + listmode_filename + "\n");
-    }
 }
 
 Succeeded

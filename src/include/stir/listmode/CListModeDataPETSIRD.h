@@ -230,14 +230,9 @@ public:
     else
       current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
 
-    // current_lm_data_ptr->ReadHeader(header);
-
     curr_event_in_event_block = 0;
     curr_is_prompt = true;
     m_time_block_index = 0;
-
-    // if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
-    //   return Succeeded::no;
 
     try
       {
