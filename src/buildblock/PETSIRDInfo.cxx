@@ -396,17 +396,17 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   float polygon_area
       = float(0.5f * unique_angle_modules.size() * radius * radius * std::sin(2.f * float(M_PI) / unique_angle_modules.size()));
   info(format("Circle area: {}, Polygon area: {}, pct {}",
-                   expected_circle_area,
-                   polygon_area,
-                   std::abs(expected_circle_area - polygon_area) / expected_circle_area));
+              expected_circle_area,
+              polygon_area,
+              std::abs(expected_circle_area - polygon_area) / expected_circle_area));
   // This is the NeuroLF ratio.
   forced_geometry = "BlocksOnCylindrical";
   if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.02f || forced_geometry == "cylindrical")
     {
       info(format("PETSIRDInfo: The cylindrical area {} is more than 95% matching the polygon area {}. We will presume a "
-                       "cylindrical configuration.",
-                       expected_circle_area,
-                       polygon_area));
+                  "cylindrical configuration.",
+                  expected_circle_area,
+                  polygon_area));
       stir_scanner_sptr.reset(
           new Scanner(Scanner::User_defined_scanner,
                       std::string("PETSIRD_defined_scanner"),
@@ -598,8 +598,8 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   if (petsird_to_stir->size() != stir_to_petsird->size())
     {
       info(format("PETSIRDInfo: Map size mismatch! Forward size: {0}\n Reverse size: {1}",
-                       petsird_to_stir->size(),
-                       stir_to_petsird->size()));
+                  petsird_to_stir->size(),
+                  stir_to_petsird->size()));
 
       error("Forward and reverse maps differ in size");
     }
