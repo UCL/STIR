@@ -1,4 +1,4 @@
-/* 
+/*
 
      Copyright 2015 ETH Zurich, Institute of Particle Physics
      Copyright 2020 Positrigo AG, Zurich

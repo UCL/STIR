@@ -63,7 +63,6 @@ CListEventPETSIRD::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 
 LORAs2Points<float>
 CListEventPETSIRD::get_LOR() const
-{
-}
+{}
 
 END_NAMESPACE_STIR

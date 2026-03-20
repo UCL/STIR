@@ -109,7 +109,7 @@ public:
       }
 
     det_pos.pos1() = it0->second;
-    det_pos.pos2() = it1->second;  
+    det_pos.pos2() = it1->second;
 
     det_pos.timing_pos() = static_cast<int>(m_tof_bin);
   }
