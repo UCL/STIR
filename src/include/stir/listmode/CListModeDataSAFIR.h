@@ -54,6 +54,11 @@ template <class CListRecordT>
 class CListModeDataSAFIR : public CListModeDataBasedOnCoordinateMap
 {
 public:
+ /*! Constructor
+  \par
+  Takes as arguments the filenames of the coicidence listmode file, the crystal map (text) file, and the template projection data
+  file
+  */
   CListModeDataSAFIR(const std::string& listmode_filename,
                      const std::string& crystal_map_filename,
                      const std::string& template_proj_data_filename,

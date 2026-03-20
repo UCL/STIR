@@ -1,33 +1,12 @@
 /* CListModeDataPETSIRD.h
 
-Coincidence LM Data Class for PETSIRD
-
-     Copyright 2025, UMCG
+     Copyright 2025, 2026 UMCG
      Copyright 2025, MGH / HST A. Martinos Center for Biomedical Imaging
 
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-
-             http://www.apache.org/licenses/LICENSE-2.0
-
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
+    SPDX-License-Identifier: Apache-2.0
+    See STIR/LICENSE.txt for details.
 
  */
-
-/*!
-
-\file
-\ingroup listmode
-\brief Declaration of class stir::CListModeDataPETSIRD
-
-\author Daniel Deidda
-\author Nikos Efthimiou
-*/
 
 #ifndef __stir_listmode_CListModeDataPETSIRD_H__
 #define __stir_listmode_CListModeDataPETSIRD_H__
@@ -66,20 +45,20 @@ START_NAMESPACE_STIR
   comments.)
   \li Some of the hardcoded assumptions are in CListRecordPETSIRD as well.
 
-  \note Exact PETSIRD format specification is defined in the PETSIRD project documentation. (NOTE: It looks like GATE.)
+  \note Exact PETSIRD format specification is defined in the PETSIRD project documentation.
   \note Initially, I wanted to:
         - Is close to a cylindrical geometry ?
           - then yes use a cylindrical scanner that is simpler.
           - Else, is it made of blocks arranged on a cylinder.
 
         However, now I do the following:
-        - Is close to cylindriacl geometry?
+        - Is close to cylindrical geometry?
           - yes use cylindrical scanner
           - Check if blocks-on-cylinder configuration, are a good match.
             - yes use blocks-on-cylinder scanner
             - else use generic scanner and export the map to the disk.
 
-  If listmode reconstruciton is done, the map is regenerated on-the-fly.
+  If listmode reconstruction is done, the map is regenerated on-the-fly.
 
 */
 class CListModeDataPETSIRD : public CListModeDataBasedOnCoordinateMap
@@ -230,7 +209,9 @@ public:
 
   Succeeded reset() override
   {
-    std::cout << "RESETING CListModeDataPETSIRD" << std::endl;
+    /* \todo Not sure if this is the best way to reset the reader. 
+    It ensures we are in a clean state, but it might be slow if the file is large and/or on a slow disk.
+    */
     // if (current_lm_data_ptr)
     //   {
     //     try
@@ -262,7 +243,7 @@ public:
       {
         while (true)
           {
-            std::cout << "Reading TimeBlock index " << m_time_block_index << std::endl;
+            info(format("Reading TimeBlock index {}", m_time_block_index), 2 );
             if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
               return Succeeded::no;
 

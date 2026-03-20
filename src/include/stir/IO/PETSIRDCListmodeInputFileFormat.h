@@ -42,7 +42,7 @@
 START_NAMESPACE_STIR
 
 /*! \brief Class for reading PETSIRD coincidence listmode data.
-*/
+ */
 
 class PETSIRDCListmodeInputFileFormat : public InputFileFormat<ListModeData>
 {
