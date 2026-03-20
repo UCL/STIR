@@ -1,3 +1,6 @@
 [submodule "external_helpers/fmt"]
 	path = external_helpers/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "cuvec"]
+	path = external_helpers/CuVec
+	url = https://github.com/AMYPAD/CuVec

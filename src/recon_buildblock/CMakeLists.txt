@@ -167,9 +167,17 @@ endif()
 endif()
 
 if (STIR_WITH_Parallelproj_PROJECTOR)
-  target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_c)
-  if (parallelproj_built_with_CUDA)
-    target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_cuda)
+  if (PARALLELPROJ_VERSION VERSION_LESS 2.0)
+    # variable to enable work-arounds in .cxx
+    target_compile_definitions(${TARGET} PRIVATE parallelproj1)
+    target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_c)
+    if (parallelproj_built_with_CUDA)
+      target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj_cuda)
+      # variable to enable work-arounds in .cxx
+      target_compile_definitions(${TARGET} PRIVATE parallelproj1_CUDA)
+    endif()
+  else()
+    target_link_libraries(${TARGET} PRIVATE parallelproj::parallelproj)
   endif()
 endif()
 
@@ -183,5 +191,14 @@ if (HAVE_HDF5)
 endif()
 
 if (STIR_WITH_CUDA)
-  target_link_libraries(${TARGET} PRIVATE CUDA::cudart)
+  target_link_libraries(${TARGET} PUBLIC CUDA::cudart)
+endif()
+
+target_include_directories(${TARGET} PUBLIC #${CUVEC_INCLUDE_DIR})
+    $<BUILD_INTERFACE:${CUVEC_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include>)
+
+
+if (NOT STIR_WITH_CUDA)
+  target_compile_definitions(${TARGET} PUBLIC CUVEC_DISABLE_CUDA)
 endif()

@@ -133,6 +133,21 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
   const CartesianCoordinate3D<float> diff = point2 - middle;
   const CartesianCoordinate3D<float> diff_unit_vector(diff / static_cast<float>(norm(diff)));
 
+  ProjMatrixElemsForOneBin tof_row(probabilities.get_bin());
+  // Estimate size of TOF row such that we can pre-allocate.
+  std::size_t max_num_elements;
+  {
+    const auto length = norm(point1 - point2);
+    const auto kernel_width = 8 / r_sqrt2_gauss_sigma;
+    const auto tof_bin_width = proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].high_lim
+                               - proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].low_lim;
+    const auto fraction = (kernel_width + tof_bin_width) / length;
+    // This seems to sometimes over-, sometimes underestimate, but it's probably not very important
+    // as std::vector will grow as necessary.
+    max_num_elements = std::size_t(probabilities.size() * std::min(fraction * 1.2, 1.001));
+  }
+  tof_row.reserve(max_num_elements);
+
   for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin(); element_ptr != probabilities.end(); ++element_ptr)
     {
       Coordinate3D<int> c(element_ptr->get_coords());
@@ -150,8 +165,23 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
       const float high_dist
           = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].high_lim - d2));
 
-      *element_ptr = ProjMatrixElemsForOneBin::value_type(c, element_ptr->get_value() * get_tof_value(low_dist, high_dist));
+      const auto tof_kernel_value = get_tof_value(low_dist, high_dist);
+      if (tof_kernel_value > 0)
+        {
+          if (auto non_tof_value = element_ptr->get_value())
+            tof_row.push_back(ProjMatrixElemsForOneBin::value_type(c, non_tof_value * tof_kernel_value));
+        }
+      else
+        {
+          // Optimisation would be to get out of the loop once we're "beyond" the TOF kernel,
+          // but it is tricky to do. It requires that the input is sorted
+          // "along" the LOR, i.e. d2 increases montonically, but that doesn't seem to be true.
+          // if (tof_row.size() > 0)
+          //   break;
+        }
     }
+  probabilities = tof_row;
+  // info("Estimate " + std::to_string(max_num_elements) + ", actual " + std::to_string(tof_row.size()));
 }
 
 float

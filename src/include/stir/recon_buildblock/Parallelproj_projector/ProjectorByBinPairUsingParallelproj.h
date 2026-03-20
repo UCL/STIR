@@ -53,6 +53,9 @@ public:
   /// Set verbosity
   void set_verbosity(const bool verbosity);
 
+  /// Set number of GPU chunks used by the forward and back projectors.
+  void set_num_gpu_chunks(const int num_gpu_chunks);
+
 private:
   shared_ptr<detail::ParallelprojHelper> _helper;
 
@@ -60,6 +63,7 @@ private:
   void initialise_keymap() override;
   bool post_processing() override;
   bool _verbosity;
+  int _num_gpu_chunks;
 };
 
 END_NAMESPACE_STIR

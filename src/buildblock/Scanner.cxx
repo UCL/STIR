@@ -448,61 +448,63 @@ Scanner::Scanner(Type scanner_type)
       // Vision number of TOF bins seems always 33. However, the sinogram headers say this is with TOF mashing factor 8,
       // so we create the scanner with 33*8 possible TOF bins, and rely on InterfileHeaderSiemens
       // to create a ProjDataInfo with mashing 8
-      set_params(Siemens_Vision_600,                                      // type
-                 string_list("Siemens Vision 600", "Vision 600", "1208"), // names
-                 80,                                                      // rings
-                 520,                                                     // max n non-arc-corr bins
-                 520,                                                     // default n arc-corr bins
-                 21 * 38,                                                 // num detector per ring
-                 410.0F,                                                  // inner ring radius (mm)
-                 7.0F,     // unsure on this                          // avg DoI (mm)
-                 3.29114F, // ring spacing (mm)
-                 1.6F,     // bin size (mm)
-                 0.0F,     // intrinsic tilt
-                 // 8 axial block, 38 transaxial blocks total, no buckets?
-                 1,
-                 1, // n axial/trans blocks per bucket
-                 10,
-                 21, // n axial/trans xtals per block
-                 10,
-                 21, // n axial/trans xtals per singles unit
-                 1,  // n detector layers
-                 // energy
-                 0.F,
-                 511.F,
-                 33 * 8,      // max n timing position
-                 143.231 / 8, // timing position bin size
-                 214.F        // timing resolution
+      set_params(
+          Siemens_Vision_600,                                      // type
+          string_list("Siemens Vision 600", "Vision 600", "1208"), // names
+          80,                                                      // rings
+          520,                                                     // max n non-arc-corr bins
+          520,                                                     // default n arc-corr bins
+          21 * 38,                                                 // num detector per ring
+          410.0F,                                                  // inner ring radius (mm)
+          7.0F,                                                    // unsure on this                          // avg DoI (mm)
+          3.29114F,                                                // ring spacing (mm)
+          1.6F,                                                    // bin size (mm)
+          0.0324F, // intrinsic tilt, use value for the Siemens Biograph Vision (same crystal size and geometry as the Quadra)
+          // 8 axial block, 38 transaxial blocks total, no buckets?
+          1,
+          1, // n axial/trans blocks per bucket
+          10,
+          21, // n axial/trans xtals per block
+          10,
+          21, // n axial/trans xtals per singles unit
+          1,  // n detector layers
+          // energy
+          0.F,
+          511.F,
+          33 * 8,      // max n timing position
+          143.231 / 8, // timing position bin size
+          214.F        // timing resolution
       );
       break;
 
     case Siemens_Quadra:
       // Info from Prenosil et al., J Nucl Med 2022; 63(3):476-484, DOI: 10.2967/jnumed.121.261972
-      set_params(Siemens_Quadra,                                  // type
-                 string_list("Siemens Quadra", "Quadra", "1232"), // names
-                 323,                                             // rings, because of the max ring difference is 322
-                 520,                                             // max n non-arc-corr bins
-                 520,                                             // default n arc-corr bins
-                 (20 + 1) * 38,                                   // num detector per ring
-                 410.0F,                                          // inner ring radius (mm)
-                 7.0F,                                            // unsure on this                          // avg DoI (mm)
-                 3.29114F,                                        // ring spacing (mm)
-                 1.6F,                                            // bin size (mm)
-                 0.0F,                                            // intrinsic tilt
-                 // ONLY used for CTI scanners for normalisation. These values will be ignored here.
-                 4,
-                 1, // n axial/trans blocks per bucket
-                 10 * 8 + 1,
-                 20 + 1, // n axial/trans xtals per block
-                 0,
-                 0, // n axial/trans xtals per singles unit
-                 1, // n detector layers
-                 // energy
-                 0.F,
-                 511.F,
-                 33 * 8,      // max n timing position
-                 143.231 / 8, // timing position bin size
-                 214.F        // timing resolution
+      set_params(
+          Siemens_Quadra,                                  // type
+          string_list("Siemens Quadra", "Quadra", "1232"), // names
+          323,                                             // rings, because of the max ring difference is 322
+          520,                                             // max n non-arc-corr bins
+          520,                                             // default n arc-corr bins
+          (20 + 1) * 38,                                   // num detector per ring
+          410.0F,                                          // inner ring radius (mm)
+          7.0F,                                            // unsure on this                          // avg DoI (mm)
+          3.29114F,                                        // ring spacing (mm)
+          1.6F,                                            // bin size (mm)
+          0.0324F, // intrinsic tilt, use value for the Siemens Biograph Vision (same crystal size and geometry as the Quadra)
+          // ONLY used for CTI scanners for normalisation. These values will be ignored here.
+          4,
+          1, // n axial/trans blocks per bucket
+          10 * 8 + 1,
+          20 + 1, // n axial/trans xtals per block
+          0,
+          0, // n axial/trans xtals per singles unit
+          1, // n detector layers
+          // energy
+          0.F,
+          511.F,
+          33 * 8,      // max n timing position
+          143.231 / 8, // timing position bin size
+          214.F        // timing resolution
       );
       break;
 

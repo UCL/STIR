@@ -140,7 +140,9 @@ jobs:
           compiler: clang
           compiler_version: 21
           cuda_version: "0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          # openMP off as problems again with brew
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          # parallelproj off as it needs openMP
           parallelproj: "OFF"
           BUILD_TYPE: "Release"
           ROOT: "OFF"
@@ -303,16 +305,20 @@ jobs:
           esac
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
-             git clone --depth 1 --branch v1.7.3 https://github.com/gschramm/parallelproj
-             mkdir parallelproj/build
-             cd parallelproj/build
+             git clone --depth 20 https://github.com/KUL-recon-lab/libparallelproj/
+             cd libparallelproj
+             git checkout v2.0.3
+             mkdir build
+             cd build
              if test "${{matrix.cuda_version}}" == "0"; then
-               extra_args="-DSKIP_CUDA_LIB:BOOL=ON"
+                 extra_args="-DUSE_CUDA:BOOL=OFF"
+             else
+                 extra_args="-DUSE_CUDA:BOOL=ON"
              fi
              cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_args}
              cmake --build . --target install --config Release
              cd ../..
-             rm -rf parallelproj
+             rm -rf libparallelproj
           fi
 
           # Install ROOT (warning: brittle due to OS versions etc)
