@@ -1,5 +1,7 @@
 
-#pragma once
+#ifndef __stir_IO_PETSIRDInfo_helpers_H__
+#define __stir_IO_PETSIRDInfo_helpers_H__
+
 #include "stir/CartesianCoordinate3D.h"
 #include <array>
 #include <set>
@@ -26,6 +28,11 @@
     For a pure rotation, S encodes the axis direction.
   - These helpers assume small numerical noise; thresholds are handled by callers.
   - No external dependencies; intended for quick geometric inference (e.g., rotation axis detection).
+
+  \todo
+  - Might worth it to use stir::Arrays here. I started a bit of this work but lots pending. See the test_petsird_info_helpers.cxx
+  for some of the work done so far.
+  - The function are moved in ArrayFunctions
 */
 
 namespace matrix
@@ -252,3 +259,5 @@ inferGroupSizes_dim2_dim3(const std::vector<stir::CartesianCoordinate3D<float>>&
 
   return true;
 }
+
+#endif

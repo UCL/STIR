@@ -45,7 +45,7 @@ protected:
     return false; // cannot read from istream
   }
 
-  bool can_read(const FileSignature&, const std::string& filename) { return is_ECAT6_image_file(filename); }
+  bool can_read(const FileSignature&, const std::string& filename) const { return is_ECAT6_image_file(filename); }
 
   virtual unique_ptr<data_type> read_from_file(std::istream& input) const
   {
