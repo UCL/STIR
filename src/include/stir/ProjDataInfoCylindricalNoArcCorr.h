@@ -268,13 +268,13 @@ public:
                                                CartesianCoordinate3D<float>& coord_2,
                                                const Bin& bin) const;
 
-  void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
-                                                            CartesianCoordinate3D<float>& coord_2,
-                                                            const int Ring_A,
-                                                            const int Ring_B,
-                                                            const int det1,
-                                                            const int det2,
-                                                            const int timing_pos_num) const;
+  virtual void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
+                                                                    CartesianCoordinate3D<float>& coord_2,
+                                                                    const int Ring_A,
+                                                                    const int Ring_B,
+                                                                    const int det1,
+                                                                    const int det2,
+                                                                    const int timing_pos_num) const;
 
   void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
                                                          const CartesianCoordinate3D<float>& coord_1,
@@ -317,6 +317,7 @@ private:
   //! build look-up table unless already done before
   inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
 
+protected:
   bool blindly_equals(const root_type* const) const override;
 };
 
