@@ -63,7 +63,7 @@ public:
   */
   ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
                    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
-                   Array<1, float>&& buffer);
+                   Array<1, float, long long>&& buffer);
 
   //! constructor that copies data from another ProjData
   ProjDataInMemory(const ProjData& proj_data);
