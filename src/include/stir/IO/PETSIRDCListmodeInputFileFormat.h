@@ -42,10 +42,6 @@
 START_NAMESPACE_STIR
 
 /*! \brief Class for reading PETSIRD coincidence listmode data.
-
-  The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0",
-"PETSIRD". If either is successful, the class claims it can read the file format. The
-rest of the file is read as records, e.g. CListRecordPETSIRD.
 */
 
 class PETSIRDCListmodeInputFileFormat : public InputFileFormat<ListModeData>

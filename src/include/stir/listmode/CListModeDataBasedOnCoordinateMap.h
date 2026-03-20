@@ -1,22 +1,12 @@
-/* CListModeDataSAFIR.h
+/* CListModeDataBasedOnCoordinateMap.h
 
- Coincidence LM Data Class for SAFIR: Header File
- Jannis Fischer
-
-        Copyright 2015 ETH Zurich, Institute of Particle Physics
+        Copyright 2026, UMCG
+        Copyright 2025 A.A. Martinos Center for Biomedical Imaging, MGH / HST
         Copyright 2020 Positrigo AG, Zurich
 
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
+    SPDX-License-Identifier: Apache-2.0
 
-                http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
+    See STIR/LICENSE.txt for details
 
  */
 
@@ -24,8 +14,9 @@
 
   \file
   \ingroup listmode
-  \brief Declaration of class stir::CListModeDataSAFIR
+  \brief Declaration of class stir::CListModeDataBasedOnCoordinateMap
 
+  \author Nikos Efthimiou
   \author Jannis Fischer
 */
 
