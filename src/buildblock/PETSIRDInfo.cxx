@@ -501,13 +501,13 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   petsird_to_stir = std::make_shared<PETSIRDToSTIRDetectorIndexMap>();
   petsird_map_sptr = std::make_shared<DetectorCoordinateMap::det_pos_to_coord_type>();
 
-  //enum class InnerLoopDim
+  // enum class InnerLoopDim
   //{
-  //  Axial,
-  //  Tangential,
-  //  Radial
-  //};
-  // InnerLoopDim inner_dim = InnerLoopDim::Tangential; // determined from your groupSize analysis
+  //   Axial,
+  //   Tangential,
+  //   Radial
+  // };
+  //  InnerLoopDim inner_dim = InnerLoopDim::Tangential; // determined from your groupSize analysis
 
   // PRECOMPUTED from previous step:
   std::size_t groupSize
