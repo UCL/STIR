@@ -67,7 +67,7 @@ PETSIRDTests::test_find_unique_values_1D()
   find_unique_values<float>(result, _input);
   for (const auto& val : expected)
     {
-      this->check(result.find(val) != result.end(), fmt::format("Value {} should be in the unique set", val));
+      this->check(result.find(val) != result.end(), format("Value {} should be in the unique set", val));
     }
 }
 
@@ -89,7 +89,7 @@ PETSIRDTests::test_find_unique_values_2D()
 
   for (const auto& val : expected)
     {
-      this->check(result.find(val) != result.end(), fmt::format("Value {} should be in the unique set", val));
+      this->check(result.find(val) != result.end(), format("Value {} should be in the unique set", val));
     }
 }
 

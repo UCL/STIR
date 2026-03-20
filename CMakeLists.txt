@@ -35,7 +35,7 @@ include(src/cmake/SetC++Version.cmake)
 
 # minimum C++ version required (you can still ask for a more recent one
 # by setting CMAKE_CXX_STANDARD)
-UseCXX(17)
+UseCXX(20)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -294,12 +294,12 @@ if(NOT DISABLE_PETSIRD)
       get_target_property(_petsird_libs PETSIRD::petsird INTERFACE_LINK_LIBRARIES)
 
       # --- HDF5 ---
-      if(_petsird_libs MATCHES "HDF5::")
-        if(DISABLE_HDF5)
-          message(STATUS "PETSIRD was built with HDF5 → forcing DISABLE_HDF5=OFF")
-          set(DISABLE_HDF5 OFF CACHE BOOL "disable use of HDF5 libraries" FORCE)
-        endif()
-      endif()
+      # if(_petsird_libs MATCHES "HDF5::")
+      #   if(DISABLE_HDF5)
+      #     message(STATUS "PETSIRD was built with HDF5 → forcing DISABLE_HDF5=OFF")
+      #     set(DISABLE_HDF5 OFF CACHE BOOL "disable use of HDF5 libraries" FORCE)
+      #   endif()
+      # endif()
 
       # --- nlohmann_json (optional but recommended) ---
       if(_petsird_libs MATCHES "nlohmann_json::")

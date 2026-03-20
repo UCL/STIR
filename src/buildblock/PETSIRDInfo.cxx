@@ -240,10 +240,10 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   module_pair = petsird::TypeOfModulePair{ type_of_module, type_of_module };
 
   const auto& tof_bin_edges = petsird_scanner_info_sptr->tof_bin_edges[type_of_module][type_of_module];
-  info(fmt::format("Num. of TOF bins in PETSIRD {}", tof_bin_edges.NumberOfBins()));
+  info(format("Num. of TOF bins in PETSIRD {}", tof_bin_edges.NumberOfBins()));
   if (tof_bin_edges.NumberOfBins() > 1)
     {
-      info(fmt::format(
+      info(format(
           "Since the PETSIRD file has TOF information, STIR will force cylindrical geometry, as long as other things checkout."));
       forced_geometry = "cylindrical";
     }
@@ -266,7 +266,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   const std::set<float>& main_axis = vector_utils::get_largest_vector(unique_dim1_values, unique_dim2_values, unique_dim3_values);
 
   int num_transaxial_blocks = numberOfModules / main_axis.size();
-  info(fmt::format("I deduce that the scanner has {} transaxial number of blocks", num_transaxial_blocks));
+  info(format("I deduce that the scanner has {} transaxial number of blocks", num_transaxial_blocks));
 
   float radius = 0;
   int radius_indx = -1;
@@ -353,7 +353,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   }
 
   bool has_tile_structure = group2 > 1 && group3 > 1 && (numberOfElementsIndices % (group2 * group3) == 0);
-  info(fmt::format("Has tile structure: {}", has_tile_structure ? "yes" : "no"));
+  info(format("Has tile structure: {}", has_tile_structure ? "yes" : "no"));
 
   if (has_tile_structure)
     {
@@ -390,12 +390,12 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
       block_axial_spacing.push_back(std::abs(end - begin));
     }
 
-  info(fmt::format("I counted {} axial blocks with spacing {}", unique_dim3_values.size(), block_axial_spacing[0]));
+  info(format("I counted {} axial blocks with spacing {}", unique_dim3_values.size(), block_axial_spacing[0]));
   // Check if the cyrcle area is less than 5% different from the polygon
   float expected_circle_area = float(M_PI * radius * radius);
   float polygon_area
       = float(0.5f * unique_angle_modules.size() * radius * radius * std::sin(2.f * float(M_PI) / unique_angle_modules.size()));
-  info(fmt::format("Circle area: {}, Polygon area: {}, pct {}",
+  info(format("Circle area: {}, Polygon area: {}, pct {}",
                    expected_circle_area,
                    polygon_area,
                    std::abs(expected_circle_area - polygon_area) / expected_circle_area));
@@ -403,7 +403,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   forced_geometry = "BlocksOnCylindrical";
   if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.02f || forced_geometry == "cylindrical")
     {
-      info(fmt::format("PETSIRDInfo: The cylindrical area {} is more than 95% matching the polygon area {}. We will presume a "
+      info(format("PETSIRDInfo: The cylindrical area {} is more than 95% matching the polygon area {}. We will presume a "
                        "cylindrical configuration.",
                        expected_circle_area,
                        polygon_area));
@@ -530,7 +530,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
   // const int num_ax = blocks_per_bucket_axial * num_axial_crystals_per_block;
   // const int num_tang = blocks_per_bucket_transaxial * num_trans_crystals_per_block;
 
-  info(fmt::format("Tile size (groupSize) = {}", groupSize));
+  info(format("Tile size (groupSize) = {}", groupSize));
 
   // const uint32_t num_rings = static_cast<uint32_t>(stir_scanner_sptr->get_num_rings());
   // const uint32_t num_det = static_cast<uint32_t>(stir_scanner_sptr->get_num_detectors_per_ring());
@@ -597,7 +597,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
   if (petsird_to_stir->size() != stir_to_petsird->size())
     {
-      info(fmt::format("PETSIRDInfo: Map size mismatch! Forward size: {0}\n Reverse size: {1}",
+      info(format("PETSIRDInfo: Map size mismatch! Forward size: {0}\n Reverse size: {1}",
                        petsird_to_stir->size(),
                        stir_to_petsird->size()));
 

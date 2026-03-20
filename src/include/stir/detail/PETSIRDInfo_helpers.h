@@ -3,7 +3,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include <array>
 #include <set>
-#include <fmt/format.h>
+#include "stir/format.h" 
 #include "stir/info.h"
 #include <vector>
 
