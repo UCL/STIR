@@ -22,7 +22,7 @@
 #ifndef __stir_ProjDataInfoGenericNoArcCorr_H__
 #define __stir_ProjDataInfoGenericNoArcCorr_H__
 
-#include "stir/ProjDataInfoGeneric.h"
+#include "stir/ProjDataInfoCylindrical.h"
 #include "stir/GeometryBlocksOnCylindrical.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/VectorWithOffset.h"
@@ -31,9 +31,16 @@
 START_NAMESPACE_STIR
 
 class Succeeded;
+template <typename coordT>
+class CartesianCoordinate3D;
+
 /*!
   \ingroup projdata
   \brief Projection data info for data for a scanner with discrete detectors
+
+  This isn't completely generic as it assumes that there is "axial" (or "ring")
+  coordinate and a "transaxial" (or "crystal"). However, their spacing can
+  be arbitrary.
 
   This class also contains some functions specific for (static) full-ring PET
   scanners. In this case, it is assumed that for 'raw' data (i.e. no mashing)
@@ -66,11 +73,23 @@ class Succeeded;
   - have 2 sinograms of the same size as in 2D, together with the rings
     as 'ordered pair' (i.e. ring_difference can be positive and negative).
   In STIR, we use the second convention.
+
+  \par Design considerations
+
+  Currently this class is derived from ProjDataInfoCylindrical. Arguably it
+  should be the other way around. However, this would break backwards
+  compatibility dramatically, and break other pull-requests in progress.
+  We will leave this for later. At present, we just \c delete some member functions
+  that do not make sense in the Generic case. There are a few ones left which might
+  be removed in future, but are currently still used.
+
+  \todo change ProjDataInfo hierarchy order.
+
   */
-class ProjDataInfoGenericNoArcCorr : public ProjDataInfoGeneric
+class ProjDataInfoGenericNoArcCorr : public ProjDataInfoCylindrical
 {
 private:
-  typedef ProjDataInfoGeneric base_type;
+  typedef ProjDataInfoCylindrical base_type;
 #ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
 public:
@@ -78,16 +97,20 @@ public:
   typedef ProjDataInfoGenericNoArcCorr self_type;
 
 public:
+  //! Type used by get_all_ring_pairs_for_segment_axial_pos_num()
+  typedef std::vector<std::pair<int, int>> RingNumPairs;
+
   //! Default constructor (leaves object in ill-defined state)
   ProjDataInfoGenericNoArcCorr();
 
   //! Constructor which gets geometry from the scanner
-  ProjDataInfoGenericNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
-                               const VectorWithOffset<int>& num_axial_pos_per_segment,
-                               const VectorWithOffset<int>& min_ring_diff_v,
-                               const VectorWithOffset<int>& max_ring_diff_v,
-                               const int num_views,
-                               const int num_tangential_poss);
+  ProjDataInfoGenericNoArcCorr(
+      const shared_ptr<Scanner> scanner_ptr,
+      const VectorWithOffset<int>& num_axial_pos_per_segment, // index ranges from min_segment_num to max_segment_num
+      const VectorWithOffset<int>& min_ring_diff_v,
+      const VectorWithOffset<int>& max_ring_diff_v,
+      const int num_views,
+      const int num_tangential_poss);
 
   ProjDataInfo* clone() const override;
 
@@ -99,6 +122,42 @@ public:
     customarily applied to raw PET data.
   */
   inline float get_s(const Bin&) const override;
+
+  inline float get_tantheta(const Bin&) const override;
+
+  inline float get_phi(const Bin&) const override;
+
+  inline float get_t(const Bin&) const override;
+
+  //! Return z-coordinate of the middle of the LOR
+  /*!
+  The 0 of the z-axis is chosen in the middle of the scanner.
+  */
+  inline float get_m(const Bin&) const override;
+
+  void get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor, const Bin& bin) const override;
+
+  void set_azimuthal_angle_offset(const float angle) = delete;
+  void set_azimuthal_angle_sampling(const float angle) = delete;
+
+  //! set new number of views (currently calls error() unless nothing changes)
+  void set_num_views(const int new_num_views) override;
+
+  float get_azimuthal_angle_sampling() const = delete;
+  float get_azimuthal_angle_offset() const = delete;
+  float get_ring_radius() const = delete;
+  void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius) = delete;
+  VectorWithOffset<float> get_ring_radii_for_all_views() const = delete;
+
+  //! return an average ring-spacing (from Scanner)
+  // TODOBLOCK what does this mean in a generic case?
+  inline float get_ring_spacing() const;
+
+  inline float get_sampling_in_t(const Bin&) const override;
+  inline float get_sampling_in_m(const Bin&) const override;
+
+  inline float get_axial_sampling(int segment_num) const override;
+  inline bool axial_sampling_is_uniform() const override;
 
   std::string parameter_info() const override;
 
@@ -214,10 +273,9 @@ public:
     is zero in the first ring, while for get_m() etc it is zero in the centre of the scanner.
     \obsolete
   */
-
   void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
                                                CartesianCoordinate3D<float>& coord_2,
-                                               const Bin& bin) const override;
+                                               const Bin& bin) const;
 
   virtual void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
                                                                     CartesianCoordinate3D<float>& coord_2,
@@ -225,6 +283,9 @@ public:
                                                                     const int Ring_B,
                                                                     const int det1,
                                                                     const int det2) const;
+
+protected:
+  CartesianCoordinate3D<float> z_shift;
 
 private:
   // used in get_view_tangential_pos_num_for_det_num_pair()
@@ -259,6 +320,9 @@ private:
 protected:
   bool blindly_equals(const root_type* const) const override;
 };
+
+//! For backwards compatibility
+using ProjDataInfoGeneric = ProjDataInfoGenericNoArcCorr;
 
 END_NAMESPACE_STIR
 

@@ -29,7 +29,6 @@ set(${dir_LIB_SOURCES}
   ProjDataInfoCylindricalNoArcCorr.cxx
   ProjDataInfoSubsetByView.cxx
   ProjDataInfoBlocksOnCylindricalNoArcCorr.cxx
-  ProjDataInfoGeneric.cxx
   ProjDataInfoGenericNoArcCorr.cxx
   DetectorCoordinateMap.cxx
   GeometryBlocksOnCylindrical.cxx

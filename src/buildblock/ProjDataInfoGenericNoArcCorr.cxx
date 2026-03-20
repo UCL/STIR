@@ -1,12 +1,13 @@
 /*
+    Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
-    Copyright (C) 2018, University College London
+    Copyright (C) 2013, 2018, 2021, 2026, University College London
     Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
-    SPDX-License-Identifier: Apache-2.0
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
     See STIR/LICENSE.txt for details
 */
 
@@ -18,6 +19,8 @@
   \brief Implementation of non-inline functions of class stir::ProjDataInfoGenericNoArcCorr
 
   \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author PARAPET project
   \author Palak Wadhwa
   \author Parisa Khateri
   \author Michael Roethlisberger
@@ -30,13 +33,21 @@
 #include "stir/DetectionPosition.h"
 #include "stir/is_null_ptr.h"
 #include "stir/error.h"
+#include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include <sstream>
 
 #include <boost/static_assert.hpp>
 
+using std::min_element;
+using std::max_element;
+using std::min;
+using std::max;
+using std::swap;
+using std::endl;
 using std::endl;
 using std::ends;
 
@@ -50,7 +61,7 @@ ProjDataInfoGenericNoArcCorr::ProjDataInfoGenericNoArcCorr(const shared_ptr<Scan
                                                            const VectorWithOffset<int>& max_ring_diff_v,
                                                            const int num_views,
                                                            const int num_tangential_poss)
-    : ProjDataInfoGeneric(
+    : ProjDataInfoCylindrical(
         scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v, num_views, num_tangential_poss)
 {
   if (!scanner_sptr)
@@ -85,6 +96,7 @@ ProjDataInfoGenericNoArcCorr::operator==(const self_type& that) const
 {
   if (!base_type::blindly_equals(&that))
     return false;
+  // TODO this is incomplete, probably
   return true;
 }
 
@@ -95,6 +107,39 @@ ProjDataInfoGenericNoArcCorr::blindly_equals(const root_type* const that_ptr) co
   return this->operator==(static_cast<const self_type&>(*that_ptr));
 }
 
+void
+ProjDataInfoGenericNoArcCorr::set_num_views(const int new_num_views)
+{
+  if (new_num_views != get_num_views())
+    error("ProjDataInfoGenericNoArcCorr::set_num_views not supported");
+}
+#if 0 // TODOBLOCK
+void
+ProjDataInfoGenericNoArcCorr::
+set_ring_spacing(float ring_spacing_v)
+{
+  ring_diff_arrays_computed = false;
+  ring_spacing = ring_spacing_v;
+}
+#endif
+
+//! warning Find lor from cartesian coordinates of detector pair
+void
+ProjDataInfoGenericNoArcCorr::get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor, const Bin& bin) const
+{
+  CartesianCoordinate3D<float> _p1;
+  CartesianCoordinate3D<float> _p2;
+  find_cartesian_coordinates_of_detection(_p1, _p2, bin);
+
+  _p1.z() += z_shift.z();
+  _p2.z() += z_shift.z();
+
+  LORAs2Points<float> lor_as_2_points(_p1, _p2);
+  const double R = sqrt(max(square(_p1.x()) + square(_p1.y()), square(_p2.x()) + square(_p2.y())));
+
+  lor_as_2_points.change_representation(lor, R);
+}
+
 std::string
 ProjDataInfoGenericNoArcCorr::parameter_info() const
 {
@@ -102,7 +147,17 @@ ProjDataInfoGenericNoArcCorr::parameter_info() const
   std::ostringstream s;
 
   s << "ProjDataInfoGenericNoArcCorr := \n";
-  s << ProjDataInfoGeneric::parameter_info();
+  s << ProjDataInfo::parameter_info();
+  // TODOBLOCK Cylindrical has the following which doesn't make sense for Generic, so repeat code
+  // s << "Azimuthal angle increment (deg):   " << get_azimuthal_angle_sampling()*180/_PI << '\n';
+  // s << "Azimuthal angle extent (deg):      " << fabs(get_azimuthal_angle_sampling())*get_num_views()*180/_PI << '\n';
+
+  s << "ring differences per segment: \n";
+  for (int segment_num = get_min_segment_num(); segment_num <= get_max_segment_num(); ++segment_num)
+    {
+      s << '(' << get_min_ring_difference(segment_num) << ',' << get_max_ring_difference(segment_num) << ')';
+    }
+  s << std::endl;
   s << "End :=\n";
   return s.str();
 }
@@ -296,8 +351,7 @@ ProjDataInfoGenericNoArcCorr::get_all_det_pos_pairs_for_bin(std::vector<Detectio
 
   dps.resize(get_num_det_pos_pairs_for_bin(bin));
 
-  const ProjDataInfoGeneric::RingNumPairs& ring_pairs
-      = get_all_ring_pairs_for_segment_axial_pos_num(bin.segment_num(), bin.axial_pos_num());
+  const auto& ring_pairs = get_all_ring_pairs_for_segment_axial_pos_num(bin.segment_num(), bin.axial_pos_num());
   // not sure how to handle mashing with non-zero view offset...
   assert(get_min_view_num() == 0);
 
@@ -308,8 +362,7 @@ ProjDataInfoGenericNoArcCorr::get_all_det_pos_pairs_for_bin(std::vector<Detectio
     {
       const int det1_num = uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det1_num;
       const int det2_num = uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
-      for (ProjDataInfoGeneric::RingNumPairs::const_iterator rings_iter = ring_pairs.begin(); rings_iter != ring_pairs.end();
-           ++rings_iter)
+      for (auto rings_iter = ring_pairs.begin(); rings_iter != ring_pairs.end(); ++rings_iter)
         {
           assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
           dps[current_dp_num].pos1().tangential_coord() = det1_num;
