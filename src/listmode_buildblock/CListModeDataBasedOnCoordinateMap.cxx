@@ -1,9 +1,8 @@
-/* CListModeDataSAFIR.cxx
+/*
 
-Coincidence LM Data Class for SAFIR: Implementation
 
-        Copyright 2015 ETH Zurich, Institute of Particle Physics
-        Copyright 2020 Positrigo AG, Zurich
+    Copyright 2015 ETH Zurich, Institute of Particle Physics
+    Copyright 2020 Positrigo AG, Zurich
     Copyright 2021 University College London
 
         Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,11 +32,6 @@ Coincidence LM Data Class for SAFIR: Implementation
 #include "stir/Succeeded.h"
 
 #include "stir/listmode/CListModeDataBasedOnCoordinateMap.h"
-
-using std::ios;
-using std::fstream;
-using std::ifstream;
-using std::istream;
 
 START_NAMESPACE_STIR;
 

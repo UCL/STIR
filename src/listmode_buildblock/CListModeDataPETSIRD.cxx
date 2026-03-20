@@ -1,22 +1,9 @@
-/* CListModeDataPETSIRD.cxx
-
-Coincidence LM Data Class for PETSIRD: Implementation
-
+/*
     Copyright 2025, UMCG
     Copyright 2025, MGH / HST A. Martinos Center for Biomedical Imaging
 
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-
-             http://www.apache.org/licenses/LICENSE-2.0
-
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
-*/
+    SPDX-License-Identifier: Apache-2.0
+    See STIR/LICENSE.txt for detail
 /*!
 
 \file
@@ -70,7 +57,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
 
   int tof_mash_factor = 1;
-  this->set_proj_data_info_sptr(std::const_pointer_cast<const ProjDataInfo>(
+  this->set_proj_data_info_sptr(std::dynamic_pointer_cast<const ProjDataInfo>(
       ProjDataInfo::construct_proj_data_info(petsird_info_sptr->get_scanner_sptr(),
                                              1,
                                              petsird_info_sptr->get_scanner_sptr()->get_num_rings() - 1,
@@ -89,8 +76,6 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 
   this->exam_info_sptr = _exam_info_sptr;
 
-  // N.E.: In my experience the first time block is always empty.
-  // So I use this unncessessary call to skip to the next.
   if (this->open_lm_file() == Succeeded::no)
     {
       error("CListModeDataPETSIRD: Could not open listmode file " + listmode_filename + "\n");
@@ -118,7 +103,7 @@ Succeeded
 CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 {
   auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
-  const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support mulitple pairs of modules.
+  const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support multiple pairs of modules.
   const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events.at(0).at(0) : prompt_list;
 
   const auto& event_list = curr_is_prompt ? prompt_list : delayed_list;

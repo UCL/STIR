@@ -209,7 +209,7 @@ public:
 
   Succeeded reset() override
   {
-    /* \todo Not sure if this is the best way to reset the reader. 
+    /* \todo Not sure if this is the best way to reset the reader.
     It ensures we are in a clean state, but it might be slow if the file is large and/or on a slow disk.
     */
     // if (current_lm_data_ptr)
@@ -243,7 +243,7 @@ public:
       {
         while (true)
           {
-            info(format("Reading TimeBlock index {}", m_time_block_index), 2 );
+            info(format("Reading TimeBlock index {}", m_time_block_index), 2);
             if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
               return Succeeded::no;
 

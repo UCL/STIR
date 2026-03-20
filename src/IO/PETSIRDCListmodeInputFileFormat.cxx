@@ -2,8 +2,8 @@
 
  Class defining input file format for coincidence listmode data for PETSIRD.
 
-        Copyright 2025, 2026 UMCG
-        Copyright 2025 National Physical Laboratory
+  Copyright 2025, 2026 UMCG
+  Copyright 2025 National Physical Laboratory
 
     SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
@@ -11,7 +11,7 @@
 
   \file
   \ingroup listmode
-  \brief Declaration of class stir::PETSIRDCListmodeInputFileFormat
+  \brief Implementation of class stir::PETSIRDCListmodeInputFileFormat
 
   \author Nikos Efthimiou
   \author Daniel Deidda
@@ -21,6 +21,9 @@
 #include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
 #include "petsird/binary/protocols.h"
 #include "petsird/hdf5/protocols.h"
+#include "stir/error.h"
+#include "stir/format.h"
+#include <array>
 // #include "../../PETSIRD/cpp/generated/types.h"
 // #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
 
@@ -36,7 +39,7 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
   std::ifstream file(filename, std::ios::binary);
   if (!file.is_open())
     {
-      std::cerr << "Cannot open file: " << filename << std::endl;
+      error(format("Cannot open file: {}", filename));
       return false;
     }
   std::array<char, 4> signature_{};

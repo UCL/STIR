@@ -1,23 +1,8 @@
-/* CListModeDataPETSIRD.h
+/*
+   Copyright 2025, UMCG
 
-Coincidence LM Data Class for PETSIRD
-
-     Copyright 2025, UMCG
-
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-
-             http://www.apache.org/licenses/LICENSE-2.0
-
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
-
- */
-
+    SPDX-License-Identifier: Apache-2.0
+    See STIR/LICENSE.txt for detail
 /*!
 
 \file
@@ -106,87 +91,11 @@ public:
 
   inline bool is_cylindrical_configuration_used() const { return is_cylindrical; };
 
-  inline float get_detection_efficiency_for_bin(const stir::DetectionPositionPair<>& dp) const
-  {
-    // std::cout << "WIth det efficiencies: " <<
-    // petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies->size()
-    //           << std::endl;
+  float get_detection_efficiency_for_bin(const stir::DetectionPositionPair<>& dp) const;
 
-    const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
+  float get_lower_energy_threshold() const;
 
-    if (!detection_bin_efficiencies)
-      {
-        return 1.f; // no efficiencies available
-      }
-
-    DetectionPosition<> temp_dp1;
-    DetectionPosition<> temp_dp2;
-
-    if (dp.timing_pos() < 0)
-      {
-        temp_dp1 = dp.pos2();
-        temp_dp2 = dp.pos1();
-      }
-    else
-      {
-        temp_dp1 = dp.pos1();
-        temp_dp2 = dp.pos2();
-      }
-
-    auto it0 = stir_to_petsird->find(temp_dp1);
-    if (it0 == stir_to_petsird->end())
-      {
-        info(format("DetectionPosition pos1(): tangential {}, axial {},radial {}",
-                    dp.pos1().tangential_coord(),
-                    dp.pos1().axial_coord(),
-                    dp.pos1().radial_coord()));
-        error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
-      }
-
-    auto it1 = stir_to_petsird->find(temp_dp2);
-
-    if (it1 == stir_to_petsird->end())
-      {
-        info(format("DetectionPosition pos2(): tangential {}, axial {}, radial {}",
-                    dp.pos2().tangential_coord(),
-                    dp.pos2().axial_coord(),
-                    dp.pos2().radial_coord()));
-        error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR→PETSIRD map");
-      }
-
-    const auto det0 = petsird_helpers::make_detection_bin(
-        *petsird_scanner_info_sptr, type_of_module, it0->second); // it0->second is ExpandedDetectionBin
-
-    const auto det1 = petsird_helpers::make_detection_bin(*petsird_scanner_info_sptr, type_of_module, it1->second);
-
-    return petsird_helpers::get_detection_efficiency(*petsird_scanner_info_sptr.get(), module_pair, det0, det1);
-  }
-
-  float get_lower_energy_threshold() const
-  {
-    if (petsird_scanner_info_sptr->event_energy_bin_edges.size() == 0)
-      return 0.0f;
-    float min_energy = std::numeric_limits<float>::max();
-    for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
-      {
-        if (bin_edges.edges.front() < min_energy)
-          min_energy = bin_edges.edges.front();
-      }
-    return min_energy;
-  }
-
-  float get_upper_energy_threshold() const
-  {
-    if (petsird_scanner_info_sptr->event_energy_bin_edges.size() == 0)
-      return 0.0f;
-    float max_energy = std::numeric_limits<float>::lowest();
-    for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
-      {
-        if (bin_edges.edges.back() > max_energy)
-          max_energy = bin_edges.edges.back();
-      }
-    return max_energy;
-  }
+  float get_upper_energy_threshold() const;
 
 private:
   /*!
