@@ -301,13 +301,13 @@ if(NOT DISABLE_PETSIRD)
       #   endif()
       # endif()
 
-      # --- nlohmann_json (optional but recommended) ---
-      if(_petsird_libs MATCHES "nlohmann_json::")
-        if(DISABLE_NLOHMANN_JSON)
-          message(STATUS "PETSIRD was built with nlohmann_json → forcing DISABLE_NLOHMANN_JSON=OFF")
-          set(DISABLE_NLOHMANN_JSON OFF CACHE BOOL "disable use of nlohmann JSON libraries" FORCE)
-        endif()
-      endif()
+      # # --- nlohmann_json (optional but recommended) ---
+      # if(_petsird_libs MATCHES "nlohmann_json::")
+      #   if(DISABLE_NLOHMANN_JSON)
+      #     message(STATUS "PETSIRD was built with nlohmann_json → forcing DISABLE_NLOHMANN_JSON=OFF")
+      #     set(DISABLE_NLOHMANN_JSON OFF CACHE BOOL "disable use of nlohmann JSON libraries" FORCE)
+      #   endif()
+      # endif()
 
     else()
       message(FATAL_ERROR "PETSIRD::petsird target not found after find_package(PETSIRD)")
