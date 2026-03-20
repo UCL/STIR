@@ -2,7 +2,7 @@
 
  Class defining input file format for coincidence listmode data for PETSIRD.
 
-        Copyright 2025, UMCG
+        Copyright 2025, 2026 UMCG
         Copyright 2025 National Physical Laboratory
 
         Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,7 @@
 START_NAMESPACE_STIR
 
 bool
-PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const std::string& filename)
+PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const std::string& filename) const
 {
 
   std::array<char, 4> hdf5_signature = { 'H', 'D', 'F', '5' };

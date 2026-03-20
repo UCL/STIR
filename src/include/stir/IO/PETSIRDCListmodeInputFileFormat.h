@@ -2,7 +2,7 @@
 
  Class defining input file format for coincidence listmode data for PETSIRD.
 
-        Copyright 2025, UMCG
+        Copyright 2025, 2026 UMCG
         Copyright 2025 National Physical Laboratory
 
         Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,12 +54,12 @@ public:
   const std::string get_name() const override { return "PETSIRD"; }
 
   //! Checks in binary data file for correct signature.
-  bool can_read(const FileSignature& signature, const std::string& filename) override;
+  bool can_read(const FileSignature& signature, const std::string& filename) const override;
 
 protected:
   bool actual_can_read(const FileSignature& signature, std::istream& input) const override { return false; }
 
-  bool use_hdf5 = false;
+  mutable bool use_hdf5 = false;
 
 public:
   unique_ptr<data_type> read_from_file(std::istream& input) const override
