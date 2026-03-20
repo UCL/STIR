@@ -352,7 +352,7 @@ template <typename elemT>
 inline void
 find_unique_values(std::set<elemT>& values, const Array<1, elemT>& input)
 {
-  for (auto& vi : input)
+  for (auto& v : input)
     {
       values.insert(v);
     }
