@@ -884,7 +884,7 @@ LmToProjData::process_data()
                                      current_time);
                           }
                       } // end of spatial event processing
-                  } // end of while loop over all events
+                  }     // end of while loop over all events
 
                 time_of_last_stored_event = max(time_of_last_stored_event, current_time);
               }
