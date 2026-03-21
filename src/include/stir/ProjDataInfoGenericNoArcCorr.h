@@ -59,8 +59,8 @@ class Succeeded;
   Currently this class is derived from ProjDataInfoCylindricalNoArcCorr. Arguably it
   should be the other way around. However, this would break backwards
   compatibility dramatically, and break other pull-requests in progress.
-  We will leave this for later. At present, we just \c delete some member functions
-  that do not make sense in the Generic case. There are a few ones left which might
+  We will leave this for later. At present, the member functions
+  that do not make sense in the Generic case will call error(). There are a few ones which might
   be removed in future, but are currently still used.
 
   \todo change ProjDataInfoCylindrical hierarchy order.
@@ -117,21 +117,21 @@ public:
 
   void get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor, const Bin& bin) const override;
 
-  void set_azimuthal_angle_offset(const float angle) = delete;
-  void set_azimuthal_angle_sampling(const float angle) = delete;
+  //! currently calls error() unless nothing changes
+  void set_azimuthal_angle_offset(const float angle) override;
+  //! calls error()
+  void set_azimuthal_angle_sampling(const float angle) override;
 
-  //! set new number of views (currently calls error() unless nothing changes)
+  //! currently calls error() unless nothing changes
   void set_num_views(const int new_num_views) override;
-
-  float get_azimuthal_angle_sampling() const = delete;
-  float get_azimuthal_angle_offset() const = delete;
-  float get_ring_radius() const = delete;
-  void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius) = delete;
-  VectorWithOffset<float> get_ring_radii_for_all_views() const = delete;
+  //! currently calls error() unless nothing changes
+  void set_ring_spacing(float ring_spacing_v) override;
+  //! calls error()
+  void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius) override;
 
   //! return an average ring-spacing (from Scanner)
   // TODOBLOCK what does this mean in a generic case?
-  inline float get_ring_spacing() const;
+  inline float get_ring_spacing() const override;
 
   inline float get_sampling_in_t(const Bin&) const override;
   inline float get_sampling_in_m(const Bin&) const override;

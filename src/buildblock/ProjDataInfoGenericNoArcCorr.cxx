@@ -82,20 +82,37 @@ ProjDataInfoGenericNoArcCorr::blindly_equals(const root_type* const that_ptr) co
 }
 
 void
+ProjDataInfoGenericNoArcCorr::set_azimuthal_angle_offset(const float angle)
+{
+  if (angle != get_azimuthal_angle_offset())
+    error("ProjDataInfoGenericNoArcCorr::set_azimuthal_angle_offset is not supported");
+}
+
+void
+ProjDataInfoGenericNoArcCorr::set_azimuthal_angle_sampling(const float)
+{
+  error("ProjDataInfoGenericNoArcCorr::set_azimuthal_angle_sampling is not supported");
+}
+
+void
+ProjDataInfoGenericNoArcCorr::set_ring_radii_for_all_views(const VectorWithOffset<float>&)
+{
+  error("ProjDataInfoGenericNoArcCorr::set_ring_radii_for_all_views is not supported");
+}
+
+void
 ProjDataInfoGenericNoArcCorr::set_num_views(const int new_num_views)
 {
   if (new_num_views != get_num_views())
     error("ProjDataInfoGenericNoArcCorr::set_num_views not supported");
 }
-#if 0 // TODOBLOCK
+
 void
-ProjDataInfoGenericNoArcCorr::
-set_ring_spacing(float ring_spacing_v)
+ProjDataInfoGenericNoArcCorr::set_ring_spacing(float ring_spacing_v)
 {
-  ring_diff_arrays_computed = false;
-  ring_spacing = ring_spacing_v;
+  if (ring_spacing_v != get_ring_spacing())
+    error("ProjDataInfoGenericNoArcCorr::set_ring_spacing is not supported");
 }
-#endif
 
 //! Find lor from cartesian coordinates of detector pair
 void
@@ -164,8 +181,10 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
 
   if (timing_pos_num < 0)
     {
+#ifndef ENABLE_TOF_GENERIC
       error("ProjDataInfoGenericNoArcCorr does not support TOF yet");
-      /* TODOBLOCKS. Not sure about this. KT copied it from the CylindricalNoArcCorr case, but suspects it isn't needed here. */
+#endif
+      // Currently timing_pos is unsigned, so we need to swap if the input is negative
       std::swap(coord_1, coord_2);
     }
 }
@@ -177,8 +196,10 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
 Bin
 ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_time) const
 {
+#ifndef ENABLE_TOF_GENERIC
   if (delta_time != 0.)
     error("ProjDataInfoGenericNoArcCorr does not support TOF yet");
+#endif
 
   Bin bin;
 
@@ -186,10 +207,23 @@ ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_
     error("ProjDataInfoGenericNoArcCorr::get_bin(lor) currently only supports LORAs2Points");
 
   auto& lor_as_2points = static_cast<const LORAs2Points<float>&>(lor);
-  auto& _p1 = lor_as_2points.p1();
-  auto& _p2 = lor_as_2points.p2();
+  auto _p1 = lor_as_2points.p1();
+  auto _p2 = lor_as_2points.p2();
 
   DetectionPositionPair<> det_pos_pair;
+  {
+    const auto tof_bin = get_tof_bin(delta_time);
+    // Currently timing_pos is unsigned, so we need to swap if the input is negative
+    if (tof_bin < 0)
+      {
+        det_pos_pair.timing_pos() = -tof_bin;
+        std::swap(_p1, _p2);
+      }
+    else
+      {
+        det_pos_pair.timing_pos() = tof_bin;
+      }
+  }
   auto& det_pos1 = det_pos_pair.pos1();
   auto& det_pos2 = det_pos_pair.pos2();
 
@@ -199,9 +233,6 @@ ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_
       bin.set_bin_value(-1);
       return bin;
     }
-
-  // KT thinks the following should be fine
-  // det_pos_pair.timing_pos() = get_tof_bin(delta_time);
 
   if (get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes && bin.tangential_pos_num() >= get_min_tangential_pos_num()
       && bin.tangential_pos_num() <= get_max_tangential_pos_num())
