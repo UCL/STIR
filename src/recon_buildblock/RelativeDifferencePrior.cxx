@@ -444,7 +444,7 @@ RelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& p
   if (gradient_filename_prefix.size() > 0)
     {
       char* filename = new char[gradient_filename_prefix.size() + 100];
-      sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
+      snprintf(filename, gradient_filename_prefix.size() + 100, "%s%d.v", gradient_filename_prefix.c_str(), count);
       write_to_file(filename, prior_gradient);
       delete[] filename;
     }

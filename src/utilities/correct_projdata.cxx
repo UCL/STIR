@@ -464,7 +464,7 @@ CorrectProjDataApplication::set_up()
       for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
         {
           char ext[50];
-          sprintf(ext, "_f%dg1b0d0", current_frame);
+          snprintf(ext, sizeof(ext), "_f%dg1b0d0", current_frame);
           const string output_filename_with_ext = output_filename + ext;	
           output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
                   output_proj_data_info_sptr,output_filename_with_ext);
@@ -478,7 +478,7 @@ CorrectProjDataApplication::set_up()
       if (frame_definition_filename.size()!=0)
         {
           char ext[50];
-          sprintf(ext, "_f%dg1b0d0", frame_num);
+          snprintf(ext, sizeof(ext), "_f%dg1b0d0", frame_num);
           output_filename_with_ext += ext;
         }
 #endif

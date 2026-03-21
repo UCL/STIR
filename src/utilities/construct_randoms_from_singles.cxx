@@ -27,7 +27,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-//#include <algorithm>
+// #include <algorithm>
 
 using std::cerr;
 using std::endl;
@@ -66,7 +66,13 @@ main(int argc, char** argv)
     // efficiencies
     {
       char* in_filename = new char[in_filename_prefix.size() + 30];
-      sprintf(in_filename, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
+      snprintf(in_filename,
+               in_filename_prefix.size() + 30,
+               "%s_%s_%d_%d.out",
+               in_filename_prefix.c_str(),
+               "eff",
+               iter_num,
+               eff_iter_num);
       ifstream in(in_filename);
       in >> efficiencies;
       if (!in)

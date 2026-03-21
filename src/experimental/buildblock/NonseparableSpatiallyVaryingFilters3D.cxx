@@ -967,7 +967,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::virtual_apply(DiscretisedDensity<3
 #      if 0
 		  {
 		    char filename[1000];
-		    sprintf(filename, "filter%g.hv",tmp);
+		    snprintf(filename, sizeof(filename), "filter%g.hv",tmp);
 		    filename[7]='_';
 		    write_basic_interfile(filename, new_coeffs);
 		  }

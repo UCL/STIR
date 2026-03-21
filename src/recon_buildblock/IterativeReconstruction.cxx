@@ -335,7 +335,7 @@ std::string
 IterativeReconstruction<TargetT>::make_filename_prefix_subiteration_num(const std::string& filename_prefix) const
 {
   char num[50];
-  sprintf(num, "_%d", subiteration_num);
+  snprintf(num, sizeof(num), "_%d", subiteration_num);
   return filename_prefix + num;
 }
 

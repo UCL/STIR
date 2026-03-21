@@ -95,7 +95,7 @@ print_debug(char const* const fname, char const* const format, ...)
       len = strlen(fname) + strlen(format) + 5;
       if ((fmt = (char*)calloc((long)len, sizeof(char))) == NULL)
         return (1);
-      sprintf(fmt, "%s%s%s", fname, " :: ", format);
+      snprintf(fmt, len, "%s%s%s", fname, " :: ", format);
 
       va_start(ap, format);
       vfprintf(stderr, fmt, ap);
@@ -1657,7 +1657,13 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     if (dot_ptr != NULL)
       header_filename[dot_ptr - header_filename] = '_';
     // now add stuff to say which frame, gate, bed, data this was
-    sprintf(header_filename + strlen(header_filename), "_f%dg%dd%db%d", frame_num, gate_num, data_num, bed_num);
+    snprintf(header_filename + strlen(header_filename),
+             ECAT7_filename.size() + 100 - strlen(header_filename),
+             "_f%dg%dd%db%d",
+             frame_num,
+             gate_num,
+             data_num,
+             bed_num);
   }
 
   switch (mptr->mhptr->file_type)

@@ -30,7 +30,7 @@
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/DiscretisedDensity.h"
-//#include "stir/LogLikBased/common.h"
+// #include "stir/LogLikBased/common.h"
 #include "stir/ThresholdMinToSmallPositiveValueDataProcessor.h"
 #include "stir/ChainedDataProcessor.h"
 #include "stir/Succeeded.h"
@@ -480,7 +480,11 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
       // allocate space for the filename assuming that
       // we never have more than 10^49 subiterations ...
       char* fname = new char[this->output_filename_prefix.size() + 60];
-      sprintf(fname, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
+      snprintf(fname,
+               this->output_filename_prefix.size() + 60,
+               "%s_update_%d",
+               this->output_filename_prefix.c_str(),
+               this->subiteration_num);
 
       // Write it to file
       this->output_file_format_ptr->write_to_file(fname, *multiplicative_update_image_ptr);

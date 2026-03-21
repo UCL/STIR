@@ -74,7 +74,13 @@ main(int argc, char** argv)
                                                    * exp(noise * ((2.F * rand()) / RAND_MAX - 1)));
       {
         char* out_filename = new char[out_filename_prefix.size() + 30];
-        sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
+        snprintf(out_filename,
+                 out_filename_prefix.size() + 30,
+                 "%s_%s_%d_%d.out",
+                 out_filename_prefix.c_str(),
+                 "eff",
+                 iter_num,
+                 eff_iter_num);
         ofstream out(out_filename);
         out << efficiencies;
         delete[] out_filename;
@@ -95,7 +101,7 @@ main(int argc, char** argv)
 
       {
         char* out_filename = new char[out_filename_prefix.size() + 30];
-        sprintf(out_filename, "%s_%s_%d.out", out_filename_prefix.c_str(), "block", iter_num);
+        snprintf(out_filename, out_filename_prefix.size() + 30, "%s_%s_%d.out", out_filename_prefix.c_str(), "block", iter_num);
         ofstream out(out_filename);
         out << norm_block_data;
         delete[] out_filename;

@@ -38,7 +38,7 @@ FRAME_BASED_DT_CORR:
 // (Note: can currently NOT be disabled)
 #define USE_SegmentByView
 
-//#define FRAME_BASED_DT_CORR
+// #define FRAME_BASED_DT_CORR
 
 // set elem_type to what you want to use for the sinogram elements
 // we need a signed type, as randoms can be subtracted. However, signed char could do.
@@ -510,13 +510,13 @@ LmToProjData::get_bin_from_event(Bin& bin, const ListEvent& event) const
         return; // rejected for some strange reason
 
       // do_normalisation
-      //#ifndef FRAME_BASED_DT_CORR
+      // #ifndef FRAME_BASED_DT_CORR
       //     const double start_time = current_time;
       //     const double end_time = current_time;
-      //#else
+      // #else
       //     const double start_time = frame_defs.get_start_time(current_frame_num);
       //     const double end_time =frame_defs.get_end_time(current_frame_num);
-      //#endif
+      // #endif
 
       const float bin_efficiency = normalisation_ptr->get_bin_efficiency(uncompressed_bin);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
@@ -566,13 +566,13 @@ LmToProjData::do_post_normalisation(Bin& bin) const
         }
       else
         {
-          //#ifndef FRAME_BASED_DT_CORR
+          // #ifndef FRAME_BASED_DT_CORR
           //	  const double start_time = current_time;
           //	  const double end_time = current_time;
-          //#else
+          // #else
           //	  const double start_time = frame_defs.get_start_time(current_frame_num);
           //	  const double end_time =frame_defs.get_end_time(current_frame_num);
-          //#endif
+          // #endif
           const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin);
           // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
           if (bin_efficiency < 1.E-10)
@@ -694,7 +694,7 @@ LmToProjData::process_data()
         {
           writing_to_file = true;
           char rest[50];
-          sprintf(rest, "_f%dg1d0b0", current_frame_num);
+          snprintf(rest, sizeof(rest), "_f%dg1d0b0", current_frame_num);
           const string output_filename = output_filename_prefix + rest;
 
           output_proj_data_sptr = construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
@@ -884,7 +884,7 @@ LmToProjData::process_data()
                                      current_time);
                           }
                       } // end of spatial event processing
-                  }     // end of while loop over all events
+                  } // end of while loop over all events
 
                 time_of_last_stored_event = max(time_of_last_stored_event, current_time);
               }
@@ -951,7 +951,7 @@ LmToProjData::run_tof_test_function()
 
     {
         char rest[50];
-        sprintf(rest, "_f%dg1d0b0", current_frame_num);
+        snprintf(rest, sizeof(rest), "_f%dg1d0b0", current_frame_num);
         const string output_filename = output_filename_prefix + rest;
 
         proj_data_sptr =

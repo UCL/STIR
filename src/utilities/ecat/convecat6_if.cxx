@@ -169,7 +169,13 @@ main(int argc, char* argv[])
               {
                 strcpy(new_out_filename, out_name.c_str());
                 if (do_all)
-                  sprintf(new_out_filename + strlen(new_out_filename), "_f%dg%db%dd%d", frame_num, gate_num, bed_num, data_num);
+                  snprintf(new_out_filename + strlen(new_out_filename),
+                           out_name.size() + 100 - strlen(new_out_filename),
+                           "_f%dg%db%dd%d",
+                           frame_num,
+                           gate_num,
+                           bed_num,
+                           data_num);
                 cout << "Writing " << new_out_filename << endl;
                 shared_ptr<VoxelsOnCartesianGrid<float>> image_ptr(
                     ECAT6_to_VoxelsOnCartesianGrid(frame_num, gate_num, data_num, bed_num, cti_fptr, mhead));
@@ -193,7 +199,13 @@ main(int argc, char* argv[])
               {
                 strcpy(new_out_filename, out_name.c_str());
                 if (do_all)
-                  sprintf(new_out_filename + strlen(new_out_filename), "_f%dg%db%dd%d", frame_num, gate_num, bed_num, data_num);
+                  snprintf(new_out_filename + strlen(new_out_filename),
+                           out_name.size() + 100 - strlen(new_out_filename),
+                           "_f%dg%db%dd%d",
+                           frame_num,
+                           gate_num,
+                           bed_num,
+                           data_num);
                 cout << "Writing " << new_out_filename << endl;
                 ECAT6_to_PDFS(
                     frame_num, gate_num, data_num, bed_num, max_ring_diff, arccorrected, new_out_filename, cti_fptr, mhead);

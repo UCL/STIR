@@ -184,7 +184,7 @@ ParametricQuadraticPrior<TargetT>::compute_gradient(TargetT& prior_gradient, con
       ++count; // Maybe it will be usefult to add here a writing step, intialised by the parameter file, otherwise we will run out
                // of space!
       char* filename = new char[gradient_filename_prefix.size() + 100];
-      sprintf(filename, "%s%d.img", gradient_filename_prefix.c_str(), count);
+      snprintf(filename, gradient_filename_prefix.size() + 100, "%s%d.img", gradient_filename_prefix.c_str(), count);
       // This works only for ParametricVoxelsOnCartesianGrid and maybe for other ecat7 format files.
       write_to_file(filename, prior_gradient);
       delete[] filename;
