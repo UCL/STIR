@@ -257,12 +257,12 @@ public:
     is zero in the first ring, while for get_m() etc it is zero in the centre of the scanner.
     \obsolete
   */
-  Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1,
-                                                                 int& det2,
-                                                                 int& ring1,
-                                                                 int& ring2,
-                                                                 const CartesianCoordinate3D<float>& c1,
-                                                                 const CartesianCoordinate3D<float>& c2) const;
+  virtual Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1,
+                                                                         int& det2,
+                                                                         int& ring1,
+                                                                         int& ring2,
+                                                                         const CartesianCoordinate3D<float>& c1,
+                                                                         const CartesianCoordinate3D<float>& c2) const;
 
   void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
                                                CartesianCoordinate3D<float>& coord_2,
