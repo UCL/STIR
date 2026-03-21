@@ -177,7 +177,13 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
               iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
               {
                 char* out_filename = new char[out_filename_prefix.size() + 30];
-                snprintf(out_filename, out_filename_prefix.size() + 30, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
+                snprintf(out_filename,
+                         out_filename_prefix.size() + 30,
+                         "%s_%s_%d_%d.out",
+                         out_filename_prefix.c_str(),
+                         "eff",
+                         iter_num,
+                         eff_iter_num);
                 std::ofstream out(out_filename);
                 out << efficiencies;
                 delete[] out_filename;
@@ -266,7 +272,8 @@ ML_estimate_component_based_normalisation(const std::string& out_filename_prefix
 #endif
           {
             char* out_filename = new char[out_filename_prefix.size() + 30];
-            snprintf(out_filename, out_filename_prefix.size() + 30, "%s_%s_%d.out", out_filename_prefix.c_str(), "block", iter_num);
+            snprintf(
+                out_filename, out_filename_prefix.size() + 30, "%s_%s_%d.out", out_filename_prefix.c_str(), "block", iter_num);
             std::ofstream out(out_filename);
             out << norm_block_data;
             delete[] out_filename;

@@ -139,11 +139,11 @@ stir_mathTests::run_tests()
     {
       char cmd_args[1000];
       snprintf(cmd_args,
-              sizeof(cmd_args),
-              "--add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
-              "STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv",
-              min_threshold,
-              max_threshold);
+               sizeof(cmd_args),
+               "--add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
+               "STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv",
+               min_threshold,
+               max_threshold);
       if (run_stir_math(cmd_args))
         {
           out_data_ptr = read_from_file<DiscretisedDensity<3, float>>("STIRtmpout.hv");
@@ -270,11 +270,11 @@ stir_mathTests::run_tests()
     {
       char cmd_args[1000];
       snprintf(cmd_args,
-              sizeof(cmd_args),
-              "-s --add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
-              "STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs",
-              min_threshold,
-              max_threshold);
+               sizeof(cmd_args),
+               "-s --add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
+               "STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs",
+               min_threshold,
+               max_threshold);
       if (run_stir_math(cmd_args))
         {
           out_data_ptr = ProjData::read_from_file("STIRtmpout.hs");

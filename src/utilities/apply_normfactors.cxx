@@ -83,7 +83,14 @@ main(int argc, char** argv)
       if (do_eff)
         {
           char* in_filename = new char[in_filename_prefix.size() + 30];
-          snprintf(in_filename, in_filename_prefix.size() + 30, "%s_%s_%d_%d_%d.out", in_filename_prefix.c_str(), "eff", ax_pos_num, iter_num, eff_iter_num);
+          snprintf(in_filename,
+                   in_filename_prefix.size() + 30,
+                   "%s_%s_%d_%d_%d.out",
+                   in_filename_prefix.c_str(),
+                   "eff",
+                   ax_pos_num,
+                   iter_num,
+                   eff_iter_num);
           std::ifstream in(in_filename);
           in >> efficiencies;
           if (!in)
@@ -100,7 +107,13 @@ main(int argc, char** argv)
         {
           {
             char* in_filename = new char[in_filename_prefix.size() + 30];
-            snprintf(in_filename, in_filename_prefix.size() + 30, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
+            snprintf(in_filename,
+                     in_filename_prefix.size() + 30,
+                     "%s_%s_%d_%d.out",
+                     in_filename_prefix.c_str(),
+                     "geo",
+                     ax_pos_num,
+                     iter_num);
             std::ifstream in(in_filename);
             in >> norm_geo_data;
             if (!in)
@@ -117,7 +130,13 @@ main(int argc, char** argv)
         {
           {
             char* in_filename = new char[in_filename_prefix.size() + 30];
-            snprintf(in_filename, in_filename_prefix.size() + 30, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
+            snprintf(in_filename,
+                     in_filename_prefix.size() + 30,
+                     "%s_%s_%d_%d.out",
+                     in_filename_prefix.c_str(),
+                     "block",
+                     ax_pos_num,
+                     iter_num);
             std::ifstream in(in_filename);
             in >> norm_block_data;
             if (!in)

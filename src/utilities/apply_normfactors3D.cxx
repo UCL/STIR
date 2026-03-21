@@ -71,7 +71,13 @@ main(int argc, char** argv)
     if (do_eff)
       {
         char* in_filename = new char[in_filename_prefix.size() + 30];
-        snprintf(in_filename, in_filename_prefix.size() + 30, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
+        snprintf(in_filename,
+                 in_filename_prefix.size() + 30,
+                 "%s_%s_%d_%d.out",
+                 in_filename_prefix.c_str(),
+                 "eff",
+                 iter_num,
+                 eff_iter_num);
         std::ifstream in(in_filename);
         in >> norm.crystal_efficiencies();
         if (!in)
