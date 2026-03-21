@@ -162,14 +162,18 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
   coord_1.z() -= z_shift.z();
   coord_2.z() -= z_shift.z();
 
-  /* TODOBLOCKS. Not sure about this. KT copied it from the CylindricalNoArcCorr case, but doesn't know why it's (t)here. */
   if (timing_pos_num < 0)
     {
       error("ProjDataInfoGenericNoArcCorr does not support TOF yet");
+      /* TODOBLOCKS. Not sure about this. KT copied it from the CylindricalNoArcCorr case, but suspects it isn't needed here. */
       std::swap(coord_1, coord_2);
     }
 }
 
+/*!
+  \warning \a lor currently has to be of type LORAs2Points<float> and points have to be in the
+  detector map.
+*/
 Bin
 ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_time) const
 {
@@ -178,13 +182,16 @@ ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_
 
   Bin bin;
 
-  const LORAs2Points<float>& lor_as_2points = dynamic_cast<const LORAs2Points<float>&>(lor);
+  if (!dynamic_cast<const LORAs2Points<float>*>(&lor))
+    error("ProjDataInfoGenericNoArcCorr::get_bin(lor) currently only supports LORAs2Points");
 
-  CartesianCoordinate3D<float> _p1 = lor_as_2points.p1();
-  CartesianCoordinate3D<float> _p2 = lor_as_2points.p2();
+  auto& lor_as_2points = static_cast<const LORAs2Points<float>&>(lor);
+  auto& _p1 = lor_as_2points.p1();
+  auto& _p2 = lor_as_2points.p2();
 
-  DetectionPosition<> det_pos1;
-  DetectionPosition<> det_pos2;
+  DetectionPositionPair<> det_pos_pair;
+  auto& det_pos1 = det_pos_pair.pos1();
+  auto& det_pos2 = det_pos_pair.pos2();
 
   if (get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos1, _p1) == Succeeded::no
       || get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos2, _p2) == Succeeded::no)
@@ -193,9 +200,8 @@ ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_
       return bin;
     }
 
-  DetectionPositionPair<> det_pos_pair;
-  det_pos_pair.pos1() = det_pos1;
-  det_pos_pair.pos2() = det_pos2;
+  // KT thinks the following should be fine
+  // det_pos_pair.timing_pos() = get_tof_bin(delta_time);
 
   if (get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes && bin.tangential_pos_num() >= get_min_tangential_pos_num()
       && bin.tangential_pos_num() <= get_max_tangential_pos_num())
