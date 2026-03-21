@@ -91,13 +91,14 @@ BinNormalisationFromML2D::set_up(const shared_ptr<const ProjDataInfo>& proj_data
       if (do_eff)
         {
           char* normalisation_filename = new char[normalisation_filename_prefix.size() + 30];
-          sprintf(normalisation_filename,
-                  "%s_%s_%d_%d_%d.out",
-                  normalisation_filename_prefix.c_str(),
-                  "eff",
-                  ax_pos_num,
-                  iter_num,
-                  eff_iter_num);
+          snprintf(normalisation_filename,
+                   normalisation_filename_prefix.size() + 30,
+                   "%s_%s_%d_%d_%d.out",
+                   normalisation_filename_prefix.c_str(),
+                   "eff",
+                   ax_pos_num,
+                   iter_num,
+                   eff_iter_num);
           ifstream in(normalisation_filename);
           in >> efficiencies;
           if (!in)
@@ -114,8 +115,13 @@ BinNormalisationFromML2D::set_up(const shared_ptr<const ProjDataInfo>& proj_data
         {
           {
             char* normalisation_filename = new char[normalisation_filename_prefix.size() + 30];
-            sprintf(
-                normalisation_filename, "%s_%s_%d_%d.out", normalisation_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
+            snprintf(normalisation_filename,
+                     normalisation_filename_prefix.size() + 30,
+                     "%s_%s_%d_%d.out",
+                     normalisation_filename_prefix.c_str(),
+                     "geo",
+                     ax_pos_num,
+                     iter_num);
             ifstream in(normalisation_filename);
             in >> norm_geo_data;
             if (!in)
@@ -132,8 +138,13 @@ BinNormalisationFromML2D::set_up(const shared_ptr<const ProjDataInfo>& proj_data
         {
           {
             char* normalisation_filename = new char[normalisation_filename_prefix.size() + 30];
-            sprintf(
-                normalisation_filename, "%s_%s_%d_%d.out", normalisation_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
+            snprintf(normalisation_filename,
+                     normalisation_filename_prefix.size() + 30,
+                     "%s_%s_%d_%d.out",
+                     normalisation_filename_prefix.c_str(),
+                     "block",
+                     ax_pos_num,
+                     iter_num);
             ifstream in(normalisation_filename);
             in >> norm_block_data;
             if (!in)

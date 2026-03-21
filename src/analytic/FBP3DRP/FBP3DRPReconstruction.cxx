@@ -82,8 +82,8 @@
 
 #include "stir/analytic/FBP3DRP/ColsherFilter.h"
 #include "stir/display.h"
-//#include "stir/recon_buildblock/distributable.h"
-//#include "stir/FBP3DRP/process_viewgrams.h"
+// #include "stir/recon_buildblock/distributable.h"
+// #include "stir/FBP3DRP/process_viewgrams.h"
 
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
@@ -92,7 +92,7 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "stir/IO/read_from_file.h"
-//#include "stir/mash_views.h"
+// #include "stir/mash_views.h"
 
 #include <algorithm>
 #include <fstream>
@@ -370,7 +370,7 @@ FBP3DRPReconstruction::actual_reconstruct(shared_ptr<DiscretisedDensity<3, float
 
   {
     // char file[max_filename_length];
-    // sprintf(file,"%s.full_log",output_filename_prefix.c_str());
+    // snprintf(file, sizeof(file), "%s.full_log",output_filename_prefix.c_str());
     std::string file = output_filename_prefix;
     file += ".full_log";
     full_log.open(file.c_str(), ios::out);

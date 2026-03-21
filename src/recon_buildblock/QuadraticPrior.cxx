@@ -527,7 +527,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3, elemT
     static int count = 0;
     ++count;
     char filename[20];
-    sprintf(filename, "normalised_gradient%d.v",count);
+    snprintf(filename, sizeof(filename), "normalised_gradient%d.v",count);
     write_basic_interfile(filename, parabolic_surrogate_curvature);
   }*/
 }
