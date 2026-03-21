@@ -201,7 +201,7 @@ main(int argc, char** argv)
           display(measured_block_data, "raw block data from measurements");
         /*{
           char *out_filename = new char[20];
-          sprintf(out_filename, "%s_%d.out",
+          snprintf(out_filename, 20, "%s_%d.out",
           "fan", ax_pos_num);
           std::ofstream out(out_filename);
           out << data_fan_sums;
@@ -233,8 +233,8 @@ main(int argc, char** argv)
                 iterate_efficiencies(efficiencies, data_fan_sums, det_pair_data);
                 {
                   char* out_filename = new char[out_filename_prefix.size() + 30];
-                  sprintf(
-                      out_filename, "%s_%s_%d_%d_%d.out", out_filename_prefix.c_str(), "eff", ax_pos_num, iter_num, eff_iter_num);
+                  snprintf(
+                      out_filename, out_filename_prefix.size() + 30, "%s_%s_%d_%d_%d.out", out_filename_prefix.c_str(), "eff", ax_pos_num, iter_num, eff_iter_num);
                   std::ofstream out(out_filename);
                   out << efficiencies;
                   delete[] out_filename;
@@ -275,7 +275,7 @@ main(int argc, char** argv)
             }
             {
               char* out_filename = new char[out_filename_prefix.size() + 30];
-              sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
+              snprintf(out_filename, out_filename_prefix.size() + 30, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
               std::ofstream out(out_filename);
               out << norm_geo_data;
               delete[] out_filename;
@@ -314,7 +314,7 @@ main(int argc, char** argv)
               }
             {
               char* out_filename = new char[out_filename_prefix.size() + 30];
-              sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
+              snprintf(out_filename, out_filename_prefix.size() + 30, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
               std::ofstream out(out_filename);
               out << norm_block_data;
               delete[] out_filename;

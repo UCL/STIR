@@ -138,7 +138,8 @@ stir_mathTests::run_tests()
     const float max_threshold = RAND_MAX / 2.F;
     {
       char cmd_args[1000];
-      sprintf(cmd_args,
+      snprintf(cmd_args,
+              sizeof(cmd_args),
               "--add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
               "STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv",
               min_threshold,
@@ -268,7 +269,8 @@ stir_mathTests::run_tests()
     const float max_threshold = RAND_MAX / 2.F;
     {
       char cmd_args[1000];
-      sprintf(cmd_args,
+      snprintf(cmd_args,
+              sizeof(cmd_args),
               "-s --add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
               "STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs",
               min_threshold,

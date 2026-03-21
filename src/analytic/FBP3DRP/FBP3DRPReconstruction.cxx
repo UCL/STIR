@@ -565,7 +565,7 @@ FBP3DRPReconstruction::do_2D_reconstruction()
   if (save_intermediate_files && !_disable_output)
     {
       char file[max_filename_length];
-      sprintf(file, "%s_estimated", output_filename_prefix.c_str());
+      snprintf(file, sizeof(file), "%s_estimated", output_filename_prefix.c_str());
       do_save_img(file, estimated_image());
     }
 }
@@ -656,7 +656,7 @@ FBP3DRPReconstruction::do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image)
           if (save_intermediate_files && !_disable_output)
             {
               char* file = new char[output_filename_prefix.size() + 20];
-              sprintf(file, "%s_afterseg%d", output_filename_prefix.c_str(), seg_num);
+              snprintf(file, output_filename_prefix.size() + 20, "%s_afterseg%d", output_filename_prefix.c_str(), seg_num);
               back_projector_sptr->get_output(image);
               do_save_img(file, image);
               delete[] file;
@@ -897,7 +897,7 @@ void
 FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float>& image)
 {
   char file[max_filename_length];
-  sprintf(file, "%s.log", output_filename_prefix.c_str());
+  snprintf(file, sizeof(file), "%s.log", output_filename_prefix.c_str());
 
   full_log << endl << "- WRITE LOGFILE (" << file << ")" << endl;
 

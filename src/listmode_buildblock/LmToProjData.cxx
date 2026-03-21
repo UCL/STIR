@@ -694,7 +694,7 @@ LmToProjData::process_data()
         {
           writing_to_file = true;
           char rest[50];
-          sprintf(rest, "_f%dg1d0b0", current_frame_num);
+          snprintf(rest, sizeof(rest), "_f%dg1d0b0", current_frame_num);
           const string output_filename = output_filename_prefix + rest;
 
           output_proj_data_sptr = construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);

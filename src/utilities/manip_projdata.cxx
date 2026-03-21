@@ -189,7 +189,7 @@ do_math(enum options operation,
 
       case _display_view: { // display math buffer by View
         char title[100];
-        sprintf(title, "Segment %d", sino1.get_segment_num());
+        snprintf(title, sizeof(title), "Segment %d", sino1.get_segment_num());
         display(sino1, sino1.find_max(), title);
         if (ask("Display single viewgram?", false))
           {
@@ -205,7 +205,7 @@ do_math(enum options operation,
 
       case _display_sino: { // display math buffer by sinogram
         char title[100];
-        sprintf(title, "Segment %d", sino1.get_segment_num());
+        snprintf(title, sizeof(title), "Segment %d", sino1.get_segment_num());
         display(seg_sinogram, seg_sinogram.find_max());
         break;
       }
@@ -399,9 +399,9 @@ main(int argc, char* argv[])
               char output_buffer_filename[max_filename_length];
 
               ask_filename_with_extension(output_buffer_root, "Output to which file (without extension)?", "");
-              sprintf(output_buffer_filename, "%s.%s", output_buffer_root, "s");
+              snprintf(output_buffer_filename, max_filename_length, "%s.%s", output_buffer_root, "s");
               // TODO relies on write_basic_interfile_PDFS_header using .hs extension
-              sprintf(output_buffer_header, "%s.%s", output_buffer_root, "hs");
+              snprintf(output_buffer_header, max_filename_length, "%s.%s", output_buffer_root, "hs");
               shared_ptr<fstream> new_sino_ptr(new fstream);
               open_write_binary(*new_sino_ptr, output_buffer_filename);
               shared_ptr<ProjDataInfo> pdi_ptr = first_operand->get_proj_data_info_sptr()->create_shared_clone();

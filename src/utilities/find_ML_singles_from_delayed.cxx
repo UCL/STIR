@@ -178,7 +178,7 @@ main(int argc, char** argv)
             if (eff_iter_num == num_eff_iterations || (do_save_interval > 0 && eff_iter_num % do_save_interval == 0))
               {
                 char* out_filename = new char[out_filename_prefix.size() + 30];
-                sprintf(out_filename, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
+                snprintf(out_filename, out_filename_prefix.size() + 30, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
                 std::ofstream out(out_filename);
                 if (!out)
                   {

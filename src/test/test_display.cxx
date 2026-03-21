@@ -84,10 +84,11 @@ main()
         }
     }
   VectorWithOffset<char*> text(t.get_min_index(), t.get_max_index());
+  const std::size_t label_size = 15;
   for (int i = t.get_min_index(); i <= t.get_max_index(); i++)
     {
-      text[i] = new char[15];
-      sprintf(text[i], "image %d", i);
+      text[i] = new char[label_size];
+      snprintf(text[i], label_size, "image %d", i);
     }
 
   display(t, scale_factors, text, maxi, "Test display 3D all args", scale);

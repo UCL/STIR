@@ -116,18 +116,18 @@ private:
     for (int i = inboundaries.get_min_index(); i <= inboundaries.get_max_index(); ++i)
       inboundaries[i] = i - .5F;
     outvalues.set_min_index(outstartindex);
-    sprintf(out, "%s: inconsistent index sizes. Check test program", description);
+    snprintf(out, sizeof(out), "%s: inconsistent index sizes. Check test program", description);
     if (!check_if_equal(outvalues.get_max_index(), outendindex - 1, out))
       return Succeeded::no;
     VectorWithOffset<float> outboundaries(outstartindex, outendindex);
     for (int i = outboundaries.get_min_index(); i <= outboundaries.get_max_index(); ++i)
       outboundaries[i] = (i - .5F) / zoom + offset;
 
-    sprintf(out, "%s: test general overlap_interpolate", description);
+    snprintf(out, sizeof(out), "%s: test general overlap_interpolate", description);
     if (test_case(invalues, inboundaries, outvalues, outboundaries, out) == Succeeded::no)
       return Succeeded::no;
 
-    sprintf(out, "%s: test uniform overlap_interpolate", description);
+    snprintf(out, sizeof(out), "%s: test uniform overlap_interpolate", description);
     if (uniform_test_case(invalues, zoom, offset, outvalues, out) == Succeeded::no)
       return Succeeded::no;
     return Succeeded::yes;
