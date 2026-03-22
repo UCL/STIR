@@ -1648,7 +1648,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       return Succeeded::no;
     }
 
-  char* header_filename = new char[ECAT7_filename.size() + 100];
+  const size_t max_filename_length = ECAT7_filename.size() + 100;
+  char* header_filename = new char[max_filename_length];
   {
     strcpy(header_filename, ECAT7_filename.c_str());
     // keep extension, just in case we would have conflicts otherwise
@@ -1657,13 +1658,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     if (dot_ptr != NULL)
       header_filename[dot_ptr - header_filename] = '_';
     // now add stuff to say which frame, gate, bed, data this was
-    snprintf(header_filename + strlen(header_filename),
-             ECAT7_filename.size() + 100 - strlen(header_filename),
-             "_f%dg%dd%db%d",
-             frame_num,
-             gate_num,
-             data_num,
-             bed_num);
+    const size_t used = strnlen(header_filename, max_filename_length);
+    snprintf(header_filename + used, max_filename_length - used, "_f%dg%dd%db%d", frame_num, gate_num, data_num, bed_num);
   }
 
   switch (mptr->mhptr->file_type)

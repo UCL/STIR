@@ -162,15 +162,17 @@ main(int argc, char* argv[])
   switch (mhead.file_type)
     {
       case matImageFile: {
-        char* new_out_filename = new char[out_name.size() + 100];
+        const size_t max_filename_length = out_name.size() + 100;
+        char* new_out_filename = new char[max_filename_length];
         for (int frame_num = min_frame_num; frame_num <= max_frame_num; ++frame_num)
           for (int bed_num = min_bed_num; bed_num <= max_bed_num; ++bed_num)
             for (int gate_num = min_gate_num; gate_num <= max_gate_num; ++gate_num)
               {
                 strcpy(new_out_filename, out_name.c_str());
+                const size_t used = strnlen(new_out_filename, max_filename_length);
                 if (do_all)
-                  snprintf(new_out_filename + strlen(new_out_filename),
-                           out_name.size() + 100 - strlen(new_out_filename),
+                  snprintf(new_out_filename + used,
+                           max_filename_length - used,
                            "_f%dg%db%dd%d",
                            frame_num,
                            gate_num,
@@ -191,21 +193,24 @@ main(int argc, char* argv[])
         const int max_ring_diff = ask_num("Max ring diff to store (-1 == num_rings-1)", -1, 100, -1);
 
         const bool arccorrected = ask("Consider the data to be arc-corrected?", false);
-
-        char* new_out_filename = new char[out_name.size() + 100];
+        const size_t max_filename_length = out_name.size() + 100;
+        char* new_out_filename = new char[max_filename_length];
         for (int frame_num = min_frame_num; frame_num <= max_frame_num; ++frame_num)
           for (int bed_num = min_bed_num; bed_num <= max_bed_num; ++bed_num)
             for (int gate_num = min_gate_num; gate_num <= max_gate_num; ++gate_num)
               {
                 strcpy(new_out_filename, out_name.c_str());
                 if (do_all)
-                  snprintf(new_out_filename + strlen(new_out_filename),
-                           out_name.size() + 100 - strlen(new_out_filename),
-                           "_f%dg%db%dd%d",
-                           frame_num,
-                           gate_num,
-                           bed_num,
-                           data_num);
+                  {
+                    const size_t used = strnlen(new_out_filename, max_filename_length);
+                    snprintf(new_out_filename + used,
+                             max_filename_length - used,
+                             "_f%dg%db%dd%d",
+                             frame_num,
+                             gate_num,
+                             bed_num,
+                             data_num);
+                  }
                 cout << "Writing " << new_out_filename << endl;
                 ECAT6_to_PDFS(
                     frame_num, gate_num, data_num, bed_num, max_ring_diff, arccorrected, new_out_filename, cti_fptr, mhead);
