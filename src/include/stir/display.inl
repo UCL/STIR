@@ -43,7 +43,7 @@ display(const Array<3, elemT>& plane_stack, double maxi, const char* const title
   scale_factors.fill(1.);
   VectorWithOffset<char*> text(plane_stack.get_min_index(), plane_stack.get_max_index());
 
-  const std::size_t label_size = 10;
+  constexpr std::size_t label_size = 10;
   for (int i = plane_stack.get_min_index(); i <= plane_stack.get_max_index(); i++)
     {
       text[i] = new char[label_size];

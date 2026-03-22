@@ -494,7 +494,7 @@ display(const RelatedViewgrams<elemT>& vs, double maxi, const char* const title,
   VectorWithOffset<char*>::iterator text_iter = text.begin();
   typename RelatedViewgrams<elemT>::const_iterator vs_iter = vs.begin();
 
-  const std::size_t label_size = 100;
+  constexpr std::size_t label_size = 100;
   while (vs_iter != vs.end())
     {
       *text_iter = new char[label_size];
