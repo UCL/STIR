@@ -176,7 +176,7 @@ CListModeDataECAT<CListRecordT>::open_lm_file(unsigned int new_lm_file) const
       // now open new file
       std::string filename = listmode_filename_prefix;
       char rest[50];
-      sprintf(rest, "_%d.lm", new_lm_file);
+      snprintf(rest, sizeof(rest), "_%d.lm", new_lm_file);
       filename += rest;
       info(format("CListModeDataECAT: opening file {}", filename));
       shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));

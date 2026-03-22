@@ -30,7 +30,7 @@
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/DiscretisedDensity.h"
-//#include "stir/LogLikBased/common.h"
+// #include "stir/LogLikBased/common.h"
 #include "stir/ThresholdMinToSmallPositiveValueDataProcessor.h"
 #include "stir/ChainedDataProcessor.h"
 #include "stir/Succeeded.h"
@@ -49,8 +49,8 @@
 #include "stir/format.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
-//#include "stir/modelling/ParametricDiscretisedDensity.h"
-//#include "stir/modelling/KineticParameters.h"
+// #include "stir/modelling/ParametricDiscretisedDensity.h"
+// #include "stir/modelling/KineticParameters.h"
 
 #include <memory>
 #include <iostream>
@@ -1093,8 +1093,9 @@ KOSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_alpha_coeffic
     {
       // allocate space for the filename assuming that
       // we never have more than 10^49 subiterations ...
-      char* fname = new char[this->output_filename_prefix.size() + 60];
-      sprintf(fname, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
+      const size_t filename_length = this->output_filename_prefix.size() + 60;
+      char* fname = new char[filename_length];
+      snprintf(fname, filename_length, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
 
       // Write it to file
       this->output_file_format_ptr->write_to_file(fname, *kmultiplicative_update_ptr);

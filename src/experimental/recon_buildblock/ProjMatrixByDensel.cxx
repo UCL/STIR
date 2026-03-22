@@ -65,9 +65,9 @@ void ProjMatrixByDensel::write_to_file_by_densel(
                                       const char * const file_name_without_extension)
 { 
   char h_interfile[256];
-  sprintf (h_interfile, "%s.hp", file_name_without_extension );
+  snprintf (h_interfile, sizeof(h_interfile), "%s.hp", file_name_without_extension );
   FILE * prob_file = fopen (h_interfile , "wb");
-  sprintf (h_interfile, "%s.p", file_name_without_extension );
+  snprintf (h_interfile, sizeof(h_interfile), "%s.p", file_name_without_extension );
   fstream pout;
   open_write_denselary(pout, h_interfile);
   

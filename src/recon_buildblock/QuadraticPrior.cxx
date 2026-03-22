@@ -375,8 +375,9 @@ QuadraticPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_grad
   ++count;
   if (gradient_filename_prefix.size() > 0)
     {
-      char* filename = new char[gradient_filename_prefix.size() + 100];
-      sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
+      const size_t filename_size = gradient_filename_prefix.size() + 100;
+      char* filename = new char[filename_size];
+      snprintf(filename, filename_size, "%s%d.v", gradient_filename_prefix.c_str(), count);
       write_to_file(filename, prior_gradient);
       delete[] filename;
     }
@@ -527,7 +528,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3, elemT
     static int count = 0;
     ++count;
     char filename[20];
-    sprintf(filename, "normalised_gradient%d.v",count);
+    snprintf(filename, sizeof(filename), "normalised_gradient%d.v",count);
     write_basic_interfile(filename, parabolic_surrogate_curvature);
   }*/
 }

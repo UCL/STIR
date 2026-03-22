@@ -150,7 +150,7 @@ MatchTrackerAndScanner::run()
       CartesianCoordinate3D<float> location_of_image_max_in_mm;
       {
         char rest[50];
-        sprintf(rest, "_f%ug1d0b0.hv", current_frame_num);
+        snprintf(rest, sizeof(rest), "_f%ug1d0b0.hv", current_frame_num);
         const string input_filename = this->get_image_filename_prefix() + rest;
 
         shared_ptr<DiscretisedDensity<3, float>> input_image_sptr(read_from_file<DiscretisedDensity<3, float>>(input_filename));
