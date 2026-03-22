@@ -673,8 +673,9 @@ PLSPrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT>& prior_gradient,
   ++count;
   if (gradient_filename_prefix.size() > 0)
     {
-      char* filename = new char[gradient_filename_prefix.size() + 100];
-      snprintf(filename, gradient_filename_prefix.size() + 100, "%s%d.v", gradient_filename_prefix.c_str(), count);
+      const size_t filename_size = gradient_filename_prefix.size() + 100;
+      char* filename = new char[filename_size];
+      snprintf(filename, filename_size, "%s%d.v", gradient_filename_prefix.c_str(), count);
       write_to_file(filename, prior_gradient);
       delete[] filename;
     }

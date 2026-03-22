@@ -72,9 +72,10 @@ main(int argc, char** argv)
         for (int b = 0; b < num_detectors; ++b)
           efficiencies[b] = exp(noise * ((2.F * rand()) / RAND_MAX - 1));
         {
-          char* out_filename = new char[out_filename_prefix.size() + 30];
+          const size_t filename_size = out_filename_prefix.size() + 30;
+          char* out_filename = new char[filename_size];
           snprintf(out_filename,
-                   out_filename_prefix.size() + 30,
+                   filename_size,
                    "%s_%s_%d_%d_%d.out",
                    out_filename_prefix.c_str(),
                    "eff",
@@ -112,14 +113,9 @@ main(int argc, char** argv)
                 }
           }
           {
-            char* out_filename = new char[out_filename_prefix.size() + 30];
-            snprintf(out_filename,
-                     out_filename_prefix.size() + 30,
-                     "%s_%s_%d_%d.out",
-                     out_filename_prefix.c_str(),
-                     "geo",
-                     ax_pos_num,
-                     iter_num);
+            const size_t filename_size = out_filename_prefix.size() + 30;
+            char* out_filename = new char[filename_size];
+            snprintf(out_filename, filename_size, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
             ofstream out(out_filename);
             out << norm_geo_data;
             delete[] out_filename;
@@ -136,14 +132,9 @@ main(int argc, char** argv)
               }
 
           {
-            char* out_filename = new char[out_filename_prefix.size() + 30];
-            snprintf(out_filename,
-                     out_filename_prefix.size() + 30,
-                     "%s_%s_%d_%d.out",
-                     out_filename_prefix.c_str(),
-                     "block",
-                     ax_pos_num,
-                     iter_num);
+            const size_t filename_size = out_filename_prefix.size() + 30;
+            char* out_filename = new char[filename_size];
+            snprintf(out_filename, filename_size, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
             ofstream out(out_filename);
             out << norm_block_data;
             delete[] out_filename;

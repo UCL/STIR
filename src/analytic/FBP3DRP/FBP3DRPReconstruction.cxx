@@ -655,8 +655,9 @@ FBP3DRPReconstruction::do_3D_Reconstruction(VoxelsOnCartesianGrid<float>& image)
 #ifndef PARALLEL
           if (save_intermediate_files && !_disable_output)
             {
-              char* file = new char[output_filename_prefix.size() + 20];
-              snprintf(file, output_filename_prefix.size() + 20, "%s_afterseg%d", output_filename_prefix.c_str(), seg_num);
+              const size_t filename_size = output_filename_prefix.size() + 20;
+              char* file = new char[filename_size];
+              snprintf(file, filename_size, "%s_afterseg%d", output_filename_prefix.c_str(), seg_num);
               back_projector_sptr->get_output(image);
               do_save_img(file, image);
               delete[] file;

@@ -479,12 +479,9 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
     {
       // allocate space for the filename assuming that
       // we never have more than 10^49 subiterations ...
-      char* fname = new char[this->output_filename_prefix.size() + 60];
-      snprintf(fname,
-               this->output_filename_prefix.size() + 60,
-               "%s_update_%d",
-               this->output_filename_prefix.c_str(),
-               this->subiteration_num);
+      const size_t filename_length = this->output_filename_prefix.size() + 60;
+      char* fname = new char[filename_length];
+      snprintf(fname, filename_length, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
 
       // Write it to file
       this->output_file_format_ptr->write_to_file(fname, *multiplicative_update_image_ptr);

@@ -90,9 +90,10 @@ BinNormalisationFromML2D::set_up(const shared_ptr<const ProjDataInfo>& proj_data
       // efficiencies
       if (do_eff)
         {
-          char* normalisation_filename = new char[normalisation_filename_prefix.size() + 30];
+          const size_t filename_size = normalisation_filename_prefix.size() + 30;
+          char* normalisation_filename = new char[filename_size];
           snprintf(normalisation_filename,
-                   normalisation_filename_prefix.size() + 30,
+                   filename_size,
                    "%s_%s_%d_%d_%d.out",
                    normalisation_filename_prefix.c_str(),
                    "eff",
@@ -114,9 +115,10 @@ BinNormalisationFromML2D::set_up(const shared_ptr<const ProjDataInfo>& proj_data
       if (do_geo)
         {
           {
-            char* normalisation_filename = new char[normalisation_filename_prefix.size() + 30];
+            const size_t filename_size = normalisation_filename_prefix.size() + 30;
+            char* normalisation_filename = new char[filename_size];
             snprintf(normalisation_filename,
-                     normalisation_filename_prefix.size() + 30,
+                     filename_size,
                      "%s_%s_%d_%d.out",
                      normalisation_filename_prefix.c_str(),
                      "geo",
@@ -137,9 +139,10 @@ BinNormalisationFromML2D::set_up(const shared_ptr<const ProjDataInfo>& proj_data
       if (do_block)
         {
           {
-            char* normalisation_filename = new char[normalisation_filename_prefix.size() + 30];
+            const size_t filename_size = normalisation_filename_prefix.size() + 30;
+            char* normalisation_filename = new char[filename_size];
             snprintf(normalisation_filename,
-                     normalisation_filename_prefix.size() + 30,
+                     filename_size,
                      "%s_%s_%d_%d.out",
                      normalisation_filename_prefix.c_str(),
                      "block",

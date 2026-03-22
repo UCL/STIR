@@ -177,14 +177,10 @@ main(int argc, char** argv)
             iterate_efficiencies(efficiencies, data_fan_sums, max_ring_diff, half_fan_size);
             if (eff_iter_num == num_eff_iterations || (do_save_interval > 0 && eff_iter_num % do_save_interval == 0))
               {
-                char* out_filename = new char[out_filename_prefix.size() + 30];
-                snprintf(out_filename,
-                         out_filename_prefix.size() + 30,
-                         "%s_%s_%d_%d.out",
-                         out_filename_prefix.c_str(),
-                         "eff",
-                         iter_num,
-                         eff_iter_num);
+                const size_t filename_size = out_filename_prefix.size() + 30;
+                char* out_filename = new char[filename_size];
+                snprintf(
+                    out_filename, filename_size, "%s_%s_%d_%d.out", out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
                 std::ofstream out(out_filename);
                 if (!out)
                   {
