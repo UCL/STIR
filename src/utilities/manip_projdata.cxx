@@ -35,7 +35,7 @@ This utility programme processes (interfile) sinogram data
 #include "stir/Sinogram.h"
 #include "stir/Viewgram.h"
 
-//#include "stir/Scanner.h"
+// #include "stir/Scanner.h"
 #include "stir/ArrayFunction.h"
 #include "stir/recon_array_functions.h"
 #include "stir/display.h"
@@ -395,7 +395,7 @@ main(int argc, char* argv[])
             {
               // operation result is a sinogram
 
-              char output_buffer_root[max_filename_length];
+              char output_buffer_root[max_filename_length - 3]; // to allow for extension
               char output_buffer_filename[max_filename_length];
 
               ask_filename_with_extension(output_buffer_root, "Output to which file (without extension)?", "");
