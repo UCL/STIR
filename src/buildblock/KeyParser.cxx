@@ -34,16 +34,13 @@
 #include <cstring>
 #include <cstdlib>
 #include "stir/warning.h"
-#include <strstream>
-#include <sstream>
 
 using std::ifstream;
 using std::cerr;
 using std::cout;
 using std::cin;
 using std::endl;
-using std::istrstream;
-using std::ostrstream;
+using std::istringstream;
 using std::vector;
 using std::string;
 // using std::map;
@@ -674,7 +671,7 @@ get_param_from_string(T& param, const string& s)
   if (cp == string::npos)
     return Succeeded::no;
 
-  istrstream str(s.c_str() + cp + 1);
+  istringstream str(s.c_str() + cp + 1);
   str >> param;
   return str.fail() ? Succeeded::no : Succeeded::yes;
 }
@@ -713,7 +710,7 @@ get_vparam_from_string(vector<T>& param, const string& s)
       const string::size_type start = s.find_first_not_of(" \t", cp + 1); // KT 07/10/2002 now also skips tabs
       if (start != string::npos)
         {
-          istrstream str(s.c_str() + start);
+          istringstream str(s.c_str() + start);
 
           if (s[start] == '{')
             str >> param;
@@ -739,7 +736,7 @@ get_vparam_from_string(VectorWithOffset<T>& param, const string& s)
       const string::size_type start = s.find_first_not_of(" \t", cp + 1); // KT 07/10/2002 now also skips tabs
       if (start != string::npos)
         {
-          istrstream str(s.c_str() + start);
+          istringstream str(s.c_str() + start);
 
           if (s[start] == '{')
             str >> param;
