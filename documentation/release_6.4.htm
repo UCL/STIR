@@ -134,6 +134,15 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1665>PR #1665</a>
     </li>
+    <li>
+      Use the CMake <code>CMAKE_ROOT_CXX_STANDARD</code> to configure the minimum C++ version for the ROOT dependency.
+      Starting with ROOT v6.32, <code>ROOT_CXX_STANDARD</code> defines the minimum C++ version required by ROOT, 
+      and CMake will automatically set the C++ version for the target that links to ROOT to at least that version.
+      For ROOT v6.30, we set <code>CMAKE_ROOT_CXX_STANDARD = 20</code>. 
+      For ROOT v6.28, we set <code>CMAKE_ROOT_CXX_STANDARD = 17</code>. 
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1700>PR #1700</a>
+    </li>
 </ul>
 
   <h3>Known problems</h3>
