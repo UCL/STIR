@@ -4,6 +4,7 @@
 # @Author Kris Thielemans
 # @Author the ROOT team
 # @Author Robert Twyman (improved documentation)
+# @Author Denis Prokopenko (added auto detection of CXX version from ROOT 6.32+)
 
 ## CMAKE ARGS
 #
@@ -62,6 +63,17 @@ if (ROOT_FOUND)
   set(CERN_ROOT_VERSION ${ROOT_VERSION})
   set(CERN_ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
   set(CERN_ROOT_LIBRARIES ${ROOT_LIBRARIES})
+
+  if (${CERN_ROOT_VERSION} VERSION_GREATER 6.31.99)
+    set(CERN_ROOT_CXX_STANDARD ${ROOT_CXX_STANDARD})
+    if (CERN_ROOT_DEBUG)
+      message(STATUS "ROOT Version is ${CERN_ROOT_VERSION}. Loading minimum C++ from ROOT_CXX_STANDARD.")
+    endif()
+  elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
+    set(CERN_ROOT_CXX_STANDARD 20)
+  else()
+    set(CERN_ROOT_CXX_STANDARD 17)
+  endif()
 
 else()
 
