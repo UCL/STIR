@@ -79,41 +79,51 @@ else()
 
   ### Old work-arounds. Should be removed later really
 
+  if (CERN_ROOT_DEBUG)
+    message(STATUS "Did not find ROOTConfig.cmake, so trying via root-config")
+  endif()
+  find_program(CERN_ROOT_CONFIG "root-config" HINTS "${ROOTSYS}" )
+
+  if (CERN_ROOT_CONFIG)
+
     if (CERN_ROOT_DEBUG)
-      message(STATUS "Did not find ROOTConfig.cmake, so trying via root-config")
+      message(STATUS "Finding ROOT location etc via ${CERN_ROOT_CONFIG}")
     endif()
-    find_program(CERN_ROOT_CONFIG "root-config" HINTS "${ROOTSYS}" )
 
-    if (CERN_ROOT_CONFIG)
+    execute_process(COMMAND ${CERN_ROOT_CONFIG} --incdir OUTPUT_VARIABLE
+        CERN_ROOT_INCLUDE_DIRS
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-        if (CERN_ROOT_DEBUG)
-          message(STATUS "Finding ROOT location etc via ${CERN_ROOT_CONFIG}")
-        endif()
+    # Attempt fo find libraries from root-config. However, this doesn't work if
+    # not all libraries are installed (as root-config lists them anyway).
+    # set (root_lib_arg "--libs")
+    # execute_process(COMMAND ${CERN_ROOT_CONFIG} ${root_lib_arg} OUTPUT_VARIABLE
+    #    TCERN_ROOT_LIBRARIES)
+    # string (STRIP "${TCERN_ROOT_LIBRARIES}" CERN_ROOT_LIBRARIES)
 
-        execute_process(COMMAND ${CERN_ROOT_CONFIG} --incdir OUTPUT_VARIABLE
-            CERN_ROOT_INCLUDE_DIRS
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    # Do an explicit search
+    # Lines copied from FindROOT.cmake distributed with ROOT v6.08/06
+    execute_process(
+        COMMAND ${CERN_ROOT_CONFIG} --libdir
+        OUTPUT_VARIABLE CERN_ROOT_LIBRARY_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-        # Attempt fo find libraries from root-config. However, this doesn't work if
-        # not all libraries are installed (as root-config lists them anyway).
-        # set (root_lib_arg "--libs")
-        # execute_process(COMMAND ${CERN_ROOT_CONFIG} ${root_lib_arg} OUTPUT_VARIABLE
-        #    TCERN_ROOT_LIBRARIES)
-        # string (STRIP "${TCERN_ROOT_LIBRARIES}" CERN_ROOT_LIBRARIES)
-
-        # Do an explicit search
-        # Lines copied from FindROOT.cmake distributed with ROOT v6.08/06
-        execute_process(
-            COMMAND ${CERN_ROOT_CONFIG} --libdir
-            OUTPUT_VARIABLE CERN_ROOT_LIBRARY_DIR
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-	execute_process(
+	  execute_process(
 	    COMMAND ${CERN_ROOT_CONFIG} --version
 	        OUTPUT_VARIABLE CERN_ROOT_VERSION
-		OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+		      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.31.99)
+      set(CERN_ROOT_CXX_STANDARD ${ROOT_CXX_STANDARD})
+      if (CERN_ROOT_DEBUG)
+        message(STATUS "ROOT Version is ${CERN_ROOT_VERSION}. Loading minimum C++ from ROOT_CXX_STANDARD.")
+      endif()
+    elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
+      set(CERN_ROOT_CXX_STANDARD 20)
     else()
+      set(CERN_ROOT_CXX_STANDARD 17)
+    endif()
+
+  else()
 
         # no root-config
         if (CERN_ROOT_DEBUG)
