@@ -147,7 +147,6 @@ if(NOT DISABLE_CERN_ROOT)
     message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
     message(STATUS "ROOT Version is ${CERN_ROOT_VERSION}. Required minimum CXX version is ${CERN_ROOT_CXX_STANDARD}.")
     UseCXX(${CERN_ROOT_CXX_STANDARD})
-    endif()
   endif()
 endif()
 
