@@ -75,6 +75,8 @@ if (NOT MINI_STIR)
     find_sum_projection_of_viewgram_and_sinogram.cxx
     separate_true_from_random_scatter_for_necr.cxx
     stir_timings.cxx
+    convert_projdata_types.cxx
+		trim_projdata.cxx
     )
 
   if (HAVE_ITK)
