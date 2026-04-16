@@ -63,17 +63,7 @@ if (ROOT_FOUND)
   set(CERN_ROOT_VERSION ${ROOT_VERSION})
   set(CERN_ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
   set(CERN_ROOT_LIBRARIES ${ROOT_LIBRARIES})
-
-  if (${CERN_ROOT_VERSION} VERSION_GREATER 6.31.99)
-    set(CERN_ROOT_CXX_STANDARD ${ROOT_CXX_STANDARD})
-    if (CERN_ROOT_DEBUG)
-      message(STATUS "ROOT Version is ${CERN_ROOT_VERSION}. Loading minimum C++ from ROOT_CXX_STANDARD.")
-    endif()
-  elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
-    set(CERN_ROOT_CXX_STANDARD 20)
-  else()
-    set(CERN_ROOT_CXX_STANDARD 17)
-  endif()
+  set(CERN_ROOT_CXX_STANDARD ${ROOT_CXX_STANDARD})
 
 else()
 
@@ -113,14 +103,10 @@ else()
 	        OUTPUT_VARIABLE CERN_ROOT_VERSION
 		      OUTPUT_STRIP_TRAILING_WHITESPACE)
     if (${CERN_ROOT_VERSION} VERSION_GREATER 6.31.99)
-      set(CERN_ROOT_CXX_STANDARD ${ROOT_CXX_STANDARD})
-      if (CERN_ROOT_DEBUG)
-        message(STATUS "ROOT Version is ${CERN_ROOT_VERSION}. Loading minimum C++ from ROOT_CXX_STANDARD.")
-      endif()
-    elseif (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
-      set(CERN_ROOT_CXX_STANDARD 20)
-    else()
-      set(CERN_ROOT_CXX_STANDARD 17)
+      execute_process(
+	      COMMAND ${CERN_ROOT_CONFIG} --cxxstandard
+	          OUTPUT_VARIABLE CERN_ROOT_CXX_STANDARD
+		        OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
 
   else()
@@ -176,11 +162,17 @@ else()
 
 endif()
 
+# Fall back to minimum C++ version required by ROOT.
+if (NOT (CERN_ROOT_CXX_STANDARD))
+  set(CERN_ROOT_CXX_STANDARD 17)
+endif()
+
 # root-config reports version as 6.26/10. This might also happen in other cases. Convert it to 6.26.10
 string(REPLACE "/" "." CERN_ROOT_VERSION "${CERN_ROOT_VERSION}")
 
 if (CERN_ROOT_DEBUG)
   message(STATUS "CERN_ROOT_VERSION: ${CERN_ROOT_VERSION}")
+  message(STATUS "CERN_ROOT_CXX_STANDARD: ${CERN_ROOT_CXX_STANDARD}")
   message(STATUS "CERN_ROOT_INCLUDE_DIRS: ${CERN_ROOT_INCLUDE_DIRS}")
   message(STATUS "AVAILABLE ROOT LIBRARIES: ${CERN_ROOT_LIBRARIES}")
   if (TARGET ROOT::Tree)

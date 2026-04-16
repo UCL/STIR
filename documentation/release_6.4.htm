@@ -135,11 +135,13 @@
       <a href=https://github.com/UCL/STIR/pull/1665>PR #1665</a>
     </li>
     <li>
-      Use the CMake <code>CMAKE_ROOT_CXX_STANDARD</code> to configure the minimum C++ version for the ROOT dependency.
-      Starting with ROOT v6.32, <code>ROOT_CXX_STANDARD</code> defines the minimum C++ version required by ROOT, 
-      and CMake will automatically set the C++ version for the target that links to ROOT to at least that version.
-      For ROOT v6.30, we set <code>CMAKE_ROOT_CXX_STANDARD = 20</code>. 
-      For ROOT v6.28, we set <code>CMAKE_ROOT_CXX_STANDARD = 17</code>. 
+      For builds with CERN ROOT, the C++ standard is now automatically set to match the one used to build ROOT.
+      New CMake variable <code>CMAKE_ROOT_CXX_STANDARD</code> is used to configure the minimum C++ standard for the project.
+      Starting from ROOT v6.32, the variable <code>ROOT_CXX_STANDARD</code> specifies the C++ standard used to build ROOT. 
+      CMake will automatically ensure that the project uses the same C++ standard.
+      For ROOT versions below v6.32, the C++ standard is not exposed. 
+      In this case, the default is set to <code>CMAKE_CXX_STANDARD = 17</code>, matching pre-built releases and conda packages.
+      For custom builds of ROOT below v6.32 that use a different C++ standard, the user must specify the C++ standard manually during configuration.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1700>PR #1700</a>
     </li>
