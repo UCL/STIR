@@ -34,8 +34,6 @@
 #include "stir/error.h"
 #include <sstream>
 
-#include <boost/static_assert.hpp>
-
 using std::endl;
 using std::ends;
 using std::string;
@@ -165,19 +163,12 @@ ProjDataInfoCylindricalNoArcCorr::get_psi_offset() const
 void
 ProjDataInfoCylindricalNoArcCorr::initialise_uncompressed_view_tangpos_to_det1det2() const
 {
-  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
-  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
+  static_assert(-1 >> 1 == -1);
+  static_assert(-2 >> 1 == -1);
 
   const int num_detectors = get_scanner_ptr()->get_num_detectors_per_ring();
 
   assert(num_detectors % 2 == 0);
-#ifndef NDEBUG
-  // check views range from 0 to Pi
-  // PW Supports intrinsic tilt.
-  const float v_offset = get_azimuthal_angle_offset();
-  assert(fabs(get_phi(Bin(0, 0, 0, 0)) - v_offset) < 1.E-4);
-  assert(fabs(get_phi(Bin(0, get_num_views(), 0, 0)) - v_offset - _PI) < 1.E-4);
-#endif
   const int min_tang_pos_num = -(num_detectors / 2) + 1;
   const int max_tang_pos_num = -(num_detectors / 2) + num_detectors;
 
@@ -219,8 +210,8 @@ ProjDataInfoCylindricalNoArcCorr::initialise_uncompressed_view_tangpos_to_det1de
 void
 ProjDataInfoCylindricalNoArcCorr::initialise_det1det2_to_uncompressed_view_tangpos() const
 {
-  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
-  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
+  static_assert(-1 >> 1 == -1);
+  static_assert(-2 >> 1 == -1);
 
   const int num_detectors = get_scanner_ptr()->get_num_detectors_per_ring();
 
@@ -232,15 +223,6 @@ ProjDataInfoCylindricalNoArcCorr::initialise_det1det2_to_uncompressed_view_tangp
     {
       error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
     }
-#ifndef NDEBUG
-  // check views range from 0 to Pi
-  // PW Supports intrinsic tilt.
-  const float v_offset = get_azimuthal_angle_offset();
-  assert(fabs(get_phi(Bin(0, 0, 0, 0)) - v_offset) < 1.E-4);
-  assert(fabs(get_phi(Bin(0, get_max_view_num() + 1, 0, 0)) - v_offset - _PI) < 1.E-4);
-#endif
-  // const int min_tang_pos_num = -(num_detectors/2);
-  // const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   const int max_num_views = num_detectors / 2;
 
   det1det2_to_uncompressed_view_tangpos.grow(0, num_detectors - 1);

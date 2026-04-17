@@ -162,6 +162,11 @@
 
   <h3>Changed functionality</h3>
   <ul>
+    <li>
+      Simplified the <code>ProjDataInfoGenericNoArcCorr</code> class hierarchy by merging `<code>ProjDataInfoGeneric</code> into it
+      and deriving it from <code>ProjDataInfoCylindricalNoArcCorr</code>. See <a href=https://github.com/UCL/STIR/pull/1307>Issue #1307</a> for rationale.<br>
+      <a href=https://github.com/UCL/STIR/pull/1696>PR #1696</a>
+    </li>
   </ul>
 
   <h3>Bug fixes</h3>
@@ -170,6 +175,12 @@
 
   <h3>New Deprecations and renames</h3>
   <ul>
+    <li>
+      <code>ProjDataInfoGeneric</code> is now identical to <code>ProjDataInfoGenericNoArcCorr</code>.
+    </li>
+    <li>
+      <code>ProjDataInfoBlocksOnCylindricalNoArcCorr</code> will be removed in v7.0 as it is almost identical to <code>ProjDataInfoGenericNoArcCorr</code>.
+    </li>
   </ul>
 
   <h3>Test changes</h3>
