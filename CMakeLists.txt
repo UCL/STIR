@@ -144,11 +144,8 @@ endif()
 if(NOT DISABLE_CERN_ROOT)
   find_package(CERN_ROOT 6.28.00) # required for C++17
   if (CERN_ROOT_FOUND)
-    message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
-        message(STATUS "ROOT Version is >= 6.30. Setting the minimum CXX version to 20.")
-        UseCXX(20)
-    endif()
+    message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}. CXX version: ${CERN_ROOT_CXX_STANDARD}.")
+    UseCXX(${CERN_ROOT_CXX_STANDARD})
   endif()
 endif()
 
