@@ -135,13 +135,11 @@
       <a href=https://github.com/UCL/STIR/pull/1665>PR #1665</a>
     </li>
     <li>
-      For builds with CERN ROOT, the C++ standard is now automatically set to match the one used to build ROOT.
-      New CMake variable <code>CMAKE_ROOT_CXX_STANDARD</code> is used to configure the minimum C++ standard for the project.
-      Starting from ROOT v6.32, the variable <code>ROOT_CXX_STANDARD</code> specifies the C++ standard used to build ROOT. 
-      CMake will automatically ensure that the project uses the same C++ standard.
-      For ROOT versions below v6.32, the C++ standard is not exposed. 
-      In this case, the default is set to <code>CMAKE_CXX_STANDARD = 17</code>, matching pre-built releases and conda packages.
-      For custom builds of ROOT below v6.32 that use a different C++ standard, the user must specify the C++ standard manually during configuration.
+      For builds with CERN ROOT, the minimum C++ standard is now automatically set to the one used to build ROOT.
+      Starting from ROOT v6.32, the CMake variable <code>ROOT_CXX_STANDARD</code> specifies the C++ standard used to build ROOT, so STIR now uses this as (minimum) C++ version. (From ROOT 6.34, CMake will automatically ensure that ROOT dependencies (such as STIR) use the same C++ standard).<br>
+      Note that for ROOT versions below v6.32, the C++ standard is not exposed. 
+      In this case, STIR's <tt>FindROOT.cmake</tt> sets <code>ROOT_CXX_STANDARD = 17</code>, matching pre-built releases and conda packages.
+      For custom builds of ROOT below v6.32 that use a more recent C++ standard, the STIR user must specify the appropriate C++ standard manually during configuration by specifying <code>CMAKE_CXX_STANDARD</code>.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1700>PR #1700</a>
     </li>
