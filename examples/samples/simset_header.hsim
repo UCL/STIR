@@ -1,0 +1,10 @@
+SimSET header := 
+
+originating system := Vereos
+
+name of phg file := phg.rec
+
+%TOF mashing factor := 30
+
+
+end SimSET header := 
