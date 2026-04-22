@@ -105,6 +105,12 @@ list(APPEND ${dir_LIB_SOURCES}
 	BinNormalisationFromECAT8.cxx
 )
 
+if (HAVE_PETSIRD)
+  list(APPEND ${dir_LIB_SOURCES}
+	BinNormalisationFromPETSIRD.cxx
+  )
+endif()
+
 if (HAVE_HDF5)
 list(APPEND ${dir_LIB_SOURCES}
          BinNormalisationFromGEHDF5.cxx
@@ -201,4 +207,8 @@ target_include_directories(${TARGET} PUBLIC #${CUVEC_INCLUDE_DIR})
 
 if (NOT STIR_WITH_CUDA)
   target_compile_definitions(${TARGET} PUBLIC CUVEC_DISABLE_CUDA)
+endif()
+
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()

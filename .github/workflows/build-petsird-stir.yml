@@ -1,0 +1,155 @@
+name: Build PETSIRD + STIR
+
+on:
+    push:
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    stir-with-petsird:
+        runs-on: ubuntu-24.04
+
+        env:
+            YARDL_VERSION: 0.6.6
+            PETSIRD_PREFIX: ${{ github.workspace }}/petsird-install
+        
+        steps:
+        - name: Install System Dependencies (date-tz)
+          run: |
+            sudo apt update
+            sudo apt install -y libomp-dev libboost-dev libhdf5-serial-dev nlohmann-json3-dev ninja-build
+            sudo apt install -y libdate-tz-dev || sudo apt install -y libhowardhinnant-date-dev
+
+        - name: Checkout STIR
+          uses: actions/checkout@v4
+
+        - name: Checkout PETSIRD
+          uses: actions/checkout@v4
+          with:
+            repository: NikEfth/PETSIRD
+            ref: fix/cmake-export
+            path: PETSIRD
+            
+        - name: Install Yardl
+          run: |
+            curl -L https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz -o yardl_${YARDL_VERSION}_linux_x86_64.tar.gz
+            mkdir yardl
+            tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" -C yardl
+            rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+            echo "$PWD/yardl" >> "$GITHUB_PATH"
+
+        - name: Install PETSIRD Python environment
+          uses: conda-incubator/setup-miniconda@v3
+          with:
+            activate-environment: yardl
+            environment-file: PETSIRD/environment.yml
+
+        - name: Check PETSIRD C++ build
+          shell: bash -l {0}
+          run: |
+            conda info
+            conda env list 
+            python --version
+
+        - name: Build PETSIRD C++
+          shell: bash -l {0}
+          run: |
+            export CC=/usr/bin/gcc
+            export CXX=/usr/bin/g++
+            
+            # Make conda packages visible to CMake
+            export CMAKE_PREFIX_PATH=$CONDA_PREFIX:$CMAKE_PREFIX_PATH
+            # export CXXFLAGS="-I$MAMBA_ROOT_PREFIX/envs/yardl/include $CXXFLAGS"
+
+            cd PETSIRD/model
+            just build
+
+            cd PETSIRD/cpp 
+            mkdir -p build
+            cd build
+
+            cmake .. \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_PREFIX_PATH="$CONDA_PREFIX" \
+                -DCMAKE_INSTALL_PREFIX="${PETSIRD_PREFIX}"
+
+            cmake --build . --target install -- -j$(nproc)
+
+         # - name: Install just
+        #   run: |
+        #     sudo apt-get update
+        #     sudo apt-get install -y cmake ninja-build just
+          # run: |
+          #   micromamba install -y -n yardl -f PETSIRD/environment.yml
+          #   micromamba install -n yardl -c conda-forge xtensor xtensor-blas openblas
+        #     micromamba install -y -n yardl -c conda-forge libdate tzdata libcurl
+
+        # - name: Generate PETSIRD sources (yardl) 
+        #   run: |
+        #     micromamba run -n yardl bash -lc "
+        #     export CC=/usr/bin/gcc
+        #     export CXX=/usr/bin/g++
+            
+        #     # Make conda packages visible to CMake
+        #     export CMAKE_PREFIX_PATH=\$CONDA_PREFIX:\$CMAKE_PREFIX_PATH
+        #     export CXXFLAGS=\"-I\$MAMBA_ROOT_PREFIX/envs/yardl/include \$CXXFLAGS\"
+
+        #     cd PETSIRD/model
+        #     just build
+        #     "
+        # - name: Build PETSIRD C++
+        #   run: |
+        #     micromamba run -n yardl bash -lc "
+        #     cd PETSIRD/cpp
+        #     mkdir -p build 
+        #     cd build
+            
+        #     cmake .. \
+        #         -DCMAKE_BUILD_TYPE=Release \
+        #         -DCMAKE_PREFIX_PATH=\"\$CONDA_PREFIX\" \
+        #         -DCMAKE_INSTALL_PREFIX=\"${{ env.PETSIRD_PREFIX }}\"
+
+        #     cmake --build . --target install -- -j$(nproc)
+        #     "
+
+        # - name: Build STIR with PETSIRD
+        #   run: |
+        #     micromamba run -n yardl bash -e <<'EOF'
+        #     export CC=/usr/bin/gcc
+        #     export CXX=/usr/bin/g++
+        #     export CMAKE_PREFIX_PATH="$CONDA_PREFIX:${PETSIRD_PREFIX}"
+            
+        #     mkdir -p build-stir
+        #     cd build-stir
+            
+        #     cmake .. \
+        #         -DCMAKE_BUILD_TYPE=Release \
+        #         -DCMAKE_PREFIX_PATH=\"\$CMAKE_PREFIX_PATH\" \
+        #         -DPETSIRD_DIR=\"${{ env.PETSIRD_PREFIX }}/lib/cmake/PETSIRD\" \
+        #         -DDISABLE_PETSIRD:BOOL=OFF \
+        #         -DDISABLE_HDF5:BOOL=OFF \
+        #         -DBUILD_DOCUMENTATION=OFF \
+        #         -DDISABLE_NLOHMANN_JSON:BOOL=OFF\
+        #         -DSTIR_OPENMP:BOOL=ON
+            
+        #     cmake --build . -- -j$(nproc)
+        #     EOF
+
+        # - name: Run STIR tests
+        #   run: |
+        #     micromamba run -n yardl bash -e <<'EOF'
+        #     export STIR_CONFIG_DIR=${GITHUB_WORKSPACE}/src/config
+        #     cd build-stir
+        #     make test 
+        #     EOF
+
+
+
+
+
+
+
+
+
+
+        
