@@ -31,6 +31,7 @@
 #include "H5Cpp.h"
 
 #include <string>
+#include <array>
 
 START_NAMESPACE_STIR
 
