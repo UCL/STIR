@@ -130,7 +130,9 @@ jobs:
           compiler: clang
           compiler_version: 21
           cuda_version: "0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          # openMP off as problems again with brew
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          # parallelproj off as it needs openMP
           parallelproj: "OFF"
           BUILD_TYPE: "Release"
           ROOT: "OFF"
