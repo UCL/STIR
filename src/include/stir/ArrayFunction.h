@@ -68,37 +68,37 @@ START_NAMESPACE_STIR
 
 //! Replace elements by their logarithm, 1D version
 /*! \ingroup Array */
-template <class elemT>
-inline Array<1, elemT>& in_place_log(Array<1, elemT>& v);
+template <typename elemT, typename indexT>
+inline Array<1, elemT, indexT>& in_place_log(Array<1, elemT, indexT>& v);
 
 //! apply log to each element of the multi-dimensional array
 /*! \ingroup Array */
-template <int num_dimensions, class elemT>
-inline Array<num_dimensions, elemT>& in_place_log(Array<num_dimensions, elemT>& v);
+template <int num_dimensions, typename elemT, typename indexT>
+inline Array<num_dimensions, elemT, indexT>& in_place_log(Array<num_dimensions, elemT, indexT>& v);
 
 //! Replace elements by their exponentiation, 1D version
 /*! \ingroup Array */
-template <class elemT>
-inline Array<1, elemT>& in_place_exp(Array<1, elemT>& v);
+template <typename elemT, typename indexT>
+inline Array<1, elemT, indexT>& in_place_exp(Array<1, elemT, indexT>& v);
 
 //! apply exp to each element of the multi-dimensional array
 /*! \ingroup Array */
-template <int num_dimensions, class elemT>
-inline Array<num_dimensions, elemT>& in_place_exp(Array<num_dimensions, elemT>& v);
+template <int num_dimensions, typename elemT, typename indexT>
+inline Array<num_dimensions, elemT, indexT>& in_place_exp(Array<num_dimensions, elemT, indexT>& v);
 
 //! Replace elements by their absolute value, 1D version
 /*! \ingroup Array
   \warning The implementation does not work with complex numbers.
 */
-template <class elemT>
-inline Array<1, elemT>& in_place_abs(Array<1, elemT>& v);
+template <typename elemT, typename indexT>
+inline Array<1, elemT, indexT>& in_place_abs(Array<1, elemT, indexT>& v);
 
 //! store absolute value of each element of the multi-dimensional array
 /*! \ingroup Array
   \warning The implementation does not work with complex numbers.
 */
-template <int num_dimensions, class elemT>
-inline Array<num_dimensions, elemT>& in_place_abs(Array<num_dimensions, elemT>& v);
+template <int num_dimensions, typename elemT, typename indexT>
+inline Array<num_dimensions, elemT, indexT>& in_place_abs(Array<num_dimensions, elemT, indexT>& v);
 
 //! apply any function(object) to each element of the multi-dimensional array
 /*! \ingroup Array
@@ -141,8 +141,8 @@ inline T& in_place_apply_function(T& v, FUNCTION f);
   \todo Add a specialisation such that this function would handle function
   objects and (smart) pointers to function objects. At the moment, it's only the latter.
 */
-template <int num_dim, typename elemT, typename FunctionObjectPtr>
-inline void in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, FunctionObjectPtr f);
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtr>
+inline void in_place_apply_array_function_on_1st_index(Array<num_dim, elemT, indexT>& array, FunctionObjectPtr f);
 
 //! apply any function(object) to each element of the multi-dimensional array, storing results in a different array
 /*! \ingroup Array
@@ -153,9 +153,10 @@ inline void in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& ar
   \endcode
   \a f should not modify the index range of the output argument.
   */
-template <int num_dim, typename elemT, typename FunctionObjectPtr>
-inline void
-apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array, FunctionObjectPtr f);
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtr>
+inline void apply_array_function_on_1st_index(Array<num_dim, elemT, indexT>& out_array,
+                                              const Array<num_dim, elemT, indexT>& in_array,
+                                              FunctionObjectPtr f);
 
 /* local #define used for 2 purposes:
    - in partial template specialisation that uses ArrayFunctionObject types
@@ -171,7 +172,7 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array, const Array<
   Ideally, the code should be rewritten to work with any kind of (smart) ptr. TODO
 */
 #if !defined(__GNUC__) && !defined(_MSC_VER)
-#  define ActualFunctionObjectPtrIter VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT>>>::const_iterator
+#  define ActualFunctionObjectPtrIter VectorWithOffset<shared_ptr<ArrayFunctionObject<1, elemT, indexT>>>::const_iterator
 #else
 /*
   Puzzlingly, although the code is actually  called with iterators of the type above,
@@ -180,7 +181,7 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array, const Array<
   VC also refuses to compile it.
   A work-around is to use the following type
 */
-#  define ActualFunctionObjectPtrIter shared_ptr<ArrayFunctionObject<1, elemT>> const*
+#  define ActualFunctionObjectPtrIter shared_ptr<ArrayFunctionObject<1, elemT, indexT>> const*
 #endif
 
 //! Apply a sequence of 1d array-function objects on every dimension of the input array
@@ -198,15 +199,16 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array, const Array<
   objects and (smart) pointers to function objects. At the moment, it's only the latter.
 */
 // TODO add specialisation that uses ArrayFunctionObject::is_trivial
-template <int num_dim, typename elemT, typename FunctionObjectPtrIter>
-inline void in_place_apply_array_functions_on_each_index(Array<num_dim, elemT>& array,
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtrIter>
+inline void in_place_apply_array_functions_on_each_index(Array<num_dim, elemT, indexT>& array,
                                                          FunctionObjectPtrIter start,
                                                          FunctionObjectPtrIter stop);
 
 //! 1d specialisation of the above.
-template <typename elemT, typename FunctionObjectPtrIter>
-inline void
-in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, FunctionObjectPtrIter start, FunctionObjectPtrIter stop);
+template <typename elemT, typename indexT, typename FunctionObjectPtrIter>
+inline void in_place_apply_array_functions_on_each_index(Array<1, elemT, indexT>& array,
+                                                         FunctionObjectPtrIter start,
+                                                         FunctionObjectPtrIter stop);
 
 //! Apply a sequence of 1d array-function objects on every dimension of the input array, store in output array
 /*! \ingroup Array
@@ -223,9 +225,9 @@ in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, FunctionObj
   \todo Add a specialisation such that this function would handle iterators of function
   objects and (smart) pointers to function objects. At the moment, it's only the latter.
 */
-template <int num_dim, typename elemT, typename FunctionObjectPtrIter>
-inline void apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
-                                                const Array<num_dim, elemT>& in_array,
+template <int num_dim, typename elemT, typename indexT, typename FunctionObjectPtrIter>
+inline void apply_array_functions_on_each_index(Array<num_dim, elemT, indexT>& out_array,
+                                                const Array<num_dim, elemT, indexT>& in_array,
                                                 FunctionObjectPtrIter start,
                                                 FunctionObjectPtrIter stop);
 
@@ -237,9 +239,9 @@ inline void apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array
   \todo Modify such that this function would handle function
   objects and (smart) pointers to ArrayFunctionObject objects. At the moment, it's only the latter.
 */
-template <int num_dim, typename elemT>
-inline void apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
-                                                const Array<num_dim, elemT>& in_array,
+template <int num_dim, typename elemT, typename indexT>
+inline void apply_array_functions_on_each_index(Array<num_dim, elemT, indexT>& out_array,
+                                                const Array<num_dim, elemT, indexT>& in_array,
                                                 ActualFunctionObjectPtrIter start,
                                                 ActualFunctionObjectPtrIter stop);
 
@@ -247,25 +249,27 @@ inline void apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array
 /*! \ingroup Array
  */
 // has to be here to get general 1D specialisation to compile
-template <typename elemT>
-inline void apply_array_functions_on_each_index(Array<1, elemT>& out_array,
-                                                const Array<1, elemT>& in_array,
+template <typename elemT, typename indexT>
+inline void apply_array_functions_on_each_index(Array<1, elemT, indexT>& out_array,
+                                                const Array<1, elemT, indexT>& in_array,
                                                 ActualFunctionObjectPtrIter start,
                                                 ActualFunctionObjectPtrIter stop);
 
-template <typename elemT, typename FunctionObjectPtrIter>
 //! 1d specialisation for general function objects
 /*! \ingroup Array
  */
-inline void apply_array_functions_on_each_index(Array<1, elemT>& out_array,
-                                                const Array<1, elemT>& in_array,
+template <typename elemT, typename indexT, typename FunctionObjectPtrIter>
+inline void apply_array_functions_on_each_index(Array<1, elemT, indexT>& out_array,
+                                                const Array<1, elemT, indexT>& in_array,
                                                 FunctionObjectPtrIter start,
                                                 FunctionObjectPtrIter stop);
 
-template <int num_dim, typename elemT>
-inline void transform_array_to_periodic_indices(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array);
-template <int num_dim, typename elemT>
-inline void transform_array_from_periodic_indices(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array);
+template <int num_dim, typename elemT, typename indexT>
+inline void transform_array_to_periodic_indices(Array<num_dim, elemT, indexT>& out_array,
+                                                const Array<num_dim, elemT, indexT>& in_array);
+template <int num_dim, typename elemT, typename indexT>
+inline void transform_array_from_periodic_indices(Array<num_dim, elemT, indexT>& out_array,
+                                                  const Array<num_dim, elemT, indexT>& in_array);
 
 END_NAMESPACE_STIR
 

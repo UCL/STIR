@@ -23,12 +23,9 @@
 #ifndef __stir_numerics_overlap_interpolate__H__
 #define __stir_numerics_overlap_interpolate__H__
 
-#include "stir/common.h"
+#include "stir/VectorWithOffsetFwd.h"
 
 START_NAMESPACE_STIR
-
-template <class T>
-class VectorWithOffset;
 
 /*!
   \ingroup numerics
@@ -40,9 +37,9 @@ class VectorWithOffset;
                      const in_coord_iter_t in_coord_begin, const in_coord_iter_t in_coord_end,
                      const bool only_add_to_output=false, const bool assign_rest_with_zeroes)
 */
-template <typename T>
-void overlap_interpolate(VectorWithOffset<T>& out_data,
-                         const VectorWithOffset<T>& in_data,
+template <typename T, typename indexT>
+void overlap_interpolate(VectorWithOffset<T, indexT>& out_data,
+                         const VectorWithOffset<T, indexT>& in_data,
                          const float zoom,
                          const float offset,
                          const bool assign_rest_with_zeroes = true);
