@@ -2118,7 +2118,7 @@ Scanner::ask_parameters()
 
       // will also read detector-map from file
       scanner_ptr->set_scanner_geometry(ScannerGeometry);
-
+      scanner_ptr->set_up();
       return scanner_ptr;
     }
 
