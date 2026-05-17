@@ -84,13 +84,13 @@ include(stir_test_exe_targets)
 if (MINI_STIR)
 
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;IO;recon_buildblock;" "")
+  create_stir_test(${source} "${STIR_RECON_BUILDBLOCK_LIB};" "")
 endforeach()
 
 else()
 
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO;recon_buildblock;Shape_buildblock;scatter_buildblock" "")
+  create_stir_test(${source} "Shape_buildblock;scatter_buildblock" "")
 endforeach()
 #
 

@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016-2023 University College London
+# Copyright 2013, 2014, 2016-2023, 2025 University College London
 
 # This file is part of STIR.
 #
@@ -29,6 +29,11 @@ option(BUILD_EXECUTABLES
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
+if (BUILD_SHARED_LIBS)
+    # needed explicitly for the registries
+    set(CMAKE_POSITION_INDEPENDENT_CODE True)
+endif()
+       
 ### Settings for external libraries
 
 if (LLN_FOUND)
@@ -205,6 +210,13 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
     endif()
 endif()
 
+#### Define name for the main library
+
+set(STIR_BUILDBLOCK_LIB stir_buildblock)
+# use different names for the same library, in case we want to split them up again
+set(STIR_RECON_BUILDBLOCK_LIB stir_buildblock)
+set (STIR_SPATIAL_TRANSFORMATION_BUIDBLOCK_LIB stir_buildblock)
+
 #### Create stir/config.h
 
 # This has to be written where we build somewhere. We will put it somewhere "natural"
@@ -257,6 +269,14 @@ target_link_libraries(stir_registries)
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
+target_include_directories(stir_registries PUBLIC
+  $<BUILD_INTERFACE:${CUVEC_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:include>)
+if (NOT STIR_WITH_CUDA)
+  target_compile_definitions(stir_registries PUBLIC CUVEC_DISABLE_CUDA)
+else()
+  target_link_libraries(stir_registries PUBLIC CUDA::cudart)
+endif()
 
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})

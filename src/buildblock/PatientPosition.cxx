@@ -77,7 +77,7 @@ PatientPosition::get_position() const
     }
 }
 
-const char* const
+const char*
 PatientPosition::get_position_as_string() const
 {
   switch (this->get_position())

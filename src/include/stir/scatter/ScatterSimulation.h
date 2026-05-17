@@ -124,7 +124,9 @@ public:
 
   void set_template_proj_data_info(const std::string&);
 
-  void set_template_proj_data_info(const ProjDataInfo&);
+  void set_template_proj_data_info(const ProjDataInfo& arg);
+
+  void set_template_proj_data_info(shared_ptr<const ProjDataInfo> arg);
 
   void set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3, float>>);
 
@@ -334,7 +336,7 @@ protected:
 
   std::string template_proj_data_filename;
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   //! \details Exam info extracted from the scanner template
   shared_ptr<ExamInfo> template_exam_info_sptr;
 

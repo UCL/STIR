@@ -23,6 +23,7 @@
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/modulo.h"
 #include "stir/Succeeded.h"
+#include "stir/format.h"
 #include "stir/warning.h"
 
 START_NAMESPACE_STIR
@@ -207,10 +208,10 @@ DetectorCoordinateMap::find_detection_position_given_cartesian_coordinate(Detect
             }
           else
             {
-              warning("cartesian coordinate (x, y, z)=(%f, %f, %f) does not exist in the inner map",
-                      cart_coord.x(),
-                      cart_coord.y(),
-                      cart_coord.z());
+              warning(format("cartesian coordinate (x, y, z)=({}, {}, {}) does not exist in the detector map",
+                             cart_coord.x(),
+                             cart_coord.y(),
+                             cart_coord.z()));
               return Succeeded::no;
             }
         }

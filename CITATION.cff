@@ -27,25 +27,31 @@ authors:
       affiliation:  National Physics Laboratory (UK)
     - family-names: Tsoumpas
       given-names:  Charalampos
-    - family-names: Falcon
-      given-names:  Carles
     - family-names: Jehl
       given-names:  Markus
       affiliation:  Positrigo
+    - family-names: Kyriakopoulou
+      given-names:  Dimitra
+      affiliation:  University College London
+    - family-names: Falcon
+      given-names:  Carles
     - family-names: Borgeaud
       given-names:  Tim
       affiliation:  Hammersmith Imanet Ltd
-    - family-names: Strugari
-      given-names:  Matthew
-      affiliation:  Dalhousie University (Canada)
-    - family-names: Khateri
-      given-names:  Parisa
-      affiliation:  ETH Zuerich
+    - family-names: Colombo
+      given-names:  Matteo Neel
+      affiliation:  University of Milano-Bicocca (Italy)
     - family-names: Wadhwa
       given-names:  Palak
       affiliation:  University of Leeds (UK)
+    - family-names: Khateri
+      given-names:  Parisa
+      affiliation:  ETH Zuerich
     - family-names: Beisel
       given-names:  Tobias
+    - family-names: Strugari
+      given-names:  Matthew
+      affiliation:  Dalhousie University (Canada)
     - family-names: Emond
       given-names:  Elise
       affiliation:  University College London
@@ -65,6 +71,9 @@ authors:
       affiliation:  University of Barcelona (Spain)
     - family-names: Labbe
       given-names:  Claire
+    - family-names: Jurjew
+      given-names:  Nicole
+      affiliation:  University College London
     - family-names: Biguri
       given-names:  Ander
       orcid:        'https://orcid.org/0000-0002-2636-3032'
@@ -96,37 +105,37 @@ authors:
     - family-names: Sadki
       given-names:  Mustapha
       affiliation:  Brunel University (UK)
+    - family-names: Singh
+      given-names:  Imraj
+      orcid:        'https://orcid.org/0000-0003-2186-0977'
+      affiliation:  University College London (UK)
     - family-names: Kerrouche
       given-names:  Nacer
       affiliation:  Hammersmith Imanet Ltd
     - family-names: Dikaios
       given-names:  Nikos
+    - family-names: Ovtchinnikov
+      given-names:  Evgueni
+      orcid:        'https://orcid.org/0000-0002-9359-6514'
     - family-names: Fardell
       given-names:  Gemma
       orcid:        'https://orcid.org/0000-0003-2388-5211'
       affiliation:  UK Research & Innovation
-    - family-names: Ehrhardt
-      given-names:  Matthias J.
-      orcid:        'https://orcid.org/0000-0001-8523-353X'
-    - family-names: Singh
-      given-names:  Imraj
-      orcid:        'https://orcid.org/0000-0003-2186-0977'
-      affiliation:  University College London (UK)
     - family-names: Schmidtlein
       given-names:  C Ross
-    - family-names: Ovtchinnikov
-      given-names:  Evgueni
-      orcid:        'https://orcid.org/0000-0002-9359-6514'
       affiliation:  UK Research & Innovation
     - family-names: Valente
       given-names:  Patrick
       affiliation:  Brunel University (UK)
-    - family-names: Jurjew
-      given-names:  Nicole
-      affiliation:  University College London
+    - family-names: Porter
+      given-names:  Sam David
+      affiliation:  University College London, National Physics Laboratory (UK)
     - family-names: Schramm
       given-names:  Georg
       affiliation:  Katholieke Universiteit Leuven (Belgium)
+    - family-names: Ehrhardt
+      given-names:  Matthias J.
+      orcid:        'https://orcid.org/0000-0001-8523-353X'
     - family-names: Völgyes
       given-names:  David
     - family-names: Dinelle
@@ -142,34 +151,37 @@ authors:
     - family-names: Tunnicliffe
       given-names:  Harry
       affiliation:  University of Leeds (UK)
-    - family-names: Chen
-      given-names:  Gefei
-    - family-names: Porter
-      given-names:  Sam David
-      affiliation:  University College London, National Physics Laboratory (UK)
-    - family-names: Mikhaylova
-      given-names:  Ekaterina
-      affiliation:  Positrigo
     - family-names: Dao
       given-names:  Viet Anh
       affiliation:  University of Leeds (UK)
+    - family-names: Chen
+      given-names:  Gefei
+    - family-names: Mikhaylova
+      given-names:  Ekaterina
+      affiliation:  Positrigo
     - family-names: da Costa-Luis
       given-names:  Casper O.
       orcid:        'https://orcid.org/0000-0002-7211-1557'
-    - family-names: Whitehead
-      given-names:  Alexander C.
+    - family-names: Li
+      given-names:  Zekai
+      affiliation:  Rijksuniversiteit Groningen (Netherlands)
+    - family-names: Reeves
+      given-names:  Antonia
       affiliation:  University College London
     - family-names: Rashidnasab
       given-names:  Alaleh
+      affiliation:  University College London
+    - family-names: Whitehead
+      given-names:  Alexander C.
+      affiliation:  University College London
+    - family-names: Tsai
+      given-names:  Yu-jung
       affiliation:  University College London
     - family-names: Gillen
       given-names:  Rebecca
       affiliation:  University College London
     - family-names: Vavrek
       given-names:  Jayson
-    - family-names: Tsai
-      given-names:  Yu-jung
-      affiliation:  University College London
     - family-names: Kohr
       given-names:  Holger
     - name: tokkot

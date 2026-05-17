@@ -195,7 +195,7 @@ BlocksTests::run_symmetry_test(ForwardProjectorByBin& forw_projector1, ForwardPr
   shared_ptr<DiscretisedDensity<3, float>> image1_sptr(image.clone());
   write_to_file("image_for", *image1_sptr);
 
-  image = *image.get_empty_copy();
+  image.fill(0);
   for (int i = 15; i < 360; i += 30)
     {
       theta2 = i * _PI / 180;
@@ -307,7 +307,8 @@ BlocksTests::run_plane_symmetry_test(ForwardProjectorByBin& forw_projector1, For
 
   //    rotate by 30 degrees
   phi2 = 30 * _PI / 180;
-  VoxelsOnCartesianGrid<float> image2 = *image.get_empty_copy();
+  VoxelsOnCartesianGrid<float> image2(image);
+  image2.fill(0);
   const Array<2, float> direction2 = make_array(make_1d_array(1.F, 0.F, 0.F),
                                                 make_1d_array(0.F, cos(float(_PI) - phi2), sin(float(_PI) - phi2)),
                                                 make_1d_array(0.F, -sin(float(_PI) - phi2), cos(float(_PI) - phi2)));
@@ -591,7 +592,7 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   shared_ptr<DiscretisedDensity<3, float>> image1_sptr(image.clone());
   write_to_file("image_to_fwp", *image1_sptr);
 
-  image = *image.get_empty_copy();
+  image.fill(0);
 
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
@@ -700,7 +701,7 @@ BlocksTests::run_projection_test(ForwardProjectorByBin& forw_projector1, Forward
   shared_ptr<DiscretisedDensity<3, float>> image1_sptr(image.clone());
   write_to_file("image_with_voxel_at_30_0", *image1_sptr);
 
-  image = *image.get_empty_copy();
+  image.fill(0);
   image[(image.get_min_index() + image.get_max_index()) / 2 * grid_spacing.z()][0][-25] = 1;
 
   shared_ptr<DiscretisedDensity<3, float>> image2_sptr(image.clone());

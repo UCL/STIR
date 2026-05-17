@@ -24,6 +24,7 @@
 #include "stir/cuda_utilities.h"
 #include "stir/recon_buildblock/GibbsPenalty.h"
 
+#include "cuvec.cuh"
 #include "stir/shared_ptr.h"
 #include <string>
 
@@ -62,7 +63,7 @@ protected:
   int threads_per_block;
   size_t shared_mem_bytes;
 
-  elemT* d_image_data = nullptr;
+  mutable CuVec<elemT> d_image_data;
   // Currently stir:CartesianCoordinate3D<int> is not supported on GPU, we need a simple structure to store boundaries.
   cuda_int3 d_image_dim;
   cuda_int3 d_image_max_indices;
@@ -71,22 +72,21 @@ protected:
   cuda_int3 d_weight_min_indices;
 
   // GPU pointers to weights and kappa data
-  float* d_weights_data = nullptr;
-  elemT* d_kappa_data = nullptr;
+  CuVec<float> d_weights_data;
+  CuVec<elemT> d_kappa_data;
 
   // Buffers for GPU input/output to avoid reallocating memory on each call see usage in set_up() and ~CudaGibbsPenalty()
-  mutable double* d_scalar = nullptr;
+  mutable CuVec<double> d_scalar;
   // d_scalar is used for compute_value and compute_gradient_times_input as output variable
-  mutable elemT* d_input_data = nullptr;
+  mutable CuVec<elemT> d_input_data;
   // d_input_data is used for storing input image for compute_gradient_times_input and accumulate_Hessian_times_input
-  mutable elemT* d_output_data = nullptr;
+  mutable CuVec<elemT> d_output_data;
   // d_output_data is used for storing output image for compute_gradient, accumulate_Hessian_times_input and
   // compute_Hessian_diagonal
 
 public:
   CudaGibbsPenalty();
   CudaGibbsPenalty(const bool only_2D, float penalization_factor);
-  ~CudaGibbsPenalty();
 
   //! Override CPU version to set up CUDA resources on GPU and call parent set_up
   Succeeded set_up(shared_ptr<const DiscretisedDensity<3, elemT>> const& target_sptr) override;

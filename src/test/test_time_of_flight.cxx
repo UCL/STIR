@@ -1,47 +1,31 @@
 /*
-    Copyright (C) 2016, 2022, UCL
+    Copyright (C) 2016, 2022, 2025, UCL
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/DetectionPositionPair.h"
-#include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
-#include "stir/recon_buildblock/ProjectorByBinPair.h"
-#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/HighResWallClockTimer.h"
-#include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
-#include "stir/ViewSegmentNumbers.h"
-#include "stir/RelatedViewgrams.h"
-//#include "stir/geometry/line_distances.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
-#include "boost/lexical_cast.hpp"
+//#include "stir/stream.h"
+
 #ifdef HAVE_CERN_ROOT
 #  include "stir/listmode/CListRecordROOT.h"
 #endif
 #include "stir/info.h"
 #include "stir/warning.h"
 #include <cmath>
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
@@ -72,6 +56,8 @@ public:
 
   *. Check that the sum of the TOF LOR is the same as the non TOF.
 
+  *. Check if the back-projection of the first and last TOF bin are symmetric for an oblique LOR
+
   \warning If you change the mashing factor the test_tof_proj_data_info() will fail.
   \warning The execution time strongly depends on the value of the TOF mashing factor
 */
@@ -87,26 +73,13 @@ private:
 #ifdef HAVE_CERN_ROOT
   void test_CListEventROOT();
 #endif
-  //! This checks peaks a specific bin, finds the LOR and applies all the
+  //! This check picks a specific bin, finds the LOR and applies all the
   //! kernels of all available timing positions. Then check if the sum
   //! of the TOF bins is equal to the non-TOF LOR.
-  void test_tof_kernel_application(bool export_to_file);
+  void test_tof_kernel_application();
 
-  //! Exports the nonTOF LOR to a file indicated by the current_id value
-  //! in the filename.
-  void export_lor(ProjMatrixElemsForOneBin& probabilities,
-                  const CartesianCoordinate3D<float>& point1,
-                  const CartesianCoordinate3D<float>& point2,
-                  int current_id);
-
-  //! Exports the TOF LOR. The TOFid is indicated in the fileName.
-  //! Only the common elements with the nonTOF LOR will be written in the file.
-  //! Although changing that is straight forward.
-  void export_lor(ProjMatrixElemsForOneBin& probabilities,
-                  const CartesianCoordinate3D<float>& point1,
-                  const CartesianCoordinate3D<float>& point2,
-                  int current_id,
-                  ProjMatrixElemsForOneBin& template_probabilities);
+  //! Check if the back-projection of the first and last TOF bin are symmetric for an oblique LOR
+  void test_tof_kernel_application_is_symmetric();
 
   shared_ptr<Scanner> test_scanner_sptr;
   shared_ptr<ProjDataInfo> test_proj_data_info_sptr;
@@ -162,8 +135,8 @@ TOF_Tests::run_tests()
   dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_nonTOF_proj_matrix_sptr.get())
       ->set_up(test_nonTOF_proj_data_info_sptr, test_discretised_density_sptr);
 
-  // Switch to true in order to export the LORs at files in the current directory
-  test_tof_kernel_application(false);
+  test_tof_kernel_application();
+  test_tof_kernel_application_is_symmetric();
 }
 
 void
@@ -323,15 +296,12 @@ TOF_Tests::test_CListEventROOT()
 #endif
 
 void
-TOF_Tests::test_tof_kernel_application(bool print_to_file)
+TOF_Tests::test_tof_kernel_application()
 {
-  int seg_num = 0;
-  int view_num = 0;
-  int axial_num = 0;
-  int tang_num = 0;
-
-  float nonTOF_val = 0.0;
-  float TOF_val = 0.0;
+  int seg_num = 3;
+  int view_num = 2;
+  int axial_num = 1;
+  int tang_num = 4;
 
   ProjMatrixElemsForOneBin proj_matrix_row;
   ProjMatrixElemsForOneBin sum_tof_proj_matrix_row;
@@ -339,10 +309,7 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
   HighResWallClockTimer t;
   std::vector<double> times_of_tofing;
 
-  ProjDataInfoCylindrical* proj_data_ptr = dynamic_cast<ProjDataInfoCylindrical*>(test_proj_data_info_sptr.get());
-
-  //    ProjDataInfoCylindrical* proj_data_nonTOF_ptr =
-  //            dynamic_cast<ProjDataInfoCylindrical*> (test_nonTOF_proj_data_info_sptr.get());
+  auto proj_data_ptr = test_proj_data_info_sptr.get();
 
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 
@@ -357,9 +324,6 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
   proj_data_ptr->get_LOR(lor, this_bin);
   LORAs2Points<float> lor2(lor);
 
-  if (print_to_file)
-    export_lor(proj_matrix_row, lor2.p1(), lor2.p2(), 500000000);
-
   for (int timing_pos_num = test_proj_data_info_sptr->get_min_tof_pos_num();
        timing_pos_num <= test_proj_data_info_sptr->get_max_tof_pos_num();
        ++timing_pos_num)
@@ -373,49 +337,15 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
       t.stop();
       times_of_tofing.push_back(t.value());
 
-      if (print_to_file)
-        export_lor(new_proj_matrix_row, lor2.p1(), lor2.p2(), timing_pos_num, proj_matrix_row);
-
       if (sum_tof_proj_matrix_row.size() > 0)
-        {
-          ProjMatrixElemsForOneBin::iterator element_ptr = new_proj_matrix_row.begin();
-          while (element_ptr != new_proj_matrix_row.end())
-            {
-              ProjMatrixElemsForOneBin::iterator sum_element_ptr = sum_tof_proj_matrix_row.begin();
-              bool found = false;
-              while (sum_element_ptr != sum_tof_proj_matrix_row.end())
-                {
-                  if (element_ptr->get_coords() == sum_element_ptr->get_coords())
-                    {
-                      float new_value = element_ptr->get_value() + sum_element_ptr->get_value();
-                      *sum_element_ptr = ProjMatrixElemsForOneBin::value_type(element_ptr->get_coords(), new_value);
-                      found = true;
-                      break;
-                    }
-                  ++sum_element_ptr;
-                }
-              if (!found)
-                {
-                  sum_tof_proj_matrix_row.push_back(
-                      ProjMatrixElemsForOneBin::value_type(element_ptr->get_coords(), element_ptr->get_value()));
-                  break;
-                }
-              ++element_ptr;
-            }
-        }
+        sum_tof_proj_matrix_row.merge(new_proj_matrix_row);
       else
-        {
-          ProjMatrixElemsForOneBin::iterator element_ptr = new_proj_matrix_row.begin();
-          while (element_ptr != new_proj_matrix_row.end())
-            {
-              sum_tof_proj_matrix_row.push_back(
-                  ProjMatrixElemsForOneBin::value_type(element_ptr->get_coords(), element_ptr->get_value()));
-              ++element_ptr;
-            }
-        }
+        sum_tof_proj_matrix_row = new_proj_matrix_row;
     }
 
   // Get value of nonTOF LOR, for central voxels only
+  float nonTOF_val = 0.0;
+  float TOF_val = 0.0;
 
   {
     ProjMatrixElemsForOneBin::iterator element_ptr = proj_matrix_row.begin();
@@ -442,16 +372,13 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
   check_if_equal(
       static_cast<double>(nonTOF_val), static_cast<double>(TOF_val), "Sum over nonTOF LOR does not match sum over TOF LOR.");
 
+  // report timings
   {
-    double mean = 0.0;
-    for (unsigned i = 0; i < times_of_tofing.size(); i++)
-      mean += times_of_tofing.at(i);
-
-    mean /= (times_of_tofing.size());
+    double mean = std::accumulate(times_of_tofing.begin(), times_of_tofing.end(), 0.) / (times_of_tofing.size());
 
     double s = 0.0;
     for (unsigned i = 0; i < times_of_tofing.size(); i++)
-      s += (times_of_tofing.at(i) - mean) * (times_of_tofing.at(i) - mean) / (times_of_tofing.size() - 1);
+      s += square(times_of_tofing.at(i) - mean) / (times_of_tofing.size() - 1);
 
     s = std::sqrt(s);
     std::cerr << "Execution  time  for TOF: " << mean << " ±" << s;
@@ -460,115 +387,41 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
   std::cerr << std::endl;
 }
 
+/*!
+  Check the matrix rows for the first and last TOF bin (for an oblique LOR). The
+  detection probabilities should be symmetric w.r.t. eachother.
+
+  Ideally, we'd also check the voxel indices, but that is not implemented yet.
+*/
 void
-TOF_Tests::export_lor(ProjMatrixElemsForOneBin& probabilities,
-                      const CartesianCoordinate3D<float>& point1,
-                      const CartesianCoordinate3D<float>& point2,
-                      int current_id)
+TOF_Tests::test_tof_kernel_application_is_symmetric()
 {
-  std::ofstream myfile;
-  std::string file_name = "glor_" + boost::lexical_cast<std::string>(current_id) + ".txt";
-  myfile.open(file_name.c_str());
+  int seg_num = test_proj_data_info_sptr->get_max_segment_num();
+  int view_num = 0;
+  int axial_num
+      = (test_proj_data_info_sptr->get_min_axial_pos_num(seg_num) + test_proj_data_info_sptr->get_max_axial_pos_num(seg_num)) / 2;
+  int tang_num = 0;
 
-  CartesianCoordinate3D<float> voxel_center;
+  ProjMatrixElemsForOneBin proj_matrix_row;
+  Bin this_bin(seg_num, view_num, axial_num, tang_num, test_proj_data_info_sptr->get_max_tof_pos_num(), 1.f);
+  test_proj_matrix_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, this_bin);
 
-  std::vector<FloatFloat> lor_to_export;
-  lor_to_export.reserve(probabilities.size());
+  ProjMatrixElemsForOneBin proj_matrix_row2;
+  this_bin.timing_pos_num() = test_proj_data_info_sptr->get_min_tof_pos_num();
+  test_proj_matrix_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row2, this_bin);
 
-  const CartesianCoordinate3D<float> middle = (point1 + point2) * 0.5f;
-  const CartesianCoordinate3D<float> diff = point2 - middle;
-
-  const float lor_length = 1.f / (std::sqrt(diff.x() * diff.x() + diff.y() * diff.y() + diff.z() * diff.z()));
-
-  ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
-  while (element_ptr != probabilities.end())
-    {
-      voxel_center = test_discretised_density_sptr->get_physical_coordinates_for_indices(element_ptr->get_coords());
-
-      //        if(voxel_center.z() == 0.f)
+  // check if symmetric
+  {
+    auto riter = proj_matrix_row.rbegin();
+    auto iter2 = proj_matrix_row2.begin();
+    while (riter != proj_matrix_row.rend())
       {
-        project_point_on_a_line(point1, point2, voxel_center);
-
-        const CartesianCoordinate3D<float> x = voxel_center - middle;
-
-        const float d2 = -inner_product(x, diff) * lor_length;
-
-        FloatFloat tmp;
-        tmp.float1 = d2;
-
-        //            std::cerr<< voxel_center.x() << " " << voxel_center.y() << " " << voxel_center.z() << " "  <<
-        //                        d1 << " " << d2 << " " << d12 << " " << element_ptr->get_value() <<std::endl;
-
-        tmp.float2 = element_ptr->get_value();
-        lor_to_export.push_back(tmp);
+        // std::cerr << riter->get_coords() << "," << riter->get_value() << iter2->get_coords() << iter2->get_value() << "\n";
+        check_if_equal(riter->get_value(), iter2->get_value(), "check symmetry in TOF");
+        ++iter2;
+        ++riter;
       }
-      ++element_ptr;
-    }
-
-  for (unsigned int i = 0; i < lor_to_export.size(); i++)
-    myfile << lor_to_export.at(i).float1 << "  " << lor_to_export.at(i).float2 << std::endl;
-
-  myfile << std::endl;
-  myfile.close();
-}
-
-void
-TOF_Tests::export_lor(ProjMatrixElemsForOneBin& probabilities,
-                      const CartesianCoordinate3D<float>& point1,
-                      const CartesianCoordinate3D<float>& point2,
-                      int current_id,
-                      ProjMatrixElemsForOneBin& template_probabilities)
-{
-  std::ofstream myfile;
-  std::string file_name = "glor_" + boost::lexical_cast<std::string>(current_id) + ".txt";
-  myfile.open(file_name.c_str());
-
-  const CartesianCoordinate3D<float> middle = (point1 + point2) * 0.5f;
-  const CartesianCoordinate3D<float> diff = point2 - middle;
-
-  const float lor_length = 1.f / (std::sqrt(diff.x() * diff.x() + diff.y() * diff.y() + diff.z() * diff.z()));
-
-  CartesianCoordinate3D<float> voxel_center;
-
-  std::vector<FloatFloat> lor_to_export;
-  lor_to_export.reserve(template_probabilities.size());
-
-  ProjMatrixElemsForOneBin::iterator tmpl_element_ptr = template_probabilities.begin();
-  while (tmpl_element_ptr != template_probabilities.end())
-    {
-      voxel_center = test_discretised_density_sptr->get_physical_coordinates_for_indices(tmpl_element_ptr->get_coords());
-      //        if(voxel_center.z() == 0.f)
-      {
-        project_point_on_a_line(point1, point2, voxel_center);
-
-        const CartesianCoordinate3D<float> x = voxel_center - middle;
-
-        const float d2 = -inner_product(x, diff) * lor_length;
-
-        FloatFloat tmp;
-        tmp.float1 = d2;
-
-        ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
-
-        while (element_ptr != probabilities.end())
-          {
-            if (element_ptr->get_coords() == tmpl_element_ptr->get_coords())
-              {
-                tmp.float2 = element_ptr->get_value();
-                lor_to_export.push_back(tmp);
-                break;
-              }
-            ++element_ptr;
-          }
-      }
-      ++tmpl_element_ptr;
-    }
-
-  for (unsigned int i = 0; i < lor_to_export.size(); i++)
-    myfile << lor_to_export.at(i).float1 << "  " << lor_to_export.at(i).float2 << std::endl;
-
-  myfile << std::endl;
-  myfile.close();
+  }
 }
 
 END_NAMESPACE_STIR

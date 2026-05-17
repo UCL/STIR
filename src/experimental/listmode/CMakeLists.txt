@@ -16,4 +16,4 @@ endif()
 
 include(stir_lib_target)
 
-target_link_libraries(local_listmode_buildblock PUBLIC listmode_buildblock  )
+target_link_libraries(local_listmode_buildblock PUBLIC ${STIR_BUILDBLOCK_LIB})

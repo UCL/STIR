@@ -35,6 +35,7 @@ ProjectorByBinPairUsingParallelproj::initialise_keymap()
   parser.add_stop_key("End Projector Pair Using Parallelproj Parameters");
   parser.add_key("verbosity", &_verbosity);
   parser.add_key("restrict to cylindrical FOV", &_restrict_to_cylindrical_FOV);
+  parser.add_key("num_gpu_chunks", &_num_gpu_chunks);
 }
 
 void
@@ -43,6 +44,7 @@ ProjectorByBinPairUsingParallelproj::set_defaults()
   base_type::set_defaults();
   this->set_verbosity(true);
   this->set_restrict_to_cylindrical_FOV(true);
+  this->set_num_gpu_chunks(1);
   this->_already_set_up = false;
 }
 
@@ -50,6 +52,7 @@ bool
 ProjectorByBinPairUsingParallelproj::post_processing()
 {
   this->set_verbosity(this->_verbosity);
+  this->set_num_gpu_chunks(this->_num_gpu_chunks);
 
   if (base_type::post_processing())
     return true;
@@ -123,6 +126,22 @@ ProjectorByBinPairUsingParallelproj::set_verbosity(const bool verbosity)
       = dynamic_pointer_cast<BackProjectorByBinParallelproj>(this->back_projector_sptr);
   if (bck_prj_downcast_sptr)
     bck_prj_downcast_sptr->set_verbosity(_verbosity);
+}
+
+void
+ProjectorByBinPairUsingParallelproj::set_num_gpu_chunks(const int num_gpu_chunks)
+{
+  _num_gpu_chunks = num_gpu_chunks;
+
+  shared_ptr<ForwardProjectorByBinParallelproj> fwd_prj_downcast_sptr
+      = dynamic_pointer_cast<ForwardProjectorByBinParallelproj>(this->forward_projector_sptr);
+  if (fwd_prj_downcast_sptr)
+    fwd_prj_downcast_sptr->set_num_gpu_chunks(_num_gpu_chunks);
+
+  shared_ptr<BackProjectorByBinParallelproj> bck_prj_downcast_sptr
+      = dynamic_pointer_cast<BackProjectorByBinParallelproj>(this->back_projector_sptr);
+  if (bck_prj_downcast_sptr)
+    bck_prj_downcast_sptr->set_num_gpu_chunks(_num_gpu_chunks);
 }
 
 END_NAMESPACE_STIR

@@ -92,7 +92,7 @@ ScatterSimulationTests::test_downsampling_ProjDataInfo()
                                     false)));
 
   unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
-  sss->set_template_proj_data_info(*original_projdata);
+  sss->set_template_proj_data_info(original_projdata);
   {
     auto sss_projdata = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(sss->get_template_proj_data_info_sptr().get());
     check(*original_projdata == *sss_projdata, "Check the ProjDataInfo has been set correctly.");
@@ -183,7 +183,7 @@ ScatterSimulationTests::test_downsampling_DiscretisedDensity()
 
   unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
 
-  sss->set_template_proj_data_info(*original_projdata);
+  sss->set_template_proj_data_info(original_projdata);
   sss->set_density_image_sptr(atten_density);
 
   //    int total_scatter_points_orig = sss.get_num_scatter_points();
@@ -391,7 +391,7 @@ ScatterSimulationTests::test_scatter_simulation()
   //// sss settings
   sss->set_randomly_place_scatter_points(false);
 
-  sss->set_template_proj_data_info(*original_projdata_info);
+  sss->set_template_proj_data_info(original_projdata_info);
   sss->downsample_scanner(original_projdata_info->get_scanner_sptr()->get_num_rings(), -1);
 #if 1
   set_tolerance(.02);
@@ -448,7 +448,7 @@ ScatterSimulationTests::test_scatter_simulation()
   }
 
   // a few tests with more downsampled scanner
-  sss->set_template_proj_data_info(*original_projdata_info);
+  sss->set_template_proj_data_info(original_projdata_info);
   sss->downsample_scanner(original_projdata_info->get_scanner_sptr()->get_num_rings() / 2, -1);
   {
     const int new_size_z = 14;

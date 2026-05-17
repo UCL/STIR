@@ -85,6 +85,8 @@ public:
   //! typedefs for iterator support
   typedef Element_vector::iterator iterator;
   typedef Element_vector::const_iterator const_iterator;
+  typedef Element_vector::reverse_iterator reverse_iterator;
+  typedef Element_vector::const_reverse_iterator const_reverse_iterator;
   typedef Element_vector::size_type size_type;
   typedef Element_vector::difference_type difference_type;
   typedef std::random_access_iterator_tag iterator_category;
@@ -117,6 +119,10 @@ public:
   inline const_iterator begin() const;
   inline iterator end();
   inline const_iterator end() const;
+  inline reverse_iterator rbegin();
+  inline const_reverse_iterator rbegin() const;
+  inline reverse_iterator rend();
+  inline const_reverse_iterator rend() const;
 
   //! reset lor to 0 length
   void erase();

@@ -197,7 +197,7 @@ ColsherFilter::set_up(int target_height, int target_width, float theta, float d_
     Array<2, float> real_filter(IndexRange2D(target_height, target_width / 2 + 1));
     std::transform(filter.begin_all(), filter.end_all(), real_filter.begin_all(), real_part /*std::real<std::complex<float> >*/);
     char file[200];
-    sprintf(file, "%s_%d_%d_%g.dat", "new_colsher", target_width, target_height, theta);
+    snprintf(file, sizeof(file), "%s_%d_%d_%g.dat", "new_colsher", target_width, target_height, theta);
     std::cout << "Saving filter : " << file << std::endl;
     std::ofstream s(file);
     write_data(s, real_filter);
@@ -365,7 +365,7 @@ ColsherFilter::ColsherFilter(int height_v,
 #  ifdef __DEBUG_COLSHER
   {
     char file[200];
-    sprintf(file, "%s_%d_%d_%g.dat", "old_colsher", width, height, _PI / 2 - gamma);
+    snprintf(file, sizeof(file), "%s_%d_%d_%g.dat", "old_colsher", width, height, _PI / 2 - gamma);
     std::cout << "Saving filter : " << file << std::endl;
     std::ofstream s(file);
     write_data(s, filter);

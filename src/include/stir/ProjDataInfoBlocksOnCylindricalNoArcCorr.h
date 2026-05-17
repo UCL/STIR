@@ -1,7 +1,5 @@
 
 /*
-    Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2017, ETH Zurich, Institute of Particle Physics and Astrophysics
     This file is part of STIR.
 
@@ -24,8 +22,6 @@
 #define __stir_ProjDataInfoBlocksOnCylindricalNoArcCorr_H__
 
 #include "stir/ProjDataInfoGenericNoArcCorr.h"
-#include "stir/VectorWithOffset.h"
-#include "stir/CartesianCoordinate3D.h"
 
 START_NAMESPACE_STIR
 
@@ -79,11 +75,7 @@ private:
                                                                  int& ring1,
                                                                  int& ring2,
                                                                  const CartesianCoordinate3D<float>& c1,
-                                                                 const CartesianCoordinate3D<float>& c2) const;
-
-  void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
-                                                         const CartesianCoordinate3D<float>& coord_1,
-                                                         const CartesianCoordinate3D<float>& coord_2) const;
+                                                                 const CartesianCoordinate3D<float>& c2) const override;
   //@}
   // give test classes access to the private members
   friend class ProjDataInfoTests;

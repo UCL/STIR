@@ -56,6 +56,15 @@ public:
                    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
                    const bool initialise_with_0 = true);
 
+  //! constructor using externally allocated storage
+  /*!
+    The supplied buffer must have exactly `size_all()` elements for the
+    projection-data geometry.
+  */
+  ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
+                   shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
+                   Array<1, float>&& buffer);
+
   //! constructor that copies data from another ProjData
   ProjDataInMemory(const ProjData& proj_data);
 
@@ -103,7 +112,7 @@ public:
   ~ProjDataInMemory() override;
 
   //! Returns a  value of a bin
-  float get_bin_value(Bin& bin);
+  float get_bin_value(const Bin& bin) const;
 
   void set_bin_value(const Bin& bin);
 
@@ -281,6 +290,8 @@ private:
 
   //! allocates buffer for storing the data. Has to be called by constructors
   void create_buffer(const bool initialise_with_0 = false);
+  //! computes the offset and timing metadata after the geometry is known
+  void initialise_layout_metadata();
   //! offset of the whole 3d sinogram in the stream
   std::streamoff offset;
   //! offset of a complete non-tof sinogram

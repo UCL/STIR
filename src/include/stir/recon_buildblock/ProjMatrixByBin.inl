@@ -11,6 +11,7 @@
   \author Mustapha Sadki
   \author Kris Thielemans
   \author Robert Twyman
+  \author Zekai Li
   \author PARAPET project
 
 */
@@ -114,30 +115,73 @@ ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& pro
 void
 ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& probabilities) const
 {
-
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
   proj_data_info_sptr->get_LOR(lor, probabilities.get_bin());
   const LORAs2Points<float> lor2(lor);
   const CartesianCoordinate3D<float> point1 = lor2.p1();
   const CartesianCoordinate3D<float> point2 = lor2.p2();
 
-  // The direction can be from 1 -> 2 depending on the bin sign.
+  // Coordinate system correction: TODO remove in future with ORIGIN shift PR
+  // LOR coordinates have origin at scanner center (z=0 at center of all rings)
+  // Image coordinates have origin at first ring (z=0 at ring 0)
+  // Calculate the offset: distance from first ring to scanner center
+  const float scanner_z_offset = (proj_data_info_sptr->get_scanner_ptr()->get_num_rings() - 1) / 2.0f
+                                 * proj_data_info_sptr->get_scanner_ptr()->get_ring_spacing();
+  const CartesianCoordinate3D<float> coord_system_offset(scanner_z_offset, 0.0f, 0.0f);
+
   const CartesianCoordinate3D<float> middle = (point1 + point2) * 0.5f;
   const CartesianCoordinate3D<float> diff = point2 - middle;
   const CartesianCoordinate3D<float> diff_unit_vector(diff / static_cast<float>(norm(diff)));
 
+  ProjMatrixElemsForOneBin tof_row(probabilities.get_bin());
+  // Estimate size of TOF row such that we can pre-allocate.
+  std::size_t max_num_elements;
+  {
+    const auto length = norm(point1 - point2);
+    const auto kernel_width = 8 / r_sqrt2_gauss_sigma;
+    const auto tof_bin_width = proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].high_lim
+                               - proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].low_lim;
+    const auto fraction = (kernel_width + tof_bin_width) / length;
+    // This seems to sometimes over-, sometimes underestimate, but it's probably not very important
+    // as std::vector will grow as necessary.
+    max_num_elements = std::size_t(probabilities.size() * std::min(fraction * 1.2, 1.001));
+  }
+  tof_row.reserve(max_num_elements);
+
   for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin(); element_ptr != probabilities.end(); ++element_ptr)
     {
       Coordinate3D<int> c(element_ptr->get_coords());
-      const float d2 = -inner_product(image_info_sptr->get_physical_coordinates_for_indices(c) - middle, diff_unit_vector);
+      // Get voxel physical coordinates (in image coordinate system)
+      const CartesianCoordinate3D<float> voxel_pos_image = image_info_sptr->get_physical_coordinates_for_indices(c);
+
+      // Convert to scanner coordinate system by subtracting the offset
+      const CartesianCoordinate3D<float> voxel_pos_scanner = voxel_pos_image - coord_system_offset;
+
+      // Now compute TOF distance in the same coordinate system as the LOR
+      const float d2 = -inner_product(voxel_pos_scanner - middle, diff_unit_vector);
 
       const float low_dist
           = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].low_lim - d2));
       const float high_dist
           = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin().timing_pos_num()].high_lim - d2));
 
-      *element_ptr = ProjMatrixElemsForOneBin::value_type(c, element_ptr->get_value() * get_tof_value(low_dist, high_dist));
+      const auto tof_kernel_value = get_tof_value(low_dist, high_dist);
+      if (tof_kernel_value > 0)
+        {
+          if (auto non_tof_value = element_ptr->get_value())
+            tof_row.push_back(ProjMatrixElemsForOneBin::value_type(c, non_tof_value * tof_kernel_value));
+        }
+      else
+        {
+          // Optimisation would be to get out of the loop once we're "beyond" the TOF kernel,
+          // but it is tricky to do. It requires that the input is sorted
+          // "along" the LOR, i.e. d2 increases montonically, but that doesn't seem to be true.
+          // if (tof_row.size() > 0)
+          //   break;
+        }
     }
+  probabilities = tof_row;
+  // info("Estimate " + std::to_string(max_num_elements) + ", actual " + std::to_string(tof_row.size()));
 }
 
 float

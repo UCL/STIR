@@ -66,6 +66,11 @@ static VoxelsOnCartesianGrid ask_parameters();
                         const CartesianCoordinate3D<float>& origin,
                         const BasicCoordinate<3, float>& grid_spacing);
 
+  //! Construct a VoxelsOnCartesianGrid, moving data from the Array<3,elemT> object.
+  VoxelsOnCartesianGrid(Array<3, elemT>&& v,
+                        const CartesianCoordinate3D<float>& origin,
+                        const BasicCoordinate<3, float>& grid_spacing);
+
   //! Construct a VoxelsOnCartesianGrid from an index range
   /*! All elements are set 0. */
   VoxelsOnCartesianGrid(const IndexRange<3>& range,
@@ -75,6 +80,12 @@ static VoxelsOnCartesianGrid ask_parameters();
   //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
   VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
                         const Array<3, elemT>& v,
+                        const CartesianCoordinate3D<float>& origin,
+                        const BasicCoordinate<3, float>& grid_spacing);
+
+  //! Construct a VoxelsOnCartesianGrid, moving data from the Array<3,elemT> object.
+  VoxelsOnCartesianGrid(const shared_ptr<const ExamInfo>& exam_info_sptr,
+                        Array<3, elemT>&& v,
                         const CartesianCoordinate3D<float>& origin,
                         const BasicCoordinate<3, float>& grid_spacing);
 

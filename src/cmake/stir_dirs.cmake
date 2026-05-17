@@ -36,9 +36,9 @@ ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx
 SET( STIR_DIRS
      buildblock
      numerics_buildblock 
-     data_buildblock 
-     recon_buildblock 
+     data_buildblock
      IO
+     recon_buildblock 
      utilities
      )
 
@@ -57,12 +57,10 @@ if (NOT MINI_STIR)
     ${PROJECT_SOURCE_DIR}/src/scatter_buildblock/scatter_registries.cxx
     )
 
-  # need to list IO first such that its dependencies on other libraries are resolved
-  SET( STIR_LIBRARIES IO analytic_FBP3DRP analytic_FBP2D analytic_SRT2D analytic_SRT2DSPECT analytic_GRD2D analytic_DDSR2D iterative_OSMAPOSL   iterative_KOSMAPOSL
+  SET( STIR_LIBRARIES # ${STIR_BUILDBLOCK_LIB}
+    analytic_FBP3DRP analytic_FBP2D analytic_SRT2D analytic_SRT2DSPECT analytic_GRD2D analytic_DDSR2D iterative_OSMAPOSL   iterative_KOSMAPOSL
     iterative_OSSPS
-    scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
-    display   data_buildblock numerics_buildblock buildblock
-    spatial_transformation_buildblock
+    scatter_buildblock
     Shape_buildblock eval_buildblock 
     )
 
@@ -113,8 +111,7 @@ if (NOT MINI_STIR)
 
 else() # MINI_STIR
 
-  SET( STIR_LIBRARIES IO recon_buildblock  
-      data_buildblock numerics_buildblock buildblock      
+  SET( STIR_LIBRARIES recon_buildblock  
       )
 
 endif()

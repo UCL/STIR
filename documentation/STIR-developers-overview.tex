@@ -1332,8 +1332,11 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-# declare dependencies on other STIR libraries, for instance to depend on the "normal" STIR buildblock
-target_link_libraries($(dir) PUBLIC buildblock)
+# Declare dependencies on other STIR libraries
+target_link_libraries($(dir) PUBLIC ${STIR_LIBRARIES})
+# Alternatively, only depend on a specific STIR libraries (NOT recommended as their names will change).
+# For instance to depend only on the "normal" STIR buildblock
+target_link_libraries($(dir) PUBLIC ${STIR_BUILDBLOCK_LIB})
 \end{verbatim}
 
 \item Re-run \textbf{CMake} and set the CMake variable \texttt{STIR\_LOCAL} to the directory where your

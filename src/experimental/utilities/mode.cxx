@@ -12,7 +12,7 @@
     See STIR/LICENSE.txt for details
 */
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <vector>
 #include <stdlib.h>
 
@@ -187,7 +187,7 @@ main(int argc, char** argv)
   while (argc > 0)
     {
       --argc;
-      istrstream s(*argv);
+      istringstream s(*argv);
       s >> (v[argc]);
       argv++;
     }

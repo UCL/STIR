@@ -850,7 +850,7 @@ InterpolationTests::transaxial_upsampling_interpolation_test_blocks()
 
   // use the code in scatter simulation to downsample the scanner
   auto scatter_simulation = SingleScatterSimulation();
-  scatter_simulation.set_template_proj_data_info(*proj_data_info);
+  scatter_simulation.set_template_proj_data_info(proj_data_info);
   scatter_simulation.set_exam_info(exam_info);
   scatter_simulation.downsample_scanner(-1, 96 / 4); // number of detectors per ring reduced by factor of four
   auto downsampled_proj_data_info = scatter_simulation.get_template_proj_data_info_sptr();

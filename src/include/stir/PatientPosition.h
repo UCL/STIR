@@ -112,7 +112,8 @@ public:
 
   PositionValue get_position() const;
 
-  const char* const get_position_as_string() const;
+  //! returns strings HFS, FFP etc (see PositionValue)
+  const char* get_position_as_string() const;
 
 private:
   OrientationValue orientation;

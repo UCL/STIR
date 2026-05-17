@@ -1,7 +1,5 @@
 
 /*
-    Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2017, ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C) 2018, University College London
     Copyright (C) 2018, University of Leeds
@@ -120,33 +118,6 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr::find_scanner_coordinates_given_cartesi
           && det1 != det2)
              ? Succeeded::yes
              : Succeeded::no;
-}
-
-void
-ProjDataInfoBlocksOnCylindricalNoArcCorr::find_bin_given_cartesian_coordinates_of_detection(
-    Bin& bin, const CartesianCoordinate3D<float>& coord_1, const CartesianCoordinate3D<float>& coord_2) const
-{
-  int det_num_a;
-  int det_num_b;
-  int ring_a;
-  int ring_b;
-
-  // given two CartesianCoordinates find the intersection
-  if (find_scanner_coordinates_given_cartesian_coordinates(det_num_a, det_num_b, ring_a, ring_b, coord_1, coord_2)
-      == Succeeded::no)
-    {
-      bin.set_bin_value(-1);
-      return;
-    }
-
-  // check rings are in valid range
-  // this should have been done by find_scanner_coordinates_given_cartesian_coordinates
-  assert(!(ring_a < 0 || ring_a >= get_scanner_ptr()->get_num_rings() || ring_b < 0
-           || ring_b >= get_scanner_ptr()->get_num_rings()));
-  const DetectionPositionPair<> det_pos_pair(DetectionPosition<>(det_num_a, ring_a), DetectionPosition<>(det_num_b, ring_b));
-  if (!get_bin_for_det_pos_pair(bin, det_pos_pair).succeeded() || bin.tangential_pos_num() < get_min_tangential_pos_num()
-      || bin.tangential_pos_num() > get_max_tangential_pos_num())
-    bin.set_bin_value(-1);
 }
 
 END_NAMESPACE_STIR

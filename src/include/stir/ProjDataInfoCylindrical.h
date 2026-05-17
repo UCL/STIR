@@ -111,9 +111,9 @@ public:
                             const int timing_pos) const;
 #endif
   //! Set azimuthal angle offset (in radians)
-  void set_azimuthal_angle_offset(const float angle);
+  virtual void set_azimuthal_angle_offset(const float angle);
   //! Set the azimuthal sampling (in radians)
-  void set_azimuthal_angle_sampling(const float angle);
+  virtual void set_azimuthal_angle_sampling(const float angle);
 
   // void set_axial_sampling(const float samp, int segment_num);
 
@@ -131,9 +131,9 @@ public:
   void set_tof_mash_factor(const int new_num) override;
 
   //! Get azimuthal angle offset (in radians)
-  inline float get_azimuthal_angle_offset() const;
+  virtual inline float get_azimuthal_angle_offset() const;
   //! Get the azimuthal sampling (in radians)
-  inline float get_azimuthal_angle_sampling() const;
+  virtual inline float get_azimuthal_angle_sampling() const;
   inline float get_sampling_in_t(const Bin&) const override;
   inline float get_sampling_in_m(const Bin&) const override;
 
@@ -170,20 +170,20 @@ public:
   void reduce_segment_range(const int min_segment_num, const int max_segment_num) override;
 
   //! Set detector ring radius for all views
-  inline void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius);
+  virtual inline void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius);
 
   //! Get detector ring radius for all views
-  inline VectorWithOffset<float> get_ring_radii_for_all_views() const;
+  virtual inline VectorWithOffset<float> get_ring_radii_for_all_views() const;
 
   //! Get detector ring radius
-  inline float get_ring_radius() const;
+  virtual inline float get_ring_radius() const;
 
-  inline float get_ring_radius(const int view_num) const;
+  virtual inline float get_ring_radius(const int view_num) const;
   //! Get detector ring spacing
-  inline float get_ring_spacing() const;
+  virtual inline float get_ring_spacing() const;
 
   //! Set detector ring spacing
-  void set_ring_spacing(float ring_spacing_v);
+  virtual void set_ring_spacing(float ring_spacing_v);
 
   //! Get the mashing factor, i.e. how many 'original' views are combined
   /*! This gets the result by comparing the number of detectors in the scanner_ptr
@@ -193,7 +193,7 @@ public:
       detectors is an even multiple of the number of views. This is not checked in
       the normal version though.
    */
-  inline int get_view_mashing_factor() const;
+  virtual inline int get_view_mashing_factor() const;
 
   //! Find which segment a particular ring difference belongs to
   /*!

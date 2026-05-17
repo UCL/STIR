@@ -1,4 +1,4 @@
-Licensing information for STIR 6.2.0
+Licensing information for STIR 6.3.0
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -59,6 +59,8 @@ Explicit list of files that carry the PARAPET license
 ./src/analytic/FBP3DRP/FBP3DRP.cxx
 ./src/analytic/FBP2D/FBP2DReconstruction.cxx
 ./src/analytic/FBP2D/RampFilter.cxx
+./src/analytic/GRD2D/GRD2DReconstruction.cxx
+./src/analytic/SRT2D/SRT2DReconstruction.cxx
 ./src/recon_test/fwdtest.cxx
 ./src/recon_test/bcktest.cxx
 ./src/include/stir/Coordinate4D.inl

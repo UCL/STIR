@@ -4,6 +4,7 @@
 # @Author Kris Thielemans
 # @Author the ROOT team
 # @Author Robert Twyman (improved documentation)
+# @Author Denis Prokopenko (added auto detection of CXX version from ROOT 6.32+)
 
 ## CMAKE ARGS
 #
@@ -62,46 +63,53 @@ if (ROOT_FOUND)
   set(CERN_ROOT_VERSION ${ROOT_VERSION})
   set(CERN_ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
   set(CERN_ROOT_LIBRARIES ${ROOT_LIBRARIES})
+  set(CERN_ROOT_CXX_STANDARD ${ROOT_CXX_STANDARD})
 
 else()
 
   ### Old work-arounds. Should be removed later really
 
+  if (CERN_ROOT_DEBUG)
+    message(STATUS "Did not find ROOTConfig.cmake, so trying via root-config")
+  endif()
+  find_program(CERN_ROOT_CONFIG "root-config" HINTS "${ROOTSYS}" )
+
+  if (CERN_ROOT_CONFIG)
+
     if (CERN_ROOT_DEBUG)
-      message(STATUS "Did not find ROOTConfig.cmake, so trying via root-config")
+      message(STATUS "Finding ROOT location etc via ${CERN_ROOT_CONFIG}")
     endif()
-    find_program(CERN_ROOT_CONFIG "root-config" HINTS "${ROOTSYS}" )
 
-    if (CERN_ROOT_CONFIG)
+    execute_process(COMMAND ${CERN_ROOT_CONFIG} --incdir OUTPUT_VARIABLE
+        CERN_ROOT_INCLUDE_DIRS
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-        if (CERN_ROOT_DEBUG)
-          message(STATUS "Finding ROOT location etc via ${CERN_ROOT_CONFIG}")
-        endif()
+    # Attempt fo find libraries from root-config. However, this doesn't work if
+    # not all libraries are installed (as root-config lists them anyway).
+    # set (root_lib_arg "--libs")
+    # execute_process(COMMAND ${CERN_ROOT_CONFIG} ${root_lib_arg} OUTPUT_VARIABLE
+    #    TCERN_ROOT_LIBRARIES)
+    # string (STRIP "${TCERN_ROOT_LIBRARIES}" CERN_ROOT_LIBRARIES)
 
-        execute_process(COMMAND ${CERN_ROOT_CONFIG} --incdir OUTPUT_VARIABLE
-            CERN_ROOT_INCLUDE_DIRS
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    # Do an explicit search
+    # Lines copied from FindROOT.cmake distributed with ROOT v6.08/06
+    execute_process(
+        COMMAND ${CERN_ROOT_CONFIG} --libdir
+        OUTPUT_VARIABLE CERN_ROOT_LIBRARY_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-        # Attempt fo find libraries from root-config. However, this doesn't work if
-        # not all libraries are installed (as root-config lists them anyway).
-        # set (root_lib_arg "--libs")
-        # execute_process(COMMAND ${CERN_ROOT_CONFIG} ${root_lib_arg} OUTPUT_VARIABLE
-        #    TCERN_ROOT_LIBRARIES)
-        # string (STRIP "${TCERN_ROOT_LIBRARIES}" CERN_ROOT_LIBRARIES)
-
-        # Do an explicit search
-        # Lines copied from FindROOT.cmake distributed with ROOT v6.08/06
-        execute_process(
-            COMMAND ${CERN_ROOT_CONFIG} --libdir
-            OUTPUT_VARIABLE CERN_ROOT_LIBRARY_DIR
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-	execute_process(
+	  execute_process(
 	    COMMAND ${CERN_ROOT_CONFIG} --version
 	        OUTPUT_VARIABLE CERN_ROOT_VERSION
-		OUTPUT_STRIP_TRAILING_WHITESPACE)
+		      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.31.99)
+      execute_process(
+	      COMMAND ${CERN_ROOT_CONFIG} --cxxstandard
+	          OUTPUT_VARIABLE CERN_ROOT_CXX_STANDARD
+		        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
 
-    else()
+  else()
 
         # no root-config
         if (CERN_ROOT_DEBUG)
@@ -154,11 +162,17 @@ else()
 
 endif()
 
+# Fall back to minimum C++ version required by ROOT.
+if (NOT (CERN_ROOT_CXX_STANDARD))
+  set(CERN_ROOT_CXX_STANDARD 17)
+endif()
+
 # root-config reports version as 6.26/10. This might also happen in other cases. Convert it to 6.26.10
 string(REPLACE "/" "." CERN_ROOT_VERSION "${CERN_ROOT_VERSION}")
 
 if (CERN_ROOT_DEBUG)
   message(STATUS "CERN_ROOT_VERSION: ${CERN_ROOT_VERSION}")
+  message(STATUS "CERN_ROOT_CXX_STANDARD: ${CERN_ROOT_CXX_STANDARD}")
   message(STATUS "CERN_ROOT_INCLUDE_DIRS: ${CERN_ROOT_INCLUDE_DIRS}")
   message(STATUS "AVAILABLE ROOT LIBRARIES: ${CERN_ROOT_LIBRARIES}")
   if (TARGET ROOT::Tree)

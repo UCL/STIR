@@ -11,6 +11,4 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 
-include(stir_lib_target)
-
-target_link_libraries(${dir} PUBLIC buildblock)
+target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})

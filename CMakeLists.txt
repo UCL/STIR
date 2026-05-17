@@ -15,6 +15,8 @@ if(CCACHE_PROGRAM)
 endif()
 
 
+include(CMakePrintHelpers)
+
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -59,9 +61,9 @@ ENDIF()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
-set(VERSION_MINOR   3)
+set(VERSION_MINOR   4)
 set(VERSION_PATCH   0)
-set(VERSION   060300) # only used in STIRConfig.h.in and swig/CMakeLists.txt
+set(VERSION   060400) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -142,16 +144,28 @@ endif()
 if(NOT DISABLE_CERN_ROOT)
   find_package(CERN_ROOT 6.28.00) # required for C++17
   if (CERN_ROOT_FOUND)
-    message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-    if (${CERN_ROOT_VERSION} VERSION_GREATER 6.29.99)
-        message(STATUS "ROOT Version is >= 6.30. Setting the minimum CXX version to 20.")
-        UseCXX(20)
-    endif()
+    message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}. CXX version: ${CERN_ROOT_CXX_STANDARD}.")
+    UseCXX(${CERN_ROOT_CXX_STANDARD})
   endif()
 endif()
 
 if(NOT DISABLE_HDF5)
   find_package(HDF5 COMPONENTS CXX)
+  if (TARGET HDF5::HDF5)
+    option(USE_HDF5_TARGET "Use HDF5::HDF5 CMake target for dependencies (recommended)" ON)
+    mark_as_advanced(USE_HDF5_TARGET)
+    # Depend on both HDF5::HDF5 (i.e. all libs just found), and hdf5::hdf5_cpp
+    # (i.e. C++ libs and dependencies). Only the latter should be necessary, but
+    # we need the former due to https://gitlab.kitware.com/cmake/cmake/-/issues/27379
+    set(HDF5_TARGET HDF5::HDF5;hdf5::hdf5_cpp)
+    if (HDF5_FIND_DEBUG) # debugging print (re-use name of FindHDF5 CMake variable)
+      cmake_print_properties(
+        TARGETS HDF5::HDF5
+        PROPERTIES LOCATION INTERFACE_INCLUDE_DIRECTORIES IMPORTED_LINK_INTERFACE_LIBRARIES IMPORTED_LINK_DEPENDENT_LIBRARIES INTERFACE_LINK_LIBRARIES
+        )
+    endif()
+  endif()
+
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
@@ -244,16 +258,17 @@ endif()
 
 # Parallelproj
 if(NOT DISABLE_Parallelproj_PROJECTOR)
-    find_package(parallelproj 1.3.4 CONFIG)
+    find_package(parallelproj CONFIG)
     if (parallelproj_FOUND)
       set(STIR_WITH_Parallelproj_PROJECTOR ON)
-      if (parallelproj_built_with_CUDA)
+      if (PARALLELPROJ_VERSION VERSION_LESS 2.0)
+        message(WARNING "Found parallelproj ${parallelproj_VERSION}. This will not be supported anymore in the near future.")        
+      endif()
+      if (PARALLELPROJ_CUDA)
         message(STATUS "Found parallelproj ${parallelproj_VERSION} (will use its CUDA support)")
+        set(parallelproj_built_with_CUDA ON)
       else()
         message(STATUS "Found parallelproj ${parallelproj_VERSION} (but using its OpenMP version as it wasn't built with CUDA)")
-      endif()
-      if (parallelproj_VERSION VERSION_LESS 1.0.1)
-        message(STATUS "If the above parallelproj info looks incorrect, upgrade it to at least 1.0.1 (but 1.2.13 or later is recommended)")
       endif()
     endif()
 endif()

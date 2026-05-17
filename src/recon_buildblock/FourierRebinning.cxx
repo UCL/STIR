@@ -227,7 +227,7 @@ FourierRebinning::rebin()
       if (fore_debug_level >= 2)
         {
           char s[100];
-          sprintf(s, "(extended) segment by sinogram %d", segment.get_segment_num());
+          snprintf(s, sizeof(s), "(extended) segment by sinogram %d", segment.get_segment_num());
           display(segment, segment.find_max(), s);
         }
 
@@ -303,12 +303,12 @@ FourierRebinning::rebin()
           for (int i = 0; i < num_views_pow2; i++)
             for (int j = 0; j <= num_tang_poss_pow2 / 2; j++)
               real[i][j] = FT_rebinned_sinogram[i][j].real();
-          sprintf(s, "real part of FT of rebinned (extended) sinogram %d", plane);
+          snprintf(s, sizeof(s), "real part of FT of rebinned (extended) sinogram %d", plane);
           display(real, s, real.find_max());
           for (int i = 0; i < num_views_pow2; i++)
             for (int j = 0; j <= num_tang_poss_pow2 / 2; j++)
               real[i][j] = FT_rebinned_sinogram[i][j].imag();
-          sprintf(s, "imag part of FT of rebinned (extended) sinogram %d", plane);
+          snprintf(s, sizeof(s), "imag part of FT of rebinned (extended) sinogram %d", plane);
           display(real, s, real.find_max());
         }
 
@@ -596,7 +596,7 @@ void
 FourierRebinning::do_log_file()
 { // CL Saving time details and write them to log file
   char file[200];
-  sprintf(file, "%s.log", output_filename_prefix.c_str());
+  snprintf(file, sizeof(file), "%s.log", output_filename_prefix.c_str());
 
   std::ofstream logfile(file);
 
