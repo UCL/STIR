@@ -144,6 +144,15 @@
     <li>
       Simplified the <code>ProjDataInfoGenericNoArcCorr</code> class hierarchy by merging `<code>ProjDataInfoGeneric</code> into it
       and deriving it from <code>ProjDataInfoCylindricalNoArcCorr</code>. See <a href=https://github.com/UCL/STIR/pull/1307>Issue #1307</a> for rationale.<br>
+      <strong>WARNING:</strong> this change might have unexpected consequences for developers:
+      when checking for the type of <code>ProjDataInfo</code> with <code>dynamic_cast</code> with
+      a sequence of <code>if<code> statements (or equivalent), make sure you test for <code>ProjDataInfoGeneric</code>
+      before testing for <code>ProjDataInfoCylindricalNoArcCorr</code>.(or even <code>ProjDataInfoCylindrical</code>). It is therefore strongly **recommended** to test via<br>
+      <code>
+      proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
+      </code><br>
+      etc
+      <br>
       <a href=https://github.com/UCL/STIR/pull/1696>PR #1696</a>
     </li>
   </ul>
