@@ -44,8 +44,9 @@ START_NAMESPACE_STIR
 
 GeometryBlocksOnCylindrical::GeometryBlocksOnCylindrical(const Scanner& scanner)
 {
-  if (scanner.check_consistency() == Succeeded::no)
-    error("Error in GeometryBlocksOnCylindrical: scanner configuration not accepted. Please check warnings.");
+  // cannot call check_consistency() here, as Scanner::set_up() calls this constructor before setting max_FOV_radius
+  // if (scanner.check_consistency() == Succeeded::no)
+  //  error("Error in GeometryBlocksOnCylindrical: scanner configuration not accepted. Please check warnings.");
   build_crystal_maps(scanner);
 }
 
