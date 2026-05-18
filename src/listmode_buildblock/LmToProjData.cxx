@@ -536,7 +536,7 @@ LmToProjData::get_bin_from_event(Bin& bin, const ListEvent& event) const
       // Also, adjust the normalisation factor according to the number of
       // uncompressed bins in a compressed bin
 
-      const float bin_value = 1.f / bin_efficiency;
+      const float bin_value = uncompressed_bin.get_bin_value() / bin_efficiency;
       // TODO wasteful: we decode the event twice. replace by something like
       // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
       event.get_bin(bin, *template_proj_data_info_ptr);
