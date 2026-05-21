@@ -32,7 +32,7 @@ open_next(std::fstream& s, const std::string& filename_prefix, int& num)
     s.close();
 
   char txt[50];
-  sprintf(txt, "_%d.lm", num);
+  snprintf(txt, sizeof(txt), "_%d.lm", num);
   string filename = filename_prefix;
   filename += txt;
   s.open(filename.c_str(), std::ios::out | std::ios::binary);

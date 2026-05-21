@@ -87,6 +87,7 @@ template <int num_dimensions, typename elemT>
 inline void
 array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array)
 {
+  dev_data.resize(stir_array.size_all());
   std::copy(stir_array.begin_all(), stir_array.end_all(), dev_data.begin());
 }
 
@@ -127,6 +128,8 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_
 {
   if (sync)
     cudaDeviceSynchronize();
+  if (stir_array.size_all() != dev_data.size())
+    error("array_to_host: size mismatch between CuVec and Array");
   std::copy(dev_data.begin(), dev_data.end(), stir_array.begin_all());
 }
 

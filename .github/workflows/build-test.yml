@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - master
-      - tof_sino_UCL
+      - release_6.3
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'

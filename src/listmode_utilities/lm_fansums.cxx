@@ -248,7 +248,7 @@ void
 LmFansums::write_fan_sums(const Array<2, float>& data_fan_sums, const unsigned current_frame_num) const
 {
   char txt[50];
-  sprintf(txt, "_f%u.dat", current_frame_num);
+  snprintf(txt, sizeof(txt), "_f%u.dat", current_frame_num);
   std::string filename = output_filename_prefix;
   filename += txt;
   ofstream out(filename.c_str());

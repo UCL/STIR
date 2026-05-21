@@ -1709,7 +1709,7 @@ iterate_efficiencies(DetectorEfficiencies& efficiencies,
 #ifdef WRITE_ALL
         {
           char out_filename[100];
-          sprintf(out_filename, "MLresult_subiter_eff_1_%d.out", sub_iter_num++);
+          snprintf(out_filename, sizeof(out_filename), "MLresult_subiter_eff_1_%d.out", sub_iter_num++);
           ofstream out(out_filename);
           if (!out)
             {

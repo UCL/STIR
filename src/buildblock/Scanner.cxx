@@ -1570,7 +1570,8 @@ Scanner::set_up()
         {
           if (crystal_map_file_name == "")
             error("Scanner: scanner_geometry=Generic needs a crystal map");
-
+          if (get_intrinsic_azimuthal_tilt() != 0)
+            error("Scanner: Generic needs zero azimuthal tilt (aka view_offset)");
           read_detectormap_from_file(crystal_map_file_name);
         }
     }
@@ -2118,7 +2119,7 @@ Scanner::ask_parameters()
 
       // will also read detector-map from file
       scanner_ptr->set_scanner_geometry(ScannerGeometry);
-
+      scanner_ptr->set_up();
       return scanner_ptr;
     }
 

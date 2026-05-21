@@ -82,8 +82,16 @@ main(int argc, char** argv)
       // efficiencies
       if (do_eff)
         {
-          char* in_filename = new char[in_filename_prefix.size() + 30];
-          sprintf(in_filename, "%s_%s_%d_%d_%d.out", in_filename_prefix.c_str(), "eff", ax_pos_num, iter_num, eff_iter_num);
+          const size_t filename_size = in_filename_prefix.size() + 30;
+          char* in_filename = new char[filename_size];
+          snprintf(in_filename,
+                   filename_size,
+                   "%s_%s_%d_%d_%d.out",
+                   in_filename_prefix.c_str(),
+                   "eff",
+                   ax_pos_num,
+                   iter_num,
+                   eff_iter_num);
           std::ifstream in(in_filename);
           in >> efficiencies;
           if (!in)
@@ -99,8 +107,9 @@ main(int argc, char** argv)
       if (do_geo)
         {
           {
-            char* in_filename = new char[in_filename_prefix.size() + 30];
-            sprintf(in_filename, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
+            const size_t filename_size = in_filename_prefix.size() + 30;
+            char* in_filename = new char[filename_size];
+            snprintf(in_filename, filename_size, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
             std::ifstream in(in_filename);
             in >> norm_geo_data;
             if (!in)
@@ -116,8 +125,9 @@ main(int argc, char** argv)
       if (do_block)
         {
           {
-            char* in_filename = new char[in_filename_prefix.size() + 30];
-            sprintf(in_filename, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
+            const size_t filename_size = in_filename_prefix.size() + 30;
+            char* in_filename = new char[filename_size];
+            snprintf(in_filename, filename_size, "%s_%s_%d_%d.out", in_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
             std::ifstream in(in_filename);
             in >> norm_block_data;
             if (!in)

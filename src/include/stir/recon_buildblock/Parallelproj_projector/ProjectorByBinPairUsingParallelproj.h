@@ -53,6 +53,8 @@ public:
   /// Set verbosity
   void set_verbosity(const bool verbosity);
 
+  bool get_restrict_to_cylindrical_FOV() const;
+  void set_restrict_to_cylindrical_FOV(bool val);
   /// Set number of GPU chunks used by the forward and back projectors.
   void set_num_gpu_chunks(const int num_gpu_chunks);
 
@@ -63,7 +65,9 @@ private:
   void initialise_keymap() override;
   bool post_processing() override;
   bool _verbosity;
+  bool _restrict_to_cylindrical_FOV;
   int _num_gpu_chunks;
+  bool _already_set_up;
 };
 
 END_NAMESPACE_STIR
