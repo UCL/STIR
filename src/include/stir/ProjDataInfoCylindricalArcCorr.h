@@ -58,7 +58,7 @@ public:
                                  const int num_tangential_poss,
                                  const int tof_mash_factor = 0);
 
-  ProjDataInfo* clone() const override;
+  self_type* clone() const override;
 
   bool operator==(const self_type&) const;
 
