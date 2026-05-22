@@ -8,13 +8,13 @@
 
  */
 
- /*!
-  \file
-  \ingroup buildblock
+/*!
+ \file
+ \ingroup buildblock
 
-  \brief Helper functions for PETSIRD
+ \brief Helper functions for PETSIRD
 
-  \author Nikos Efthimiou
+ \author Nikos Efthimiou
 */
 
 #ifndef __stir_IO_PETSIRDInfo_helpers_H__
