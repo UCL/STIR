@@ -28,11 +28,7 @@ TrivialDataSymmetriesForBins::TrivialDataSymmetriesForBins(const shared_ptr<cons
     : DataSymmetriesForBins(proj_data_info_ptr)
 {}
 
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
 TrivialDataSymmetriesForBins*
-#else
-DataSymmetriesForViewSegmentNumbers*
-#endif
 TrivialDataSymmetriesForBins::clone() const
 {
   return new TrivialDataSymmetriesForBins(*this);

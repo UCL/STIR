@@ -70,25 +70,13 @@ PixelsOnCartesianGrid(const ProjDataInfo * proj_data_info_ptr,
 		      const int xy_size);
 #endif
 
-//! Definition of the pure virtual defined in DiscretisedDensity
-#ifdef STIR_NO_COVARIANT_RETURN_TYPES
-  DiscretisedDensity<2, elemT>*
-#else
-  PixelsOnCartesianGrid<elemT>*
-#endif
-  get_empty_copy() const override;
+  //! Definition of the pure virtual defined in DiscretisedDensity
+  PixelsOnCartesianGrid<elemT>* get_empty_copy() const override;
 
-  //! Like get_empty_discretised_density, but returning a pointer to a PixelsOnCartesianGrid
+  //! Like get_empty_discretised_density (for backwards compatibility)
   PixelsOnCartesianGrid<elemT>* get_empty_pixels_on_cartesian_grid() const;
 
-  // TODO covariant return types
-
-#ifdef STIR_NO_COVARIANT_RETURN_TYPES
-  DiscretisedDensity<2, elemT>*
-#else
-  PixelsOnCartesianGrid<elemT>*
-#endif
-  clone() const override;
+  PixelsOnCartesianGrid<elemT>* clone() const override;
 
   inline int get_x_size() const;
 
