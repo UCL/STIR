@@ -1,3 +1,4 @@
+# Copyright 2025 -  University Medical Center Groningen
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2013 Kris Thielemans
 

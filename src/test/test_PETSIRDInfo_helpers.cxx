@@ -1,6 +1,6 @@
 
 /*
-    Copyright (C) 2025, UMCG
+    Copyright (C) 2025, University Medical Center Groningen
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0

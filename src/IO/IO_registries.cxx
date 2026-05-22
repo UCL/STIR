@@ -1,4 +1,5 @@
 /*
+    Copyright 2025, 2026, University Medical Center Groningen
     Copyright (C) 2002-2011, Hammersmith Imanet Ltd
     Copyright (C) 2012, Kris Thielemans
     Copyright (C) 2013, Institute for Bioengineering of Catalonia

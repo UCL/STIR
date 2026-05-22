@@ -7,7 +7,7 @@
     See STIR/LICENSE.txt for detail..
 */
 
-#include <iostream>:
+#include <iostream>
 #include <fstream>
 #include "stir/Succeeded.h"
 

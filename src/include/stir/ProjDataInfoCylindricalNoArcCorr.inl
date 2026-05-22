@@ -12,6 +12,7 @@
 
 */
 /*
+    Copyright (C) 2026, University Medical Center Groningen
     Copyright (C) 2000- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 

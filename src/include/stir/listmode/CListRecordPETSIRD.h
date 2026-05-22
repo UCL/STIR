@@ -2,7 +2,7 @@
 
 Coincidence Event Class for PETSIRD: Header File
 
-     Copyright 2025, UMCG
+     Copyright 2025, University Medical Center Groningen
      Copyright 2025 National Physical Laboratory
 
      Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,5 +1,5 @@
 /*
-        Copyright 2025, 2026 UMCG
+        Copyright 2025, 2026 University Medical Center Groningen
         Copyright 2025 National Physical Laboratory
 
     SPDX-License-Identifier: Apache-2.0

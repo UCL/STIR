@@ -7,6 +7,7 @@
     Copyright (C) 2018, University of Leeds
     Copyright (C) 2018, 2020-2023 University College London
     Copyright (C) 2016-2019, University of Hull
+    Copyright (C) 2025, 2026, University Medical Center Groningen
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license

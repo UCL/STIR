@@ -1,12 +1,21 @@
 /* CListModeDataPETSIRD.h
 
-     Copyright 2026, UMCG
+     Copyright 2026, University Medical Center Groningen
      Copyright 2025, MGH / HST A. Martinos Center for Biomedical Imaging
 
     SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details.
 
  */
+
+ /*!
+  \file
+  \ingroup buildblock
+
+  \brief Helper functions for PETSIRD
+
+  \author Nikos Efthimiou
+*/
 
 #ifndef __stir_IO_PETSIRDInfo_helpers_H__
 #define __stir_IO_PETSIRDInfo_helpers_H__

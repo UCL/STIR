@@ -1,5 +1,5 @@
 /*
-        Copyright 2026, UMCG
+        Copyright 2026, University Medical Center Groningen
         Copyright 2020 Positrigo AG, Zurich
 
     SPDX-License-Identifier: Apache-2.0

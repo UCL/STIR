@@ -1,5 +1,5 @@
 /*
-    Copyright 2025, UMCG
+    Copyright 2025, University Medical Center Groningen
     Copyright 2025, MGH / HST A. Martinos Center for Biomedical Imaging
 
     SPDX-License-Identifier: Apache-2.0
