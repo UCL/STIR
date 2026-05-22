@@ -248,7 +248,7 @@ public:
 
   //@}
 
-  Bin get_bin(const LOR<float>&, const double delta_time) const override;
+  Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
