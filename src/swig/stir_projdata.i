@@ -73,13 +73,35 @@ ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoCylindricalNoArcCorr)
 ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoGenericNoArcCorr)
 ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoBlocksOnCylindricalNoArcCorr )
 
-%extend stir::ProjDataInfoBlocksOnCylindricalNoArcCorr {
+// add Python friendly function that return a value directly
+// Currently, ProjDataInfoGenericNoArcCorr is derived from ProjDataInfoCylindricalNoArcCorr
+// so we can define this for ProjDataInfoCylindricalNoArcCorr only.
+// WARNING: once the hierarchy changes, this will have to be adapted.
+%extend stir::ProjDataInfoCylindricalNoArcCorr {
     
-stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> get_lor(const Bin bin){
+stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>
+   get_lor(const Bin& bin)
+   {
     stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
     $self->get_LOR(lor,bin);
     return lor;
-}
+   }
+
+#if 0
+   /* Next currently doesn't work. The returned object is not usable in Python
+      l = proj_data_info.get_all_det_pos_pairs_for_bin(bin)
+      l[0].pos1()
+      => TypeError: in method 'DetectionPositionPair_pos1_get', argument 1 of type 'stir::DetectionPositionPair< unsigned int > *'
+   */
+std::vector<DetectionPositionPair<>>
+   get_all_det_pos_pairs_for_bin(const Bin& bin,
+                                 bool ignore_non_spatial_dimensions = true) const
+  {
+    std::vector<DetectionPositionPair<>> dp_pos_pairs;
+    $self->get_all_det_pos_pairs_for_bin(dp_pos_pairs, bin, ignore_non_spatial_dimensions);
+    return dp_pos_pairs;
+  }
+#endif
 
 stir::CartesianCoordinate3D<float>
     find_cartesian_coordinate_of_detection_1(const Bin bin) const 
