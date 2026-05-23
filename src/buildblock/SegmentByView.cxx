@@ -25,6 +25,7 @@
 #include "stir/SegmentBySinogram.h"
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange3D.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
@@ -35,12 +36,7 @@ SegmentByView<elemT>::SegmentByView(const Array<3, elemT>& v,
     : Segment<elemT>(pdi_ptr, ind),
       Array<3, elemT>(v)
 {
-  assert(get_min_view_num() == pdi_ptr->get_min_view_num());
-  assert(get_max_view_num() == pdi_ptr->get_max_view_num());
-  assert(get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(ind.segment_num()));
-  assert(get_max_axial_pos_num() == pdi_ptr->get_max_axial_pos_num(ind.segment_num()));
-  assert(get_min_tangential_pos_num() == pdi_ptr->get_min_tangential_pos_num());
-  assert(get_max_tangential_pos_num() == pdi_ptr->get_max_tangential_pos_num());
+  this->check_state();
 }
 
 template <typename elemT>
@@ -69,17 +65,27 @@ SegmentByView<elemT>::SegmentByView(const shared_ptr<const ProjDataInfo>& pdi_sp
 
 template <typename elemT>
 SegmentByView<elemT>::SegmentByView(const SegmentBySinogram<elemT>& s_s)
-    : Segment<elemT>(s_s.get_proj_data_info_sptr()->create_shared_clone(), s_s.get_segment_indices()),
-      Array<3, elemT>(IndexRange3D(s_s.get_min_view_num(),
-                                   s_s.get_max_view_num(),
-                                   s_s.get_min_axial_pos_num(),
-                                   s_s.get_max_axial_pos_num(),
-                                   s_s.get_min_tangential_pos_num(),
-                                   s_s.get_max_tangential_pos_num()))
+    : SegmentByView<elemT>(s_s.get_proj_data_info_sptr()->create_shared_clone(), s_s.get_segment_indices())
 {
-
   for (int v = this->get_min_view_num(); v <= this->get_max_view_num(); v++)
     set_viewgram(s_s.get_viewgram(v));
+}
+
+template <typename elemT>
+void
+SegmentByView<elemT>::check_state() const
+{
+  if (!this->proj_data_info_sptr)
+    error("SegmentBySinogram not properly initialised.");
+
+  bool ok
+      = (this->get_min_view_num() == this->get_min_index() && this->get_max_view_num() == this->get_max_index()
+         && this->get_min_axial_pos_num() == (*this)[this->get_min_index()].get_min_index()
+         && this->get_max_axial_pos_num() == (*this)[this->get_min_index()].get_max_index()
+         && this->get_min_tangential_pos_num() == (*this)[this->get_min_index()][this->get_min_axial_pos_num()].get_min_index()
+         && this->get_max_tangential_pos_num() == (*this)[this->get_min_index()][this->get_max_axial_pos_num()].get_max_index());
+  if (!ok)
+    error("SegmentByView: inconsistent proj_data_info sizes and array sizes.");
 }
 
 template <typename elemT>
@@ -93,7 +99,6 @@ template <typename elemT>
 Sinogram<elemT>
 SegmentByView<elemT>::get_sinogram(int axial_pos_num) const
 {
-  // gcc 2.95.2 needs a this-> in front of get_min_voew_num for unclear reasons
   Array<2, elemT> pre_sino(IndexRange2D(this->get_min_view_num(),
                                         this->get_max_view_num(),
                                         this->get_min_tangential_pos_num(),

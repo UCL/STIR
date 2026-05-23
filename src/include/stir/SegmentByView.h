@@ -104,6 +104,13 @@ public:
   void resize(const IndexRange<3>& range) override;
 
   bool operator==(const Segment<elemT>&) const override;
+
+private:
+  //! Check if array sizes are consistent with proj_data_info
+  /*!
+   Calls error() if not ok (also in non-debug mode)
+  */
+  void check_state() const;
 };
 
 END_NAMESPACE_STIR
