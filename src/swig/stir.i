@@ -1190,6 +1190,8 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
   stir::ScatterSimulation, stir::ScatterSimulation>);
 %shared_ptr(stir::SingleScatterSimulation);
 
+%ignore stir::ScatterSimulation::set_template_proj_data_info(const ProjDataInfo&); // shadowed by (std::shared_ptr< stir::ProjDataInfo const >)
+
 %include "stir/scatter/ScatterSimulation.h"
 
 %template (internalRPSingleScatterSimulation) 

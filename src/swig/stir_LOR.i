@@ -29,10 +29,12 @@
 %attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, beta);
 %attributeref(stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>, float, phi);
 #else
+// ignore const versions as SWIG warns about shadowing with non-const version
 %ignore *::z1() const;
 %ignore *::z2() const;
 %ignore *::beta() const;
 %ignore *::phi() const;
+%ignore *::s() const;
 #endif
 %ignore *::check_state;
 

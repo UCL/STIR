@@ -30,6 +30,10 @@
 %ignore stir::VoxelsOnCartesianGrid::operator-=;
 %ignore stir::VoxelsOnCartesianGrid::operator*=;
 %ignore stir::VoxelsOnCartesianGrid::operator/=;
+// try to ignore move constructors to avoid warnings, but SIWG ignores these %ignores...
+%ignore stir::VoxelsOnCartesianGrid::VoxelsOnCartesianGrid(stir::Array&&,stir::CartesianCoordinate3D< float > const &,stir::BasicCoordinate< 3,float > const &);
+%ignore stir::VoxelsOnCartesianGrid::VoxelsOnCartesianGrid(stir::shared_ptr< stir::ExamInfo const > const &,stir::Array &&,stir::CartesianCoordinate3Dconst &,stir::BasicCoordinate const &);
+
 %include "stir/VoxelsOnCartesianGrid.h"
 
 %extend stir::VoxelsOnCartesianGrid {
