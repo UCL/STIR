@@ -85,24 +85,6 @@ public:
   SegmentBySinogram(const SegmentByView<elemT>&);
   //! Get storage order
   inline StorageOrder get_storage_order() const override;
-  //! Get number of axial positions
-  inline int get_num_axial_poss() const override;
-  //! Get number of views
-  inline int get_num_views() const override;
-  //! Get number of tangential positions
-  inline int get_num_tangential_poss() const override;
-  //! Get minimum axial position number
-  inline int get_min_axial_pos_num() const override;
-  //! Get maximum axial position number
-  inline int get_max_axial_pos_num() const override;
-  //! Get minimum view number
-  inline int get_min_view_num() const override;
-  //! Get maximum view number
-  inline int get_max_view_num() const override;
-  //! Get minimum tangetial position number
-  inline int get_min_tangential_pos_num() const override;
-  //! Get maximum tangential position number
-  inline int get_max_tangential_pos_num() const override;
   using Segment<elemT>::get_sinogram;
   using Segment<elemT>::get_viewgram;
   //! Get sinogram

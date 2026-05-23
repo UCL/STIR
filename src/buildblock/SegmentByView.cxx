@@ -78,7 +78,7 @@ SegmentByView<elemT>::SegmentByView(const SegmentBySinogram<elemT>& s_s)
                                    s_s.get_max_tangential_pos_num()))
 {
 
-  for (int v = get_min_view_num(); v <= get_max_view_num(); v++)
+  for (int v = this->get_min_view_num(); v <= this->get_max_view_num(); v++)
     set_viewgram(s_s.get_viewgram(v));
 }
 
@@ -94,9 +94,11 @@ Sinogram<elemT>
 SegmentByView<elemT>::get_sinogram(int axial_pos_num) const
 {
   // gcc 2.95.2 needs a this-> in front of get_min_voew_num for unclear reasons
-  Array<2, elemT> pre_sino(
-      IndexRange2D(this->get_min_view_num(), get_max_view_num(), get_min_tangential_pos_num(), get_max_tangential_pos_num()));
-  for (int v = get_min_view_num(); v <= get_max_view_num(); v++)
+  Array<2, elemT> pre_sino(IndexRange2D(this->get_min_view_num(),
+                                        this->get_max_view_num(),
+                                        this->get_min_tangential_pos_num(),
+                                        this->get_max_tangential_pos_num()));
+  for (int v = this->get_min_view_num(); v <= this->get_max_view_num(); v++)
     pre_sino[v] = Array<3, elemT>::operator[](v)[axial_pos_num];
 
   return Sinogram<elemT>(pre_sino, this->proj_data_info_sptr, axial_pos_num, this->get_segment_num(), this->get_timing_pos_num());
@@ -106,7 +108,7 @@ template <typename elemT>
 void
 SegmentByView<elemT>::set_sinogram(const Sinogram<elemT>& sino, int axial_pos_num)
 {
-  for (int v = get_min_view_num(); v <= get_max_view_num(); v++)
+  for (int v = this->get_min_view_num(); v <= this->get_max_view_num(); v++)
     Array<3, elemT>::operator[](v)[axial_pos_num] = sino[v];
 }
 

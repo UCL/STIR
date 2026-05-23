@@ -28,7 +28,7 @@
 #define __Viewgram_h__
 
 #include "stir/Array.h"
-#include "stir/ProjDataInfo.h"
+#include "stir/DataWithProjDataInfo.h"
 #include "stir/ViewgramIndices.h"
 #include "stir/IndexRange.h"
 #include "stir/shared_ptr.h"
@@ -45,7 +45,7 @@ START_NAMESPACE_STIR
 */
 
 template <typename elemT>
-class Viewgram : public Array<2, elemT>
+class Viewgram : public Array<2, elemT>, public DataWithProjDataInfo
 {
   typedef Array<2, elemT> base_type;
 #ifdef STIR_COMPILING_SWIG_WRAPPER
@@ -96,12 +96,6 @@ public:
   inline int get_max_axial_pos_num() const;
   //! Get number of axial positions
   inline int get_num_axial_poss() const;
-  //! Get minimum number of axial positions
-  inline int get_min_tangential_pos_num() const;
-  //! Get maximum number of tangetial positions
-  inline int get_max_tangential_pos_num() const;
-  //! Get number of tangential positions
-  inline int get_num_tangential_poss() const;
 
   //! Get an empty viewgram of the same dimensions, segment_num etc.
   inline Viewgram get_empty_copy(void) const;
@@ -110,9 +104,6 @@ public:
   void grow(const IndexRange<2>& range) override;
   //! Overloading Array::resize
   void resize(const IndexRange<2>& range) override;
-
-  //! Get shared pointer to proj data info
-  inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
 
   //! \name Equality
   //@{
@@ -139,7 +130,6 @@ public:
   //@}
 
 private:
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   ViewgramIndices _indices;
 };
 

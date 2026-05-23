@@ -22,6 +22,7 @@ set(${dir_LIB_SOURCES}
   ExamData.cxx
   RadionuclideDB.cxx
   Radionuclide.cxx
+  DataWithProjDataInfo.cxx
   ProjData.cxx
   ProjDataInfo.cxx
   ProjDataInfoCylindrical.cxx

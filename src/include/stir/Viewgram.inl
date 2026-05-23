@@ -78,27 +78,6 @@ Viewgram<elemT>::get_num_axial_poss() const
 }
 
 template <typename elemT>
-int
-Viewgram<elemT>::get_num_tangential_poss() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_axial_pos_num()].get_length();
-}
-
-template <typename elemT>
-int
-Viewgram<elemT>::get_min_tangential_pos_num() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_axial_pos_num()].get_min_index();
-}
-
-template <typename elemT>
-int
-Viewgram<elemT>::get_max_tangential_pos_num() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_axial_pos_num()].get_max_index();
-}
-
-template <typename elemT>
 Viewgram<elemT>
 Viewgram<elemT>::get_empty_copy(void) const
 {
@@ -107,16 +86,9 @@ Viewgram<elemT>::get_empty_copy(void) const
 }
 
 template <typename elemT>
-shared_ptr<const ProjDataInfo>
-Viewgram<elemT>::get_proj_data_info_sptr() const
-{
-  return proj_data_info_sptr;
-}
-
-template <typename elemT>
 Viewgram<elemT>::Viewgram(const Array<2, elemT>& p, const shared_ptr<const ProjDataInfo>& pdi_sptr, const ViewgramIndices& ind)
     : Array<2, elemT>(p),
-      proj_data_info_sptr(pdi_sptr),
+      DataWithProjDataInfo(pdi_sptr),
       _indices(ind)
 {
   assert(ind.view_num() <= proj_data_info_sptr->get_max_view_num());
@@ -135,7 +107,7 @@ Viewgram<elemT>::Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr, const 
                                    pdi_sptr->get_max_axial_pos_num(ind.segment_num()),
                                    pdi_sptr->get_min_tangential_pos_num(),
                                    pdi_sptr->get_max_tangential_pos_num())),
-      proj_data_info_sptr(pdi_sptr),
+      DataWithProjDataInfo(pdi_sptr),
       _indices(ind)
 {
   assert(ind.view_num() <= proj_data_info_sptr->get_max_view_num());

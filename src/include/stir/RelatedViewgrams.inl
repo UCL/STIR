@@ -36,6 +36,8 @@ RelatedViewgrams<elemT>::RelatedViewgrams(const std::vector<Viewgram<elemT>>& vi
     : viewgrams(viewgrams),
       symmetries_used(symmetries_used)
 {
+  if (viewgrams.size())
+    this->proj_data_info_sptr = viewgrams[0].get_proj_data_info_sptr();
   check_state();
 }
 
@@ -110,15 +112,6 @@ RelatedViewgrams<elemT>::get_num_axial_poss() const
 
 template <typename elemT>
 int
-RelatedViewgrams<elemT>::get_num_tangential_poss() const
-{
-  assert(viewgrams.size() > 0);
-  check_state();
-  return viewgrams[0].get_num_tangential_poss();
-}
-
-template <typename elemT>
-int
 RelatedViewgrams<elemT>::get_min_axial_pos_num() const
 {
   assert(viewgrams.size() > 0);
@@ -133,33 +126,6 @@ RelatedViewgrams<elemT>::get_max_axial_pos_num() const
   assert(viewgrams.size() > 0);
   check_state();
   return viewgrams[0].get_max_axial_pos_num();
-}
-
-template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_min_tangential_pos_num() const
-{
-  assert(viewgrams.size() > 0);
-  check_state();
-  return viewgrams[0].get_min_tangential_pos_num();
-}
-
-template <typename elemT>
-int
-RelatedViewgrams<elemT>::get_max_tangential_pos_num() const
-{
-  assert(viewgrams.size() > 0);
-  check_state();
-  return viewgrams[0].get_max_tangential_pos_num();
-}
-
-template <typename elemT>
-shared_ptr<const ProjDataInfo>
-RelatedViewgrams<elemT>::get_proj_data_info_sptr() const
-{
-  assert(viewgrams.size() > 0);
-  check_state();
-  return viewgrams[0].get_proj_data_info_sptr();
 }
 
 template <typename elemT>
