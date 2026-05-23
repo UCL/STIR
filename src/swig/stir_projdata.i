@@ -67,6 +67,12 @@
 %include "stir/ProjDataInfoGenericNoArcCorr.h"
 %include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 
+ADD_REPR_PARAMETER_INFO(stir::ProjDataInfo)
+ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoCylindricalArcCorr)
+ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoCylindricalNoArcCorr)
+ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoGenericNoArcCorr)
+ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoBlocksOnCylindricalNoArcCorr )
+
 %extend stir::ProjDataInfoBlocksOnCylindricalNoArcCorr {
     
 stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> get_lor(const Bin bin){

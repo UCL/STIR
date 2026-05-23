@@ -1061,7 +1061,7 @@ namespace std {
  // use this one for classes that have parameter_info()
  // example usage: ADD_REPR_PARAMETER_INFO(stir::Radionuclide);
 %define ADD_REPR_PARAMETER_INFO(classname)
-  ADD_REPR(classname, "use parameter_info() for details");
+  ADD_REPR(classname, " use parameter_info() for details");
 %enddef
 
  // Finally, start with STIR specific definitions
