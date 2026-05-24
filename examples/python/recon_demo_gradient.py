@@ -6,7 +6,6 @@ import os
 
 # go to directory with input files
 os.chdir('../recon_demo')
-
 # %%
 # initialise reconstruction object
 # we will do this here via a .par file
@@ -34,8 +33,6 @@ target.fill(1)
 s = recon.set_up(target)
 
 # %%
-
-# compute gradient of objective function
 # create a copy to store the gradient
 gradient=target.get_empty_copy();
 # compute gradient
@@ -51,6 +48,7 @@ plt.show()
 poissonobj.compute_sub_gradient_without_penalty_plus_sensitivity(gradient,target,subset_num)
 # extract to python for plotting
 npimage = stirextra.to_numpy(gradient)
+
 plt.plot(npimage[10, 30, :])
 plt.show()
 

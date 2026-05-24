@@ -20,7 +20,7 @@ type:=Matrix
 	;attenuation type := Simple
         ;Values in attenuation map in cm-1 (float file)                         
         ;attenuation map := attenuation.hv
-        attenuation map := my_atten_image_SPECT_modified.hv
+        attenuation map := my_atten_image_SPECT.hv
 
         ;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
         ;mask type := Attenuation Map
