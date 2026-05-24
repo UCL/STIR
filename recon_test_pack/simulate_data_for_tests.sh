@@ -30,6 +30,7 @@ force_zero_view_offset=0
 TOF=0
 suffix=""
 SPECT=0
+D3=0
 #
 # Parse option arguments (--)
 # Note that the -- is required to suppress interpretation of $1 as options 
@@ -47,6 +48,9 @@ do
   elif test "$1" = "--SPECT"
   then
     SPECT=1
+  elif test "$1" = "--D3"
+  then
+    D3=1
   elif test "$1" = "--suffix"
   then
     suffix="$2"
@@ -119,12 +123,28 @@ comment_out_line "$atten_input_file" "$atten_output_file"
 
 if [ "$SPECT" -eq 0 ]; then
 if [ "$TOF" -eq 0 ]; then
-  : ${view_mash:=1}
-  : ${span:=2}
-  : ${max_rd:=3}
-  echo "===  create template sinogram (DSTE with view_mash=${view_mash}, max_ring_diff=${max_rd})"
-  template_sino=my_DSTE_3D_vm${view_mash}_span${span}_rd${max_rd}_template.hs
-  cat > my_input.txt <<EOF
+  if [ "$D3" -eq 1 ]; then
+    : ${view_mash:=4}
+    : ${span:=1}
+    : ${max_rd:=23}
+    echo "===  create template sinogram (DSTE in 3D with view_mash=${view_mash}, max_ring_diff=${max_rd})"
+    template_sino=my_DSTE_3D_rd3_m4_template.hs
+    cat > my_input.txt <<EOF
+Discovery STE
+
+$view_mash
+n
+180
+$span
+$max_rd
+EOF
+  else
+    : ${view_mash:=1}
+    : ${span:=2}
+    : ${max_rd:=3}
+    echo "===  create template sinogram (DSTE with view_mash=${view_mash}, max_ring_diff=${max_rd})"
+    template_sino=my_DSTE_3D_vm${view_mash}_span${span}_rd${max_rd}_template.hs
+    cat > my_input.txt <<EOF
 Discovery STE
 
 $view_mash
@@ -133,6 +153,7 @@ n
 $span
 $max_rd
 EOF
+  fi
 else
   : ${view_mash:=2}
   : ${span:=2}

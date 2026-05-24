@@ -14,6 +14,8 @@ set(dir recon_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
+ ArtificialScanner3D.cxx
+ missing_data/MissingDataReprojection3D.cxx
  ForwardProjectorByBin.cxx
 	BackProjectorByBin.cxx
 	ProjectorByBinPair.cxx

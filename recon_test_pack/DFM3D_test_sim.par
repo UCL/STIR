@@ -1,0 +1,13 @@
+DFM3DParameters :=
+; test file for DFM3D 
+input file := my_precorrected_sino${suffix}.hs
+
+xy output image size (in pixels) := -1
+zoom := 0.5
+
+noise filter := 0
+
+output filename prefix := my_test_sim_image_DFM3D
+
+
+end:=
