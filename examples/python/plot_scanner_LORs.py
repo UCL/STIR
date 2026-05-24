@@ -56,10 +56,6 @@ NaCpBl = scanner.get_num_axial_crystals_per_block()
 NaBlpBu = scanner.get_num_axial_blocks_per_bucket()
 NCpR = scanner.get_num_detectors_per_ring()
 
-min_r_diff = stir.IntVectorWithOffset((2 * Nr - 1))
-max_r_diff = stir.IntVectorWithOffset((2 * Nr - 1))
-num_ax_pps = stir.IntVectorWithOffset((2 * Nr - 1))
-
 csi = math.pi / NtBu
 tBl_gap = tBl_s - NtCpBl * tC_s
 csi_minus_csiGaps = csi - (csi / tBl_s * 2) * (tC_s / 2 + tBl_gap)
@@ -68,19 +64,19 @@ rmax = r / math.cos(csi_minus_csiGaps)
 scanner.set_intrinsic_azimuthal_tilt(-csi_minus_csiGaps)  # if you want to play with the orientation of the blocks
 scanner.set_up()
 # %% Create projection data info for Blocks on Cylindrical
-for i in range(0, 2 * Nr - 1, 1):
-    min_r_diff[i] = -Nr + 1 + i
-    max_r_diff[i] = -Nr + 1 + i
-    if i < Nr:
-        num_ax_pps[i] = Nr + min_r_diff[i]
-    else:
-        num_ax_pps[i] = Nr - min_r_diff[i]
-    # print(num_ax_pps[i])
-
-proj_data_info_blocks = stir.ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner, num_ax_pps, min_r_diff, max_r_diff,
-                                                                      scanner.get_max_num_views(),
-                                                                      scanner.get_max_num_non_arccorrected_bins())
-
+proj_data_info_blocks = stir.ProjDataInfo.construct_proj_data_info(scanner,
+                                                                   1, #span
+                                                                   scanner.get_num_rings() -1, # max_delta,
+                                                                   scanner.get_max_num_views(),
+                                                                   scanner.get_max_num_non_arccorrected_bins(),
+                                                                   False, # not arc_corrected
+)
+# %% find the segment_num with the direct sinograms (independent of segment order and numbering)
+seg_0 = (proj_data_info_blocks.get_min_segment_num() + proj_data_info_blocks.get_max_segment_num()) // 2
+# %% variables for detection coordinates
+b1 = stir.FloatCartesianCoordinate3D()
+b2 = stir.FloatCartesianCoordinate3D()
+# %%
 fig = plt.figure()
 ax = plt.axes()
 plt.xlim([-rmax, rmax])
@@ -96,7 +92,7 @@ for v in range(0, Nv, 1):
     # TODO no clue where this comes from
     tB_nim_i, tB_num_f = divmod(v / NtCpBl, 1)
     tB_num = int(tB_nim_i)
-    bin = stir.Bin(0, v, 0, 0)
+    bin = stir.Bin(seg_0, v, 0, 0)
 
     if tB_num > tB_num2:
         c = next(color_v)
@@ -104,8 +100,7 @@ for v in range(0, Nv, 1):
     else:
         label = "_nolegend"
     tB_num2 = tB_num
-    b1 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_1(bin)
-    b2 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_2(bin)
+    proj_data_info_blocks.find_cartesian_coordinates_of_detection(b1, b2, bin)
 
     plt.plot((b1.x(), b2.x()), (b1.y(), b2.y()), color=c)
     plt.plot(b1.x(), b1.y(), 'o', color=c, label=label)
@@ -161,15 +156,14 @@ aB_num2 = -1
 for a in range(0, (Nr), 1):
     aB_nim_i, aB_num_f = divmod(a / NaCpBl, 1)
     aB_num = int(aB_nim_i)
-    bin = stir.Bin(0, v, 0, 0)
+    bin = stir.Bin(seg_0, v, 0, 0)
 
     if aB_num > aB_num2:
         c = next(color_a)
 
     aB_num2 = aB_num
-    bin = stir.Bin((Nr - 1), 0, a, 0)
-    b1 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_1(bin)
-    b2 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_2(bin)
+    bin = stir.Bin(seg_0, 0, a, 0)
+    proj_data_info_blocks.find_cartesian_coordinates_of_detection(b1, b2, bin)
 
     plt.plot((b1.z(), b2.z()), (b1.y(), b2.y()), color=c)
     plt.plot(b1.z(), b1.y(), 'o', color=c, label="Block %s - ring %s" % (aB_num, a))
@@ -198,21 +192,14 @@ ax.set_xlabel('X ')
 ax.set_ylabel('Y ')
 ax.set_zlabel('Z ')
 color_a = iter(cm.tab20(numpy.linspace(0, 1, Nr)))
-c = next(color_a)
-aB_num2 = -1
 
 for a in range(0, (Nr), 4):
     for v in range(0, Nv, 30):
-        # aB_nim_i, aB_num_f=divmod(a/NaCpBl,1)
-        # aB_num=int(aB_nim_i)
-        bin = stir.Bin((Nr - 1), v, a, 0)
+        bin = stir.Bin(seg_0, v, a, 0)
 
-        # if aB_num>aB_num2:
         c = next(color_a)
 
-        # aB_num2=aB_num
-        b1 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_1(bin)
-        b2 = proj_data_info_blocks.find_cartesian_coordinate_of_detection_2(bin)
+        proj_data_info_blocks.find_cartesian_coordinates_of_detection(b1, b2, bin)
         plt.plot((b1.x(), b2.x()), (b1.y(), b2.y()), (b1.z(), b2.z()), color=c)
         ax.scatter3D(b1.x(), b1.y(), b1.z(), 'o', color=c, label="ring %s - detector %s" % (a, v))
 
