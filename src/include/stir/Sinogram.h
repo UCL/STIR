@@ -123,7 +123,6 @@ public:
   //@}
 
 private:
-  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
   SinogramIndices _indices;
 };
 

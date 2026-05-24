@@ -25,7 +25,7 @@
 */
 
 #include "stir/IndexRange2D.h"
-
+#include "stir/error.h"
 START_NAMESPACE_STIR
 
 template <typename elemT>
@@ -91,29 +91,29 @@ Viewgram<elemT>::Viewgram(const Array<2, elemT>& p, const shared_ptr<const ProjD
       DataWithProjDataInfo(pdi_sptr),
       _indices(ind)
 {
-  assert(ind.view_num() <= proj_data_info_sptr->get_max_view_num());
-  assert(ind.view_num() >= proj_data_info_sptr->get_min_view_num());
-  // segment_num is already checked by doing get_max_axial_pos_num(s_num)
-
-  assert(get_min_axial_pos_num() == pdi_sptr->get_min_axial_pos_num(ind.segment_num()));
-  assert(get_max_axial_pos_num() == pdi_sptr->get_max_axial_pos_num(ind.segment_num()));
-  assert(get_min_tangential_pos_num() == pdi_sptr->get_min_tangential_pos_num());
-  assert(get_max_tangential_pos_num() == pdi_sptr->get_max_tangential_pos_num());
+  if (!pdi_sptr)
+    error("Sinogram constructed with empty proj_data_info");
+  if (ind.segment_num() > this->get_max_segment_num() || ind.segment_num() < this->get_min_segment_num()
+      || ind.view_num() > this->get_max_view_num() || ind.view_num() < this->get_min_view_num()
+      || ind.timing_pos_num() > this->get_max_tof_pos_num() || ind.timing_pos_num() < this->get_min_tof_pos_num())
+    error("Viewgram constructed with out-of-range indices");
+  const bool ok = (p.get_min_index() == this->get_min_axial_pos_num() && p.get_max_index() == this->get_max_axial_pos_num()
+                   && (p.size() == 0
+                       || (p[p.get_min_index()].get_min_index() == this->get_min_tangential_pos_num()
+                           && p[p.get_min_index()].get_max_index() == this->get_max_tangential_pos_num())));
+  if (!ok)
+    error("Viewgram constructed with array with dimensions that are inconsistent with the proj_data_info");
 }
 
 template <typename elemT>
 Viewgram<elemT>::Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr, const ViewgramIndices& ind)
-    : Array<2, elemT>(IndexRange2D(pdi_sptr->get_min_axial_pos_num(ind.segment_num()),
-                                   pdi_sptr->get_max_axial_pos_num(ind.segment_num()),
-                                   pdi_sptr->get_min_tangential_pos_num(),
-                                   pdi_sptr->get_max_tangential_pos_num())),
-      DataWithProjDataInfo(pdi_sptr),
-      _indices(ind)
-{
-  assert(ind.view_num() <= proj_data_info_sptr->get_max_view_num());
-  assert(ind.view_num() >= proj_data_info_sptr->get_min_view_num());
-  // segment_num is already checked by doing get_max_axial_pos_num(s_num)
-}
+    : Viewgram(Array<2, elemT>(IndexRange2D(pdi_sptr->get_min_axial_pos_num(ind.segment_num()),
+                                            pdi_sptr->get_max_axial_pos_num(ind.segment_num()),
+                                            pdi_sptr->get_min_tangential_pos_num(),
+                                            pdi_sptr->get_max_tangential_pos_num())),
+               pdi_sptr,
+               ind)
+{}
 
 template <typename elemT>
 Viewgram<elemT>::Viewgram(

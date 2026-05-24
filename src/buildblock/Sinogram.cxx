@@ -102,13 +102,13 @@ Sinogram<elemT>::resize(const IndexRange<2>& range)
 
   assert(range.get_min_index() == 0);
 
-  shared_ptr<ProjDataInfo> pdi_ptr(proj_data_info_ptr->clone());
+  shared_ptr<ProjDataInfo> pdi_ptr(this->proj_data_info_sptr->clone());
 
   pdi_ptr->set_num_views(range.get_max_index() + 1);
   pdi_ptr->set_min_tangential_pos_num(range[0].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[0].get_max_index());
 
-  proj_data_info_ptr = pdi_ptr;
+  this->proj_data_info_sptr = pdi_ptr;
 
   Array<2, elemT>::resize(range);
 }
