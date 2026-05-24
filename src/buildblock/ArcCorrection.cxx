@@ -99,7 +99,8 @@ ArcCorrection::set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data
                                                                          min_ring_diff,
                                                                          max_ring_diff,
                                                                          noarc_corr_proj_data_info_sptr->get_num_views(),
-                                                                         num_arccorrected_tangential_poss));
+                                                                         num_arccorrected_tangential_poss,
+                                                                         noarc_corr_proj_data_info_sptr->get_tof_mash_factor()));
 
   tangential_sampling = get_arc_corrected_proj_data_info().get_tangential_sampling();
 
