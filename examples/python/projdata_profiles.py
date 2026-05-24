@@ -1,12 +1,16 @@
-# Demo to plot the profile of projection data using STIR
-# To run in "normal" Python, you would type the following in the command line
-#  execfile('plot_projdata_profiles.py')
-# In ipython, you can use
-#  %run plot_projdata_profiles.py
-# Or of course
-#  import plot_projdata_profiles
+"""
+Functionality to plot a profile through projection-data with averaging etc.
 
-# Copyright 2021 University College London
+You probably want to either
+
+    python -m stir.projdata_profiles -h
+
+or from within python
+
+    import stir.projdata_visualisation
+    help(stir.projdata_visualisation.plot)
+"""
+# Copyright 2021, 2026 University College London
 # Copyright 2024 Prescient Imaging
 
 # Authors: Robert Twyman
@@ -126,10 +130,10 @@ def compress_and_extract_1d_from_nd_array(data: np.ndarray,
     return data
 
 
-def plot_projdata_profiles(projection_data_list: list[stir.ProjData] | list[str],
-                           display_axis: int = 3,
-                           data_indices: list[int | None] | None = None,
-                           ) -> None:
+def plot(projection_data_list: list[stir.ProjData] | list[str],
+        display_axis: int = 3,
+        data_indices: list[int | None] | None = None,
+        ) -> None:
     """
     Plots the profiles of the projection data.
     Compress (via sum) and extract a 1D array from a 4D array of projection data for each element of the list.
@@ -229,7 +233,7 @@ if __name__ == '__main__':
         parser.print_help()
         exit(0)
 
-    plot_projdata_profiles(projection_data_list=args.filenames,
-                           display_axis=args.display_axis,
-                           data_indices=[args.tof, args.axial_segment, args.view, args.tangential]
-                           )
+    plot(projection_data_list=args.filenames,
+        display_axis=args.display_axis,
+        data_indices=[args.tof, args.axial_segment, args.view, args.tangential]
+        )
