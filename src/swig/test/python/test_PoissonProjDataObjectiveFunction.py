@@ -59,6 +59,8 @@ class TestSTIRObjectiveFunction(unittest.TestCase):
 
         self.obj_fun = obj_fun
         self.prior = prior
+        # test down-cast
+        assert isinstance(obj_fun.get_prior(), type(prior))
         self.image = image
 
     # def tearDown(self):

@@ -53,11 +53,16 @@
 // so if class A is derived from class B, you want to put A first.
 // NOTE: I've tried to just use stir::ProjDataInfo as first argument, i.e. without all the variations,
 // but those typemaps didn't match.
-%factory_shared(%arg(stir::ProjDataInfo&, stir::ProjDataInfo const&, stir::ProjDataInfo *, stir::ProjDataInfo const*),
+%define all_ProjDataInfo
                 stir::ProjDataInfoBlocksOnCylindricalNoArcCorr,
                 stir::ProjDataInfoGenericNoArcCorr,
                 stir::ProjDataInfoCylindricalNoArcCorr,
-                stir::ProjDataInfoCylindricalArcCorr);
+                stir::ProjDataInfoCylindricalArcCorr
+%enddef
+%factory_shared(%arg(stir::ProjDataInfo&, stir::ProjDataInfo const&, stir::ProjDataInfo *, stir::ProjDataInfo const*),
+                all_ProjDataInfo);
+%formacro(ADD_REPR_PARAMETER_INFO, all_ProjDataInfo)
+
 %include "stir/ProjDataInfo.h"
 
 %include "stir/ProjDataInfoCylindrical.h"
@@ -67,13 +72,7 @@
 %include "stir/ProjDataInfoGenericNoArcCorr.h"
 %include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 
-ADD_REPR_PARAMETER_INFO(stir::ProjDataInfo)
-ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoCylindricalArcCorr)
-ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoCylindricalNoArcCorr)
-ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoGenericNoArcCorr)
-ADD_REPR_PARAMETER_INFO(stir::ProjDataInfoBlocksOnCylindricalNoArcCorr )
-
-// add Python friendly function that return a value directly
+// add Python friendly function that returns a value directly
 // Currently, ProjDataInfoGenericNoArcCorr is derived from ProjDataInfoCylindricalNoArcCorr
 // so we can define this for ProjDataInfoCylindricalNoArcCorr only.
 // WARNING: once the hierarchy changes, this will have to be adapted.

@@ -76,7 +76,7 @@
  #include "stir/listmode/ListRecord.h"
  #include "stir/listmode/ListEvent.h"
  #include "stir/listmode/CListRecord.h"
- #include "stir/listmode/ListModeData.h"
+ #include "stir/listmode/SPECTListModeData.h"
  #include "stir/listmode/CListModeData.h"
  #include "stir/listmode/LmToProjData.h"
 

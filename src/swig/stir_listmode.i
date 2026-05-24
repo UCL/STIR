@@ -37,6 +37,8 @@ ADD_REPR_PARAMETER_INFO(stir::LmToProjData);
 %include "stir/listmode/ListModeData.h"
 %shared_ptr(stir::CListModeData);
 %include "stir/listmode/CListModeData.h"
+%shared_ptr(stir::SPECTListModeData);
+%include "stir/listmode/SPECTListModeData.h"
 
 %extend stir::ListModeData {
   static shared_ptr<stir::ListModeData> read_from_file(const std::string& filename)

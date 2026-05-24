@@ -21,6 +21,14 @@
 
 // ignore this one and add it later (see below)
 %ignore stir::DiscretisedDensity::read_from_file(const std::string& filename);
+
+// add down-casting
+// WARNING: Needs to be updated with all "leaf" classes.
+// TODO: Ideally we wouldn't have to add the template arguments, but the typemaps didn't match without them.
+#define basetype stir::DiscretisedDensity<3,float>
+%factory_shared(%arg(basetype&, basetype const&, basetype*, basetype const*),
+                stir::VoxelsOnCartesianGrid<float>);
+#undef basetype
 %include "stir/DiscretisedDensity.h"
 %include "stir/DiscretisedDensityOnCartesianGrid.h"
 
