@@ -55,29 +55,29 @@ public:
 
 public:
   //! Construct sinogram from proj_data_info pointe and indices.  Data are set to 0.
-  inline Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const SinogramIndices&);
+  Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const SinogramIndices&);
 
   //! Construct sinogram with data set to the array.
-  inline Sinogram(const Array<2, elemT>& p, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const SinogramIndices&);
+  Sinogram(const Array<2, elemT>& p, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const SinogramIndices&);
 
   //! Construct sinogram from proj_data_info pointer, axial position and segment number.  Data are set to 0.
   /*!
     \deprecated Use version with SinogramIndices instead.
   */
-  inline Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                  const int ax_pos_num,
-                  const int segment_num,
-                  const int timing_pos_num = 0);
+  Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+           const int ax_pos_num,
+           const int segment_num,
+           const int timing_pos_num = 0);
 
   //! Construct sinogram with data set to the array.
   /*!
     \deprecated Use version with SinogramIndices instead.
   */
-  inline Sinogram(const Array<2, elemT>& p,
-                  const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                  const int ax_pos_num,
-                  const int segment_num,
-                  const int timing_pos_num = 0);
+  Sinogram(const Array<2, elemT>& p,
+           const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+           const int ax_pos_num,
+           const int segment_num,
+           const int timing_pos_num = 0);
 
   //! Get indices
   inline SinogramIndices get_sinogram_indices() const;
@@ -89,7 +89,7 @@ public:
   inline int get_timing_pos_num() const;
 
   //! Get an empty sinogram of the same dimensions, segment_num etc.
-  inline Sinogram get_empty_copy(void) const;
+  Sinogram get_empty_copy(void) const;
 
   //! Overloading Array::grow
   void grow(const IndexRange<2>& range) override;

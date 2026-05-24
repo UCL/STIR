@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023, University College London
+    Copyright (C) 2023, 2026 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -56,31 +56,26 @@ public:
 
 public:
   //! Construct from proj_data_info pointer and indices. Data are set to 0.
-  inline Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, const ViewgramIndices& ind);
+  Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, const ViewgramIndices& ind);
 
   //! Construct with data set to the array.
-  inline Viewgram(const Array<2, elemT>& p,
-                  const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-                  const ViewgramIndices& ind);
+  Viewgram(const Array<2, elemT>& p, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const ViewgramIndices& ind);
 
   //! Construct from proj_data_info pointer, view and segment number. Data are set to 0.
   /*!
     \deprecated Use version with ViewgramIndices instead
   */
-  inline Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                  const int v_num,
-                  const int s_num,
-                  const int t_num = 0);
+  Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, const int v_num, const int s_num, const int t_num = 0);
 
   //! Construct with data set to the array.
   /*!
     \deprecated Use version with ViewgramIndices instead
   */
-  inline Viewgram(const Array<2, elemT>& p,
-                  const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                  const int v_num,
-                  const int s_num,
-                  const int t_num = 0);
+  Viewgram(const Array<2, elemT>& p,
+           const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+           const int v_num,
+           const int s_num,
+           const int t_num = 0);
 
   //! Get indices
   inline ViewgramIndices get_viewgram_indices() const;
@@ -98,7 +93,7 @@ public:
   inline int get_num_axial_poss() const;
 
   //! Get an empty viewgram of the same dimensions, segment_num etc.
-  inline Viewgram get_empty_copy(void) const;
+  Viewgram get_empty_copy(void) const;
 
   //! Overloading Array::grow
   void grow(const IndexRange<2>& range) override;

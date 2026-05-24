@@ -48,6 +48,7 @@
 #include "stir/warning.h"
 #include "stir/format.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/IndexRange2D.h"
 
 // #include "stir/modelling/ParametricDiscretisedDensity.h"
 // #include "stir/modelling/KineticParameters.h"

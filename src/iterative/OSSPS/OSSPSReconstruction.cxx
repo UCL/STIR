@@ -23,6 +23,7 @@
 #include "stir/min_positive_element.h"
 #include "stir/recon_array_functions.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
+#include "stir/IndexRange2D.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_array_functions.h"
 #include "stir/thresholding.h"

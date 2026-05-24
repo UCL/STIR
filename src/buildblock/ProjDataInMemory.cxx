@@ -24,6 +24,7 @@
 */
 
 #include "stir/ProjDataInMemory.h"
+#include "stir/IndexRange2D.h"
 #include "stir/copy_fill.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
