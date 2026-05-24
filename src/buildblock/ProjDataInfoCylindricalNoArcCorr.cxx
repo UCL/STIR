@@ -93,10 +93,10 @@ ProjDataInfoCylindricalNoArcCorr::ProjDataInfoCylindricalNoArcCorr(const shared_
                                        tof_mash_factor)
 {}
 
-ProjDataInfo*
+ProjDataInfoCylindricalNoArcCorr*
 ProjDataInfoCylindricalNoArcCorr::clone() const
 {
-  return static_cast<ProjDataInfo*>(new ProjDataInfoCylindricalNoArcCorr(*this));
+  return new self_type(*this);
 }
 
 bool

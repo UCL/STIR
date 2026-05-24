@@ -392,12 +392,13 @@ ProjData::fill(const ProjData& proj_data)
 }
 
 ProjData::ProjData()
-    : ExamData()
+    : ExamData(),
+      DataWithProjDataInfo()
 {}
 
 ProjData::ProjData(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
     : ExamData(exam_info_sptr),
-      proj_data_info_sptr(proj_data_info_sptr)
+      DataWithProjDataInfo(proj_data_info_sptr)
 {}
 
 Succeeded

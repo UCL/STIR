@@ -21,6 +21,7 @@
 #include "stir/analytic/GRD2D/GRD2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindrical.h"
+#include "stir/IndexRange2D.h"
 
 // kept for future work, i.e. for the commented out SSRB and arc-correction
 //#include "stir/ProjDataInfoCylindricalArcCorr.h"

@@ -55,12 +55,7 @@ public:
   DataSymmetriesForDensels_PET_CartesianGrid(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
                                              const shared_ptr<const DiscretisedDensity<3, float>>& image_info_ptr);
 
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-  DataSymmetriesForDensels_PET_CartesianGrid*
-#else
-  DataSymmetriesForDensels*
-#endif
-  clone() const override;
+  DataSymmetriesForDensels_PET_CartesianGrid* clone() const override;
 
   bool operator==(const DataSymmetriesForDensels_PET_CartesianGrid&) const;
 

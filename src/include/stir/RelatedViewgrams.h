@@ -37,7 +37,7 @@ class ProjDataInfo;
   \ingroup projdata
 */
 template <typename elemT>
-class RelatedViewgrams
+class RelatedViewgrams : public DataWithProjDataInfo
 {
 #ifdef STIR_COMPILING_SWIG_WRAPPER
 public: // SWIG needs this typedef to be public
@@ -92,14 +92,9 @@ public:
   //! returns the number of viewgrams in this object
   inline int get_num_viewgrams() const;
   inline int get_num_axial_poss() const;
-  inline int get_num_tangential_poss() const;
   inline int get_min_axial_pos_num() const;
   inline int get_max_axial_pos_num() const;
-  inline int get_min_tangential_pos_num() const;
-  inline int get_max_tangential_pos_num() const;
 
-  //! Get shared pointer to proj data info
-  inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
   //! Get a pointer to the symmetries used in constructing this object
   inline const DataSymmetriesForViewSegmentNumbers* get_symmetries_ptr() const;
   //! Get a shared pointer to the symmetries used in constructing this object

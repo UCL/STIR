@@ -64,10 +64,10 @@ ProjDataInfoCylindricalArcCorr::set_tangential_sampling(const float new_tangenti
   bin_size = new_tangential_sampling;
 }
 
-ProjDataInfo*
+ProjDataInfoCylindricalArcCorr*
 ProjDataInfoCylindricalArcCorr::clone() const
 {
-  return static_cast<ProjDataInfo*>(new ProjDataInfoCylindricalArcCorr(*this));
+  return new self_type(*this);
 }
 
 bool

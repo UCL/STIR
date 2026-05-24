@@ -478,11 +478,7 @@ DataSymmetriesForBins_PET_CartesianGrid::initialise_deltas(const ProjDataInfoCyl
     }
 }
 
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
 DataSymmetriesForBins_PET_CartesianGrid*
-#else
-DataSymmetriesForViewSegmentNumbers*
-#endif
 DataSymmetriesForBins_PET_CartesianGrid::clone() const
 {
   return new DataSymmetriesForBins_PET_CartesianGrid(*this);

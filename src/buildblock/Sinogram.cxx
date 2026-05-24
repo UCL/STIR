@@ -16,6 +16,7 @@
   \ingroup projdata
   \brief Implementations for non-inline functions of class stir::Sinogram
 
+  \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
 
@@ -23,8 +24,10 @@
 */
 
 #include "stir/Sinogram.h"
+#include "stir/IndexRange2D.h"
 #include "stir/format.h"
 #include "stir/warning.h"
+#include "stir/error.h"
 
 #ifdef _MSC_VER
 // disable warning that not all functions have been implemented when instantiating
@@ -34,6 +37,59 @@
 using std::string;
 
 START_NAMESPACE_STIR
+
+template <typename elemT>
+Sinogram<elemT>
+Sinogram<elemT>::get_empty_copy(void) const
+{
+  Sinogram<elemT> copy(this->get_proj_data_info_sptr(), get_sinogram_indices());
+  return copy;
+}
+
+template <typename elemT>
+Sinogram<elemT>::Sinogram(const Array<2, elemT>& p, const shared_ptr<const ProjDataInfo>& pdi_sptr, const SinogramIndices& ind)
+    : Array<2, elemT>(p),
+      DataWithProjDataInfo(pdi_sptr),
+      _indices(ind)
+{
+  if (!pdi_sptr)
+    error("Sinogram constructed with empty proj_data_info");
+  if (ind.segment_num() > this->get_max_segment_num() || ind.segment_num() < this->get_min_segment_num()
+      || ind.axial_pos_num() > this->get_max_axial_pos_num(ind.segment_num())
+      || ind.axial_pos_num() < this->get_min_axial_pos_num(ind.segment_num())
+      || ind.timing_pos_num() > this->get_max_tof_pos_num() || ind.timing_pos_num() < this->get_min_tof_pos_num())
+    error("Sinogram constructed with out-of-range indices");
+  const bool ok = (p.get_min_index() == this->get_min_view_num() && p.get_max_index() == this->get_max_view_num()
+                   && (p.size() == 0
+                       || (p[p.get_min_index()].get_min_index() == this->get_min_tangential_pos_num()
+                           && p[p.get_min_index()].get_max_index() == this->get_max_tangential_pos_num())));
+  if (!ok)
+    error("Sinogram constructed with array with dimensions that are inconsistent with the proj_data_info");
+}
+
+template <typename elemT>
+Sinogram<elemT>::Sinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr, const SinogramIndices& ind)
+    : Sinogram(Array<2, elemT>(IndexRange2D(pdi_ptr->get_min_view_num(),
+                                            pdi_ptr->get_max_view_num(),
+                                            pdi_ptr->get_min_tangential_pos_num(),
+                                            pdi_ptr->get_max_tangential_pos_num())),
+               pdi_ptr,
+               ind)
+{}
+
+template <typename elemT>
+Sinogram<elemT>::Sinogram(const Array<2, elemT>& p,
+                          const shared_ptr<const ProjDataInfo>& pdi_sptr,
+                          const int ax_pos_num,
+                          const int s_num,
+                          const int t_num)
+    : Sinogram(p, pdi_sptr, SinogramIndices(ax_pos_num, s_num, t_num))
+{}
+
+template <typename elemT>
+Sinogram<elemT>::Sinogram(const shared_ptr<const ProjDataInfo>& pdi_sptr, const int ax_pos_num, const int s_num, const int t_num)
+    : Sinogram(pdi_sptr, SinogramIndices(ax_pos_num, s_num, t_num))
+{}
 
 template <typename elemT>
 bool
@@ -102,13 +158,13 @@ Sinogram<elemT>::resize(const IndexRange<2>& range)
 
   assert(range.get_min_index() == 0);
 
-  shared_ptr<ProjDataInfo> pdi_ptr(proj_data_info_ptr->clone());
+  shared_ptr<ProjDataInfo> pdi_ptr(this->proj_data_info_sptr->clone());
 
   pdi_ptr->set_num_views(range.get_max_index() + 1);
   pdi_ptr->set_min_tangential_pos_num(range[0].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[0].get_max_index());
 
-  proj_data_info_ptr = pdi_ptr;
+  this->proj_data_info_sptr = pdi_ptr;
 
   Array<2, elemT>::resize(range);
 }

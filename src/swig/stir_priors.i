@@ -79,8 +79,33 @@
   %shared_ptr(stir::CudaGibbsRelativeDifferencePenalty<elemT>);
 #endif
 
+// add down-casting
+// WARNING: Needs to be updated with all "leaf" classes.
+// TODO: Ideally we wouldn't have to add the template arguments, but the typemaps didn't match without them.
+// Also, SWIG complained when I put the "#ifdef STIR_WITH_CUDA" inside the %factor_shared, so we use a somewhat painful
+// work-around (note the interesting use of commas).
+%define all_penalties_no_cuda
+                stir::QuadraticPrior<elemT>,
+                stir::PLSPrior<elemT>,
+                stir::RelativeDifferencePrior<elemT>,
+                stir::LogcoshPrior<elemT>,
+                stir::GibbsQuadraticPenalty<elemT>,
+                stir::GibbsRelativeDifferencePenalty<elemT>
+%enddef
+#ifndef STIR_WITH_CUDA
+%define all_penalties_cuda
+%enddef
+#else
+%define all_penalties_cuda     ,
+              stir::CudaGibbsQuadraticPenalty<elemT>,
+             stir::CudaGibbsRelativeDifferencePenalty<elemT>
+%enddef
+#endif
+%factory_shared(%arg(stir::GeneralisedPrior<TargetT>&, stir::GeneralisedPrior<TargetT> const&, stir::GeneralisedPrior<TargetT>*, stir::GeneralisedPrior<TargetT> const*),
+               all_penalties_no_cuda all_penalties_cuda);
 
-
+// Add nicer representation in Python
+%formacro(ADD_REPR_PARAMETER_INFO, all_penalties_no_cuda all_penalties_cuda)
 
 #undef elemT
 #undef TargetT
@@ -180,8 +205,6 @@ stir::GibbsPenalty<elemT, stir::RelativeDifferencePotential<elemT>> >;
   stir::CudaGibbsPenalty<elemT, stir::QuadraticPotential<elemT>> >;
   %template (CudaGibbsQuadraticPenalty3DFloat) stir::CudaGibbsQuadraticPenalty<elemT>;
 #endif
-
-
 
 #undef elemT
 #undef TargetT

@@ -205,6 +205,9 @@ def test_FloatVoxelsOnCartesianGrid():
     maxind=Int3BasicCoordinate(9)
     indrange=IndexRange3D(minind,maxind)
     image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    # test if clone() and get_empty_copy() return correct type
+    assert isinstance(image.clone(), stir.FloatVoxelsOnCartesianGrid)
+    assert isinstance(image.get_empty_copy(), stir.FloatVoxelsOnCartesianGrid)
     org= image.get_origin()
     assert org==origin
     image.fill(2)
@@ -401,6 +404,10 @@ def test_ProjDataInfo():
     #             const int num_views, const int num_tangential_poss, 
     #
     projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    projdatainfo_clone = projdatainfo.clone()
+    # test if construct_proj_data_info and clone() returns correct type
+    assert isinstance(projdatainfo, stir.ProjDataInfoCylindricalArcCorr)
+    assert isinstance(projdatainfo_clone, stir.ProjDataInfoCylindricalArcCorr)
     #print( projdatainfo)
     assert projdatainfo.get_scanner().get_num_rings()==32
     # use arc-correction specific keywords

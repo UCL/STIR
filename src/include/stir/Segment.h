@@ -20,7 +20,7 @@
 #ifndef __Segment_H__
 #define __Segment_H__
 
-#include "stir/ProjDataInfo.h"
+#include "stir/DataWithProjDataInfo.h"
 #include "stir/SegmentIndices.h"
 #include "stir/SinogramIndices.h"
 #include "stir/ViewgramIndices.h"
@@ -47,7 +47,7 @@ class Viewgram;
  */
 
 template <typename elemT>
-class Segment
+class Segment : public DataWithProjDataInfo
 {
 #ifdef STIR_COMPILING_SWIG_WRAPPER
   // need to make typedef public for swig
@@ -62,28 +62,16 @@ public:
     StorageBySino
   };
 
-  virtual ~Segment()
-  {}
-  //! Get shared pointer to proj data info
-  inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
-
   virtual StorageOrder get_storage_order() const = 0;
   inline SegmentIndices get_segment_indices() const;
   //! Get the segment number
   inline int get_segment_num() const;
   //! Get the timing position index
   inline int get_timing_pos_num() const;
-  virtual int get_min_axial_pos_num() const = 0;
-  virtual int get_max_axial_pos_num() const = 0;
-  virtual int get_min_view_num() const = 0;
-  virtual int get_max_view_num() const = 0;
-  virtual int get_min_tangential_pos_num() const = 0;
-  virtual int get_max_tangential_pos_num() const = 0;
-  virtual int get_num_axial_poss() const = 0;
 
-  virtual int get_num_views() const = 0;
-  virtual int get_num_tangential_poss() const = 0;
-
+  int get_min_axial_pos_num() const;
+  int get_max_axial_pos_num() const;
+  int get_num_axial_poss() const;
   //! return a new sinogram, with data set as in the segment
   virtual Sinogram<elemT> get_sinogram(int axial_pos_num) const = 0;
   //! return a new viewgram, with data set as in the segment
@@ -126,7 +114,6 @@ public:
   //@}
 
 protected:
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   SegmentIndices _indices;
 
   inline Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v, const SegmentIndices&);

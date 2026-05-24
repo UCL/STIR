@@ -48,6 +48,12 @@
   </ul>
   <h4>Python</h4>
   <ul>
+    <li>
+      The Python interface has been improved, especially related to "downcasting" of return values of most hierarchies,
+      including <code>ProjDataInfo</code>, images, <code>ExamData</code>, priors/penalties, objective functions.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
   </ul>
 
   <h4>Utilities</h4>
@@ -87,8 +93,19 @@
 
   <h4>Changes to examples</h4>
   <ul>
+    <li>
+      Extra Python example <tt>coordinates_vs_bins.py</tt>.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
   </ul>
 
+  <h4>Changes to documentation</h4>
+  <ul>
+    <li>
+       more info on the coordinate conventions in the <tt>STIR-developers-overview</tt>.
+    </li>
+  </ul>
   <h3>Bug fixes</h3>
   <ul>
     <li>
@@ -96,7 +113,12 @@
       segments had problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.<br>
       <a href=https://github.com/UCL/STIR/pull/1675># 1675</a>. Extra tests were introduced in <a href=https://github.com/UCL/STIR/pull/1674># 1674</a>.
     </li>
-      <li>
+    <li>
+      <code>ArcCorrection</code> should now work correctly for TOF data (although we don't use it).
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
+    <li>
     Fixed a small memory leak in scatter estimation caused by multiple calls to <code>ProjDataInfo::clone()</code> combined with <code>dynamic_cast</code>. 
     The object is now cloned once and ownership is transferred safely after type checking.<br>
     <a href=https://github.com/UCL/STIR/pull/1673>PR #1673</a>
@@ -181,6 +203,12 @@
       etc
       <br>
       <a href=https://github.com/UCL/STIR/pull/1696>PR #1696</a>
+    </li>
+    <li>
+      <code>ProjDataInfo::clone()</code> now uses covariant return types, avoiding need for explicit downcasting.
+      Also added the <code>DataWithProjDataInfo</code> class, reducing duplicate C++ code.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
     </li>
   </ul>
 

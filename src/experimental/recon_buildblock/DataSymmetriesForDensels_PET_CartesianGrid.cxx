@@ -178,11 +178,7 @@ DataSymmetriesForDensels_PET_CartesianGrid::DataSymmetriesForDensels_PET_Cartesi
     }
 }
 
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
 DataSymmetriesForDensels_PET_CartesianGrid*
-#else
-DataSymmetriesForDensels*
-#endif
 DataSymmetriesForDensels_PET_CartesianGrid::clone() const
 {
   return new DataSymmetriesForDensels_PET_CartesianGrid(*this);
