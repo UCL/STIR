@@ -9,7 +9,6 @@ import numpy as np
 import sys
 import re
 import stir
-import stirextra
 import matplotlib.pyplot as plt
 
 #%%
@@ -262,7 +261,7 @@ prompts_from_e7 = stir.ProjData.read_from_file(prompts_header_to_read_withSTIR)
 ## the crystal depth of interaction (DOI) from 7mm to 10mm to minimize the differences.
 if apply_DOI_adaption: DOI_adaption(prompts_from_e7, 10)
 # Directly read as numpy array
-prompts_arr = stirextra.to_numpy(prompts_from_e7)
+prompts_arr = prompts_from_e7.as_array()
 # Write on the disk
 proj_info = prompts_from_e7.get_proj_data_info()
 
@@ -293,7 +292,7 @@ change_datatype_in_interfile_header(norm_sino_to_read_withSTIR, 'float', 4)
 norm_sino = stir.ProjData.read_from_file(norm_sino_to_read_withSTIR)
 
 if apply_DOI_adaption: DOI_adaption(norm_sino, 10)
-norm_sino_arr = stirextra.to_numpy(norm_sino)
+norm_sino_arr = norm_sino.as_array()
 
 ##### In case there were bad miniblocks during your measurement, the norm-file
 ##### might contain negative values. We'll set them to a very high value here, such
@@ -342,7 +341,7 @@ add_data_offset(randoms_header_to_read_withSTIR, randoms_header_to_read_withSTIR
 # #### read in again & plot to see if it worked
 randoms = stir.ProjData.read_from_file(randoms_header_to_read_withSTIR)
 if apply_DOI_adaption: DOI_adaption(randoms, 10)
-randoms_arr = stirextra.to_numpy(randoms)
+randoms_arr = randoms.as_array()
 
 #%%
 # Sanity check
@@ -376,7 +375,7 @@ stir.inverse_SSRB(scatter_3D_normalized, scatter_2D_normalized)
 #%%
 # plot to see if it worked
 scatter_3D_normalized = stir.ProjData.read_from_file(os.path.join(STIR_output_folder,scatter_3D_norm_filename))
-scatter_3D_norm_arr = stirextra.to_numpy(scatter_3D_normalized)
+scatter_3D_norm_arr = scatter_3D_normalized.as_array()
 #%%
 # Sanity check, however the e7 tools only output the 2D scatter, the 3D scatter here is not exactly the same as their
 print(np.sum(scatter_3D_norm_arr))
@@ -411,7 +410,7 @@ if apply_DOI_adaption: DOI_adaption(acf_sino_nonTOF, 10)
 
 #%%
 #### expand to TOF as normalization data is TOF
-ai_arr = stirextra.to_numpy(acf_sino_nonTOF)
+ai_arr = acf_sino_nonTOF.as_array()
 acf_arr = np.repeat(ai_arr, 33, axis=0)
 
 #%%

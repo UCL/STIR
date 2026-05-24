@@ -12,7 +12,7 @@
 #    See STIR/LICENSE.txt for details
 
 from stir import *
-from stirextra import *
+import stir.extra
 import os
 # for Python2 and itertools.zip->zip (as in Python 3) 
 try:
@@ -36,7 +36,7 @@ def test_FloatVoxelsOnCartesianGrid(tmpdir):
     image2=FloatVoxelsOnCartesianGrid.read_from_file('stir_python_test.hv')
     assert image.get_voxel_size()==image2.get_voxel_size()
     assert image.shape()==image2.shape()
-    assert get_physical_coordinates_for_bounding_box(image) == get_physical_coordinates_for_bounding_box(image2)
+    assert stir.extra.get_physical_coordinates_for_bounding_box(image) == stir.extra.get_physical_coordinates_for_bounding_box(image2)
     for i1,i2 in zip(image.flat(), image2.flat()):
         assert abs(i1-i2)<.01
 

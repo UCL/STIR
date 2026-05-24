@@ -60,7 +60,6 @@ import os, re, argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import stir
-import stirextra
 
 
 def process_files(prompts_header_filename,
@@ -184,7 +183,7 @@ def process_files(prompts_header_filename,
     #### now let's read it from file and plot to see if it worked
     mu_map = stir.FloatVoxelsOnCartesianGrid.read_from_file(mu_map_header[:-3]+'hv')
     mu_map.write_to_file(os.path.join(STIR_output_folder, file_prefix + 'mu_map.hv'))
-    mu_map_arr = stirextra.to_numpy(mu_map)
+    mu_map_arr = mu_map.as_array()
 
     plt.figure()
     plot_2d_image([1,2,1],mu_map_arr[mu_map_arr.shape[0]//2,:,:],'mu-map', cmap='Greys_r')
@@ -217,7 +216,7 @@ def process_files(prompts_header_filename,
     ## after comparing e7tools and STIR forward projections, we've found out we have to change
     ## the crystal depth of interaction (DOI) from 7mm to 10mm to minimize the differences.
     if apply_DOI_adaption: DOI_adaption(norm_sino, 10)
-    norm_sino_arr = stirextra.to_numpy(norm_sino)
+    norm_sino_arr = norm_sino.as_array()
 
     ##### in case there were bad miniblocks during your measurement, the norm-file
     ##### might contain negative values. We'll set them to a very high value here, such
@@ -274,7 +273,7 @@ def process_files(prompts_header_filename,
     randoms = stir.ProjData.read_from_file(randoms_header_to_read_withSTIR)
     if apply_DOI_adaption: DOI_adaption(randoms, 10)
     randoms.write_to_file(os.path.join(STIR_output_folder,randoms_adapted_DOI_filename))
-    randoms_arr = stirextra.to_numpy(randoms)
+    randoms_arr = randoms.as_array()
 
     for i in range(33):
         plt.figure()
@@ -303,7 +302,7 @@ def process_files(prompts_header_filename,
 
     #%%
     # plot to see if it worked
-    scatter_3D_norm_arr = stirextra.to_numpy(scatter_3D_normalized)
+    scatter_3D_norm_arr = scatter_3D_normalized.as_array()
     for i in range(33):
         plt.figure()
         plot_2d_image([1,1,1],scatter_3D_norm_arr[i, central_slice,:,:],'scatter, normalized, TOF bin {}'.format(i))
@@ -318,7 +317,7 @@ def process_files(prompts_header_filename,
 
     scatter_3D_unnormalized.write_to_file(os.path.join(STIR_output_folder,scatter_3D_unnorm_filename))
     #%%
-    scatter_3D_unnormalized_arr = stirextra.to_numpy(scatter_3D_unnormalized)
+    scatter_3D_unnormalized_arr = scatter_3D_unnormalized.as_array()
     for i in range(33):
         plt.figure()
         plot_2d_image([1,1,1],scatter_3D_unnormalized_arr[i, central_slice,:,:],'scatter, unnormalized, TOF bin {}'.format(i))
@@ -359,7 +358,7 @@ def process_files(prompts_header_filename,
     #%%
     #### expand to TOF as normalization data is TOF
     acf_sino = stir.ProjDataInMemory(prompts_from_e7)
-    ai_arr = stirextra.to_numpy(acf_sino_nonTOF)
+    ai_arr = acf_sino_nonTOF.as_array()
     expanded_arr = np.repeat(ai_arr, 33, axis=0)
     acf_sino.fill(expanded_arr.flat)
 
@@ -380,7 +379,7 @@ def process_files(prompts_header_filename,
 
     #%%
     # let's see what it looks like
-    additive_term_arr = stirextra.to_numpy(add_sino)
+    additive_term_arr = add_sino.as_array()
 
     for i in range(33):
         plt.figure()
@@ -422,8 +421,8 @@ def process_files(prompts_header_filename,
     #%%
     #### PLOT ADDITIVE TERM
     #### draw line-profiles to check if all's correct
-    prompts_precorr_arr = stirextra.to_numpy(prompts_precorr_f_multi_fact)
-    additive_term_arr = stirextra.to_numpy(add_sino)
+    prompts_precorr_arr = prompts_precorr_f_multi_fact.as_array()
+    additive_term_arr = add_sino.as_array()
 
     _, ax = plt.subplots(figsize = (8,6))
 
@@ -445,7 +444,7 @@ def process_files(prompts_header_filename,
     # %%
     #### PLOT BACKGROUND TERM
     #### draw line-profiles to check if all's correct
-    prompts_arr = stirextra.to_numpy(prompts_from_e7)
+    prompts_arr = prompts_from_e7.as_array()
     BG_arr = scatter_3D_unnormalized_arr + randoms_arr
 
     #%%

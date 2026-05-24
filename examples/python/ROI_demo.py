@@ -19,7 +19,6 @@
 
 #%% Initial imports
 import stir
-import stirextra
 import os
 import numpy as np
 import time
@@ -35,7 +34,7 @@ image = stir.FloatVoxelsOnCartesianGrid.read_from_file(image_filename)
 
 print("Populating image with random values...")
 # Make a copy in numpy, populate random voxel value and back-fill STIR FloatVoxelsOnCartesianGrid object
-image_numpy = stirextra.to_numpy(image)
+image_numpy = image.as_array()
 image_numpy = np.random.random(image_numpy.shape)
 image.fill(image_numpy.flat)
 

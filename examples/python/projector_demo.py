@@ -13,7 +13,6 @@
 
 #%% Initial imports
 import stir
-import stirextra
 import matplotlib.pyplot as pylab
 import os
 #%% go to directory with input files
@@ -47,7 +46,7 @@ forwardprojector.set_up(projdataout.get_proj_data_info(), target)
 forwardprojector.forward_project(projdataout, target)
 #%% display
 seg = projdataout.get_segment_by_sinogram(0)
-seg_array = stirextra.to_numpy(seg)
+seg_array = seg.as_array()
 pylab.figure()
 pylab.subplot(1, 2, 1)
 pylab.imshow(seg_array[10, :, :])
@@ -62,7 +61,7 @@ backprojector.set_up(projdataout.get_proj_data_info(), target)
 backprojector.back_project(target, projdataout)
 #%% display
 # This shows a beautiful pattern, a well-known feature of a ray-tracing matrix
-target_array = stirextra.to_numpy(target)
+target_array = target.as_array()
 pylab.figure()
 pylab.subplot(1, 2, 1)
 pylab.imshow(target_array[10, :, :])
@@ -79,7 +78,7 @@ projmatrix.set_up(projdata.get_proj_data_info(), target)
 #%% Run another backprojection and display
 target.fill(0)
 backprojector.back_project(target, projdataout)
-new_target_array = stirextra.to_numpy(target)
+new_target_array = target.as_array()
 pylab.figure()
 pylab.subplot(1, 2, 1)
 pylab.imshow(new_target_array[10, :, :])

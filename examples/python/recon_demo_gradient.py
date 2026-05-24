@@ -1,6 +1,5 @@
 # %%
 import stir
-import stirextra
 import matplotlib.pyplot as plt
 import os
 
@@ -43,14 +42,14 @@ subset_num=1;
 poissonobj.compute_sub_gradient(gradient,target,subset_num)
 
 # extract to python for plotting
-npimage = stirextra.to_numpy(gradient)
+npimage = gradient.as_array()
 plt.plot(npimage[10, 30, :])
 plt.show()
 
 # this is useful to find the EM update (i.e. multiply with image)
 poissonobj.compute_sub_gradient_without_penalty_plus_sensitivity(gradient,target,subset_num)
 # extract to python for plotting
-npimage = stirextra.to_numpy(gradient)
+npimage = gradient.as_array()
 plt.plot(npimage[10, 30, :])
 plt.show()
 
@@ -58,7 +57,7 @@ plt.show()
 # loop to run all the iterations and subsets
 EMupdate = target*gradient
 # extract to python for plotting
-npimage = stirextra.to_numpy(EMupdate)
+npimage = EMupdate.as_array()
 plt.plot(npimage[10, 30, :])
 plt.show()
 

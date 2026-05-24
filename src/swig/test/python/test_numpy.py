@@ -12,7 +12,6 @@
 #    See STIR/LICENSE.txt for details
 
 from stir import *
-import stirextra
 # for Python2 and itertools.zip->zip (as in Python 3) 
 try:
     import itertools.izip as zip
@@ -25,7 +24,7 @@ def test_Array2D():
     a.fill(2);
     ind=Int2BasicCoordinate((4,5));
     a[ind]=4
-    np=stirextra.to_numpy(a);
+    np=a.as_array();
     assert np[(0,0)]==2
     npind=(ind[1]-minind[1], ind[2]-minind[2])
     assert np[npind]==a[ind]
@@ -37,7 +36,7 @@ def test_Array2Diterator():
     a=FloatArray2D(IndexRange2D(Int2BasicCoordinate((1,3)), Int2BasicCoordinate((3,9))))
     for i1,i2 in zip(a.flat(), range(a.size_all())):
         i1=i2;
-    np=stirextra.to_numpy(a);
+    np=a.as_array();
     for i1,i2 in zip(a.flat(), np.flat):
         assert abs(i1-i2)<.01
 
@@ -47,7 +46,7 @@ def test_Array3D():
     a.fill(2);
     ind=Int3BasicCoordinate((4,5,6));
     a[ind]=4
-    np=stirextra.to_numpy(a);
+    np=a.as_array();
     assert np[(0,0,1)]==2
     npind=(ind[1]-minind[1], ind[2]-minind[2], ind[3]-minind[3])
     assert np[npind]==a[ind]
@@ -60,7 +59,7 @@ def test_Array3Diterator():
     a=FloatArray3D(IndexRange3D(Int3BasicCoordinate((1,3,-1)), Int3BasicCoordinate((3,9,5))))
     for i1,i2 in zip(a.flat(), range(a.size_all())):
         i1=i2;
-    np=stirextra.to_numpy(a);
+    np=a.as_array();
     for i1,i2 in zip(a.flat(), np.flat):
         assert abs(i1-i2)<.01
 
@@ -73,9 +72,9 @@ def test_ProjData():
     projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     #print projdatainfo
     projdata=ProjDataInMemory(ExamInfo(), projdatainfo)
-    np=stirextra.to_numpy(projdata)
+    np=projdata.as_array()
     np+=2
     projdata.fill(np.flat)
-    seg0=stirextra.to_numpy(projdata.get_segment_by_sinogram(0))
+    seg0=projdata.get_segment_by_sinogram(0).as_array()
     assert(seg0.max() == 2)
 

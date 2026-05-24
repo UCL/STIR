@@ -11,16 +11,16 @@
 import numpy
 import pylab
 import stir
-import stirextra
+import stir.extra
 from mayavi import mlab
 
 # read in an image using STIR
 image=stir.FloatVoxelsOnCartesianGrid.read_from_file('../../recon_test_pack/test_image_3.hv')
 
 # convert data to numpy 3d array
-npimage=stirextra.to_numpy(image);
+npimage=image.as_array();
 # get grid coordinates in mm
-[z,y,x]=stirextra.get_physical_coordinates_for_grid(image);
+[z,y,x]=stir.extra.get_physical_coordinates_for_grid(image);
 
 # create a mayavi figure
 mlab.figure();

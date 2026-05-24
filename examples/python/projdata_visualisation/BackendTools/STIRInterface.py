@@ -13,7 +13,6 @@ from enum import Enum, auto
 import numpy
 
 import stir
-import stirextra
 
 
 class ProjDataDims(Enum):
@@ -94,7 +93,7 @@ class ProjDataVisualisationBackend:
     @staticmethod
     def as_numpy(data: stir.ProjData) -> numpy.array:
         """Converts a STIR data object to a numpy array."""
-        return stirextra.to_numpy(data)
+        return data.as_array()
 
     def get_limits(self, dimension: ProjDataDims, segment_number: int) -> tuple:
         """

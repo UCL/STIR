@@ -27,7 +27,6 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import stir
-import stirextra
 
 PROJDATA_DIM_MAP = {
     0: "TOF",
@@ -52,7 +51,7 @@ def get_projdata_from_file_as_numpy(filename: str) -> np.ndarray | None:
         return None
 
     try:
-        return stirextra.to_numpy(projdata)
+        return projdata.as_array()
     except Exception as e:
         print(f"Error converting to numpy: {e}")
         return None
@@ -73,7 +72,7 @@ def get_projection_data_as_array(f: str | stir.ProjData) -> np.ndarray | None:
 
     elif isinstance(f, stir.ProjData):
         try:
-            return stirextra.to_numpy(f)
+            return f.as_array()
         except AttributeError as e:
             print(f"AttributeError converting to projdata to numpy.\nError message{e}")
             return None
