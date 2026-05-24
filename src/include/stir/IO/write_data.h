@@ -48,9 +48,9 @@ class NumericInfo;
   is then not templated in \c num_dimensions, but explicitly
   defined for a few dimensions (see the source).
 */
-template <int num_dimensions, class OStreamT, class elemT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT>
 inline Succeeded write_data(OStreamT& s,
-                            const ArrayType<num_dimensions, elemT>& data,
+                            const ArrayType<num_dimensions, elemT, indexT>& data,
                             const ByteOrder byte_order = ByteOrder::native,
                             const bool can_corrupt_data = false);
 /*! \ingroup Array_IO
@@ -69,9 +69,9 @@ inline Succeeded write_data(OStreamT& s,
   is then not templated in \c num_dimensions, but explicitly
   defined for a few dimensions (see the source).
 */
-template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT, class OutputType, class ScaleT>
 inline Succeeded write_data(OStreamT& s,
-                            const ArrayType<num_dimensions, elemT>& data,
+                            const ArrayType<num_dimensions, elemT, indexT>& data,
                             NumericInfo<OutputType> output_type,
                             ScaleT& scale_factor,
                             const ByteOrder byte_order = ByteOrder::native,
@@ -94,9 +94,9 @@ inline Succeeded write_data(OStreamT& s,
   is then not templated in \c num_dimensions, but explicitly
   defined for a few dimensions (see the source).
 */
-template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT, class OutputType, class ScaleT>
 inline Succeeded write_data_with_fixed_scale_factor(OStreamT& s,
-                                                    const ArrayType<num_dimensions, elemT>& data,
+                                                    const ArrayType<num_dimensions, elemT, indexT>& data,
                                                     NumericInfo<OutputType> output_type,
                                                     const ScaleT scale_factor,
                                                     const ByteOrder byte_order = ByteOrder::native,
@@ -118,9 +118,9 @@ inline Succeeded write_data_with_fixed_scale_factor(OStreamT& s,
   defined for a few dimensions (see the source).
 */
 
-template <int num_dimensions, class OStreamT, class elemT, class ScaleT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT, class ScaleT>
 inline Succeeded write_data(OStreamT& s,
-                            const ArrayType<num_dimensions, elemT>& data,
+                            const ArrayType<num_dimensions, elemT, indexT>& data,
                             NumericType type,
                             ScaleT& scale,
                             const ByteOrder byte_order = ByteOrder::native,

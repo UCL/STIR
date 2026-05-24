@@ -25,12 +25,9 @@
 #ifndef __FFT_H__
 #define __FFT_H__
 
-#include "stir/common.h"
+#include "stir/ArrayFwd.h"
 
 START_NAMESPACE_STIR
-
-template <int num_dimensions, typename elemT>
-class Array;
 
 //! 1-dimensional FFT
 /*!

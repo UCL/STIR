@@ -63,7 +63,7 @@ public:
   */
   ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
                    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
-                   Array<1, float>&& buffer);
+                   Array<1, float, long long>&& buffer);
 
   //! constructor that copies data from another ProjData
   ProjDataInMemory(const ProjData& proj_data);
@@ -211,10 +211,10 @@ public:
    *  iterator typedefs
    */
   ///@{
-  typedef Array<1, float>::iterator iterator;
-  typedef Array<1, float>::const_iterator const_iterator;
-  typedef Array<1, float>::full_iterator full_iterator;
-  typedef Array<1, float>::const_full_iterator const_full_iterator;
+  typedef Array<1, float, long long>::iterator iterator;
+  typedef Array<1, float, long long>::const_iterator const_iterator;
+  typedef Array<1, float, long long>::full_iterator full_iterator;
+  typedef Array<1, float, long long>::const_full_iterator const_full_iterator;
   ///@}
 
   //! start value for iterating through all elements in the array, see iterator
@@ -286,7 +286,7 @@ public:
   //@}
 
 private:
-  Array<1, float> buffer;
+  Array<1, float, long long> buffer;
 
   //! allocates buffer for storing the data. Has to be called by constructors
   void create_buffer(const bool initialise_with_0 = false);

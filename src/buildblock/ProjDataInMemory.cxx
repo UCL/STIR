@@ -57,7 +57,7 @@ ProjDataInMemory::ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_s
 
 ProjDataInMemory::ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
                                    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
-                                   Array<1, float>&& buffer_v)
+                                   Array<1, float, long long>&& buffer_v)
     : ProjData(exam_info_sptr, proj_data_info_ptr),
       buffer(std::move(buffer_v)),
       segment_sequence(ProjData::standard_segment_sequence(*proj_data_info_ptr))
@@ -102,7 +102,7 @@ namespace detail
 {
 template <int num_dimensions>
 void
-copy_data_from_buffer(const Array<1, float>& buffer, Array<num_dimensions, float>& array, std::streamoff offset)
+copy_data_from_buffer(const Array<1, float, long long>& buffer, Array<num_dimensions, float>& array, std::streamoff offset)
 {
 #ifdef STIR_OPENMP
 #  pragma omp critical(PROJDATAINMEMORYCOPY)
@@ -116,7 +116,7 @@ copy_data_from_buffer(const Array<1, float>& buffer, Array<num_dimensions, float
 
 template <int num_dimensions>
 void
-copy_data_to_buffer(Array<1, float>& buffer, const Array<num_dimensions, float>& array, std::streamoff offset)
+copy_data_to_buffer(Array<1, float, long long>& buffer, const Array<num_dimensions, float>& array, std::streamoff offset)
 {
 #ifdef STIR_OPENMP
 #  pragma omp critical(PROJDATAINMEMORYCOPY)
