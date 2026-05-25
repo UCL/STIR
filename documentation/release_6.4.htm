@@ -54,6 +54,29 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
     </li>
+    <li>
+      STIR is now installed as a Python module, but this should be backwards compatible (aside from the renames of some examples).
+      The <code>stirextra</code> module is now a submodule, so use <code>stir.extra</code> instead
+      (although the former will work, but with a warning).
+
+      Some of the more useful examples are now installed as part of the module, making the following possible
+      <pre>
+python -m stir.projdata_visualisation -h
+      </pre>
+      and in Python
+      <pre>
+import stir
+from stir.projdata_visualisation import launch_GUI
+launch_GUI('proj_data_filename')
+      </pre>
+      <br>
+      See <a href=https://github.com/UCL/STIR/pull/1713>PR #1713</a> for more details.
+    </li>
+    <li>
+      Extra Python example <tt>coordinates_vs_bins.py</tt>.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
   </ul>
 
   <h4>Utilities</h4>
@@ -96,17 +119,16 @@
 
   <h4>Changes to examples</h4>
   <ul>
-    <li>
-      Extra Python example <tt>coordinates_vs_bins.py</tt>.
-      <br>
-      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
-    </li>
+
   </ul>
 
   <h4>Changes to documentation</h4>
   <ul>
     <li>
        more info on the coordinate conventions in the <tt>STIR-developers-overview</tt>.
+    </li>
+    <li>
+      Brief section on Python in the <tt>STIR-UsersGuide</tt>.
     </li>
   </ul>
   <h3>Bug fixes</h3>

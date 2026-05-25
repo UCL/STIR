@@ -9,7 +9,7 @@
 #
 # See STIR/LICENSE.txt for details
 
-from BackendTools.STIRInterface import ProjDataDims, ProjDataVisualisationBackend
+from .STIRInterface import ProjDataDims, ProjDataVisualisationBackend
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QGridLayout, QLabel, QSpinBox, QDoubleSpinBox, QSlider
 import sys

@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2022, 2024, 2025 University College London
+# Copyright 2022, 2024, 2025, 2026 University College London
 
 # Author Robert Twyman
 # Author Kris Thielemans
@@ -13,7 +12,16 @@
 # See STIR/LICENSE.txt for details
 
 """
-Usage: python ProjDataVisualisation.py [filename]
+Qt5 based visualisation of projection data.
+
+You probably want to either
+
+    python -m stir.projdata_visualisation -h
+
+or from within python
+
+    from stir.projdata_visualisation import launch_GUI
+    launch_GUI('filename.hs')
 """
 import sys
 
@@ -24,8 +32,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
-from BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjDataDims
-from BackendTools.UIGroupboxProjdataDimensions import UIGroupboxProjDataDimensions
+from .BackendTools.STIRInterface import ProjDataVisualisationBackend, ProjDataDims
+from .BackendTools.UIGroupboxProjdataDimensions import UIGroupboxProjDataDimensions
 
 import stir
 
@@ -267,7 +275,7 @@ class ProjDataVisualisationWidgetGallery(QDialog):
         self.projdata_filename_box.setText("ProjData set externally.")
 
 
-def OpenProjDataVisualisation(projdata=None):
+def launch_GUI(projdata=None):
     """
     Function to open the ProjDataVisualisation GUI window. Will not exit python on window close.
     projdata: Proj data to be visualised. Can be either a stir.ProjData object, a file path (str) or None. If None, an empty GUI will be opened.
@@ -289,14 +297,3 @@ def OpenProjDataVisualisation(projdata=None):
     gallery.show()
     app.exec_()
     print("ProjDataVisualisationWidgetGallery closed!")
-
-def main():
-    app = QApplication([])
-    gallery = ProjDataVisualisationWidgetGallery()
-    if len(sys.argv) > 1:
-        gallery.load_projdata(sys.argv[1])
-    gallery.show()
-    sys.exit(app.exec())
-
-if __name__ == '__main__':
-    main()

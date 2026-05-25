@@ -15,7 +15,6 @@
 # See STIR/LICENSE.txt for details
 
 import stir
-import stirextra
 import matplotlib.pyplot as plt
 import os
 
@@ -49,7 +48,7 @@ lm_to_projdata.process_data()
 # as there are very few counts in this example data).
 generated_projdata = stir.ProjData.read_from_file("output_projdata_f1g1d0b0.hs")
 first_segment = generated_projdata.get_segment_by_sinogram(0)
-projdata_np = stirextra.to_numpy(first_segment)
+projdata_np = first_segment.as_array()
 plt.figure()
 plt.imshow(projdata_np[projdata_np.shape[0] // 2, :, :])  # plot the middle slice
 plt.title("sinogram 10 (starting from 0)")

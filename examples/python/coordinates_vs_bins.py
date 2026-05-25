@@ -22,7 +22,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import stir
-import stirextra
+import stir.extra
 import os
 
 # %% read in example data
@@ -140,7 +140,7 @@ target.resize(
 )
 
 first_voxel_coords, last_voxel_coords = (
-    stirextra.get_physical_coordinates_for_bounding_box(target)
+    stir.extra.get_physical_coordinates_for_bounding_box(target)
 )
 # %% initialise the projection matrix and projectors
 # Using ray-tracing here (could use Parallelproj instead)

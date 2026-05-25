@@ -20,9 +20,9 @@ except ImportError:
     except ImportError:
         raise ImportError('Tests require pytest or py<1.4')
 
-from stir import *
+from stir import * # noqa: F401
 import stir
-import stirextra
+import stir.extra
 import math
 
 def test_Vector():
@@ -309,7 +309,7 @@ def test_zoom_image():
     image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
     image.fill(1)
     # find coordinate of middle of image for later use (independent of image sizes etc)
-    [min_in_mm, max_in_mm]=stirextra.get_physical_coordinates_for_bounding_box(image)
+    [min_in_mm, max_in_mm]=stir.extra.get_physical_coordinates_for_bounding_box(image)
     try:
         middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2.)
     except:

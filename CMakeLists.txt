@@ -285,6 +285,10 @@ ADD_SUBDIRECTORY(external_helpers) # git submodules that STIR requires
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(scripts)
 
+if(BUILD_SWIG_PYTHON)
+   ADD_SUBDIRECTORY(examples/python)
+endif()
+
 #### export configuration for external projects that want to use STIR
 # See https://cmake.org/cmake/help/v3.0/manual/cmake-packages.7.html
 # Also https://rix0r.nl/blog/2015/08/13/cmake-guide/
@@ -365,6 +369,7 @@ install(
 
 # install examples
 # note that location needs to be consistent with get_STIR_examples_dir()
+# Note: Same files in examples/python will also be installed in PYTHON_DEST
 install(
   DIRECTORY
     examples
