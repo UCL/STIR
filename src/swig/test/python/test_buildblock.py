@@ -20,7 +20,7 @@ except ImportError:
     except ImportError:
         raise ImportError('Tests require pytest or py<1.4')
 
-from stir import *
+from stir import * # noqa: F401
 import stir
 import stir.extra
 import math

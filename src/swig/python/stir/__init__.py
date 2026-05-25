@@ -6,4 +6,4 @@ software. This is its python interface (generated with SWIG).
 
 See https:://stir.sf.net
 """
-from .swigstir import *
+from .swigstir import * # noqa: F401

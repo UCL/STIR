@@ -1,3 +1,3 @@
 import warnings
-warnings.warn(r'WARNING: "import stirextra" is deprecated and will stop working. Use "import stir.extra"')
-from stir.extra import *
+warnings.warn('Please replace `stirextra` with `stir.extra`', DeprecationWarning, stacklevel=2)
+from stir.extra import * # noqa: F401

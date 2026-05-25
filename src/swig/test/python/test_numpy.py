@@ -11,7 +11,7 @@
 #
 #    See STIR/LICENSE.txt for details
 
-from stir import *
+from stir import * # noqa: F401
 # for Python2 and itertools.zip->zip (as in Python 3) 
 try:
     import itertools.izip as zip
