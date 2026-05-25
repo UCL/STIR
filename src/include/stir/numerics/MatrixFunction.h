@@ -43,7 +43,7 @@ template <class elemT>
 inline elemT inner_product(const Array<1, elemT>& v1, const Array<1, elemT>& v2);
 
 //! angle between 2 1D arrays
-/*! \ingroup numbers
+/*! \ingroup numerics
  */
 template <class elemT>
 inline double angle(const Array<1, elemT>& v1, const Array<1, elemT>& v2);

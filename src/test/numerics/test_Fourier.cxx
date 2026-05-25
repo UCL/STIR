@@ -3,7 +3,7 @@
 
 /*!
   \file
-  \ingroup tests
+  \ingroup numerics_test
   \ingroup DFT
   \brief Tests for function in the DFT group
 

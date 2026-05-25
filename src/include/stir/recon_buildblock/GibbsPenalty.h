@@ -50,7 +50,7 @@ START_NAMESPACE_STIR
   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
 
   The \f$\phi\f$ function is the potential function, which is provided via the template
-  parameter PotentialFun. The potential function needs to be symmetric (\phi(x,y) = \phi(y,x)).
+  parameter PotentialFun. The potential function needs to be symmetric (\f$\phi(x,y) = \phi(y,x)\f$).
   Currently the potential function is implemented in the header of the derived classes
   (check GibbsQuadraticPrior.h or GibbsRelativeDifferencePrior.h to see examples).
   \par Potential Function Requirements

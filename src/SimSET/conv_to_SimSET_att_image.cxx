@@ -11,7 +11,7 @@
 */
 /*!
   \file
-  \ingroup SimSET
+  \ingroup simset
   \brief Convert a transmission image into SimSET attenuation file input.
 
   \author Charalampos Tsoumpas

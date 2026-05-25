@@ -10,7 +10,7 @@
 
 /*!
   \file
-  \ingroup recontest
+  \ingroup recon_test
 
   \brief Test program for back projection
 

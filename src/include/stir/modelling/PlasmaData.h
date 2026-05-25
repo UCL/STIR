@@ -77,11 +77,13 @@ public:
     This can be measured by the plasma peak and the very first frames of the dynamic images.
     \note This cannot be estimated in the current implementation of the direct reconstructions. Thus, it is given externally. */
 
-  //! \name Functions to get parameters @{
+  //! \name Functions to get parameters
+  //!@{
   inline double get_time_shift();
   inline bool get_is_decay_corrected() const;
   inline double get_isotope_halflife() const;
-  inline TimeFrameDefinitions get_time_frame_definitions() const; //!@}
+  inline TimeFrameDefinitions get_time_frame_definitions() const;
+  //!@}
   //! \name Functions to set parameters
   //!@{
   inline void set_time_frame_definitions(
@@ -97,7 +99,7 @@ public:
   inline void decay_correct_PlasmaData();
 
   //!  begin() and end() iterators for the plasma curve and the size() function
-  //@{
+  //!@{
   inline const_iterator begin() const;
   inline const_iterator end() const;
   inline unsigned int size() const;

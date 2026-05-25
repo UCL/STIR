@@ -92,7 +92,7 @@ protected:
   /*!
     Tests the convexity condition:
     \f[ x^T \cdot H_{\lambda}x >= 0 \f]
-    for all non-negative \c x and non-zero \c \lambda (Relative Difference Prior conditions).
+    for all non-negative \f$x\f$ and non-zero \f$\lambda\f$ (Relative Difference Prior conditions).
     This function constructs an array of configurations to test this condition and calls
     \c test_Hessian_convexity_configuration().
   */
@@ -244,9 +244,9 @@ GeneralisedPriorTests::test_Hessian_convexity_configuration(
   /// Compute H x
   objective_function.accumulate_Hessian_times_input(*output, *current_image, *input);
 
-  /// Compute x \cdot (H x)
+  // Compute x . (H x)
   const double my_sum = std::inner_product(input->begin_all(), input->end_all(), output->begin_all(), double(0));
-  /// Compute x \cdot x
+  // Compute x . x
   const double my_norm2 = std::inner_product(input->begin_all(), input->end_all(), input->begin_all(), double(0));
 
   // test for a CONVEX function: 0 < my_sum, but we allow for some numerical error
@@ -402,7 +402,7 @@ GeneralisedPriorTests::construct_input_data(shared_ptr<target_type>& density_spt
 
 /*!
  \brief tests for QuadraticPrior
- \ingroup recontest
+ \ingroup recon_test
  \ingroup priors
 */
 class QuadraticPriorTests : public GeneralisedPriorTests
@@ -431,7 +431,7 @@ QuadraticPriorTests::run_tests()
 
 /*!
  \brief tests for RelativeDifferencePrior
- \ingroup recontest
+ \ingroup recon_test
  \ingroup priors
 */
 template <class RDP>
@@ -537,7 +537,7 @@ RelativeDifferencePriorTests<RDP>::run_tests()
 #ifdef STIR_WITH_CUDA
 /*!
  \brief tests for CudaRelativeDifferencePrior
- \ingroup recontest
+ \ingroup recon_test
  \ingroup priors
  \ingroup CUDA
 
@@ -589,7 +589,7 @@ CudaRelativeDifferencePriorTests::run_specific_tests(const std::string& test_nam
 
 /*!
  \brief tests for PLSPrior
- \ingroup recontest
+ \ingroup recon_test
  \ingroup priors
 */
 class PLSPriorTests : public GeneralisedPriorTests
@@ -620,7 +620,7 @@ PLSPriorTests::run_tests()
 
 /*!
  \brief tests for LogCoshPrior
- \ingroup recontest
+ \ingroup recon_test
  \ingroup priors
 */
 class LogCoshPriorTests : public GeneralisedPriorTests

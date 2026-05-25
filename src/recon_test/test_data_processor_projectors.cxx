@@ -6,7 +6,7 @@
 */
 /*!
   \file
-  \ingroup stir::projector_test
+  \ingroup recon_test
   \brief Test program for forward and backwards projectors with pre- and post- data processors (smoothing in this case).
   \author Richard Brown
 */

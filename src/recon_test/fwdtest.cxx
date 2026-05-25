@@ -11,7 +11,7 @@
 /*!
 
   \file
-  \ingroup recontest
+  \ingroup recon_test
   \brief Testing program for forward projection
 
   \author Kris Thielemans

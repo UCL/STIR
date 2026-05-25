@@ -2,7 +2,7 @@
 //
 /*!
   \file
-  \ingroup analytic
+  \ingroup GRD2D
   \brief Main program for GRD2D reconstruction
   \author Dimitra Kyriakopoulou
 */

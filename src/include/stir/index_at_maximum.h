@@ -10,7 +10,7 @@
 */
 /*!
   \file
-  \ingroup array
+  \ingroup Array
 
   \brief Declaration of stir:index_at_maximum() and stir::indices_at_maximum()
 
@@ -26,7 +26,7 @@
 
 START_NAMESPACE_STIR
 
-/*! \ingroup array
+/*! \ingroup Array
   \brief Finds the index where the maximum occurs in a (1-dimensional) vector.
 
  If the maximum occurs more than once, the smallest index is returned.
@@ -58,7 +58,7 @@ index_at_maximum(const VectorWithOffset<elemT>& v)
   return index_at_max;
 }
 
-/*! \ingroup array
+/*! \ingroup Array
   \brief Finds the first (3-dimensional) index where the maximum occurs
   in a (3-dimensional) array.
 

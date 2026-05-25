@@ -10,7 +10,7 @@
 */
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2D
   \brief Implementation of class stir::SRT2DReconstruction
 
   \author Dimitra Kyriakopoulou

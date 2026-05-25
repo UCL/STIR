@@ -227,7 +227,7 @@ public:
 
   //! constructor ( a single name)
   /*! size info is in mm
-      \param intrinsic_tilt value in radians, \see get_intrinsic_azimuthal_tilt()
+      \param intrinsic_tilt_v value in radians, \see get_intrinsic_azimuthal_tilt()
       \param scanner_geometry_v \see set_scanner_geometry()
       \warning calls error() when block/bucket info are inconsistent
    */
