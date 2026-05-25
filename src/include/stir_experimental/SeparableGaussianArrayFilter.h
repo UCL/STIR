@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup local/buildblock
+  \ingroup buildblock
   \brief
 
 

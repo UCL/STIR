@@ -11,7 +11,7 @@
 #define __stir_IO_DataWithProjDataInfo_H__
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief declaration of stir::DataWithProjDataInfo
 
   \author Kris Thielemans
@@ -24,7 +24,7 @@ START_NAMESPACE_STIR
 
 /*!
   \brief base class for data objects such as ProjData etc
-  \ingroup buildblock
+  \ingroup projdata
 
   Provides a ProjDataInfo member.
 */

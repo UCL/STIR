@@ -2,7 +2,7 @@
 //
 /*!
   \file
-  \ingroup analytic
+  \ingroup DDSR2D
   \brief Main program for DDSR2D reconstruction
   \author Dimitra Kyriakopoulou
 */

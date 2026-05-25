@@ -47,27 +47,30 @@ public:
   void read_from_files(const std::string input_string);
   void write_to_files(const std::string output_string);
 
-  //! \name Functions to get parameters @{
+  //! \name Functions to get parameters
+  //!@{
   GatedDiscretisedDensity get_spatial_transformation_z() const;
   GatedDiscretisedDensity get_spatial_transformation_y() const;
   GatedDiscretisedDensity get_spatial_transformation_x() const;
   const TimeGateDefinitions& get_time_gate_definitions() const;
   //!@}
-  //! \name Functions to set parameters @{
+  //! \name Functions to set parameters
+  //!@{
   void set_spatial_transformations(const GatedDiscretisedDensity& motion_z,
                                    const GatedDiscretisedDensity& motion_y,
                                    const GatedDiscretisedDensity& motion_x);
   void set_gate_defs(const TimeGateDefinitions& gate_defs);
   //!@}
 
-  //! Warping functions from to gated images. @{
+  //! Warping functions from to gated images.
+  //!@{
   void warp_image(GatedDiscretisedDensity& new_gated_image, const GatedDiscretisedDensity& gated_image) const;
   void warp_image(DiscretisedDensity<3, float>& new_reference_image, const GatedDiscretisedDensity& gated_image) const;
   void warp_image(GatedDiscretisedDensity& gated_image, const DiscretisedDensity<3, float>& reference_image) const;
   void accumulate_warp_image(DiscretisedDensity<3, float>& new_reference_image, const GatedDiscretisedDensity& gated_image) const;
   void set_defaults() override;
   Succeeded set_up() override;
-  //@}
+  //!@}
 private:
   typedef RegisteredParsingObject<GatedSpatialTransformation, SpatialTransformation> base_type;
   void initialise_keymap() override;

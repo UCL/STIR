@@ -8,6 +8,9 @@
 # You would use this in bash for instance like
 # VERSION=5.1.0 make_distribution.sh
 # Check list of variables below for configuration options
+#
+# Dependencies: doxygen graphviz pdflatex zip etc
+# e.g. sudo apt install texlive-latex-base texlive-latex-extra doxygen graphviz zip ghosttscript
 
 # This file is part of STIR.
 #
@@ -130,13 +133,13 @@ if [ $do_doc = 1 ]; then
   cd src
   # make doxygen
   if [ $do_doxygen = 1 ]; then
-    PATH=$PATH:/cygdrive/c/Program\ Files/GPLGS:/cygdrive/d/Program\ Files/Graphviz2.26.3/bin
+    #PATH=$PATH:/cygdrive/c/Program\ Files/GPLGS:/cygdrive/d/Program\ Files/Graphviz2.26.3/bin
     echo "Running doxygen"
     mkdir -p ${DISTRIB}/build/STIR_${VERSION}
     pushd ${DISTRIB}/build/STIR_${VERSION}
-    cmake -DGRAPHICS=None ${DISTRIB}/STIR
+    cmake -DGRAPHICS=None -S ${DISTRIB}/STIR
     echo "CMake OK"
-    make RUN_DOXYGEN > ${DISTRIB}/doxygen.log 2>&1
+    cmake --build . --target RUN_DOXYGEN > ${DISTRIB}/doxygen.log 2>&1
     mkdir -p ${DISTRIB}/STIR/documentation/doxy
     #mv html ${DISTRIB}/STIR/documentation/doxy/
     cd ${DISTRIB}/STIR/documentation/doxy/

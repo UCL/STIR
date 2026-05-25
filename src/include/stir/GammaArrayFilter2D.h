@@ -33,7 +33,7 @@ START_NAMESPACE_STIR
 
   1. **Normalization**: Each pixel value in the slice is normalized to [0, 1]:
      \f[
-     \text{normalized}(i, j) = \frac{\text{input}(i, j) - \text{min\_val}}{\text{max\_val} - \text{min\_val}}
+     \textrm{normalized}(i, j) = \frac{\textrm{input}(i, j) - \textrm{min\_val}}{\textrm{max\_val} - \textrm{min\_val}}
      \f]
      where \c min_val and \c max_val are the minimum and maximum pixel values in the slice.
 
@@ -42,18 +42,18 @@ START_NAMESPACE_STIR
 
   3. **Gamma Calculation**: Determines the gamma exponent using:
      \f[
-     \gamma = \frac{\log(0.25)}{\log(\text{averagePixelValue})}
+     \gamma = \frac{\log(0.25)}{\log(\textrm{averagePixelValue})}
      \f]
      where \c 0.25 is the target average intensity level for contrast adjustment.
 
   4. **Gamma Correction**: Adjusts pixel values using:
      \f[
-     \text{corrected}(i, j) = \text{normalized}(i, j)^{\gamma}
+     \textrm{corrected}(i, j) = \textrm{normalized}(i, j)^{\gamma}
      \f]
 
   5. **Rescaling**: Converts the corrected values back to their original range:
      \f[
-     \text{output}(i, j) = \text{corrected}(i, j) \times (\text{max\_val} - \text{min\_val}) + \text{min\_val}
+     \textrm{output}(i, j) = \textrm{corrected}(i, j) \times (\textrm{max\_val} - \textrm{min\_val}) + \textrm{min\_val}
      \f]
 
   ### Edge Handling

@@ -77,7 +77,7 @@ public:
   PatlakPlot();           //!< Default constructor (calls set_defaults())
   ~PatlakPlot() override; //!< default destructor
                           /*! \name Functions to get parameters */
-                          //@{
+                          //!@{
   //! Simply gets model matrix, if it has been already stored.
   ModelMatrix<2> get_model_matrix() const;
   //! Creates model matrix from plasma data (Must be already sorted in appropriate frames).
@@ -92,9 +92,9 @@ public:
   TimeFrameDefinitions get_time_frame_definitions() const;
   //!@}
   /*! \name Functions to set parameters*/
-  //@{
+  //!@{
   void set_model_matrix(ModelMatrix<2> model_matrix); //!< Simply set model matrix
-  //@}
+  //!@}
 
   //! Multiplies the dynamic image with the model gradient.
   /*!  For a linear model the model gradient is the transpose of the model matrix.

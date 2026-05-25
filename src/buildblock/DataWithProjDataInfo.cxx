@@ -8,7 +8,7 @@
 */
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief implementation of stir::DataWithProjDataInfo
 
   \author Kris Thielemans

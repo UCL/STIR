@@ -1,7 +1,7 @@
 /*!
 
   \file
-  \ingroup recontest
+  \ingroup recon_test
 
   \brief Test program for back projection and forward projection using stir::ProjDataInfoBlockOnCylindrical
 

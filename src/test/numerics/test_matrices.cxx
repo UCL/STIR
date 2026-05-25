@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 
 /*!
   \brief Tests MatrixFunction.h functionality
-  \ingroup test_numerics
+  \ingroup numerics_test
 
 */
 class MatrixTests : public RunTests

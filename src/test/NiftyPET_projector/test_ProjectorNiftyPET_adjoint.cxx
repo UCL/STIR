@@ -9,7 +9,7 @@
 /*!
 
   \file
-  \ingroup projector_test
+  \ingroup recon_test
 
   \brief Test that the NiftyPET forward and back projectors are adjoint to one another.
 
