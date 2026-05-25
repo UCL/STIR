@@ -54,7 +54,7 @@ Classes for iterative reconstruction algorithms
 
 The documentation
 for the STIR library is generated automatically from the source 
-using the \textit{doxygen} program (\R2Lurl{http://www.doxygen.org/ }{http://www.doxygen.org/}). 
+using the \textit{doxygen} program (\R2Lurl{https://www.doxygen.org/ }{https://www.doxygen.org/}). 
 This can produce an HTML version but also various other output 
 formats (you can get e.g. RTF or LaTeX output by simply running 
 doxygen on the source files that come in the STIR distribution). 
@@ -332,9 +332,44 @@ Include files should not contain statements like \texttt{using namespace std;} o
 and texttt{format.h}).
 
 \subsection{
+Documentation}
+Most documentation is generated via in-code comments using \textit{doxygen}. There are some overview \LaTeX
+files in the \texttt{documentation} folder, such as this one.
+
+Documentation of a class and its methods generally works as follows
+\begin{verbatim}
+/*!
+  \brief 1-2 line description
+  \ingroup somegroup
+
+  Long description
+*/
+class A
+{
+public: 
+  //! brief description
+  /*!
+   optional longer description
+  */
+  void method();
+};
+\end{verbatim}
+where both styles of ``brief'' description are acceptable.
+
+Similar styles are used for functions, constants and preprocessor defines. There should also be
+a header in each file assigning it to a doxygen group.
+
+Doxygen groups have to be defined. This is currently done in \texttt{src/include/stir/doxygengroups.h}.
+
+Doxygen comments are also parsed to generate the SWIG documentation. This is currently done via
+\R2Lurl{https://github.com/m7thon/doxy2swig}{doxy2swig}, although we hope to transition to SWIG's
+native doxygen support, once its doxygen parser improves.
+
+\subsection{
 Class definitions}
 
-Class definitions follow generally the following format (ignoring \textit{doxygen} 
+Classes should be defined in their onwn \textit{.h} file (except in implementation classes, which ideally
+are in the \texttt{detail} namespace). They follow generally the following format (ignoring \textit{doxygen} 
 comments).
 
 \begin{verbatim}
