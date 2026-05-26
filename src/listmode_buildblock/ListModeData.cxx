@@ -45,14 +45,6 @@ ListModeData::set_proj_data_info_sptr(shared_ptr<const ProjDataInfo> new_proj_da
   proj_data_info_sptr = new_proj_data_info_sptr->create_shared_clone();
 }
 
-shared_ptr<const ProjDataInfo>
-ListModeData::get_proj_data_info_sptr() const
-{
-  if (is_null_ptr(proj_data_info_sptr))
-    error("ListModeData: ProjDataInfo has not been set.");
-  return proj_data_info_sptr;
-}
-
 #if 0
 std::time_t
 ListModeData::
