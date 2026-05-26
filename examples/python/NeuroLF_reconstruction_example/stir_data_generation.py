@@ -18,7 +18,9 @@ tmpl_exam_info.set_time_frame_definitions(time_frame_def)
 # set a radionuclide
 radionuclide_db = stir.RadionuclideDB()
 tmpl_exam_info.set_radionuclide(
-    radionuclide_db.get_radionuclide(stir.ImagingModality(stir.ImagingModality.PT), "^18^Fluorine")
+    radionuclide_db.get_radionuclide(
+        stir.ImagingModality(stir.ImagingModality.PT), "^18^Fluorine"
+    )
 )
 
 # define scanner geometry
@@ -27,7 +29,9 @@ number_of_rings = 48
 arccorrected_bins = 180
 inner_ring_radius_mm = 135.5
 crystal_length_mm = 15.0
-avg_interaction_depth_mm = crystal_length_mm * (1.0 - math.exp(-12.0 / crystal_length_mm))
+avg_interaction_depth_mm = crystal_length_mm * (
+    1.0 - math.exp(-12.0 / crystal_length_mm)
+)
 crystal_spacing_mm = 3.313
 ring_spacing_mm = crystal_spacing_mm
 bin_size_mm = crystal_spacing_mm / 2
@@ -88,14 +92,16 @@ def read_singles_histogram(filename, start_time=0, end_time=1e9):
     singles = np.zeros((number_of_rings, detectors_per_ring))
     singles_histogram_raw = np.fromfile(open(filename, "rb"), dtype=np.uint32)
     # the first 64 bit are the timestamp, then there are rings * detectors singles counts of 32 bit each
-    for i in range(int(len(singles_histogram_raw) / (2 + number_of_rings * detectors_per_ring))):
+    for i in range(
+        int(len(singles_histogram_raw) / (2 + number_of_rings * detectors_per_ring))
+    ):
         if i < start_time:
             continue
         if i >= end_time:
             break  # since histograms are spaced by a second, only read the ones we are interested in
         singles += singles_histogram_raw[
-            i * (2 + number_of_rings * detectors_per_ring) + 2 : (i + 1)
-            * (2 + number_of_rings * detectors_per_ring)
+            i * (2 + number_of_rings * detectors_per_ring)
+            + 2 : (i + 1) * (2 + number_of_rings * detectors_per_ring)
         ].reshape((number_of_rings, detectors_per_ring))
     return singles
 
@@ -105,4 +111,9 @@ def lambda_formula(lambda_value, args):
     coincidence_window = args[0]
     prompts_total = args[1]
     singles_total = args[2]
-    return 2 * coincidence_window * lambda_value * lambda_value - lambda_value + singles_total - prompts_total
+    return (
+        2 * coincidence_window * lambda_value * lambda_value
+        - lambda_value
+        + singles_total
+        - prompts_total
+    )
