@@ -57,7 +57,7 @@ protected:
   \verbatim
   %study date (yyyy:mm:dd") := ...
   %study time (hh:mm:ss GMT+00:00) := ...
-  \endvarbatim
+  \endverbatim
   You can ignore this for all (?) time zones by using
   \code
   ignore_Siemens_date_and_time_keys("%study");

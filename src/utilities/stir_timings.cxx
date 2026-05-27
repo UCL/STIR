@@ -8,7 +8,7 @@
 
 */
 
-/*!.
+/*!
   \file
   \ingroup utilities
   \author Kris Thielemans

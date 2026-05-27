@@ -21,6 +21,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/Bin.h"
 #include "stir/Sinogram.h"
+#include "stir/IndexRange2D.h"
 #include "stir/Succeeded.h"
 #include "stir/warning.h"
 

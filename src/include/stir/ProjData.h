@@ -37,6 +37,7 @@
 //#include <ios>
 
 #include "stir/ExamData.h"
+#include "stir/DataWithProjDataInfo.h"
 
 START_NAMESPACE_STIR
 
@@ -100,7 +101,7 @@ class ProjDataInMemory;
   \warning The arguments 'make_num_tangential_poss_odd' are temporary
   and will be deleted in the next release.
 */
-class ProjData : public ExamData
+class ProjData : public ExamData, public DataWithProjDataInfo
 {
 #ifdef STIR_COMPILING_SWIG_WRAPPER
 public: // SWIG needs self_type exposed
@@ -122,11 +123,6 @@ public:
   ProjData(const ProjData&);
 #endif
 
-  //! Destructor
-  ~ProjData() override
-  {}
-  //! Get shared pointer to proj data info
-  inline shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
   //! Get viewgram
   /*!
     \deprecated Use get_viewgram(const ViewgramIndices&) instead.
@@ -326,38 +322,6 @@ public:
     return array_iter;
   }
 
-  //! Get number of segments
-  inline int get_num_segments() const;
-  //! Get number of axial positions per segment
-  inline int get_num_axial_poss(const int segment_num) const;
-  //! Get number of views
-  inline int get_num_views() const;
-  //! Get number of tangential positions
-  inline int get_num_tangential_poss() const;
-  //! Get number of TOF positions
-  inline int get_num_tof_poss() const;
-  //! Get the index of the first timing position
-  inline int get_min_tof_pos_num() const;
-  //! Get the index of the last timgin position.
-  inline int get_max_tof_pos_num() const;
-  //! Get TOG mash factor
-  inline int get_tof_mash_factor() const;
-  //! Get minimum segment number
-  inline int get_min_segment_num() const;
-  //! Get maximum segment number
-  inline int get_max_segment_num() const;
-  //! Get mininum axial position per segmnet
-  inline int get_min_axial_pos_num(const int segment_num) const;
-  //! Get maximum axial position per segment
-  inline int get_max_axial_pos_num(const int segment_num) const;
-  //! Get minimum view number
-  inline int get_min_view_num() const;
-  //! Get maximum view number
-  inline int get_max_view_num() const;
-  //! Get minimum tangential position number
-  inline int get_min_tangential_pos_num() const;
-  //! Get maximum tangential position number
-  inline int get_max_tangential_pos_num() const;
   //! Get the total number of sinograms
   /*! Note that this will count TOF sinograms as well.
       \see get_num_non_tof_sinograms()
@@ -432,9 +396,6 @@ public:
   //! set values of the array to self*a+y*b where a, b and y are ProjData
   virtual void sapyb(const ProjData& a, const ProjData& y, const ProjData& b);
   ///@}
-
-protected:
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -44,12 +44,45 @@
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT >);
 
 %shared_ptr(stir::SqrtHessianRowSum<TargetT >);
+#undef TargetT
 
+// add down-casting
+// WARNING: Needs to be updated with all "leaf" classes.
+// TODO: Ideally we wouldn't have to add the template arguments, but the typemaps didn't match without them.
+// SWIG %factory_shared fails with multiple template arguments in the types, so we defined a typedef without commas
+%inline{
+  typedef  stir::DiscretisedDensity<3,float> DiscretisedDensity3float;
+}
+#define TargetT DiscretisedDensity3float
+
+// list of all leafs derived from PoissonLogLikelihoodWithLinearModelForMean
+%define PoissonLinearMean_funcs
+                stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
+                stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>
+%enddef
+// no others at the moment
+%define nonPoissonLinearMean_funcs
+%enddef
+
+#define basetype stir::GeneralisedObjectiveFunction<TargetT>
+%factory_shared(%arg(basetype&, basetype const&, basetype*, basetype const*),
+                PoissonLinearMean_funcs nonPoissonLinearMean_funcs);
+#undef basetype
+
+// We need this as OSMAPOSLReconstruction::get_objective_function_sptr returns a PoissonLogLikelihoodWithLinearModelForMean
+#define basetype stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT>
+%factory_shared(%arg(basetype&, basetype const&, basetype*, basetype const*),
+                PoissonLinearMean_funcs);
+#undef basetype
+
+// Add nicer representation in Python
+// Sadly, here we cannot use the template arguments, probably because of the typedef work-around. Oh well.
+%formacro(ADD_REPR_PARAMETER_INFO,
+         stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData,
+         stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin)
 #undef elemT
 #undef TargetT
 
-
-%include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"

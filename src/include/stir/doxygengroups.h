@@ -209,6 +209,10 @@ from/to file.
 \ingroup IO
 */
 /*!
+\defgroup MultiIO  support for "multi" files in the IO library
+\ingroup IO
+*/
+/*!
 \defgroup ECAT ECAT6 ... ECAT8 support in the IO library
 \ingroup IO
 */
@@ -371,7 +375,7 @@ Implementation of the 2D Direct Differentiation SPECT Reconstruction algorithm.
 building blocks for kinetic modelling
 */
 /*!
-\ingroup spatial_transformation
+\defgroup spatial_transformation Motion fields etc
 \ingroup STIR_library
 building blocks for motion fields, warping etc
 */
@@ -401,7 +405,7 @@ Library for displaying of images
 \ingroup alltest
 */
 /*!
-\defgroup recontest Tests of reconstruction building blocks
+\defgroup recon_test Tests of reconstruction building blocks
 \ingroup alltest
 */
 /*!
@@ -423,13 +427,20 @@ Almost all programs that can be executed by the user.
 \ingroup utilities
 */
 /*!
+\defgroup ClearPET_utilities ClearPET listmode support (unfinished)
+\ingroup utilities
+*/
+/*!
 \defgroup ECAT_utilities ECAT6 and ECAT7 utilities
 \ingroup utilities
 Includes conversion programs etc.
 */
-
 /*!
 \defgroup examples Example files
 \ingroup STIR
 Some examples files to illustrate some basic coding in STIR.
+*/
+/*!
+\defgroup simset Files tu support SimSET
+\ingroup STIR
 */

@@ -302,22 +302,14 @@ VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 }
 
 template <class elemT>
-#ifdef STIR_NO_COVARIANT_RETURN_TYPES
-DiscretisedDensity<3, elemT>*
-#else
 VoxelsOnCartesianGrid<elemT>*
-#endif
 VoxelsOnCartesianGrid<elemT>::get_empty_copy() const
 {
   return get_empty_voxels_on_cartesian_grid();
 }
 
 template <class elemT>
-#ifdef STIR_NO_COVARIANT_RETURN_TYPES
-DiscretisedDensity<3, elemT>*
-#else
 VoxelsOnCartesianGrid<elemT>*
-#endif
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
   VoxelsOnCartesianGrid* temp = new VoxelsOnCartesianGrid(*this);

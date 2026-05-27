@@ -57,10 +57,10 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr::ProjDataInfoBlocksOnCylindricalNoArcCo
     error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a Scanner with appropriate geometry");
 }
 
-ProjDataInfo*
+ProjDataInfoBlocksOnCylindricalNoArcCorr*
 ProjDataInfoBlocksOnCylindricalNoArcCorr::clone() const
 {
-  return static_cast<ProjDataInfo*>(new ProjDataInfoBlocksOnCylindricalNoArcCorr(*this));
+  return new self_type(*this);
 }
 
 bool

@@ -98,21 +98,12 @@ PixelsOnCartesianGrid<elemT>::set_pixel_size(const BasicCoordinate<2, float>& s)
 }
 
 template <class elemT>
-#ifdef STIR_NO_COVARIANT_RETURN_TYPES
-DiscretisedDensity<2, elemT>*
-#else
 PixelsOnCartesianGrid<elemT>*
-#endif
 PixelsOnCartesianGrid<elemT>::get_empty_copy() const
 {
   return get_empty_pixels_on_cartesian_grid();
 }
 
-/*!
-  This member function will be unnecessary when all compilers can handle
-  'covariant' return types.
-  It is a non-virtual counterpart of get_empty_pixels_on_cartesian_grid.
-*/
 template <class elemT>
 PixelsOnCartesianGrid<elemT>*
 PixelsOnCartesianGrid<elemT>::get_empty_pixels_on_cartesian_grid() const
@@ -122,11 +113,7 @@ PixelsOnCartesianGrid<elemT>::get_empty_pixels_on_cartesian_grid() const
 }
 
 template <class elemT>
-#ifdef STIR_NO_COVARIANT_RETURN_TYPES
-DiscretisedDensity<2, elemT>*
-#else
 PixelsOnCartesianGrid<elemT>*
-#endif
 PixelsOnCartesianGrid<elemT>::clone() const
 {
   return new PixelsOnCartesianGrid(*this);

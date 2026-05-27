@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2014, 2015, 2018 - 2022, 2023, 2025 University College London
+    Copyright (C) 2013, 2014, 2015, 2018 - 2022, 2023, 2025 - 2026 University College London
     Copyright (C) 2022 National Physical Laboratory
     This file is part of STIR.
 
@@ -24,6 +24,7 @@
 %shared_ptr(stir::ProjDataInfoGenericNoArcCorr);
 %shared_ptr(stir::ProjDataInfoBlocksOnCylindricalNoArcCorr);
 
+%shared_ptr(stir::DataWithProjDataInfo);
 %shared_ptr(stir::ProjData);
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
@@ -33,6 +34,7 @@
 %shared_ptr(stir::Segment<float>);
 %shared_ptr(stir::Sinogram<float>);
 %shared_ptr(stir::Viewgram<float>);
+%shared_ptr(stir::RelatedViewgrams<float>);
 
 %newobject stir::Scanner::get_scanner_from_name;
 %include "stir/Scanner.h"
@@ -46,16 +48,20 @@
 // See also the %extend trick below which currently doesn't work
 %rename(construct_proj_data_info) ProjDataInfoCTI;
 
-%factory_shared(stir::ProjDataInfo*,
-                stir::ProjDataInfoCylindricalNoArcCorr,
-                stir::ProjDataInfoCylindricalArcCorr,
+// enable automatic down-casting to appropriate type
+// WARNING: the order here is important. SWIG will check the types in order given,
+// so if class A is derived from class B, you want to put A first.
+// NOTE: I've tried to just use stir::ProjDataInfo as first argument, i.e. without all the variations,
+// but those typemaps didn't match.
+%define all_ProjDataInfo
                 stir::ProjDataInfoBlocksOnCylindricalNoArcCorr,
-                stir::ProjDataInfoGenericNoArcCorr);
-%factory_shared(stir::ProjDataInfo const*,
+                stir::ProjDataInfoGenericNoArcCorr,
                 stir::ProjDataInfoCylindricalNoArcCorr,
-                stir::ProjDataInfoCylindricalArcCorr,
-                stir::ProjDataInfoBlocksOnCylindricalNoArcCorr,
-                stir::ProjDataInfoGenericNoArcCorr);
+                stir::ProjDataInfoCylindricalArcCorr
+%enddef
+%factory_shared(%arg(stir::ProjDataInfo&, stir::ProjDataInfo const&, stir::ProjDataInfo *, stir::ProjDataInfo const*),
+                all_ProjDataInfo);
+%formacro(ADD_REPR_PARAMETER_INFO, all_ProjDataInfo)
 
 %include "stir/ProjDataInfo.h"
 
@@ -66,13 +72,35 @@
 %include "stir/ProjDataInfoGenericNoArcCorr.h"
 %include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 
-%extend stir::ProjDataInfoBlocksOnCylindricalNoArcCorr {
+// add Python friendly function that returns a value directly
+// Currently, ProjDataInfoGenericNoArcCorr is derived from ProjDataInfoCylindricalNoArcCorr
+// so we can define this for ProjDataInfoCylindricalNoArcCorr only.
+// WARNING: once the hierarchy changes, this will have to be adapted.
+%extend stir::ProjDataInfoCylindricalNoArcCorr {
     
-stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> get_lor(const Bin bin){
+stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>
+   get_lor(const Bin& bin)
+   {
     stir::LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
     $self->get_LOR(lor,bin);
     return lor;
-}
+   }
+
+#if 0
+   /* Next currently doesn't work. The returned object is not usable in Python
+      l = proj_data_info.get_all_det_pos_pairs_for_bin(bin)
+      l[0].pos1()
+      => TypeError: in method 'DetectionPositionPair_pos1_get', argument 1 of type 'stir::DetectionPositionPair< unsigned int > *'
+   */
+std::vector<DetectionPositionPair<>>
+   get_all_det_pos_pairs_for_bin(const Bin& bin,
+                                 bool ignore_non_spatial_dimensions = true) const
+  {
+    std::vector<DetectionPositionPair<>> dp_pos_pairs;
+    $self->get_all_det_pos_pairs_for_bin(dp_pos_pairs, bin, ignore_non_spatial_dimensions);
+    return dp_pos_pairs;
+  }
+#endif
 
 stir::CartesianCoordinate3D<float>
     find_cartesian_coordinate_of_detection_1(const Bin bin) const 
@@ -97,6 +125,19 @@ stir::CartesianCoordinate3D<float>
     
     return coord_2;
 }
+}
+
+// make sure that SWIG's down-casting (via %factory_shared) works
+// It could have been ok as there's a get_proj_data_info() already,
+// but for whatever reason, I still need a work-around.
+%rename(get_proj_data_info) wrap_get_proj_data_info;
+%include "stir/DataWithProjDataInfo.h"
+%extend stir::DataWithProjDataInfo
+{
+  const ProjDataInfo& wrap_get_proj_data_info() const
+  {
+    return *this->proj_data_info_sptr;
+  }
 }
 
 %nodefaultctor stir::Viewgram;
@@ -139,6 +180,7 @@ stir::CartesianCoordinate3D<float>
 %ignore stir::ProjData::operator-=;
 %ignore stir::ProjData::operator*=;
 %ignore stir::ProjData::operator/=;
+
 %include "stir/ProjData.h"
 
 %newobject stir::ProjData::get_subset;

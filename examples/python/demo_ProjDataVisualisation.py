@@ -11,14 +11,16 @@
 
 # test_ProjDataVisualisation.py 
 # This is a demo of how to use the ProjDataVisualisation PyQt5 GUI with projdata objects 
-
+import os
 import stir
-from ProjDataVisualisation import OpenProjDataVisualisation
+from stir.projdata_visualisation import launch_GUI
 
-# Load data for demo (example case)
-filename = "examples/recon_demo/smalllong.hs"
+filename = os.path.join(
+    stir.get_STIR_examples_dir(), "recon_demo/smalllong.hs")
 proj_data = stir.ProjData.read_from_file(filename)
 
 # Now open the GUI and pass the proj_data object
-OpenProjDataVisualisation(proj_data)
+launch_GUI(proj_data)
+# Could also have used
+# launch_GUI(filename)
 print("Test done.")

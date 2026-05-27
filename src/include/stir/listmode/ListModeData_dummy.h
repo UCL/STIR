@@ -18,6 +18,7 @@
 #define __stir_listmode_ListModeData_dummy_H__
 
 #include "stir/error.h"
+#include "stir/listmode/ListModeData.h"
 
 START_NAMESPACE_STIR
 /*!
@@ -44,11 +45,9 @@ listmode file with a third party.
 class ListModeData_dummy : public ListModeData
 {
 public:
-  ListModeData_dummy(shared_ptr<const ExamInfo> exam_info, shared_ptr<const ProjDataInfo> proj_data_info)
-  {
-    this->exam_info_sptr = exam_info;
-    this->proj_data_info_sptr = proj_data_info;
-  }
+  ListModeData_dummy(shared_ptr<const ExamInfo> exam_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr)
+      : ListModeData(exam_info_sptr, proj_data_info_sptr)
+  {}
 
   std::string get_name() const override { return std::string("ListModeData_dummy"); }
 

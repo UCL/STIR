@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 6.3}}
+\textbf{\textit{version 6.4}}
 
 \end{center}
 
@@ -54,7 +54,7 @@ Classes for iterative reconstruction algorithms
 
 The documentation
 for the STIR library is generated automatically from the source 
-using the \textit{doxygen} program (\R2Lurl{http://www.doxygen.org/ }{http://www.doxygen.org/}). 
+using the \textit{doxygen} program (\R2Lurl{https://www.doxygen.org/ }{https://www.doxygen.org/}). 
 This can produce an HTML version but also various other output 
 formats (you can get e.g. RTF or LaTeX output by simply running 
 doxygen on the source files that come in the STIR distribution). 
@@ -83,7 +83,14 @@ Angles are in radians.\\
 Relative times are in seconds.
 
 \subsection{
-Coordinate system for image data }
+Coordinate system etc}
+STIR uses a ``gantry-based'' coordinate system, which is left-handed.
+
+\textbf{WARNING:} This text is correct for PET data. For SPECT, we currently have problems with the image orientation, caused
+but the fact that SPECT DICOM raw data follow the patient position (not the gantry). Therefore, LPS info etc is currently
+\textbf{incorrect} for SPECT reconstructed images.
+
+\subsubsection{Image data }
 
 Although STIR is prepared for general images such as blobs on 
 bcc grids (see the online documentation for class \textbf{DiscretisedDensity}), 
@@ -106,7 +113,7 @@ from \textit{-n} to \textit{(n-1)}.
 
 
 
-\subsection{
+\subsubsection{
 Info on projection data}
 
 Conventional axes and units used for projection data are shown 
@@ -227,6 +234,10 @@ on the top of the scanner).
 Finally, in STIR code, the first 
 ring of the scanner is the ring furthest from the bed. This corresponds 
 to how the data are stored in ECAT6,7 and Interfile files.
+The ``highest" TOF bin corresponds to voxels closer to the ``first" detector
+(as encoded for instance in \texttt{stir::DetectionPositionPair}).
+
+The Python example \texttt{coordinates\_vs\_bins.py} could be useful to clarify these conventions.
 
 \section{
 Code conventions}
@@ -321,9 +332,44 @@ Include files should not contain statements like \texttt{using namespace std;} o
 and texttt{format.h}).
 
 \subsection{
+Documentation}
+Most documentation is generated via in-code comments using \textit{doxygen}. There are some overview \LaTeX
+files in the \texttt{documentation} folder, such as this one.
+
+Documentation of a class and its methods generally works as follows
+\begin{verbatim}
+/*!
+  \brief 1-2 line description
+  \ingroup somegroup
+
+  Long description
+*/
+class A
+{
+public: 
+  //! brief description
+  /*!
+   optional longer description
+  */
+  void method();
+};
+\end{verbatim}
+where both styles of ``brief'' description are acceptable.
+
+Similar styles are used for functions, constants and preprocessor defines. There should also be
+a header in each file assigning it to a doxygen group.
+
+Doxygen groups have to be defined. This is currently done in \texttt{src/include/stir/doxygengroups.h}.
+
+Doxygen comments are also parsed to generate the SWIG documentation. This is currently done via
+\R2Lurl{https://github.com/m7thon/doxy2swig}{doxy2swig}, although we hope to transition to SWIG's
+native doxygen support, once its doxygen parser improves.
+
+\subsection{
 Class definitions}
 
-Class definitions follow generally the following format (ignoring \textit{doxygen} 
+Classes should be defined in their onwn \textit{.h} file (except in implementation classes, which ideally
+are in the \texttt{detail} namespace). They follow generally the following format (ignoring \textit{doxygen} 
 comments).
 
 \begin{verbatim}
@@ -357,10 +403,10 @@ private:
 
 Inline member functions are defined in the \textit{.inl} file, and 
 are ordered (where possible) such that if inline member function 
-a() calls inline member function b(), 
-then b should be defined first. (Otherwise very 
-few compilers are able to inline the call to b 
-from a.)
+\texttt{a()} calls inline member function \texttt{b()}, 
+then \texttt{b} should be defined first. (Otherwise very 
+few compilers are able to inline the call to \texttt{b}
+from \texttt{a}.)
 
 
 
@@ -387,7 +433,7 @@ a diagnostic message).
 
 In many places, validity of input arguments or of the state of 
 an object is checked by \textit{assert} macros. This code is only 
-compiled when the \textit{NDEBUG} preprocessor macro is not defined (for isntance,
+compiled when the \textit{NDEBUG} preprocessor macro is not defined (for instance,
 when setting \texttt{CMAKE\_BUILD\_TYPE} to \texttt{Debug}), 
 such that a production version of the programs 
 is not slowed down. If an assertion is false, the program aborts 

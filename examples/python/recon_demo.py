@@ -14,7 +14,6 @@
 # See STIR/LICENSE.txt for details
 
 import stir
-import stirextra
 import matplotlib.pyplot as pylab
 import os
 
@@ -59,7 +58,7 @@ if (s.succeeded()):
         # when we call reconstruct() again in the next iteration
         poissonobj.set_recompute_sensitivity(False)
         # extract to python for plotting
-        npimage = stirextra.to_numpy(target)
+        npimage = target.as_array()
         pylab.plot(npimage[10, 30, :])
         pylab.show()
 

@@ -9,7 +9,7 @@
 */
 /*!
   \file
-  \ingroup numerics_buildblock
+  \ingroup numerics
   \brief Implementation of the B-Splines Interpolation
 
   \author Kris Thielemans

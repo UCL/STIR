@@ -2,7 +2,7 @@
 //
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2DSPECT
   \brief Main program for SRT2DSPECT reconstruction
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans

@@ -1,7 +1,7 @@
 /*!
 
 \file
-\ingroup recontest
+\ingroup recon_test
 
 \brief Test program to ensure the axial coordinates of blocks on cylindrical are monotonic with axial indices
 

@@ -11,7 +11,6 @@
 #%% Initial imports
 import matplotlib.pyplot as pylab
 import stir
-import stirextra
 
 #%% image display
 
@@ -20,7 +19,7 @@ image = stir.FloatVoxelsOnCartesianGrid.read_from_file(
     '../../recon_test_pack/test_image_3.hv')
 
 # convert data to numpy 3d array
-npimage = stirextra.to_numpy(image)
+npimage = image.as_array()
 
 # make some plots
 # first a bitmap
@@ -39,7 +38,7 @@ pylab.show(block=False)
 
 projdata = stir.ProjData.read_from_file('../recon_demo/smalllong.hs')
 # get stack of all sinograms
-sinos = stirextra.to_numpy(projdata)
+sinos = projdata.as_array()
 # display a single sinogram
 fig = pylab.figure()
 hdl = pylab.imshow(sinos[10, :, :])

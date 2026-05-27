@@ -33,10 +33,10 @@ START_NAMESPACE_STIR
 class FastErf
 {
 private:
-  //! The number of erf samples to take from -\c_maximum_sample_value to \c_maximum_sample_value
+  //! The number of erf samples to take from -\c maximum_sample_value to \c maximum_sample_value
   int _num_samples;
 
-  //! The sampling period, computed as \c_maximum_sample_value / \c_num_samples)
+  //! The sampling period, computed as \c maximum_sample_value / \c num_samples)
   double _sampling_period;
 
   //  //! Used to check if setup has been run before parameter changes
@@ -46,7 +46,7 @@ private:
   BSpline::BSplines1DRegularGrid<double, double> _spline;
 
   /*! The upper bound value x value of erf(x) used in sampling. For larger values erf(x) ~= 1.
-   * The negative \c_maximum_sample_value is used as the lower bound.
+   * The negative \c maximum_sample_value is used as the lower bound.
    */
   double _maximum_sample_value;
 
@@ -73,7 +73,7 @@ public:
   inline void set_up();
 
   /*! \brief Uses BSplines to interpolate the value of erf(xp)
-   * If xp out of range (-\c_maximum_sample_value \c_maximum_sample_value) then outputs -1 or 1
+   * If xp out of range (-\c maximum_sample_value \c maximum_sample_value) then outputs -1 or 1
    * @param xp input argument for erf(xp)
    * @return interpolated approximation of erf(xp)
    */

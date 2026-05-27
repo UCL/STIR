@@ -2,7 +2,7 @@
 //
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2D
   \brief Main program for SRT2D reconstruction
   \author Dimitra Kyriakopoulou
   \author Kris Thielemans

@@ -6,7 +6,6 @@
   All parameters can be parsed from a parameter file. See `demo5_line_search.par`.
 
   Give an image and objective function configuration, this script will perform a line search
-```suggestion
   from a minimum to a maximum step size (alpha).
   Options are included to perform this line search linearly or using exponential step
   sizes.

@@ -27,69 +27,6 @@
 START_NAMESPACE_STIR
 
 template <typename elemT>
-int
-SegmentByView<elemT>::get_num_views() const
-{
-  return this->get_length();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_min_view_num() const
-{
-  return this->get_min_index();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_max_view_num() const
-{
-  return this->get_max_index();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_num_axial_poss() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_view_num()].get_length();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_min_axial_pos_num() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_view_num()].get_min_index();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_max_axial_pos_num() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_view_num()].get_max_index();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_num_tangential_poss() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_length();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_min_tangential_pos_num() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_min_index();
-}
-
-template <typename elemT>
-int
-SegmentByView<elemT>::get_max_tangential_pos_num() const
-{
-  return this->get_length() == 0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_max_index();
-}
-
-template <typename elemT>
 typename SegmentByView<elemT>::StorageOrder
 SegmentByView<elemT>::get_storage_order() const
 {

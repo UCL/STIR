@@ -59,10 +59,10 @@ ProjDataInfoGenericNoArcCorr::ProjDataInfoGenericNoArcCorr(const shared_ptr<Scan
   this->z_shift.x() = 0;
 }
 
-ProjDataInfo*
+ProjDataInfoGenericNoArcCorr*
 ProjDataInfoGenericNoArcCorr::clone() const
 {
-  return static_cast<ProjDataInfo*>(new ProjDataInfoGenericNoArcCorr(*this));
+  return new self_type(*this);
 }
 
 bool

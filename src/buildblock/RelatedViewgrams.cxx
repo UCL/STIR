@@ -314,7 +314,8 @@ RelatedViewgrams<elemT>::grow(const IndexRange<2>& range)
       iter->grow(range);
       *iter = Viewgram<elemT>(*iter, pdi_shared_ptr, iter->get_view_num(), iter->get_segment_num(), iter->get_timing_pos_num());
     }
-
+  // set "main" proj_data_info to the new one
+  this->proj_data_info_sptr = pdi_ptr;
   check_state();
 }
 /*

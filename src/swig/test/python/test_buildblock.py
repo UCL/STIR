@@ -20,9 +20,9 @@ except ImportError:
     except ImportError:
         raise ImportError('Tests require pytest or py<1.4')
 
-from stir import *
+from stir import * # noqa: F401
 import stir
-import stirextra
+import stir.extra
 import math
 
 def test_Vector():
@@ -205,6 +205,9 @@ def test_FloatVoxelsOnCartesianGrid():
     maxind=Int3BasicCoordinate(9)
     indrange=IndexRange3D(minind,maxind)
     image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    # test if clone() and get_empty_copy() return correct type
+    assert isinstance(image.clone(), stir.FloatVoxelsOnCartesianGrid)
+    assert isinstance(image.get_empty_copy(), stir.FloatVoxelsOnCartesianGrid)
     org= image.get_origin()
     assert org==origin
     image.fill(2)
@@ -306,7 +309,7 @@ def test_zoom_image():
     image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
     image.fill(1)
     # find coordinate of middle of image for later use (independent of image sizes etc)
-    [min_in_mm, max_in_mm]=stirextra.get_physical_coordinates_for_bounding_box(image)
+    [min_in_mm, max_in_mm]=stir.extra.get_physical_coordinates_for_bounding_box(image)
     try:
         middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2.)
     except:
@@ -401,6 +404,10 @@ def test_ProjDataInfo():
     #             const int num_views, const int num_tangential_poss, 
     #
     projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
+    projdatainfo_clone = projdatainfo.clone()
+    # test if construct_proj_data_info and clone() returns correct type
+    assert isinstance(projdatainfo, stir.ProjDataInfoCylindricalArcCorr)
+    assert isinstance(projdatainfo_clone, stir.ProjDataInfoCylindricalArcCorr)
     #print( projdatainfo)
     assert projdatainfo.get_scanner().get_num_rings()==32
     # use arc-correction specific keywords

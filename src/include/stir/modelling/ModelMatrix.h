@@ -48,12 +48,14 @@ public:
   //! Implementation to write the model matrix to a text file
   inline Succeeded write_to_file(const std::string output_string);
 
-  //! \name Functions to get parameters @{
+  //! \name Functions to get parameters
+  //!@{
   inline Array<2, float> get_model_array() const;
   inline const VectorWithOffset<float> get_model_array_sum() const;
   inline VectorWithOffset<float> get_time_vector() const;
   //!@}
-  //! \name Functions to set parameters @{
+  //! \name Functions to set parameters
+  //!@{
   inline void set_model_array(const Array<2, float>& model_array);
   inline void set_time_vector(const VectorWithOffset<float>& time_vector);
   //! Function to set _is_calibrated boolean true or false
@@ -84,7 +86,7 @@ public:
   /*! Multiplications of the model with the dynamic or the parametric images.
     /todo Maybe it will be better to lie in a linear models class.
   */
-  //@{
+  //!@{
   //! multiply (transpose) model-matrix with dynamic image and add result to original \c parametric_image
   inline void multiply_dynamic_image_with_model_and_add_to_input(ParametricVoxelsOnCartesianGrid& parametric_image,
                                                                  const DynamicDiscretisedDensity& dynamic_image) const;
@@ -107,7 +109,7 @@ public:
 
   inline void normalise_parametric_image_with_model_sum(ParametricVoxelsOnCartesianGrid& parametric_image_out,
                                                         const ParametricVoxelsOnCartesianGrid& parametric_image) const;
-  //@}
+  //!@}
 private:
   //! At the moment it has the form of _model_array[param_num][frame_num].
   Array<2, float> _model_array;

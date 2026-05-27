@@ -29,6 +29,20 @@
 %include "stir/ExamInfo.h"
 %include "stir/ExamData.h"
 
+
+// add down-cast
+// WARNING: order is important. Use "lowest" first.
+// We don't list all of them, but at least we should get something useful for most.
+#define basetype stir::ExamData
+%factory_shared(%arg(basetype&, basetype const&, basetype*, basetype const*),
+                stir::ProjDataInterfile,
+                stir::ProjDataInMemory,
+                stir::ProjData,
+                stir::VoxelsOnCartesianGrid<float>,
+                stir::CListModeData,
+                stir::SPECTListModeData);
+#undef basetype
+
 // add display functions
 ADD_REPR(stir::PatientPosition, %arg($self->get_position_as_string()));
 ADD_REPR(stir::ImagingModality, %arg($self->get_name()));

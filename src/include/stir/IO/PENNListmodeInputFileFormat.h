@@ -1,5 +1,4 @@
 /*
-/*
  *  Copyright (C) 2020-2022 University of Pennsylvania
     This file is part of STIR.
 

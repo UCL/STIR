@@ -23,6 +23,8 @@
 */
 
 #include "stir/Viewgram.h"
+#include "stir/IndexRange2D.h"
+#include "stir/error.h"
 #include "stir/format.h"
 
 #ifdef _MSC_VER
@@ -33,6 +35,55 @@
 using std::string;
 
 START_NAMESPACE_STIR
+
+template <typename elemT>
+Viewgram<elemT>
+Viewgram<elemT>::get_empty_copy(void) const
+{
+  Viewgram<elemT> copy(proj_data_info_sptr, get_viewgram_indices());
+  return copy;
+}
+
+template <typename elemT>
+Viewgram<elemT>::Viewgram(const Array<2, elemT>& p, const shared_ptr<const ProjDataInfo>& pdi_sptr, const ViewgramIndices& ind)
+    : Array<2, elemT>(p),
+      DataWithProjDataInfo(pdi_sptr),
+      _indices(ind)
+{
+  if (!pdi_sptr)
+    error("Sinogram constructed with empty proj_data_info");
+  if (ind.segment_num() > this->get_max_segment_num() || ind.segment_num() < this->get_min_segment_num()
+      || ind.view_num() > this->get_max_view_num() || ind.view_num() < this->get_min_view_num()
+      || ind.timing_pos_num() > this->get_max_tof_pos_num() || ind.timing_pos_num() < this->get_min_tof_pos_num())
+    error("Viewgram constructed with out-of-range indices");
+  const bool ok = (p.get_min_index() == this->get_min_axial_pos_num() && p.get_max_index() == this->get_max_axial_pos_num()
+                   && (p.size() == 0
+                       || (p[p.get_min_index()].get_min_index() == this->get_min_tangential_pos_num()
+                           && p[p.get_min_index()].get_max_index() == this->get_max_tangential_pos_num())));
+  if (!ok)
+    error("Viewgram constructed with array with dimensions that are inconsistent with the proj_data_info");
+}
+
+template <typename elemT>
+Viewgram<elemT>::Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr, const ViewgramIndices& ind)
+    : Viewgram(Array<2, elemT>(IndexRange2D(pdi_sptr->get_min_axial_pos_num(ind.segment_num()),
+                                            pdi_sptr->get_max_axial_pos_num(ind.segment_num()),
+                                            pdi_sptr->get_min_tangential_pos_num(),
+                                            pdi_sptr->get_max_tangential_pos_num())),
+               pdi_sptr,
+               ind)
+{}
+
+template <typename elemT>
+Viewgram<elemT>::Viewgram(
+    const Array<2, elemT>& p, const shared_ptr<const ProjDataInfo>& pdi_sptr, const int v_num, const int s_num, const int t_num)
+    : Viewgram(p, pdi_sptr, ViewgramIndices(v_num, s_num, t_num))
+{}
+
+template <typename elemT>
+Viewgram<elemT>::Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr, const int v_num, const int s_num, const int t_num)
+    : Viewgram(pdi_sptr, ViewgramIndices(v_num, s_num, t_num))
+{}
 
 template <typename elemT>
 bool

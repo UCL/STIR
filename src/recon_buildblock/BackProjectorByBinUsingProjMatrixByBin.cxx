@@ -34,6 +34,7 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/IndexRange2D.h"
 #include "stir/is_null_ptr.h"
 #include "stir/warning.h"
 #include "stir/error.h"

@@ -11,7 +11,7 @@
 
 /*!
   \file
-  \ingroup analytic
+  \ingroup SRT2DSPECT
   \brief Implementation of class stir::SRT2DSPECTReconstruction
 
   \author Dimitra Kyriakopoulou

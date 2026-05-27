@@ -21,6 +21,14 @@
 
 // ignore this one and add it later (see below)
 %ignore stir::DiscretisedDensity::read_from_file(const std::string& filename);
+
+// add down-casting
+// WARNING: Needs to be updated with all "leaf" classes.
+// TODO: Ideally we wouldn't have to add the template arguments, but the typemaps didn't match without them.
+#define basetype stir::DiscretisedDensity<3,float>
+%factory_shared(%arg(basetype&, basetype const&, basetype*, basetype const*),
+                stir::VoxelsOnCartesianGrid<float>);
+#undef basetype
 %include "stir/DiscretisedDensity.h"
 %include "stir/DiscretisedDensityOnCartesianGrid.h"
 
@@ -30,6 +38,10 @@
 %ignore stir::VoxelsOnCartesianGrid::operator-=;
 %ignore stir::VoxelsOnCartesianGrid::operator*=;
 %ignore stir::VoxelsOnCartesianGrid::operator/=;
+// try to ignore move constructors to avoid warnings, but SIWG ignores these %ignores...
+%ignore stir::VoxelsOnCartesianGrid::VoxelsOnCartesianGrid(stir::Array&&,stir::CartesianCoordinate3D< float > const &,stir::BasicCoordinate< 3,float > const &);
+%ignore stir::VoxelsOnCartesianGrid::VoxelsOnCartesianGrid(stir::shared_ptr< stir::ExamInfo const > const &,stir::Array &&,stir::CartesianCoordinate3Dconst &,stir::BasicCoordinate const &);
+
 %include "stir/VoxelsOnCartesianGrid.h"
 
 %extend stir::VoxelsOnCartesianGrid {

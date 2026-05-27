@@ -76,7 +76,7 @@
  #include "stir/listmode/ListRecord.h"
  #include "stir/listmode/ListEvent.h"
  #include "stir/listmode/CListRecord.h"
- #include "stir/listmode/ListModeData.h"
+ #include "stir/listmode/SPECTListModeData.h"
  #include "stir/listmode/CListModeData.h"
  #include "stir/listmode/LmToProjData.h"
 
@@ -1061,7 +1061,7 @@ namespace std {
  // use this one for classes that have parameter_info()
  // example usage: ADD_REPR_PARAMETER_INFO(stir::Radionuclide);
 %define ADD_REPR_PARAMETER_INFO(classname)
-  ADD_REPR(classname, "use parameter_info() for details");
+  ADD_REPR(classname, " use parameter_info() for details");
 %enddef
 
  // Finally, start with STIR specific definitions
@@ -1069,7 +1069,7 @@ namespace std {
  // General renaming of *sptr functions
 %ignore *::get_scanner_sptr;
 %rename (get_scanner) *::get_scanner_ptr;
-%rename (get_proj_data_info) *::get_proj_data_info_sptr;
+%ignore *::get_proj_data_info_sptr;
 %ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
 %rename (set_input_proj_data) *::set_input_projdata_sptr; // warning: extra _
 %rename (set_output_proj_data) *::set_output_projdata_sptr; // warning: extra _
@@ -1189,6 +1189,8 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %shared_ptr(stir::RegisteredParsingObject<stir::SingleScatterSimulation,
   stir::ScatterSimulation, stir::ScatterSimulation>);
 %shared_ptr(stir::SingleScatterSimulation);
+
+%ignore stir::ScatterSimulation::set_template_proj_data_info(const ProjDataInfo&); // shadowed by (std::shared_ptr< stir::ProjDataInfo const >)
 
 %include "stir/scatter/ScatterSimulation.h"
 

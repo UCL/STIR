@@ -48,7 +48,7 @@ public:
   ProjDataInfoSubsetByView(const shared_ptr<const ProjDataInfo> org_proj_data_info_sptr, const std::vector<int>& views);
 
   //! Clone the object.
-  ProjDataInfoSubsetByView* clone() const override;
+  self_type* clone() const override;
 
   //! true if the subset is actually all of the data
   bool contains_full_data() const;

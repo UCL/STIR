@@ -23,7 +23,7 @@
 
 #include <string>
 #include <ctime>
-#include "stir/ProjDataInfo.h"
+#include "stir/DataWithProjDataInfo.h"
 #include "stir/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/listmode/ListRecord.h"
@@ -38,7 +38,6 @@ using ::time_t;
 START_NAMESPACE_STIR
 class ListRecord;
 class Succeeded;
-class ExamInfo;
 
 /*!
   \brief The base class for reading list mode data.
@@ -120,7 +119,7 @@ class ExamInfo;
   make sure that read_from_file<ListModeData> recognises your data. This
   normally involves creating a new InputFileFormat class.
 */
-class ListModeData : public ExamData
+class ListModeData : public ExamData, public DataWithProjDataInfo
 {
 public:
   //! typedef used by read_from_file
@@ -131,6 +130,11 @@ public:
 
   //! Default constructor
   ListModeData();
+
+  ListModeData(shared_ptr<const ExamInfo> exam_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr)
+      : ExamData(exam_info_sptr),
+        DataWithProjDataInfo(proj_data_info_sptr)
+  {}
 
   ~ListModeData() override;
 
@@ -144,15 +148,6 @@ public:
       not really on disk, but the object corresponds for instance to a Monte Carlo simulator.
   */
   virtual std::string get_name() const = 0;
-
-  //  //! Get const pointer to exam info
-  //  const ExamInfo*
-  //    get_exam_info_ptr() const;
-  //  //! Get shared pointer to exam info
-  //  /*! \warning Use with care. If you modify the object pointer to by a shared ptr, all objects using the same
-  //    shared pointer will be affected. */
-  //  shared_ptr<ExamInfo>
-  //    get_exam_info_sptr() const;
 
 #if 0
   //! Scan start time
@@ -219,24 +214,21 @@ public:
   //! Return if the file stores delayed events as well (as opposed to prompts)
   virtual bool has_delayeds() const = 0;
   //! Returns the total number of events in the listmode file.
-  //! \warning This function currently works only with ROOT input files. By default
-  //! it will throw an error.
+  /*!
+   \warning This function currently works only a limited number
+   of input types (including ROOT). By default
+   it will throw an error.
+   */
   virtual inline unsigned long int get_total_number_of_events() const
   {
     error("ListModeData: The function get_total_number_of_events() is currently not supported for this file format.");
     return 0;
   }
 
-  virtual shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const;
-
 protected:
   virtual shared_ptr<ListRecord> get_empty_record_helper_sptr() const = 0;
   virtual Succeeded get_next(ListRecord& event) const = 0;
   virtual void set_proj_data_info_sptr(shared_ptr<const ProjDataInfo>);
-  //! Has to be set by the derived class
-  //  shared_ptr<ExamInfo> exam_info_sptr;
-  //! Has to be initialised by the derived class
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -44,3 +44,5 @@ ADD_REPR(stir::DetectionPositionPair, %arg(*$self))
 %include "stir/SinogramIndices.h"
 %include "stir/Bin.h"
 ADD_REPR(stir::Bin, %arg(*$self))
+
+%template(DetectionPositionPairVector) std::vector<stir::DetectionPositionPair<unsigned int>>;

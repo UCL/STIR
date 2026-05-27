@@ -8,7 +8,7 @@
 */
 /*!
   \file
-  \ingroup SimSET
+  \ingroup simset
   \brief  This program converts SimSET 3D sinograms to STIR format
 
   This program should normally be called from the conv_SimSET_projdata_to_STIR.sh script.

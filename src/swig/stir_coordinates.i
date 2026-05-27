@@ -128,20 +128,21 @@ namespace stir {
   %template(Int3BasicCoordinate) BasicCoordinate<3,int>;
   %template(Size3BasicCoordinate) BasicCoordinate<3,std::size_t>;
   %template(Float3BasicCoordinate) BasicCoordinate<3,float>;
+  %template(Int3Coordinate) Coordinate3D< int >;
   %template(Float3Coordinate) Coordinate3D< float >;
   %template(FloatCartesianCoordinate3D) CartesianCoordinate3D<float>;
   %template(IntCartesianCoordinate3D) CartesianCoordinate3D<int>;
-  
+
   %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
   %template(Size2BasicCoordinate) BasicCoordinate<2,std::size_t>;
   %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
-  
+  %template(Int2Coordinate) Coordinate2D< int >;
+  %template(Float2Coordinate) Coordinate2D< float >;
+  %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
+
   %template(Int4BasicCoordinate) BasicCoordinate<4,int>;
   %template(Size4BasicCoordinate) BasicCoordinate<4,std::size_t>;
   %template(Float4BasicCoordinate) BasicCoordinate<4,float>;
-  // TODO not needed in python case?
-  %template(Float2Coordinate) Coordinate2D< float >;
-  %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
 
   //#ifndef SWIGPYTHON
   // not necessary for Python as we can use tuples there

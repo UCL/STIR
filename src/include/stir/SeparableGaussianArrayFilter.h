@@ -52,7 +52,7 @@ public:
 
   //! Constructor
   /*!
-  \param fwhms: the FWHM of the Gaussian 1D filters (in mm)
+  \param fwhm the FWHM of the Gaussian 1D filters (in mm)
   \param max_kernel_sizes maximum number of elements in the kernels.
           -1 means that the size will be determined such that the smallest element is approximately 1E-6 times the largest (in
   each dimension)

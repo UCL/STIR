@@ -1,11 +1,7 @@
 import numpy as np
 import pytest
 
-import sys
-from os.path import dirname
-print(dirname(dirname(dirname(dirname(dirname(__file__))))))
-sys.path.append(dirname(dirname(dirname(dirname(dirname(__file__))))))
-from examples.python.plot_projdata_profiles import compress_and_extract_1d_from_nd_array
+from stir.projdata_profiles import compress_and_extract_1d_from_nd_array
 
 
 def test_generate_1d_from_4d():

@@ -89,13 +89,7 @@ public:
                                           const bool do_symmetry_swap_s = true,
                                           const bool do_symmetry_shift_z = true);
 
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES
-  DataSymmetriesForBins_PET_CartesianGrid
-#else
-  DataSymmetriesForViewSegmentNumbers
-#endif
-      *
-      clone() const override;
+  DataSymmetriesForBins_PET_CartesianGrid* clone() const override;
 
   //! Check equality
   virtual bool operator==(const DataSymmetriesForBins_PET_CartesianGrid&) const;

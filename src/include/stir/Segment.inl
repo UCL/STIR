@@ -26,7 +26,7 @@ START_NAMESPACE_STIR
 
 template <typename elemT>
 Segment<elemT>::Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v, const SegmentIndices& ind)
-    : proj_data_info_sptr(proj_data_info_sptr_v),
+    : DataWithProjDataInfo(proj_data_info_sptr_v),
       _indices(ind)
 {}
 
@@ -52,10 +52,24 @@ Segment<elemT>::get_timing_pos_num() const
 }
 
 template <typename elemT>
-shared_ptr<const ProjDataInfo>
-Segment<elemT>::get_proj_data_info_sptr() const
+int
+Segment<elemT>::get_min_axial_pos_num() const
 {
-  return proj_data_info_sptr;
+  return this->proj_data_info_sptr->get_min_axial_pos_num(this->get_segment_num());
+}
+
+template <typename elemT>
+int
+Segment<elemT>::get_max_axial_pos_num() const
+{
+  return this->proj_data_info_sptr->get_max_axial_pos_num(this->get_segment_num());
+}
+
+template <typename elemT>
+int
+Segment<elemT>::get_num_axial_poss() const
+{
+  return this->proj_data_info_sptr->get_num_axial_poss(this->get_segment_num());
 }
 
 template <typename elemT>

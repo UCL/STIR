@@ -14,7 +14,7 @@
 
  \brief Find normalisation factors using an ML approach
 
- Just a wrapper around ML_estimate_component_based_normalisation
+ Just a wrapper around stir::ML_estimate_component_based_normalisation
  \author Kris Thielemans
  */
 #include "stir/recon_buildblock/ML_estimate_component_based_normalisation.h"
@@ -28,10 +28,12 @@
 static void
 print_usage_and_exit(const std::string& program_name)
 {
-  std::cerr << "Usage: " << program_name
-            << " [--display | --print-KL | --include-block-timing-model | --for-symmetry-per-block] \\\n"
-            << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
-            << " set num_iterations to 0 to do only efficiencies\n";
+  std::cerr
+      << "Usage: " << program_name
+      << " [--display] [--print-KL] [--disable-geometric-model] [--include-block-timing-model] [--for-symmetry-per-block] \\\n"
+      << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
+      << " set num_iterations to 0 to do only efficiencies\n"
+      << "\nDo not use --include-block-timing-model, as it is underdetermined.\n";
   exit(EXIT_FAILURE);
 }
 
@@ -66,9 +68,9 @@ main(int argc, char** argv)
           --argc;
           ++argv;
         }
-      else if (strcmp(argv[0], "--include-geometric-model") == 0)
+      else if (strcmp(argv[0], "--disable-geometric-model") == 0)
         {
-          do_geo = true;
+          do_geo = false;
           --argc;
           ++argv;
         }

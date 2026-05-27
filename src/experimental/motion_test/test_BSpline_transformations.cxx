@@ -9,7 +9,8 @@
 /*!
 
   \file
-  \ingroup stir::motion_test
+  \ingroup spatial_transformation
+  \ingroup test
 
   \brief Test program for non-rigid B-spline transformations with stir::NonRigidObjectTransformationUsingBSplines
 
@@ -41,6 +42,7 @@ START_NAMESPACE_STIR
 using namespace std;
 
 /*!
+  \ingroup spatial_transformation
   \ingroup test
   \brief Test class for Transformations
 

@@ -44,7 +44,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 6.3}}
+ Version 6.4}}
 \end{center}
 
 \end{spacing}
@@ -53,7 +53,7 @@
 
 \noindent 
 K. Thielemans \\
-{\it \small University College London; Algorithms and Software Consulting Ltd (formerly Hammersmith Imanet Ltd}\\
+{\it \small University College London; Algorithms and Software Consulting Ltd; formerly Hammersmith Imanet Ltd}\\
 Ch. Tsoumpas\\ 
 {\it \small Hammersmith Imanet Ltd; Imperial College London; King's College London}\\
 D. Sauge, C. Labb\'e, C. Morel \\
@@ -5754,6 +5754,39 @@ For example, if you installed STIR with
 \texttt{CMAKE\_INSTALL\_PREFIX=\$HOME/install}, set
 \texttt{CMAKE\_PREFIX\_PATH=\$HOME/install} or \texttt{STIR\_DIR=\$HOME/install/lib/cmake/STIR-6.0}.
 \footnote{This uses CMake Config mode for \texttt{find\_package}. There is no need for a \texttt{FindSTIR.cmake}}
+
+\section{
+  Python interface and utilities}
+
+  \textit{STIR} can be built with a Python interface. This is automatically generated via
+  \url{https://swig.org/}{SWIG}. This means that the interface has a bit of a C++ feeling
+  unfortunately\footnote{This could be improved by using SWIG's typemaps.}. In particular, keyword arguments are (sadly) not supported. Documentation
+  is also underwhelming. The docstrings are generated from the doxygen comments and therefore
+  often refer to C++ classes/notation etc. Help welcome! Nevertheless, the Python interface
+  is very useful, and just as powerful as the C++ functionality (by construction).
+
+  There are some examples in the \texttt{examples/python} folder that should be helpful.
+  We also have a separate repository \url{https://github.com/UCL/STIR-exercises}{STIR-exercises}
+  which is gradually being updated (many of the exercises still use bash scripts).
+  You could even explore the tests in \texttt{src/swig/test/python}, although they are not
+  designed for readability\footnote{These test only basic functionality.  Of course, the underlying
+  functionality is the same as in C++, which is tested quite heavily.}.
+
+  Some of the examples are installed (since STIR 6.4) and feel like ``part of STIR". However,
+  they can be a bit rough, and probably need reading of the python files before you can use them properly.
+  Here is an example (\texttt{projdata\_visualisation} needs PyQt5).
+  \begin{verbatim}
+import os
+import stir
+from stir.projdata_visualisation import launch_GUI
+
+filename = os.path.join(
+    stir.get_STIR_examples_dir(), "recon_demo/smalllong.hs")
+proj_data = stir.ProjData.read_from_file(filename)    
+launch_GUI(proj_data)
+# copy to numpy
+proj_data_array = proj_data.as_array()
+  \end{verbatim}
 
 \section{
 Future developments and Support}

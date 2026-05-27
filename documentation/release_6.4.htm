@@ -15,26 +15,55 @@
       This version is 100% backwards compatible with STIR 6.3.
     </p>
     <p>
-      This is a release with many new features, as listed below. Highlights are
-      <ul>
-
-      </ul>
-      But there are many other changes from other contributors as well, see below.
+      This is a release with an important TOF bug fix, considerable improvements  in the Python
+      interface, support for libparallelproj 2, speed-up in CUDA code and normalisation code,
+      and example/documentation improvements (including an example script to process Siemens Quadra data).
       Of course, there is also the usual code-cleanup and some improvements to the documentation.
-      Overall overview and release management was by Kris Thielemans (UCL) with help
-      from Daniel Deidda (NPL).
+    </p>
+    <p>
+      Main code contributions were by Kris Thielemans (UCL), Zekai Li (UMCG), Denis Prokopenko (KCL),
+      Nicole Jurjew (UCL), Markus Jehl (Positrigo).
+      Thanks also to Christian Hinge (U Copenhagen) for testing Quadra reconstructions.
+      <br>
+      Overall overview and release management was by Kris Thielemans (UCL).
     </p>
 
     <h2>Patch release info</h2>
     <ul>
       <li>
-        6.4.0 released XXX/2026<br>
+        6.4.0 released 27 May 2026<br>
         <a href="https://github.com/UCL/STIR/milestone/13">GitHub Milestone 6.4</a>
       </li>
     </ul>
 
   <h2> Summary for end users (also to be read by developers)</h2>
 
+
+  <h3>Bug fixes</h3>
+  <ul>
+    <li>
+      An important bug fix for the "ray tracing matrix" (or actually any "matrix") projector for TOF PET. Previously, oblique
+      segments had problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.<br>
+      <a href=https://github.com/UCL/STIR/pull/1675># 1675</a>. Extra tests were introduced in <a href=https://github.com/UCL/STIR/pull/1674># 1674</a>.
+    </li>
+    <li>
+      <code>ArcCorrection</code> should now work correctly for TOF data (although we don't use it).
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
+    <li>
+    Fixed a small memory leak in scatter estimation caused by multiple calls to <code>ProjDataInfo::clone()</code>
+    combined with <code>dynamic_cast</code>.
+    The object is now cloned once and ownership is transferred safely after type checking.<br>
+    <a href=https://github.com/UCL/STIR/pull/1673>PR #1673</a>
+    </li>
+    <li>
+      Vision 600 and Quadra default Scanner definitions now have a view-offset such that STIR
+      reconstructed images match e7tools output.
+      <br>
+      <a href="https://github.com/UCL/STIR/pull/1675">PR #1675</a>.
+    </li>
+ </ul>
 
   <h3>New functionality</h3>
   <h4>General</h4>
@@ -48,10 +77,55 @@
   </ul>
   <h4>Python</h4>
   <ul>
+    <li>
+      The Python interface has been improved, especially related to "downcasting" of return values of most hierarchies,
+      including <code>ProjDataInfo</code>, images, <code>ExamData</code>, priors/penalties, objective functions.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
+    <li>
+      STIR is now installed as a Python module, but this should be backwards compatible (aside from the renames of some examples).
+      The <code>stirextra</code> module is now a submodule, so use <code>stir.extra</code> instead
+      (although the former will work, but with a warning).
+
+      Some of the more useful examples, including <tt>Vision_files_preprocess.py</tt>,
+      are now installed as part of the module, to make them easy to call. You can
+      now for instance do
+      <pre>
+python -m stir.projdata_visualisation -h
+      </pre>
+      and in Python
+      <pre>
+import stir
+from stir.projdata_visualisation import launch_GUI
+launch_GUI('proj_data_filename')
+      </pre>
+      <br>
+      See <a href=https://github.com/UCL/STIR/pull/1713>PR #1713</a> for more details.
+    </li>
+    <li>
+      Example script <tt>Quadra_files_preprocess.py</tt> to convert e7tools output for the
+      Siemens Biograph Quadra to STIR compatible files (based on <tt>Vision_files_preprocess.py</tt>).
+      <br>
+      <a href="https://github.com/UCL/STIR/pull/1675">PR #1675</a>.
+    </li>
+    <li>
+      Extra arguments to <tt>Vision_files_preprocess.py</tt>
+      <br>
+      <a href="https://github.com/UCL/STIR/pull/1682">PR #1682</a>.
+    </li>
+    <li>
+      Extra Python example <tt>coordinates_vs_bins.py</tt>.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
   </ul>
 
   <h4>Utilities</h4>
   <ul>
+    <li>
+      Add <tt>--disable-geometric-model</tt> option to <tt>find_ML_normfactors3D</tt>.
+    </li>
   </ul>
 
   <h3>Changed functionality</h3>
@@ -85,35 +159,21 @@
     </li>
   </ul>
 
+  <!--
   <h4>Changes to examples</h4>
   <ul>
-  </ul>
 
-  <h3>Bug fixes</h3>
+  </ul>
+  -->
+
+  <h3>Changes to documentation</h3>
   <ul>
     <li>
-      An important bug fix for the "ray tracing matrix" (or actually any "matrix") projector for TOF PET. Previously, oblique
-      segments had problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.<br>
-      <a href=https://github.com/UCL/STIR/pull/1675># 1675</a>. Extra tests were introduced in <a href=https://github.com/UCL/STIR/pull/1674># 1674</a>.
-    </li>
-      <li>
-    Fixed a small memory leak in scatter estimation caused by multiple calls to <code>ProjDataInfo::clone()</code> combined with <code>dynamic_cast</code>. 
-    The object is now cloned once and ownership is transferred safely after type checking.<br>
-    <a href=https://github.com/UCL/STIR/pull/1673>PR #1673</a>
-       </li>
-    <li>
-      Minor fix to replace a deprecated <code>std::sprintf()</code> with <code>std::snprintf()</code>, see <a href="https://github.com/UCL/STIR/issues/1586">#1586</a>.<br>
-      <a href="https://github.com/UCL/STIR/pull/1697">PR #1697</a>
+       more info on the coordinate conventions in the <tt>STIR-developers-overview</tt>.
     </li>
     <li>
-      Minor fix to replace a deprecated <code>std::istrstream()</code> with <code>std::istringstream()</code>, see <a href="https://github.com/UCL/STIR/issues/1637">#1637</a>.<br>
-      <a href="https://github.com/UCL/STIR/pull/1698">PR #1698</a>
+      Brief section on Python in the <tt>STIR-UsersGuide</tt>.
     </li>
-    <li>
-      Fix to adjust buffer size in `manip_projdata.cxx` to account for appended extensions for file names.<br>
-      <a href="https://github.com/UCL/STIR/pull/1699">PR #1699</a>
-    </li>
-    <br>
   </ul>
 
   <h3>Build system</h3>
@@ -149,7 +209,7 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1700>PR #1700</a>
     </li>
-</ul>
+  </ul>
 
   <h3>Known problems</h3>
   <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
@@ -170,7 +230,8 @@
   <ul>
     <li>
       Simplified the <code>ProjDataInfoGenericNoArcCorr</code> class hierarchy by merging `<code>ProjDataInfoGeneric</code> into it
-      and deriving it from <code>ProjDataInfoCylindricalNoArcCorr</code>. See <a href=https://github.com/UCL/STIR/pull/1307>Issue #1307</a> for rationale.<br>
+      and deriving it from <code>ProjDataInfoCylindricalNoArcCorr</code>.
+      See <a href=https://github.com/UCL/STIR/pull/1307>Issue #1307</a> for rationale.<br>
       <strong>WARNING:</strong> this change might have unexpected consequences for developers:
       when checking for the type of <code>ProjDataInfo</code> with <code>dynamic_cast</code> with
       a sequence of <code>if<code> statements (or equivalent), make sure you test for <code>ProjDataInfoGeneric</code>
@@ -182,10 +243,12 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1696>PR #1696</a>
     </li>
-  </ul>
-
-  <h3>Bug fixes</h3>
-  <ul>
+    <li>
+      <code>ProjDataInfo::clone()</code> now uses covariant return types, avoiding need for explicit downcasting.
+      Also added the <code>DataWithProjDataInfo</code> class, reducing duplicate C++ code.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1712>PR #1712</a>.
+    </li>
   </ul>
 
   <h3>New Deprecations and renames</h3>
@@ -195,6 +258,22 @@
     </li>
     <li>
       <code>ProjDataInfoBlocksOnCylindricalNoArcCorr</code> will be removed in v7.0 as it is almost identical to <code>ProjDataInfoGenericNoArcCorr</code>.
+    </li>
+  </ul>
+
+<h3>Code improvements</h3>
+<uL>
+  <li>
+      Minor fix to replace a deprecated <code>std::sprintf()</code> with <code>std::snprintf()</code>, see <a href="https://github.com/UCL/STIR/issues/1586">#1586</a>.<br>
+      <a href="https://github.com/UCL/STIR/pull/1697">PR #1697</a>
+    </li>
+    <li>
+      Minor fix to replace a deprecated <code>std::istrstream()</code> with <code>std::istringstream()</code>, see <a href="https://github.com/UCL/STIR/issues/1637">#1637</a>.<br>
+      <a href="https://github.com/UCL/STIR/pull/1698">PR #1698</a>
+    </li>
+    <li>
+      Fix to adjust buffer size in `manip_projdata.cxx` to account for appended extensions for file names.<br>
+      <a href="https://github.com/UCL/STIR/pull/1699">PR #1699</a>
     </li>
   </ul>
 

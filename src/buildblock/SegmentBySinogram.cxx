@@ -26,6 +26,7 @@
 #include "stir/SegmentByView.h"
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange3D.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
@@ -36,12 +37,7 @@ SegmentBySinogram<elemT>::SegmentBySinogram(const Array<3, elemT>& v,
     : Segment<elemT>(pdi_ptr, ind),
       Array<3, elemT>(v)
 {
-  assert(get_min_view_num() == pdi_ptr->get_min_view_num());
-  assert(get_max_view_num() == pdi_ptr->get_max_view_num());
-  assert(get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(ind.segment_num()));
-  assert(get_max_axial_pos_num() == pdi_ptr->get_max_axial_pos_num(ind.segment_num()));
-  assert(get_min_tangential_pos_num() == pdi_ptr->get_min_tangential_pos_num());
-  assert(get_max_tangential_pos_num() == pdi_ptr->get_max_tangential_pos_num());
+  this->check_state();
 }
 
 template <typename elemT>
@@ -53,7 +49,9 @@ SegmentBySinogram<elemT>::SegmentBySinogram(const shared_ptr<const ProjDataInfo>
                                    pdi_ptr->get_max_view_num(),
                                    pdi_ptr->get_min_tangential_pos_num(),
                                    pdi_ptr->get_max_tangential_pos_num()))
-{}
+{
+  this->check_state();
+}
 
 template <typename elemT>
 SegmentBySinogram<elemT>::SegmentBySinogram(const Array<3, elemT>& v,
@@ -73,17 +71,26 @@ SegmentBySinogram<elemT>::SegmentBySinogram(const shared_ptr<const ProjDataInfo>
 template <typename elemT>
 SegmentBySinogram<elemT>::SegmentBySinogram(const SegmentByView<elemT>& s_v)
 
-    : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(), s_v.get_segment_indices()),
-      Array<3, elemT>(IndexRange3D(s_v.get_min_axial_pos_num(),
-                                   s_v.get_max_axial_pos_num(),
-                                   s_v.get_min_view_num(),
-                                   s_v.get_max_view_num(),
-                                   s_v.get_min_tangential_pos_num(),
-                                   s_v.get_max_tangential_pos_num()))
+    : SegmentBySinogram<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(), s_v.get_segment_indices())
 {
-
-  for (int r = get_min_axial_pos_num(); r <= get_max_axial_pos_num(); r++)
+  for (int r = this->get_min_axial_pos_num(); r <= this->get_max_axial_pos_num(); r++)
     set_sinogram(s_v.get_sinogram(r));
+}
+
+template <typename elemT>
+void
+SegmentBySinogram<elemT>::check_state() const
+{
+  if (!this->proj_data_info_sptr)
+    error("SegmentBySinogram not properly initialised.");
+
+  bool ok = (this->get_min_axial_pos_num() == this->get_min_index() && this->get_max_axial_pos_num() == this->get_max_index()
+             && this->get_min_view_num() == (*this)[this->get_min_index()].get_min_index()
+             && this->get_max_view_num() == (*this)[this->get_min_index()].get_max_index()
+             && this->get_min_tangential_pos_num() == (*this)[this->get_min_index()][this->get_min_view_num()].get_min_index()
+             && this->get_max_tangential_pos_num() == (*this)[this->get_min_index()][this->get_min_view_num()].get_max_index());
+  if (!ok)
+    error("SegmentBySinogram: inconsistent proj_data_info sizes and array sizes.");
 }
 
 template <typename elemT>
@@ -97,10 +104,11 @@ template <typename elemT>
 Viewgram<elemT>
 SegmentBySinogram<elemT>::get_viewgram(int view_num) const
 {
-  // gcc 2.95.2 needs a this-> in front of get_min_ring for unclear reasons
-  Array<2, elemT> pre_view(IndexRange2D(
-      this->get_min_axial_pos_num(), get_max_axial_pos_num(), get_min_tangential_pos_num(), get_max_tangential_pos_num()));
-  for (int r = get_min_axial_pos_num(); r <= get_max_axial_pos_num(); r++)
+  Array<2, elemT> pre_view(IndexRange2D(this->get_min_axial_pos_num(),
+                                        this->get_max_axial_pos_num(),
+                                        this->get_min_tangential_pos_num(),
+                                        this->get_max_tangential_pos_num()));
+  for (int r = this->get_min_axial_pos_num(); r <= this->get_max_axial_pos_num(); r++)
     pre_view[r] = Array<3, elemT>::operator[](r)[view_num];
   // KT 9/12 constructed a PETSinogram before...
   //  CL&KT 15/12 added ring_difference stuff
@@ -112,7 +120,7 @@ template <typename elemT>
 void
 SegmentBySinogram<elemT>::set_viewgram(const Viewgram<elemT>& viewgram)
 {
-  for (int r = get_min_axial_pos_num(); r <= get_max_axial_pos_num(); r++)
+  for (int r = this->get_min_axial_pos_num(); r <= this->get_max_axial_pos_num(); r++)
     Array<3, elemT>::operator[](r)[viewgram.get_view_num()] = viewgram[r];
 }
 
@@ -150,10 +158,6 @@ SegmentBySinogram<elemT>::resize(const IndexRange<3>& range)
   Array<3, elemT>::resize(range);
 }
 
-/*!
-  This makes sure that the new Array dimensions are the same as those in the
-  ProjDataInfo member.
-*/
 template <typename elemT>
 void
 SegmentBySinogram<elemT>::grow(const IndexRange<3>& range)

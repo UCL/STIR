@@ -1,7 +1,7 @@
 /*!
 
   \file
-  \ingroup recontest
+  \ingroup recon_test
 
   \brief Test program for detection position map using stir::ProjDataInfoBlockOnCylindrical
 
