@@ -432,7 +432,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}"
 
-            cmake --build . --target install -- -j$(nproc)
+            cmake --build . --target install --parallel
           fi
 
           # we'll install some dependencies with shared libraries, so need to let the OS know
