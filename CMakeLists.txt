@@ -109,6 +109,7 @@ option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # d
 option(DISABLE_NiftyPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 option(DISABLE_Parallelproj_PROJECTOR "disable use of Parallelproj projector" OFF)
 OPTION(DOWNLOAD_ZENODO_TEST_DATA "download zenodo data for tests" OFF)
+option(DISABLE_PETSIRD "disable use of PETSIRD filetypes" OFF)
 option(DISABLE_UPENN "disable use of UPENN filetypes" OFF)
 
 find_package(Git QUIET)
@@ -276,6 +277,40 @@ if (STIR_WITH_Parallelproj_PROJECTOR)
   message(STATUS "Parallelproj projector support enabled.")
 else()
   message(STATUS "Parallelproj projector support disabled or not available.")
+endif()
+
+if(NOT DISABLE_PETSIRD)
+  find_package(PETSIRD CONFIG)
+
+  if(PETSIRD_FOUND)
+    message(STATUS "PETSIRD support enabled (found PETSIRD).")
+    set(HAVE_PETSIRD ON)
+
+    # Inspect PETSIRD transitive dependencies
+    if(TARGET PETSIRD::petsird)
+      get_target_property(_petsird_libs PETSIRD::petsird INTERFACE_LINK_LIBRARIES)
+      
+      get_target_property(_petsird_features PETSIRD::petsird INTERFACE_COMPILE_FEATURES)
+      get_target_property(_petsird_libs PETSIRD::petsird INTERFACE_LINK_LIBRARIES)
+      message(STATUS "PETSIRD::petsird dependencies: ${_petsird_libs}")
+      message(STATUS "PETSIRD::petsird compile features: ${_petsird_features}")
+      
+      # I have to give credit to AI for the following line. 
+      string(REGEX MATCH "cxx_std_([0-9]+)" _petsird_std_match "${_petsird_features}")
+      if(CMAKE_MATCH_1)
+          UseCXX(${CMAKE_MATCH_1})
+      endif()
+      
+    else()
+      message(FATAL_ERROR "PETSIRD::petsird target not found after find_package(PETSIRD)")
+    endif()
+
+  else()
+    message(STATUS "PETSIRD not found: PETSIRD support will be disabled.")
+    set(HAVE_PETSIRD OFF)
+  endif()
+else()
+  set(HAVE_PETSIRD OFF)
 endif()
 
 #### enable support for ctest

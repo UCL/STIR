@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2026, University Medical Center Groningen
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -346,6 +347,26 @@ transform_array_from_periodic_indices(Array<num_dimensions, elemT>& out_array, c
     {
       out_array[index] = in_array[modulo(index, in_sizes)];
   } while (next(index, out_array));
+}
+
+template <typename elemT>
+inline void
+find_unique_values(std::set<elemT>& values, const Array<1, elemT>& input)
+{
+  for (auto& v : input)
+    {
+      values.insert(v);
+    }
+}
+
+template <int num_dim, typename elemT>
+inline void
+find_unique_values(std::set<elemT>& values, const Array<num_dim, elemT>& input)
+{
+  for (int i = input.get_min_index(); i <= input.get_max_index(); ++i)
+    {
+      find_unique_values(values, input[i]);
+    }
 }
 
 END_NAMESPACE_STIR

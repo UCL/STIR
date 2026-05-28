@@ -1,3 +1,4 @@
+# Copyright 2025, 2026, University Medical Center Groningen
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
@@ -266,6 +267,8 @@ endif()
 # Warning: dependencies for object libraries are not transitive!
 add_library(stir_registries OBJECT ${STIR_REGISTRIES})
 target_link_libraries(stir_registries)
+#target_link_libraries(stir_registries PRIVATE petsird)
+
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
@@ -276,6 +279,10 @@ if (NOT STIR_WITH_CUDA)
   target_compile_definitions(stir_registries PUBLIC CUVEC_DISABLE_CUDA)
 else()
   target_link_libraries(stir_registries PUBLIC CUDA::cudart)
+endif()
+
+if (HAVE_PETSIRD)
+  target_link_libraries(stir_registries PUBLIC PETSIRD::petsird)
 endif()
 
 # go and look for CMakeLists.txt files in all those directories

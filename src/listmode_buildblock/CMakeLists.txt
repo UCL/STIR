@@ -14,13 +14,20 @@ set(${dir_LIB_SOURCES}
 	LmToProjDataWithRandomRejection.cxx
         CListModeDataECAT8_32bit.cxx
         CListRecordECAT8_32bit.cxx
-	CListModeDataSAFIR.cxx
+        CListModeDataBasedOnCoordinateMap.cxx
+        CListModeDataSAFIR.cxx
 )
 
 if (HAVE_HDF5)
 list(APPEND ${dir_LIB_SOURCES}
         CListModeDataGEHDF5.cxx
         # CListRecordGEHDF5.cxx
+)
+endif()
+
+if (HAVE_PETSIRD)
+list(APPEND ${dir_LIB_SOURCES}
+        CListModeDataPETSIRD.cxx
 )
 endif()
 
@@ -66,4 +73,8 @@ if (HAVE_HDF5)
     # for GEHDF5, TODO remove once IO dependency added or GEHDF5Wrapper no longer includes H5Cpp.h
     target_include_directories(${TARGET} PRIVATE ${HDF5_INCLUDE_DIRS})
   endif()
+endif()
+
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()
