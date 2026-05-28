@@ -50,115 +50,115 @@ jobs:
           ROOT: "OFF"
           ITK: "OFF"
           PETSIRD: "ON"
+        - os: ubuntu-24.04
+          compiler: gcc
+          # compiler_version: 9
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "OFF"
+          PETSIRD: "OFF"
+        - os: ubuntu-24.04
+          compiler: clang
+          #compiler_version:
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          # currently using ITK 5.2 which doesn't like clang 14
+          ITK: "OFF"
+          PETSIRD: "ON"
+        - os: ubuntu-24.04
+          compiler: gcc
+          compiler_version: 10
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
+          BUILD_TYPE: "Debug"
+          parallelproj: "OFF"
+          ROOT: "OFF"
+          ITK: "ON"
+          PETSIRD: "OFF"
+        # gcc-12, C++20 test (Interesting, as gcc-12 does not support all of C++20 yet).
+        # However, commented out, as this seems to hang during install step for unknown reasons.
+        # See https://github.com/UCL/STIR/pull/1605
         # - os: ubuntu-24.04
-        #   compiler: gcc
-        #   # compiler_version: 9
-        #   cuda_version: "0"
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-        #   BUILD_TYPE: "Release"
-        #   parallelproj: "ON"
-        #   ROOT: "OFF"
-        #   ITK: "OFF"
-        #   PETSIRD: "OFF"
-        # - os: ubuntu-24.04
-        #   compiler: clang
-        #   #compiler_version:
-        #   cuda_version: "0"
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON"
-        #   BUILD_TYPE: "Release"
-        #   parallelproj: "ON"
-        #   ROOT: "OFF"
-        #   # currently using ITK 5.2 which doesn't like clang 14
-        #   ITK: "OFF"
-        #   PETSIRD: "OFF"
-        # - os: ubuntu-24.04
-        #   compiler: gcc
-        #   compiler_version: 10
-        #   cuda_version: "0"
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
-        #   BUILD_TYPE: "Debug"
-        #   parallelproj: "OFF"
-        #   ROOT: "OFF"
-        #   ITK: "ON"
-        #   PETSIRD: "OFF"
-        # # gcc-12, C++20 test (Interesting, as gcc-12 does not support all of C++20 yet).
-        # # However, commented out, as this seems to hang during install step for unknown reasons.
-        # # See https://github.com/UCL/STIR/pull/1605
-        # # - os: ubuntu-24.04
-        # #  compiler: gcc
-        # #  compiler_version: 12
-        # #  cuda_version: "0"
-        # #  BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
-        # #  BUILD_TYPE: "RelWithDebInfo"
-        # #  parallelproj: "ON"
-        # #  ROOT: "OFF"
-        # #  ITK: "ON"
-        # - os: ubuntu-24.04
-        #   compiler: gcc
-        #   compiler_version: 14
-        #   cuda_version: "0"
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
-        #   BUILD_TYPE: "RelWithDebInfo"
-        #   parallelproj: "ON"
-        #   ROOT: "OFF"
-        #   # Currently disabled due to out of disk space, see https://github.com/UCL/STIR/issues/1618
-        #   ITK: "OFF"
-        #   PETSIRD: "OFF"
-        # - os: ubuntu-24.04
-        #   # shared library build
-        #   compiler: gcc
-        #   compiler_version: 14
-        #   cuda_version: "0"
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20 -DBUILD_SHARED_LIBS=ON"
-        #   BUILD_TYPE: "Release"
-        #   parallelproj: "ON"
-        #   ROOT: "OFF"
-        #   ITK: "ON"
-        #   PETSIRD: "OFF"
-        # - os: ubuntu-24.04
-        #   compiler: gcc
-        #   # currently CUDA doesn't support gcc 14 yet
-        #   compiler_version: 13
-        #   cuda_version: "12.6.1"
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
-        #   BUILD_TYPE: "Release"
-        #   parallelproj: "ON"
-        #   ROOT: "OFF"
-        #   ITK: "ON"
-        #   PETSIRD: "OFF"
-        # - os: macOS-latest
-        #   compiler: gcc
-        #   # compiler_version: 11
-        #   cuda_version: "0"
-        #   # openmp=OFF as ON needs special stuff for Apple gcc which KT doesn't feel like getting into...
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-        #   parallelproj: "OFF"
-        #   BUILD_TYPE: "Debug"
-        #   ROOT: "OFF"
-        #   ITK: "OFF"
-        #   PETSIRD: "OFF"
-        # - os: macOS-latest
-        #   compiler: clang
-        #   compiler_version: 18
-        #   cuda_version: "0"
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-        #   parallelproj: "OFF"
-        #   BUILD_TYPE: "Release"
-        #   ROOT: "OFF"
-        #   ITK: "OFF"
-        #   PETSIRD: "OFF"
-        # - os: macOS-latest
-        #   compiler: clang
-        #   compiler_version: 21
-        #   cuda_version: "0"
-        #   # openMP off as problems again with brew
-        #   BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-        #   # parallelproj off as it needs openMP
-        #   parallelproj: "OFF"
-        #   BUILD_TYPE: "Release"
-        #   ROOT: "OFF"
-        #   ITK: "OFF"
-        #   PETSIRD: "OFF"
+        #  compiler: gcc
+        #  compiler_version: 12
+        #  cuda_version: "0"
+        #  BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
+        #  BUILD_TYPE: "RelWithDebInfo"
+        #  parallelproj: "ON"
+        #  ROOT: "OFF"
+        #  ITK: "ON"
+        - os: ubuntu-24.04
+          compiler: gcc
+          compiler_version: 14
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20"
+          BUILD_TYPE: "RelWithDebInfo"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          # Currently disabled due to out of disk space, see https://github.com/UCL/STIR/issues/1618
+          ITK: "OFF"
+          PETSIRD: "OFF"
+        - os: ubuntu-24.04
+          # shared library build
+          compiler: gcc
+          compiler_version: 14
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=20 -DBUILD_SHARED_LIBS=ON"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+          PETSIRD: "OFF"
+        - os: ubuntu-24.04
+          compiler: gcc
+          # currently CUDA doesn't support gcc 14 yet
+          compiler_version: 13
+          cuda_version: "12.6.1"
+          BUILD_FLAGS: "-DSTIR_OPENMP=ON -DCMAKE_CXX_STANDARD=17"
+          BUILD_TYPE: "Release"
+          parallelproj: "ON"
+          ROOT: "OFF"
+          ITK: "ON"
+          PETSIRD: "OFF"
+        - os: macOS-latest
+          compiler: gcc
+          # compiler_version: 11
+          cuda_version: "0"
+          # openmp=OFF as ON needs special stuff for Apple gcc which KT doesn't feel like getting into...
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Debug"
+          ROOT: "OFF"
+          ITK: "OFF"
+          PETSIRD: "OFF"
+        - os: macOS-latest
+          compiler: clang
+          compiler_version: 18
+          cuda_version: "0"
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          parallelproj: "OFF"
+          BUILD_TYPE: "Release"
+          ROOT: "OFF"
+          ITK: "OFF"
+          PETSIRD: "ON"
+        - os: macOS-latest
+          compiler: clang
+          compiler_version: 21
+          cuda_version: "0"
+          # openMP off as problems again with brew
+          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
+          # parallelproj off as it needs openMP
+          parallelproj: "OFF"
+          BUILD_TYPE: "Release"
+          ROOT: "OFF"
+          ITK: "OFF"
+          PETSIRD: "ON"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
