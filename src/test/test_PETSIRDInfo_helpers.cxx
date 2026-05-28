@@ -15,6 +15,11 @@
 
   \author Nikos Efthimiou
 
+  \todo The helper code is being transitioned from std::vector-based arrays
+        in PETSIRDInfo_helpers.h to stir::Array. This test currently checks
+        find_unique_values() with stir::Array inputs, while the production
+        PETSIRDInfo_helpers code may still use the older std::vector-based
+        data structures.
 */
 #include "stir/detail/PETSIRDInfo_helpers.h"
 #include "stir/RunTests.h"
@@ -78,7 +83,7 @@ PETSIRDTests::test_find_unique_values_2D()
   std::set<float> expected = { 1.0f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f, 9.0f };
   std::set<float> result;
 
-  const IndexRange<2> range(Coordinate2D<int>(0, 0), Coordinate2D<int>(2, 2));
+  const IndexRange<2> range(make_coordinate(0, 0), make_coordinate(2, 2));
   stir::Array<2, float> _input(range); //{ { 1.0f, 2.0f, 3.0f }, { 4.0f, 2.0f, 6.0f }, { 1.0f, 8.0f, 9.0f } };
 
   for (size_t i = 0; i < input.size(); ++i)
