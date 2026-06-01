@@ -1,5 +1,5 @@
 # Copyright 2012 Kris Thielemans
-# Copyright 2014, 2018, 2020, 2022, 2023 University College London
+# Copyright 2014, 2018, 2020, 2022, 2023, 2026 University College London
 # This file is part of STIR.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -18,10 +18,7 @@ cmake_policy(SET CMP0086 NEW)
 
 if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
-  FIND_PACKAGE(SWIG 3.0 REQUIRED)
-  if (SWIG_VERSION VERSION_LESS 3.0.12)
-    message(FATAL_ERROR "Your SWIG version is too old. We need at least 3.0.12, but (at least) 4.4 is highly recommended.")
-  endif()
+  FIND_PACKAGE(SWIG 4.2 REQUIRED)
   INCLUDE("${SWIG_USE_FILE}")
 
   SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\" -DSTIR_DEPRECATED="" -DSTIR_TOF=1 -DSTIR_VERSION=${VERSION} -D__host__="" -D__device__="")
