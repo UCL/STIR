@@ -12,7 +12,7 @@
   <h2>Overall summary</h2>
 
     <p>
-      This version is 100% backwards compatible with STIR 6.3.
+      This version is 100% backwards compatible with STIR 6.3 (aside from bug fixes of course).
     </p>
     <p>
       This is a release with an important TOF bug fix, considerable improvements  in the Python
@@ -44,7 +44,7 @@
     <li>
       An important bug fix for the "ray tracing matrix" (or actually any "matrix") projector for TOF PET. Previously, oblique
       segments had problems, see <a href=https://github.com/UCL/STIR/issues/1537># 1537</a>.<br>
-      <a href=https://github.com/UCL/STIR/pull/1675># 1675</a>. Extra tests were introduced in <a href=https://github.com/UCL/STIR/pull/1674># 1674</a>.
+      <a href=https://github.com/UCL/STIR/pull/1675>PR #1675</a>. Extra tests were introduced in <a href=https://github.com/UCL/STIR/pull/1674>PR #1674</a>.
     </li>
     <li>
       <code>ArcCorrection</code> should now work correctly for TOF data (although we don't use it).
@@ -139,7 +139,7 @@ launch_GUI('proj_data_filename')
   <ul>
     <li>When using a (ray tracing) matrix as projector, previously the matrix stored elements for the whole LOR,
       while many elements would be zero. We now only store the non-zero ones, resulting in a speed-up for the Siemens Vision Quadra of about a factor 1.7. Memory usage is also reduced.<br>
-      <a href=https://github.com/UCL/STIR/pull/1674># 1674</a>.
+      <a href=https://github.com/UCL/STIR/pull/1674>PR #1674</a>.
     </li>
     <li>
       OpenMP parallelisation was added to the function to create a 2d histogram of hits per crystal 
@@ -202,7 +202,7 @@ launch_GUI('proj_data_filename')
     <li>
       Use the CMake <code>HDF5::HDF5</code> target to specify dependencies on,
       as opposed to <code>HDF5_CXX_LIBRARIES</code> etc. This should be more future proof
-      and avoids problems with the STIR conda-forge build. (This can be switched of
+      and avoids problems with the STIR conda-forge build. (This can be switched off
       with the CMake option <code>USE_HDF5_TARGET=OFF</code>.)
       <br>
       <a href=https://github.com/UCL/STIR/pull/1665>PR #1665</a>
@@ -225,18 +225,10 @@ launch_GUI('proj_data_filename')
 
   <H2>What is new for developers (aside from what should be obvious from the above):</H2>
 
-  <h3>New functionality</h3>
-  <ul>
-    <li>
-      Added a Python script to convert e7tools generated Siemens Biograph Vision 600 sinograms to STIR compatible format.
-      <a href=https://github.com/UCL/STIR/pull/1675>PR #1675</a>
-    </li>
-  </ul>
-
   <h3>Changed functionality</h3>
   <ul>
     <li>
-      Simplified the <code>ProjDataInfoGenericNoArcCorr</code> class hierarchy by merging `<code>ProjDataInfoGeneric</code> into it
+      Simplified the <code>ProjDataInfoGenericNoArcCorr</code> class hierarchy by merging <code>ProjDataInfoGeneric</code> into it
       and deriving it from <code>ProjDataInfoCylindricalNoArcCorr</code>.
       See <a href=https://github.com/UCL/STIR/pull/1307>Issue #1307</a> for rationale.<br>
       <strong>WARNING:</strong> this change might have unexpected consequences for developers:
