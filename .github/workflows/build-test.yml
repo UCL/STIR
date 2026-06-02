@@ -47,7 +47,7 @@ jobs:
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
-          ROOT: "OFF"
+          ROOT: "ON"
           ITK: "OFF"
           PETSIRD: "ON"
         - os: ubuntu-24.04

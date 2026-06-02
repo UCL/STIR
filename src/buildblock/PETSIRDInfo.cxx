@@ -16,7 +16,6 @@
 
 #include "stir/PETSIRDInfo.h"
 #include "stir/detail/PETSIRDInfo_helpers.h"
-#include "stir/Succeeded.h"
 
 #include "stir/warning.h"
 
@@ -591,40 +590,6 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
       error("Forward and reverse maps differ in size");
     }
-
-  //   for (const auto& [petsird_bin, stir_pos] : *petsird_to_stir)
-  // {
-  //   auto it = stir_to_petsird->find(stir_pos);
-
-  //   if (it == stir_to_petsird->end())
-  //   {
-  //     std::cerr << "Missing reverse entry for STIR position: "
-  //               << stir_pos.tangential_coord() << ", "
-  //               << stir_pos.axial_coord() << ", "
-  //               << stir_pos.radial_coord() << std::endl;
-  //     error("Reverse map lookup failed");
-  //   }
-
-  //   if (!(it->second == petsird_bin))
-  //   {
-  //     std::cerr << "Mismatch after round-trip!\n"
-  //               << "Forward PETSIRD bin: "<<  "\n"
-  //               << "Recovered PETSIRD bin: " << "\n"
-  //               << "STIR position: "
-  //               << stir_pos.tangential_coord() << ", "
-  //               << stir_pos.axial_coord() << ", "
-  //               << stir_pos.radial_coord() << std::endl;
-  //     error("Forward/backward maps are inconsistent");
-  //   }
-  // }
-
-  // // this->map.reset(new DetectorCoordinateMapLightPETSIRD(petsird_map));
-  // this->map.reset(new DetectorCoordinateMap(petsird_map));
-  // // this_scanner_sptr->get_detector_map_sptr()->set_detector_coordinate_map_light_sptr(
-  // //     std::make_shared<DetectorCoordinateMapLightPETSIRD>(petsird_map));
-  // this->map->write_detectormap_to_file("petsird_detector_map_from_scanner_definition.txt");
-  // this_scanner_sptr->set_detector_map(petsird_map);
-  // this_scanner_sptr->set_up();
 }
 
 float

@@ -24,10 +24,7 @@
 #include <vector>
 
 #include "stir/listmode/CListModeData.h"
-#include "stir/ProjData.h"
-#include "stir/ProjDataInfo.h"
-#include "stir/listmode/CListRecord.h"
-#include "stir/IO/InputStreamWithRecords.h"
+#include "stir/DetectorCoordinateMap.h"
 #include "stir/shared_ptr.h"
 
 // #include "stir/listmode/CListRecordSAFIR.h"

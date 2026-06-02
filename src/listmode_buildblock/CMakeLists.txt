@@ -58,6 +58,10 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
   )
 endif()
 
+if(HAVE_PETSIRD)
+  list(APPEND ${dir_LIB_SOURCES}
+  CListRecordPETSIRD.cxx)
+endif()
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 

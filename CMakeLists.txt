@@ -296,10 +296,11 @@ if(NOT DISABLE_PETSIRD)
       message(STATUS "PETSIRD::petsird compile features: ${_petsird_features}")
       
       # I have to give credit to AI for the following line. 
-      string(REGEX MATCH "cxx_std_([0-9]+)" _petsird_std_match "${_petsird_features}")
-      if(CMAKE_MATCH_1)
-          UseCXX(${CMAKE_MATCH_1})
-      endif()
+      # Probably this will not be needed, but I will keep it here for future reference. 
+      # string(REGEX MATCH "cxx_std_([0-9]+)" _petsird_std_match "${_petsird_features}")
+      # if(CMAKE_MATCH_1)
+          # UseCXX(${CMAKE_MATCH_1})
+      # endif()
       
     else()
       message(FATAL_ERROR "PETSIRD::petsird target not found after find_package(PETSIRD)")

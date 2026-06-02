@@ -7,17 +7,7 @@
 
     SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
-/*!
-
-  \file
-  \ingroup listmode
-  \brief Implementation of class stir::PETSIRDCListmodeInputFileFormat
-
-  \author Nikos Efthimiou
-  \author Daniel Deidda
-
-*/
-
+  */
 #include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
 #include "petsird/binary/protocols.h"
 #include "petsird/hdf5/protocols.h"
@@ -28,6 +18,17 @@
 // #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
 
 START_NAMESPACE_STIR
+
+/*!
+
+  \file PETSIRDCListmodeInputFileFormat
+  \ingroup listmode
+  \brief Implementation of class stir::PETSIRDCListmodeInputFileFormat
+
+  \author Nikos Efthimiou
+  \author Daniel Deidda
+
+*/
 
 bool
 PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const std::string& filename) const

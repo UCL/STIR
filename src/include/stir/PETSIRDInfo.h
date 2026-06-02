@@ -3,17 +3,16 @@
 
     SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for detail
-/*!
-
-\file
-\ingroup listmode
-\brief Place that converts PETSIRD geometry to STIR geometry
-
-\author Nikos Efthimiou
 */
-
 #ifndef __stir_listmode_PETSIRDInfo_H__
 #define __stir_listmode_PETSIRDInfo_H__
+/*!
+  \file PETSIRDInfo.h
+  \ingroup listmode
+  \brief Declaration of class PETSIRDInfo
+
+  \author Nikos Efthimiou
+*/
 
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
@@ -23,8 +22,6 @@
 #include "stir/ProjDataInfo.h"
 #include <set>
 #include "stir/format.h"
-#include "stir/info.h"
-#include "stir/error.h"
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"   // for make_detection_bin
@@ -150,7 +147,7 @@ private:
   uint32_t num_axial_crystals_per_block;
   //! Number of transaxial crystals per block.
   uint32_t num_trans_crystals_per_block;
-
+  //! True if we should be using the cylindrical geometry
   bool is_cylindrical = true;
 
   bool is_generic_geometry = false;
