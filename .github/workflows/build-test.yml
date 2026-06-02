@@ -240,10 +240,10 @@ jobs:
             ;;
         esac
 
-        curl -L https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz -o yardl_${YARDL_VERSION}_${YARLD_OS}_${ARCH}.tar.gz
+        curl -L https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz -o yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz
         mkdir yardl
-        tar -xzf "yardl_${YARDL_VERSION}_${YARLD_OS}_${ARCH}.tar.gz" -C yardl
-        rm "yardl_${YARDL_VERSION}_${YARLD_OS}_${ARCH}.tar.gz"
+        tar -xzf "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz" -C yardl
+        rm "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz"
         echo "$PWD/yardl" >> "$GITHUB_PATH"
 
 
@@ -322,6 +322,7 @@ jobs:
                 echo "Using compilers from PETSIRD/micromamba environment"
                 echo "CC=${CC:-unset}"
                 echo "CXX=${CXX:-unset}"
+                micromamba install -y -n yardl -c conda-forge boost-cpp swig
               else
                 # install compiler
                 if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
@@ -330,9 +331,11 @@ jobs:
                 else
                     sudo apt install -y $CXX
                 fi
+
+                # other dependencies
+                sudo apt install -y cmake libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev ninja-build
               fi
-              # other dependencies
-              sudo apt install -y cmake libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev ninja-build
+              
               if test "${{matrix.ITK}}XX" == "ONXX"; then
                 sudo apt install -y libinsighttoolkit5-dev
               fi
@@ -347,7 +350,7 @@ jobs:
               if ! command -v swig > /dev/null; then
                   brew install swig
               fi
-              brew install boost nlohmann-json
+              # brew install boost nlohmann-json
               # Temp fix to 3.13 due to https://github.com/UCL/STIR/issues/1638
               #if ! command -v python3 > /dev/null; then
               #    brew install python
@@ -376,6 +379,7 @@ jobs:
           if test "${{matrix.PETSIRD}}XX" == "ONXX"; then
             micromamba install -y -n yardl -c conda-forge numpy pytest matplotlib
             PYTHON_EXECUTABLE="$(which python)"
+            echo PYTHON_EXECUTABLE="$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
           else
             ${PYTHON_EXECUTABLE} -m venv ${GITHUB_WORKSPACE}/my-env
             source "${GITHUB_WORKSPACE}/my-env/bin/activate"
@@ -395,6 +399,7 @@ jobs:
             esac
             # From now on, use the venv Python.
             PYTHON_EXECUTABLE="$(which python)"
+            echo PYTHON_EXECUTABLE="$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
           fi
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
@@ -418,7 +423,11 @@ jobs:
           if test "${{matrix.ROOT}}XX" == "ONXX"; then
              case ${{matrix.os}} in
                (ubuntu*)
-               sudo apt install -y libtbb-dev libvdt-dev libgif-dev
+               if test "${{matrix.PETSIRD}}XX" == "ONXX"; then
+                micromamba install -y -n yardl -c conda-forge tbb-devel vdt giflib
+               else
+                sudo apt install -y libtbb-dev libvdt-dev libgif-dev
+               fi 
                ROOT_file=root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz
                #root_v6.34.00.Linux-ubuntu24.10-x86_64-gcc14.2.tar.gz
                ;;
@@ -429,8 +438,14 @@ jobs:
              wget https://root.cern/download/"$ROOT_file"
              tar -xzvf "$ROOT_file"
              rm "$ROOT_file"
+             
              source root/bin/thisroot.sh
-             echo ROOTSYS="$ROOTSYS" >> $GITHUB_ENV
+             # thisroot.sh adds ROOTSYS to CMAKE_PREFIX_PATH.
+             # Avoid ROOTConfig.cmake; let STIR find ROOT via root-config instead.
+             export CMAKE_PREFIX_PATH="${CONDA_PREFIX}:${CMAKE_INSTALL_PREFIX}"
+             echo ROOTSYS="$ROOTSYS" >> "$GITHUB_ENV"
+             echo CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" >> "$GITHUB_ENV"
+             echo PATH="$PATH" >> "$GITHUB_ENV"
           fi
 
           # Install PETSIRD
@@ -455,11 +470,11 @@ jobs:
           # thisroot.sh also modified the path, so save that for the recon_test_pack
           case ${{matrix.os}} in
             (ubuntu*)
-              echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+              echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${CONDA_PREFIX}/lib:${ROOTSYS:+${ROOTSYS}/lib:}${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
               echo PATH="$PATH" >> $GITHUB_ENV
               ;;
             (macOS*)
-              echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$DYLD_FALLBACK_LIBRARY_PATH" >> $GITHUB_ENV
+              echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${CONDA_PREFIX}/lib:${ROOTSYS:+${ROOTSYS}/lib:}${DYLD_FALLBACK_LIBRARY_PATH}" >> "$GITHUB_ENV"
               echo PATH="$PATH" >> $GITHUB_ENV
               ;;
             (windows*)
@@ -493,8 +508,14 @@ jobs:
           # make available to jobs below
           echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
           if [ -n "$ROOTSYS" ]; then
-            # make sure we find ROOT (and vdt, which is installed in the same place)
-            EXTRA_BUILD_FLAGS=-DCMAKE_PREFIX_PATH:PATH="$ROOTSYS"
+            if test "${{matrix.PETSIRD}}XX" == "ONXX"; then
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_PATH=${ROOTSYS};${CONDA_PREFIX}"
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DHDF5_ROOT=${CONDA_PREFIX}"
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DVDT_LIBRARY=${CONDA_PREFIX}/lib/libvdt.so"
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DVDT_INCLUDE_DIR=${CONDA_PREFIX}/include"
+            else
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_PATH=${ROOTSYS};/usr"
+            fi
           fi
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DBUILD_SWIG_PYTHON=ON -DPython_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"

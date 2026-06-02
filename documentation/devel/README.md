@@ -6,3 +6,4 @@ Please check files here for information/code practices for developers.
 - Set your editor settings appropriately: [instructions](editor-settings.md)
 - Install git hooks for serious development: [instructions](git-hooks.md)
 - Read the documentation, including the STIR developers guide
+- To run the CI workflow locally with `act`: [instructions](local-CI.md)
