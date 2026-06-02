@@ -6,6 +6,7 @@
     See STIR/LICENSE.txt for detail
 */
 
+#include "stir/format.h"
 #include "stir/info.h"
 #include "stir/error.h"
 

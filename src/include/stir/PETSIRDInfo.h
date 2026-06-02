@@ -21,7 +21,6 @@
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/ProjDataInfo.h"
 #include <set>
-#include "stir/format.h"
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"   // for make_detection_bin
