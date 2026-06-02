@@ -47,7 +47,7 @@ jobs:
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           parallelproj: "ON"
-          ROOT: "ON"
+          ROOT: "OFF"
           ITK: "OFF"
           PETSIRD: "ON"
         - os: ubuntu-24.04
@@ -218,7 +218,7 @@ jobs:
       shell: bash -el {0}
       run: |
         set -ex
-        micromamba install -y -n yardl -c conda-forge boost-cpp swig matplotlib
+        micromamba install -y -n yardl -c conda-forge boost-cpp swig 
         test -f "${CONDA_PREFIX}/include/boost/config.hpp"
 
     - name: Install Yardl
@@ -329,9 +329,10 @@ jobs:
                 else
                     sudo apt install -y $CXX
                 fi
+                # other dependencies
+                sudo apt install -y cmake libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev ninja-build
               fi
-              # other dependencies
-              sudo apt install -y cmake libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev ninja-build
+              
               if test "${{matrix.ITK}}XX" == "ONXX"; then
                 sudo apt install -y libinsighttoolkit5-dev
               fi
@@ -340,20 +341,27 @@ jobs:
               PYTHON_EXECUTABLE=$(which python3)
               ;;
             (macOS*)
-              if ! command -v ninja > /dev/null; then
+              if test "${{matrix.PETSIRD}}XX" == "ONXX"; then
+                echo "Using compilers from PETSIRD/micromamba environment"
+                echo "CC=${CC:-unset}"
+                echo "CXX=${CXX:-unset}"
+              else
+                if ! command -v ninja > /dev/null; then
                   brew install ninja
-              fi
-              if ! command -v swig > /dev/null; then
+                fi
+                if ! command -v swig > /dev/null; then
                   brew install swig
+                fi
+                brew install boost nlohmann-json
+                # Temp fix to 3.13 due to https://github.com/UCL/STIR/issues/1638
+                #if ! command -v python3 > /dev/null; then
+                #    brew install python
+                #fi
+                brew install python@3.13
+                brew ls python@3.13
+                PYTHON_EXECUTABLE=$(find /opt/homebrew/Cellar/python@3.13 -type f -name python3.13)
               fi
-              brew install boost nlohmann-json
-              # Temp fix to 3.13 due to https://github.com/UCL/STIR/issues/1638
-              #if ! command -v python3 > /dev/null; then
-              #    brew install python
-              #fi
-              brew install python@3.13
-              brew ls python@3.13
-              PYTHON_EXECUTABLE=$(find /opt/homebrew/Cellar/python@3.13 -type f -name python3.13)
+
               #PYTHON_EXECUTABLE=$(which python3)
               ;;
             (windows*)
