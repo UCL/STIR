@@ -149,7 +149,7 @@ public:
     // timing positions have the same binning/mashing and number of TOF bins.
     // If the STIR proj_data_info uses a different TOF mashing factor or TOF range,
     // this simple offset conversion is not valid.
-    DetectionPositionPair<> det_pair(
+    this->det_pos_pair = DetectionPositionPair<>(
         it0->second, it1->second, static_cast<int>(event.tof_idx) + this->proj_data_info_sptr->get_min_tof_pos_num());
 
     is_prompt_event = is_prompt;
