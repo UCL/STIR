@@ -527,7 +527,9 @@ jobs:
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       run: |
           cd ${GITHUB_WORKSPACE}/build;
-          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          if test "${{matrix.PETSIRD}}XX" != "ONXX"; then
+            source "${GITHUB_WORKSPACE}/my-env/bin/activate"
+          fi
           cmake --build . --config ${BUILD_TYPE} --target install
 
     - name: ctest
@@ -666,7 +668,9 @@ jobs:
       shell: bash -el {0}
       run: |
           set -ex
-          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          if test "${{matrix.PETSIRD}}XX" != "ONXX"; then
+            source "${GITHUB_WORKSPACE}/my-env/bin/activate"
+          fi
           # Run Python tests, making sure we're using the correct Python interpreter
           which python
           export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/python
