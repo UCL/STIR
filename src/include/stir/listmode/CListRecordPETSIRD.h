@@ -48,8 +48,8 @@ class CListEventPETSIRD : public CListEventScannerWithDiscreteDetectors<ProjData
 {
 public:
   inline CListEventPETSIRD(shared_ptr<const ProjDataInfo> proj_data_info_sptr,
-                          DetectionPositionPair<>* det_pos_pair,
-                          bool* is_prompt)
+                           DetectionPositionPair<>* det_pos_pair,
+                           bool* is_prompt)
       : CListEventScannerWithDiscreteDetectors<ProjDataInfoT>(proj_data_info_sptr),
         det_pos_pair_ptr(det_pos_pair),
         is_prompt_ptr(is_prompt)
@@ -107,7 +107,7 @@ class CListRecordPETSIRD : public CListRecord
 public:
   CListRecordPETSIRD(shared_ptr<const PETSIRDInfo> petsird_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr)
       : event_data(make_event_data(proj_data_info_sptr, this->det_pos_pair, this->is_prompt_event)),
-        petsird_info_sptr(std::move(petsird_info_sptr)), 
+        petsird_info_sptr(std::move(petsird_info_sptr)),
         proj_data_info_sptr(std::move(proj_data_info_sptr))
   {}
 
@@ -157,9 +157,8 @@ public:
   }
 
 private:
-  static std::unique_ptr<CListEvent> make_event_data(shared_ptr<const ProjDataInfo> proj_data_info,
-                                                    DetectionPositionPair<>& det_pos_pair,
-                                                    bool& is_prompt_event);
+  static std::unique_ptr<CListEvent>
+  make_event_data(shared_ptr<const ProjDataInfo> proj_data_info, DetectionPositionPair<>& det_pos_pair, bool& is_prompt_event);
 
   std::unique_ptr<CListEvent> event_data;
   CListTimePETSIRD time_data;
