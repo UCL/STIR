@@ -48,8 +48,8 @@ class CListEventPETSIRD : public CListEventScannerWithDiscreteDetectors<ProjData
 {
 public:
   inline CListEventPETSIRD(shared_ptr<const ProjDataInfo> proj_data_info_sptr,
-                           const DetectionPositionPair<>* det_pos_pair,
-                           const bool* is_prompt)
+                          DetectionPositionPair<>* det_pos_pair,
+                          bool* is_prompt)
       : CListEventScannerWithDiscreteDetectors<ProjDataInfoT>(proj_data_info_sptr),
         det_pos_pair_ptr(det_pos_pair),
         is_prompt_ptr(is_prompt)
@@ -69,7 +69,7 @@ public:
 
   inline Succeeded set_prompt(const bool prompt) override
   {
-    // m_prompt = prompt;
+    *this->is_prompt_ptr = prompt;
     return Succeeded::yes;
   }
 
@@ -80,12 +80,12 @@ public:
 
   virtual void set_detection_position(const DetectionPositionPair<>& det_pos_pair) override
   {
-    *const_cast<DetectionPositionPair<>*>(this->det_pos_pair_ptr) = det_pos_pair;
+    *this->det_pos_pair_ptr = det_pos_pair;
   }
 
 private:
-  const DetectionPositionPair<>* det_pos_pair_ptr = nullptr;
-  const bool* is_prompt_ptr = nullptr;
+  DetectionPositionPair<>* det_pos_pair_ptr = nullptr;
+  bool* is_prompt_ptr = nullptr;
 };
 
 class CListTimePETSIRD : public ListTime
@@ -107,7 +107,8 @@ class CListRecordPETSIRD : public CListRecord
 public:
   CListRecordPETSIRD(shared_ptr<const PETSIRDInfo> petsird_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr)
       : event_data(make_event_data(proj_data_info_sptr, this->det_pos_pair, this->is_prompt_event)),
-        petsird_info_sptr(std::move(petsird_info_sptr))
+        petsird_info_sptr(std::move(petsird_info_sptr)), 
+        proj_data_info_sptr(std::move(proj_data_info_sptr))
   {}
 
   bool is_time() const override { return true; /*time_data.is_time();*/ }
@@ -144,8 +145,12 @@ public:
               exp_det_0.energy_index);
       }
 
-    DetectionPositionPair<> det_pair(it0->second, it1->second, event.tof_idx);
-    // + (this->proj_data_info_sptr->get_min_tof_pos_num()));
+    // Warning: this assumes that the PETSIRD TOF bins and the STIR ProjDataInfo
+    // timing positions have the same binning/mashing and number of TOF bins.
+    // If the STIR proj_data_info uses a different TOF mashing factor or TOF range,
+    // this simple offset conversion is not valid.
+    DetectionPositionPair<> det_pair(
+        it0->second, it1->second, static_cast<int>(event.tof_idx) + this->proj_data_info_sptr->get_min_tof_pos_num());
 
     is_prompt_event = is_prompt;
     return Succeeded::yes;
@@ -153,17 +158,17 @@ public:
 
 private:
   static std::unique_ptr<CListEvent> make_event_data(shared_ptr<const ProjDataInfo> proj_data_info,
-                                                     const DetectionPositionPair<>& det_pos_pair,
-                                                     const bool& is_prompt_event);
+                                                    DetectionPositionPair<>& det_pos_pair,
+                                                    bool& is_prompt_event);
 
   std::unique_ptr<CListEvent> event_data;
   CListTimePETSIRD time_data;
 
   shared_ptr<const PETSIRDInfo> petsird_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 
   bool is_prompt_event = true;
   DetectionPositionPair<> det_pos_pair;
-  uint32_t m_tof_bin;
 };
 
 END_NAMESPACE_STIR

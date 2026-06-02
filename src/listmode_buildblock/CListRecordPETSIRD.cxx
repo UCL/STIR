@@ -23,8 +23,8 @@ START_NAMESPACE_STIR
 
 std::unique_ptr<CListEvent>
 CListRecordPETSIRD::make_event_data(shared_ptr<const ProjDataInfo> proj_data_info_sptr,
-                                    const DetectionPositionPair<>& det_pos_pair,
-                                    const bool& is_prompt_event)
+                                    DetectionPositionPair<>& det_pos_pair,
+                                    bool& is_prompt_event)
 {
   if (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()) != nullptr)
     {
