@@ -17,17 +17,17 @@ act -W .github/workflows/build-test.yml \
 ```
 
 * The ```-W``` option selects the workflow file to run
-* The ```-P``` option maps the GitHub Actions 
-runner label ```ubuntu-24.04``` to a local container image. 
+* The ```-P``` option maps the GitHub Actions
+runner label ```ubuntu-24.04``` to a local container image.
 The image in the command above is suggested online.
 * The ```--env ACT=true``` option sets an environment variable
  used by the workflow to detect that it is running under ```act```.
  Some GitHub setp are skipped.
 
-## NOTES
+### NOTES
 
-* It is highly recommended to run only one job at the time. 
-STIR has an array of different OSes and options. 
+* It is highly recommended to run only one job at the time.
+STIR has an array of different OSes and options.
 Don't try to spin them up all together in your local workstation.
 * Runnning the workflow locally with ```act``` is not always identical to GitHub.
 * If Docker runs out of disk space, remove old images and containers before running
