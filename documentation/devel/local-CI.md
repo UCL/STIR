@@ -24,7 +24,7 @@ The image in the command above is suggested online.
  used by the workflow to detect that it is running under ```act```.
  Some GitHub setp are skipped.
 
-### NOTES
+## NOTES
 
 * It is highly recommended to run only one job at the time.
 STIR has an array of different OSes and options.

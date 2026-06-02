@@ -19,7 +19,6 @@
 #include "petsird/protocols.h"
 #include "stir/Scanner.h"
 #include "stir/DetectorCoordinateMap.h"
-#include "stir/ProjDataInfo.h"
 #include <set>
 
 #include "petsird_helpers.h"
