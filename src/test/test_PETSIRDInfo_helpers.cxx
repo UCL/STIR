@@ -58,8 +58,8 @@ PETSIRDTests::run_tests()
 void
 PETSIRDTests::test_find_unique_values_1D()
 {
-  stir::Array<1, float> input = make_1d_array( 1.0f, 2.0f, 3.0f, 2.0f, 4.0f, 1.0f, 5.0f);
-  stir::Array<1, float> expected = make_1d_array( 1.0f, 2.0f, 3.0f, 4.0f, 5.0f );
+  stir::Array<1, float> input = make_1d_array(1.0f, 2.0f, 3.0f, 2.0f, 4.0f, 1.0f, 5.0f);
+  stir::Array<1, float> expected = make_1d_array(1.0f, 2.0f, 3.0f, 4.0f, 5.0f);
   std::set<float> result;
 
   find_unique_values(result, input.begin_all_const(), input.end_all_const());
@@ -72,9 +72,8 @@ PETSIRDTests::test_find_unique_values_1D()
 void
 PETSIRDTests::test_find_unique_values_2D()
 {
-  stir::Array<2, float> input = make_array(make_1d_array(1.0f, 2.0f, 3.0f), 
-                                                  make_1d_array(4.0f, 2.0f, 6.0f), 
-                                                  make_1d_array(1.0f, 8.0f, 9.0f));
+  stir::Array<2, float> input
+      = make_array(make_1d_array(1.0f, 2.0f, 3.0f), make_1d_array(4.0f, 2.0f, 6.0f), make_1d_array(1.0f, 8.0f, 9.0f));
   stir::Array<1, float> expected = { 1.0f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f, 9.0f };
   std::set<float> result;
 
