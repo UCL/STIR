@@ -4,9 +4,9 @@
 
     SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
-
+*/
 /*!
-  \file
+  \file BinNormalisationFromPETSIRD.cxx
   \ingroup normalisation
 
   \brief Implementation for class stir::BinNormalisationFromPETSIRD

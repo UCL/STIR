@@ -269,11 +269,8 @@ inline void transform_array_to_periodic_indices(Array<num_dim, elemT>& out_array
 template <int num_dim, typename elemT>
 inline void transform_array_from_periodic_indices(Array<num_dim, elemT>& out_array, const Array<num_dim, elemT>& in_array);
 
-template <typename elemT>
-inline void find_unique_values(std::set<elemT>& values, const Array<1, elemT>& input);
-
-template <int num_dim, typename elemT>
-inline void find_unique_values(std::set<elemT>& values, const Array<num_dim, elemT>& input);
+template <typename InputIt, typename elemT>
+inline void find_unique_values(std::set<elemT>& values, InputIt begin, InputIt end);
 
 // inline bool
 // get_spacing_uniform(std::vector<float>& spacing, const std::set<float>& unsorted_block_poss, double epsilon = 1e-4)
