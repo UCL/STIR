@@ -213,7 +213,7 @@ jobs:
         cache-environment: true
         cache-downloads: true
 
-    - name: Add STIR dependencies in PETSIRD environent
+    - name: Add STIR dependencies in PETSIRD environment
       if: matrix.PETSIRD =='ON'
       shell: bash -el {0}
       run: |
