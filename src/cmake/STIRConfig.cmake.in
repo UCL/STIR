@@ -3,6 +3,8 @@
 # Author: Kris Thielemans
 # Author Richard Brown
 # Copyright 2016, 2019, 2020, 2022, 2023 University College London
+# Copyright 2025, University Medical Center Groningen
+#
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -156,6 +158,12 @@ endif()
 if(@STIR_WITH_Parallelproj_PROJECTOR@)
   find_package(parallelproj REQUIRED CONFIG)
   set(STIR_WITH_Parallelproj_PROJECTOR TRUE)
+endif()
+
+if(@HAVE_PETSIRD@)
+  find_package(PETSIRD CONFIG REQUIRED ${STIR_FIND_TYPE})
+  message(STATUS "PETSIRD support in STIR enabled.")
+  set(HAVE_PETSIRD TRUE)
 endif()
 
 SET(STIR_WITH_EXPERIMENTAL @STIR_ENABLE_EXPERIMENTAL@)
