@@ -252,6 +252,7 @@ jobs:
       run: |
           case ${{matrix.os}} in
             (ubuntu* | macOS*)
+              # For local CI, see documentation/devel/local-CI.md
               if [ "${ACT:-false}" = "true" ]; then
                 echo "Skipping GHA_increase_disk_space.sh under act"
               else
