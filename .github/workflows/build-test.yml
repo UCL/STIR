@@ -377,7 +377,7 @@ jobs:
           # #python -m pip install -U pip
 
           if test "${{matrix.PETSIRD}}XX" == "ONXX"; then
-            micromamba install -y -n yardl -c conda-forge numpy pytest matplotlib
+            micromamba install -y -n yardl -c conda-forge numpy pytest
             PYTHON_EXECUTABLE="$(which python)"
             echo PYTHON_EXECUTABLE="$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
           else
