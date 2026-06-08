@@ -210,6 +210,7 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
   //   - If num_tof_bins is odd:    bins go from -N/2 ... +N/2
   //   - If num_tof_bins is even:   bins go from -(N/2) ... +(N/2 - 1)
   // This preserves the old behavior for odd counts and gives clean indexing for even counts.
+  // Note that this convention needs to match what we do in get_k(bin)
   min_tof_pos_num = -num_tof_bins / 2;
   max_tof_pos_num = min_tof_pos_num + num_tof_bins - 1;
 
