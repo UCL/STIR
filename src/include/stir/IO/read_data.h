@@ -40,8 +40,9 @@ class NumericInfo;
   \warning When an error occurs, the function immediately returns.
   However, the data might have been partially read from \a s.
 */
-template <int num_dimensions, class IStreamT, class elemT>
-inline Succeeded read_data(IStreamT& s, ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order = ByteOrder::native);
+template <int num_dimensions, class IStreamT, class elemT, class indexT>
+inline Succeeded
+read_data(IStreamT& s, ArrayType<num_dimensions, elemT, indexT>& data, const ByteOrder byte_order = ByteOrder::native);
 
 /*! \ingroup Array_IO
   \brief Read the data of an Array from file as a different type.
@@ -55,9 +56,9 @@ inline Succeeded read_data(IStreamT& s, ArrayType<num_dimensions, elemT>& data, 
 
   \see find_scale_factor() for the meaning of \a scale_factor.
 */
-template <int num_dimensions, class IStreamT, class elemT, class InputType, class ScaleT>
+template <int num_dimensions, class IStreamT, class elemT, class indexT, class InputType, class ScaleT>
 inline Succeeded read_data(IStreamT& s,
-                           ArrayType<num_dimensions, elemT>& data,
+                           ArrayType<num_dimensions, elemT, indexT>& data,
                            NumericInfo<InputType> input_type,
                            ScaleT& scale_factor,
                            const ByteOrder byte_order = ByteOrder::native);
@@ -72,9 +73,9 @@ inline Succeeded read_data(IStreamT& s,
            const bool)
   The only difference is that the input type is now specified using NumericType.
 */
-template <int num_dimensions, class IStreamT, class elemT, class ScaleT>
+template <int num_dimensions, class IStreamT, class elemT, class indexT, class ScaleT>
 inline Succeeded read_data(IStreamT& s,
-                           ArrayType<num_dimensions, elemT>& data,
+                           ArrayType<num_dimensions, elemT, indexT>& data,
                            NumericType type,
                            ScaleT& scale,
                            const ByteOrder byte_order = ByteOrder::native);

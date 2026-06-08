@@ -26,9 +26,6 @@
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-class VectorWithOffset;
-
 /*!
   \ingroup Array
   \brief This class implements convolution of a 1D array with a symmetric kernel.

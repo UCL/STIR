@@ -15,7 +15,6 @@ set(${dir_LIB_SOURCES}
   ParsingObject.cxx
   num_threads.cxx
   Array.cxx
-  IndexRange.cxx
   PatientPosition.cxx
   TimeFrameDefinitions.cxx
   ExamInfo.cxx

@@ -81,7 +81,7 @@
   DiscretisedDensity\<3,float\>::get_physical_coordinates_for_indices.
 */
 
-#include "stir/common.h"
+#include "stir/BasicCoordinateFwd.h"
 #include "stir/ZoomOptions.h"
 
 START_NAMESPACE_STIR
@@ -96,8 +96,6 @@ template <typename elemT>
 class PixelsOnCartesianGrid;
 template <typename elemT>
 class CartesianCoordinate3D;
-template <int num_dimensions, typename elemT>
-class BasicCoordinate;
 
 /*!
  \ingroup buildblock

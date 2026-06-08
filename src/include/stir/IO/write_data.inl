@@ -32,11 +32,11 @@ namespace detail
 /* Generic implementation of write_data_with_fixed_scale_factor().
    See test_if_1d.h for info why we do this this way.
 */
-template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT, class OutputType, class ScaleT>
 inline Succeeded
 write_data_with_fixed_scale_factor_help(is_not_1d,
                                         OStreamT& s,
-                                        const ArrayType<num_dimensions, elemT>& data,
+                                        const ArrayType<num_dimensions, elemT, indexT>& data,
                                         NumericInfo<OutputType> output_type,
                                         const ScaleT scale_factor,
                                         const ByteOrder byte_order,
@@ -51,11 +51,11 @@ write_data_with_fixed_scale_factor_help(is_not_1d,
 }
 
 // specialisation for 1D case
-template <class OStreamT, class elemT, class OutputType, class ScaleT>
+template <class OStreamT, class elemT, class indexT, class OutputType, class ScaleT>
 inline Succeeded
 write_data_with_fixed_scale_factor_help(is_1d,
                                         OStreamT& s,
-                                        const ArrayType<1, elemT>& data,
+                                        const ArrayType<1, elemT, indexT>& data,
                                         NumericInfo<OutputType>,
                                         const ScaleT scale_factor,
                                         const ByteOrder byte_order,
@@ -77,10 +77,10 @@ write_data_with_fixed_scale_factor_help(is_1d,
 
 } // end of namespace detail
 
-template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT, class OutputType, class ScaleT>
 Succeeded
 write_data_with_fixed_scale_factor(OStreamT& s,
-                                   const ArrayType<num_dimensions, elemT>& data,
+                                   const ArrayType<num_dimensions, elemT, indexT>& data,
                                    NumericInfo<OutputType> output_type,
                                    const ScaleT scale_factor,
                                    const ByteOrder byte_order,
@@ -90,10 +90,10 @@ write_data_with_fixed_scale_factor(OStreamT& s,
       detail::test_if_1d<num_dimensions>(), s, data, output_type, scale_factor, byte_order, can_corrupt_data);
 }
 
-template <int num_dimensions, class OStreamT, class elemT, class OutputType, class ScaleT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT, class OutputType, class ScaleT>
 Succeeded
 write_data(OStreamT& s,
-           const ArrayType<num_dimensions, elemT>& data,
+           const ArrayType<num_dimensions, elemT, indexT>& data,
            NumericInfo<OutputType> output_type,
            ScaleT& scale_factor,
            const ByteOrder byte_order,
@@ -103,17 +103,20 @@ write_data(OStreamT& s,
   return write_data_with_fixed_scale_factor(s, data, output_type, scale_factor, byte_order, can_corrupt_data);
 }
 
-template <int num_dimensions, class OStreamT, class elemT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT>
 inline Succeeded
-write_data(OStreamT& s, const ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data)
+write_data(OStreamT& s,
+           const ArrayType<num_dimensions, elemT, indexT>& data,
+           const ByteOrder byte_order,
+           const bool can_corrupt_data)
 {
   return write_data_with_fixed_scale_factor(s, data, NumericInfo<elemT>(), 1.F, byte_order, can_corrupt_data);
 }
 
-template <int num_dimensions, class OStreamT, class elemT, class ScaleT>
+template <int num_dimensions, class OStreamT, class elemT, class indexT, class ScaleT>
 Succeeded
 write_data(OStreamT& s,
-           const ArrayType<num_dimensions, elemT>& data,
+           const ArrayType<num_dimensions, elemT, indexT>& data,
            NumericType type,
            ScaleT& scale,
            const ByteOrder byte_order,

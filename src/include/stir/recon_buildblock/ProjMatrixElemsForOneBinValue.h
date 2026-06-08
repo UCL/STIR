@@ -24,12 +24,9 @@
 #ifndef __ProjMatrixElemsForOneBinValue_H__
 #define __ProjMatrixElemsForOneBinValue_H__
 
-#include "stir/common.h"
+#include "stir/BasicCoordinateFwd.h"
 
 START_NAMESPACE_STIR
-
-template <int num_dimensions, typename coordT>
-class BasicCoordinate;
 
 /*!
   \ingroup projection

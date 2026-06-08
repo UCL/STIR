@@ -115,19 +115,19 @@
 
 namespace stir
 {
-  %template(IndexRange1D) IndexRange<1>;
+  %template(IndexRange1D) IndexRange<1, int>;
   //    %template(IndexRange1DVectorWithOffset) VectorWithOffset<IndexRange<1> >;
-  %template(IndexRange2D) IndexRange<2>;
+  %template(IndexRange2D) IndexRange<2, int>;
   //%template(IndexRange2DVectorWithOffset) VectorWithOffset<IndexRange<2> >;
-  %template(IndexRange3D) IndexRange<3>;
-  %template(IndexRange4D) IndexRange<4>;
+  %template(IndexRange3D) IndexRange<3, int>;
+  %template(IndexRange4D) IndexRange<4, int>;
 
   %ADD_indexaccess(int,T,VectorWithOffset);
-  %template(FloatVectorWithOffset) VectorWithOffset<float>;
-  %template(IntVectorWithOffset) VectorWithOffset<int>;
+  %template(FloatVectorWithOffset) VectorWithOffset<float, int>;
+  %template(IntVectorWithOffset) VectorWithOffset<int, int>;
 
   // TODO need to instantiate with name?
-  %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
+  %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float, int>;
 
 #ifdef SWIGPYTHON
   // TODO this extends ND-Arrays, but apparently not 1D Arrays (because specialised template?)
@@ -264,7 +264,7 @@ namespace stir
 
   %ADD_indexaccess(%arg(const BasicCoordinate<num_dimensions,int>&),elemT, Array);
 
-  %template(FloatArray1D) Array<1,float>;
+  %template(FloatArray1D) Array<1,float, int>;
 
   // this doesn't work because of bug in swig (incorrectly parses num_dimensions)
   //%ADD_indexaccess(int,%arg(Array<num_dimensions -1,elemT>), Array);
@@ -282,18 +282,18 @@ namespace stir
 
   // Todo need to instantiate with name?
   // TODO Swig doesn't see that Array<2,float> is derived from it anyway becuse of num_dimensions bug
-%template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float>, float>;
+  %template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float, int>, float, int>;
 
-  %template(FloatArray2D) stir::Array<2,float>;
-  %apply const stir::Array<2,float>& { const stir::ArrayType<2,float>& };
-  %apply stir::Array<2,float>& { stir::ArrayType<2,float>& };
-  %apply stir::Array<2,float>* { stir::ArrayType<2,float>* };
+  %template(FloatArray2D) stir::Array<2,float, int>;
+  %apply const stir::Array<2,float, int>& { const stir::ArrayType<2,float, int>& };
+  %apply stir::Array<2,float, int>& { stir::ArrayType<2,float, int>& };
+  %apply stir::Array<2,float, int>* { stir::ArrayType<2,float, int>* };
 
   // TODO name
-  %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float>, float>;
-  %template(FloatArray3D) stir::Array<3,float>;
+  %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float, int>, float, int>;
+  %template(FloatArray3D) stir::Array<3,float, int>;
 #if 0
-  %ADD_indexaccess(int,%arg(stir::Array<2,float>),%arg(stir::Array<3,float>));
+  %ADD_indexaccess(int,%arg(stir::Array<2,float, int>),%arg(stir::Array<3,float, int>));
 #endif
-  %template (FloatNumericVectorWithOffset4D) stir::NumericVectorWithOffset<stir::Array<3,float>, float>;
-  %template(FloatArray4D) stir::Array<4,float>;
+  %template (FloatNumericVectorWithOffset4D) stir::NumericVectorWithOffset<stir::Array<3,float, int>, float, int>;
+  %template(FloatArray4D) stir::Array<4,float, int>;
