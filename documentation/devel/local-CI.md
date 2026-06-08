@@ -5,7 +5,7 @@ This is useful for debugging workflow changes before pushing to GitHub.
 
 ## Prerequisities
 
-Install `act` and make sure Docker or Podman is availabel and running.
+Install `act` and make sure Docker or Podman is available and running.
 
 On Linux, the workflow can be run with an Ubuntu 24.04
  container image compatible with GitHub Actions:
