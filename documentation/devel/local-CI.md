@@ -20,7 +20,7 @@ act -W .github/workflows/build-test.yml \
 * The ```-P``` option maps the GitHub Actions
 runner label ```ubuntu-24.04``` to a local container image.
 The image in the command above is suggested online.
-* The ```--env ACT=true``` option sets an environment variable
+* The `--env ACT=true` option sets an environment variable
  used by the workflow to detect that it is running under ```act```.
  Some GitHub steps are skipped.
 
