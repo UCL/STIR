@@ -14,7 +14,7 @@
 
 START_NAMESPACE_STIR
 /*!
-  \file CListModeDataPETSIRD
+  \file
   \ingroup listmode
   \brief implementation of class stir::CListModeDataPETSIRD
 
@@ -40,7 +40,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   // Get the first TimeBlock
   current_lm_data_ptr->ReadTimeBlocks(curr_time_block);
   if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-    error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abord.");
+    error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abort.");
 
   ++m_time_block_index;
 

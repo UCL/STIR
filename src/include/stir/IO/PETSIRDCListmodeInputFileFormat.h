@@ -48,7 +48,7 @@ protected:
 public:
   unique_ptr<data_type> read_from_file(std::istream& input) const override
   {
-    error("read_from_file for ROOT listmode data with istream not implemented %s:%s. Sorry", __FILE__, __LINE__);
+    error("read_from_file for PETSIRD listmode data with istream not implemented. Sorry");
     return unique_ptr<data_type>();
   }
 

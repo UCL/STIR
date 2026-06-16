@@ -21,7 +21,7 @@ START_NAMESPACE_STIR
 
 /*!
 
-  \file PETSIRDCListmodeInputFileFormat
+  \file
   \ingroup listmode
   \brief Implementation of class stir::PETSIRDCListmodeInputFileFormat
 

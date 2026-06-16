@@ -9,7 +9,7 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes CListRecordPETSIRD
+  \brief Implementation of classes stir::CListRecordPETSIRD
 
   \author Nikos Efthimiou
 */

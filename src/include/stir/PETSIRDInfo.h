@@ -53,7 +53,7 @@ struct ExpandedDetectionBinLess
 };
 
 /*!
-  \brief Mapping type from PETSIRD ExpandedDetectionBin to STIR DetectionPosition.
+  \brief Mapping type from petsird::ExpandedDetectionBin to stir::DetectionPosition.
 */
 using PETSIRDToSTIRDetectorIndexMap
     = std::map<petsird::ExpandedDetectionBin, stir::DetectionPosition<>, ExpandedDetectionBinLess>;
