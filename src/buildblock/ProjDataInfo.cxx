@@ -201,6 +201,12 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
   // Initialise mashed TOF bins
   tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
 
+  if (max_timing_poss % tof_mash_factor != 0)
+    {
+      error("ProjDataInfo::set_tof_mash_factor: scanner's number of timing positions (" + std::to_string(max_timing_poss)
+            + ") must be divisible by the TOF mashing factor (" + std::to_string(tof_mash_factor) + ").");
+    }
+
   const int num_mashed_bins = max_timing_poss / tof_mash_factor;
   num_tof_bins = num_mashed_bins;
 

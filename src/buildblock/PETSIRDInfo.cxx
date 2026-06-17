@@ -165,7 +165,6 @@ PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_di
             }
 
           insert_translation(el_trans);
-          // std::cout << el_trans.matrix << std::endl;
         }
     }
 }
@@ -296,18 +295,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
           }
       }
 
-    if (inferGroupSizes_dim2_dim3(pet_sird_positions, group2, group3))
-      {
-        std::cout << "groupSize_dim2 = " << group2 << "\n";
-
-        std::cout << "groupSize_dim3 = " << group3 << "\n";
-      }
-    else
-      {
-        std::cout << "No (dim2, dim3) loop structure detected.\n";
-        group2 = 1;
-        group3 = 1;
-      }
+    inferGroupSizes_dim2_dim3(pet_sird_positions, group2, group3);
   }
 
   std::vector<float> element_horizontal_spacing, element_vertical_spacing;
@@ -335,7 +323,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
     info("Printing TOF bin edges for validation (please make sure that the STIR TOF bin edges match the PETSIRD TOF bin edges):");
     for (size_t i = 0; i < tof_bin_edges.NumberOfBins(); ++i)
       {
-        std::cout << "PETSIRD TOF bin edge " << i << ": " << tof_bin_edges.edges[i] << "\n";
+        info(format("PETSIRD TOF bin edge {}: {}", i, tof_bin_edges.edges[i]), 2);
       }
   }
 
@@ -346,10 +334,10 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
     {
       // GATE-style tiled PETSIRD
       blocks_per_bucket_transaxial = group2 > 1 ? unique_elements_vertical_values.size() / group2 : group2;
-      std::cout << "blocks per bucket in transaxial direction = " << blocks_per_bucket_transaxial << "\n";
+      info(format("blocks per bucket in transaxial direction = {}", blocks_per_bucket_transaxial));
       blocks_per_bucket_axial
           = group3 > 1 ? unique_elements_horizontal_values.size() / (numberOfElementsIndices / group3) : group3;
-      std::cout << "blocks per bucket in axial direction =  " << blocks_per_bucket_axial << "\n";
+      info(format("blocks per bucket in axial direction =  {}", blocks_per_bucket_axial));
       num_axial_crystals_per_block = unique_elements_horizontal_values.size() / blocks_per_bucket_axial;
       num_trans_crystals_per_block = unique_elements_vertical_values.size() / blocks_per_bucket_transaxial;
     }
@@ -595,10 +583,6 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 float
 PETSIRDInfo::get_detection_efficiency_for_bin(const stir::DetectionPositionPair<>& dp) const
 {
-  // std::cout << "WIth det efficiencies: " <<
-  // petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies->size()
-  //           << std::endl;
-
   const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
 
   if (!detection_bin_efficiencies)

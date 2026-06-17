@@ -7,10 +7,6 @@
     See STIR/LICENSE.txt for detail..
 */
 
-#include <iostream>
-#include <fstream>
-#include "stir/Succeeded.h"
-
 #include "stir/listmode/CListModeDataBasedOnCoordinateMap.h"
 
 START_NAMESPACE_STIR;

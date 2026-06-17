@@ -1,10 +1,7 @@
-/* CListModeDataSAFIR.cxx
-
-Coincidence LM Data Class for SAFIR: Implementation
-
+/*
      Copyright 2015 ETH Zurich, Institute of Particle Physics
      Copyright 2020 Positrigo AG, Zurich
- Copyright 2021 University College London
+     Copyright 2021 University College London
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
