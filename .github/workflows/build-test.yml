@@ -192,16 +192,16 @@ jobs:
               # no idea how to do this
               ;;
            esac
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
         
     - name: Checkout PETSIRD
       if: matrix.PETSIRD == 'ON'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: ETSInitiative/PETSIRD
-        ref: v0.9.0
+        ref: v0.9.1
         path: external/PETSIRD
     
     - name: Setup PETSIRD environment
