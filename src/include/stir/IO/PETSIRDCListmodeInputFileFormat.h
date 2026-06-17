@@ -54,7 +54,7 @@ public:
 
   unique_ptr<data_type> read_from_file(const std::string& filename) const override
   {
-    info("PETSIRDCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
+    info("PETSIRDCListmodeInputFileFormat: read_from_file(" + filename + ")");
     return unique_ptr<data_type>(new CListModeDataPETSIRD(filename, use_hdf5));
   }
 };

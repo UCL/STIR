@@ -9,7 +9,7 @@
 /*!
   \file PETSIRDInfo.h
   \ingroup listmode
-  \brief Declaration of class PETSIRDInfo
+  \brief Declaration of class stir::PETSIRDInfo
 
   \author Nikos Efthimiou
 */
@@ -20,6 +20,7 @@
 #include "stir/Scanner.h"
 #include "stir/DetectorCoordinateMap.h"
 #include <set>
+#include <map>
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"   // for make_detection_bin

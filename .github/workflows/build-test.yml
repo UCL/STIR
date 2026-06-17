@@ -452,19 +452,8 @@ jobs:
           # Install PETSIRD
           if test "${{matrix.PETSIRD}}XX" == "ONXX"; then
             ls 
-            cd external/PETSIRD/model
-            just build
-
-            cd ../cpp
-            mkdir -p build 
-            cd build 
-
-            cmake .. \
-                -G Ninja \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}"
-
-            cmake --build . --target install --parallel
+            cd external/PETSIRD/
+            just cmake_install_prefix="${CMAKE_INSTALL_PREFIX}" build-cpp
           fi
 
           # we'll install some dependencies with shared libraries, so need to let the OS know
