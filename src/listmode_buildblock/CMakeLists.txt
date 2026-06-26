@@ -58,6 +58,10 @@ if (STIR_WITH_NiftyPET_PROJECTOR)
   )
 endif()
 
+if(HAVE_PETSIRD)
+  list(APPEND ${dir_LIB_SOURCES}
+  CListRecordPETSIRD.cxx)
+endif()
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
@@ -75,31 +79,6 @@ if (HAVE_HDF5)
   endif()
 endif()
 
-if (HAVE_PETSIRD)
-#set(PETSIRD_dir ../../PETSIRD/cpp/generated)
-#add_subdirectory(${PETSIRD_dir} PETSIRD_generated)
-
-target_include_directories(listmode_buildblock PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/helpers/include>
-  $<INSTALL_INTERFACE:include>
-)
-
-# target_include_directories(listmode_buildblock PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-# target_include_directories(listmode_buildblock PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/helpers/include>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-# target_include_directories(listmode_buildblock PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../PETSIRD/cpp/generated/binary>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-target_link_libraries(listmode_buildblock PUBLIC petsird_generated)
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()

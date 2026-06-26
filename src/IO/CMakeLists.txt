@@ -143,3 +143,7 @@ if (HAVE_JSON)
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
   target_include_directories(${TARGET} PRIVATE "${TMP}")
 endif()
+
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
+endif()
