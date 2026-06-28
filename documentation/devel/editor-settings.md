@@ -11,6 +11,7 @@ Unfortunately, this isn't very easy to get exactly right as `clang-format` outpu
 However, in many cases it will help (and minimise changes introduced by our `pre-commit` hooks.)
 
 Editor documentation for C++ formatting:
+
 - [VS Code documentation](https://code.visualstudio.com/docs/cpp/cpp-ide#_code-formatting)
 - [Eclipse](https://marketplace.eclipse.org/free-tagging/clang-format)
 - [Visual Studio](https://learn.microsoft.com/en-us/visualstudio/ide/reference/options-text-editor-c-cpp-formatting?view=visualstudio)

@@ -10,13 +10,14 @@ Here are some pointers. Please create a PR if your editor is not covered.
 We use [clang-format](https://clang.llvm.org/docs/ClangFormat.html) to enforce white-space conventions for C++.
 
 ### Emacs
+
 Install the `clang-format.el` package, e.g. from [MELPA](https://melpa.org). You will first
 need to add MELPA to the list of packages as per their documentation. Then you can do
 `M-x install-package RET clang-format RET`.
 
 An example `init.el` (to put in your `.emacs.d`) is as follows
 
-```
+```lisp
 (setq-default indent-tabs-mode nil)
 ;; save history
 (savehist-mode 1)
@@ -59,12 +60,15 @@ An example `init.el` (to put in your `.emacs.d`) is as follows
 ```
 
 ### Visual Studio 2019 (or later)
+
 VS automatically finds our `.clang-format` in the source tree and adds 2 commands to the `Tools`
 menu to format a selection or document (with shortcuts).
 
 ### Visual Studio Code
-Install the [CLangFormat extension](https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.ClangFormat) which add shortcuts to format a selection or document.
+
+Install the [CLangFormat extension](https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.ClangFormat)
+which add shortcuts to format a selection or document.
 
 ### QTCreator
-See [this blog post](https://www.qt.io/blog/2019/04/17/clangformat-plugin-qt-creator-4-9) for some info.
 
+See [this blog post](https://www.qt.io/blog/2019/04/17/clangformat-plugin-qt-creator-4-9) for some info.

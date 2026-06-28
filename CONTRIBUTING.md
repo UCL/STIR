@@ -1,5 +1,4 @@
-Contributing
-============
+# Contributing
 
 Please help us by finding problems, discussing on the mailing lists, contributing documentation,
 bug fixes or even features. Below are some brief guidelines.
@@ -33,16 +32,19 @@ could read their [Hello World tutorial](https://docs.github.com/en/get-started/s
 simple you could do it on github by editing a file, otherwise clone your project (or add a remote
 to your current git clone) and work as usual.
 4. If your change is important, add it to the release notes for the upcoming version in the [documentation folder](https://github.com/UCL/STIR/tree/master/documentation/)
-and even the [User's Guide](https://github.com/UCL/STIR/blob/master/documentation/STIR-UsersGuide.tex) or other documentation files.
+and even the [User's Guide](https://github.com/UCL/STIR/blob/master/documentation/STIR-UsersGuide.tex)
+or other documentation files.
 5. Push the commits to your fork and submit a [pull request (PR)](https://help.github.com/articles/creating-a-pull-request)
-(enable changes by project admins.) Give your pull request a descriptive name (i.e. don't call if *Fix #issuenumber*). Be prepared to add further commits to your branch after discussion.
+(enable changes by project admins.) Give your pull request a descriptive name (i.e. don't call if *Fix #issuenumber*).
+Be prepared to add further commits to your branch after discussion.
 In the description of the PR, add a statement about which Issue this applies to
 using [a phrase such that github auto-closes the issue when merged to master](https://help.github.com/articles/closing-issues-using-keywords/).
 6. Be prepared to add further commits to your branch after discussion.
 7. After acceptance of your PR, go home with a nice warm feeling.
 
-Suggested reading: 
-https://help.github.com/articles/fork-a-repo/, https://git-scm.com/book/en/v2/GitHub-Contributing-to-a-Project or https://guides.github.com/activities/forking/, https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/.
+Suggested reading:  
+https://help.github.com/articles/fork-a-repo/, https://git-scm.com/book/en/v2/GitHub-Contributing-to-a-Project
+or https://guides.github.com/activities/forking/, https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/.
 
 ### A note on copyright dates and notices (and licenses)
 
@@ -60,10 +62,10 @@ In addition, you add yourself to [NOTICE.txt](https://github.com/UCL/STIR/blob/m
 
 - Always be kind and supportive.
 - Only one official, stable, up-to-date branch: **master**
-    + Essentially "latest stable beta version with no known bugs
-      since the last official release version"
-    + Never knowingly add a bug to **master**
-    + Exceptions to this rule might occur close to a release, where there might be a release-branch.
+  - Essentially "latest stable beta version with no known bugs
+    since the last official release version"
+  - Never knowingly add a bug to **master**
+  - Exceptions to this rule might occur close to a release, where there might be a release-branch.
 - Any work-in-progress commits should be in their own branches.
 - GitHub assigns a unique number to each issue, c.f. the [issue-tracker].
 - A pull request (PR) is an issue with an associated branch,
@@ -78,10 +80,10 @@ In addition, you add yourself to [NOTICE.txt](https://github.com/UCL/STIR/blob/m
 - Contributions of new features should also update documentation and release notes. After version 1.0,
   this needs documentation needs to state something like "introduced after version 1.xxx".
 - We prefer issues to be opened via [github][issue-tracker] due to the following reasons:
-    + Ensures issues will never get lost in emails
-        * Facilitates issue status tracking
-    + Allows focused comments/discussion
-        * Easy cross-referencing of related issues, PRs, and commits
+  - Ensures issues will never get lost in emails
+    - Facilitates issue status tracking
+  - Allows focused comments/discussion
+    - Easy cross-referencing of related issues, PRs, and commits
 
 [issue-tracker]: https://github.com/UCL/STIR/issues
 [pull-requests]: https://github.com/UCL/STIR/pulls
