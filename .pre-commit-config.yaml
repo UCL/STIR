@@ -4,3 +4,7 @@ repos:
   hooks:
   - id: clang-format
     files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|inl|txx)$
+- repo: https://github.com/jackdewinter/pymarkdown
+  rev: v0.9.38
+  hooks:
+  - id: pymarkdown
