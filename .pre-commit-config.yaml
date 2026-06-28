@@ -8,3 +8,13 @@ repos:
   rev: v0.9.38
   hooks:
   - id: pymarkdown
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-case-conflict
+  - id: check-toml
+  - id: check-merge-conflict
+  - id: check-yaml
+    args: [--unsafe]
+  - id: sort-simple-yaml
