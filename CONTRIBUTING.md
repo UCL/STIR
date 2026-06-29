@@ -76,7 +76,7 @@ In addition, you add yourself to [NOTICE.txt](https://github.com/UCL/STIR/blob/m
   commenting/improving/merging this branch/PR
   independent of other developments.
 - Discussions on issues and PRs are preferably done on github. General questions and request for advice
-  should go to the <stir-devel@sourceforge.net> mailing list or our Discord server.
+  should go to the <stir-devel@sourceforge.net> mailing list or our [Discord server](https://discord.gg/ECxYGtPHq).
 - Contributions of new features should also update documentation and release notes. After version 1.0,
   this needs documentation needs to state something like "introduced after version 1.xxx".
 - We prefer issues to be opened via [github][issue-tracker] due to the following reasons:
