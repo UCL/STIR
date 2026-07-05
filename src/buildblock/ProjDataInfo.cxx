@@ -196,6 +196,12 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
               "max timing bins ("
             + std::to_string(max_timing_poss) + ").");
     }
+  if (max_timing_poss % new_num != 0)
+    {
+      // TODO we might not need this, but are not sure. Better safe than sorry...
+      error("ProjDataInfo::set_tof_mash_factor: TOF mashing factor (" + std::to_string(new_num)
+            + ") should divide the scanner's number of max timing bins (" + std::to_string(max_timing_poss) + ").");
+    }
 
   tof_mash_factor = new_num;
   // Initialise mashed TOF bins
