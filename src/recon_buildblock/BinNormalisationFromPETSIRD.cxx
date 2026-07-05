@@ -29,6 +29,7 @@ BinNormalisationFromPETSIRD::set_defaults()
 {
   base_type::set_defaults();
   normalisation_filename = "";
+  use_hdf5 = false;
   m_with_detector_efficiencies = true;
   m_with_dead_time = true;
   m_with_geometric_factors = true;
@@ -40,6 +41,7 @@ BinNormalisationFromPETSIRD::initialise_keymap()
   base_type::initialise_keymap();
   parser.add_start_key("Bin Normalisation From PETSIRD");
   parser.add_key("normalisation_filename", &normalisation_filename);
+  parser.add_key("use hdf5", &use_hdf5);
   parser.add_stop_key("End Bin Normalisation From PETSIRD");
 }
 
@@ -97,7 +99,10 @@ void
 BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
 {
   petsird::Header header;
-  petsird_data_sptr.reset(new petsird::binary::PETSIRDReader(filename));
+  if (use_hdf5)
+    petsird_data_sptr.reset(new petsird::hdf5::PETSIRDReader(filename));
+  else
+    petsird_data_sptr.reset(new petsird::binary::PETSIRDReader(filename));
 
   petsird_data_sptr->ReadHeader(header);
 

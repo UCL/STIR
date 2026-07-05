@@ -53,6 +53,8 @@ public:
   inline bool with_geometric_factors() const { return m_with_geometric_factors; }
 
 private:
+  bool use_hdf5;
+
   void set_defaults() override;
 
   void initialise_keymap() override;
