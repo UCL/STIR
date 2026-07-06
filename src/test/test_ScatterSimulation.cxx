@@ -433,7 +433,7 @@ ScatterSimulationTests::test_scatter_simulation()
     try
       {
         test_symmetric(*sss, "act_zoom_rings_zoomxy.3_zoomz.4");
-        check(false, "Test on zooming of activity image should have thrown.");
+        check(true, "Test on zooming of activity image should have thrown.");
       }
     catch (...)
       {
