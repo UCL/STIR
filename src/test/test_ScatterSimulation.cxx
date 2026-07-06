@@ -113,14 +113,23 @@ ScatterSimulationTests::test_downsampling_ProjDataInfo()
                    "Check number of detectors per ring.");
 
     set_tolerance(0.01);
-    check_if_equal(2.f * original_projdata->get_ring_spacing(), sss_projdata->get_ring_spacing(), "Check the ring spacing.");
-    check_if_equal(
-        2.f * original_projdata->get_axial_sampling(0), sss_projdata->get_axial_sampling(0), "Check axial samping. Seg 0");
+    const float expected_ring_spacing
+        = (test_scanner->get_num_rings() - 1) * test_scanner->get_ring_spacing() / static_cast<float>(down_rings - 1);
+    const float expected_axial_sampling
+        = (test_scanner->get_num_rings() - 1) * original_projdata->get_axial_sampling(0) / static_cast<float>(down_rings - 1);
+    check_if_equal(expected_ring_spacing, sss_projdata->get_ring_spacing(), "Check the ring spacing.");
+    check_if_equal(expected_axial_sampling, sss_projdata->get_axial_sampling(0), "Check axial samping. Seg 0");
 
-    check_if_equal(2.f * original_projdata->get_axial_sampling(original_projdata->get_min_segment_num()),
+    const float expected_min_segment_num = (test_scanner->get_num_rings() - 1)
+                                           * original_projdata->get_axial_sampling(original_projdata->get_min_segment_num())
+                                           / static_cast<float>(down_rings - 1);
+    const float expected_max_segment_num = (test_scanner->get_num_rings() - 1)
+                                           * original_projdata->get_axial_sampling(original_projdata->get_max_segment_num())
+                                           / static_cast<float>(down_rings - 1);
+    check_if_equal(expected_min_segment_num,
                    sss_projdata->get_axial_sampling(sss_projdata->get_min_segment_num()),
                    "Check axial samping. Min. Seg");
-    check_if_equal(2.f * original_projdata->get_axial_sampling(original_projdata->get_max_segment_num()),
+    check_if_equal(expected_max_segment_num,
                    sss_projdata->get_axial_sampling(sss_projdata->get_max_segment_num()),
                    "Check axial samping. Max Seg.");
 
