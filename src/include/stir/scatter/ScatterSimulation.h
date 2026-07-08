@@ -265,7 +265,7 @@ protected:
   //! Scatter emission point in physical coordinates
   struct ScatterPoint
   {
-    CartesianCoordinate3D<float> coord;
+    CartesianCoordinate3D<float> physical_coord;
     float mu_value;
   };
 

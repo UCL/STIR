@@ -151,7 +151,7 @@ else
     const float result = exp_integral_over_attenuation_image_between_scattpoint_det(
         scatt_points_vector[scatter_point_num].physical_coord,
         get_template_proj_data_info_sptr()->get_physical_coordinates_for_gantry_coordinates(
-            detection_points_in_gantry_coords_vector[det_num])););
+            detection_points_in_gantry_coords_vector[det_num]));
     if (this->use_cache)
 #ifdef STIR_OPENMP
 #  if _OPENMP >= 201012

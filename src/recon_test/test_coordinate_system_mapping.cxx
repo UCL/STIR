@@ -56,6 +56,7 @@
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/IO/write_to_file.h"
 #include "stir/RunTests.h"
+#include "stir/format.h"
 #include "stir/info.h"
 #include "stir/format.h"
 #include "stir/stream.h"

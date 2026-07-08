@@ -878,10 +878,10 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                          + 1;
 
       // preserve the length of the scanner the following includes no gaps
-      float scanner_length_cyl = new_scanner_sptr->get_num_rings() * new_scanner_sptr->get_ring_spacing();
+      float scanner_length_cyl = (new_scanner_sptr->get_num_rings() - 1) * new_scanner_sptr->get_ring_spacing();
       new_scanner_sptr->set_num_rings(new_num_rings);
       new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
-      new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length_cyl / new_scanner_sptr->get_num_rings()));
+      new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length_cyl / (new_scanner_sptr->get_num_rings() - 1)));
     }
 
   new_scanner_sptr->set_max_num_non_arccorrected_bins(approx_num_non_arccorrected_bins);
