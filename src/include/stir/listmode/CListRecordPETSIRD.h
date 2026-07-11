@@ -22,11 +22,9 @@
 #include "stir/listmode/CListEventScannerWithDiscreteDetectors.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/DetectionPositionPair.h"
-#include "stir/Succeeded.h"
-#include "stir/ByteOrderDefine.h"
-
-#include "stir/DetectorCoordinateMap.h"
 #include "stir/PETSIRDInfo.h"
+#include "stir/Succeeded.h"
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -34,17 +32,20 @@ template <class ProjDataInfoT>
 class CListEventPETSIRD : public CListEventScannerWithDiscreteDetectors<ProjDataInfoT>
 {
 public:
-  inline CListEventPETSIRD(shared_ptr<const ProjDataInfo> proj_data_info_sptr,
-                           DetectionPositionPair<>* det_pos_pair,
-                           bool* is_prompt)
-      : CListEventScannerWithDiscreteDetectors<ProjDataInfoT>(proj_data_info_sptr),
-        det_pos_pair_ptr(det_pos_pair),
-        is_prompt_ptr(is_prompt)
+  //! Constructor which leaves \c det_pos_pair and \c is_prompts undefined.
+  inline CListEventPETSIRD(shared_ptr<const ProjDataInfo> proj_data_info_sptr)
+      : CListEventScannerWithDiscreteDetectors<ProjDataInfoT>(proj_data_info_sptr)
   {}
 
-  // inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const override;
+  inline CListEventPETSIRD(shared_ptr<const ProjDataInfo> proj_data_info_sptr,
+                           const DetectionPositionPair<>& det_pos_pair,
+                           bool is_prompt_v)
+      : CListEventScannerWithDiscreteDetectors<ProjDataInfoT>(proj_data_info_sptr),
+        _det_pos_pair(det_pos_pair),
+        _is_prompt(is_prompt_v)
+  {}
 
-  inline bool is_prompt() const override { return *this->is_prompt_ptr; }
+  inline bool is_prompt() const override { return this->_is_prompt; }
 
   bool operator==(const CListEventPETSIRD& other) const
   {
@@ -56,23 +57,23 @@ public:
 
   inline Succeeded set_prompt(const bool prompt) override
   {
-    *this->is_prompt_ptr = prompt;
+    this->_is_prompt = prompt;
     return Succeeded::yes;
   }
 
-  virtual void get_detection_position(DetectionPositionPair<>& det_pos_pair) const override
+  virtual void get_detection_position(DetectionPositionPair<>& det_pos_pair_arg) const override
   {
-    det_pos_pair = *this->det_pos_pair_ptr;
+    det_pos_pair_arg = this->_det_pos_pair;
   }
 
-  virtual void set_detection_position(const DetectionPositionPair<>& det_pos_pair) override
+  virtual void set_detection_position(const DetectionPositionPair<>& det_pos_pair_arg) override
   {
-    *this->det_pos_pair_ptr = det_pos_pair;
+    this->_det_pos_pair = det_pos_pair_arg;
   }
 
 private:
-  DetectionPositionPair<>* det_pos_pair_ptr = nullptr;
-  bool* is_prompt_ptr = nullptr;
+  DetectionPositionPair<> _det_pos_pair;
+  bool _is_prompt;
 };
 
 class CListTimePETSIRD : public ListTime
@@ -96,21 +97,18 @@ public:
   The time associated with a PETSIRD event is therefore obtained from the
   enclosing EventTimeBlock, rather than from a separate time marker record.
 
-  \par
   CListModeDataPETSIRD assigns this time to the record before returning it.
   Consequently, a CListRecordPETSIRD represents a coincidence event and also
   carries valid timing information.
 
-  \par
-  This follows the STIR convention, similar to CListRecordROOT,
-  that a listmode record can be both an event record and a time record.
-
+  In this implementation, a record is both an event record and a time record,
+  similar to CListRecordROOT.
 */
 class CListRecordPETSIRD : public CListRecord
 {
 public:
   CListRecordPETSIRD(shared_ptr<const PETSIRDInfo> petsird_info_sptr, shared_ptr<const ProjDataInfo> proj_data_info_sptr)
-      : event_data(make_event_data(proj_data_info_sptr, this->det_pos_pair, this->is_prompt_event)),
+      : event_data(make_event_data(proj_data_info_sptr)),
         petsird_info_sptr(std::move(petsird_info_sptr)),
         proj_data_info_sptr(std::move(proj_data_info_sptr))
   {}
@@ -128,7 +126,7 @@ public:
 
   bool operator==(const CListRecordPETSIRD& e2) const { return event_data == e2.event_data && time_data == e2.time_data; }
 
-  Succeeded init_from_data(petsird::CoincidenceEvent& event, const bool is_prompt = true)
+  Succeeded init_from_data(const petsird::CoincidenceEvent& event, const bool is_prompt)
   {
     const auto scanner_info_sptr = petsird_info_sptr->get_petsird_scanner_info_sptr();
 
@@ -144,35 +142,34 @@ public:
     auto it1 = petsird_info_sptr->get_petsird_to_stir_map()->find(exp_det_0);
     if (it0 == petsird_info_sptr->get_petsird_to_stir_map()->end() || it1 == petsird_info_sptr->get_petsird_to_stir_map()->end())
       {
-        error("get_stir_det_pos_from_PETSIRD_id: one or both PETSIRD ids not found",
-              exp_det_0.module_index,
-              exp_det_0.element_index,
-              exp_det_0.energy_index);
+        error(format("get_stir_det_pos_from_PETSIRD_id: one or both PETSIRD ids (mod {}, elem {}, energy {}) not found",
+                     exp_det_0.module_index,
+                     exp_det_0.element_index,
+                     exp_det_0.energy_index));
       }
 
     // Warning: this assumes that the PETSIRD TOF bins and the STIR ProjDataInfo
     // timing positions have the same binning/mashing and number of TOF bins.
     // If the STIR proj_data_info uses a different TOF mashing factor or TOF range,
     // this simple offset conversion is not valid.
-    this->det_pos_pair = DetectionPositionPair<>(
+    const DetectionPositionPair<> det_pos_pair(
         it0->second, it1->second, static_cast<int>(event.tof_idx) + this->proj_data_info_sptr->get_min_tof_pos_num());
-
-    is_prompt_event = is_prompt;
+    this->event_data->set_detection_position(det_pos_pair);
+    this->event_data->set_prompt(is_prompt);
     return Succeeded::yes;
   }
 
 private:
-  static std::unique_ptr<CListEvent>
-  make_event_data(shared_ptr<const ProjDataInfo> proj_data_info, DetectionPositionPair<>& det_pos_pair, bool& is_prompt_event);
+  static std::unique_ptr<CListEventScannerWithDiscreteDetectorsBase>
+  make_event_data(shared_ptr<const ProjDataInfo> proj_data_info);
 
-  std::unique_ptr<CListEvent> event_data;
+  std::unique_ptr<CListEventScannerWithDiscreteDetectorsBase> event_data;
   CListTimePETSIRD time_data;
 
   shared_ptr<const PETSIRDInfo> petsird_info_sptr;
   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 
   bool is_prompt_event = true;
-  DetectionPositionPair<> det_pos_pair;
 };
 
 END_NAMESPACE_STIR
