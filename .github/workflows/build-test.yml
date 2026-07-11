@@ -5,6 +5,7 @@ on:
     branches: 
       - master
       - release_6.3
+      - PETSIRD
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -16,7 +17,7 @@ on:
   pull_request:
     branches:
       - master
-      - tof_sino_UCL
+      - PETSIRD
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
