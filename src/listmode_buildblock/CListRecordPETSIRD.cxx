@@ -23,10 +23,8 @@
 
 START_NAMESPACE_STIR
 
-std::unique_ptr<CListEvent>
-CListRecordPETSIRD::make_event_data(shared_ptr<const ProjDataInfo> proj_data_info_sptr,
-                                    DetectionPositionPair<>& det_pos_pair,
-                                    bool& is_prompt_event)
+std::unique_ptr<CListEventScannerWithDiscreteDetectorsBase>
+CListRecordPETSIRD::make_event_data(shared_ptr<const ProjDataInfo> proj_data_info_sptr)
 {
   // construct event of type of current ProjDataInfo
   // Note: currently cumbersome due to change ProjDataInfo hierarchy.
@@ -35,22 +33,19 @@ CListRecordPETSIRD::make_event_data(shared_ptr<const ProjDataInfo> proj_data_inf
   if ((proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
       && (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()) != nullptr))
     {
-      return std::make_unique<CListEventPETSIRD<ProjDataInfoCylindricalNoArcCorr>>(
-          proj_data_info_sptr, &det_pos_pair, &is_prompt_event);
+      return std::make_unique<CListEventPETSIRD<ProjDataInfoCylindricalNoArcCorr>>(proj_data_info_sptr);
     }
 
   if ((proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical")
       && (dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get()) != nullptr))
     {
-      return std::make_unique<CListEventPETSIRD<ProjDataInfoBlocksOnCylindricalNoArcCorr>>(
-          proj_data_info_sptr, &det_pos_pair, &is_prompt_event);
+      return std::make_unique<CListEventPETSIRD<ProjDataInfoBlocksOnCylindricalNoArcCorr>>(proj_data_info_sptr);
     }
 
   if ((proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "Generic")
       && (dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(proj_data_info_sptr.get()) != nullptr))
     {
-      return std::make_unique<CListEventPETSIRD<ProjDataInfoGenericNoArcCorr>>(
-          proj_data_info_sptr, &det_pos_pair, &is_prompt_event);
+      return std::make_unique<CListEventPETSIRD<ProjDataInfoGenericNoArcCorr>>(proj_data_info_sptr);
     }
 
   error("Unsupported ProjDataInfo type in CListRecordPETSIRD::make_event_data");

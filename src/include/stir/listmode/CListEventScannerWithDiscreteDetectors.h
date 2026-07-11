@@ -10,6 +10,7 @@
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) University College London, 2017, 2023, 2026
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -26,25 +27,36 @@
 
 START_NAMESPACE_STIR
 
-//! Class for storing and using a coincidence event from a list mode file for a cylindrical single layer scanner
+//! Base-class for storing and using a coincidence event for a list-mode file that uses detector indices
 /*! \ingroup listmode
     For scanners with discrete detectors, the list mode events usually store detector indices
-    in some way. This class provides access mechanisms to those detection positions, and
-    also provides more efficient implementations of some virtual members of CListEvent.
+    in some way. This class provides virtual members to to set/get those detection indices
+    via DetectionPositionPair.
+
+    \see CListEventScannerWithDiscreteDetectors. This base-class exists for cases where we don't
+    want/need to know the ProjDataInfo type.
 */
-template <class ProjDataInfoT>
-class CListEventScannerWithDiscreteDetectors : public CListEvent
+class CListEventScannerWithDiscreteDetectorsBase : public CListEvent
 {
 public:
-  explicit CListEventScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info);
-
-  const Scanner* get_scanner_ptr() const { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
-
   //! This routine returns the corresponding detector pair
   virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
 
   //! This routine sets in a coincidence event from detector "indices"
   virtual void set_detection_position(const DetectionPositionPair<>&) = 0;
+};
+
+//! Class for coincidence events from a list-mode file that uses detector indices and a specific type of ProjDataInfo
+/*! \ingroup listmode
+    This class provides more efficient implementations of some virtual members of CListEvent.
+*/
+template <class ProjDataInfoT>
+class CListEventScannerWithDiscreteDetectors : public CListEventScannerWithDiscreteDetectorsBase
+{
+public:
+  explicit CListEventScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info);
+
+  const Scanner* get_scanner_ptr() const { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
 
   //! find LOR between detector pairs
   /*! Overrides the default implementation to use get_detection_position()
@@ -71,8 +83,6 @@ public:
 
 protected:
   shared_ptr<const ProjDataInfoT> get_uncompressed_proj_data_info_sptr() const { return uncompressed_proj_data_info_sptr; }
-
-  // shared_ptr<Scanner> scanner_sptr;
 
 private:
   shared_ptr<const ProjDataInfoT> uncompressed_proj_data_info_sptr;
