@@ -270,6 +270,11 @@ target_link_libraries(stir_registries)
 # TODO, really should use stir_libs.cmake
 target_include_directories(stir_registries PRIVATE ${STIR_INCLUDE_DIR})
 target_include_directories(stir_registries PRIVATE ${Boost_INCLUDE_DIR})
+if (FMT_INCLUDE_DIRS) # used by stir::format if std::format doesn't work
+  target_include_directories(stir_registries PUBLIC
+    $<BUILD_INTERFACE:${FMT_INCLUDE_DIRS}>
+    $<INSTALL_INTERFACE:include>)
+endif()
 target_include_directories(stir_registries PUBLIC
   $<BUILD_INTERFACE:${CUVEC_INCLUDE_DIR}>
   $<INSTALL_INTERFACE:include>)
