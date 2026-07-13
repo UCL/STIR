@@ -54,9 +54,9 @@ ProjDataInfoGenericNoArcCorr::ProjDataInfoGenericNoArcCorr(const shared_ptr<Scan
     error("ProjDataInfoGenericNoArcCorr: view mashing is not supported");
 
   // find shift between "new" centre-of-scanner and "old" centre-of-first-ring coordinate system
-  this->z_shift.z() = this->get_scanner_ptr()->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
-  this->z_shift.y() = 0;
-  this->z_shift.x() = 0;
+  // this->z_shift.z() = this->get_scanner_ptr()->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
+  // this->z_shift.y() = 0;
+  // this->z_shift.x() = 0;
 }
 
 ProjDataInfoGenericNoArcCorr*
@@ -122,8 +122,8 @@ ProjDataInfoGenericNoArcCorr::get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<
   CartesianCoordinate3D<float> _p2;
   find_cartesian_coordinates_of_detection(_p1, _p2, bin);
 
-  _p1.z() += z_shift.z();
-  _p2.z() += z_shift.z();
+  // _p1.z() += z_shift.z();
+  // _p2.z() += z_shift.z();
 
   LORAs2Points<float> lor_as_2_points(_p1, _p2);
   const double R = sqrt(std::max(square(_p1.x()) + square(_p1.y()), square(_p2.x()) + square(_p2.y())));
@@ -176,8 +176,8 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
 
   coord_1 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos1);
   coord_2 = get_scanner_ptr()->get_coordinate_for_det_pos(det_pos2);
-  coord_1.z() -= z_shift.z();
-  coord_2.z() -= z_shift.z();
+  // coord_1.z() -= z_shift.z();
+  // coord_2.z() -= z_shift.z();
 
   if (timing_pos_num < 0)
     {
