@@ -107,7 +107,12 @@ if (NOT MINI_STIR)
     list(APPEND ${dir_LIB_SOURCES}
       ProjDataGEHDF5.cxx
       )
-endif()
+  endif()
+  if (HAVE_PETSIRD)
+    list(APPEND ${dir_LIB_SOURCES}
+      PETSIRDInfo.cxx
+    )
+  endif()
 
 endif() # MINI_STIR
 
@@ -153,4 +158,8 @@ endif()
 
 if (STIR_OPENMP)
   target_link_libraries(${TARGET} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
+endif()
+
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()

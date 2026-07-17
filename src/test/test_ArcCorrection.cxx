@@ -176,7 +176,7 @@ ArcCorrectionTests::run_tests_tof()
                                                                            /*views*/ 112,
                                                                            /*tang_pos*/ 357,
                                                                            /*arc_corrected*/ false,
-                                                                           /*tof_mashing_factor*/ 116));
+                                                                           /*tof_mashing_factor*/ 117));
 
   cerr << "Using default range and bin-size\n";
   {

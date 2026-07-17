@@ -1,0 +1,28 @@
+name: stir
+channels:
+- conda-forge
+dependencies:
+  - cmake
+  # - ccache # recommended by not required (possibly interferes with existing ccache on GitHub Actions)
+  - ninja
+  - swig
+  - pre-commit>=4.0.1
+  - nlohmann_json>=3.11.2
+  - libboost-devel # really only libboost-headers needed, but CMake can then find a non-CONDA boost
+  - hdf5 # not win and not (osx and arm64)
+  - libitk-devel
+#  - cuda-version ==${{ cuda_version }}
+#  - cuda-driver-dev: linux
+#  - cuda-cudart-dev
+  - libparallelproj=2
+  - root_base=6.34 # not win
+#  - zlib # win
+  - xtensor>=0.24.2 # PETSIRD
+  - xtensor-blas # PETSIRD
+  - howardhinnant_date>=3.0.1 # PETSIRD
+  - python>=3.11.3 # 3.11.3 required for PETSIRD
+  - numpy>=1.24.3
+  - pip
+  - pytest
+  - matplotlib # for pytests
+  
