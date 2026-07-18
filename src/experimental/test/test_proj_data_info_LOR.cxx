@@ -159,7 +159,8 @@ main(int argc, char* argv[])
           ring1_90,
           ring2_90,
           det1_90,
-          det2_90); // set timing_pos_num=0 as test-code is pre-TOF
+          det2_90,
+          0); // set timing_pos_num=0 as test-code is pre-TOF
 
 #if 0
        cout << coord_1_0<<endl;

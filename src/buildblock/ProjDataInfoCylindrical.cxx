@@ -284,7 +284,10 @@ ProjDataInfoCylindrical::initialise_ring_diff_arrays() const
                                                    + (get_scanner_ptr()->get_num_rings() - 1);
               const int ring1_plus_ring2 = round(ring1_plus_ring2_float);
               // check that it was integer
-              assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4);
+              if (get_scanner_sptr()->get_scanner_geometry() == "Cylindrical")
+                {
+                  assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4);
+                }
               segment_axial_pos_to_ring1_plus_ring2[s_num][ax_pos_num] = ring1_plus_ring2;
             }
         }

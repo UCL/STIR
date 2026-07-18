@@ -437,6 +437,10 @@ ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_of_detection(Cartes
   DetectionPositionPair<> dpp;
   get_det_pos_pair_for_bin(dpp, bin);
 
+  /* TODO
+   best to use Scanner::get_coordinate_for_det_pos().
+   Sadly, the latter is not yet implemented for Cylindrical scanners.
+  */
   // find corresponding cartesian coordinates
   find_cartesian_coordinates_given_scanner_coordinates(coord_1,
                                                        coord_2,
