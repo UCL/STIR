@@ -1200,7 +1200,7 @@ private:
 void
 ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 {
-  std::cerr << "\n-------- Testing get_m for difference Scanner models --------\n";
+  std::cerr << "\n-------- Testing get_m for different Scanner models --------\n";
   run_get_m_test();
   cerr << "\n-------- Testing ProjDataInfoCylindricalNoArcCorr --------\n";
   shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
@@ -1250,11 +1250,8 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 void
 ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
 {
-  //-- ExamInfo
-  auto exam_info_sptr = std::make_shared<ExamInfo>();
-  exam_info_sptr->imaging_modality = ImagingModality::PT;
-
-  //-- create projadata info Blocks on Cylindrical
+  // ExamInfo not required for get_m() consistency checks.
+  //-- create projdata info Blocks on Cylindrical
   auto scannerCyl_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerCyl_sptr->set_scanner_geometry("Cylindrical");
   scannerCyl_sptr->set_up();
@@ -1262,7 +1259,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
   auto proj_data_info_cyl_sptr = std::make_shared<ProjDataInfoCylindricalNoArcCorr>();
   proj_data_info_cyl_sptr = set_blocks_projdata_info<ProjDataInfoCylindricalNoArcCorr>(scannerCyl_sptr, 2);
 
-  //-- create projadata info Blocks on Cylindrical
+  //-- create projdata info Blocks on Cylindrical
   auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
   scannerBlocks_sptr->set_num_axial_crystals_per_block(1);
@@ -1317,10 +1314,8 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
   auto proj_data_info_generic_sptr = std::make_shared<ProjDataInfoGenericNoArcCorr>();
   proj_data_info_generic_sptr = set_blocks_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerGeneric_sptr, 2);
 
-  Bin bin, bin_cyl, bin_gen, bin_blk;
+  Bin bin;
   CartesianCoordinate3D<float> det_cyl_1, det_cyl_2, det_gen_1, det_gen_2, det_blk_1, det_blk_2;
-  DetectionPositionPair<> dp_cyl, dp_gen, dp_blk;
-
   float z_shift_cyl = (scannerCyl_sptr->get_axial_length() - scannerCyl_sptr->get_ring_spacing()) / 2.F;
   float z_shift_gen = scannerGeneric_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
   float z_shift_blk = scannerBlocks_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
@@ -1331,7 +1326,6 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
       bin.view_num() = 0;
       bin.tangential_pos_num() = 0;
 
-      int index = 0;
       float m_cyl[2] = { 0., 0. };
       float m_blk[2] = { 0., 0. };
       float m_gen[2] = { 0., 0. };
