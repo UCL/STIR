@@ -1595,11 +1595,29 @@ Scanner::set_up()
 void
 Scanner::set_detector_map(const DetectorCoordinateMap::det_pos_to_coord_type& coord_map)
 {
-  this->detector_map_sptr.reset(new DetectorCoordinateMap(coord_map));
-  if ((unsigned)num_detectors_per_ring != detector_map_sptr->get_num_tangential_coords()
-      || (unsigned)num_rings != detector_map_sptr->get_num_axial_coords()
-      || (unsigned)num_detector_layers != detector_map_sptr->get_num_radial_coords())
-    error("Scanner:set_detector_map: inconsistent number of detectors");
+  // Create a new DetectorCoordinateMap
+  install_detector_coordinate_map_sptr(std::make_shared<DetectorCoordinateMap>(coord_map));
+}
+
+void
+Scanner::set_detector_coordinate_map_sptr(const shared_ptr<const DetectorCoordinateMap>& coord_map_sptr)
+{
+  if (!coord_map_sptr)
+    error("Scanner::set_detector_coordinate_map_sptr: null pointer passed");
+  // Deep - Copy the DetectorCoordinateMap
+  install_detector_coordinate_map_sptr(std::make_shared<DetectorCoordinateMap>(*coord_map_sptr));
+}
+
+void
+Scanner::install_detector_coordinate_map_sptr(shared_ptr<DetectorCoordinateMap> new_map_sptr)
+{
+
+  if ((unsigned)num_detectors_per_ring != new_map_sptr->get_num_tangential_coords()
+      || (unsigned)num_rings != new_map_sptr->get_num_axial_coords()
+      || (unsigned)num_detector_layers != new_map_sptr->get_num_radial_coords())
+    error("Scanner::set_detector_coordinate_map_sptr: inconsistent number of detectors");
+  // Use move to reduce atomic increaments
+  this->detector_map_sptr = std::move(new_map_sptr);
 }
 
 void

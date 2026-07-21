@@ -607,7 +607,7 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   DetectionPosition<> det_pos, det_pos_ord;
   DetectionPositionPair<> dp1, dp2, dpR1;
   CartesianCoordinate3D<float> coord_ord;
-  map_sptr = scannerBlocks_sptr->get_detector_map_sptr();
+  map_sptr = scannerBlocks_sptr->get_detector_coordinate_map_sptr();
   int rad_size = map_sptr->get_num_radial_coords();
   int ax_size = map_sptr->get_num_axial_coords();
   int tang_size = map_sptr->get_num_tangential_coords();
