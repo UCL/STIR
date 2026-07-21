@@ -1290,17 +1290,17 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
     CartesianCoordinate3D<float> coord_ord;
 
     for (unsigned int rad = 0; rad < map_sptr->get_num_radial_coords(); rad++)
-    {
-      for (unsigned int ax = 0; ax < map_sptr->get_num_axial_coords(); ax++)
       {
-        for (unsigned int tang = 0; tang < map_sptr->get_num_tangential_coords(); tang++)
-        {
-          det_pos.radial_coord() = rad;
-          det_pos.axial_coord() = ax;
-          det_pos.tangential_coord() = tang;
-          det_pos_ord.radial_coord() = rad;
-          det_pos_ord.axial_coord() = ax;
-          det_pos_ord.tangential_coord() = tang;//tang_size - 1 - tang;
+        for (unsigned int ax = 0; ax < map_sptr->get_num_axial_coords(); ax++)
+          {
+            for (unsigned int tang = 0; tang < map_sptr->get_num_tangential_coords(); tang++)
+              {
+                det_pos.radial_coord() = rad;
+                det_pos.axial_coord() = ax;
+                det_pos.tangential_coord() = tang;
+                det_pos_ord.radial_coord() = rad;
+                det_pos_ord.axial_coord() = ax;
+                det_pos_ord.tangential_coord() = tang; // tang_size - 1 - tang;
 
                 coord_ord = map_sptr->get_coordinate_for_det_pos(det_pos_ord);
                 coord_map_reordered[det_pos] = coord_ord;
