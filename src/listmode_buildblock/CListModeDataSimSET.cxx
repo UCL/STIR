@@ -56,7 +56,7 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
 
   parser.add_key("originating system", &this->originating_system);
   parser.add_key("name of phg file", &this->phg_filename);
-  parser.add_key("%TOF mashing factor", &this->tof_mash_factor);
+  parser.add_key("TOF mashing factor", &this->tof_mash_factor);
 
   if (!parser.parse(hsimset_filename.c_str()))
     error("CListModeDataSimSET: error parsing '%s'", hsimset_filename.c_str());
@@ -64,35 +64,35 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
   double SubObjCurTimeBinDuration = 0.0;
 
   // The dirty trick we did in SimSETListmodeInputFileFormat::is_SimSET_signature()
-  // char** argv = new char*[3];
-  // argv[0] = nullptr;
-  // argv[1] = nullptr;
-  // argv[2] = nullptr;
+  char** argv = new char*[3];
+  argv[0] = nullptr;
+  argv[1] = nullptr;
+  argv[2] = nullptr;
 
   char pseudo_binary[] = "phgbin";
 
-  // memset(pseudo_binary, 0, 7);
-  // strcpy(pseudo_binary, "phgbin\0");
-  // argv[0] = pseudo_binary;
+  memset(pseudo_binary, 0, 7);
+  strcpy(pseudo_binary, "phgbin\0");
+  argv[0] = pseudo_binary;
 
-  char flag[] = "-d";
-  // char* flag = new char[4];
-  // memset(flag, 0, 4);
-  // strcpy(flag, "-d");
-  // flag[3] = '\0';
-  // argv[1] = flag;
+  // char flag[] = "-d";
+  char* flag = new char[4];
+  memset(flag, 0, 4);
+  strcpy(flag, "-d");
+  flag[3] = '\0';
+  argv[1] = flag;
 
   std::vector<char> filename(phg_filename.begin(), phg_filename.end());
   filename.push_back('\0');
 
-  // char* argv_c = new char[phg_filename.size() + 1];
-  // memset(argv_c, 0, phg_filename.size() + 1);
-  char* argv[] = { pseudo_binary, flag, filename.data() };
+  char* argv_c = new char[phg_filename.size() + 1];
+  memset(argv_c, 0, phg_filename.size() + 1);
+  // char* argv[] = { pseudo_binary, flag, filename.data() };
   int argc = 3;
 
-  // phg_filename.copy(argv_c, phg_filename.size());
-  // argv_c[phg_filename.size()] = '\0';
-  // argv[2] = argv_c;
+  phg_filename.copy(argv_c, phg_filename.size());
+  argv_c[phg_filename.size()] = '\0';
+  argv[2] = argv_c;
 
   char* knownOptions = new char[4];
   strcpy(knownOptions, "pcd");
@@ -195,6 +195,7 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
 
   /* Initialize the binning module if necessary */
   /* Initialize parameters */
+  /* Lately this started causing problems */
   if (PhgBinInitParams(PhgRunTimeParams.PhgBinParamsFilePath[0], &PhgBinParams[0], &PhgBinData[0], &PhgBinFields[0]) == false)
     error("CListModeDataSimSET: Unable to initialize the bining module.");
 
@@ -239,7 +240,7 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
         }
       else
         {
-          error("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
+          info("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
                 "do not match a scanner in the Scanner list.");
         }
     }
@@ -270,7 +271,7 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
         }
       else
         {
-          error("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
+          info("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
                 "do not match a scanner in the Scanner list.");
         }
     }

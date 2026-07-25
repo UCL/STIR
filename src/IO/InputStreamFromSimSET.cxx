@@ -51,6 +51,11 @@ InputStreamFromSimSET::reset()
   fseek(historyFile, headerHk.headerSize, SEEK_SET);
   blueScatters = 0;
   pinkScatters = 0;
+  bluePhotons.clear();
+  pinkPhotons.clear();
+  buffer.clear();
+  have_pending_decay = false;
+  reached_eof = false;
   return Succeeded::yes;
 }
 
@@ -72,6 +77,12 @@ InputStreamFromSimSET::set_get_position(const InputStreamFromSimSET::SavedPositi
     fseek(historyFile, 0, SEEK_END); // go to eof
   else
     fseek(historyFile, saved_get_positions[pos], SEEK_SET);
+
+  bluePhotons.clear();
+  pinkPhotons.clear();
+  buffer.clear();
+  have_pending_decay = false;
+  reached_eof = false;
 
   return Succeeded::yes;
 }
@@ -104,6 +115,8 @@ InputStreamFromSimSET::set_defaults()
   numPhotonsProcessed = 0;
   numDecaysProcessed = 0;
   numPhotons = 0;
+  have_pending_decay = false;
+  reached_eof = false;
 }
 
 Succeeded
@@ -289,275 +302,102 @@ InputStreamFromSimSET::set_up_custom_hist_file()
 Succeeded
 InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
 {
-
-  PHG_Decay nextDecay;
-
-  //! The first detected photon
-  PHG_DetectedPhoton cur_detectedPhoton;
-
-  if (buffer.size() > 0)
+  for (;;)
     {
-      int i = 0;
-      bool found = false;
-      for (; i < buffer.size(); i++)
+      while (!buffer.empty())
         {
-          if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy < binParams->minE))
+          PHG_DetectedPhoton blue = buffer.front().first;
+          PHG_DetectedPhoton pink = buffer.front().second;
+          buffer.erase(buffer.begin());
+
+          if ((binParams->numE1Bins > 0) && (blue.energy < binParams->minE || blue.energy > binParams->maxE))
+            continue;
+          if ((binParams->numE2Bins > 0) && (pink.energy < binParams->minE || pink.energy > binParams->maxE))
             continue;
 
-          if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy > binParams->maxE))
-            continue;
+          const float coincidence_weight = decay_weight * blue.photon_weight * pink.photon_weight;
 
-          if ((binParams->numE2Bins > 0) && (buffer.at(i).second->energy < binParams->minE))
-            continue;
+          blue.location.z_position = (blue.location.z_position - static_cast<float>(binParams->minZ)) * 10.F - 4.1026F/2;
+          blue.location.y_position *= 10.F;
+          blue.location.x_position *= 10.F;
+          pink.location.z_position = (pink.location.z_position - static_cast<float>(binParams->minZ)) * 10.F - 4.1026F/2;
+          pink.location.y_position *= 10.F;
+          pink.location.x_position *= 10.F;
 
-          if ((binParams->numE2Bins > 0) && (buffer.at(i).second->energy > binParams->maxE))
-            continue;
+          // SimSET stores times in seconds; STIR expects the difference in ps.
+          const float tof_difference = 1.E12F * (pink.time_since_creation - blue.time_since_creation);
 
-          found = true;
-          break;
+          // A rejected geometrical pair is not end-of-file. Keep looking.
+          if (record.init_from_data(pink, blue, coincidence_weight, tof_difference) == Succeeded::yes)
+            return Succeeded::yes;
         }
 
-      if (found)
+      if (reached_eof)
+        return Succeeded::no;
+
+      PHG_DetectedPhoton detected_photon{};
+      EventTy current_event;
+
+      if (have_pending_decay)
         {
-          // float tofDifference;
-          PHG_DetectedPhoton blue = *buffer.at(i).first;
-          PHG_DetectedPhoton pink = *buffer.at(i).second;
-
-          buffer.erase(buffer.begin() + i);
-
-          float coincidenceWeight = (decay_weight * blue.photon_weight * pink.photon_weight);
-
-          blue.location.z_position -= static_cast<float>(binParams->minZ);
-          pink.location.z_position -= static_cast<float>(binParams->minZ);
-
-          // STIR uses mm.
-          blue.location.z_position *= 10.f;
-          blue.location.y_position *= 10.f;
-          blue.location.x_position *= 10.f;
-
-          pink.location.z_position *= 10.f;
-          pink.location.y_position *= 10.f;
-          pink.location.x_position *= 10.f;
-
-          //            std::cout << buffer.size() << std::endl;
-
-          /* tofDifference is in nanoseconds, hence '1E9*' */
-          float tofDifference = 1.0E12 * (pink.time_since_creation - blue.time_since_creation);
-
-          /* make sure that positive TOF is always oriented in the same direction,
-                                  +TOF equating to +x. */
-          //            if (blue.location.x_position < pink.location.x_position) {
-          //                tofDifference = -tofDifference;
-          //            } else if ( (blue.location.x_position == pink.location.x_position)
-          //                        &&  (blue.location.y_position < pink.location.y_position) ) {
-          //                tofDifference = -tofDifference;
-          //            }
-
-          // if (tofDifference < 0.0)
-          //  {
-          //  tofDifference *= -1;
-          return record.init_from_data(pink, blue, coincidenceWeight, tofDifference);
-          // }
-          // return record.init_from_data(blue, pink, coincidenceWeight, tofDifference);
+          current_event = Decay;
+          have_pending_decay = false;
         }
+      else
+        {
+          current_event = readEvent(historyFile, &curDecay, &detected_photon);
+        }
+
+      // Be robust against an unexpected photon at a restored file position.
+      while (current_event != Decay && current_event != PhoHFileNullEvent)
+        current_event = readEvent(historyFile, &curDecay, &detected_photon);
+
+      if (current_event == PhoHFileNullEvent)
+        {
+          reached_eof = true;
+          continue;
+        }
+
+      const PHG_Decay decay_being_processed = curDecay;
+      bluePhotons.clear();
+      pinkPhotons.clear();
+
+      PHG_Decay next_decay{};
+      current_event = readEvent(historyFile, &next_decay, &detected_photon);
+      while (current_event == Photon)
+        {
+          if (LbFgIsSet((detected_photon.flags & 3), PHGFg_PhotonBlue))
+            bluePhotons.push_back(detected_photon);
+          else
+            pinkPhotons.push_back(detected_photon);
+
+          current_event = readEvent(historyFile, &next_decay, &detected_photon);
+        }
+
+      if (current_event == Decay)
+        {
+          curDecay = next_decay;
+          have_pending_decay = true;
+        }
+      else
+        {
+          reached_eof = true;
+        }
+
+      if (!(PHG_IsPETCoincidencesOnly() || PHG_IsPETCoincPlusSingles()))
+        error("InputStreamFromSimSET: only PET coincidence history is supported.");
+
+      if ((decay_being_processed.decayType == PhgEn_PETRandom) && !binParams->acceptRandoms)
+        continue;
+
+      decay_weight = decay_being_processed.startWeight;
+
+      // Preserve every blue-pink combination as values. This avoids dangling
+      // pointers when the photon vectors are cleared for the next decay.
+      for (const auto& blue : bluePhotons)
+        for (const auto& pink : pinkPhotons)
+          buffer.emplace_back(blue, pink);
     }
-
-  {
-
-    EventTy eventType = readEvent(historyFile, &curDecay, &cur_detectedPhoton);
-
-    while (eventType == Decay)
-      {
-        /* Clear decay variables */
-        bluePhotons.clear();
-        pinkPhotons.clear();
-        buffer.clear();
-        buffer_size = 0;
-
-        eventType = readEvent(historyFile, &nextDecay, &cur_detectedPhoton);
-
-        if (eventType == PhoHFileNullEvent)
-          return Succeeded::no;
-
-        decay_weight = nextDecay.startWeight;
-
-        while (eventType == Photon)
-          {
-            /* See if it is blue or pink */
-            if (LbFgIsSet((cur_detectedPhoton.flags & 3), PHGFg_PhotonBlue))
-              {
-                bluePhotons.push_back(cur_detectedPhoton);
-              }
-            else
-              {
-                pinkPhotons.push_back(cur_detectedPhoton);
-              }
-            eventType = readEvent(historyFile, &nextDecay, &cur_detectedPhoton);
-
-            if (eventType == PhoHFileNullEvent)
-              return Succeeded::no;
-          }
-
-        /* Update current decay */
-        curDecay = nextDecay;
-        //-> break
-        if (PHG_IsPETCoincidencesOnly() || PHG_IsPETCoincPlusSingles())
-          {
-            if ((bluePhotons.size() == 1) && (pinkPhotons.size() == 1))
-              {
-                /* Reject the coincidence if it is random and
-                  we are rejecting randoms */
-                if ((curDecay.decayType == PhgEn_PETRandom) && (!binParams->acceptRandoms))
-                  continue;
-
-                if ((binParams->numE1Bins > 0) && (bluePhotons.at(0).energy < binParams->minE))
-                  continue;
-
-                if ((binParams->numE1Bins > 0) && (bluePhotons.at(0).energy > binParams->maxE))
-                  continue;
-
-                if ((binParams->numE2Bins > 0) && (pinkPhotons.at(0).energy < binParams->minE))
-                  continue;
-
-                if ((binParams->numE2Bins > 0) && (pinkPhotons.at(0).energy > binParams->maxE))
-                  continue;
-
-                float coincidenceWeight = (decay_weight * bluePhotons.at(0).photon_weight * pinkPhotons.at(0).photon_weight);
-
-                bluePhotons.at(0).location.z_position -= static_cast<float>(binParams->minZ);
-                pinkPhotons.at(0).location.z_position -= static_cast<float>(binParams->minZ);
-
-                // STIR uses mm.
-                bluePhotons.at(0).location.z_position *= 10.f;
-                bluePhotons.at(0).location.y_position *= 10.f;
-                bluePhotons.at(0).location.x_position *= 10.f;
-
-                pinkPhotons.at(0).location.z_position *= 10.f;
-                pinkPhotons.at(0).location.y_position *= 10.f;
-                pinkPhotons.at(0).location.x_position *= 10.f;
-
-                /* tofDifference is in nanoseconds, hence '1E9*' */
-                float tofDifference = 1.0E12 * (pinkPhotons.at(0).time_since_creation - bluePhotons.at(0).time_since_creation);
-
-                /* make sure that positive TOF is always oriented in the same direction,
-                    +TOF equating to +x. */
-                //                    if (bluePhotons.at(0).location.x_position < pinkPhotons.at(0).location.x_position) {
-                //                        tofDifference = -tofDifference;
-                //                    } else if ( (bluePhotons.at(0).location.x_position == pinkPhotons.at(0).location.x_position)
-                //                                &&  (bluePhotons.at(0).location.y_position <
-                //                                pinkPhotons.at(0).location.y_position) ) {
-                //                        tofDifference = -tofDifference;
-                //                    }
-
-                // if (tofDifference < 0.0)
-                //  {
-                // tofDifference *= -1;
-                return record.init_from_data(pinkPhotons.at(0), bluePhotons.at(0), coincidenceWeight, tofDifference);
-                //                       std::cout <<tofDifference << std::endl;
-                // }
-
-                // return record.init_from_data(bluePhotons.at(0), pinkPhotons.at(0), coincidenceWeight, tofDifference);
-              }
-            else if (bluePhotons.size() == 0 || pinkPhotons.size() == 0)
-              {
-                // warning("InputStreamFromSimSET: Single, not supported. continue... ");
-                continue;
-              }
-            else if (bluePhotons.size() > 1 || pinkPhotons.size() > 1)
-              {
-                //                    warning("Multiples");
-                // Create buffer
-                for (int i = 0; i < bluePhotons.size(); ++i)
-                  {
-                    for (int j = 0; j < pinkPhotons.size(); ++j)
-                      {
-                        buffer.push_back({ &bluePhotons.at(i), &pinkPhotons.at(j) });
-                        buffer_size++;
-                      }
-                  }
-
-                buffer_size--;
-
-                //                    /* Reject the coincidence if it is random and
-                //                      we are rejecting randoms */
-                //                    if ( (curDecay.decayType == PhgEn_PETRandom) &&
-                //                            (!binParams->acceptRandoms) )
-                //                        continue;
-
-                int i = 0;
-                bool found = false;
-                for (; i < buffer.size(); ++i)
-                  {
-                    if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy < binParams->minE))
-                      continue;
-
-                    if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy > binParams->maxE))
-                      continue;
-
-                    if ((binParams->numE2Bins > 0) && (buffer.at(i).second->energy < binParams->minE))
-                      continue;
-
-                    if ((binParams->numE2Bins > 0) && (buffer.at(i).second->energy > binParams->maxE))
-                      continue;
-
-                    found = true;
-                    break;
-                  }
-
-                if (found)
-                  {
-                    PHG_DetectedPhoton blue = *buffer.at(i).first;
-                    PHG_DetectedPhoton pink = *buffer.at(i).second;
-
-                    buffer.erase(buffer.begin() + i);
-
-                    float coincidenceWeight = (decay_weight * blue.photon_weight * pink.photon_weight);
-
-                    blue.location.z_position -= static_cast<float>(binParams->minZ);
-                    pink.location.z_position -= static_cast<float>(binParams->minZ);
-
-                    // STIR uses mm.
-                    blue.location.z_position *= 10.f;
-                    blue.location.y_position *= 10.f;
-                    blue.location.x_position *= 10.f;
-
-                    pink.location.z_position *= 10.f;
-                    pink.location.y_position *= 10.f;
-                    pink.location.x_position *= 10.f;
-
-                    /* tofDifference is in nanoseconds, hence '1E9*' */
-                    float tofDifference = 1.0E12 * (pink.time_since_creation - blue.time_since_creation);
-
-                    /* make sure that positive TOF is always oriented in the same direction,
-                    +TOF equating to +x. */
-                    //                        if (blue.location.x_position < pink.location.x_position) {
-                    //                            tofDifference = -tofDifference;
-                    //                        } else if ( (blue.location.x_position == pink.location.x_position)
-                    //                                    &&  (blue.location.y_position < pink.location.y_position) ) {
-                    //                            tofDifference = -tofDifference;
-                    //                        }
-
-                    // if (tofDifference < 0.0)
-                    //  {
-                    //    tofDifference *= -1;
-                    //  return record.init_from_data(pink, blue, coincidenceWeight, tofDifference);
-                    //                             std::cout << "Negative" << std::endl;
-                    //}
-
-                    return record.init_from_data(blue, pink, coincidenceWeight, tofDifference);
-                  }
-              }
-            else
-              {
-                error("Why am I here??");
-              }
-          }
-        else
-          {
-            error("Not supported.");
-          }
-      }
-  }
 }
 
 END_NAMESPACE_STIR
