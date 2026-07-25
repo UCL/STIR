@@ -163,9 +163,12 @@ private:
 
   std::vector<PHG_DetectedPhoton> bluePhotons; /* Blue photons for current decay */
   std::vector<PHG_DetectedPhoton> pinkPhotons; /* Pink photon for current decay*/
-  std::vector<std::pair<PHG_DetectedPhoton*, PHG_DetectedPhoton*>> buffer;
+  std::vector<std::pair<PHG_DetectedPhoton, PHG_DetectedPhoton>> buffer;
 
-  int buffer_size = 0;
+  //! The stream has already used the decay marker stored in curDecay.
+  bool have_pending_decay = false;
+  //! No more events can be read after the buffered pairs have been drained.
+  bool reached_eof = false;
 
   float decay_weight = 0.0;
 };

@@ -174,6 +174,7 @@ public:
     nanoPET,
     HRRT,
     Allegro,
+    Vereos,
     GeminiTF,
     SAFIRDualRingPrototype,
     UPENN_5rings,
