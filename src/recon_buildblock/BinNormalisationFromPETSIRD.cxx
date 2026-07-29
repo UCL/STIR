@@ -68,7 +68,7 @@ float
 BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) const
 {
 
-  DetectionPositionPair<> dp;
+  /*DetectionPositionPair<> dp;
 
   if (const auto* proj_cyl = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
     {
@@ -83,7 +83,26 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
       error("BinNormalisationFromPETSIRD: ProjDataInfo is neither Cylindrical nor BlocksOnCylindrical");
     }
 
-  return petsird_info_sptr->get_detection_efficiency_for_bin(dp);
+  return petsird_info_sptr->get_detection_efficiency_for_bin(dp);*/
+  std::vector<DetectionPositionPair<>> dps;
+  if (const auto* proj_cyl = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
+    {
+      proj_cyl->get_all_det_pos_pairs_for_bin(dps, bin);
+    }
+  else if (const auto* proj_blk = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
+    {
+      proj_blk->get_all_det_pos_pairs_for_bin(dps, bin);
+    }
+  else
+    {
+      error("BinNormalisationFromPETSIRD: ProjDataInfo is neither Cylindrical nor BlocksOnCylindrical");
+    }
+  if (dps.empty())
+    return 1.f;
+  float total = 0.f;
+  for (const auto& dp : dps)
+    total += petsird_info_sptr->get_detection_efficiency_for_bin(dp);
+  return total / dps.size();
 }
 
 Succeeded

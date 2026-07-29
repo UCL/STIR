@@ -75,9 +75,6 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 Succeeded
 CListModeDataPETSIRD::open_lm_file() const
 {
-  // current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
-  if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-    return Succeeded::no;
   curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   return Succeeded::yes;
 }
@@ -282,31 +279,17 @@ CListModeDataPETSIRD::set_get_position(const SavedPosition& pos)
 Succeeded
 CListModeDataPETSIRD::reset()
 {
-  /* \todo Not sure if this is the best way to reset the reader.
-  It ensures we are in a clean state, but it might be slow if the file is large and/or on a slow disk.
-  */
-  // if (current_lm_data_ptr)
-  //   {
-  //     try
-  //       {
-  //         current_lm_data_ptr->Close();
-  //       }
-  //     catch (...)
-  //       {
-  //         // If Close throws, treat as failure (or swallow if you must)
-  //         return Succeeded::no;
-  //       }
-  //   }
-
   if (use_hdf5)
     current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(this->listmode_filename));
   else
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
 
+  petsird::Header header;
+  current_lm_data_ptr->ReadHeader(header);   // <-- ADD THIS LINE
+
   curr_event_in_event_block = 0;
   curr_is_prompt = true;
   m_time_block_index = 0;
-
   try
     {
       while (true)
@@ -314,9 +297,7 @@ CListModeDataPETSIRD::reset()
           info(format("Reading TimeBlock index {}", m_time_block_index), 2);
           if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
             return Succeeded::no;
-
           ++m_time_block_index;
-
           if (std::holds_alternative<petsird::EventTimeBlock>(this->curr_time_block))
             {
               this->curr_event_block = std::get<petsird::EventTimeBlock>(this->curr_time_block);
@@ -328,7 +309,6 @@ CListModeDataPETSIRD::reset()
     {
       return Succeeded::no;
     }
-
   return Succeeded::yes;
 }
 
