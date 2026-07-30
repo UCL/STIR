@@ -102,7 +102,7 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
   float total = 0.f;
   for (const auto& dp : dps)
     total += petsird_info_sptr->get_detection_efficiency_for_bin(dp);
-  return total / dps.size();
+  return total;
 }
 
 Succeeded
