@@ -82,7 +82,8 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
     }
   if (dps.empty())
     {
-      error("No detection position pairs found for bin.") return 1.f;
+      error("No detection position pairs found for bin.");
+      return 1.f;
     }
   float total = 0.f;
   for (const auto& dp : dps)
