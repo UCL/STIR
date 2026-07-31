@@ -75,6 +75,10 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 Succeeded
 CListModeDataPETSIRD::open_lm_file() const
 {
+  // current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
+  // if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+  //  return Succeeded::no;
+
   curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   return Succeeded::yes;
 }
@@ -279,6 +283,22 @@ CListModeDataPETSIRD::set_get_position(const SavedPosition& pos)
 Succeeded
 CListModeDataPETSIRD::reset()
 {
+  /* \todo Not sure if this is the best way to reset the reader.
+  It ensures we are in a clean state, but it might be slow if the file is large and/or on a slow disk.
+  */
+  // if (current_lm_data_ptr)
+  //   {
+  //     try
+  //       {
+  //         current_lm_data_ptr->Close();
+  //       }
+  //     catch (...)
+  //       {
+  //         // If Close throws, treat as failure (or swallow if you must)
+  //         return Succeeded::no;
+  //       }
+  //   }
+
   if (use_hdf5)
     current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(this->listmode_filename));
   else
