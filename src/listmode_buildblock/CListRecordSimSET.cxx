@@ -24,46 +24,74 @@
 */
 
 #include "stir/listmode/CListRecordSimSET.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
+#include "stir/format.h"
+#include "stir/LORCoordinates.h"
 
 START_NAMESPACE_STIR
 
-CListEventSimSET::CListEventSimSET(const shared_ptr<const ProjDataInfo>& proj_data_info)
-    : CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
-{}
-
-void
-CListEventSimSET::get_detection_position(DetectionPositionPair<>& _det_pos) const
+Succeeded
+CListRecordSimSET::init_from_data(const PHG_DetectedPhoton& detectedPhotonBlue,
+                                  const PHG_DetectedPhoton& detectedPhotonPink,
+                                  const float weight,
+                                  const bool is_prompt)
 {
-  DetectionPosition<> det1(this->det1, this->ring1, 0);
-  DetectionPosition<> det2(this->det2, this->ring2, 0);
 
-  _det_pos.pos1() = det1;
-  _det_pos.pos2() = det2;
-  _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(tofDifference);
+  double tof_difference = 1.E3F * (detectedPhotonPink.time_since_creation - detectedPhotonBlue.time_since_creation);
+
+  CartesianCoordinate3D<float> coord_1(detectedPhotonBlue.location.z_position - half_ring_spacing,
+                                       detectedPhotonBlue.location.y_position,
+                                       detectedPhotonBlue.location.x_position);
+
+  CartesianCoordinate3D<float> coord_2(detectedPhotonPink.location.z_position - half_ring_spacing,
+                                       detectedPhotonPink.location.y_position,
+                                       detectedPhotonPink.location.x_position);
+
+  const LORAs2Points<float> input_lor(coord_1, coord_2);
+  LORAs2Points<float> intersected_lor;
+
+  if (input_lor.get_intersections_with_cylinder(intersected_lor, radius) == Succeeded::no)
+    return Succeeded::no;
+
+  this->event_data->set_lor(intersected_lor, tof_difference, weight);
+  this->event_data->set_prompt(is_prompt);
+
+  const auto time_in_millisecs = static_cast<unsigned long>(detectedPhotonBlue.time_since_creation / 1.E6);
+
+  this->time_data.set_time_in_millisecs(time_in_millisecs);
+
+  return Succeeded::yes;
 }
 
-void
-CListEventSimSET::set_detection_position(const DetectionPositionPair<>&)
+std::unique_ptr<CListEventScannerWithDiscreteDetectorsBase>
+CListRecordSimSET::make_event_data(shared_ptr<const ProjDataInfo> proj_data_info_sptr)
 {
-  error("Cannot set events in a ROOT file!");
-}
+  // construct event of type of current ProjDataInfo
+  // Note: currently cumbersome due to change ProjDataInfo hierarchy.
+  // The following is safe...
+  // See https://github.com/UCL/STIR/commit/79bd05694091f7b08fb0237cb34bdbeedb256a45
+  if ((proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
+      && (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()) != nullptr))
+    {
+      return std::make_unique<CListEventSimSET<ProjDataInfoCylindricalNoArcCorr>>(proj_data_info_sptr);
+    }
 
-void
-CListEventSimSET::init_from_data(const PHG_DetectedPhoton* const _blue,
-                                 const PHG_DetectedPhoton* const _pink,
-                                 const float _weight,
-                                 const float _tofDifference)
-{
+  if ((proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical")
+      && (dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get()) != nullptr))
+    {
+      return std::make_unique<CListEventSimSET<ProjDataInfoBlocksOnCylindricalNoArcCorr>>(proj_data_info_sptr);
+    }
 
-  CartesianCoordinate3D<float> blue_coord(_blue->location.z_position, _blue->location.y_position, _blue->location.x_position);
+  if ((proj_data_info_sptr->get_scanner_ptr()->get_scanner_geometry() == "Generic")
+      && (dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(proj_data_info_sptr.get()) != nullptr))
+    {
+      return std::make_unique<CListEventSimSET<ProjDataInfoGenericNoArcCorr>>(proj_data_info_sptr);
+    }
 
-  CartesianCoordinate3D<float> pink_coord(_pink->location.z_position, _pink->location.y_position, _pink->location.x_position);
-
-  weight = _weight;
-  tofDifference = _tofDifference;
-
-  this->get_uncompressed_proj_data_info_sptr()->find_scanner_coordinates_given_cartesian_coordinates(
-      det1, det2, ring1, ring2, blue_coord, pink_coord);
+  error("Unsupported ProjDataInfo type in CListRecordPETSIRD::make_event_data");
+  return nullptr;
 }
 
 END_NAMESPACE_STIR

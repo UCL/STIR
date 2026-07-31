@@ -125,7 +125,7 @@ static RegisterInputFileFormat<SimSETListmodeInputFileFormat> LMdummySimSET(7);
 // static InputStreamFromSimSET::RegisterIt dummy70707;
 #  endif
 
-#ifdef HAVE_LLN_MATRIX
+#  ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 static ECAT6OutputFileFormat::RegisterIt dummy2;

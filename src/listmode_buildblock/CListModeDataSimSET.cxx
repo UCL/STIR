@@ -230,6 +230,7 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
 
   // We have already established that a cylindrical scanner will be used.
   shared_ptr<Scanner> tmpl_scanner(Scanner::get_scanner_from_name(originating_system));
+  tmpl_scanner->set_up();
   // SimplePET
   if (DetRunTimeParams[0].DetectorType == 1)
     {
@@ -241,7 +242,7 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
       else
         {
           info("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
-                "do not match a scanner in the Scanner list.");
+               "do not match a scanner in the Scanner list.");
         }
     }
   else if (DetRunTimeParams[0].DetectorType == 6) // CylindricalPET
@@ -272,7 +273,7 @@ CListModeDataSimSET::CListModeDataSimSET(const std::string& _hsimset_filename)
       else
         {
           info("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
-                "do not match a scanner in the Scanner list.");
+               "do not match a scanner in the Scanner list.");
         }
     }
   else
