@@ -285,7 +285,7 @@ CListModeDataPETSIRD::reset()
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
 
   petsird::Header header;
-  current_lm_data_ptr->ReadHeader(header);   // <-- ADD THIS LINE
+  current_lm_data_ptr->ReadHeader(header); // <-- ADD THIS LINE
 
   curr_event_in_event_block = 0;
   curr_is_prompt = true;

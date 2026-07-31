@@ -80,14 +80,14 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
     {
       error("BinNormalisationFromPETSIRD: ProjDataInfo is neither Cylindrical nor BlocksOnCylindrical");
     }
-  if (dps.empty()){
-    error("No detection position pairs found for bin.")
-    return 1.f;
-  }
+  if (dps.empty())
+    {
+      error("No detection position pairs found for bin.") return 1.f;
+    }
   float total = 0.f;
   for (const auto& dp : dps)
     total += petsird_info_sptr->get_detection_efficiency_for_bin(dp);
-  
+
   return total;
 }
 
