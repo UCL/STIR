@@ -290,6 +290,7 @@ CListModeDataPETSIRD::reset()
   curr_event_in_event_block = 0;
   curr_is_prompt = true;
   m_time_block_index = 0;
+
   try
     {
       while (true)
@@ -297,7 +298,9 @@ CListModeDataPETSIRD::reset()
           info(format("Reading TimeBlock index {}", m_time_block_index), 2);
           if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
             return Succeeded::no;
+
           ++m_time_block_index;
+
           if (std::holds_alternative<petsird::EventTimeBlock>(this->curr_time_block))
             {
               this->curr_event_block = std::get<petsird::EventTimeBlock>(this->curr_time_block);
@@ -309,7 +312,7 @@ CListModeDataPETSIRD::reset()
     {
       return Succeeded::no;
     }
+
   return Succeeded::yes;
 }
-
 END_NAMESPACE_STIR
