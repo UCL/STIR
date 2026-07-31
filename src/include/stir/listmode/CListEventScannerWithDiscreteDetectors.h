@@ -24,6 +24,7 @@
 #include "stir/DetectionPositionPair.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/listmode/CListRecord.h"
+#include "stir/LORCoordinates.h"
 
 START_NAMESPACE_STIR
 
@@ -44,6 +45,12 @@ public:
 
   //! This routine sets in a coincidence event from detector "indices"
   virtual void set_detection_position(const DetectionPositionPair<>&) = 0;
+
+  //! This routine is used when we want to convert from Cartesian coordinates and we need access to the ProjDataInfo type
+  virtual void set_lor(const LORAs2Points<float>&, float tof_arg, float weight = 1)
+  {
+    error("This has not been implemented for this input type. Abort");
+  }
 };
 
 //! Class for coincidence events from a list-mode file that uses detector indices and a specific type of ProjDataInfo

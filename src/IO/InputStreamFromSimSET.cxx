@@ -306,6 +306,7 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
     {
       while (!buffer.empty())
         {
+          bool is_prompt = true;
           PHG_DetectedPhoton blue = buffer.front().first;
           PHG_DetectedPhoton pink = buffer.front().second;
           buffer.erase(buffer.begin());
@@ -317,18 +318,15 @@ InputStreamFromSimSET::get_next_record(CListRecordSimSET& record)
 
           const float coincidence_weight = decay_weight * blue.photon_weight * pink.photon_weight;
 
-          blue.location.z_position = (blue.location.z_position - static_cast<float>(binParams->minZ)) * 10.F - 4.1026F/2;
+          blue.location.z_position *= 10.F;
           blue.location.y_position *= 10.F;
           blue.location.x_position *= 10.F;
-          pink.location.z_position = (pink.location.z_position - static_cast<float>(binParams->minZ)) * 10.F - 4.1026F/2;
+          pink.location.z_position *= 10.F;
           pink.location.y_position *= 10.F;
           pink.location.x_position *= 10.F;
 
-          // SimSET stores times in seconds; STIR expects the difference in ps.
-          const float tof_difference = 1.E12F * (pink.time_since_creation - blue.time_since_creation);
-
           // A rejected geometrical pair is not end-of-file. Keep looking.
-          if (record.init_from_data(pink, blue, coincidence_weight, tof_difference) == Succeeded::yes)
+          if (record.init_from_data(blue, pink, coincidence_weight, is_prompt) == Succeeded::yes)
             return Succeeded::yes;
         }
 
