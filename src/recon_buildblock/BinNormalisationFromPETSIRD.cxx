@@ -67,23 +67,29 @@ BinNormalisationFromPETSIRD::BinNormalisationFromPETSIRD(const std::string& file
 float
 BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) const
 {
-
-  DetectionPositionPair<> dp;
-
+  std::vector<DetectionPositionPair<>> dps;
   if (const auto* proj_cyl = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
     {
-      proj_cyl->get_det_pos_pair_for_bin(dp, bin);
+      proj_cyl->get_all_det_pos_pairs_for_bin(dps, bin);
     }
   else if (const auto* proj_blk = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
     {
-      proj_blk->get_det_pos_pair_for_bin(dp, bin);
+      proj_blk->get_all_det_pos_pairs_for_bin(dps, bin);
     }
   else
     {
       error("BinNormalisationFromPETSIRD: ProjDataInfo is neither Cylindrical nor BlocksOnCylindrical");
     }
+  if (dps.empty())
+    {
+      error("No detection position pairs found for bin.");
+      return 1.f;
+    }
+  float total = 0.f;
+  for (const auto& dp : dps)
+    total += petsird_info_sptr->get_detection_efficiency_for_bin(dp);
 
-  return petsird_info_sptr->get_detection_efficiency_for_bin(dp);
+  return total;
 }
 
 Succeeded
