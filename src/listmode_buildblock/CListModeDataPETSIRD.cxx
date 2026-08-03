@@ -27,10 +27,12 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 {
   CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
 
+  petsird::Header header;
   if (reset() == Succeeded::no)
     error("CListModeDataPETSIRD: Could not open/prime the reader. Abort.");
 
-  petsird_info_sptr = std::make_shared<PETSIRDInfo>(m_last_header);
+  current_lm_data_ptr->ReadHeader(header);
+  petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
 
   int tof_mash_factor = 1;
@@ -176,8 +178,9 @@ CListModeDataPETSIRD::reopen_and_prime()
   else
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
 
-  current_lm_data_ptr->ReadHeader(m_last_header); // read directly into the member
-  m_has_delayeds = m_last_header.scanner.delayed_events_are_stored;
+  petsird::Header header;
+  current_lm_data_ptr->ReadHeader(header);
+  m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   curr_event_in_event_block = 0;
   curr_is_prompt = true;

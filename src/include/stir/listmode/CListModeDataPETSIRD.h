@@ -133,8 +133,6 @@ private:
   mutable bool curr_is_prompt = true;
   //! Whether the PETSIRD data contains delayed events.
   mutable bool m_has_delayeds;
-  //! Storing header
-  petsird::Header m_last_header;
   //! Shared PETSIRD scanner and acquisition information.
   shared_ptr<const PETSIRDInfo> petsird_info_sptr;
   //! Cursor used to restore the most recently saved reader position
