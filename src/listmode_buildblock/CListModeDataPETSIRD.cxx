@@ -34,7 +34,9 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
 
   current_lm_data_ptr->ReadHeader(header);
+
   m_has_delayeds = header.scanner.delayed_events_are_stored;
+
   if (reset() == Succeeded::no)
     error("CListModeDataPETSIRD: Could not open/prime the reader. Abort.");
 
@@ -65,6 +67,10 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 Succeeded
 CListModeDataPETSIRD::open_lm_file() const
 {
+  // current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
+  // if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+  //  return Succeeded::no;
+
   curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   return Succeeded::yes;
 }
@@ -175,6 +181,7 @@ CListModeDataPETSIRD::save_get_position()
 Succeeded
 CListModeDataPETSIRD::reopen_and_prime()
 {
+  // current_lm_data_ptr.reset();
   if (use_hdf5)
     current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(this->listmode_filename));
   else
@@ -182,18 +189,20 @@ CListModeDataPETSIRD::reopen_and_prime()
 
   petsird::Header header;
   current_lm_data_ptr->ReadHeader(header);
+  // m_eof_reached = false;
   m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   curr_event_in_event_block = 0;
   curr_is_prompt = true;
   m_time_block_index = 0;
-
+  // read until first EventTimeBlock
   return seek_to_event_block_index(0);
 }
 
 Succeeded
 CListModeDataPETSIRD::seek_to_event_block_index(std::size_t target_event_block_index) const
 {
+  // assumes we are primed at event_block_index = 0
   std::size_t idx = 0;
   while (true)
     {
@@ -202,6 +211,7 @@ CListModeDataPETSIRD::seek_to_event_block_index(std::size_t target_event_block_i
         {
           if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
             {
+              // m_eof_reached = true;
               current_lm_data_ptr->Close();
               return Succeeded::no;
             }
