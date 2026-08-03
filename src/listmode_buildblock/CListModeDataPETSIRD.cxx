@@ -178,25 +178,24 @@ CListModeDataPETSIRD::save_get_position()
   return static_cast<SavedPosition>(m_saved_positions.size() - 1);
 }
 
-Succeeded
+void
 CListModeDataPETSIRD::reopen_and_prime()
 {
-  // current_lm_data_ptr.reset();
   if (use_hdf5)
     current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(this->listmode_filename));
   else
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
 
   petsird::Header header;
-  current_lm_data_ptr->ReadHeader(header);
-  // m_eof_reached = false;
+  current_lm_data_ptr->ReadHeader(header); // let it throw naturally if it fails
   m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   curr_event_in_event_block = 0;
   curr_is_prompt = true;
   m_time_block_index = 0;
-  // read until first EventTimeBlock
-  return seek_to_event_block_index(0);
+
+  if (seek_to_event_block_index(0) == Succeeded::no)
+    error(format("CListModeDataPETSIRD: No event time blocks found in file {}.", listmode_filename));
 }
 
 Succeeded
@@ -255,6 +254,7 @@ CListModeDataPETSIRD::set_get_position(const SavedPosition& pos)
 Succeeded
 CListModeDataPETSIRD::reset()
 {
-  return reopen_and_prime();
+  reopen_and_prime();
+  return Succeeded::yes;
 }
 END_NAMESPACE_STIR
