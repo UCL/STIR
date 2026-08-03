@@ -234,8 +234,7 @@ CListModeDataPETSIRD::set_get_position(const SavedPosition& pos)
   // If you cached the actual blocks, you STILL must ensure the reader state
   // will not be used incorrectly. Easiest: reopen+seek anyway (robust),
   // then overwrite curr_* with cached data.
-  if (reopen_and_prime() == Succeeded::no)
-    return Succeeded::no;
+  reopen_and_prime();
   if (seek_to_event_block_index(c.time_block_index) == Succeeded::no)
     return Succeeded::no;
 
