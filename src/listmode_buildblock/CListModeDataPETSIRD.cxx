@@ -28,10 +28,16 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
 
   petsird::Header header;
+  if (use_hdf5)
+    current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
+  else
+    current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
+
+  current_lm_data_ptr->ReadHeader(header);
+  m_has_delayeds = header.scanner.delayed_events_are_stored;
   if (reset() == Succeeded::no)
     error("CListModeDataPETSIRD: Could not open/prime the reader. Abort.");
 
-  current_lm_data_ptr->ReadHeader(header);
   petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
 
@@ -59,10 +65,6 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 Succeeded
 CListModeDataPETSIRD::open_lm_file() const
 {
-  // current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
-  // if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-  //  return Succeeded::no;
-
   curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
   return Succeeded::yes;
 }
@@ -192,25 +194,24 @@ CListModeDataPETSIRD::reopen_and_prime()
 Succeeded
 CListModeDataPETSIRD::seek_to_event_block_index(std::size_t target_event_block_index) const
 {
-  try
+  std::size_t idx = 0;
+  while (true)
     {
-      while (m_time_block_index <= target_event_block_index)
+      // read next until EventTimeBlock
+      while (true)
         {
-          if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-            return Succeeded::no;
-          ++m_time_block_index;
-          if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
+          if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
             {
-              curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
-              if (m_time_block_index > target_event_block_index)
-                return Succeeded::yes;
+              current_lm_data_ptr->Close();
+              return Succeeded::no;
             }
+          if (std::holds_alternative<petsird::EventTimeBlock>(this->curr_time_block))
+            break;
         }
-      return Succeeded::yes;
-    }
-  catch (...)
-    {
-      return Succeeded::no;
+      this->curr_event_block = std::get<petsird::EventTimeBlock>(this->curr_time_block);
+      if (idx == target_event_block_index)
+        return Succeeded::yes;
+      ++idx;
     }
 }
 
