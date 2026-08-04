@@ -38,7 +38,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
   m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   if (reset() == Succeeded::no)
-    error("CListModeDataPETSIRD: Could not open/prime the reader. Abort.");
+    error(format("CListModeDataPETSIRD: Could not read the PETSIRD header from file {}.", listmode_filename));
 
   petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
