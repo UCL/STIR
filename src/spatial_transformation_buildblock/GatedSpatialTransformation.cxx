@@ -179,6 +179,7 @@ GatedSpatialTransformation::accumulate_warp_image(DiscretisedDensity<3, float>& 
   //	new_reference_image /= gated_image.get_time_gate_definitions().get_num_gates();
 }
 
+void
 GatedSpatialTransformation::average_warp_image(DiscretisedDensity<3, float>& new_reference_image,
                                                const GatedDiscretisedDensity& gated_image) const
 {

@@ -391,9 +391,6 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
   // This can be utilized by nested obj functions for many purposes
   this->objective_function().set_nested_output_filename_prefix(this->output_filename_prefix, this->subiteration_num);
 
-  // TODO make member parameter to avoid reallocation all the time
-  auto_ptr<TargetT> multiplicative_update_image_ptr = auto_ptr<TargetT>(current_image_estimate.get_empty_copy());
-
   const int subset_num = this->get_subset_num();
   info(format("Now processing subset #: {}", subset_num));
 
@@ -481,61 +478,62 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
                  multiplicative_update_image_ptr->end_all(),
                  denominator_ptr->begin_all(),
                  small_num);
-
-          info(format("Number of (cancelled) singularities in Sensitivity division: {}", count));
-
-          if (this->inter_update_filter_interval > 0 && !is_null_ptr(this->inter_update_filter_ptr)
-              && !(this->subiteration_num % this->inter_update_filter_interval))
-            {
-              info("Applying inter-update filter");
-              this->inter_update_filter_ptr->apply(current_image_estimate);
-            }
-
-          // KT 17/08/2000 limit update
-          // TODO move below thresholding?
-          if (this->write_update_image && !this->_disable_output)
-            {
-              // allocate space for the filename assuming that
-              // we never have more than 10^49 subiterations ...
-              const size_t filename_length = this->output_filename_prefix.size() + 60;
-              char* fname = new char[filename_length];
-              snprintf(fname, filename_length, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
-
-              // Write it to file
-              this->output_file_format_ptr->write_to_file(fname, *multiplicative_update_image_ptr);
-              delete[] fname;
-            }
-
-          if (this->subiteration_num != 1)
-            {
-              const float current_min
-                  = *std::min_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
-              const float current_max
-                  = *std::max_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
-              const float new_min = static_cast<float>(this->minimum_relative_change);
-              const float new_max = static_cast<float>(this->maximum_relative_change);
-              info(format("Update image old min,max: {}, {}, new min,max {}, {}",
-                          current_min,
-                          current_max,
-                          (min(current_min, new_min)),
-                          (max(current_max, new_max))));
-
-              threshold_upper_lower(
-                  multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all(), new_min, new_max);
-            }
-
-          // current_image_estimate *= *multiplicative_update_image_ptr;
-          apply_multiplicative_update(current_image_estimate, *multiplicative_update_image_ptr);
         }
 
-#ifdef PARALLEL
-      timerSubset.Stop();
-      info(format("Subset: {}secs", timerSubset.GetTime()));
-#endif
+      info(format("Number of (cancelled) singularities in Sensitivity division: {}", count));
+
+      if (this->inter_update_filter_interval > 0 && !is_null_ptr(this->inter_update_filter_ptr)
+          && !(this->subiteration_num % this->inter_update_filter_interval))
+        {
+          info("Applying inter-update filter");
+          this->inter_update_filter_ptr->apply(current_image_estimate);
+        }
+
+      // KT 17/08/2000 limit update
+      // TODO move below thresholding?
+      if (this->write_update_image && !this->_disable_output)
+        {
+          // allocate space for the filename assuming that
+          // we never have more than 10^49 subiterations ...
+          const size_t filename_length = this->output_filename_prefix.size() + 60;
+          char* fname = new char[filename_length];
+          snprintf(fname, filename_length, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
+
+          // Write it to file
+          this->output_file_format_ptr->write_to_file(fname, *multiplicative_update_image_ptr);
+          delete[] fname;
+        }
+
+      if (this->subiteration_num != 1)
+        {
+          const float current_min
+              = *std::min_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
+          const float current_max
+              = *std::max_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
+          const float new_min = static_cast<float>(this->minimum_relative_change);
+          const float new_max = static_cast<float>(this->maximum_relative_change);
+          info(format("Update image old min,max: {}, {}, new min,max {}, {}",
+                      current_min,
+                      current_max,
+                      (min(current_min, new_min)),
+                      (max(current_max, new_max))));
+
+          threshold_upper_lower(
+              multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all(), new_min, new_max);
+        }
+
+      // current_image_estimate *= *multiplicative_update_image_ptr;
+      apply_multiplicative_update(current_image_estimate, *multiplicative_update_image_ptr);
     }
 
-  template class OSMAPOSLReconstruction<DiscretisedDensity<3, float>>;
-  template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid>;
-  template class OSMAPOSLReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid>;
+#ifdef PARALLEL
+  timerSubset.Stop();
+  info(format("Subset: {}secs", timerSubset.GetTime()));
+#endif
+}
 
-  END_NAMESPACE_STIR
+template class OSMAPOSLReconstruction<DiscretisedDensity<3, float>>;
+template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid>;
+template class OSMAPOSLReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid>;
+
+END_NAMESPACE_STIR

@@ -111,9 +111,6 @@ public:
   inline void normalise_parametric_image_with_model_sum(ParametricVoxelsOnCartesianGrid& parametric_image_out,
                                                         const ParametricVoxelsOnCartesianGrid& parametric_image) const;
 
-  inline void normalise_parametric_image_with_model_sum(ParametricVoxelsOnCartesianGrid& parametric_image_out,
-                                                        const ParametricVoxelsOnCartesianGrid& parametric_image) const;
-
   /*! Multiplications of the initialization kinetic model matrix with the dynamic or the parametric images.
       /todo Maybe it will be better to lie in a linear models class.
     */

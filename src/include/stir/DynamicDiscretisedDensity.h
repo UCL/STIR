@@ -122,9 +122,11 @@ public:
       _exam_info_sptr = density_sptr->get_exam_info_sptr()->create_shared_clone();
     _exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
 
-    _start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
-    _calibration_factor = -1.F;
-    _isotope_halflife = -1.F;
+    _exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+    this->exam_info_sptr = _exam_info_sptr;
+
+    // _calibration_factor = -1.F;
+    // _isotope_halflife = -1.F;
 
     _scanner_sptr = scanner_sptr;
 
@@ -208,7 +210,7 @@ public:
   void resize_densities(const TimeFrameDefinitions& time_frame_definitions)
   {
     this->set_time_frame_definitions(time_frame_definitions);
-    unsigned int num_densities = this->_time_frame_definitions.get_num_time_frames();
+    unsigned int num_densities = this->get_time_frame_definitions().get_num_time_frames();
     this->_densities.resize(num_densities);
   }
 

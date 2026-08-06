@@ -211,8 +211,7 @@ read_interfile_DPDFS(istream& input, const string& directory_for_data, const std
 {
 
   // Nicolas A Karakatsanis - Add the printed message for better clarity and evaluation of implementation
-  info(boost::format("DynamicProjData: Reading the Interfile projection data set located in directory\n%1%  ...\n")
-       % directory_for_data);
+  info(format("DynamicProjData: Reading the Interfile projection data set located in directory\n{}  ...\n", directory_for_data));
 
   InterfilePDFSHeader hdr;
 

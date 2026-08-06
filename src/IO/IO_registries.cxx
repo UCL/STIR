@@ -44,45 +44,44 @@
 #    include "stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
 #    include "stir/IO/ECAT7DynamicDiscretisedDensityInputFileFormat.h"
 #  endif
-#endif
 
-#if 1
-#  ifdef HAVE_LLN_MATRIX
-#    include "stir/IO/ECAT6ImageInputFileFormat.h"
-#    include "stir/IO/ECAT7ImageInputFileFormat.h"
-#    include "stir/IO/ECAT966ListmodeInputFileFormat.h"
-#    include "stir/IO/ECAT962ListmodeInputFileFormat.h"
+#  if 1
+#    ifdef HAVE_LLN_MATRIX
+#      include "stir/IO/ECAT6ImageInputFileFormat.h"
+#      include "stir/IO/ECAT7ImageInputFileFormat.h"
+#      include "stir/IO/ECAT966ListmodeInputFileFormat.h"
+#      include "stir/IO/ECAT962ListmodeInputFileFormat.h"
+#    endif
 #  endif
-#endif
-#include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
+#  include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
-#ifdef HAVE_HDF5
-#  include "stir/IO/GEHDF5ListmodeInputFileFormat.h"
-#endif
+#  ifdef HAVE_HDF5
+#    include "stir/IO/GEHDF5ListmodeInputFileFormat.h"
+#  endif
 //! Addition for SAFIR listmode input file format
-#include "stir/IO/SAFIRCListmodeInputFileFormat.h"
+#  include "stir/IO/SAFIRCListmodeInputFileFormat.h"
 
 //! Addition for ROOT support - Nikos Efthimiou
-#ifdef HAVE_CERN_ROOT
-#  include "stir/IO/ROOTListmodeInputFileFormat.h"
-#  include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
-#  include "stir/IO/InputStreamFromROOTFileForECATPET.h"
-#endif
+#  ifdef HAVE_CERN_ROOT
+#    include "stir/IO/ROOTListmodeInputFileFormat.h"
+#    include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
+#    include "stir/IO/InputStreamFromROOTFileForECATPET.h"
+#  endif
 
-#ifdef HAVE_PETSIRD
-#  include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
-#endif
+#  ifdef HAVE_PETSIRD
+#    include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
+#  endif
 
-#ifdef HAVE_UPENN
-#  include "stir/IO/PENNListmodeInputFileFormat.h"
-#  include "stir/IO/InputStreamWithRecordsFromUPENNbin.h"
-#  include "stir/IO/InputStreamWithRecordsFromUPENNtxt.h"
-#endif
+#  ifdef HAVE_UPENN
+#    include "stir/IO/PENNListmodeInputFileFormat.h"
+#    include "stir/IO/InputStreamWithRecordsFromUPENNbin.h"
+#    include "stir/IO/InputStreamWithRecordsFromUPENNtxt.h"
+#  endif
 
-#ifdef HAVE_ITK
-#  include "stir/IO/ITKOutputFileFormat.h"
-#  include "stir/IO/ITKImageInputFileFormat.h"
-#endif
+#  ifdef HAVE_ITK
+#    include "stir/IO/ITKOutputFileFormat.h"
+#    include "stir/IO/ITKImageInputFileFormat.h"
+#  endif
 #endif // MINI_STIR
 
 START_NAMESPACE_STIR
@@ -96,10 +95,10 @@ static ITKOutputFileFormat::RegisterIt dummyITK1;
 #  endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfOut;
 static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfOut;
+static InterfileParametricDiscretisedDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>::RegisterIt
+    dummyGenPatIntfIn;
 static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiOut;
 static MultiParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparMultiOut;
-static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
-static InterfileParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>::RegisterIt dummyGenPatIntfIn;
 
 //! Support for SAFIR listmode file format
 static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat<CListEventDataSAFIR>> LMdummySAFIR(4);

@@ -22,9 +22,7 @@
   \brief Implementation of class stir::PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
 
   \author Nicolas A Karakatsanis
-
-  $Date: 2013-07-12 10:34:00 $
-  $Revision: 1.0 $
+  
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
@@ -41,6 +39,7 @@
 #include "stir/stream.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/CPUTimer.h"
+#include "stir/format.h"
 
 // for get_symmetries_ptr()
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
@@ -145,13 +144,13 @@ initialise_keymap()
 
   // image stuff
   this->parser.add_key("zoom", &this->_zoom);
-  this->parser.add_key("XY output image size (in pixels)",&this->_output_image_size_xy);
-  this->parser.add_key("Z output image size (in pixels)",&this->_output_image_size_z);
+  this->parser.add_key("xy output image size (in pixels)",&this->_output_image_size_xy);
+  this->parser.add_key("z output image size (in pixels)",&this->_output_image_size_z);
 
   // parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
   // parser.add_key("Y offset (in mm)", &this->Yoffset);
-  this->parser.add_key("Z offset (in mm)", &this->_Zoffset);
-  this->parser.add_parsing_key("Projector pair type", &this->_projector_pair_ptr);
+  this->parser.add_key("z offset (in mm)", &this->_Zoffset);
+  this->parser.add_parsing_key("projector pair type", &this->_projector_pair_ptr);
 
   // Scatter correction
   this->parser.add_key("additive sinograms",&this->_additive_dyn_proj_data_filename);
@@ -188,9 +187,9 @@ post_processing()
     { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
  
-  this->_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(_input_filename));
+  this->_dyn_proj_data_sptr = DynamicProjData::read_from_file(_input_filename);
   if (is_null_ptr(this->_dyn_proj_data_sptr))
-    { warning("Error reading input file %s", _input_filename.c_str()); return true; }
+    { warning(format("Error reading input file {}", _input_filename.c_str())); return true; }
   // image stuff
   if (this->_zoom <= 0)
     { warning("zoom should be positive"); return true; }
@@ -206,7 +205,7 @@ post_processing()
       cerr << "\nReading additive projdata data "
            << this->_additive_dyn_proj_data_filename 
            << std::endl;
-      this->_additive_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename));
+      this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
 	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
 
@@ -228,7 +227,7 @@ construct_target_ptr() const
 {  
   return
     new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(
-                                                                                *(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
+                                                                                *(this->_dyn_proj_data_sptr->get_proj_data_info_sptr()),
                                                                                 static_cast<float>(this->_zoom),
                                                                                 CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
                                                                                                              static_cast<float>(this->_Yoffset),
@@ -293,13 +292,13 @@ get_zero_seg0_end_planes() const
 template <typename TargetT>
 const DynamicProjData& 
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-get_additive_dyn_proj_data() const
+get_additive_proj_data() const
 { return *this->_additive_dyn_proj_data_sptr; }
 
 template <typename TargetT>
 const shared_ptr<DynamicProjData>& 
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-get_additive_dyn_proj_data_sptr() const
+get_additive_proj_data_sptr() const
 { return this->_additive_dyn_proj_data_sptr; }
 
 template <typename TargetT>
@@ -342,6 +341,13 @@ get_model_sensitivity_image() const
   return *this->model_sensitivity_image_sptr;
 }
 
+template <typename TargetT>
+const ExamData&
+PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::get_input_data() const
+{
+  return *this->_dyn_proj_data_sptr;
+}
+
 
 /***************************************************************
   set_ functions
@@ -361,13 +367,40 @@ set_num_subsets(const int num_subsets)
   return this->num_subsets;
 }
 
+template <typename TargetT>
+void
+PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::set_input_data(const shared_ptr<ExamData>& arg)
+{
+  this->already_set_up = false;
+  this->_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
+}
+
+template <typename TargetT>
+void
+PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::set_additive_proj_data_sptr(
+    const shared_ptr<ExamData>& arg)
+{
+  this->already_set_up = false;
+  this->_additive_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
+}
+
+template <typename TargetT>
+void
+PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::set_normalisation_sptr(
+    const shared_ptr<BinNormalisation>& arg)
+{
+  this->already_set_up = false;
+  //  this->normalisation_sptr = arg;
+  error("Not implemeted yet");
+}
+
 /***************************************************************
   set_up()
 ***************************************************************/
 template<typename TargetT>
 Succeeded 
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (this->_max_segment_num_to_process==-1)
     this->_max_segment_num_to_process =
@@ -381,7 +414,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(
-					       (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
+					       (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
                          +this->_max_segment_num_to_process);
@@ -402,7 +435,8 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  if (this->_normalisation_sptr->set_up(proj_data_info_sptr) == Succeeded::no)
+  if (this->_normalisation_sptr->set_up(this->get_dyn_proj_data_sptr()->get_exam_info_sptr(), 
+                                        proj_data_info_sptr) == Succeeded::no)
     return Succeeded::no;
 
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)
@@ -459,11 +493,15 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
+actual_compute_subset_gradient_without_penalty(TargetT& gradient, 
                                                       const TargetT &current_estimate, 
-                                                      const int subset_num)
+                                                      const int subset_num,
+                                                      const bool add_sensitivity)
 {
-  
+ 
+  if (!add_sensitivity)
+    error("Not supported for nested Patlak objective functions; use OSMAPOSL/POSMAPOSL-style callers");
+      
   // Clone the const TargetT& current estimate to a TargetT nested_estimate   
   shared_ptr<TargetT> current_nested_estimate(current_estimate.get_empty_copy());
 
@@ -478,9 +516,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     }
   }
   
-  this->compute_nested_sub_gradient_without_penalty_plus_sensitivity(gradient, 
+  this->actual_compute_nested_sub_gradient_without_penalty(gradient, 
 															   *current_nested_estimate, 
-															   subset_num);
+															   subset_num, 
+                                 add_sensitivity);
 															   
   this->last_nested_estimate_sptr = current_nested_estimate; 
 															   
@@ -489,12 +528,11 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 template<typename TargetT>
 void
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
+actual_compute_nested_sub_gradient_without_penalty(TargetT& gradient, 
 															 TargetT &current_estimate, 
-															 const int subset_num)
+															 const int subset_num, 
+                               const bool add_sensitivity)
 {
-  assert(subset_num>=0);
-  assert(subset_num<this->num_subsets);
 
   DynamicDiscretisedDensity dyn_gradient=this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_image_estimate=this->_dyn_image_template;
@@ -516,8 +554,9 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 	const float current_max_estimate = 
 	*std::max_element(current_estimate.begin_all(),
 					  current_estimate.end_all());
-	cerr << "Initial parametric image " 
-	     << ", (min, max): (" << current_min_estimate << ", " << current_max_estimate << ")" << endl;
+  #ifndef NDEBUG
+	info(format("Initial parametric image, (min, max): ({}, {})", current_min_estimate, current_max_estimate)); 
+  #endif
   
   //Forward project from parameter space to time space using a parametric image estimate as an input													 
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate,current_estimate) ; 
@@ -530,9 +569,10 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   // loop over single_frame and use model_matrix
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
   {
-  
+#ifndef NDEBUG
     //Get system sensitivity for each dynamic frame
-	cerr << "Getting system sub-sensitivity image for dynamic frame: " << frame_num << "..." << endl;
+	info(format("Getting system sub-sensitivity image for dynamic frame: {} ...", frame_num)); 
+#endif // NDEBUG
 	dyn_sensitivity[frame_num]=this->_single_frame_obj_funcs[frame_num].get_subset_sensitivity(subset_num);
 	
 	 //Print out the min and max values of the system dynamic sensitivity image
@@ -542,19 +582,23 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 	const float current_max_system_dyn_sensitivity = 
 	*std::max_element(dyn_sensitivity[frame_num].begin_all(),
 					  dyn_sensitivity[frame_num].end_all());
-	cerr << "System sensitivity image for dynamic frame: " << frame_num
-	     << ", (min, max): (" << current_min_system_dyn_sensitivity << ", " << current_max_system_dyn_sensitivity << ")" << endl;	
-	
+#ifndef NDEBUG
+	info(format("System sensitivity image for dynamic frame: {}, (min, max): ({}, {})", frame_num, 
+    current_min_system_dyn_sensitivity, current_max_system_dyn_sensitivity)); 
+#endif // NDEBUG
+
 	//Compute sub-gradient for each frame
-	cerr << "Compute sub-gradient (update image) for dynamic frame: " << frame_num << "." << endl;
+#ifndef NDEBUG
+	info(format("Compute sub-gradient (update image) for dynamic frame: {}.", frame_num)); 
+#endif
 	std::fill(dyn_gradient[frame_num].begin_all(),
 			dyn_gradient[frame_num].end_all(),
 			1.F);
 
 	this->_single_frame_obj_funcs[frame_num].
-	  compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
+	  actual_compute_subset_gradient_without_penalty(dyn_gradient[frame_num], 
 														  dyn_image_estimate[frame_num], 
-														  subset_num);
+														  subset_num, add_sensitivity);
 															  
 	//Print out the min and max values of the sub-gradient for each fynamic frame
 	const float current_min_outer_loop_gradient =
@@ -563,13 +607,17 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 	const float current_max_outer_loop_gradient = 
 	*std::max_element(dyn_gradient[frame_num].begin_all(),
 					  dyn_gradient[frame_num].end_all());
-	cerr << "Outer loop dynamic sub-gradient image (frame) " << frame_num 
-	     << ", (min, max): (" << current_min_outer_loop_gradient << ", " << current_max_outer_loop_gradient << ")" << endl;	
+#ifndef NDEBUG
+	info(format("Outer loop dynamic sub-gradient image (frame): {}, (min, max): ({}, {})", frame_num, 
+    current_min_outer_loop_gradient, current_max_outer_loop_gradient)); 
+#endif // NDEBUG
 	
 	// Perform projection matrix sensitivity division and update for the single outer loop iteration 
 	  
 	// Devide by system matrix sensitivity
+#ifndef NDEBUG
 	cerr << "Divide sub-gradient (update image) by system sub-sensitivity for dynamic frame " << frame_num << "." << endl;
+#endif // NDEBUG
 	divide(dyn_gradient[frame_num].begin_all(), 
 		   dyn_gradient[frame_num].end_all(),
 		   dyn_sensitivity[frame_num].begin_all(),
@@ -582,11 +630,12 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 	const float current_max_outer_loop_gradient_over_sensitivity = 
 	*std::max_element(dyn_gradient[frame_num].begin_all(),
 					  dyn_gradient[frame_num].end_all());
-	cerr << "Outer loop dynamic sub-gradient/sensitivity image (frame) " << frame_num 
-	     << ", (min, max): (" << current_min_outer_loop_gradient_over_sensitivity << ", " << current_max_outer_loop_gradient_over_sensitivity << ")" << endl;	
-	
+  #ifndef NDEBUG
+	info(format("Outer loop dynamic sub-gradient/sensitivity image (frame) {}, (min, max): ({}, {})", 
+    frame_num, current_min_outer_loop_gradient_over_sensitivity, current_max_outer_loop_gradient_over_sensitivity)); 
+	#endif // NDEBUG
+
 	// Update outer loop dynamic image estimate
-	cerr << "Update dynamic image frame estimate " << frame_num << " with the sub-gradient (update image) of dynamic frame " << frame_num << "." << endl;
 	DiscretisedDensity<3,float>::const_full_iterator dyn_gradient_single_frame_iter = dyn_gradient[frame_num].begin_all_const(); 
 	DiscretisedDensity<3,float>::const_full_iterator end_dyn_gradient_single_frame_iter = dyn_gradient[frame_num].end_all_const(); 
 	DiscretisedDensity<3,float>::full_iterator dyn_image_reference_data_single_frame_iter = dyn_image_reference_data[frame_num].begin_all(); 
@@ -603,19 +652,22 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 	const float current_max_outer_loop_updated_image = 
 	*std::max_element(dyn_image_reference_data[frame_num].begin_all(),
 					  dyn_image_reference_data[frame_num].end_all());
-	cerr << "Outer loop updated image (frame): " << frame_num 
-	     << ", (min, max): (" << current_min_outer_loop_updated_image << ", " << current_max_outer_loop_updated_image << ")" << endl;
-	
+  #ifndef NDEBUG
+	info(format("Outer loop updated image (frame): {}, (min, max): ({}, {})",
+    frame_num, current_min_outer_loop_updated_image, current_max_outer_loop_updated_image));
+	#endif // NDEBUG
   }
   
-  cerr << "Current outer loop computation time: " << outer_loop_timer.value() << endl << endl;
-
+  info(format("Current outer loop computation time: {}", outer_loop_timer.value()), 2);
+ 
   CPUTimer nested_loop_timer;
   nested_loop_timer.start();
   
+  #ifndef NDEBUG
   //nested EM loop
-  cerr << endl << "Entering nested loop " << endl;
-  
+  info(format("Entering nested loop "));
+  #endif // NDEBUG
+
   // This is the principal method that iteratively estimates the generalized Patlak estimates in a nested EM loop
   this->estimate_nested_loop_parameters_with_model(gradient,
                                                    current_estimate,
@@ -623,7 +675,7 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 											       dyn_image_reference_data,
 											       dyn_image_nested_loop_estimate);
   
-  cerr << "Total computation time for " <<  this->num_nested_subiterations << " nested iterations: " << nested_loop_timer.value() << endl << endl;
+  info(format("Total computation time for {} nested iterations: ", this->num_nested_subiterations, nested_loop_timer.value()), 2);
 
 }
 
@@ -640,9 +692,8 @@ estimate_nested_loop_parameters_with_model(TargetT &gradient,
 {
 
   //nested EM loop
-  cerr << endl << "Entering nested loop (" << this->num_nested_subiterations << " standard Patlak EM subiterations)." << endl;
+  info(format("Entering nested loop ({} standard Patlak EM subiterations).", this->num_nested_subiterations));
 
-  
   for(nested_subiterations_num=1; nested_subiterations_num<=this->num_nested_subiterations; nested_subiterations_num++)
   {
     //equivalent of forward-projection operation for kinetic parameter estimation
@@ -686,8 +737,8 @@ estimate_nested_loop_parameters_with_model(TargetT &gradient,
 		   << " sub-gradient(update image) old value (min, max): (" 
 		   << current_min_nested_gradient << ", " << current_max_nested_gradient
 		   << "), new value (min, max) (" 
-		   << max(current_min_nested_gradient, new_min_nested_gradient) << ", " 
-		   << min(current_max_nested_gradient, new_max_nested_gradient) << ")" << endl;
+		   << std::max(current_min_nested_gradient, new_min_nested_gradient) << ", " 
+		   << std::min(current_max_nested_gradient, new_max_nested_gradient) << ")" << endl;
 
 	  threshold_upper_lower(gradient.begin_all(),
 							gradient.end_all(), 
@@ -719,8 +770,7 @@ estimate_nested_loop_parameters_with_model(TargetT &gradient,
 	
   }
   
-    cerr << "End of nested reconstruction process of parameter estimates (after " 
-       << this->num_nested_subiterations << " nested EM subiterations)" << endl << endl;
+    info(format("End of nested reconstruction process of parameter estimates (after {}nested EM subiterations)", this->num_nested_subiterations));
 	   
 }
 
@@ -760,7 +810,7 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
 template<typename TargetT>
 void
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-compute_model_sensitivity_image(TargetT& param_image)
+compute_model_sensitivity_image(const TargetT& param_image)
 {
 
   shared_ptr<TargetT> param_image_sptr(param_image.get_empty_copy());
@@ -826,7 +876,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
                                                                        const int subset_num) const
 {
   {
-    string explanation;
+    std::string explanation;
     if (!input.has_same_characteristics(this->get_sensitivity(), 
                                         explanation))
       {

@@ -100,9 +100,34 @@ InterfileParamDiscDensity::actual_write_to_file(std::string& filename,
   return success;
 }
 
+template <>
+Succeeded
+InterfileParametricDiscretisedDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>::actual_write_to_file(
+    std::string& filename, const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_density) const
+{
+  for (unsigned int parameter_num = 1; parameter_num <= parametric_density.get_num_params(); ++parameter_num)
+    {
+      std::string parameter_filename = filename;
+      const auto single_density = parametric_density.construct_single_density(parameter_num);
+
+      const Succeeded result = write_basic_interfile(parameter_filename,
+                                                     single_density,
+                                                     parameter_num,
+                                                     this->type_of_numbers,
+                                                     this->scale_to_write_data,
+                                                     this->file_byte_order);
+
+      if (result == Succeeded::no)
+        return result;
+    }
+
+  return Succeeded::yes;
+}
+
 #undef ParamDiscDensity
 #undef TEMPLATE
 
 template class InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;
+template class InterfileParametricDiscretisedDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>;
 
 END_NAMESPACE_STIR

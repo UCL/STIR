@@ -42,7 +42,7 @@
 #include "stir/stream.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/CPUTimer.h"
-
+#include "stir/format.h"
 // for get_symmetries_ptr()
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 // include the following to set defaults
@@ -168,12 +168,12 @@ initialise_keymap()
 
   // image stuff
   this->parser.add_key("zoom", &this->_zoom);
-  this->parser.add_key("XY output image size (in pixels)",&this->_output_image_size_xy);
-  this->parser.add_key("Z output image size (in pixels)",&this->_output_image_size_z);
+  this->parser.add_key("xy output image size (in pixels)",&this->_output_image_size_xy);
+  this->parser.add_key("z output image size (in pixels)",&this->_output_image_size_z);
 
   // parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
   // parser.add_key("Y offset (in mm)", &this->Yoffset);
-  this->parser.add_key("Z offset (in mm)", &this->_Zoffset);
+  this->parser.add_key("z offset (in mm)", &this->_Zoffset);
   this->parser.add_parsing_key("Projector pair type", &this->_projector_pair_ptr);
 
   // Scatter correction
@@ -226,7 +226,7 @@ post_processing()
     { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
  
-  this->_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(_input_filename));
+  this->_dyn_proj_data_sptr = DynamicProjData::read_from_file(_input_filename);
   if (is_null_ptr(this->_dyn_proj_data_sptr))
     { warning("Error reading input file %s", _input_filename.c_str()); return true; }
   // image stuff
@@ -244,7 +244,7 @@ post_processing()
       cerr << "\nReading additive projdata data "
            << this->_additive_dyn_proj_data_filename 
            << std::endl;
-      this->_additive_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename));
+      this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
 	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
 
@@ -266,7 +266,7 @@ construct_target_ptr() const
 {  
   return
     new GeneralizedPatlakVoxelsOnCartesianGrid(GeneralizedPatlakVoxelsOnCartesianGridBaseType(
-                                                                                *(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
+                                                                                *(this->_dyn_proj_data_sptr->get_proj_data_info_sptr()),
                                                                                 static_cast<float>(this->_zoom),
                                                                                 CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
                                                                                                              static_cast<float>(this->_Yoffset),
@@ -389,6 +389,12 @@ get_initialization_model_sensitivity_image_sptr() const
   return this->initialization_model_sensitivity_image_sptr;
 }
 
+template <typename TargetT>
+const ExamData&
+PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::get_input_data() const
+{
+  return *this->_dyn_proj_data_sptr;
+}
 
 /***************************************************************
   set_ functions
@@ -408,13 +414,40 @@ set_num_subsets(const int num_subsets)
   return this->num_subsets;
 }
 
+template <typename TargetT>
+void
+PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::set_input_data(const shared_ptr<ExamData>& arg)
+{
+  this->already_set_up = false;
+  this->_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
+}
+
+template <typename TargetT>
+void
+PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::set_additive_proj_data_sptr(
+    const shared_ptr<ExamData>& arg)
+{
+  this->already_set_up = false;
+  this->_additive_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
+}
+
+template <typename TargetT>
+void
+PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::set_normalisation_sptr(
+    const shared_ptr<BinNormalisation>& arg)
+{
+  this->already_set_up = false;
+  //  this->normalisation_sptr = arg;
+  error("Not implemeted yet");
+}
+
 /***************************************************************
   set_up()
 ***************************************************************/
 template<typename TargetT>
 Succeeded 
 PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (this->_max_segment_num_to_process==-1)
     this->_max_segment_num_to_process =
@@ -428,7 +461,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(
-					       (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
+					       (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
                          +this->_max_segment_num_to_process);
@@ -449,8 +482,9 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  if (this->_normalisation_sptr->set_up(proj_data_info_sptr) == Succeeded::no)
-    return Succeeded::no;
+    if (this->_normalisation_sptr->set_up(this->get_dyn_proj_data_sptr()->get_exam_info_sptr(),
+                                          proj_data_info_sptr) == Succeeded::no)
+      return Succeeded::no;
  
 	
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)
@@ -543,11 +577,15 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::
-compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
+actual_compute_subset_gradient_without_penalty(TargetT& gradient, 
                                                       const TargetT &current_estimate, 
-                                                      const int subset_num)
+                                                      const int subset_num, 
+                                                      const bool add_sensitivity)
 {
   
+  if (!add_sensitivity)
+    error("Not supported for nested Patlak objective functions; use OSMAPOSL/POSMAPOSL-style callers");
+
   // Clone the const TargetT& current estimate to a TargetT nested_estimate   
   shared_ptr<TargetT> current_nested_estimate(current_estimate.get_empty_copy());
 
@@ -562,9 +600,9 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     }
   }
   
-  this->compute_nested_sub_gradient_without_penalty_plus_sensitivity(gradient, 
+  this->actual_compute_nested_sub_gradient_without_penalty(gradient, 
 															   *current_nested_estimate, 
-															   subset_num);
+															   subset_num, add_sensitivity);
 															   
   this->last_nested_estimate_sptr = current_nested_estimate; 
 															   
@@ -573,9 +611,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 template<typename TargetT>
 void
 PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::
-compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
+actual_compute_nested_sub_gradient_without_penalty(TargetT& gradient, 
 															 TargetT &current_estimate, 
-															 const int subset_num)
+															 const int subset_num, 
+                              const bool add_sensitivity)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -703,9 +742,9 @@ compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 			1.F);
 
 	this->_single_frame_obj_funcs[frame_num].
-	  compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
+	  actual_compute_subset_gradient_without_penalty(dyn_gradient[frame_num], 
 														  dyn_image_estimate[frame_num], 
-														  subset_num);
+														  subset_num, add_sensitivity);
 															  
 	//Print out the min and max values of the sub-gradient for each fynamic frame
 	const float current_min_outer_loop_gradient =
@@ -1052,8 +1091,8 @@ estimate_nested_loop_parameters_with_model(DynamicDiscretisedDensity &impulse_re
 						  
 	      cerr << "	[" << conv_param_num << "](" << current_min_nested_impulse_response_normalized_gradient << ", " 
 	           << current_max_nested_impulse_response_normalized_gradient << "),		"
-		       << "	[" << conv_param_num << "](" << max(current_min_nested_impulse_response_normalized_gradient, new_min_nested_impulse_response) << ", " 
-	           << min(current_max_nested_impulse_response_normalized_gradient, new_max_nested_impulse_response) << ")		" << endl;
+		       << "	[" << conv_param_num << "](" << std::max(current_min_nested_impulse_response_normalized_gradient, new_min_nested_impulse_response) << ", " 
+	           << std::min(current_max_nested_impulse_response_normalized_gradient, new_max_nested_impulse_response) << ")		" << endl;
 	    }
 		   
 	  threshold_upper_lower(impulse_response_gradient[conv_param_num].begin_all(),
@@ -1185,8 +1224,8 @@ initialize_nested_loop_parameters_with_initialization_model(TargetT &parametric_
 		   << " sub-gradient(update image) old value (min, max): (" 
 		   << current_min_nested_gradient << ", " << current_max_nested_gradient
 		   << "), new value (min, max) (" 
-		   << max(current_min_nested_gradient, new_min_nested_gradient) << ", " 
-		   << min(current_max_nested_gradient, new_max_nested_gradient) << ")" << endl;
+		   << std::max(current_min_nested_gradient, new_min_nested_gradient) << ", " 
+		   << std::min(current_max_nested_gradient, new_max_nested_gradient) << ")" << endl;
 
 	  threshold_upper_lower(parametric_gradient.begin_all(),
 							parametric_gradient.end_all(), 
@@ -1297,7 +1336,7 @@ compute_model_sensitivity_impulse_response(DynamicDiscretisedDensity& impulse_re
 template<typename TargetT>
 void
 PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<TargetT>::
-compute_initialization_model_sensitivity_image(TargetT& param_image)
+compute_initialization_model_sensitivity_image(const TargetT& param_image)
 {
 
   //Initialize the initialization model sensitivity image
@@ -1404,7 +1443,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
                                                                        const int subset_num) const
 {
   {
-    string explanation;
+    std::string explanation;
     if (!input.has_same_characteristics(this->get_sensitivity(), 
                                         explanation))
       {

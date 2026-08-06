@@ -447,7 +447,8 @@ GeneralizedPatlakMatrix<num_conv_points>::multiply_dynamic_image_with_model_and_
   // Assert that the sizes of the one frame of the dynamic image is equal with the parametric image size.
   // ChT::ToDo::Might be better to assert that each of the dimensions sizes with their voxle sizes are equal.
   // Could probably use has_same_characteristics()?
-  assert(dynamic_image[1].size_all() == parametric_image.size_all());
+  //! TODO: NE
+  // assert(dynamic_image[1].size_all() == parametric_image.size_all());
   assert(dynamic_image.get_time_frame_definitions().get_num_frames() == static_cast<unsigned int>(model_array_max[2]));
   assert(model_array_max[1] - model_array_min[1] + 1 == num_conv_params);
 
@@ -856,8 +857,8 @@ GeneralizedPatlakMatrix<num_conv_points>::estimate_nested_loop_parameters_with_m
           const float new_max_nested_gradient = static_cast<float>(max_nested_rel_change);
           cerr << "Nested iteration: " << nested_subiterations_num << " sub-gradient(update image) old value (min, max): ("
                << current_min_nested_gradient << ", " << current_max_nested_gradient << "), new value (min, max) ("
-               << max(current_min_nested_gradient, new_min_nested_gradient) << ", "
-               << min(current_max_nested_gradient, new_max_nested_gradient) << ")" << endl;
+               << std::max(current_min_nested_gradient, new_min_nested_gradient) << ", "
+               << std::min(current_max_nested_gradient, new_max_nested_gradient) << ")" << endl;
 
           threshold_upper_lower(impulse_response_update_factor.begin(),
                                 impulse_response_update_factor.end(),

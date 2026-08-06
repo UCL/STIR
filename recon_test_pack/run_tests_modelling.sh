@@ -126,7 +126,7 @@ generate_image ${INPUTDIR}generate_p5.par
 fi
 assemble_images p0005-p5.${imgext} p0005.hv p5.hv
 # test
-extract_single_images_from_parametric_image p0005-p5_%d.hv p0005-p5.${imgext}
+extract_single_images_from_parametric_image p0005-p5_{}.hv p0005-p5.${imgext}
 if compare_image p0005-p5_1.hv p0005.hv; then
     : # ok
 else
@@ -145,14 +145,14 @@ get_dynamic_images_from_parametric_images dyn_from_p0005-p5.hv p0005-p5.${imgext
 # run and test Patlak estimation
 apply_patlak_to_images indirect_Patlak.hv dyn_from_p0005-p5.hv ${INPUTDIR}PatlakPlot.par
 echo "Test Patlak round-trip"
-extract_single_images_from_parametric_image indirect_Patlak_img_%d.hv indirect_Patlak.hv
+extract_single_images_from_parametric_image indirect_Patlak_img_{}.hv indirect_Patlak.hv
 echo "indirect to original"
 for par in 1 2; do
     compare_image indirect_Patlak_img_${par}.hv p0005-p5_${par}.hv
 done
 
 # Create the appropriate proj_data files
-extract_single_images_from_dynamic_image dyn_from_p0005-p5_img_f%dg1d0b0.hv dyn_from_p0005-p5.hv
+extract_single_images_from_dynamic_image dyn_from_p0005-p5_img_f{}g1d0b0.hv dyn_from_p0005-p5.hv
 # if [ ! -r fwd_dyn_from_p0005-p5.S ]; then
 
 for fr in `count 23 28`; do
@@ -184,14 +184,30 @@ for direct in OSMAPOSL OSSPS ; do
     INPUT=fwd_dyn_from_p0005-p5.hs INIT=indirect_Patlak.hv ${MPIRUN} P${direct} P${direct}.par > P${direct}.log 2>&1
 
     echo "Compare the direct parametric images to the original ones"
-    extract_single_images_from_parametric_image p0005-p5_img_f%dg1d0b0.hv p0005-p5.${imgext}
-    extract_single_images_from_parametric_image P${direct}_${ITER}_img_f%dg1d0b0.hv P${direct}_${ITER}.hv
+    extract_single_images_from_parametric_image p0005-p5_img_f{}g1d0b0.hv p0005-p5.${imgext}
+    extract_single_images_from_parametric_image P${direct}_${ITER}_img_f{}g1d0b0.hv P${direct}_${ITER}.hv
     for par in 1 2; do
         compare_image -t .01 P${direct}_${ITER}_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
     done
     echo "Comparison is OK"
 
 done # POSMAPOSL POSSPS#
+    
+for nested in NESTPOSMAPOSL ; do #NESTGPOSMAPOSL ; do 
+    cp ${INPUTDIR}${nested}.par . 
+    echo "Test the nested ${nested} Patlak Plot reconstruction" 
+    # rm -f ${nested}.log
+    INPUT=fwd_dyn_from_p0005-p5.hs INIT=indirect_Patlak.hv ${MPIRUN} ${nested} ${nested}.par > ${nested}.log 2>&1
+
+    echo "Compare the nested direct parametric images to the original ones"
+    extract_single_images_from_parametric_image p0005-p5_img_f{}g1d0b0.hv p0005-p5.${imgext}
+    extract_single_images_from_parametric_image ${nested}_${ITER}_img_f{}g1d0b0.hv ${nested}_${ITER}.hv
+    for par in 1 2; do
+        compare_image -t .01 ${nested}_${ITER}_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
+    done
+    echo "Comparison is OK"
+
+done # NESTPOSMAPOSL NESTGPOSMAPOSL
 
 echo "Test the utility: 'mult_model_with_dyn_images'"
 echo "Multiply the  dynamic images with the model matrix to get images in the parametric space."

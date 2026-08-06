@@ -24,8 +24,6 @@ set(${dir_LIB_SOURCES}
   InterfilePDFSHeaderSPECT.cxx
   InputFileFormatRegistry.cxx
   InterfileDynamicDiscretisedDensityOutputFileFormat.cxx 
-  InterfileDynamicDiscretisedDensityInputFileFormat.cxx
-  InterfileParametricDensityOutputFileFormat.cxx
 ) 
 
 if (NOT MINI_STIR)

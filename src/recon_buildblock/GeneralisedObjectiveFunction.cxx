@@ -32,6 +32,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 using std::string;
 
 START_NAMESPACE_STIR
@@ -123,8 +124,7 @@ void
 GeneralisedObjectiveFunction<TargetT>::set_nested_output_filename_prefix(std::string& filename_prefix,
                                                                          int global_subiteration_num)
 {
-  char num[50];
-  sprintf(num, "_%d", global_subiteration_num);
+  std::string num = format("_{}", global_subiteration_num);
 
   this->nested_output_filename_prefix = filename_prefix + num;
 }

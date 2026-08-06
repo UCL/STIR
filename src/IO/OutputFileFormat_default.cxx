@@ -61,7 +61,7 @@ shared_ptr<OutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGrid>>
 #    ifdef HAVE_LLN_MATRIX
         new ecat::ecat7::ECAT7ParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>
 #    else
-        new InterfileParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>
+        new InterfileParametricDiscretisedDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>
 #    endif
     );
 

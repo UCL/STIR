@@ -34,9 +34,24 @@ int
 main(int argc, char** argv)
 #endif
 {
-  using namespace stir;
+
+  USING_NAMESPACE_STIR
+
+  HighResWallClockTimer t;
+  t.reset();
+  t.start();
 
   OSMAPOSLReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid> reconstruction_object(argc > 1 ? argv[1] : "");
 
-  return reconstruction_object.reconstruct() == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+  if (reconstruction_object.reconstruct() == Succeeded::yes)
+    {
+      t.stop();
+      std::cout << "Total Wall clock time: " << t.value() << " seconds" << std::endl;
+      return EXIT_SUCCESS;
+    }
+  else
+    {
+      t.stop();
+      return EXIT_FAILURE;
+    }
 }

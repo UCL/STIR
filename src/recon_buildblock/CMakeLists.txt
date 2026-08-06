@@ -94,8 +94,8 @@ if (NOT MINI_STIR)
         PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
 	PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx
     PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData.cxx
-    PoissonNestedLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
-    PoissonNestedLogLikelihoodWithLinearModelForMeanAndConvolvedProjDataWithMotion.cxx
+    # PoissonNestedLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
+    # PoissonNestedLogLikelihoodWithLinearModelForMeanAndConvolvedProjDataWithMotion.cxx
 	SqrtHessianRowSum.cxx
     )
 

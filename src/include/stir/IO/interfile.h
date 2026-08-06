@@ -138,11 +138,11 @@ read_interfile_parametric_image(const std::string& filename);
 VoxelsOnCartesianGrid<float>* read_interfile_frame_image(std::istream& input,
                                                          const unsigned int data_offset,
                                                          InterfileImageHeader& ifheader,
-                                                         const string& directory_for_data = "");
+                                                         const std::string& directory_for_data = "");
 
 //! Same as previous function, except here the filename and the data offset are provided as parameters instead.
 //! From the filename, the collection data stream is derived and then the previous function is called.
-VoxelsOnCartesianGrid<float>* read_interfile_frame_image(const string& filename, const unsigned int frame_num);
+VoxelsOnCartesianGrid<float>* read_interfile_frame_image(const std::string& filename, const unsigned int frame_num);
 
 //! This outputs an Interfile header for an image.
 /*!
@@ -277,7 +277,7 @@ Succeeded write_basic_interfile(const std::string& filename,
 //  Nicolas A Karakatsanis
 //	This outputs an Interfile header and data for a DiscretisedDensity<3,float> object after
 //  modifying the filename to denote a particular frame/type of image
-Succeeded write_basic_interfile(string& filename,
+Succeeded write_basic_interfile(std::string& filename,
                                 const DiscretisedDensity<3, float>& image,
                                 const unsigned int param_num,
                                 const NumericType output_type = NumericType::FLOAT,

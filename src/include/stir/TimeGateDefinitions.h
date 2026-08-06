@@ -65,7 +65,7 @@ public:
   void read_gdef_file(const std::string& gdef_filename);
 
   // Nicolas A Karakatsanis: Calculate and set the time fraction for each motion/gate relative to the total frame duration
-  void set_gate_relative_durations(const vector<pair<unsigned int, double>>& gate_sequence);
+  void set_gate_relative_durations(const std::vector<std::pair<unsigned int, double>>& gate_sequence);
 
   //! \name get info for a gate
   //@{
@@ -92,7 +92,7 @@ private:
 
   //! Stores the time fractions for all motions/gate (time fraction = gate_duration/acquisition_total_duration)  (Nicolas A
   //! Karakatsanis)
-  vector<float> _gate_relative_durations_sequence;
+  std::vector<float> _gate_relative_durations_sequence;
 };
 
 END_NAMESPACE_STIR

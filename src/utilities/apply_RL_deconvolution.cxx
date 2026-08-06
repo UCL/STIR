@@ -212,8 +212,8 @@ RL_deconvolution(DiscretisedDensity<3, float>& gradient,
       const float current_max_gradient = *std::max_element(gradient.begin_all(), gradient.end_all());
       cerr << "Richardson-Lucy iteration: " << iterations_num
            << " Gradient after sensitivity image division: old value (min, max): (" << current_min_gradient << ", "
-           << current_max_gradient << "), new value (min, max) (" << max(current_min_gradient, min_update_factor) << ", "
-           << min(current_max_gradient, max_update_factor) << ")"
+           << current_max_gradient << "), new value (min, max) (" << std::max(current_min_gradient, min_update_factor) << ", "
+           << std::min(current_max_gradient, max_update_factor) << ")"
            << "), threshold limits (min, max) (" << min_update_factor << ", " << max_update_factor << ")" << endl;
 
       zero_threshold_upper_lower(gradient.begin_all(), gradient.end_all(), min_update_factor, max_update_factor);

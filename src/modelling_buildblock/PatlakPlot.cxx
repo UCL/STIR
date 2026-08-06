@@ -209,9 +209,8 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid& par_image, 
     {
       patlak_x[frame_num - 1] = patlak_model_array[1][frame_num] / patlak_model_array[2][frame_num];
       weights[frame_num - 1] = 1;
-      std::cout << frame_num << "			" << brain_patlak_model_array[1][frame_num]
-                << "				" << brain_patlak_model_array[2][frame_num] << "			"
-                << patlak_x[frame_num - 1] << "\n";
+      std::cout << frame_num << "			" << patlak_model_array[1][frame_num] << "				"
+                << patlak_model_array[2][frame_num] << "			" << patlak_x[frame_num - 1] << "\n";
     }
   { // Do linear_regression for each voxel // for k j i
     float slope = 0.F;

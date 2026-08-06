@@ -142,10 +142,10 @@ public:
   //@}
 protected:
   //! Filename with input projection data
-  string _input_filename;
-  string _motion_vectors_filename_prefix;
-  string _reverse_motion_vectors_filename_prefix;
-  string _gate_definitions_filename;
+  std::string _input_filename;
+  std::string _motion_vectors_filename_prefix;
+  std::string _reverse_motion_vectors_filename_prefix;
+  std::string _gate_definitions_filename;
 
   //! points to the object for the total input projection data
   shared_ptr<GatedProjData> _gated_proj_data_sptr;
@@ -193,17 +193,17 @@ protected:
 
   /********************************/
   //! name of file in which additive projection data are stored
-  string _additive_gated_proj_data_filename;
+  std::string _additive_gated_proj_data_filename;
 
   //! name of file in which normalisation projection data are stored
-  string _normalisation_gated_proj_data_filename;
+  std::string _normalisation_gated_proj_data_filename;
 
   //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<GatedProjData> _additive_gated_proj_data_sptr;
   shared_ptr<GatedProjData> _normalisation_gated_proj_data_sptr;
   /*! the normalisation or/and attenuation data */
-  string _normalisation_filename_prefix;
+  std::string _normalisation_filename_prefix;
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> _projector_pair_ptr;
   //! signals whether to zero the data in the end planes of the projection data
@@ -220,7 +220,7 @@ protected:
   //! Define a shared pointer for the (motion transformation) model sensitivity image
   shared_ptr<TargetT> model_sensitivity_image_sptr;
 
-  bool actual_subsets_are_approximately_balanced(string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
   void compute_model_sensitivity_image(TargetT& motion_corrected_image);
 

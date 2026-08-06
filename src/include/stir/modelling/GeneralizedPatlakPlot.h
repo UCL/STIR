@@ -3,15 +3,7 @@
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -21,9 +13,6 @@
   \brief Implementation of functions of class stir::PatlakPlot
 
   \author Charalampos Tsoumpas
-
-  $Date: 2011-01-12 18:36:24 $
-  $Revision: 1.5 $
 */
 
 #ifndef __stir_modelling_GeneralizedPatlakPlot_H__
@@ -204,12 +193,12 @@ public:
   bool _plasma_in_total_cnt; //!< Switch to choose the plasma values of the model to be in total counts or in mean counts.
   float _kloss_lb;           //!< Lower bound for the search space of the estimated kloss parameter.
   float _kloss_ub;           //!< Upper bound for the search space of the estimated kloss parameter.
-  unsigned int _kloss_num_samples;        //!< Number of samples for the search space of the estimated kloss parameter.
-  string _blood_data_filename;            //!< Name of file in which the input function is stored
-  PlasmaData _complete_plasma_data;       //!< Stores the complete plasma data before distributing/sorting into frames
-  PlasmaData _plasma_frame_data;          //!< Stores the plasma data into frames for brain studies
-  string _time_frame_definition_filename; //!< name of file to get frame definitions
-  TimeFrameDefinitions _frame_defs;       //!< TimeFrameDefinitions
+  unsigned int _kloss_num_samples;             //!< Number of samples for the search space of the estimated kloss parameter.
+  std::string _blood_data_filename;            //!< Name of file in which the input function is stored
+  PlasmaData _complete_plasma_data;            //!< Stores the complete plasma data before distributing/sorting into frames
+  PlasmaData _plasma_frame_data;               //!< Stores the plasma data into frames for brain studies
+  std::string _time_frame_definition_filename; //!< name of file to get frame definitions
+  TimeFrameDefinitions _frame_defs;            //!< TimeFrameDefinitions
 
 private:
   void create_model_matrix();                //!< Creates model matrix from private members

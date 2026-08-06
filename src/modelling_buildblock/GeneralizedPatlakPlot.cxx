@@ -1,31 +1,19 @@
 //
-// $Id: PatlakPlot.cxx,v 1.6 2011-01-12 18:43:28 kris Exp $
-//
 /*
-    Copyright (C) 2006 - $Date: 2011-01-12 18:43:28 $, Hammersmith Imanet Ltd
+    Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
-
+*/
+/*!
   \file
   \ingroup modelling
   \brief Implementations of inline functions of class stir::PatlakPlot
   \author Charalampos Tsoumpas
 
   \sa GeneralizedPatlakPlot.h, GeneralizedModelMatrix.h and KineticModel.h
-
-  $Date: 2011-01-12 18:43:28 $
-  $Revision: 1.6 $
 */
 
 #include "stir/modelling/GeneralizedPatlakPlot.h"
@@ -161,12 +149,11 @@ GeneralizedPatlakPlot::get_model_matrix(const PlasmaData& complete_plasma_data,
       PlasmaData::const_iterator cur_iter = plasma_frame_data.begin() + this->_starting_frame - 1;
       PlasmaData::const_iterator complete_plasma_cur_iter;
 
-      unsigned int frame_num, conv_sample, cur_frame_mid_time, actual_time_point;
-      float cur_frame_time;
+      unsigned int frame_num, conv_sample, actual_time_point;
 
-      if (plasma_frame_data.get_if_decay_corrected())
+      if (plasma_frame_data.get_is_decay_corrected())
         warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-      else if (!plasma_frame_data.get_if_decay_corrected())
+      else if (!plasma_frame_data.get_is_decay_corrected())
         error("plasma_data have not been corrected during the process, which will create wrong results!!!");
 
       std::cout << "\nCreating Generalized Model Matrix (Here printed in its transverse format)\n\n"
@@ -180,8 +167,8 @@ GeneralizedPatlakPlot::get_model_matrix(const PlasmaData& complete_plasma_data,
       // First conv_sample columns are filled with plasma samples for each sec,
       for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
         {
-          cur_frame_time = 0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num));
-          cur_frame_mid_time = (int)floor(cur_frame_time + 0.5);
+          float cur_frame_time = 0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num));
+          unsigned int cur_frame_mid_time = (int)floor(cur_frame_time + 0.5);
           std::cout << "\nFrame Number: " << frame_num << " Current Frame Mid Time (float): " << cur_frame_time
                     << " Current Frame Mid Time (int): " << cur_frame_mid_time << "\n";
           complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
@@ -203,7 +190,7 @@ GeneralizedPatlakPlot::get_model_matrix(const PlasmaData& complete_plasma_data,
 
           std::cout << "\n";
           // Un-correcting for decay, if data are decay corrected
-          if (this->_plasma_frame_data.get_if_decay_corrected())
+          if (this->_plasma_frame_data.get_is_decay_corrected())
             {
               cerr << "Timing info (Decay correction factor info)" << endl;
               complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
@@ -247,7 +234,7 @@ GeneralizedPatlakPlot::get_model_matrix(const PlasmaData& complete_plasma_data,
           std::cout << "\n";
         }
 
-      if (this->_plasma_frame_data.get_if_decay_corrected())
+      if (this->_plasma_frame_data.get_is_decay_corrected())
         {
           std::cout << "\n\nFrame Index	Start Time	End Time	Decay correction factor\n";
           cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
@@ -295,7 +282,6 @@ GeneralizedPatlakPlot::get_initialization_model_matrix(const PlasmaData& plasma_
       VectorWithOffset<float> time_vector(min_range[2], max_range[2]);
       PlasmaData::const_iterator cur_iter = plasma_frame_data.begin();
 
-      double integral_step = 0.;
       double sum_value = 0.;
       unsigned int sample_num;
       //      std::cerr << "\n" << cur_iter->get_plasma_counts_in_kBq() << " " << cur_iter->get_time_in_s() << "\n";
@@ -311,14 +297,14 @@ GeneralizedPatlakPlot::get_initialization_model_matrix(const PlasmaData& plasma_
 
       for (sample_num = starting_frame; cur_iter != plasma_frame_data.end(); ++sample_num, ++cur_iter)
         {
-          integral_step
+          double integral_step
               = cur_iter->get_plasma_counts_in_kBq() * plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
           // Calculation of the plasma integral only up to the mid time of the current plasma frame
           sum_value += 0.5 * integral_step;
           // Fillling of the Patlak array. First column is filled with plasma integral, second column with plasma activity
           patlak_array[1][sample_num] = static_cast<float>(sum_value);
           patlak_array[2][sample_num] = cur_iter->get_plasma_counts_in_kBq();
-          if (plasma_frame_data.get_if_decay_corrected())
+          if (plasma_frame_data.get_is_decay_corrected())
             {
               const float dec_fact = static_cast<float>(
                   decay_correction_factor(plasma_frame_data.get_isotope_halflife(),
@@ -332,15 +318,15 @@ GeneralizedPatlakPlot::get_initialization_model_matrix(const PlasmaData& plasma_
           // Completion of integral calculation before moving to the next plasma frame
           sum_value += 0.5 * integral_step;
         }
-      if (plasma_frame_data.get_if_decay_corrected())
+      if (plasma_frame_data.get_is_decay_corrected())
         warning("Uncorrecting previous decay correction, while putting the plasma_frame_data into the model_matrix.");
-      else if (!plasma_frame_data.get_if_decay_corrected())
+      else if (!plasma_frame_data.get_is_decay_corrected())
         warning("plasma_frame_data have not been corrected during the process, which might create wrong results!!!");
 
       assert(sample_num - 1 == plasma_frame_data.size());
       this->_initialization_model_matrix.set_model_array(patlak_array);
       this->_initialization_model_matrix.set_time_vector(time_vector);
-      this->_initialization_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
+      this->_initialization_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);
       this->_initialization_model_matrix.threshold_model_array(.0000001F);
       this->_initialization_matrix_is_stored = true;
     }
@@ -361,7 +347,7 @@ GeneralizedPatlakPlot::create_Hfunction_matrix()
   Array<2, float> Hfunction_array(kloss_range);
   unsigned int kloss_index, conv_sample, actual_time_point;
   float kloss_step = (this->_kloss_ub - this->_kloss_lb) / this->_kloss_num_samples;
-  float kloss_val = this->_kloss_lb, numerator_sum, denominator_sum;
+  float kloss_val = this->_kloss_lb;
 
   std::cout << "\nPrecalculating H Matrix for the following range of " << this->_kloss_num_samples << " kloss values:\n"
             << "[ kloss_start : kloss_end : kloss_step ] -> [ " << this->_kloss_lb << " : " << this->_kloss_ub << " : "
@@ -369,7 +355,7 @@ GeneralizedPatlakPlot::create_Hfunction_matrix()
 
   for (kloss_index = 1; kloss_index <= this->_kloss_num_samples; ++kloss_index)
     {
-      numerator_sum = 0, denominator_sum = 0;
+      float numerator_sum = 0, denominator_sum = 0;
       for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_mid_time; ++conv_sample)
         {
           actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
@@ -405,7 +391,7 @@ GeneralizedPatlakPlot::create_Ki_matrix()
   Array<2, float> Ki_array(kloss_range);
   unsigned int kloss_index, conv_sample, actual_time_point;
   float kloss_step = (this->_kloss_ub - this->_kloss_lb) / this->_kloss_num_samples;
-  float kloss_val = this->_kloss_lb, Ki_sum;
+  float kloss_val = this->_kloss_lb;
 
   std::cout << "\nPrecalculating Ki Matrix for the following range of " << this->_kloss_num_samples << " kloss values:\n"
             << "[ kloss_start : kloss_end : kloss_step ] -> [ " << this->_kloss_lb << " : " << this->_kloss_ub << " : "
@@ -413,7 +399,7 @@ GeneralizedPatlakPlot::create_Ki_matrix()
 
   for (kloss_index = 1; kloss_index <= this->_kloss_num_samples; ++kloss_index)
     {
-      Ki_sum = 0;
+      float Ki_sum = 0;
       for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_mid_time; ++conv_sample)
         {
           actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
@@ -450,12 +436,11 @@ GeneralizedPatlakPlot::create_model_matrix()
       PlasmaData::const_iterator cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
       PlasmaData::const_iterator complete_plasma_cur_iter;
 
-      unsigned int frame_num, conv_sample, cur_frame_mid_time, actual_time_point;
-      float cur_frame_time;
+      unsigned int frame_num, conv_sample, actual_time_point;
 
-      if (this->_plasma_frame_data.get_if_decay_corrected())
+      if (this->_plasma_frame_data.get_is_decay_corrected())
         warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-      else if (!this->_plasma_frame_data.get_if_decay_corrected())
+      else if (!this->_plasma_frame_data.get_is_decay_corrected())
         error("plasma_data have not been corrected during the process, which will create wrong results!!!");
 
       std::cout << "\nCreating Generalized Model Matrix (Here printed in its transverse format)\n\n"
@@ -474,8 +459,8 @@ GeneralizedPatlakPlot::create_model_matrix()
       // First conv_sample columns are filled with plasma samples for each sec,
       for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
         {
-          cur_frame_time = 0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num));
-          cur_frame_mid_time = (int)floor(cur_frame_time + 0.5);
+          float cur_frame_time = 0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num));
+          unsigned int cur_frame_mid_time = (int)floor(cur_frame_time + 0.5);
           std::cout << "\nFrame Number: " << frame_num << " Current Frame Mid Time (float): " << cur_frame_time
                     << " Current Frame Mid Time (int): " << cur_frame_mid_time << "\n";
           complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
@@ -496,7 +481,7 @@ GeneralizedPatlakPlot::create_model_matrix()
 
           std::cout << "\n";
           // Un-correcting for decay, if data are decay corrected
-          if (this->_plasma_frame_data.get_if_decay_corrected())
+          if (this->_plasma_frame_data.get_is_decay_corrected())
             {
               cerr << "Timing info (Decay correction factor info)" << endl;
               complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
@@ -540,7 +525,7 @@ GeneralizedPatlakPlot::create_model_matrix()
           std::cout << "\n";
         }
 
-      if (this->_plasma_frame_data.get_if_decay_corrected())
+      if (this->_plasma_frame_data.get_is_decay_corrected())
         {
           std::cout << "\n\nFrame Index	Start Time	End Time	Decay correction factor\n";
           cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
@@ -591,13 +576,12 @@ GeneralizedPatlakPlot::create_initialization_model_matrix()
       VectorWithOffset<float> dec_fact(min_range[2], max_range[2]);
       PlasmaData::const_iterator cur_iter = this->_plasma_frame_data.begin();
 
-      double integral_step = 0.;
       double sum_value = 0.;
       unsigned int sample_num;
 
-      if (this->_plasma_frame_data.get_if_decay_corrected())
+      if (this->_plasma_frame_data.get_is_decay_corrected())
         warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-      else if (!this->_plasma_frame_data.get_if_decay_corrected())
+      else if (!this->_plasma_frame_data.get_is_decay_corrected())
         error("plasma_frame_data have not been corrected during the process, which will create wrong results!!!");
 
       for (sample_num = 1; sample_num < this->_starting_frame; ++sample_num, ++cur_iter)
@@ -614,15 +598,15 @@ GeneralizedPatlakPlot::create_initialization_model_matrix()
 
       for (sample_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++sample_num, ++cur_iter)
         {
-          integral_step = cur_iter->get_plasma_counts_in_kBq()
-                          * this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
+          double integral_step = cur_iter->get_plasma_counts_in_kBq()
+                                 * this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
           // Calculation of the plasma integral only up to the mid time of the current plasma frame
           sum_value += 0.5 * integral_step;
           // Fillling of the Patlak array. First column is filled with plasma integral, second column with plasma activity
           patlak_array[1][sample_num] = static_cast<float>(sum_value);
           patlak_array[2][sample_num] = cur_iter->get_plasma_counts_in_kBq();
 
-          if (this->_plasma_frame_data.get_if_decay_corrected())
+          if (this->_plasma_frame_data.get_is_decay_corrected())
             {
               dec_fact[sample_num] = static_cast<float>(
                   decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),
@@ -640,7 +624,7 @@ GeneralizedPatlakPlot::create_initialization_model_matrix()
                     << "			(" << sample_num << ")\n";
         }
 
-      if (this->_plasma_frame_data.get_if_decay_corrected())
+      if (this->_plasma_frame_data.get_is_decay_corrected())
         {
           std::cout << "\n\nFrame Index	Start Time	End Time	Decay correction factor\n";
           cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
@@ -663,7 +647,7 @@ GeneralizedPatlakPlot::create_initialization_model_matrix()
       this->_initialization_model_matrix.set_matrix_in_total_frame_counts(this->_plasma_in_total_cnt);
       if (this->_in_total_cnt)
         this->_initialization_model_matrix.convert_to_total_frame_counts(this->_frame_defs);
-      this->_initialization_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
+      this->_initialization_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);
       this->_initialization_model_matrix.threshold_model_array(.000000001F);
       this->_initialization_matrix_is_stored = true;
     }

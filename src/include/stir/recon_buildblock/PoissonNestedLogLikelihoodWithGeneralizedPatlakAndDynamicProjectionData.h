@@ -3,15 +3,7 @@
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -23,8 +15,6 @@
 
   \author Nicolas A Karakatsanis
 
-  $Date: 2013-07-12 10:34:00 $
-  $Revision: 1.0 $
 */
 
 #ifndef __stir_recon_buildblock_PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData_H__
@@ -77,20 +67,23 @@ public:
   /*! Dimensions etc are set from the \a dyn_proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
   */
-  virtual TargetT* construct_target_ptr() const;
+  TargetT* construct_target_ptr() const override;
 
   // Computes the outer loop gradient after conducting nested iterations
   /* At each nested iteration \current_estimate  is updated and therefore it
      is declared as TargetT and NOT as const TargetT
   */
 
-  virtual void
-  compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, const TargetT& current_estimate, const int subset_num);
+  void actual_compute_subset_gradient_without_penalty(TargetT& gradient,
+                                                      const TargetT& current_estimate,
+                                                      const int subset_num,
+                                                      const bool add_sensitivity) override;
 
 protected:
-  virtual void compute_nested_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
-                                                                            TargetT& current_estimate,
-                                                                            const int subset_num);
+  virtual void actual_compute_nested_sub_gradient_without_penalty(TargetT& gradient,
+                                                                  TargetT& current_estimate,
+                                                                  const int subset_num,
+                                                                  const bool add_sensitivity);
 
   // The nested EM reconstruction method using the standard Patlak model for initialization purposes
   // Use this method in GeneralizedPatlak objective function class ONLY for EM initialization
@@ -110,23 +103,23 @@ protected:
                                                           DynamicDiscretisedDensity& dyn_image_reference_data,
                                                           DynamicDiscretisedDensity& dyn_image_nested_loop_estimate);
 
-  virtual double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num);
+  double actual_compute_objective_function_without_penalty(const TargetT& current_estimate, const int subset_num) override;
 
-  virtual Succeeded set_up_before_sensitivity(shared_ptr<TargetT> const& target_sptr);
+  Succeeded set_up_before_sensitivity(shared_ptr<const TargetT> const& target_sptr) override;
 
   //! Add subset sensitivity to existing data
   /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites
    */
-  virtual void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+  void add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const override;
 
   //! Add subset initialization sensitivity to existing initialization data
   /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites
    */
   virtual void add_subset_initialization_sensitivity(TargetT& initialization_sensitivity, const int subset_num) const;
 
-  virtual Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-                                                                                           const TargetT& input,
-                                                                                           const int subset_num) const;
+  Succeeded actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
+                                                                                   const TargetT& input,
+                                                                                   const int subset_num) const override;
 
 public:
   /*! \name Functions to get parameters
@@ -138,6 +131,7 @@ public:
   const shared_ptr<DynamicProjData>& get_dyn_proj_data_sptr() const;
   const int get_max_segment_num_to_process() const;
   const bool get_zero_seg0_end_planes() const;
+  const ExamData& get_input_data() const override;
   const DynamicProjData& get_additive_dyn_proj_data() const;
   const shared_ptr<DynamicProjData>& get_additive_dyn_proj_data_sptr() const;
   const ProjectorByBinPair& get_projector_pair() const;
@@ -147,7 +141,6 @@ public:
   const DynamicDiscretisedDensity get_model_sensitivity_impulse_response() const;
   const TargetT& get_initialization_model_sensitivity_image() const;
   const shared_ptr<TargetT>& get_initialization_model_sensitivity_image_sptr() const;
-
   //@}
 
   /*! \name Functions to set parameters
@@ -159,11 +152,14 @@ public:
   //@{
   void set_recompute_sensitivity(const bool);
   void set_sensitivity_sptr(const shared_ptr<TargetT>&);
-  virtual int set_num_subsets(const int num_subsets);
+  int set_num_subsets(const int num_subsets) override;
+  void set_input_data(const shared_ptr<ExamData>&) override;
+  void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) override;
+  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) override;
   //@}
 protected:
   //! Filename with input projection data
-  string _input_filename;
+  std::string _input_filename;
 
   //! points to the object for the total input projection data
   shared_ptr<DynamicProjData> _dyn_proj_data_sptr;
@@ -222,7 +218,7 @@ protected:
 
   /********************************/
   //! name of file in which additive projection data are stored
-  string _additive_dyn_proj_data_filename;
+  std::string _additive_dyn_proj_data_filename;
   //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<DynamicProjData> _additive_dyn_proj_data_sptr;
@@ -250,9 +246,9 @@ protected:
   // Define a shared pointer for the (linear kinetic) model sensitivity image
   shared_ptr<TargetT> initialization_model_sensitivity_image_sptr;
 
-  void compute_initialization_model_sensitivity_image(TargetT& param_image);
+  void compute_initialization_model_sensitivity_image(const TargetT& param_image);
 
-  bool actual_subsets_are_approximately_balanced(string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const override;
 
   void compute_model_sensitivity_impulse_response(DynamicDiscretisedDensity& impulse_reponse);
 
@@ -262,9 +258,9 @@ protected:
   /*! Resets \c sensitivity_filename and \c sensitivity_sptr and
      \c recompute_sensitivity to \c false.
   */
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  void set_defaults() override;
+  void initialise_keymap() override;
+  bool post_processing() override;
 };
 
 END_NAMESPACE_STIR
