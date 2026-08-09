@@ -81,7 +81,14 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
 #if STIR_VERSION < 070000
   this->parser.add_alias_key("TOF mashing factor", "%TOF mashing factor");
 #endif
-  //
+  // keys for blocks
+  this->parser.add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)", &this->scanner_geometry);
+  this->parser.add_key("distance between crystals in axial direction (cm)", &this->axial_distance_between_crystals_in_cm);
+  this->parser.add_key("distance between crystals in transaxial direction (cm)",
+                       &this->transaxial_distance_between_crystals_in_cm);
+  this->parser.add_key("distance between blocks in axial direction (cm)", &this->axial_distance_between_blocks_in_cm);
+  this->parser.add_key("distance between blocks in transaxial direction (cm)", &this->transaxial_distance_between_blocks_in_cm);
+  // end of new keys for block geometry
 
   // ROOT related
   this->parser.add_parsing_key("GATE scanner type", &this->root_file_sptr);
@@ -174,7 +181,12 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
                                           /* size of basic TOF bin */
                                           size_timing_bin,
                                           /* Scanner's timing resolution */
-                                          timing_resolution));
+                                          timing_resolution,
+                                          scanner_geometry,
+                                          static_cast<float>(axial_distance_between_crystals_in_cm * 10.),
+                                          static_cast<float>(transaxial_distance_between_crystals_in_cm * 10.),
+                                          static_cast<float>(axial_distance_between_blocks_in_cm * 10.),
+                                          static_cast<float>(transaxial_distance_between_blocks_in_cm * 10.)));
     }
   // have to do this here currently as these variables cannot be set via the constructor
   if (num_virtual_axial_crystals_per_block >= 0)
@@ -275,6 +287,11 @@ CListModeDataROOT::set_defaults()
   tof_mash_factor = 1;
   reference_energy = 511.F;
   energy_resolution = -1.F;
+  scanner_geometry = "Cylindrical";
+  axial_distance_between_crystals_in_cm = -0.1F;
+  transaxial_distance_between_crystals_in_cm = -0.1F;
+  axial_distance_between_blocks_in_cm = -0.1F;
+  transaxial_distance_between_blocks_in_cm = -0.1F;
 }
 
 Succeeded

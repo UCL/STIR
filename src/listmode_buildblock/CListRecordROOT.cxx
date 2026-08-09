@@ -24,7 +24,7 @@
 START_NAMESPACE_STIR
 
 CListEventROOT::CListEventROOT(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
-    : CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr)
+    : base_type(proj_data_info_sptr)
 {
 #ifdef STIR_ROOT_ROTATION_AS_V4
   quarter_of_detectors = static_cast<int>(scanner_sptr->get_num_detectors_per_ring() / 4.f);
