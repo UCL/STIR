@@ -37,16 +37,8 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 
   m_has_delayeds = header.scanner.delayed_events_are_stored;
 
-  // Get the first TimeBlock
-  if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-    error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abort.");
-
-  ++m_time_block_index;
-
-  if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
-    curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
-  else
-    error("CListModeDataPETSIRD: holds_alternative not true. Abort.");
+  if (reset() == Succeeded::no)
+    error(format("CListModeDataPETSIRD: Could not read the PETSIRD header from file {}.", listmode_filename));
 
   petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
@@ -186,46 +178,24 @@ CListModeDataPETSIRD::save_get_position()
   return static_cast<SavedPosition>(m_saved_positions.size() - 1);
 }
 
-Succeeded
+void
 CListModeDataPETSIRD::reopen_and_prime()
 {
-  // ensure PETSIRD state machine is satisfied
-  if (current_lm_data_ptr)
-    {
-      try
-        {
-          current_lm_data_ptr->Close();
-        }
-      catch (...)
-        {}
-    }
-  // current_lm_data_ptr.reset();
   if (use_hdf5)
     current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(this->listmode_filename));
   else
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
 
   petsird::Header header;
-  current_lm_data_ptr->ReadHeader(header);
-  // m_eof_reached = false;
+  current_lm_data_ptr->ReadHeader(header); // let it throw naturally if it fails
+  m_has_delayeds = header.scanner.delayed_events_are_stored;
+
   curr_event_in_event_block = 0;
   curr_is_prompt = true;
   m_time_block_index = 0;
-  // read until first EventTimeBlock
-  while (true)
-    {
-      if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
-        {
-          // m_eof_reached = true;
-          current_lm_data_ptr->Close();
-          return Succeeded::no;
-        }
-      if (std::holds_alternative<petsird::EventTimeBlock>(this->curr_time_block))
-        {
-          this->curr_event_block = std::get<petsird::EventTimeBlock>(this->curr_time_block);
-          return Succeeded::yes;
-        }
-    }
+
+  if (seek_to_event_block_index(0) == Succeeded::no)
+    error(format("CListModeDataPETSIRD: No event time blocks found in file {}.", listmode_filename));
 }
 
 Succeeded
@@ -233,7 +203,7 @@ CListModeDataPETSIRD::seek_to_event_block_index(std::size_t target_event_block_i
 {
   // assumes we are primed at event_block_index = 0
   std::size_t idx = 0;
-  while (idx < target_event_block_index)
+  while (true)
     {
       // read next until EventTimeBlock
       while (true)
@@ -248,9 +218,10 @@ CListModeDataPETSIRD::seek_to_event_block_index(std::size_t target_event_block_i
             break;
         }
       this->curr_event_block = std::get<petsird::EventTimeBlock>(this->curr_time_block);
+      if (idx == target_event_block_index)
+        return Succeeded::yes;
       ++idx;
     }
-  return Succeeded::yes;
 }
 
 Succeeded
@@ -263,8 +234,7 @@ CListModeDataPETSIRD::set_get_position(const SavedPosition& pos)
   // If you cached the actual blocks, you STILL must ensure the reader state
   // will not be used incorrectly. Easiest: reopen+seek anyway (robust),
   // then overwrite curr_* with cached data.
-  if (reopen_and_prime() == Succeeded::no)
-    return Succeeded::no;
+  reopen_and_prime();
   if (seek_to_event_block_index(c.time_block_index) == Succeeded::no)
     return Succeeded::no;
 
@@ -283,56 +253,7 @@ CListModeDataPETSIRD::set_get_position(const SavedPosition& pos)
 Succeeded
 CListModeDataPETSIRD::reset()
 {
-  /* \todo Not sure if this is the best way to reset the reader.
-  It ensures we are in a clean state, but it might be slow if the file is large and/or on a slow disk.
-  */
-  // if (current_lm_data_ptr)
-  //   {
-  //     try
-  //       {
-  //         current_lm_data_ptr->Close();
-  //       }
-  //     catch (...)
-  //       {
-  //         // If Close throws, treat as failure (or swallow if you must)
-  //         return Succeeded::no;
-  //       }
-  //   }
-
-  if (use_hdf5)
-    current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(this->listmode_filename));
-  else
-    current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(this->listmode_filename));
-
-  petsird::Header header;
-  current_lm_data_ptr->ReadHeader(header);
-
-  curr_event_in_event_block = 0;
-  curr_is_prompt = true;
-  m_time_block_index = 0;
-
-  try
-    {
-      while (true)
-        {
-          info(format("Reading TimeBlock index {}", m_time_block_index), 2);
-          if (!current_lm_data_ptr->ReadTimeBlocks(this->curr_time_block))
-            return Succeeded::no;
-
-          ++m_time_block_index;
-
-          if (std::holds_alternative<petsird::EventTimeBlock>(this->curr_time_block))
-            {
-              this->curr_event_block = std::get<petsird::EventTimeBlock>(this->curr_time_block);
-              break;
-            }
-        }
-    }
-  catch (...)
-    {
-      return Succeeded::no;
-    }
-
+  reopen_and_prime();
   return Succeeded::yes;
 }
 END_NAMESPACE_STIR
