@@ -17,7 +17,6 @@
   \brief Declaration of class stir::InterfileDynamicDiscretisedDensityInputFileFormat
 
   \author Kris Thielemans
-  \author Nicolas A Karakatsanis
   \author Richard Brown
 
 */
@@ -66,7 +65,6 @@ protected:
     return ret;
   }
 };
-
 END_NAMESPACE_STIR
 
 #endif
