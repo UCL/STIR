@@ -357,6 +357,7 @@ ProjDataInfoCylindricalNoArcCorr::get_all_det_pos_pairs_for_bin(vector<Detection
   assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin, ignore_non_spatial_dimensions));
 }
 
+// find_scanner_coordinates_given_cartesian_coordinates
 Succeeded
 ProjDataInfoCylindricalNoArcCorr::find_scanner_coordinates_given_cartesian_coordinates(
     int& det1, int& det2, int& ring1, int& ring2, const CartesianCoordinate3D<float>& c1, const CartesianCoordinate3D<float>& c2)
@@ -399,14 +400,23 @@ ProjDataInfoCylindricalNoArcCorr::find_scanner_coordinates_given_cartesian_coord
   ring1 = round(coord_det1.z()/ring_spacing);
   ring2 = round(coord_det2.z()/ring_spacing);
 #else
-  LORInCylinderCoordinates<float> cyl_coords;
-  if (find_LOR_intersections_with_cylinder(cyl_coords, LORAs2Points<float>(c1, c2), ring_radius) == Succeeded::no)
+
+  // here we define an internal-only coord system called ring coords
+  // They just define z=0 as first ring, for ease of calculating ring no.
+  CartesianCoordinate3D<float> offset_gantry_coords_to_ring_coords = get_vector_centre_of_first_ring_to_centre_of_gantry();
+
+  LORInCylinderCoordinates<float> cyl_in_ring_coords;
+  if (find_LOR_intersections_with_cylinder(
+          cyl_in_ring_coords,
+          LORAs2Points<float>(c1 + offset_gantry_coords_to_ring_coords, c2 + offset_gantry_coords_to_ring_coords),
+          ring_radius)
+      == Succeeded::no)
     return Succeeded::no;
 
-  det1 = modulo(round((cyl_coords.p1().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors)), num_detectors);
-  det2 = modulo(round((cyl_coords.p2().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors)), num_detectors);
-  ring1 = round(cyl_coords.p1().z() / ring_spacing);
-  ring2 = round(cyl_coords.p2().z() / ring_spacing);
+  det1 = modulo(round((cyl_in_ring_coords.p1().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors)), num_detectors);
+  det2 = modulo(round((cyl_in_ring_coords.p2().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors)), num_detectors);
+  ring1 = round((cyl_in_ring_coords.p1()).z() / ring_spacing);
+  ring2 = round((cyl_in_ring_coords.p2()).z() / ring_spacing);
 
 #endif
 
@@ -497,8 +507,9 @@ ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coord
   cyl_coords.p1().z() = r1 * get_scanner_ptr()->get_ring_spacing();
   cyl_coords.p2().z() = r2 * get_scanner_ptr()->get_ring_spacing();
   LORAs2Points<float> lor(cyl_coords);
-  coord_1 = lor.p1();
-  coord_2 = lor.p2();
+  CartesianCoordinate3D<float> offset_gantry_coords_to_ring_coords = get_vector_centre_of_first_ring_to_centre_of_gantry();
+  coord_1 = lor.p1() - offset_gantry_coords_to_ring_coords;
+  coord_2 = lor.p2() - offset_gantry_coords_to_ring_coords;
 
 #endif
   if (tpos < 0)
@@ -538,8 +549,8 @@ ProjDataInfoCylindricalNoArcCorr::get_bin(const LOR<float>& lor, const double de
   Bin bin;
 #ifndef STIR_DEVEL
   // find nearest bin by going to nearest detectors first
-  LORInCylinderCoordinates<float> cyl_coords;
-  if (lor.change_representation(cyl_coords, get_ring_radius()) == Succeeded::no)
+  LORInCylinderCoordinates<float> cyl_in_gantry_coords;
+  if (lor.change_representation(cyl_in_gantry_coords, get_ring_radius()) == Succeeded::no)
     {
       bin.set_bin_value(-1);
       return bin;
@@ -547,19 +558,20 @@ ProjDataInfoCylindricalNoArcCorr::get_bin(const LOR<float>& lor, const double de
   const int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
   const int num_rings = get_scanner_ptr()->get_num_rings();
 
-  const int det1 = modulo(round((cyl_coords.p1().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors_per_ring)),
+  const int det1 = modulo(round((cyl_in_gantry_coords.p1().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors_per_ring)),
                           num_detectors_per_ring);
-  const int det2 = modulo(round((cyl_coords.p2().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors_per_ring)),
+  const int det2 = modulo(round((cyl_in_gantry_coords.p2().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors_per_ring)),
                           num_detectors_per_ring);
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
-  const int ring1 = round(cyl_coords.p1().z() / get_ring_spacing() + (num_rings - 1) / 2.F);
-  const int ring2 = round(cyl_coords.p2().z() / get_ring_spacing() + (num_rings - 1) / 2.F);
+  const int ring1 = round(cyl_in_gantry_coords.p1().z() / get_ring_spacing() + (num_rings - 1) / 2.F);
+  const int ring2 = round(cyl_in_gantry_coords.p2().z() / get_ring_spacing() + (num_rings - 1) / 2.F);
 
   assert(det1 >= 0 && det1 < num_detectors_per_ring);
   assert(det2 >= 0 && det2 < num_detectors_per_ring);
 
   if (ring1 >= 0 && ring1 < num_rings && ring2 >= 0 && ring2 < num_rings
-      && get_bin_for_det_pair(bin, det1, ring1, det2, ring2, (cyl_coords.is_swapped() ? -1 : 1) * get_tof_bin(delta_time))
+      && get_bin_for_det_pair(
+             bin, det1, ring1, det2, ring2, (cyl_in_gantry_coords.is_swapped() ? -1 : 1) * get_tof_bin(delta_time))
              == Succeeded::yes
       && bin.tangential_pos_num() >= get_min_tangential_pos_num() && bin.tangential_pos_num() <= get_max_tangential_pos_num())
     {
