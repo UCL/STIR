@@ -20,6 +20,7 @@
 #define __stir_evaluation_compute_ROI_values__H__
 
 #include "stir/evaluation/ROIValues.h"
+#include "stir/VectorWithOffsetFwd.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
 START_NAMESPACE_STIR
@@ -28,8 +29,6 @@ template <typename coordT>
 class CartesianCoordinate2D;
 template <typename coordT>
 class CartesianCoordinate3D;
-template <typename elemT>
-class VectorWithOffset;
 template <int num_dimensions, typename elemT>
 class DiscretisedDensity;
 class Shape3D;

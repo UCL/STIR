@@ -30,7 +30,7 @@
 
 */
 
-#include "stir/common.h"
+#include "stir/BasicCoordinateFwd.h"
 #include <boost/operators.hpp>
 #include <iterator>
 

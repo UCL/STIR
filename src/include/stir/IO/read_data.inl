@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2024, University College London
+    Copyright (C) 2024, 2025, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -31,15 +31,15 @@ START_NAMESPACE_STIR
 namespace detail
 {
 /* Generic implementation of read_data(). See test_if_1d.h for info why we do this.*/
-template <int num_dimensions, class IStreamT, class elemT>
+template <int num_dimensions, class IStreamT, class elemT, class indexT>
 inline Succeeded
-read_data_help(is_not_1d, IStreamT& s, ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order)
+read_data_help(is_not_1d, IStreamT& s, ArrayType<num_dimensions, elemT, indexT>& data, const ByteOrder byte_order)
 {
   if (data.is_contiguous())
     return read_data_1d(s, data, byte_order);
 
   // otherwise, recurse
-  for (typename ArrayType<num_dimensions, elemT>::iterator iter = data.begin(); iter != data.end(); ++iter)
+  for (auto iter = data.begin(); iter != data.end(); ++iter)
     {
       if (read_data(s, *iter, byte_order) == Succeeded::no)
         return Succeeded::no;
@@ -49,26 +49,26 @@ read_data_help(is_not_1d, IStreamT& s, ArrayType<num_dimensions, elemT>& data, c
 
 /* 1D implementation of read_data(). See test_if_1d.h for info why we do this.*/
 // specialisation for 1D case
-template <class IStreamT, class elemT>
+template <class IStreamT, class elemT, class indexT>
 inline Succeeded
-read_data_help(is_1d, IStreamT& s, ArrayType<1, elemT>& data, const ByteOrder byte_order)
+read_data_help(is_1d, IStreamT& s, ArrayType<1, elemT, indexT>& data, const ByteOrder byte_order)
 {
   return read_data_1d(s, data, byte_order);
 }
 
 } // end of namespace detail
 
-template <int num_dimensions, class IStreamT, class elemT>
+template <int num_dimensions, class IStreamT, class elemT, class indexT>
 inline Succeeded
-read_data(IStreamT& s, ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order)
+read_data(IStreamT& s, ArrayType<num_dimensions, elemT, indexT>& data, const ByteOrder byte_order)
 {
   return detail::read_data_help(detail::test_if_1d<num_dimensions>(), s, data, byte_order);
 }
 
-template <int num_dimensions, class IStreamT, class elemT, class InputType, class ScaleT>
+template <int num_dimensions, class IStreamT, class elemT, class indexT, class InputType, class ScaleT>
 inline Succeeded
 read_data(IStreamT& s,
-          ArrayType<num_dimensions, elemT>& data,
+          ArrayType<num_dimensions, elemT, indexT>& data,
           NumericInfo<InputType> input_type,
           ScaleT& scale_factor,
           const ByteOrder byte_order)
@@ -82,7 +82,7 @@ read_data(IStreamT& s,
     }
   else
     {
-      ArrayType<num_dimensions, InputType> in_data(data.get_index_range());
+      ArrayType<num_dimensions, InputType, indexT> in_data(data.get_index_range());
       Succeeded success = read_data(s, in_data, byte_order);
       if (success == Succeeded::no)
         return Succeeded::no;
@@ -91,9 +91,10 @@ read_data(IStreamT& s,
     }
 }
 
-template <int num_dimensions, class IStreamT, class elemT, class ScaleT>
+template <int num_dimensions, class IStreamT, class elemT, class indexT, class ScaleT>
 inline Succeeded
-read_data(IStreamT& s, ArrayType<num_dimensions, elemT>& data, NumericType type, ScaleT& scale, const ByteOrder byte_order)
+read_data(
+    IStreamT& s, ArrayType<num_dimensions, elemT, indexT>& data, NumericType type, ScaleT& scale, const ByteOrder byte_order)
 {
   switch (type.id)
     {

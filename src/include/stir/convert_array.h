@@ -52,7 +52,7 @@ class NumericInfo;
           In that case, the same scale_factor is used as in the 0 case.
 
    \param data_in
-          some Array object, elements are of some numeric type \a T1
+          some Array-like object, i.e. it needs to have \c begin_all(), \c end_all() methods
    \param info_for_out_type
           \a T2 is the desired output type
 
@@ -61,9 +61,8 @@ class NumericInfo;
 
    \see convert_array
 */
-template <int num_dimensions, class T1, class T2, class scaleT>
-inline void
-find_scale_factor(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in, const NumericInfo<T2> info_for_out_type);
+template <class ArrayLike, class T2, class scaleT>
+inline void find_scale_factor(scaleT& scale_factor, const ArrayLike& data_in, const NumericInfo<T2> info_for_out_type);
 
 /*!
   \ingroup Array
@@ -97,13 +96,13 @@ find_scale_factor(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in
    numbers are cut out) when T2 is an unsigned type.
 
 */
-template <int num_dimensions, class T1, class T2, class scaleT>
-inline Array<num_dimensions, T2>
-convert_array(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in, const NumericInfo<T2> info2);
+template <int num_dimensions, class T1, class indexT, class T2, class scaleT>
+inline Array<num_dimensions, T2, indexT>
+convert_array(scaleT& scale_factor, const Array<num_dimensions, T1, indexT>& data_in, const NumericInfo<T2> info2);
 /*!
   \ingroup Array
-  \brief Converts the \c data_in Array to \c data_out (with elements of different types) such that \c data_in == \c data_out * \c
-  scale_factor
+  \brief Converts the \c data_in Array-like object to \c data_out (potentially with elements of different types) such that \c
+  data_in == \c data_out * \c scale_factor
 
   \par example
   \code
@@ -112,9 +111,10 @@ convert_array(scaleT& scale_factor, const Array<num_dimensions, T1>& data_in, co
 
   \see convert_array(scale_factor, data_in, info2) for more info
 */
-
-template <int num_dimensions, class T1, class T2, class scaleT>
-inline void convert_array(Array<num_dimensions, T2>& data_out, scaleT& scale_factor, const Array<num_dimensions, T1>& data_in);
+template <int num_dimensions, class T1, class indexT1, class T2, class indexT2, class scaleT>
+inline void convert_array(Array<num_dimensions, T2, indexT2>& data_out,
+                          scaleT& scale_factor,
+                          const Array<num_dimensions, T1, indexT1>& data_in);
 
 END_NAMESPACE_STIR
 
