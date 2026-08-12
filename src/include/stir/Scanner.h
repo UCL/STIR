@@ -107,6 +107,7 @@ class Succeeded;
 class Scanner
 {
   friend class BlocksTests;
+  friend class ProjDataInfoCylindricalNoArcCorrTests;
 
 public:
   /************* static members*****************************/
