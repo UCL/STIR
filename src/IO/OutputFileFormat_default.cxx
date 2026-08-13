@@ -47,23 +47,22 @@ shared_ptr<OutputFileFormat<DiscretisedDensity<3, float>>>
   new InterfileParametricDiscretisedDensityOutputFileFormat<3,KineticParameters<2,float> >;
 #  else
 template <>
-shared_ptr<OutputFileFormat<ParametricVoxelsOnCartesianGrid>> OutputFileFormat<ParametricVoxelsOnCartesianGrid>::_default_sptr(
+shared_ptr<OutputFileFormat<Parametric2VoxelsOnCartesianGrid>> OutputFileFormat<Parametric2VoxelsOnCartesianGrid>::_default_sptr(
 #    ifdef HAVE_LLN_MATRIX
     new ecat::ecat7::ECAT7ParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>
 #    else
-    new InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>
+    new InterfileParametricDiscretisedDensityOutputFileFormat<Parametric2VoxelsOnCartesianGridBaseType>
 #    endif
 );
 
 template <>
-shared_ptr<OutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGrid>>
-    OutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGrid>::_default_sptr(
+shared_ptr<OutputFileFormat<Parametric3VoxelsOnCartesianGrid>> OutputFileFormat<Parametric3VoxelsOnCartesianGrid>::_default_sptr(
 #    ifdef HAVE_LLN_MATRIX
-        new ecat::ecat7::ECAT7ParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>
+    new ecat::ecat7::ECAT7ParametricDensityOutputFileFormat<Parametric3VoxelsOnCartesianGridBaseType>
 #    else
-        new InterfileParametricDiscretisedDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>
+    new InterfileParametricDiscretisedDensityOutputFileFormat<Parametric3VoxelsOnCartesianGridBaseType>
 #    endif
-    );
+);
 
 #  endif
 #  if 1

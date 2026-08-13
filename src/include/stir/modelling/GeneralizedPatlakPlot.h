@@ -127,7 +127,7 @@ public:
                                                                            const DynamicDiscretisedDensity& dyn_image) const;
 
   virtual void get_impulse_response_from_parametric_image(DynamicDiscretisedDensity& impulse_response_image,
-                                                          const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const;
+                                                          const Parametric3VoxelsOnCartesianGrid& par_image) const;
 
   virtual void get_dynamic_image_from_impulse_response(DynamicDiscretisedDensity& dyn_image,
                                                        const DynamicDiscretisedDensity& impulse_response_image) const;
@@ -136,9 +136,9 @@ public:
   /*! \todo Should be a virtual function declared in the KineticModel class.
    */
   virtual void get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity& dyn_image,
-                                                       const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const;
+                                                       const Parametric3VoxelsOnCartesianGrid& par_image) const;
 
-  virtual void get_generalized_patlak_parameters_from_impulse_response(GeneralizedPatlakVoxelsOnCartesianGrid& par_image,
+  virtual void get_generalized_patlak_parameters_from_impulse_response(Parametric3VoxelsOnCartesianGrid& par_image,
                                                                        const DynamicDiscretisedDensity& dyn_image,
                                                                        const DynamicDiscretisedDensity& impulse_response) const;
 
@@ -149,25 +149,25 @@ public:
     \todo Should be a virtual function declared in the KineticModel class.
         Only used for the initialization of the Generalized Patlak Model EM update estimates
   */
-  virtual void multiply_dynamic_image_with_initialization_model_gradient(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  virtual void multiply_dynamic_image_with_initialization_model_gradient(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                          const DynamicDiscretisedDensity& dyn_image) const;
 
   //! Multiplies the dynamic image with the initialization kinetic model gradient and add to original \c parametric_image
   /*! \todo Should be a virtual function declared in the KineticModel class.
       //  Only used for the initialization of the Generalized Patlak Model EM update estimates
   */
-  virtual void multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(
-      GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image, const DynamicDiscretisedDensity& dyn_image) const;
+  virtual void
+  multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(Parametric3VoxelsOnCartesianGrid& parametric_image,
+                                                                             const DynamicDiscretisedDensity& dyn_image) const;
 
   //! Multiplies the parametric image with the initialization kinetic model matrix to get the corresponding dynamic image.
   /*! \todo Should be a virtual function declared in the KineticModel class.
       //  Only used for the initialization of the Generalized Patlak Model EM update estimates
   */
-  virtual void
-  get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
-                                                         const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const;
+  virtual void get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
+                                                                      const Parametric3VoxelsOnCartesianGrid& par_image) const;
 
-  virtual void estimate_nested_loop_parameters_with_model(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  virtual void estimate_nested_loop_parameters_with_model(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                           DynamicDiscretisedDensity& dynamic_image_nested_loop_estimate,
                                                           DynamicDiscretisedDensity& dynamic_image_update_factor,
                                                           const DynamicDiscretisedDensity& dynamic_image_reference,

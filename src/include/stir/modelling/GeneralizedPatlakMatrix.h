@@ -113,7 +113,7 @@ public:
                                                 int num_conv_params) const;
 
   inline void synthesize_impulse_response_from_parametric_image(DynamicDiscretisedDensity& impulse_response_image,
-                                                                const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+                                                                const Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                 int num_conv_params) const;
 
   inline void multiply_impulse_response_with_model_and_add_to_input(DynamicDiscretisedDensity& dynamic_image,
@@ -125,33 +125,32 @@ public:
                                                    int num_conv_params) const;
 
   //! multiply model-matrix with parametric image and add result to original \c dynamic_image
-  inline void
-  multiply_parametric_image_with_model_and_add_to_input(DynamicDiscretisedDensity& dynamic_image,
-                                                        const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
-                                                        int num_conv_params) const;
+  inline void multiply_parametric_image_with_model_and_add_to_input(DynamicDiscretisedDensity& dynamic_image,
+                                                                    const Parametric3VoxelsOnCartesianGrid& parametric_image,
+                                                                    int num_conv_params) const;
   //! multiply model-matrix with parametric image (overwriting original content of \c dynamic_image)
   /*! \todo current implementation first fills first argument with 0 and then calls
    multiply_dynamic_image_with_model_and_add_to_input(). This is somewhat inefficient.
   */
   inline void multiply_parametric_image_with_model(DynamicDiscretisedDensity& dynamic_image,
-                                                   const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+                                                   const Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                    int num_conv_params) const;
 
   inline void estimate_generalized_patlak_parameters_with_impulse_response_and_add_to_input(
-      GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+      Parametric3VoxelsOnCartesianGrid& parametric_image,
       const DynamicDiscretisedDensity& impulse_response_image,
       int num_conv_params) const;
 
   inline void
-  estimate_generalized_patlak_parameters_with_impulse_response(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  estimate_generalized_patlak_parameters_with_impulse_response(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                const DynamicDiscretisedDensity& impulse_response_image,
                                                                int num_conv_params) const;
 
-  inline void normalise_parametric_image_with_model_sum(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image_out,
-                                                        const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  inline void normalise_parametric_image_with_model_sum(Parametric3VoxelsOnCartesianGrid& parametric_image_out,
+                                                        const Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                         int num_conv_params) const;
 
-  inline void estimate_nested_loop_parameters_with_model(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  inline void estimate_nested_loop_parameters_with_model(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                          DynamicDiscretisedDensity& dynamic_image_nested_loop_estimate,
                                                          DynamicDiscretisedDensity& dynamic_image_update_factor,
                                                          const DynamicDiscretisedDensity& dynamic_image_reference,

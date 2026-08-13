@@ -30,7 +30,7 @@ START_NAMESPACE_STIR
 
 template class OutputFileFormat<DiscretisedDensity<3, float>>;
 template class OutputFileFormat<DynamicDiscretisedDensity>;
-template class OutputFileFormat<ParametricVoxelsOnCartesianGrid>;
-template class OutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGrid>;
+template class OutputFileFormat<Parametric2VoxelsOnCartesianGrid>;
+template class OutputFileFormat<Parametric3VoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR

@@ -102,20 +102,14 @@ set_defaults()
     reset(new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
   this->_normalisation_sptr.reset(new TrivialBinNormalisation);
 
-  // image stuff
-  this->_output_image_size_xy=-1;
-  this->_output_image_size_z=-1;
-  this->_zoom=1.F;
-  this->_Xoffset=0.F;
-  this->_Yoffset=0.F;
-  this->_Zoffset=0.F;   // KT 20/06/2001 new
-
   //Number of nested iterations
   this->num_nested_subiterations=1;
   
   this->maximum_nested_relative_change = NumericInfo<float>().max_value();
   this->minimum_nested_relative_change = 0;
   
+  this->target_parameter_parser.set_defaults();
+
   // Modelling Stuff
   this->_patlak_plot_sptr.reset();
 }
@@ -134,14 +128,7 @@ initialise_keymap()
   this->parser.add_key("maximum absolute segment number to process", &this->_max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->_zero_seg0_end_planes);
 
-  // image stuff
-  this->parser.add_key("zoom", &this->_zoom);
-  this->parser.add_key("xy output image size (in pixels)",&this->_output_image_size_xy);
-  this->parser.add_key("z output image size (in pixels)",&this->_output_image_size_z);
-
-  // parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
-  // parser.add_key("Y offset (in mm)", &this->Yoffset);
-  this->parser.add_key("z offset (in mm)", &this->_Zoffset);
+  this->target_parameter_parser.add_to_keymap(this->parser);
   this->parser.add_parsing_key("projector pair type", &this->_projector_pair_ptr);
 
   // Scatter correction
@@ -172,7 +159,10 @@ post_processing()
   if (base_type::post_processing() == true)
     return true;
   if (this->_input_filename.length() == 0)
-    { warning("You need to specify an input filename"); return true; }
+    { 
+      warning("You need to specify an input filename"); 
+      return true; 
+    }
   
 #if 0 // KT 20/06/2001 disabled as not functional yet
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
@@ -181,26 +171,22 @@ post_processing()
  
   this->_dyn_proj_data_sptr = DynamicProjData::read_from_file(_input_filename);
   if (is_null_ptr(this->_dyn_proj_data_sptr))
-    { warning(format("Error reading input file {}", _input_filename.c_str())); return true; }
-  // image stuff
-  if (this->_zoom <= 0)
-    { warning("zoom should be positive"); return true; }
-  
-  if (this->_output_image_size_xy!=-1 && this->_output_image_size_xy<1) // KT 10122001 appended_xy
-    { warning("output image size xy must be positive (or -1 as default)"); return true; }
-  if (this->_output_image_size_z!=-1 && this->_output_image_size_z<1) // KT 10122001 new
-    { warning("output image size z must be positive (or -1 as default)"); return true; }
+    { 
+      warning(format("Error reading input file {}", _input_filename)); 
+      return true; 
+    }
 
+  this->target_parameter_parser.check_values();
 
   if (this->_additive_dyn_proj_data_filename != "0")
     {
-      cerr << "\nReading additive projdata data "
-           << this->_additive_dyn_proj_data_filename 
-           << std::endl;
+      info(format("Reading additive projdata data {}", this->_additive_dyn_proj_data_filename));
       this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
-	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
-
+	{ 
+    warning(format("Error reading additive input file {}", _additive_dyn_proj_data_filename)); 
+    return true; 
+  }
     }
   return false;
 }
@@ -217,16 +203,7 @@ TargetT *
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 construct_target_ptr() const
 {  
-  return
-    new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(
-                                                                                *(this->_dyn_proj_data_sptr->get_proj_data_info_sptr()),
-                                                                                static_cast<float>(this->_zoom),
-                                                                                CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
-                                                                                                             static_cast<float>(this->_Yoffset),
-                                                                                                             static_cast<float>(this->_Xoffset)),
-                                                                                CartesianCoordinate3D<int>(this->_output_image_size_z,
-                                                                                                           this->_output_image_size_xy,
-                                                                                                           this->_output_image_size_xy)));
+  return this->target_parameter_parser.create(this->get_input_data());
 }
 /***************************************************************
   subset balancing
@@ -334,7 +311,7 @@ get_model_sensitivity_image() const
 }
 
 template <typename TargetT>
-const ExamData&
+const DynamicProjData&
 PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::get_input_data() const
 {
   return *this->_dyn_proj_data_sptr;

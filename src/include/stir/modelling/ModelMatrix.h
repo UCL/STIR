@@ -117,29 +117,28 @@ public:
   //@{
   //! multiply (transpose) initialization kinetic model-matrix with dynamic image and add result to original \c parametric_image
   inline void
-  multiply_dynamic_image_with_initialization_model_and_add_to_input(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  multiply_dynamic_image_with_initialization_model_and_add_to_input(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                     const DynamicDiscretisedDensity& dynamic_image) const;
   //! multiply (transpose) initialization kinetic model-matrix with dynamic image (overwriting original content of \c
   //! parametric_image)
   /*! \todo current implementation first fills first argument with 0 and then calls
    multiply_dynamic_image_with_initialization kinetic model_and_add_to_input(). This is somewhat inefficient.
   */
-  inline void multiply_dynamic_image_with_initialization_model(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  inline void multiply_dynamic_image_with_initialization_model(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                const DynamicDiscretisedDensity& dynamic_image) const;
   //! multiply initialization kinetic model-matrix with parametric image and add result to original \c dynamic_image
   inline void multiply_parametric_image_with_initialization_model_and_add_to_input(
-      DynamicDiscretisedDensity& dynamic_image, const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image) const;
+      DynamicDiscretisedDensity& dynamic_image, const Parametric3VoxelsOnCartesianGrid& parametric_image) const;
   //! multiply initialization kinetic model-matrix with parametric image (overwriting original content of \c dynamic_image)
   /*! \todo current implementation first fills first argument with 0 and then calls
    multiply_dynamic_image_with_initialization_model_and_add_to_input(). This is somewhat inefficient.
   */
-  inline void
-  multiply_parametric_image_with_initialization_model(DynamicDiscretisedDensity& dynamic_image,
-                                                      const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image) const;
+  inline void multiply_parametric_image_with_initialization_model(DynamicDiscretisedDensity& dynamic_image,
+                                                                  const Parametric3VoxelsOnCartesianGrid& parametric_image) const;
 
   inline void
-  normalise_parametric_image_with_initialization_model_sum(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image_out,
-                                                           const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image) const;
+  normalise_parametric_image_with_initialization_model_sum(Parametric3VoxelsOnCartesianGrid& parametric_image_out,
+                                                           const Parametric3VoxelsOnCartesianGrid& parametric_image) const;
 
   //@}
 private:

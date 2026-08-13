@@ -734,7 +734,7 @@ GeneralizedPatlakPlot::multiply_dynamic_image_with_model_gradient_and_add_to_inp
 // Should be a virtual function declared in the KineticModels or better to the LinearModels
 void
 GeneralizedPatlakPlot::get_impulse_response_from_parametric_image(DynamicDiscretisedDensity& impulse_response_image,
-                                                                  const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const
+                                                                  const Parametric3VoxelsOnCartesianGrid& par_image) const
 {
 
   this->_model_matrix.synthesize_impulse_response_from_parametric_image(
@@ -766,7 +766,7 @@ GeneralizedPatlakPlot::get_dynamic_image_from_impulse_response(DynamicDiscretise
 // Should be a virtual function declared in the KineticModels or better to the LinearModels
 void
 GeneralizedPatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity& dyn_image,
-                                                               const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const
+                                                               const Parametric3VoxelsOnCartesianGrid& par_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -787,7 +787,7 @@ GeneralizedPatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretise
 
 void
 GeneralizedPatlakPlot::get_generalized_patlak_parameters_from_impulse_response(
-    GeneralizedPatlakVoxelsOnCartesianGrid& par_image,
+    Parametric3VoxelsOnCartesianGrid& par_image,
     const DynamicDiscretisedDensity& dyn_image,
     const DynamicDiscretisedDensity& impulse_response) const
 {
@@ -810,8 +810,8 @@ GeneralizedPatlakPlot::get_generalized_patlak_parameters_from_impulse_response(
 }
 
 void
-GeneralizedPatlakPlot::multiply_dynamic_image_with_initialization_model_gradient(
-    GeneralizedPatlakVoxelsOnCartesianGrid& par_image, const DynamicDiscretisedDensity& dyn_image) const
+GeneralizedPatlakPlot::multiply_dynamic_image_with_initialization_model_gradient(Parametric3VoxelsOnCartesianGrid& par_image,
+                                                                                 const DynamicDiscretisedDensity& dyn_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -831,7 +831,7 @@ GeneralizedPatlakPlot::multiply_dynamic_image_with_initialization_model_gradient
 
 void
 GeneralizedPatlakPlot::multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(
-    GeneralizedPatlakVoxelsOnCartesianGrid& par_image, const DynamicDiscretisedDensity& dyn_image) const
+    Parametric3VoxelsOnCartesianGrid& par_image, const DynamicDiscretisedDensity& dyn_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -852,7 +852,7 @@ GeneralizedPatlakPlot::multiply_dynamic_image_with_initialization_model_gradient
 // Should be a virtual function declared in the KineticModels or better to the LinearModels
 void
 GeneralizedPatlakPlot::get_dynamic_image_from_initialization_parametric_image(
-    DynamicDiscretisedDensity& dyn_image, const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const
+    DynamicDiscretisedDensity& dyn_image, const Parametric3VoxelsOnCartesianGrid& par_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -872,7 +872,7 @@ GeneralizedPatlakPlot::get_dynamic_image_from_initialization_parametric_image(
 }
 
 void
-GeneralizedPatlakPlot::estimate_nested_loop_parameters_with_model(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+GeneralizedPatlakPlot::estimate_nested_loop_parameters_with_model(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                   DynamicDiscretisedDensity& dynamic_image_nested_loop_estimate,
                                                                   DynamicDiscretisedDensity& dynamic_image_update_factor,
                                                                   const DynamicDiscretisedDensity& dynamic_image_reference,

@@ -374,7 +374,7 @@ ModelMatrix<num_param>::normalise_parametric_image_with_model_sum(ParametricVoxe
 template <int num_param>
 void
 ModelMatrix<num_param>::multiply_dynamic_image_with_initialization_model_and_add_to_input(
-    GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image, const DynamicDiscretisedDensity& dynamic_image) const
+    Parametric3VoxelsOnCartesianGrid& parametric_image, const DynamicDiscretisedDensity& dynamic_image) const
 {
   BasicCoordinate<2, int> model_array_min, model_array_max;
   if (!this->_model_array.get_regular_range(model_array_min, model_array_max))
@@ -417,7 +417,7 @@ ModelMatrix<num_param>::multiply_dynamic_image_with_initialization_model_and_add
 
 template <int num_param>
 void
-ModelMatrix<num_param>::multiply_dynamic_image_with_initialization_model(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+ModelMatrix<num_param>::multiply_dynamic_image_with_initialization_model(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                          const DynamicDiscretisedDensity& dynamic_image) const
 {
   std::fill(parametric_image.begin_all(), parametric_image.end_all(), 0.F);
@@ -427,7 +427,7 @@ ModelMatrix<num_param>::multiply_dynamic_image_with_initialization_model(General
 template <int num_param>
 void
 ModelMatrix<num_param>::multiply_parametric_image_with_initialization_model_and_add_to_input(
-    DynamicDiscretisedDensity& dynamic_image, const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image) const
+    DynamicDiscretisedDensity& dynamic_image, const Parametric3VoxelsOnCartesianGrid& parametric_image) const
 {
   BasicCoordinate<2, int> model_array_min, model_array_max;
   if (!(this->_model_array).get_regular_range(model_array_min, model_array_max))
@@ -468,7 +468,7 @@ ModelMatrix<num_param>::multiply_parametric_image_with_initialization_model_and_
 template <int num_param>
 void
 ModelMatrix<num_param>::multiply_parametric_image_with_initialization_model(
-    DynamicDiscretisedDensity& dynamic_image, const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image) const
+    DynamicDiscretisedDensity& dynamic_image, const Parametric3VoxelsOnCartesianGrid& parametric_image) const
 {
   std::fill(dynamic_image.begin_all(), dynamic_image.end_all(), 0.F);
   this->multiply_parametric_image_with_initialization_model_and_add_to_input(dynamic_image, parametric_image);
@@ -477,8 +477,7 @@ ModelMatrix<num_param>::multiply_parametric_image_with_initialization_model(
 template <int num_param>
 void
 ModelMatrix<num_param>::normalise_parametric_image_with_initialization_model_sum(
-    GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image_out,
-    const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image) const
+    Parametric3VoxelsOnCartesianGrid& parametric_image_out, const Parametric3VoxelsOnCartesianGrid& parametric_image) const
 {
   BasicCoordinate<2, int> model_array_min, model_array_max;
   if (!(this->_model_array).get_regular_range(model_array_min, model_array_max))

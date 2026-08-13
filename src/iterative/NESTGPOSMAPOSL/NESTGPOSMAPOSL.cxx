@@ -33,7 +33,7 @@ main(int argc, char** argv)
   t.reset();
   t.start();
 
-  OSMAPOSLReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid> reconstruction_object(argc > 1 ? argv[1] : "");
+  OSMAPOSLReconstruction<Parametric3VoxelsOnCartesianGrid> reconstruction_object(argc > 1 ? argv[1] : "");
 
   if (reconstruction_object.reconstruct() == Succeeded::yes)
     {

@@ -329,7 +329,7 @@ PatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity& d
 // Currently not used but retained for future potential usage.
 // The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
 void
-PatlakPlot::multiply_dynamic_image_with_initialization_model_gradient(GeneralizedPatlakVoxelsOnCartesianGrid& par_image,
+PatlakPlot::multiply_dynamic_image_with_initialization_model_gradient(Parametric3VoxelsOnCartesianGrid& par_image,
                                                                       const DynamicDiscretisedDensity& dyn_image) const
 {
   if (!this->_in_correct_scale)
@@ -352,7 +352,7 @@ PatlakPlot::multiply_dynamic_image_with_initialization_model_gradient(Generalize
 // The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
 void
 PatlakPlot::multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(
-    GeneralizedPatlakVoxelsOnCartesianGrid& par_image, const DynamicDiscretisedDensity& dyn_image) const
+    Parametric3VoxelsOnCartesianGrid& par_image, const DynamicDiscretisedDensity& dyn_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -375,7 +375,7 @@ PatlakPlot::multiply_dynamic_image_with_initialization_model_gradient_and_add_to
 // The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
 void
 PatlakPlot::get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
-                                                                   const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const
+                                                                   const Parametric3VoxelsOnCartesianGrid& par_image) const
 {
   if (!this->_in_correct_scale)
     {

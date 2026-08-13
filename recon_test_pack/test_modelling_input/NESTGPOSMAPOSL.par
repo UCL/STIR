@@ -48,18 +48,18 @@ blood data filename := plasma.if
 Time Shift := 0
 In total counts := 1
 ;In correct scale := 0
-; kloss lower bound := 
-; kloss upper bound := 
-; number of kloss samples :=
+kloss lower bound := 0
+kloss upper bound := 0
+number of kloss samples := 3
 end Generalized Patlak Plot Parameters :=
 
-number of nested subiterations := 2
+;; Nested subiterations (regular nested iterations using the Generalized Patlak matrix)
+number of nested subiterations := 0
 ;; run the nested linear (standard) Patlak EM to convergence first, 
 ;;  and use that as the starting point for the nested generalized Patlak EM,
 ;; Global initial subiterations for initialization (using standard Patlak model, 
 ;;   i.e. ModelMatrix) before switching to Generalized Patlak iterations
-number of global initialization subiterations := 2
-;; Nested subiterations (regular nested iterations using the Generalized Patlak matrix)
+number of global initialization subiterations := 40
 ;; Nested subiterations for initialization (using standard Patlak model, 
 ;;   i.e. ModelMatrix instead of GenearlizedPatlakMatrix)
 number of nested initialization subiterations := 1

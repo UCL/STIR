@@ -477,7 +477,7 @@ template <int num_conv_points>
 void
 GeneralizedPatlakMatrix<num_conv_points>::synthesize_impulse_response_from_parametric_image(
     DynamicDiscretisedDensity& impulse_response_image,
-    const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+    const Parametric3VoxelsOnCartesianGrid& parametric_image,
     int num_conv_params) const
 {
   BasicCoordinate<2, int> model_array_min, model_array_max;
@@ -556,9 +556,7 @@ GeneralizedPatlakMatrix<num_conv_points>::multiply_impulse_response_with_model(
 template <int num_conv_points>
 void
 GeneralizedPatlakMatrix<num_conv_points>::multiply_parametric_image_with_model_and_add_to_input(
-    DynamicDiscretisedDensity& dynamic_image,
-    const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
-    int num_conv_params) const
+    DynamicDiscretisedDensity& dynamic_image, const Parametric3VoxelsOnCartesianGrid& parametric_image, int num_conv_params) const
 {
   BasicCoordinate<2, int> model_array_min, model_array_max;
   if (!(this->_model_array).get_regular_range(model_array_min, model_array_max))
@@ -609,9 +607,7 @@ GeneralizedPatlakMatrix<num_conv_points>::multiply_parametric_image_with_model_a
 template <int num_conv_points>
 void
 GeneralizedPatlakMatrix<num_conv_points>::multiply_parametric_image_with_model(
-    DynamicDiscretisedDensity& dynamic_image,
-    const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
-    int num_conv_params) const
+    DynamicDiscretisedDensity& dynamic_image, const Parametric3VoxelsOnCartesianGrid& parametric_image, int num_conv_params) const
 {
   std::fill(dynamic_image.begin_all(), dynamic_image.end_all(), 0.F);
   this->multiply_parametric_image_with_model_and_add_to_input(dynamic_image, parametric_image, num_conv_params);
@@ -620,7 +616,7 @@ GeneralizedPatlakMatrix<num_conv_points>::multiply_parametric_image_with_model(
 template <int num_conv_points>
 void
 GeneralizedPatlakMatrix<num_conv_points>::estimate_generalized_patlak_parameters_with_impulse_response_and_add_to_input(
-    GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+    Parametric3VoxelsOnCartesianGrid& parametric_image,
     const DynamicDiscretisedDensity& impulse_response_image,
     int num_conv_params) const
 {
@@ -677,7 +673,7 @@ GeneralizedPatlakMatrix<num_conv_points>::estimate_generalized_patlak_parameters
 template <int num_conv_points>
 void
 GeneralizedPatlakMatrix<num_conv_points>::estimate_generalized_patlak_parameters_with_impulse_response(
-    GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+    Parametric3VoxelsOnCartesianGrid& parametric_image,
     const DynamicDiscretisedDensity& impulse_response_image,
     int num_conv_params) const
 {
@@ -689,8 +685,8 @@ GeneralizedPatlakMatrix<num_conv_points>::estimate_generalized_patlak_parameters
 template <int num_conv_points>
 void
 GeneralizedPatlakMatrix<num_conv_points>::normalise_parametric_image_with_model_sum(
-    GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image_out,
-    const GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+    Parametric3VoxelsOnCartesianGrid& parametric_image_out,
+    const Parametric3VoxelsOnCartesianGrid& parametric_image,
     int num_conv_params) const
 {
   BasicCoordinate<2, int> model_array_min, model_array_max;
@@ -722,7 +718,7 @@ GeneralizedPatlakMatrix<num_conv_points>::normalise_parametric_image_with_model_
 template <int num_conv_points>
 void
 GeneralizedPatlakMatrix<num_conv_points>::estimate_nested_loop_parameters_with_model(
-    GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+    Parametric3VoxelsOnCartesianGrid& parametric_image,
     DynamicDiscretisedDensity& dynamic_image_nested_loop_estimate,
     DynamicDiscretisedDensity& dynamic_image_update_factor,
     const DynamicDiscretisedDensity& dynamic_image_reference,

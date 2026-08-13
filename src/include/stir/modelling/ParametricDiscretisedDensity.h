@@ -166,17 +166,20 @@ public:
 };
 
 //! Convenience typedef for base-type of Cartesian Voxelised Parametric Images with just two parameters
-typedef VoxelsOnCartesianGrid<KineticParameters<2, float>> ParametricVoxelsOnCartesianGridBaseType;
+typedef VoxelsOnCartesianGrid<KineticParameters<2, float>> Parametric2VoxelsOnCartesianGridBaseType;
 
 //! Convenience typedef for Cartesian Voxelised Parametric Images with just two parameters
-typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType> ParametricVoxelsOnCartesianGrid;
+typedef ParametricDiscretisedDensity<Parametric2VoxelsOnCartesianGridBaseType> Parametric2VoxelsOnCartesianGrid;
 
 //! Convenience typedef for base-type of Cartesian Voxelised Parametric Images with just three parameters (for Generalized Patlak
 //! algorithm)
-typedef VoxelsOnCartesianGrid<KineticParameters<3, float>> GeneralizedPatlakVoxelsOnCartesianGridBaseType;
+typedef VoxelsOnCartesianGrid<KineticParameters<3, float>> Parametric3VoxelsOnCartesianGridBaseType;
 
 //! Convenience typedef for Cartesian Voxelised Parametric Images with just three parameters (for Generalized Patlak algorithm)
-typedef ParametricDiscretisedDensity<GeneralizedPatlakVoxelsOnCartesianGridBaseType> GeneralizedPatlakVoxelsOnCartesianGrid;
+typedef ParametricDiscretisedDensity<Parametric3VoxelsOnCartesianGridBaseType> Parametric3VoxelsOnCartesianGrid;
+
+//! type for 2 parameters, we need this for backwards compatibility
+using ParametricVoxelsOnCartesianGrid = Parametric2VoxelsOnCartesianGrid;
 
 END_NAMESPACE_STIR
 //#include "stir/modelling/ParametricDiscretisedDensity.inl"

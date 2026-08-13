@@ -534,6 +534,6 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
 
 template class OSMAPOSLReconstruction<DiscretisedDensity<3, float>>;
 template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid>;
-template class OSMAPOSLReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid>;
+template class OSMAPOSLReconstruction<Parametric3VoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR

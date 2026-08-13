@@ -133,7 +133,7 @@ TEMPLATE
 void
 ParamDiscDensity::update_parametric_image(const SingleDiscretisedDensityType& single_density, const unsigned int param_num)
 {
-  assert(param_num <= this->get_num_params());
+  assert(param_num >= 1 && param_num <= this->get_num_params());
   assert(single_density.get_index_range() == this->get_index_range());
 
   const unsigned int f = param_num;
@@ -283,8 +283,8 @@ construct_single_density(const int index)
 // instantiations
 
 // template class ParametricDiscretisedDensity<3,KineticParameters<NUM_PARAMS,float> >;
-template class ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>;
+template class ParametricDiscretisedDensity<Parametric2VoxelsOnCartesianGridBaseType>;
 
-template class ParametricDiscretisedDensity<GeneralizedPatlakVoxelsOnCartesianGridBaseType>;
+template class ParametricDiscretisedDensity<Parametric3VoxelsOnCartesianGridBaseType>;
 
 END_NAMESPACE_STIR

@@ -126,7 +126,7 @@ public:
         Currently not used but retained for future potential usage.
     The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
   */
-  virtual void multiply_dynamic_image_with_initialization_model_gradient(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+  virtual void multiply_dynamic_image_with_initialization_model_gradient(Parametric3VoxelsOnCartesianGrid& parametric_image,
                                                                          const DynamicDiscretisedDensity& dyn_image) const;
 
   //! Multiplies the dynamic image with the initialization kinetic model gradient and add to original \c parametric_image
@@ -135,8 +135,9 @@ public:
           Currently not used but retained for future potential usage.
       The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
   */
-  virtual void multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(
-      GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image, const DynamicDiscretisedDensity& dyn_image) const;
+  virtual void
+  multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(Parametric3VoxelsOnCartesianGrid& parametric_image,
+                                                                             const DynamicDiscretisedDensity& dyn_image) const;
 
   //! Multiplies the parametric image with the initialization kinetic model matrix to get the corresponding dynamic image.
   /*! \todo Should be a virtual function declared in the KineticModel class.
@@ -144,9 +145,8 @@ public:
           Currently not used but retained for future potential usage.
       The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
   */
-  virtual void
-  get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
-                                                         const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const;
+  virtual void get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
+                                                                      const Parametric3VoxelsOnCartesianGrid& par_image) const;
 
   //! This is the common method used to estimate the parametric images from the dynamic images.
   /*! \todo There is currently no check if the time frame definitions from \a dyn_image are

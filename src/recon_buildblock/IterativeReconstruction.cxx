@@ -645,7 +645,7 @@ IterativeReconstruction<TargetT>::get_subset_num()
 #endif
 
 template class IterativeReconstruction<DiscretisedDensity<3, float>>;
-template class IterativeReconstruction<ParametricVoxelsOnCartesianGrid>;
-template class IterativeReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid>;
+template class IterativeReconstruction<Parametric2VoxelsOnCartesianGrid>;
+template class IterativeReconstruction<Parametric3VoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR

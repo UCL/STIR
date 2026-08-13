@@ -21,6 +21,7 @@
   \author Kris Thielemans
   \author Berta Marti Fuster
   \author Nicolas A Karakatsanis
+  \author Nikos Efthimiou
 */
 
 #include "stir/IO/InterfileOutputFileFormat.h"
@@ -94,11 +95,12 @@ static RegisterInputFileFormat<InterfileImageInputFileFormat> idummy0(0);
 static ITKOutputFileFormat::RegisterIt dummyITK1;
 #  endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfOut;
-static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfOut;
-static InterfileParametricDiscretisedDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>::RegisterIt
+static InterfileParametricDiscretisedDensityOutputFileFormat<Parametric2VoxelsOnCartesianGridBaseType>::RegisterIt
+    dummyparIntfOut;
+static InterfileParametricDiscretisedDensityOutputFileFormat<Parametric3VoxelsOnCartesianGridBaseType>::RegisterIt
     dummyGenPatIntfIn;
 static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiOut;
-static MultiParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparMultiOut;
+static MultiParametricDiscretisedDensityOutputFileFormat<Parametric2VoxelsOnCartesianGridBaseType>::RegisterIt dummyparMultiOut;
 
 //! Support for SAFIR listmode file format
 static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat<CListEventDataSAFIR>> LMdummySAFIR(4);
@@ -122,8 +124,8 @@ END_NAMESPACE_ECAT6
 START_NAMESPACE_ECAT7
 static ECAT7OutputFileFormat::RegisterIt dummy3;
 static ECAT7DynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynecat7In;
-static ECAT7ParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparecat7In;
-static ECAT7ParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>::RegisterIt dummyGenPatecat7In;
+static ECAT7ParametricDensityOutputFileFormat<Parametric2VoxelsOnCartesianGridBaseType>::RegisterIt dummyparecat7In;
+static ECAT7ParametricDensityOutputFileFormat<Parametric3VoxelsOnCartesianGridBaseType>::RegisterIt dummyGenPatecat7In;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #  endif
@@ -143,7 +145,8 @@ static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3, flo
 static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3, CartesianCoordinate3D<float>>>> idummy7(10000);
 #  endif
 static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
-static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);
+static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat<2>> paradummy_intf(1);
+static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat<3>> paradummy_int3f(1);
 static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> dynim_dummy_multi(1);
 static RegisterInputFileFormat<MultiParametricDiscretisedDensityInputFileFormat> parim_dummy_multi(1);
 

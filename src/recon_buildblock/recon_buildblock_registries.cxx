@@ -166,9 +166,9 @@ static BackProjectorByBinParallelproj::RegisterIt parallelproj_bck;
 static ProjectorByBinPairUsingParallelproj::RegisterIt parallelproj_pair;
 #endif
 
-static PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt
+static PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<Parametric2VoxelsOnCartesianGrid>::RegisterIt
     Dummyzzz;
-static PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<GeneralizedPatlakVoxelsOnCartesianGrid>::RegisterIt
+static PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<Parametric3VoxelsOnCartesianGrid>::RegisterIt
     Dummykkk;
 // static PoissonNestedLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3, float>>::RegisterIt
 //     Dummyxxxzz1;

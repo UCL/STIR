@@ -536,6 +536,6 @@ GeneralisedObjectiveFunction<TargetT>::subsets_are_approximately_balanced(std::s
 
 template class GeneralisedObjectiveFunction<DiscretisedDensity<3, float>>;
 template class GeneralisedObjectiveFunction<ParametricVoxelsOnCartesianGrid>;
-template class GeneralisedObjectiveFunction<GeneralizedPatlakVoxelsOnCartesianGrid>;
+template class GeneralisedObjectiveFunction<Parametric3VoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR

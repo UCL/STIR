@@ -25,6 +25,6 @@ START_NAMESPACE_STIR
 #  pragma warning(disable : 4661)
 #endif // _MSC_VER
 
-template class PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<GeneralizedPatlakVoxelsOnCartesianGrid>;
+template class PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData<Parametric3VoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR
