@@ -63,6 +63,12 @@ if(HAVE_PETSIRD)
   CListRecordPETSIRD.cxx)
 endif()
 
+if (HAVE_SIMSET)
+	list(APPEND ${dir_LIB_SOURCES}
+		CListModeDataSimSET.cxx
+        CListRecordSimSET.cxx)
+endif()
+
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
@@ -82,3 +88,13 @@ endif()
 if(HAVE_PETSIRD)
   target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()
+
+if (HAVE_SIMSET)
+  target_include_directories(${TARGET} PUBLIC ${SIMSET_INCLUDE_DIRS})
+  if(TARGET SIMSET::simset)
+    target_link_libraries(${TARGET} PUBLIC SIMSET::simset)
+  else()
+    target_link_libraries(${TARGET} PUBLIC ${SIMSET_LIBRARY})
+  endif()
+endif()
+
