@@ -997,9 +997,9 @@ write_basic_interfile(const string& filename,
   std::vector<std::string> data_type_descriptions;
 
   data_type_descriptions.push_back("slope");
-  data_type_descriptions.push_back("intercept");
   if constexpr (num_params == 3)
     data_type_descriptions.push_back("kloss");
+  data_type_descriptions.push_back("intercept");
 
   const Succeeded success = write_basic_interfile_image_header(header_name,
                                                                data_name,

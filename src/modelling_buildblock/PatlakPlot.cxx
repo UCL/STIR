@@ -95,7 +95,6 @@ PatlakPlot::create_model_matrix()
       PlasmaData::const_iterator cur_iter = this->_plasma_frame_data.begin();
 
       double sum_value = 0.;
-      double integral_step = 0.;
       unsigned int sample_num;
       // Compute the value of the integral of Cp(t) for frames before the one we want to start applying Patlak to.
       // Remember that this code requires all frames, from t=0 to be included, otherwise this integral will be wrongly computed.
@@ -108,8 +107,10 @@ PatlakPlot::create_model_matrix()
       // For each frame that we are interested in, fill the model matrix.
       for (sample_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++sample_num, ++cur_iter)
         {
-          sum_value += cur_iter->get_plasma_counts_in_kBq()
-                       * this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
+          double integral_step = cur_iter->get_plasma_counts_in_kBq()
+                                 * this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
+
+          sum_value += 0.5 * integral_step;
           // integral of Cp(t)
           patlak_array[1][sample_num] = static_cast<float>(sum_value);
           // Cp(t)
@@ -140,6 +141,7 @@ PatlakPlot::create_model_matrix()
       // Uncalibrate the ModelMatrix instead of Calibrating all the Dynamic Images. This should make faster the computation.
       // Supposes the images are not calibrated.
       this->_model_matrix.uncalibrate(this->_cal_factor);
+      this->_model_matrix.set_matrix_in_total_frame_counts(this->_plasma_in_total_cnt);
       if (this->_in_total_cnt)
         this->_model_matrix.convert_to_total_frame_counts(this->_frame_defs);
       this->_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);

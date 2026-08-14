@@ -193,18 +193,37 @@ for direct in OSMAPOSL OSSPS ; do
 
 done # POSMAPOSL POSSPS#
     
-for nested in NESTPOSMAPOSL ; do #NESTGPOSMAPOSL ; do 
+for nested in NESTPOSMAPOSL NESTGPOSMAPOSL; do #NESTGPOSMAPOSL ; do 
     cp ${INPUTDIR}${nested}.par . 
     echo "Test the nested ${nested} Patlak Plot reconstruction" 
     # rm -f ${nested}.log
     INPUT=fwd_dyn_from_p0005-p5.hs INIT=indirect_Patlak.hv ${MPIRUN} ${nested} ${nested}.par > ${nested}.log 2>&1
 
+    case ${nested} in
+        NESTPOSMAPOSL)
+            par_map="1:1 2:2"
+            ;;
+        NESTGPOSMAPOSL)
+            par_map="1:1 3:2"
+            ;;
+        *)
+            echo "Unknown algorithm ${nested}" >&2
+            exit 1
+            ;;
+    esac
+
     echo "Compare the nested direct parametric images to the original ones"
     extract_single_images_from_parametric_image p0005-p5_img_f{}g1d0b0.hv p0005-p5.${imgext}
     extract_single_images_from_parametric_image ${nested}_${ITER}_img_f{}g1d0b0.hv ${nested}_${ITER}.hv
-    for par in 1 2; do
-        compare_image -t .01 ${nested}_${ITER}_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
+
+    for pair in ${par_map}; do
+        recon_par=${pair%%:*}
+        truth_par=${pair##*:}
+        compare_image -t .01 \
+            ${nested}_${ITER}_img_f${recon_par}g1d0b0.hv \
+            p0005-p5_img_f${truth_par}g1d0b0.hv
     done
+
     echo "Comparison is OK"
 
 done # NESTPOSMAPOSL NESTGPOSMAPOSL

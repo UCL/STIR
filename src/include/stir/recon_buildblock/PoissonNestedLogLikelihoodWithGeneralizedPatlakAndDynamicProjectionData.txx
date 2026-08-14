@@ -14,9 +14,6 @@
   \brief Implementation of class stir::PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData
 
   \author Nicolas A Karakatsanis
-
-  $Date: 2013-07-12 10:34:00 $
-  $Revision: 1.0 $
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
@@ -662,9 +659,8 @@ actual_compute_nested_sub_gradient_without_penalty(TargetT& gradient,
 						        this->impulse_response[conv_param_num].end_all());
 	  
 	         cerr << "	[" << conv_param_num << "](" << current_min_initial_impulse_response << ", " << current_max_initial_impulse_response << ")		" << endl;
-			}
+			  }
 	    }
-      cerr << endl;
   
       //Then convolve the initial impulse response with the input function matrix to get the dynamic images (2nd step of kinetic forward projection)
       this->_patlak_plot_sptr->get_dynamic_image_from_impulse_response(dyn_image_estimate,this->impulse_response);
