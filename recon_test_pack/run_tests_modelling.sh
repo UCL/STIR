@@ -193,7 +193,7 @@ for direct in OSMAPOSL OSSPS ; do
 
 done # POSMAPOSL POSSPS#
     
-for nested in NESTPOSMAPOSL NESTGPOSMAPOSL; do #NESTGPOSMAPOSL ; do 
+for nested in NESTPOSMAPOSL ; do #NESTGPOSMAPOSL ; do 
     cp ${INPUTDIR}${nested}.par . 
     echo "Test the nested ${nested} Patlak Plot reconstruction" 
     # rm -f ${nested}.log

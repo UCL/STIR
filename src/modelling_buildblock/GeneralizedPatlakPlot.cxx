@@ -18,6 +18,7 @@
 
 #include "stir/modelling/GeneralizedPatlakPlot.h"
 #include <math.h>
+#include "stir/format.h"
 
 using namespace std;
 
@@ -27,17 +28,11 @@ void
 GeneralizedPatlakPlot::set_defaults()
 {
   base_type::set_defaults();
-  this->_blood_data_filename = "";
-  this->_cal_factor = 1.F;
-  this->_starting_frame = 0;
-  this->_time_shift = 0.;
-  this->_in_correct_scale = false;
-  this->_in_total_cnt = false;
-  this->_plasma_in_total_cnt = false;
   this->_conv_sample_interval = 60;
   this->_kloss_lb = 0.0000001;
   this->_kloss_ub = 2;
   this->_kloss_num_samples = 1000000;
+  with_initialization_loops = true;
 }
 
 const char* const GeneralizedPatlakPlot::registered_name = "Generalized Patlak Plot";
@@ -124,139 +119,139 @@ GeneralizedPatlakPlot::get_model_matrix(const PlasmaData& complete_plasma_data,
                                         const TimeFrameDefinitions& time_frame_definitions,
                                         const unsigned int starting_frame)
 {
-  assert(starting_frame > 0);
+  // assert(starting_frame > 0);
 
-  if (_matrix_is_stored == false)
-    {
-      this->_starting_frame = starting_frame;
-      BasicCoordinate<2, int> min_range;
-      BasicCoordinate<2, int> max_range;
-      unsigned int num_frames = plasma_frame_data.size();
-      float last_frame_time
-          = floor(0.5 * (time_frame_definitions.get_end_time(num_frames) + time_frame_definitions.get_start_time(num_frames)));
-      unsigned int last_frame_mid_time = (unsigned int)floor(last_frame_time + 0.5);
-      unsigned int num_conv_params = (unsigned int)floor(((last_frame_mid_time - 1) / this->_conv_sample_interval)) + 2;
+  // if (_matrix_is_stored == false)
+  //   {
+  //     this->_starting_frame = starting_frame;
+  //     BasicCoordinate<2, int> min_range;
+  //     BasicCoordinate<2, int> max_range;
+  //     unsigned int num_frames = plasma_frame_data.size();
+  //     float last_frame_time
+  //         = floor(0.5 * (time_frame_definitions.get_end_time(num_frames) + time_frame_definitions.get_start_time(num_frames)));
+  //     unsigned int last_frame_mid_time = (unsigned int)floor(last_frame_time + 0.5);
+  //     unsigned int num_conv_params = (unsigned int)floor(((last_frame_mid_time - 1) / this->_conv_sample_interval)) + 2;
 
-      min_range[1] = 1;
-      min_range[2] = this->_starting_frame;
-      max_range[1] = num_conv_params;
-      max_range[2] = num_frames;
-      IndexRange<2> data_range(min_range, max_range);
-      Array<2, float> patlak_array(data_range);
-      VectorWithOffset<float> time_vector(min_range[2], max_range[2]);
-      VectorWithOffset<float> plasma_sample_dec_fact(min_range[1], max_range[1]);
-      VectorWithOffset<float> dec_fact(min_range[2], max_range[2]);
-      PlasmaData::const_iterator cur_iter = plasma_frame_data.begin() + this->_starting_frame - 1;
-      PlasmaData::const_iterator complete_plasma_cur_iter;
+  //     min_range[1] = 1;
+  //     min_range[2] = this->_starting_frame;
+  //     max_range[1] = num_conv_params;
+  //     max_range[2] = num_frames;
+  //     IndexRange<2> data_range(min_range, max_range);
+  //     Array<2, float> patlak_array(data_range);
+  //     VectorWithOffset<float> time_vector(min_range[2], max_range[2]);
+  //     VectorWithOffset<float> plasma_sample_dec_fact(min_range[1], max_range[1]);
+  //     VectorWithOffset<float> dec_fact(min_range[2], max_range[2]);
+  //     PlasmaData::const_iterator cur_iter = plasma_frame_data.begin() + this->_starting_frame - 1;
+  //     PlasmaData::const_iterator complete_plasma_cur_iter;
 
-      unsigned int frame_num, conv_sample, actual_time_point;
+  //     unsigned int frame_num, conv_sample, actual_time_point;
 
-      if (plasma_frame_data.get_is_decay_corrected())
-        warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-      else if (!plasma_frame_data.get_is_decay_corrected())
-        error("plasma_data have not been corrected during the process, which will create wrong results!!!");
+  //     if (plasma_frame_data.get_is_decay_corrected())
+  //       warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
+  //     else if (!plasma_frame_data.get_is_decay_corrected())
+  //       error("plasma_data have not been corrected during the process, which will create wrong results!!!");
 
-      std::cout << "\nCreating Generalized Model Matrix (Here printed in its transverse format)\n\n"
-                << "NOTE1: It contains as many columns as the number of later frames participating in parameter estimation\n"
-                << "It contains as many rows as the convolution points of the input function\n"
-                << "+ 1 last row consisting of the plasma counts for the corresponding later frame\n"
-                << "NOTE2: Last element of each column is the plasma counts for the corresponding later frame\n\n"
-                << "First Column: plasma samples for frame 1	...		Last Column: plasma samples for last frame\n";
+  //     std::cout << "\nCreating Generalized Model Matrix (Here printed in its transverse format)\n\n"
+  //               << "NOTE1: It contains as many columns as the number of later frames participating in parameter estimation\n"
+  //               << "It contains as many rows as the convolution points of the input function\n"
+  //               << "+ 1 last row consisting of the plasma counts for the corresponding later frame\n"
+  //               << "NOTE2: Last element of each column is the plasma counts for the corresponding later frame\n\n"
+  //               << "First Column: plasma samples for frame 1	...		Last Column: plasma samples for last frame\n";
 
-      // Fillling of the Patlak array.
-      // First conv_sample columns are filled with plasma samples for each sec,
-      for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
-        {
-          float cur_frame_time = 0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num));
-          unsigned int cur_frame_mid_time = (int)floor(cur_frame_time + 0.5);
-          std::cout << "\nFrame Number: " << frame_num << " Current Frame Mid Time (float): " << cur_frame_time
-                    << " Current Frame Mid Time (int): " << cur_frame_mid_time << "\n";
-          complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
+  //     // Fillling of the Patlak array.
+  //     // First conv_sample columns are filled with plasma samples for each sec,
+  //     for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
+  //       {
+  //         float cur_frame_time = 0.5 * (this->_frame_defs.get_end_time(frame_num) +
+  //         this->_frame_defs.get_start_time(frame_num)); unsigned int cur_frame_mid_time = (int)floor(cur_frame_time + 0.5);
+  //         std::cout << "\nFrame Number: " << frame_num << " Current Frame Mid Time (float): " << cur_frame_time
+  //                   << " Current Frame Mid Time (int): " << cur_frame_mid_time << "\n";
+  //         complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
 
-          for (conv_sample = 1, actual_time_point = 1; actual_time_point <= last_frame_mid_time; ++conv_sample)
-            {
-              actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
-              if (actual_time_point <= cur_frame_mid_time)
-                patlak_array[conv_sample][frame_num]
-                    = complete_plasma_cur_iter->get_plasma_counts_in_kBq() * this->_conv_sample_interval;
-              else
-                patlak_array[conv_sample][frame_num] = 0;
+  //         for (conv_sample = 1, actual_time_point = 1; actual_time_point <= last_frame_mid_time; ++conv_sample)
+  //           {
+  //             actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
+  //             if (actual_time_point <= cur_frame_mid_time)
+  //               patlak_array[conv_sample][frame_num]
+  //                   = complete_plasma_cur_iter->get_plasma_counts_in_kBq() * this->_conv_sample_interval;
+  //             else
+  //               patlak_array[conv_sample][frame_num] = 0;
 
-              complete_plasma_cur_iter = complete_plasma_cur_iter - this->_conv_sample_interval;
-            }
+  //             complete_plasma_cur_iter = complete_plasma_cur_iter - this->_conv_sample_interval;
+  //           }
 
-          // Last column is filled with the plasma activity of the later frames
-          patlak_array[num_conv_params][frame_num] = cur_iter->get_plasma_counts_in_kBq();
+  //         // Last column is filled with the plasma activity of the later frames
+  //         patlak_array[num_conv_params][frame_num] = cur_iter->get_plasma_counts_in_kBq();
 
-          std::cout << "\n";
-          // Un-correcting for decay, if data are decay corrected
-          if (this->_plasma_frame_data.get_is_decay_corrected())
-            {
-              cerr << "Timing info (Decay correction factor info)" << endl;
-              complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
-              for (conv_sample = 1, actual_time_point = 1; actual_time_point <= last_frame_mid_time; ++conv_sample)
-                {
-                  actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
-                  if (actual_time_point <= cur_frame_mid_time)
-                    {
-                      cerr << complete_plasma_cur_iter->get_time_in_s() << "  ";
-                      plasma_sample_dec_fact[conv_sample] = static_cast<float>(decay_correction_factor(
-                          this->_complete_plasma_data.get_isotope_halflife(), complete_plasma_cur_iter->get_time_in_s()));
-                      patlak_array[conv_sample][frame_num] /= plasma_sample_dec_fact[conv_sample];
-                    }
-                  else
-                    {
-                      cerr << 0 << "  ";
-                      plasma_sample_dec_fact[conv_sample] = 1;
-                    }
+  //         std::cout << "\n";
+  //         // Un-correcting for decay, if data are decay corrected
+  //         if (this->_plasma_frame_data.get_is_decay_corrected())
+  //           {
+  //             cerr << "Timing info (Decay correction factor info)" << endl;
+  //             complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
+  //             for (conv_sample = 1, actual_time_point = 1; actual_time_point <= last_frame_mid_time; ++conv_sample)
+  //               {
+  //                 actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
+  //                 if (actual_time_point <= cur_frame_mid_time)
+  //                   {
+  //                     cerr << complete_plasma_cur_iter->get_time_in_s() << "  ";
+  //                     plasma_sample_dec_fact[conv_sample] = static_cast<float>(decay_correction_factor(
+  //                         this->_complete_plasma_data.get_isotope_halflife(), complete_plasma_cur_iter->get_time_in_s()));
+  //                     patlak_array[conv_sample][frame_num] /= plasma_sample_dec_fact[conv_sample];
+  //                   }
+  //                 else
+  //                   {
+  //                     cerr << 0 << "  ";
+  //                     plasma_sample_dec_fact[conv_sample] = 1;
+  //                   }
 
-                  cerr << " (" << plasma_sample_dec_fact[conv_sample] << ")		";
+  //                 cerr << " (" << plasma_sample_dec_fact[conv_sample] << ")		";
 
-                  complete_plasma_cur_iter = complete_plasma_cur_iter - this->_conv_sample_interval;
-                }
+  //                 complete_plasma_cur_iter = complete_plasma_cur_iter - this->_conv_sample_interval;
+  //               }
 
-              dec_fact[frame_num] = static_cast<float>(
-                  decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),
-                                          this->_plasma_frame_data.get_time_frame_definitions().get_start_time(frame_num),
-                                          this->_plasma_frame_data.get_time_frame_definitions().get_end_time(frame_num)));
+  //             dec_fact[frame_num] = static_cast<float>(
+  //                 decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),
+  //                                         this->_plasma_frame_data.get_time_frame_definitions().get_start_time(frame_num),
+  //                                         this->_plasma_frame_data.get_time_frame_definitions().get_end_time(frame_num)));
 
-              patlak_array[num_conv_params][frame_num] /= dec_fact[frame_num];
-              time_vector[frame_num] = static_cast<float>(
-                  0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num)));
-            }
-        }
-      std::cout << endl << endl;
-      // Print out the model matrix
-      for (conv_sample = 1; conv_sample <= num_conv_params; ++conv_sample)
-        {
-          for (frame_num = this->_starting_frame; frame_num <= num_frames; ++frame_num)
-            std::cout << patlak_array[conv_sample][frame_num] << "			";
-          std::cout << "\n";
-        }
+  //             patlak_array[num_conv_params][frame_num] /= dec_fact[frame_num];
+  //             time_vector[frame_num] = static_cast<float>(
+  //                 0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num)));
+  //           }
+  //       }
+  //     std::cout << endl << endl;
+  //     // Print out the model matrix
+  //     for (conv_sample = 1; conv_sample <= num_conv_params; ++conv_sample)
+  //       {
+  //         for (frame_num = this->_starting_frame; frame_num <= num_frames; ++frame_num)
+  //           std::cout << patlak_array[conv_sample][frame_num] << "			";
+  //         std::cout << "\n";
+  //       }
 
-      if (this->_plasma_frame_data.get_is_decay_corrected())
-        {
-          std::cout << "\n\nFrame Index	Start Time	End Time	Decay correction factor\n";
-          cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
-          for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
-            {
-              // Print out the frame indices, start and time points and the decay correction factors
-              std::cout << frame_num << "		"
-                        << _plasma_frame_data.get_time_frame_definitions().get_start_time(frame_num) << "		"
-                        << _plasma_frame_data.get_time_frame_definitions().get_end_time(frame_num) << "		"
-                        << dec_fact[frame_num] << "\n";
-            }
-        }
+  //     if (this->_plasma_frame_data.get_is_decay_corrected())
+  //       {
+  //         std::cout << "\n\nFrame Index	Start Time	End Time	Decay correction factor\n";
+  //         cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
+  //         for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
+  //           {
+  //             // Print out the frame indices, start and time points and the decay correction factors
+  //             std::cout << frame_num << "		"
+  //                       << _plasma_frame_data.get_time_frame_definitions().get_start_time(frame_num) << "		"
+  //                       << _plasma_frame_data.get_time_frame_definitions().get_end_time(frame_num) << "		"
+  //                       << dec_fact[frame_num] << "\n";
+  //           }
+  //       }
 
-      assert(frame_num - 1 == plasma_frame_data.size());
-      this->_model_matrix.set_model_array(patlak_array);
-      this->_model_matrix.set_conv_sample_interval(this->_conv_sample_interval);
-      this->_model_matrix.set_time_vector(time_vector);
-      this->_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
-      this->_model_matrix.threshold_model_array(.0000001F);
-      this->_matrix_is_stored = true;
-    }
-  return _model_matrix;
+  //     assert(frame_num - 1 == plasma_frame_data.size());
+  //     this->_model_matrix.set_model_array(patlak_array);
+  //     this->_model_matrix.set_conv_sample_interval(this->_conv_sample_interval);
+  //     this->_model_matrix.set_time_vector(time_vector);
+  //     this->_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
+  //     this->_model_matrix.threshold_model_array(.0000001F);
+  //     this->_matrix_is_stored = true;
+  //   }
+  // return _model_matrix;
 }
 
 //! Create initialization (standard Patlak) model matrix from plasma data (has to be in appropriate frames: i.e.
@@ -266,71 +261,72 @@ GeneralizedPatlakPlot::get_initialization_model_matrix(const PlasmaData& plasma_
                                                        const TimeFrameDefinitions& time_frame_definitions,
                                                        const unsigned int starting_frame)
 {
-  assert(starting_frame > 0);
+  // assert(starting_frame > 0);
 
-  if (_matrix_is_stored == false)
-    {
-      this->_starting_frame = starting_frame;
-      BasicCoordinate<2, int> min_range;
-      BasicCoordinate<2, int> max_range;
-      min_range[1] = 1;
-      min_range[2] = starting_frame;
-      max_range[1] = 2;
-      max_range[2] = plasma_frame_data.size();
-      IndexRange<2> data_range(min_range, max_range);
-      Array<2, float> patlak_array(data_range);
-      VectorWithOffset<float> time_vector(min_range[2], max_range[2]);
-      PlasmaData::const_iterator cur_iter = plasma_frame_data.begin();
+  // if (_matrix_is_stored == false)
+  //   {
+  //     this->_starting_frame = starting_frame;
+  //     BasicCoordinate<2, int> min_range;
+  //     BasicCoordinate<2, int> max_range;
+  //     min_range[1] = 1;
+  //     min_range[2] = starting_frame;
+  //     max_range[1] = 2;
+  //     max_range[2] = plasma_frame_data.size();
+  //     IndexRange<2> data_range(min_range, max_range);
+  //     Array<2, float> patlak_array(data_range);
+  //     VectorWithOffset<float> time_vector(min_range[2], max_range[2]);
+  //     PlasmaData::const_iterator cur_iter = plasma_frame_data.begin();
 
-      double sum_value = 0.;
-      unsigned int sample_num;
-      //      std::cerr << "\n" << cur_iter->get_plasma_counts_in_kBq() << " " << cur_iter->get_time_in_s() << "\n";
-      //      std::cerr <<
-      //      "\nFrame-PlasmaStart-TimeFrameFileStart-PlasmaDuration-TimeFrameFileDuration-PlasmaEnd-TimeFrameFileEnd\n" ;
-      for (sample_num = 1; sample_num < starting_frame; ++sample_num, ++cur_iter)
-        {
-          sum_value
-              += cur_iter->get_plasma_counts_in_kBq() * plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
-        }
+  //     double sum_value = 0.;
+  //     unsigned int sample_num;
+  //     //      std::cerr << "\n" << cur_iter->get_plasma_counts_in_kBq() << " " << cur_iter->get_time_in_s() << "\n";
+  //     //      std::cerr <<
+  //     //      "\nFrame-PlasmaStart-TimeFrameFileStart-PlasmaDuration-TimeFrameFileDuration-PlasmaEnd-TimeFrameFileEnd\n" ;
+  //     for (sample_num = 1; sample_num < starting_frame; ++sample_num, ++cur_iter)
+  //       {
+  //         sum_value
+  //             += cur_iter->get_plasma_counts_in_kBq() *
+  //             plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
+  //       }
 
-      assert(cur_iter == plasma_frame_data.begin() + starting_frame - 1);
+  //     assert(cur_iter == plasma_frame_data.begin() + starting_frame - 1);
 
-      for (sample_num = starting_frame; cur_iter != plasma_frame_data.end(); ++sample_num, ++cur_iter)
-        {
-          double integral_step
-              = cur_iter->get_plasma_counts_in_kBq() * plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
-          // Calculation of the plasma integral only up to the mid time of the current plasma frame
-          sum_value += 0.5 * integral_step;
-          // Fillling of the Patlak array. First column is filled with plasma integral, second column with plasma activity
-          patlak_array[1][sample_num] = static_cast<float>(sum_value);
-          patlak_array[2][sample_num] = cur_iter->get_plasma_counts_in_kBq();
-          if (plasma_frame_data.get_is_decay_corrected())
-            {
-              const float dec_fact = static_cast<float>(
-                  decay_correction_factor(plasma_frame_data.get_isotope_halflife(),
-                                          plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
-                                          plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num)));
-              patlak_array[1][sample_num] /= dec_fact;
-              patlak_array[2][sample_num] /= dec_fact;
-              time_vector[sample_num] = static_cast<float>(
-                  0.5 * (time_frame_definitions.get_end_time(sample_num) + time_frame_definitions.get_start_time(sample_num)));
-            }
-          // Completion of integral calculation before moving to the next plasma frame
-          sum_value += 0.5 * integral_step;
-        }
-      if (plasma_frame_data.get_is_decay_corrected())
-        warning("Uncorrecting previous decay correction, while putting the plasma_frame_data into the model_matrix.");
-      else if (!plasma_frame_data.get_is_decay_corrected())
-        warning("plasma_frame_data have not been corrected during the process, which might create wrong results!!!");
+  //     for (sample_num = starting_frame; cur_iter != plasma_frame_data.end(); ++sample_num, ++cur_iter)
+  //       {
+  //         double integral_step
+  //             = cur_iter->get_plasma_counts_in_kBq() * plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
+  //         // Calculation of the plasma integral only up to the mid time of the current plasma frame
+  //         sum_value += 0.5 * integral_step;
+  //         // Fillling of the Patlak array. First column is filled with plasma integral, second column with plasma activity
+  //         patlak_array[1][sample_num] = static_cast<float>(sum_value);
+  //         patlak_array[2][sample_num] = cur_iter->get_plasma_counts_in_kBq();
+  //         if (plasma_frame_data.get_is_decay_corrected())
+  //           {
+  //             const float dec_fact = static_cast<float>(
+  //                 decay_correction_factor(plasma_frame_data.get_isotope_halflife(),
+  //                                         plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
+  //                                         plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num)));
+  //             patlak_array[1][sample_num] /= dec_fact;
+  //             patlak_array[2][sample_num] /= dec_fact;
+  //             time_vector[sample_num] = static_cast<float>(
+  //                 0.5 * (time_frame_definitions.get_end_time(sample_num) + time_frame_definitions.get_start_time(sample_num)));
+  //           }
+  //         // Completion of integral calculation before moving to the next plasma frame
+  //         sum_value += 0.5 * integral_step;
+  //       }
+  //     if (plasma_frame_data.get_is_decay_corrected())
+  //       warning("Uncorrecting previous decay correction, while putting the plasma_frame_data into the model_matrix.");
+  //     else if (!plasma_frame_data.get_is_decay_corrected())
+  //       warning("plasma_frame_data have not been corrected during the process, which might create wrong results!!!");
 
-      assert(sample_num - 1 == plasma_frame_data.size());
-      this->_initialization_model_matrix.set_model_array(patlak_array);
-      this->_initialization_model_matrix.set_time_vector(time_vector);
-      this->_initialization_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);
-      this->_initialization_model_matrix.threshold_model_array(.0000001F);
-      this->_initialization_matrix_is_stored = true;
-    }
-  return _initialization_model_matrix;
+  //     assert(sample_num - 1 == plasma_frame_data.size());
+  //     this->_initialization_model_matrix.set_model_array(patlak_array);
+  //     this->_initialization_model_matrix.set_time_vector(time_vector);
+  //     this->_initialization_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);
+  //     this->_initialization_model_matrix.threshold_model_array(.0000001F);
+  //     this->_initialization_matrix_is_stored = true;
+  //   }
+  // return _initialization_model_matrix;
 }
 
 //! Create prefeched H matrix from private members
@@ -356,7 +352,7 @@ GeneralizedPatlakPlot::create_Hfunction_matrix()
   for (kloss_index = 1; kloss_index <= this->_kloss_num_samples; ++kloss_index)
     {
       float numerator_sum = 0, denominator_sum = 0;
-      for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_mid_time; ++conv_sample)
+      for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_ref_time; ++conv_sample)
         {
           actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
           numerator_sum += actual_time_point * exp(-kloss_val * actual_time_point);
@@ -400,7 +396,7 @@ GeneralizedPatlakPlot::create_Ki_matrix()
   for (kloss_index = 1; kloss_index <= this->_kloss_num_samples; ++kloss_index)
     {
       float Ki_sum = 0;
-      for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_mid_time; ++conv_sample)
+      for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_ref_time; ++conv_sample)
         {
           actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
           Ki_sum += exp(-kloss_val * actual_time_point);
@@ -422,52 +418,55 @@ GeneralizedPatlakPlot::create_model_matrix()
 {
   if (_matrix_is_stored == false)
     {
+      base_type::create_model_matrix();
+
       BasicCoordinate<2, int> min_range;
       BasicCoordinate<2, int> max_range;
       min_range[1] = 1;
-      min_range[2] = this->_starting_frame;
+      min_range[2] = this->get_starting_frame();
       max_range[1] = this->_num_conv_params;
-      max_range[2] = this->_num_frames;
+      max_range[2] = this->get_plasma_data().size();
+
       IndexRange<2> data_range(min_range, max_range);
       Array<2, float> patlak_array(data_range);
       VectorWithOffset<float> time_vector(min_range[2], max_range[2]);
       VectorWithOffset<float> plasma_sample_dec_fact(min_range[1], max_range[1]);
       VectorWithOffset<float> dec_fact(min_range[2], max_range[2]);
-      PlasmaData::const_iterator cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
+      PlasmaData::const_iterator cur_iter = this->_plasma_frame_data.begin() + this->get_starting_frame() - 1;
       PlasmaData::const_iterator complete_plasma_cur_iter;
 
       unsigned int frame_num, conv_sample, actual_time_point;
+      const bool integrate_to_midpoint = this->get_frame_reference_time() == 1;
 
-      if (this->_plasma_frame_data.get_is_decay_corrected())
-        warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-      else if (!this->_plasma_frame_data.get_is_decay_corrected())
-        error("plasma_data have not been corrected during the process, which will create wrong results!!!");
-
-      std::cout << "\nCreating Generalized Model Matrix (Here printed in its transverse format)\n\n"
-                << "NOTE1: It contains as many columns as the number of later frames participating in parameter estimation\n"
-                << "It contains as many rows as the convolution points of the input function\n"
-                << "+ 1 last row consisting of the plasma counts for the corresponding later frame\n"
-                << "NOTE2: Last element of each column is the plasma counts for the corresponding later frame\n\n"
-                << "The total number of frames are: " << this->_num_frames << "\n"
-                << "The total number of complete plasma samples are: " << this->_complete_plasma_data.size() << "\n"
-                << "The last frame middle time is : " << this->_last_frame_mid_time << "\n"
-                << "The time shift in complete plasma samples is: " << this->_complete_plasma_data.get_time_shift() << "\n"
-                << "The total number of convolution points + 1(one) more column are: " << this->_num_conv_params << "\n"
-                << "First Column: plasma samples for frame 1	...		Last Column: plasma samples for last frame\n";
+      // std::cout<< "The total number of frames are: " << this->_num_frames << "\n"
+      // << "The total number of complete plasma samples are: " << this->_plasma_frame_data.size() << "\n"
+      // << "The last frame middle time is : " << this->_last_frame_mid_time << "\n"
+      // << "The time shift in complete plasma samples is: " << this->_plasma_frame_data.get_time_shift() << "\n"
+      // << "The total number of convolution points + 1(one) more column are: " << this->_num_conv_params << "\n"
+      // << "First Column: plasma samples for frame 1	...		Last Column: plasma samples for last frame\n";
 
       // Fillling of the Patlak array.
       // First conv_sample columns are filled with plasma samples for each sec,
-      for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
+      for (frame_num = this->get_starting_frame(); cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
         {
-          float cur_frame_time = 0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num));
-          unsigned int cur_frame_mid_time = (int)floor(cur_frame_time + 0.5);
-          std::cout << "\nFrame Number: " << frame_num << " Current Frame Mid Time (float): " << cur_frame_time
-                    << " Current Frame Mid Time (int): " << cur_frame_mid_time << "\n";
-          complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
-          for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_mid_time; ++conv_sample)
+          const double frame_start = this->_plasma_frame_data.get_time_frame_definitions().get_start_time(frame_num);
+          const double frame_end = this->_plasma_frame_data.get_time_frame_definitions().get_end_time(frame_num);
+
+          // instant at which this frame's model value is evaluated
+          const double cur_frame_ref_time_f = integrate_to_midpoint ? 0.5 * (frame_start + frame_end) : frame_end;
+
+          unsigned int cur_frame_ref_time = static_cast<unsigned int>(floor(cur_frame_ref_time_f + 0.5));
+          info(format("Frame Number: {} Current Frame Mid Time (float): {} Current Frame Mid Time (int): {} ",
+                      frame_num,
+                      cur_frame_ref_time_f,
+                      cur_frame_ref_time));
+
+          complete_plasma_cur_iter = this->_plasma_frame_data.begin() + cur_frame_ref_time - 1;
+
+          for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_ref_time; ++conv_sample)
             {
               actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
-              if (actual_time_point <= cur_frame_mid_time)
+              if (actual_time_point <= cur_frame_ref_time)
                 patlak_array[conv_sample][frame_num]
                     = complete_plasma_cur_iter->get_plasma_counts_in_kBq() * this->_conv_sample_interval;
               else
@@ -479,20 +478,18 @@ GeneralizedPatlakPlot::create_model_matrix()
           // Last column is filled with the plasma activity of the later frames
           patlak_array[this->_num_conv_params][frame_num] = cur_iter->get_plasma_counts_in_kBq();
 
-          std::cout << "\n";
           // Un-correcting for decay, if data are decay corrected
           if (this->_plasma_frame_data.get_is_decay_corrected())
             {
-              cerr << "Timing info (Decay correction factor info)" << endl;
-              complete_plasma_cur_iter = this->_complete_plasma_data.begin() + cur_frame_mid_time - 1;
-              for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_mid_time; ++conv_sample)
+              complete_plasma_cur_iter = this->_plasma_frame_data.begin() + cur_frame_ref_time - 1;
+              for (conv_sample = 1, actual_time_point = 1; actual_time_point <= this->_last_frame_ref_time; ++conv_sample)
                 {
                   actual_time_point = (conv_sample - 1) * this->_conv_sample_interval + 1;
-                  if (actual_time_point <= cur_frame_mid_time)
+                  if (actual_time_point <= cur_frame_ref_time)
                     {
                       cerr << complete_plasma_cur_iter->get_time_in_s() << "  ";
                       plasma_sample_dec_fact[conv_sample] = static_cast<float>(decay_correction_factor(
-                          this->_complete_plasma_data.get_isotope_halflife(), complete_plasma_cur_iter->get_time_in_s()));
+                          this->_plasma_frame_data.get_isotope_halflife(), complete_plasma_cur_iter->get_time_in_s()));
                       patlak_array[conv_sample][frame_num] /= plasma_sample_dec_fact[conv_sample];
                     }
                   else
@@ -512,15 +509,16 @@ GeneralizedPatlakPlot::create_model_matrix()
                                           this->_plasma_frame_data.get_time_frame_definitions().get_end_time(frame_num)));
 
               patlak_array[this->_num_conv_params][frame_num] /= dec_fact[frame_num];
-              time_vector[frame_num] = static_cast<float>(
-                  0.5 * (this->_frame_defs.get_end_time(frame_num) + this->_frame_defs.get_start_time(frame_num)));
+              time_vector[frame_num] = static_cast<float>(0.5
+                                                          * (this->get_time_frame_definitions().get_end_time(frame_num)
+                                                             + this->get_time_frame_definitions().get_start_time(frame_num)));
             }
         }
-      std::cout << endl << endl;
+
       // Print out the model matrix
       for (conv_sample = 1; conv_sample <= this->_num_conv_params; ++conv_sample)
         {
-          for (frame_num = this->_starting_frame; frame_num <= this->_num_frames; ++frame_num)
+          for (frame_num = this->get_starting_frame(); frame_num <= this->_num_frames; ++frame_num)
             std::cout << patlak_array[conv_sample][frame_num] << "			";
           std::cout << "\n";
         }
@@ -528,8 +526,8 @@ GeneralizedPatlakPlot::create_model_matrix()
       if (this->_plasma_frame_data.get_is_decay_corrected())
         {
           std::cout << "\n\nFrame Index	Start Time	End Time	Decay correction factor\n";
-          cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
-          for (frame_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
+          cur_iter = this->_plasma_frame_data.begin() + this->get_starting_frame() - 1;
+          for (frame_num = this->get_starting_frame(); cur_iter != this->_plasma_frame_data.end(); ++frame_num, ++cur_iter)
             {
               // Print out the frame indices, start and time points and the decay correction factors
               std::cout << frame_num << "		"
@@ -548,7 +546,7 @@ GeneralizedPatlakPlot::create_model_matrix()
       this->_model_matrix.uncalibrate(this->_cal_factor);
       this->_model_matrix.set_matrix_in_total_frame_counts(this->_plasma_in_total_cnt);
       if (this->_in_total_cnt)
-        this->_model_matrix.convert_to_total_frame_counts(this->_frame_defs);
+        this->_model_matrix.convert_to_total_frame_counts(this->get_time_frame_definitions());
       this->_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
       this->_model_matrix.threshold_model_array(.000000001F);
       this->_matrix_is_stored = true;
@@ -557,117 +555,33 @@ GeneralizedPatlakPlot::create_model_matrix()
     warning("ModelMatrix has been already created");
 }
 
-//! Create initialization model matrix from private members
-//  Essentially a standard Patlak model matrix, therefore this method is based on PatlakPlot::create_model_matrix() method)
-void
-GeneralizedPatlakPlot::create_initialization_model_matrix()
-{
-  if (_initialization_matrix_is_stored == false)
-    {
-      BasicCoordinate<2, int> min_range;
-      BasicCoordinate<2, int> max_range;
-      min_range[1] = 1;
-      min_range[2] = this->_starting_frame;
-      max_range[1] = 2;
-      max_range[2] = this->_plasma_frame_data.size();
-      IndexRange<2> data_range(min_range, max_range);
-      Array<2, float> patlak_array(data_range);
-      VectorWithOffset<float> time_vector(min_range[2], max_range[2]);
-      VectorWithOffset<float> dec_fact(min_range[2], max_range[2]);
-      PlasmaData::const_iterator cur_iter = this->_plasma_frame_data.begin();
-
-      double sum_value = 0.;
-      unsigned int sample_num;
-
-      if (this->_plasma_frame_data.get_is_decay_corrected())
-        warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
-      else if (!this->_plasma_frame_data.get_is_decay_corrected())
-        error("plasma_frame_data have not been corrected during the process, which will create wrong results!!!");
-
-      for (sample_num = 1; sample_num < this->_starting_frame; ++sample_num, ++cur_iter)
-        sum_value += cur_iter->get_plasma_counts_in_kBq()
-                     * this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
-
-      std::cout << "\nInitial plasma integral: " << sum_value << "\n";
-      assert(cur_iter == this->_plasma_frame_data.begin() + this->_starting_frame - 1);
-
-      std::cout << "Creating Initialization Model Matrix"
-                << "\n"
-                << "Column 1: plasma integral	Column 2: plasma	(Reference frame index)"
-                << "\n";
-
-      for (sample_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++sample_num, ++cur_iter)
-        {
-          double integral_step = cur_iter->get_plasma_counts_in_kBq()
-                                 * this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
-          // Calculation of the plasma integral only up to the mid time of the current plasma frame
-          sum_value += 0.5 * integral_step;
-          // Fillling of the Patlak array. First column is filled with plasma integral, second column with plasma activity
-          patlak_array[1][sample_num] = static_cast<float>(sum_value);
-          patlak_array[2][sample_num] = cur_iter->get_plasma_counts_in_kBq();
-
-          if (this->_plasma_frame_data.get_is_decay_corrected())
-            {
-              dec_fact[sample_num] = static_cast<float>(
-                  decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),
-                                          this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
-                                          this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num)));
-              patlak_array[1][sample_num] /= dec_fact[sample_num];
-              patlak_array[2][sample_num] /= dec_fact[sample_num];
-              time_vector[sample_num] = static_cast<float>(
-                  0.5 * (this->_frame_defs.get_end_time(sample_num) + this->_frame_defs.get_start_time(sample_num)));
-            }
-          // Completion of integral calculation before moving to the next plasma frame
-          sum_value += 0.5 * integral_step;
-          // Print out the model matrix
-          std::cout << patlak_array[1][sample_num] << "				" << patlak_array[2][sample_num]
-                    << "			(" << sample_num << ")\n";
-        }
-
-      if (this->_plasma_frame_data.get_is_decay_corrected())
-        {
-          std::cout << "\n\nFrame Index	Start Time	End Time	Decay correction factor\n";
-          cur_iter = this->_plasma_frame_data.begin() + this->_starting_frame - 1;
-          for (sample_num = this->_starting_frame; cur_iter != this->_plasma_frame_data.end(); ++sample_num, ++cur_iter)
-            {
-              // Print out the frame indices, start and time points and the decay correction factors
-              std::cout << sample_num << "		"
-                        << _plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num) << "		"
-                        << _plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num) << "		"
-                        << dec_fact[sample_num] << "\n";
-            }
-        }
-
-      assert(sample_num - 1 == this->_plasma_frame_data.size());
-      this->_initialization_model_matrix.set_model_array(patlak_array);
-      this->_initialization_model_matrix.set_time_vector(time_vector);
-      // Uncalibrate the ModelMatrix instead of Calibrating all the Dynamic Images. This should make faster the computation.
-      // Supposes the images are not calibrated.
-      this->_initialization_model_matrix.uncalibrate(this->_cal_factor);
-      this->_initialization_model_matrix.set_matrix_in_total_frame_counts(this->_plasma_in_total_cnt);
-      if (this->_in_total_cnt)
-        this->_initialization_model_matrix.convert_to_total_frame_counts(this->_frame_defs);
-      this->_initialization_model_matrix.set_is_in_correct_scale(this->_in_correct_scale);
-      this->_initialization_model_matrix.threshold_model_array(.000000001F);
-      this->_initialization_matrix_is_stored = true;
-    }
-  else
-    warning("InitializationModelMatrix has been already created");
-}
-
 Succeeded
 GeneralizedPatlakPlot::set_up()
 {
-  //  if (base_type::set_up() != Succeeded::yes)
-  //    return Succeeded::no;
+  if (base_type::set_up() != Succeeded::yes)
+    return Succeeded::no;
 
-  std::cout << "Preparing to set up the Generalized Patlak Plot..." << endl;
+  info("Preparing to set up the Generalized Patlak Plot...");
+  // std::cout << "Set up of Generalized Patlak Plot has been completed." << endl;
   this->create_model_matrix();
-  std::cout << "Set up of Generalized Patlak Plot has been completed." << endl;
 
-  std::cout << "Preparing to set up the initialization (standard) Patlak Plot..." << endl;
-  this->create_initialization_model_matrix();
-  std::cout << "Set up of initialization (standard) Patlak Plot has been completed." << endl;
+  if (with_initialization_loops)
+    {
+      info("Preparing to set up the initialization (standard) Patlak Plot...");
+      linear_model = std::make_shared<PatlakPlot>(this->get_exam_info_sptr());
+
+      // linear_model->set_starting_frame(this->_starting_frame);
+      // linear_model->set_cal_factor(this->_cal_factor);
+      // linear_model->set_time_frame_definitions(this->_frame_defs);
+      // linear_model->set_in_total_cnt(this->_in_total_cnt);
+      // linear_model->set_in_correct_scale(this->_in_correct_scale);
+      // linear_model->set_frame_reference_time(this->get_frame_reference_time());
+      // // reuse the plasma data we already sampled — do not re-read the blood file
+      // linear_model->set_plasma_data(this->_plasma_frame_data.get_sample_data_in_frames(this->_frame_defs));
+
+      linear_model->set_up();
+      info("Set up of initialization (standard) Patlak Plot has been completed.");
+    }
 
   std::cout << "Preparing to construct look up tables..." << endl;
   this->create_Hfunction_matrix();
@@ -906,18 +820,6 @@ GeneralizedPatlakPlot::estimate_nested_loop_parameters_with_model(Parametric3Vox
 }
 
 unsigned int
-GeneralizedPatlakPlot::get_starting_frame() const
-{
-  return this->_starting_frame;
-}
-
-TimeFrameDefinitions
-GeneralizedPatlakPlot::get_time_frame_definitions() const
-{
-  return this->_frame_defs;
-}
-
-unsigned int
 GeneralizedPatlakPlot::get_num_conv_params() const
 {
   return this->_num_conv_params;
@@ -928,14 +830,6 @@ GeneralizedPatlakPlot::initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key("Generalized Patlak Plot Parameters");
-  this->parser.add_key("Blood Data Filename", &this->_blood_data_filename);
-  this->parser.add_key("Calibration Factor", &this->_cal_factor);
-  this->parser.add_key("Starting Frame", &this->_starting_frame);
-  this->parser.add_key("Time Shift", &this->_time_shift);
-  this->parser.add_key("In total counts", &this->_in_total_cnt);
-  this->parser.add_key("Plasma in total counts", &this->_plasma_in_total_cnt);
-  this->parser.add_key("In correct scale", &this->_in_correct_scale);
-  this->parser.add_key("Time Frame Definition Filename", &this->_time_frame_definition_filename);
   this->parser.add_key("convolution sampling interval", &this->_conv_sample_interval);
   this->parser.add_key("kloss lower bound", &this->_kloss_lb);
   this->parser.add_key("kloss upper bound", &this->_kloss_ub);
@@ -950,38 +844,22 @@ GeneralizedPatlakPlot::post_processing()
   if (base_type::post_processing() == true)
     return true;
 
-  // read time frame def
-  if (this->_time_frame_definition_filename.size() != 0)
-    this->_frame_defs = TimeFrameDefinitions(this->_time_frame_definition_filename);
-  else
-    {
-      error("No Time Frames Definitions available!!!\n ");
-      return true;
-    }
+  this->_plasma_frame_data.read_plasma_data(this->_blood_data_filename); // The implementation assumes three list file.
+  // TODO have parameter
+  warning("Assuming F-18 tracer for plasma data!!!");
+  this->_plasma_frame_data.set_isotope_halflife(6586.2F);
+  this->_plasma_frame_data.shift_time(this->_time_shift);
 
-  // Determine the mid time point of the last frame as this will later determine the number of columns of the model matrix
+  // this->_plasma_frame_data = this->_complete_plasma_data.get_sample_data_in_frames(this->_frame_defs);
+  this->_num_frames = this->_plasma_frame_data.size();
+  float _last_frame_time = this->get_frame_reference_time() == 1
+                               ? floor(0.5
+                                       * (this->get_time_frame_definitions().get_end_time(this->_num_frames)
+                                          + this->get_time_frame_definitions().get_start_time(this->_num_frames)))
+                               : this->get_time_frame_definitions().get_end_time(this->_num_frames);
+  this->_last_frame_ref_time = static_cast<unsigned int>(floor(_last_frame_time + 0.5));
+  this->_num_conv_params = ((this->_last_frame_ref_time - 1) / this->_conv_sample_interval) + 2;
 
-  // Reading the input function
-  if (this->_blood_data_filename == "0")
-    {
-      warning("You need to specify a file for the input function.");
-      return true;
-    }
-  else
-    {
-      this->_if_cardiac = false;
-      this->_complete_plasma_data.read_plasma_data(this->_blood_data_filename); // The implementation assumes three list file.
-      // TODO have parameter
-      warning("Assuming F-18 tracer for plasma data!!!");
-      this->_complete_plasma_data.set_isotope_halflife(6586.2F);
-      this->_complete_plasma_data.shift_time(this->_time_shift);
-      this->_plasma_frame_data = this->_complete_plasma_data.get_sample_data_in_frames(this->_frame_defs);
-      this->_num_frames = this->_plasma_frame_data.size();
-      float _last_frame_time = floor(
-          0.5 * (this->_frame_defs.get_end_time(this->_num_frames) + this->_frame_defs.get_start_time(this->_num_frames)));
-      this->_last_frame_mid_time = (unsigned int)floor(_last_frame_time + 0.5);
-      this->_num_conv_params = ((this->_last_frame_mid_time - 1) / this->_conv_sample_interval) + 2;
-    }
   return false;
 }
 

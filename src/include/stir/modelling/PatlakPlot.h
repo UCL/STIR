@@ -23,8 +23,7 @@
 
 #include "stir/modelling/KineticModel.h"
 #include "stir/modelling/ModelMatrix.h"
-#include "stir/modelling/PlasmaData.h"
-#include "stir/Succeeded.h"
+
 #include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
@@ -69,28 +68,31 @@ START_NAMESPACE_STIR
 
   \todo Should be derived from LinearModels, but when non-linear models will be introduced, as well.
 */
-class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
+class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel, KineticModel>
 {
+private:
+  typedef RegisteredParsingObject<PatlakPlot, KineticModel, KineticModel> base_type;
+
 public:
   //! Name which will be used when parsing a PatlakPlot object
   static const char* const registered_name;
 
-  PatlakPlot();           //!< Default constructor (calls set_defaults())
-  ~PatlakPlot() override; //!< default destructor
-                          /*! \name Functions to get parameters */
-                          //!@{
+  //! Default constructor (calls set_defaults())
+  PatlakPlot();
+
+  PatlakPlot(const shared_ptr<const ExamInfo>& exam_info_sptr);
+
+  ~PatlakPlot() override;
+
+  /*! \name Functions to get parameters */
+  //!@{
   //! Simply gets model matrix, if it has been already stored.
   ModelMatrix<2> get_model_matrix() const;
   //! Creates model matrix from plasma data (Must be already sorted in appropriate frames).
   ModelMatrix<2> get_model_matrix(const PlasmaData& plasma_data,
                                   const TimeFrameDefinitions& time_frame_definitions,
                                   const unsigned int starting_frame);
-  //! Returns the frame that the PatlakPlot linearization is assumed to be valid.
-  unsigned int get_starting_frame() const;
-  //! Returns the number of the last frame available.
-  unsigned int get_ending_frame() const;
-  //! Returns the TimeFrameDefinitions that the PatlakPlot linearization is assumed to be valid: ChT::Check
-  TimeFrameDefinitions get_time_frame_definitions() const;
+
   //!@}
   /*! \name Functions to set parameters*/
   //!@{
@@ -158,26 +160,13 @@ public:
 
   Succeeded set_up() override;
 
-  bool _if_cardiac;             //!< Switches between cardiac and brain data
-  unsigned int _starting_frame; //!< Starting frame to apply the model
-  float _cal_factor;            //!< Calibration Factor, maybe to be removed.
-  float _time_shift;            //!< Shifts the time to fit the timing of Plasma Data with the Projection Data.
-  bool _in_correct_scale;    //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale
-                             //!< factor.
-  bool _in_total_cnt;        //!< Switch to choose the values of the model to be in total counts or in mean counts.
-  bool _plasma_in_total_cnt; //!< Switch to choose the plasma values of the model to be in total counts or in mean counts.
-  std::string _blood_data_filename;            //!< Name of file in which the input function is stored
-  PlasmaData _plasma_frame_data;               //!< Stores the plasma data into frames for brain studies
-  std::string _time_frame_definition_filename; //!< name of file to get frame definitions
-  TimeFrameDefinitions _frame_defs;            //!< TimeFrameDefinitions
-
 private:
-  void create_model_matrix(); //!< Creates model matrix from private members
+  //! Creates model matrix from private members
+  void create_model_matrix() override;
+
   void initialise_keymap() override;
   bool post_processing() override;
   mutable ModelMatrix<2> _model_matrix;
-  bool _matrix_is_stored;
-  typedef RegisteredParsingObject<PatlakPlot, KineticModel> base_type;
 };
 
 END_NAMESPACE_STIR

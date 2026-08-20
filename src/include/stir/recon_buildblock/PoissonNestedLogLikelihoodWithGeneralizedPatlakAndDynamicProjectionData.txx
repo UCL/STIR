@@ -225,6 +225,16 @@ post_processing()
   }
 
     }
+
+    if (!this->initial_data_filename.empty() && this->initial_data_filename != "1"
+    && this->num_initialization_subiterations > 0)
+    {
+  warning("An initial estimate was supplied and 'number of global initialization subiterations' is non-zero. "
+          "These serve the same purpose; the initialization sub-iterations will re-run standard Patlak "
+          "updates on an estimate that is presumably already initialised. "
+          "Skipping initialization loops");
+  this->num_initialization_subiterations = 0; 
+  }
   return false;
 }
 
@@ -452,6 +462,7 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
                                           proj_data_info_sptr) == Succeeded::no)
       return Succeeded::no;
  
+      // this->_patlak_plot_sptr->set_radionuclide(this->get_dyn_proj_data_sptr()->get_exam_info_sptr()->get_radionuclide()); 
 	
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)
     {

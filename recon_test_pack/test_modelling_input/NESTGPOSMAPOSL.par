@@ -50,6 +50,9 @@ In total counts := 1
 ;In correct scale := 0
 kloss lower bound := 0
 kloss upper bound := 0
+; Default: end_of_frame = 0
+;mid_of_frame = 1
+frame reference time: = 0
 number of kloss samples := 3
 end Generalized Patlak Plot Parameters :=
 

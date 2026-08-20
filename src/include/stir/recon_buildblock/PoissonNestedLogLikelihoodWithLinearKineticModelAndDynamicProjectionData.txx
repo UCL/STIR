@@ -408,6 +408,8 @@ set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
                                         proj_data_info_sptr) == Succeeded::no)
     return Succeeded::no;
 
+    // this->_patlak_plot_sptr->set_radionuclide(this->get_dyn_proj_data_sptr()->get_exam_info_sptr()->get_radionuclide()); 
+    
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)
     return Succeeded::no;
 

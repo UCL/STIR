@@ -21,10 +21,10 @@
 #include "stir/modelling/KineticModel.h"
 #include "stir/modelling/GeneralizedPatlakMatrix.h"
 #include "stir/modelling/ModelMatrix.h"
-#include "stir/modelling/PlasmaData.h"
 #include "stir/Succeeded.h"
 #include "stir/RegisteredParsingObject.h"
 
+#include "stir/modelling/PatlakPlot.h"
 START_NAMESPACE_STIR
 
 //!
@@ -67,16 +67,19 @@ START_NAMESPACE_STIR
 
   \todo Should be derived from LinearModels, but when non-linear models will be introduced, as well.
 */
-class GeneralizedPatlakPlot : public RegisteredParsingObject<GeneralizedPatlakPlot, KineticModel>
+class GeneralizedPatlakPlot : public RegisteredParsingObject<GeneralizedPatlakPlot, KineticModel, KineticModel>
 {
+private:
+  typedef RegisteredParsingObject<GeneralizedPatlakPlot, KineticModel, KineticModel> base_type;
+
 public:
   //! Name which will be used when parsing a GeneralizedPatlakPlot object
   static const char* const registered_name;
 
-  GeneralizedPatlakPlot();  //!< Default constructor (calls set_defaults())
-  ~GeneralizedPatlakPlot(); //!< default destructor
-                            /*! \name Functions to get parameters */
-                            //@{
+  GeneralizedPatlakPlot(); //!< Default constructor (calls set_defaults())
+  ~GeneralizedPatlakPlot() override;
+  /*! \name Functions to get parameters */
+  //@{
   //! Simply gets model matrix, if it has been already stored.
   GeneralizedPatlakMatrix<2> get_model_matrix() const;
   //! Creates model matrix from plasma data (Must be already sorted in appropriate frames).
@@ -92,15 +95,13 @@ public:
                                                  const TimeFrameDefinitions& time_frame_definitions,
                                                  const unsigned int starting_frame);
 
-  //! Returns the frame that the GeneralizedPatlakPlot linearization is assumed to be valid.
-  unsigned int get_starting_frame() const;
-  //! Returns the TimeFrameDefinitions that the GeneralizedPatlakPlot linearization is assumed to be valid: ChT::Check
-  TimeFrameDefinitions get_time_frame_definitions() const;
   //! Returns the number of convolution parameters for the GeneralizedPatlakPlot matrix.
   unsigned int get_num_conv_params() const;
   //!@}
   /*! \name Functions to set parameters*/
   //@{
+  inline void set_with_initialization_loops(bool arg) { with_initialization_loops = arg; }
+
   void set_model_matrix(GeneralizedPatlakMatrix<2> model_matrix);                   //!< Simply set model matrix
   void set_initialization_model_matrix(ModelMatrix<2> initialization_model_matrix); //!< Simply set initialization model matrix
                                                                                     //@}
@@ -175,45 +176,45 @@ public:
                                                           float maximum_nested_relative_change,
                                                           int num_nested_subiterations) const;
 
-  void set_defaults();
+  void set_defaults() override;
 
-  Succeeded set_up();
-
-  bool _if_cardiac;                   //!< Switches between cardiac and brain data
-  unsigned int _starting_frame;       //!< Starting frame to apply the model
-  unsigned int _num_frames;           //!< Number of frames to apply the model
-  unsigned int _conv_sample_interval; //!< Interval between convolution samples (in order to downsample the convolution sampling)
-  unsigned int _num_conv_params;      //!< Number of convolution parameters
-  unsigned int _last_frame_mid_time;  //!< End-time point of the last frame defined by user
-  float _cal_factor;                  //!< Calibration Factor, maybe to be removed.
-  float _time_shift;                  //!< Shifts the time to fit the timing of Plasma Data with the Projection Data.
-  bool _in_correct_scale;    //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale
-                             //!< factor.
-  bool _in_total_cnt;        //!< Switch to choose the image values of the model to be in total counts or in mean counts.
-  bool _plasma_in_total_cnt; //!< Switch to choose the plasma values of the model to be in total counts or in mean counts.
-  float _kloss_lb;           //!< Lower bound for the search space of the estimated kloss parameter.
-  float _kloss_ub;           //!< Upper bound for the search space of the estimated kloss parameter.
-  unsigned int _kloss_num_samples;             //!< Number of samples for the search space of the estimated kloss parameter.
-  std::string _blood_data_filename;            //!< Name of file in which the input function is stored
-  PlasmaData _complete_plasma_data;            //!< Stores the complete plasma data before distributing/sorting into frames
-  PlasmaData _plasma_frame_data;               //!< Stores the plasma data into frames for brain studies
-  std::string _time_frame_definition_filename; //!< name of file to get frame definitions
-  TimeFrameDefinitions _frame_defs;            //!< TimeFrameDefinitions
+  Succeeded set_up() override;
+  //! Number of frames to apply the model
+  unsigned int _num_frames;
+  //! Interval between convolution samples (in order to downsample the convolution sampling)
+  unsigned int _conv_sample_interval;
+  unsigned int _num_conv_params; //!< Number of convolution parameters
+  //! Reference point of the last frame defined by user
+  unsigned int _last_frame_ref_time;
+  //! Lower bound for the search space of the estimated kloss parameter.
+  float _kloss_lb;
+  //! Upper bound for the search space of the estimated kloss parameter.
+  float _kloss_ub;
+  //! Number of samples for the search space of the estimated kloss parameter.
+  unsigned int _kloss_num_samples;
+  //! Stores the complete plasma data before distributing/sorting into frames
+  PlasmaData _not_complete_plasma_data;
 
 private:
-  void create_model_matrix();                //!< Creates model matrix from private members
-  void create_initialization_model_matrix(); //!< Creates initialization model matrix from private members
-  void create_Hfunction_matrix();            //!< Precalculates Hfunction matrix from private members
+  bool with_initialization_loops;
+  //! Creating Generalized Model Matrix (Here printed in its transverse format)
+  //! NOTE1: It contains as many columns as the number of later frames participating in parameter estimation
+  //! It contains as many rows as the convolution points of the input function
+  //! + 1 last row consisting of the plasma counts for the corresponding later frame
+  //! "NOTE2: Last element of each column is the plasma counts for the corresponding later frame
+  void create_model_matrix() override;
+  //! Precalculates Hfunction matrix from private members
+  void create_Hfunction_matrix();
   void create_Ki_matrix();
-  void initialise_keymap();
-  bool post_processing();
+  void initialise_keymap() override;
+  bool post_processing() override;
   mutable GeneralizedPatlakMatrix<2> _model_matrix;
   mutable ModelMatrix<2> _initialization_model_matrix;
   mutable GeneralizedPatlakMatrix<2> _Hfunction_matrix;
   mutable GeneralizedPatlakMatrix<2> _Ki_matrix;
-  bool _matrix_is_stored;
-  bool _initialization_matrix_is_stored;
-  typedef RegisteredParsingObject<GeneralizedPatlakPlot, KineticModel> base_type;
+  bool _initialization_matrix_is_stored; // -remove
+
+  std::shared_ptr<PatlakPlot> linear_model;
 };
 
 END_NAMESPACE_STIR
