@@ -14,6 +14,7 @@
   \brief Implementation of class stir::DynamicProjData
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
   \author Richard Brown
 */
 
@@ -208,6 +209,9 @@ DynamicProjData::write_to_ecat7(const string& filename) const
 static DynamicProjData*
 read_interfile_DPDFS(istream& input, const string& directory_for_data, const std::ios::openmode open_mode)
 {
+
+  // Nicolas A Karakatsanis - Add the printed message for better clarity and evaluation of implementation
+  info(format("DynamicProjData: Reading the Interfile projection data set located in directory\n{}  ...\n", directory_for_data));
 
   InterfilePDFSHeader hdr;
 

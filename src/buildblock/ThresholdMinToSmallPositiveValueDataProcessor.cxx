@@ -86,7 +86,8 @@ const char* const ThresholdMinToSmallPositiveValueDataProcessor<DataT>::register
 // have the above variable in a separate file, which you need to pass at link time
 
 template class ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3, float>>;
-template class ThresholdMinToSmallPositiveValueDataProcessor<ParametricVoxelsOnCartesianGrid>;
+template class ThresholdMinToSmallPositiveValueDataProcessor<Parametric2VoxelsOnCartesianGrid>;
+template class ThresholdMinToSmallPositiveValueDataProcessor<Parametric3VoxelsOnCartesianGrid>;
 // template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<1,float> > >;
 // template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<2,float> > >;
 // template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<3,float> > >;

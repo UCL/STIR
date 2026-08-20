@@ -17,6 +17,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
   \author PARAPET project
   \author Richard Brown
   \author Parisa Khateri
@@ -215,7 +216,8 @@ read_interfile_dynamic_image(istream& input, const string& directory_for_data)
 
 #ifndef MINI_STIR
 
-ParametricVoxelsOnCartesianGrid*
+template <int num_params>
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>*
 read_interfile_parametric_image(istream& input, const string& directory_for_data)
 {
   InterfileImageHeader hdr;
@@ -232,9 +234,10 @@ read_interfile_parametric_image(istream& input, const string& directory_for_data
   voxel_size[2] = hdr.pixel_sizes[1];
   voxel_size[3] = hdr.pixel_sizes[0];
 
-  ParametricVoxelsOnCartesianGrid* parametric_dens_ptr
-      = new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(
-          hdr.get_exam_info_sptr(), image_sptr->get_index_range(), image_sptr->get_origin(), voxel_size));
+  ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>* parametric_dens_ptr
+      = new ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>(
+          VoxelsOnCartesianGrid<KineticParameters<num_params, float>>(
+              hdr.get_exam_info_sptr(), image_sptr->get_index_range(), image_sptr->get_origin(), voxel_size));
 
   ifstream data_in;
   open_read_binary(data_in, full_data_file_name);
@@ -259,23 +262,28 @@ read_interfile_parametric_image(istream& input, const string& directory_for_data
         if (hdr.image_scaling_factors[kin_param - 1][i] != 1)
           (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[kin_param - 1][i]);
 
-      // Check that we're dealing with VoxelsOnCartesianGrid
-      if (dynamic_cast<const VoxelsOnCartesianGrid<float>*>(image_sptr.get()) == 0)
-        error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
+      auto img_sptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(image_sptr.get());
+      if (is_null_ptr(img_sptr))
+        error("read_interfile_parametric_image only supports VoxelsOnCartesianGrid");
+      parametric_dens_ptr->update_parametric_image(*img_sptr, kin_param);
 
-      // Set the image for the given kinetic parameter
-      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator single_density_iter
-          = image_sptr->begin_all();
-      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator end_single_density_iter
-          = image_sptr->end_all();
-      ParametricVoxelsOnCartesianGrid::full_densel_iterator parametric_density_iter = parametric_dens_ptr->begin_all_densel();
+      // // Check that we're dealing with VoxelsOnCartesianGrid
+      // if (dynamic_cast<const VoxelsOnCartesianGrid<float>*>(image_sptr.get()) == 0)
+      //   error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
 
-      while (single_density_iter != end_single_density_iter)
-        {
-          (*parametric_density_iter)[kin_param] = *single_density_iter;
-          ++single_density_iter;
-          ++parametric_density_iter;
-        }
+      // // Set the image for the given kinetic parameter
+      // ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator single_density_iter
+      //     = image_sptr->begin_all();
+      // ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator end_single_density_iter
+      //     = image_sptr->end_all();
+      // ParametricVoxelsOnCartesianGrid::full_densel_iterator parametric_density_iter = parametric_dens_ptr->begin_all_densel();
+
+      // while (single_density_iter != end_single_density_iter)
+      //   {
+      //     (*parametric_density_iter)[kin_param] = *single_density_iter;
+      //     ++single_density_iter;
+      //     ++parametric_density_iter;
+      //   }
     }
 
   return parametric_dens_ptr;
@@ -315,7 +323,8 @@ read_interfile_dynamic_image(const string& filename)
 
 #ifndef MINI_STIR
 
-ParametricVoxelsOnCartesianGrid*
+template <int num_params>
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>*
 read_interfile_parametric_image(const string& filename)
 {
   ifstream image_stream(filename.c_str());
@@ -327,8 +336,110 @@ read_interfile_parametric_image(const string& filename)
   char directory_name[max_filename_length];
   get_directory_name(directory_name, filename.c_str());
 
-  return read_interfile_parametric_image(image_stream, directory_name);
+  return read_interfile_parametric_image<num_params>(image_stream, directory_name);
 }
+
+// // Nicolas A Karakatsanis
+// VoxelsOnCartesianGrid<float>*
+// read_interfile_frame_image(std::istream& input,
+//                            const unsigned int data_offset,
+//                            InterfileImageHeader& ifheader,
+//                            const string& directory_for_data)
+// {
+//   /*
+//   InterfileImageHeader ifheader;
+//   if (!ifheader.parse(input))
+//     {
+//       error("read_interfile_frame_image: Failed to properly parse the Interfile header file of the provided data stream");
+//           return 0;
+//     }
+//   */
+//   // prepend directory_for_data to the data_file_name from the header
+
+//   char full_data_file_name[max_filename_length];
+//   strcpy(full_data_file_name, ifheader.data_file_name.c_str());
+//   prepend_directory_name(full_data_file_name, directory_for_data.c_str());
+
+//   std::cout << "Preparing to load the image data of current image with offset = " << data_offset << endl;
+//   ifstream data_in;
+//   open_read_binary(data_in, full_data_file_name);
+
+//   std::cout << "Loading of image data stream for current image/frame was successful\n";
+
+//   CartesianCoordinate3D<float> voxel_size(static_cast<float>(ifheader.pixel_sizes[2]),
+//                                           static_cast<float>(ifheader.pixel_sizes[1]),
+//                                           static_cast<float>(ifheader.pixel_sizes[0]));
+
+//   const int z_size = ifheader.matrix_size[2][0];
+//   const int y_size = ifheader.matrix_size[1][0];
+//   const int x_size = ifheader.matrix_size[0][0];
+//   const BasicCoordinate<3, int> min_indices = make_coordinate(0, -y_size / 2, -x_size / 2);
+//   const BasicCoordinate<3, int> max_indices = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+
+//   CartesianCoordinate3D<float> origin(0, 0, 0);
+//   if (ifheader.first_pixel_offsets[2] != InterfileHeader::double_value_not_set)
+//     {
+//       // make sure that origin is such that
+//       // first_pixel_offsets =  min_indices*voxel_size + origin
+//       origin = make_coordinate(float(ifheader.first_pixel_offsets[2]),
+//                                float(ifheader.first_pixel_offsets[1]),
+//                                float(ifheader.first_pixel_offsets[0]))
+//                - voxel_size * BasicCoordinate<3, float>(min_indices);
+//       // TODO remove
+//       if (norm(origin) > .01)
+//         warning("interfile parsing: setting origin to (z=%g,y=%g,x=%g)", origin.z(), origin.y(), origin.x());
+//     }
+
+//   std::cout << "The min. and max. indices as well as the origin of the current image have been determined.\n";
+
+//   VoxelsOnCartesianGrid<float>* image_ptr
+//       = new VoxelsOnCartesianGrid<float>(IndexRange<3>(min_indices, max_indices), origin, voxel_size);
+
+//   std::cout << "Loading of image data buffer for current image was successful.\n";
+
+//   data_in.seekg(data_offset);
+
+//   std::cout << "Shifting of the reference point of the current data stream was successful.\n";
+
+//   float scale = float(1);
+//   if (read_data(data_in, *image_ptr, ifheader.type_of_numbers, scale, ifheader.file_byte_order) == Succeeded::no || scale != 1)
+//     {
+//       error("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
+//       return 0;
+//     }
+
+//   for (int i = 0; i < ifheader.matrix_size[2][0]; i++)
+//     if (ifheader.image_scaling_factors[0][i] != 1)
+//       (*image_ptr)[i] *= static_cast<float>(ifheader.image_scaling_factors[0][i]);
+
+//   std::cout << "Binary data stream was successfully loaded to the image buffer.\nReady to return the current image/frame data "
+//                "buffer pointer.\n\n";
+
+//   return image_ptr;
+// }
+
+// // Nicolas A Karakatsanis
+// VoxelsOnCartesianGrid<float>*
+// read_interfile_frame_image(const string& filename, const unsigned int data_offset)
+// {
+//   ifstream image_stream(filename.c_str());
+//   if (!image_stream)
+//     {
+//       error("read_interfile_frame_image: couldn't open file %s\n", filename.c_str());
+//     }
+
+//   InterfileImageHeader ifheader;
+//   if (!ifheader.parse(image_stream))
+//     {
+//       error("read_interfile_frame_image: Failed to properly parse the Interfile header file of the provided data stream\n");
+//       return 0;
+//     }
+
+//   char directory_name[max_filename_length];
+//   get_directory_name(directory_name, filename.c_str());
+
+//   return read_interfile_frame_image(image_stream, data_offset, ifheader, directory_name);
+// }
 
 #endif
 
@@ -830,13 +941,41 @@ write_basic_interfile(const string& filename,
 
 #ifndef MINI_STIR
 
+// // Nicolas A Karakatsanis
+// Succeeded
+// write_basic_interfile(string& filename,
+//                       const DiscretisedDensity<3, float>& image,
+//                       const unsigned int param_num,
+//                       const NumericType output_type,
+//                       const float scale,
+//                       const ByteOrder byte_order)
+// {
+
+//   // Construct a string stream from the integer denoting the frame index
+//   std::ostringstream frame_idx;
+//   frame_idx << param_num;
+
+//   // Append the frame/parameter dependent extension to the original filename
+//   // string frame_ext = "_p";
+//   filename += "_p";
+//   filename += frame_idx.str();
+
+//   // dynamic_cast will throw an exception when it's not valid
+//   return write_basic_interfile(
+//       filename, dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image), output_type, scale, byte_order);
+// }
+
+template <int num_params>
 Succeeded
 write_basic_interfile(const string& filename,
-                      const ParametricVoxelsOnCartesianGrid& image,
+                      const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>& image,
                       const NumericType output_type,
                       const float scale,
                       const ByteOrder byte_order)
 {
+
+  static_assert(num_params == 2 || num_params == 3,
+                "write_basic_interfile: unnamed kinetic parameter labels for this num_dimensions — add a case below");
 
   std::string data_name, header_name;
   interfile_create_filenames(filename, data_name, header_name);
@@ -856,7 +995,10 @@ write_basic_interfile(const string& filename,
 
   // Tell it what the different kinetic parameters mean
   std::vector<std::string> data_type_descriptions;
+
   data_type_descriptions.push_back("slope");
+  if constexpr (num_params == 3)
+    data_type_descriptions.push_back("kloss");
   data_type_descriptions.push_back("intercept");
 
   const Succeeded success = write_basic_interfile_image_header(header_name,
@@ -1491,5 +1633,25 @@ template Succeeded write_basic_interfile<>(const string& filename,
                                            const NumericType output_type,
                                            const float scale,
                                            const ByteOrder byte_order);
+
+template Succeeded
+write_basic_interfile<2>(const std::string& filename,
+                         const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2, float>>>& image,
+                         const NumericType output_type,
+                         const float scale,
+                         const ByteOrder byte_order);
+
+template Succeeded
+write_basic_interfile<3>(const std::string& filename,
+                         const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<3, float>>>& image,
+                         const NumericType output_type,
+                         const float scale,
+                         const ByteOrder byte_order);
+
+template ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2, float>>>*
+read_interfile_parametric_image<2>(const std::string& filename);
+
+template ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<3, float>>>*
+read_interfile_parametric_image<3>(const std::string& filename);
 
 END_NAMESPACE_STIR
