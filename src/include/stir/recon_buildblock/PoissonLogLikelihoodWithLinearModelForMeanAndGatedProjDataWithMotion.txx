@@ -46,7 +46,8 @@
 #include "stir/spatial_transformation/GatedSpatialTransformation.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
-
+#include "stir/recon_buildblock/BinNormalisationFromConstantFactor.h"
+#include "stir/recon_buildblock/ChainedBinNormalisation.h"
 START_NAMESPACE_STIR
 
 template <typename TargetT>
@@ -378,7 +379,23 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::s
 
     // construct _single_gate_obj_funcs
     this->_single_gate_obj_funcs.resize(1, this->get_time_gate_definitions().get_num_gates());
-
+    
+    double total_gate_duration = 0.;
+    for (unsigned int gate_num = 1; gate_num <= this->get_time_gate_definitions().get_num_gates(); ++gate_num)
+      {
+        const double gate_duration = this->get_time_gate_definitions().get_gate_duration(gate_num);
+        if (gate_duration <= 0.)
+          {
+            warning("Gate duration for gate %u should be larger than 0.", gate_num);
+            return Succeeded::no;
+          }
+        total_gate_duration += gate_duration;
+      }
+    if (total_gate_duration <= 0.)
+      {
+        warning("Total gate duration should be larger than 0.");
+        return Succeeded::no;
+      }
     for (unsigned int gate_num = 1; gate_num <= this->get_time_gate_definitions().get_num_gates(); ++gate_num)
       {
         info(format("Objective Function for Gate Number: {}", gate_num));
@@ -391,6 +408,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::s
               this->_additive_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
         this->_single_gate_obj_funcs[gate_num].set_num_subsets(this->num_subsets);
         this->_single_gate_obj_funcs[gate_num].set_frame_num(1); // This should be gate...
+        const double gate_duration = this->get_time_gate_definitions().get_gate_duration(gate_num);
+        // Keep gate timing available for time-dependent normalisation, but do not use it
+        // as an extra sensitivity scale factor below.
         std::vector<std::pair<double, double>> frame_times(1, std::pair<double, double>(0, 1));
         this->_single_gate_obj_funcs[gate_num].set_frame_definitions(TimeFrameDefinitions(frame_times));
 
@@ -402,6 +422,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::s
             shared_ptr<ProjData> norm_data_sptr(this->_normalisation_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
             current_gate_norm_factors_sptr.reset(new BinNormalisationFromProjData(norm_data_sptr));
           }
+        const float gate_duration_fraction = static_cast<float>(this->get_time_gate_definitions().get_gate_duration(gate_num) / total_gate_duration);
+        shared_ptr<BinNormalisation> gate_duration_norm_sptr(new BinNormalisationFromConstantFactor(gate_duration_fraction));
+        current_gate_norm_factors_sptr.reset(new ChainedBinNormalisation(gate_duration_norm_sptr, current_gate_norm_factors_sptr));
         this->_single_gate_obj_funcs[gate_num].set_normalisation_sptr(current_gate_norm_factors_sptr);
         this->_single_gate_obj_funcs[gate_num].set_recompute_sensitivity(this->get_recompute_sensitivity());
         this->_single_gate_obj_funcs[gate_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
