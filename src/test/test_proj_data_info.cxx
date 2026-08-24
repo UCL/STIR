@@ -1272,8 +1272,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
                                                    * scannerBlocks_sptr->get_num_transaxial_crystals_per_block());
   scannerBlocks_sptr->set_up();
 
-  auto proj_data_info_blocks_sptr = std::make_shared<ProjDataInfoBlocksOnCylindricalNoArcCorr>();
-  proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
+  auto proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
 
   //-- create projdata info generic
   shared_ptr<const DetectorCoordinateMap> map_sptr = scannerBlocks_sptr->get_detector_map_sptr();
