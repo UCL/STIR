@@ -13,13 +13,12 @@
 #  include "stir/listmode/CListModeDataSimSET.h"
 #  include "stir/error.h"
 #  include <iostream>
-#  include <unistd.h>
 
 START_NAMESPACE_STIR
 
 //!
 //! \brief The SimSETListmodeInputFileFormat class
-//! \details Class to check the file signature of SiSET history files.
+//! \details Class to check the file signature of SimSET history files.
 //! These are listmode files.
 //!
 //! \ingroup SimSET
