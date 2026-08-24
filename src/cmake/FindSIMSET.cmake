@@ -49,6 +49,13 @@ if (SIMSET_FOUND AND NOT TARGET SIMSET::simset)
         IMPORTED_LOCATION ${SIMSET_LIBRARY}
         INTERFACE_INCLUDE_DIRECTORIES ${SIMSET_INCLUDE_DIRS}
         )
+#    \todo Remove these lines once SimSET is updated. 
+#    Photon.h uses types like LbFourByte, LbUsFourByte, etc. 
+#    Those are defined in SimSET’s LbTypes.h inside an OS-specific 
+#    #if ... #elif ... block. If none of the expected platform macros are defined, 
+#    you get “unknown type name LbFourByte” (or even #error you have not 
+#    declared an OS-dependent clause). This can be changed in the SimSET code. 
+#    No super hard, but we need to wait until the public version.
   if (APPLE)
     target_compile_definitions(SIMSET::simset INTERFACE DARWIN MAC_10 GEN_UNIX arm64)
     elseif(UNIX)

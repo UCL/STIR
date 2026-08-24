@@ -2,15 +2,7 @@
     Copyright (C) 2019 University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -35,13 +27,13 @@ START_NAMESPACE_STIR
 //! Since we introduced a SimSET header the identification
 //! became simpler.
 //!
-//! <line-through>The phg parameter file should be used here.
+//! The phg parameter file should be used here.
 //! However, STIR passes only 1024 bytes. The solution is that the
 //! first line of your phg file should always write the line
 //!
 //! # Hello, I am a SimSET PHG file!
 //!
-//! This will let us know that this is a PHG file.</line-through>
+//! This will let us know that this is a PHG file.
 //!
 //!
 //! \author Nikos Efthimiou
@@ -68,13 +60,8 @@ protected:
     return this->is_SimSET_signature(signature.get_signature());
   }
 
-  //! This is a very dirty function. We have to replicate argv in
-  //! a linux terminal fashion, as that is the acceptabel input to SimSET
-  //! function LbEnGetOptions. I could rewrite that, but the effort might
-  //! be too much.
   bool is_SimSET_signature(const char* const signature) const
   {
-    // checking for "interfile :"
     const char* pos_of_colon = strchr(signature, ':');
     if (pos_of_colon == NULL)
       return false;

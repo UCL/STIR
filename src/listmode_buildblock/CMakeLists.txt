@@ -90,7 +90,6 @@ if(HAVE_PETSIRD)
 endif()
 
 if (HAVE_SIMSET)
-  target_include_directories(${TARGET} PUBLIC ${SIMSET_INCLUDE_DIRS})
   if(TARGET SIMSET::simset)
     target_link_libraries(${TARGET} PUBLIC SIMSET::simset)
   else()

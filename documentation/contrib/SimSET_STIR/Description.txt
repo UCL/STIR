@@ -10,3 +10,13 @@ Nikolaos Dikaios (University of Patras and National Technical University of Athe
 Charalampos Tsoumpas (Imperial College London)
 Kris Thielemans (Hammersmith Imanet Ltd)
  
+## Reading SimSET history files as listmode Input
+
+Contributor: 
+    * Nikos Efthimiou (University of Hull, UK)
+
+1. In order to make your history file readable from STIR you need to add to 
+the phg parameter file the first line: 
+    
+``` # Hello, I am a SimSET PHG file!  ```
+

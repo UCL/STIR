@@ -24,9 +24,11 @@
 #include "stir/DetectionPositionPair.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/listmode/CListRecord.h"
-#include "stir/LORCoordinates.h"
-
+#include "stir/error.h"
 START_NAMESPACE_STIR
+
+template <class coordT>
+class LORAs2Points;
 
 //! Base-class for storing and using a coincidence event for a list-mode file that uses detector indices
 /*! \ingroup listmode
