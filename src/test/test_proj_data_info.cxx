@@ -1256,8 +1256,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
   scannerCyl_sptr->set_scanner_geometry("Cylindrical");
   scannerCyl_sptr->set_up();
 
-  auto proj_data_info_cyl_sptr = std::make_shared<ProjDataInfoCylindricalNoArcCorr>();
-  proj_data_info_cyl_sptr = set_blocks_projdata_info<ProjDataInfoCylindricalNoArcCorr>(scannerCyl_sptr, 2);
+  auto proj_data_info_cyl_sptr = set_blocks_projdata_info<ProjDataInfoCylindricalNoArcCorr>(scannerCyl_sptr, 2);
 
   //-- create projdata info Blocks on Cylindrical
   auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
