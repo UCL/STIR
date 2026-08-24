@@ -103,7 +103,7 @@ protected:
   void test_generic_proj_data_info(ProjDataInfo& proj_data_info);
 
   template <class TProjDataInfo>
-  shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction = 1);
+  static shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction = 1);
   void run_coordinate_test();
   void run_coordinate_test_for_realistic_scanner();
   void run_Blocks_DOI_test();
@@ -1250,8 +1250,12 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 void
 ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
 {
+
   // ExamInfo not required for get_m() consistency checks.
-  //-- create projdata info Blocks on Cylindrical
+  // auto exam_info_sptr = std::make_shared<ExamInfo>();
+  // exam_info_sptr->imaging_modality = ImagingModality::PT;
+
+  //-- create projadata info Blocks on Cylindrical
   auto scannerCyl_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerCyl_sptr->set_scanner_geometry("Cylindrical");
   scannerCyl_sptr->set_up();
@@ -1278,7 +1282,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
   shared_ptr<const DetectorCoordinateMap> map_sptr = scannerBlocks_sptr->get_detector_map_sptr();
 
   //-- Copy the detector locations
-  DetectionPosition<> det_pos, det_pos_ord;
+  DetectionPosition<> det_pos;
   DetectorCoordinateMap::det_pos_to_coord_type coord_map_reordered;
 
   {
@@ -1293,11 +1297,8 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
                 det_pos.radial_coord() = rad;
                 det_pos.axial_coord() = ax;
                 det_pos.tangential_coord() = tang;
-                det_pos_ord.radial_coord() = rad;
-                det_pos_ord.axial_coord() = ax;
-                det_pos_ord.tangential_coord() = tang; // tang_size - 1 - tang;
 
-                coord_ord = map_sptr->get_coordinate_for_det_pos(det_pos_ord);
+                coord_ord = map_sptr->get_coordinate_for_det_pos(det_pos);
                 coord_map_reordered[det_pos] = coord_ord;
               }
           }
@@ -1315,8 +1316,8 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
   Bin bin;
   CartesianCoordinate3D<float> det_cyl_1, det_cyl_2, det_gen_1, det_gen_2, det_blk_1, det_blk_2;
   float z_shift_cyl = (scannerCyl_sptr->get_axial_length() - scannerCyl_sptr->get_ring_spacing()) / 2.F;
-  float z_shift_gen = scannerGeneric_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
-  float z_shift_blk = scannerBlocks_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
+  float z_shift_gen = -scannerGeneric_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
+  float z_shift_blk = -scannerBlocks_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
 
   for (int seg = proj_data_info_cyl_sptr->get_min_segment_num(); seg <= proj_data_info_cyl_sptr->get_max_segment_num(); ++seg)
     {
@@ -1343,7 +1344,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
             proj_data_info_generic_sptr->find_cartesian_coordinates_of_detection(det_gen_1, det_gen_2, bin);
 
             check_if_equal(m_gen[index],
-                           ((det_gen_1.z() + det_gen_2.z()) / 2.F) + z_shift_gen,
+                           ((det_gen_1.z() + det_gen_2.z()) / 2.F) - z_shift_gen,
                            format("Generic get_m() does not equal the LOR axial midpoint for segment {} and axial position {}",
                                   seg,
                                   bin.axial_pos_num()));
@@ -1364,7 +1365,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
             proj_data_info_blocks_sptr->find_cartesian_coordinates_of_detection(det_blk_1, det_blk_2, bin);
 
             check_if_equal(m_blk[index],
-                           ((det_blk_1.z() + det_blk_2.z()) / 2.F) + z_shift_blk,
+                           ((det_blk_1.z() + det_blk_2.z()) / 2.F) - z_shift_blk,
                            format("Blocks get_m() does not equal the LOR axial midpoint for segment {} and axial position {}",
                                   seg,
                                   bin.axial_pos_num()));
