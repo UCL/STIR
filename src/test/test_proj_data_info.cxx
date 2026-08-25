@@ -1279,35 +1279,12 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
   auto proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
 
   //-- create projdata info generic
-  shared_ptr<const DetectorCoordinateMap> map_sptr = scannerBlocks_sptr->get_detector_map_sptr();
+  shared_ptr<const DetectorCoordinateMap> map_sptr = scannerBlocks_sptr->det_pos_to_coord_type();
 
-  //-- Copy the detector locations
-  DetectionPosition<> det_pos;
-  DetectorCoordinateMap::det_pos_to_coord_type coord_map_reordered;
-
-  {
-    CartesianCoordinate3D<float> coord_ord;
-
-    for (unsigned int rad = 0; rad < map_sptr->get_num_radial_coords(); rad++)
-      {
-        for (unsigned int ax = 0; ax < map_sptr->get_num_axial_coords(); ax++)
-          {
-            for (unsigned int tang = 0; tang < map_sptr->get_num_tangential_coords(); tang++)
-              {
-                det_pos.radial_coord() = rad;
-                det_pos.axial_coord() = ax;
-                det_pos.tangential_coord() = tang;
-
-                coord_ord = map_sptr->get_coordinate_for_det_pos(det_pos);
-                coord_map_reordered[det_pos] = coord_ord;
-              }
-          }
-      }
-  }
   auto scannerGeneric_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerGeneric_sptr->set_scanner_geometry("Generic");
   //    scannerBlocks_reord_sptr->set_num_transaxial_blocks_per_bucket(1);
-  scannerGeneric_sptr->set_detector_map(coord_map_reordered);
+  scannerGeneric_sptr->set_detector_map(map_sptr->det_pos_to_coord_type_sptr());
   scannerGeneric_sptr->set_up();
 
   auto proj_data_info_generic_sptr = std::make_shared<ProjDataInfoGenericNoArcCorr>();
