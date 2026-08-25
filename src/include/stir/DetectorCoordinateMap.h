@@ -84,7 +84,7 @@ public:
   /*! applies sorting to standard STIR order */
   void set_detector_map(const det_pos_to_coord_type& coord_map);
 
-  const det_pos_to_coord_type& det_pos_to_coord_type() const { return det_pos_to_coord; }
+  const det_pos_to_coord_type& get_det_pos_to_coord_type() const { return det_pos_to_coord; }
 
   stir::DetectionPosition<> get_det_pos_for_index(const stir::DetectionPosition<>& index) const
   {
