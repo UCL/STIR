@@ -1279,12 +1279,12 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
   auto proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
 
   //-- create projdata info generic
-  shared_ptr<const DetectorCoordinateMap> map_sptr = scannerBlocks_sptr->det_pos_to_coord_type();
+  shared_ptr<const DetectorCoordinateMap> map_sptr = scannerBlocks_sptr->get_detector_map_sptr();
 
   auto scannerGeneric_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerGeneric_sptr->set_scanner_geometry("Generic");
   //    scannerBlocks_reord_sptr->set_num_transaxial_blocks_per_bucket(1);
-  scannerGeneric_sptr->set_detector_map(map_sptr->get_det_pos_to_coord_type_sptr());
+  scannerGeneric_sptr->set_detector_map(map_sptr->get_det_pos_to_coord_type());
   scannerGeneric_sptr->set_up();
 
   auto proj_data_info_generic_sptr = std::make_shared<ProjDataInfoGenericNoArcCorr>();
