@@ -71,8 +71,10 @@ ArcCorrection::set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data
       if (dynamic_cast<ProjDataInfoCylindricalArcCorr const*>(noarc_corr_proj_data_info_sptr.get()) != 0)
         warning("ArcCorrection called with arc-corrected proj_data_info");
       else
-        warning("ArcCorrection called with proj_data_info of the wrong type:\n\t%s",
-                typeid(*noarc_corr_proj_data_info_sptr).name());
+        {
+          const auto& noarc_corr_proj_data_info = *noarc_corr_proj_data_info_sptr;
+          warning("ArcCorrection called with proj_data_info of the wrong type:\n\t%s", typeid(noarc_corr_proj_data_info).name());
+        }
       return Succeeded::no;
     }
 
