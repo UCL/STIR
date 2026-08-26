@@ -293,7 +293,7 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
         {
           const auto& image_info = *image_info_ptr;
           error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-                typeid(image_info_ptr).name());
+                typeid(image_info).name());
         }
 
       // WARNING get_grid_spacing()[1] == z
