@@ -79,8 +79,6 @@ ScatterEstimation::upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_pr
   else
     interpolate_projdata_3d(*interpolated_scatter, scatter_proj_data, spline_type);
 
-  const TimeFrameDefinitions& time_frame_defs = emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
-
   if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
       shared_ptr<ProjDataInMemory> _interpolated_scatter;
