@@ -72,11 +72,10 @@ template <typename elemT, typename FunctionType, typename Lambda>
 inline void sample_function_using_index_converter(Array<3, elemT>& out, FunctionType func, Lambda&& index_converter);
 
 template <class FunctionType, class elemT, class positionT>
-inline
-void sample_function_on_regular_grid(Array<2,elemT>& out,
-                                     FunctionType func,
-                                     const BasicCoordinate<2, positionT>&  offset,
-                                     const BasicCoordinate<2, positionT>& step);
+inline void sample_function_on_regular_grid(Array<2, elemT>& out,
+                                            FunctionType func,
+                                            const BasicCoordinate<2, positionT>& offset,
+                                            const BasicCoordinate<2, positionT>& step);
 
 END_NAMESPACE_STIR
 
