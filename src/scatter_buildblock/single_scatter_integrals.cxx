@@ -69,15 +69,11 @@ ScatterSimulation::integral_between_2_points(const DiscretisedDensity<3, float>&
 
   const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
 
-  CartesianCoordinate3D<float> origin = image.get_origin();
-  const float z_to_middle = (image.get_max_index() + image.get_min_index()) * voxel_size.z() / 2.F;
-  origin.z() -= z_to_middle;
-  /* TODO replace with image.get_index_coordinates_for_physical_coordinates */
   ProjMatrixElemsForOneBin lor;
   RayTraceVoxelsOnCartesianGrid(lor,
-                                (scatter_point - origin) / voxel_size,  // should be in voxel units
-                                (detector_coord - origin) / voxel_size, // should be in voxel units
-                                voxel_size,                             // should be in mm
+                                density.get_index_coordinates_for_physical_coordinates(scatter_point),
+                                density.get_index_coordinates_for_physical_coordinates(detector_coord),
+                                voxel_size, // should be in mm
 #ifdef NEWSCALE
                                 1.F // normalise to mm
 #else
