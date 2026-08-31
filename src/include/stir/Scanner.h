@@ -574,7 +574,7 @@ public:
   inline Succeeded find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
                                                                       const CartesianCoordinate3D<float>& cart_coord) const;
 
-  shared_ptr<const DetectorCoordinateMap> get_detector_map_sptr() const { return detector_map_sptr; }
+  const shared_ptr<const DetectorCoordinateMap> get_detector_coordinate_map_sptr() const { return detector_map_sptr; }
 
 private:
   bool _already_setup;
@@ -630,7 +630,13 @@ private:
   std::string crystal_map_file_name;
   shared_ptr<DetectorCoordinateMap> detector_map_sptr; /*! effective detection positions including average DOI */
 
+  //! Since the two setters either create a new DetectorCoordinateMap or make a deep-copy
+  //! here the function justs moves from the the temporal shared_ptr to the local.
+  void install_detector_coordinate_map_sptr(shared_ptr<DetectorCoordinateMap> new_map_sptr);
+  //! This function creates a new DetectorCoordinateMap
   void set_detector_map(const DetectorCoordinateMap::det_pos_to_coord_type& coord_map);
+  //! This function performs a deep copy of the object
+  void set_detector_coordinate_map_sptr(const shared_ptr<const DetectorCoordinateMap>& coord_map_sptr);
   void initialise_max_FOV_radius();
 
   // function to create the maps
