@@ -447,7 +447,8 @@ SCX_WRITE(int* Xpos_x, int* Xpos_y, char* text)
     }
 }
 
-void SCX_STOP(stop) int stop;
+void
+SCX_STOP(int stop)
 {
   XEvent report;
 
@@ -525,8 +526,8 @@ SCX_Y_MAX()
 #  undef SCX_hintY
 
 /* KT 28/11/2002 heavily modified to account for TrueColor */
-void SCX_PutImg(image, x_begin, y_begin, lengthX, lengthY) image_t* image;
-int x_begin, y_begin, lengthX, lengthY;
+void
+SCX_PutImg(image_t* image, int x_begin, int y_begin, int lengthX, int lengthY)
 {
   XImage* myimage;
   unsigned char* local_image;
@@ -687,7 +688,8 @@ SCX_SAVE_TO_FILE(int x_begin, int y_begin, int width, int height, FILE* outfile)
 /* change November 1997: added this function (was SCX_SCALE before) */
 /* 30/01/98 put high intensities on top of scale
    25/11/2002 try this again*/
-void SC_SCALE(pos_x, pos_y, size_x, size_y) int pos_x, pos_y, size_x, size_y;
+void
+SC_SCALE(int pos_x, int pos_y, int size_x, int size_y)
 {
   unsigned char par;
   float pos_inc;

@@ -154,19 +154,14 @@ const std::set<float>&
 get_largest_vector(const std::set<float>& x, const std::set<float>& y, const std::set<float>& z)
 {
   const std::set<float>* largest = &x;
-  int axis = 0;
   if (y.size() > largest->size())
     {
       largest = &y;
-      axis = 1;
     }
-  else if (z.size() > largest->size())
+  if (z.size() > largest->size())
     {
       largest = &z;
-      axis = 2;
     }
-
-  //   stir::info(fmt::format("I believe the axial direction is the {}.", axis));
   return *largest;
 }
 

@@ -260,9 +260,12 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       // will for now just switch view syms off
       if (is_null_ptr(
               dynamic_cast<const ProjDataInfoCylindrical*>(subset_proj_data_info_ptr->get_original_proj_data_info_sptr().get())))
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of original (non-subset) ProjDataInfo: %s\n"
-              "(can only handle projection data corresponding to a cylinder)\n",
-              typeid(*subset_proj_data_info_ptr->get_original_proj_data_info_sptr()).name());
+        {
+          const auto& original_proj_data_info = *subset_proj_data_info_ptr->get_original_proj_data_info_sptr();
+          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of original (non-subset) ProjDataInfo: %s\n"
+                "(can only handle projection data corresponding to a cylinder)\n",
+                typeid(original_proj_data_info).name());
+        }
 
       if (do_symmetry_90degrees_min_phi || do_symmetry_180degrees_min_phi)
         {
@@ -287,8 +290,11 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
           = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, float>*>(image_info_ptr.get());
 
       if (is_null_ptr(cartesian_grid_info_ptr))
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-              typeid(*image_info_ptr).name());
+        {
+          const auto& image_info = *image_info_ptr;
+          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
+                typeid(image_info).name());
+        }
 
       // WARNING get_grid_spacing()[1] == z
       const float z_origin_in_planes = image_info_ptr->get_origin().z() / cartesian_grid_info_ptr->get_grid_spacing()[1];
@@ -391,8 +397,11 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
           = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, float>*>(image_info_ptr.get());
 
       if (cartesian_grid_info_ptr == NULL)
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-              typeid(*image_info_ptr).name());
+        {
+          const auto& image_info = *image_info_ptr;
+          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
+                typeid(image_info).name());
+        }
 
       // WARNING get_grid_spacing()[1] == z
       // note: origin by default is (0,0,0)
@@ -435,8 +444,11 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
           = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, float>*>(image_info_ptr.get());
 
       if (cartesian_grid_info_ptr == NULL)
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-              typeid(*image_info_ptr).name());
+        {
+          const auto& image_info = *image_info_ptr;
+          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
+                typeid(image_info).name());
+        }
 
       // WARNING get_grid_spacing()[1] == z
       const float z_origin_in_planes = image_info_ptr->get_origin().z() / cartesian_grid_info_ptr->get_grid_spacing()[1];
