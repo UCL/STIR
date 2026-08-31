@@ -47,6 +47,58 @@ START_NAMESPACE_STIR
 
 namespace detail_interpolate_projdata
 {
+
+inline int
+bspline_degree(BSpline::BSplineType type)
+{
+  switch (type)
+    {
+    case BSpline::near_n:
+      return 0;
+    case BSpline::linear:
+      return 1;
+    case BSpline::quadratic:
+      return 2;
+    case BSpline::cubic:
+      return 3;
+    case BSpline::quartic:
+      return 4;
+    case BSpline::quintic:
+      return 5;
+    case BSpline::oMoms:
+      return 3;
+    }
+  return 0;
+}
+
+inline int
+bspline_min_samples(BSpline::BSplineType type)
+{
+  return bspline_degree(type) + 1;
+}
+
+// step an interpolation type down to the next-lowest degree
+inline BSpline::BSplineType
+bspline_step_down(BSpline::BSplineType type)
+{
+  switch (type)
+    {
+    case BSpline::oMoms:
+    case BSpline::cubic:
+      return BSpline::quadratic;
+    case BSpline::quartic:
+      return BSpline::cubic;
+    case BSpline::quintic:
+      return BSpline::quartic;
+    case BSpline::quadratic:
+      return BSpline::linear;
+    case BSpline::linear:
+      return BSpline::near_n;
+    default:
+      return BSpline::near_n;
+    }
+}
+
 /* Collection of functions to remove interleaving in non-arccorrected data.
 It does this by doubling the number of views, and filling in the new
 tangential positions by averaging the 4 neighbouring bins.
@@ -532,139 +584,159 @@ interpolate_projdata_3d(ProjData& proj_data_out,
                         const BSpline::BSplineType& spline_type,
                         const bool use_view_offset)
 {
-  //   if (use_view_offset)
-  //     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
+  if (use_view_offset)
+    warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
 
-  //   const shared_ptr<const ProjDataInfo> projdata_in_info_sptr = projdata_in_sptr->get_proj_data_info_sptr();
+  const ProjDataInfo& proj_data_in_info = *proj_data_in.get_proj_data_info_sptr();
+  const ProjDataInfo& proj_data_out_info = *proj_data_out.get_proj_data_info_sptr();
 
-  //   shared_ptr<ProjDataInfo> projdata_in_up_info_sptr(projdata_in_sptr->get_proj_data_info_sptr()->clone());
-  //   projdata_in_up_info_sptr->set_num_views(projdata_out->get_num_views());
-  //   projdata_in_up_info_sptr->set_num_tangential_poss(projdata_out->get_num_tangential_poss());
+  ProjDataInfo& proj_data_in_up_info = *proj_data_in.get_proj_data_info_sptr()->clone();
+  proj_data_in_up_info.set_num_views(proj_data_out.get_num_views());
+  proj_data_in_up_info.set_num_tangential_poss(proj_data_out.get_num_tangential_poss());
 
-  //   if (projdata_in_info_sptr->get_scanner_sptr()->get_scanner_geometry() == "BlocksOnCylindrical")
-  //     {
-  //       // interpolate_axial_position(*projdata_out, *projdata_in_sptr);
-  //       return Succeeded::yes;
-  //     }
+  if (proj_data_in_info.get_scanner_sptr()->get_scanner_geometry() == "BlocksOnCylindrical")
+    {
+      // interpolate_axial_position(*projdata_out, *projdata_in_sptr);
+      return Succeeded::no;
+    }
 
-  //   // check for the same ring radius
-  //   // This is strictly speaking only necessary for non-arccorrected data, but
-  //   // we leave it in for all cases.
-  //   if (fabs(projdata_in_info_sptr->get_scanner_sptr()->get_inner_ring_radius()
-  //            - projdata_out->get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius())
-  //       > 1)
-  //     {
-  //       error("interpolate_projdata needs both projection to be of a scanner with the same ring radius");
-  //     }
+  // check for the same ring radius
+  // This is strictly speaking only necessary for non-arccorrected data, but
+  // we leave it in for all cases.
+  if (fabs(proj_data_in_info.get_scanner_sptr()->get_inner_ring_radius()
+           - proj_data_out.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius())
+      > 1)
+    {
+      error("interpolate_projdata needs both projection to be of a scanner with the same ring radius");
+    }
 
-  //   std::string output_filename = "tmp_in_up";
-  //   //    ProjDataInMemory in_up_projdata(projdata_in_sptr->get_exam_info_sptr(),
-  //   //                                    projdata_in_info_sptr->create_shared_clone(),
-  //   //                                    1); // I pressume 1 but we should check!
-  //   // For larger scanners ProjDataInterfile might be the right option.
-  //   ProjDataInterfile in_up_projdata(
-  //       projdata_in_sptr->get_exam_info_sptr(), projdata_in_up_info_sptr, output_filename, std::ios::out);
+  std::string output_filename = "tmp_in_up";
+  //    ProjDataInMemory in_up_projdata(projdata_in_sptr->get_exam_info_sptr(),
+  //                                    projdata_in_info_sptr->create_shared_clone(),
+  //                                    1); // I pressume 1 but we should check!
+  // For larger scanners ProjDataInterfile might be the right option.
+  shared_ptr<ProjDataInfo> proj_data_in_up_info_sptr(proj_data_in_up_info.clone());
+  ProjDataInterfile in_up_projdata(proj_data_in.get_exam_info_sptr(), proj_data_in_up_info_sptr, output_filename, std::ios::out);
 
-  //   info("interpolate_projdata: Interpolating views and tangential positions ...");
+  info("interpolate_projdata: Interpolating views and tangential positions ...");
 
-  //   bool flag_something_went_wrong = false;
+  bool flag_something_went_wrong = false;
 
-  // #ifdef STIR_OPENMP
-  // #  if _OPENMP < 201107
-  // #    pragma omp parallel for
-  // #  else
-  // #    pragma omp parallel for schedule(dynamic)
-  // #  endif
-  // #endif
-  // #ifdef STIR_TOF
-  //   for (int i_tof_in = projdata_in_sptr->get_min_tof_pos_num(); i_tof_in <= projdata_in_sptr->get_max_tof_pos_num();
-  //   ++i_tof_in)
-  //     {
-  // #endif
-  //       for (int i_seg_in = projdata_in_sptr->get_min_segment_num(); i_seg_in <= projdata_in_sptr->get_max_segment_num();
-  //            ++i_seg_in)
-  //         {
-  //           info(boost::format("Now processing segment #: %1%") % i_seg_in);
+  BasicCoordinate<3, BSpline::BSplineType> these_types;
+  these_types[2] = these_types[3] = spline_type;
+  // these_types[1] = these_types[2] = these_types[3] = spline_type;
+  // BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
 
-  //           BasicCoordinate<2, BSpline::BSplineType> these_types2;
-  //           these_types2[1] = these_types2[2] = spline_type;
-  //           BasicCoordinate<2, double> offset, step;
+#ifdef STIR_OPENMP
+#  if _OPENMP < 201107
+#    pragma omp parallel for
+#  else
+#    pragma omp parallel for schedule(dynamic)
+#  endif
+#endif
+#ifdef STIR_TOF
+  for (int i_tof_in = in_up_projdata.get_min_tof_pos_num(); i_tof_in <= in_up_projdata.get_max_tof_pos_num(); ++i_tof_in)
+    {
+#endif
+      for (int i_seg_in = in_up_projdata.get_min_segment_num(); i_seg_in <= in_up_projdata.get_max_segment_num(); ++i_seg_in)
+        {
+          info(boost::format("Now processing segment #: %1%") % i_seg_in);
+          // for Cylindrical, spacing is regular in all directions, which makes mapping trivial
+          std::function<BasicCoordinate<3, double>(const BasicCoordinate<3, int>&)> index_converter;
 
-  //           const float in_sampling_phi = (projdata_in_info_sptr->get_phi(Bin(i_seg_in, 1, 0, 0 /*, i_tof_in*/))
-  //                                          - projdata_in_info_sptr->get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/)));
-  //           const float in_up_sampling_phi
-  //               = projdata_out->get_proj_data_info_sptr()->get_phi(Bin(i_seg_in, 1, 0, 0 /*, i_tof_in*/))
-  //                 - projdata_out->get_proj_data_info_sptr()->get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
+          BasicCoordinate<3, double> offset, step;
 
-  //           const float in_view_offset = 0;
-  //           //                    use_view_offset
-  //           //                    ? projdata_in_info_sptr->get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
-  //           //                    : 0.F;
-  //           const float in_up_view_offset = 0;
-  //           //                    use_view_offset
-  //           //                    ? projdata_in_up_info_sptr->get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
-  //           //                    : 0.F;
+          const float in_sampling_m = proj_data_in_info.get_sampling_in_m(Bin(0, 0, 0, 0));
+          const float out_sampling_m = proj_data_in_up_info.get_sampling_in_m(Bin(0, 0, 0, 0));
+          // offset in 'in' index units
+          offset[1] = (proj_data_in_up_info.get_m(Bin(0, 0, 0, 0)) - proj_data_in_info.get_m(Bin(0, 0, 0, 0))) / in_sampling_m;
+          step[1] = out_sampling_m / in_sampling_m;
 
-  //           offset[1]
-  //               = (projdata_in_info_sptr->get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/)) + in_view_offset
-  //                  - projdata_out->get_proj_data_info_sptr()->get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/)) -
-  //                  in_up_view_offset)
-  //                 / in_sampling_phi;
-  //           step[1] = in_up_sampling_phi / in_sampling_phi;
+          const float in_sampling_phi = (proj_data_in_info.get_phi(Bin(i_seg_in, 1, 0, 0 /*, i_tof_in*/))
+                                         - proj_data_in_info.get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/)));
+          const float in_up_sampling_phi = proj_data_in_up_info.get_phi(Bin(i_seg_in, 1, 0, 0 /*, i_tof_in*/))
+                                           - proj_data_in_up_info.get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
 
-  //           const float in_sampling_s = projdata_in_info_sptr->get_sampling_in_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
-  //           const float in_up_sampling_s
-  //               = projdata_out->get_proj_data_info_sptr()->get_sampling_in_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
+          const float in_view_offset = 0;
+          //                    use_view_offset
+          //                    ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
+          //                    : 0.F;
+          const float in_up_view_offset = 0;
+          //                    use_view_offset
+          //                    ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt()
+          //                    : 0.F;
 
-  //           float dd = projdata_out->get_proj_data_info_sptr()->get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
-  //           float ee = projdata_in_info_sptr->get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
+          offset[2] = (proj_data_in_up_info.get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/))
+                       - proj_data_in_info.get_phi(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/)))
+                      / in_sampling_phi;
+          step[2] = in_up_sampling_phi / in_sampling_phi;
 
-  //           offset[2] = (dd - ee) / in_sampling_s;
-  //           step[2] = in_up_sampling_s / in_sampling_s;
+          const float in_sampling_s = proj_data_in_info.get_sampling_in_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
+          const float in_up_sampling_s = proj_data_in_up_info.get_sampling_in_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
 
-  //           std::cout << "n3" << std::endl;
-  //           int inv_seg = -i_seg_in;
+          float dd = projdata_out->get_proj_data_info_sptr()->get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
+          float ee = projdata_in_info_sptr->get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
 
-  //           Array<3, float> extended3 = extend_segment_in_views(projdata_in_sptr->get_segment_by_sinogram(i_seg_in /*,
-  //           i_tof_in*/),
-  //                                                               2,
-  //                                                               2,
-  //                                                               projdata_in_sptr->get_segment_by_sinogram(inv_seg /*,
-  //                                                               i_tof_in*/));
-  //           SegmentBySinogram<float> sino_3D_out
-  //               = in_up_projdata.get_proj_data_info_sptr()->get_empty_segment_by_sinogram(i_seg_in);
+          offset[3] = (dd - ee) / in_sampling_s;
+          step[3] = in_up_sampling_s / in_sampling_s;
 
-  //           std::cout << "n6" << std::endl;
-  //           for (int i_axial = projdata_in_sptr->get_min_axial_pos_num(i_seg_in);
-  //                i_axial <= projdata_in_sptr->get_max_axial_pos_num(i_seg_in);
-  //                ++i_axial)
-  //             {
-  //               Array<2, float> extended = extended3[i_axial];
-  //               BSpline::BSplinesRegularGrid<2, float, float> proj_data_interpolator(these_types2);
-  //               for (int y = extended.get_min_index(); y <= extended.get_max_index(); ++y)
-  //                 {
-  //                   const int old_min = extended[y].get_min_index();
-  //                   const int old_max = extended[y].get_max_index();
-  //                   extended[y].grow(old_min - 1, old_max + 1);
-  //                   extended[y][old_min - 1] = extended[y][old_min];
-  //                   extended[y][old_max + 1] = extended[y][old_max];
-  //                 }
-  //               std::cout << "n7" << std::endl;
-  //               proj_data_interpolator.set_coef(extended);
-  //               std::cout << "n7.2" << std::endl;
-  //               Sinogram<float> sino_2D_out = sino_3D_out.get_sinogram(i_axial);
-  //               sample_function_on_regular_grid(sino_2D_out, proj_data_interpolator, offset, step);
-  //               sino_3D_out.set_sinogram(sino_2D_out, i_axial);
-  //             }
-  //           if (in_up_projdata.set_segment(sino_3D_out) == Succeeded::no)
-  //             {
-  //               flag_something_went_wrong = true;
-  //             }
-  //         }
+          // define a function to translate indices in the output proj data to indices in input proj data
+          index_converter
+              = [&proj_data_in_up_info, offset, step](const BasicCoordinate<3, int>& index_out) -> BasicCoordinate<3, double> {
+            // translate to indices in input proj data
+            BasicCoordinate<3, double> index_in;
+            for (auto dim = 1; dim <= 3; dim++)
+              index_in[dim] = index_out[dim] * step[dim] + offset[dim];
 
-  // #ifdef STIR_TOF
-  //     }
-  // #endif
+            return index_in;
+          };
+
+          auto segment = proj_data_in.get_segment_by_sinogram(i_seg_in /*,i_tof_in*/);
+
+          const Array<3, float> extended3 = [&]() -> Array<3, float> {
+            if (i_seg_in != 0)
+              {
+                SegmentBySinogram<float> opposite_segment = proj_data_in.get_segment_by_sinogram(-i_seg_in);
+                // views, axial, tangential
+                return extend_segment(segment, 5, 0, 5, &opposite_segment);
+              }
+            else
+              {
+                return extend_segment(segment, 5, 0, 5, nullptr);
+              }
+          }();
+
+          if (segment.get_num_axial_poss() < bspline_min_samples(spline_type))
+            {
+              BSpline::BSplineType axial_type = spline_type;
+              while (segment.get_num_axial_poss() < bspline_min_samples(axial_type) && axial_type != BSpline::near_n)
+                {
+                  axial_type = bspline_step_down(axial_type);
+                }
+              warning(
+                  (boost::format(
+                       "The axial support (%1%) for interpolation degree (%2%) was not sufficient. Switching to degree (%3%).")
+                   % segment.get_num_axial_poss() % spline_type % axial_type)
+                      .str());
+              these_types[1] = axial_type;
+            }
+          else
+            these_types[1] = spline_type;
+
+          BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
+
+          proj_data_interpolator.set_coef(extended3);
+          auto sino_3D_out = proj_data_in_up_info.get_empty_segment_by_sinogram(i_seg_in, false);
+          sample_function_using_index_converter(sino_3D_out, proj_data_interpolator, index_converter);
+          if (in_up_projdata.set_segment(sino_3D_out) == Succeeded::no)
+            {
+              flag_something_went_wrong = true;
+            }
+        }
+
+#ifdef STIR_TOF
+    }
+#endif
 
   //   if (flag_something_went_wrong == true)
   //     error("interpolate_projdata: Something went wrong in the first level of interpolation");
