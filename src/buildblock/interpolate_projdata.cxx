@@ -674,10 +674,9 @@ interpolate_projdata_3d(ProjData& proj_data_out,
           const float in_sampling_s = proj_data_in_info.get_sampling_in_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
           const float in_up_sampling_s = proj_data_in_up_info.get_sampling_in_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
 
-          float dd = projdata_out->get_proj_data_info_sptr()->get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
-          float ee = projdata_in_info_sptr->get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/));
-
-          offset[3] = (dd - ee) / in_sampling_s;
+          offset[3] = (proj_data_in_up_info.get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/))
+                       - proj_data_in_info.get_s(Bin(i_seg_in, 0, 0, 0 /*, i_tof_in*/)))
+                      / in_sampling_s;
           step[3] = in_up_sampling_s / in_sampling_s;
 
           // define a function to translate indices in the output proj data to indices in input proj data
