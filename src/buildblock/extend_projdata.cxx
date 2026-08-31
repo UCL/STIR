@@ -27,6 +27,7 @@
 #include "stir/round.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 
@@ -37,7 +38,8 @@ Array<3, float>
 extend_segment(const SegmentBySinogram<float>& segment,
                const int view_extension,
                const int axial_extension,
-               const int tangential_extension)
+               const int tangential_extension,
+               const SegmentBySinogram<float>* opposite_segment_ptr)
 {
   Array<3, float> out(segment);
   BasicCoordinate<3, int> min_dim, max_dim;
@@ -58,6 +60,7 @@ extend_segment(const SegmentBySinogram<float>& segment,
 
   // check, whether the projection data cover 180° or 360°
   bool flip_views = false;
+  bool use_opposite_segment = false;
   bool extend_without_wrapping = false;
   float min_phi = _PI, max_phi = -_PI;
   for (auto view = segment.get_proj_data_info_sptr()->get_min_view_num();
@@ -76,14 +79,48 @@ extend_segment(const SegmentBySinogram<float>& segment,
   // use a rather large tolerance to cope with non-uniform sampling in BlocksOnCylindrical
   if (std::abs(phi_range - 2 * _PI) < 5 * average_phi_sampling)
     flip_views = false; // if views cover 360°, we can simply wrap around
-  else if ((std::abs(phi_range - _PI) < 5 * average_phi_sampling) && (segment.get_segment_num() == 0))
-    flip_views = true; // if views cover 180°, the tangential positions need to be flipped
+  else if ((std::abs(phi_range - _PI) < 5 * average_phi_sampling))
+    {
+      // 180°: the tangential positions need to be flipped when wrapping.
+      // For segment 0 the mirrored data is this same segment; for any
+      // other segment n, it lives in segment -n instead.
+      if (segment.get_segment_num() == 0)
+        {
+          flip_views = true;
+        }
+      else if (opposite_segment_ptr != nullptr)
+        {
+          flip_views = true;
+          use_opposite_segment = true;
+        }
+      else
+        {
+          extend_without_wrapping = true;
+          warning(format("extend_segment: 180 degree wrap-around extension for segment {} requires segment {} "
+                         "which was not provided. Falling back to nearest-neighbour extension.",
+                         segment.get_segment_num(),
+                         -segment.get_segment_num()));
+        }
+    }
   else
     {
       extend_without_wrapping = true;
       warning("Extending ProjData by wrapping only works for view coverage of 180° or 360°. Instead, just extending with nearest "
               "neighbour.");
     }
+
+  auto flip_source = [&](int axial_pos, int view, int tang_pos) -> float {
+    if (!use_opposite_segment)
+      return out[axial_pos][view][tang_pos];
+
+    if (tang_pos < opposite_segment_ptr->get_min_tangential_pos_num()
+        || tang_pos > opposite_segment_ptr->get_max_tangential_pos_num())
+      return 0.0F;
+
+    const int src_axial
+        = std::max(opposite_segment_ptr->get_min_index(), std::min(opposite_segment_ptr->get_max_index(), axial_pos));
+    return (*opposite_segment_ptr)[src_axial][view][tang_pos];
+  };
 
   // fill the view extensions by wrapping around
   for (int view_edge = 0; view_edge < view_extension; view_edge++)
@@ -101,23 +138,23 @@ extend_segment(const SegmentBySinogram<float>& segment,
               for (int tang_pos = -sym_dim; tang_pos <= sym_dim; tang_pos++)
                 {
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]
-                      = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][-tang_pos];
+                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, -tang_pos);
                   out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
-                      = out[axial_pos][min_dim[2] + view_extension + view_edge][-tang_pos];
+                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, -tang_pos);
                 }
               for (int tang_pos = min_dim[3]; tang_pos < -sym_dim; tang_pos++)
                 { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]
-                      = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][sym_dim];
+                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, sym_dim);
                   out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
-                      = out[axial_pos][min_dim[2] + view_extension + view_edge][sym_dim];
+                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, sym_dim);
                 }
               for (int tang_pos = max_dim[3]; tang_pos > sym_dim; tang_pos--)
                 { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]
-                      = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][-sym_dim];
+                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, -sym_dim);
                   out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
-                      = out[axial_pos][min_dim[2] + view_extension + view_edge][-sym_dim];
+                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, -sym_dim);
                 }
             }
           else
