@@ -65,6 +65,10 @@
 #include "stir/recon_buildblock/preconditioners/EMPreconditioner.h"
 #include "stir/recon_buildblock/preconditioners/IdentityPreconditioner.h"
 #include "stir/recon_buildblock/preconditioners/SPSPreconditioner.h"
+#include "stir/recon_buildblock/gradient_estimators/SVRGGradientEstimator.h"
+#include "stir/recon_buildblock/gradient_estimators/OrderedSubsetsGradientEstimator.h"
+#include "stir/recon_buildblock/gradient_estimators/FullGradientEstimator.h"
+#include "stir/recon_buildblock/gradient_estimators/SAGAGradientEstimator.h"
 
 #ifdef HAVE_LLN_MATRIX
 #  include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
@@ -150,6 +154,11 @@ static HessianDiagonalPreconditioner<DiscretisedDensity<3, float>>::RegisterIt d
 static EMPreconditioner<DiscretisedDensity<3, float>>::RegisterIt dummyEMPrecond;
 static IdentityPreconditioner<DiscretisedDensity<3, float>>::RegisterIt dummyIdentityPrecond;
 static SPSPreconditioner<DiscretisedDensity<3, float>>::RegisterIt dummySPSPrecond;
+
+static SVRGGradientEstimator<DiscretisedDensity<3, float>>::RegisterIt dummySVRGEstimator;
+static OrderedSubsetsGradientEstimator<DiscretisedDensity<3, float>>::RegisterIt dummyOSEstimator;
+static FullGradientEstimator<DiscretisedDensity<3, float>>::RegisterIt dummyFullEstimator;
+static SAGAGradientEstimator<DiscretisedDensity<3, float>>::RegisterIt dummySAGAEstimator;
 
 static OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid>::RegisterIt dummyOSMAPOSLPVC;
 static OSSPSReconstruction<ParametricVoxelsOnCartesianGrid>::RegisterIt dummyOSSPSPVC;

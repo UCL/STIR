@@ -82,6 +82,11 @@ if (NOT MINI_STIR)
 	preconditioners/EMPreconditioner.cxx
 	preconditioners/IdentityPreconditioner.cxx
 	preconditioners/SPSPreconditioner.cxx
+	gradient_estimators/GeneralisedGradientEstimator.cxx
+	gradient_estimators/SVRGGradientEstimator.cxx
+	gradient_estimators/OrderedSubsetsGradientEstimator.cxx
+	gradient_estimators/FullGradientEstimator.cxx
+	gradient_estimators/SAGAGradientEstimator.cxx
 	ProjDataRebinning.cxx
 	FourierRebinning.cxx
 	PLSPrior.cxx
