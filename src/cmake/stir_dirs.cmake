@@ -60,6 +60,7 @@ if (NOT MINI_STIR)
   SET( STIR_LIBRARIES # ${STIR_BUILDBLOCK_LIB}
     analytic_FBP3DRP analytic_FBP2D analytic_SRT2D analytic_SRT2DSPECT analytic_GRD2D analytic_DDSR2D iterative_OSMAPOSL   iterative_KOSMAPOSL
     iterative_OSSPS
+    iterative_PSV
     iterative_PreconditionedGradient
     scatter_buildblock
     Shape_buildblock eval_buildblock 
@@ -85,6 +86,7 @@ if (NOT MINI_STIR)
     iterative/OSMAPOSL  
     iterative/KOSMAPOSL
     iterative/OSSPS
+    iterative/PSV
     iterative/PreconditionedGradient
     iterative/POSMAPOSL  
     iterative/POSSPS

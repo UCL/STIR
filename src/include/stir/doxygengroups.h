@@ -335,6 +335,12 @@ Implementation of the kernel-based OSMAP One-Step-Late reconstruction algorithm.
 Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorithm.
 */
 /*!
+\defgroup PSV PSV
+\ingroup iterativereconstructors
+Implementation of the preconditioned SVRG reconstruction algorithm (PETRIC2 psv contribution).
+A locked preset of the composable \ref PreconditionedGradient engine.
+*/
+/*!
 \defgroup PreconditionedGradient PreconditionedGradient
 \ingroup iterativereconstructors
 Composable preconditioned-gradient reconstruction engine: update \f$x \leftarrow [x + \alpha P \tilde g]_+\f$
