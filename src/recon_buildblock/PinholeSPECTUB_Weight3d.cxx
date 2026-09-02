@@ -602,7 +602,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
             float dzvch = (float)0.;
 
             // voxel distance to the channel margin
-            if (v->x1 > 0)
+            if (v->x1 > h->x1)
             {
                 dxvch = mxdx - v->x1;     
             }
@@ -610,7 +610,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
             {
                 dxvch = mxsx - v->x1;
             }
-            if (v->z > 0)
+            if (v->z > h->z1)
             {
                 dzvch = mzdx - v->z;
             }
@@ -628,9 +628,9 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
 
             //...vector voxel-hole, angles and distances...............................
 
-            float ux1 = h->x1 + dxh - v->x1;
+            float ux1 = h->x1 + dxh / 2.F - v->x1;
             float uy1 = myup - v->y1;
-            float uz1 = h->z1 + dzh - v->z;
+            float uz1 = h->z1 + dzh / 2.F - v->z;
 
             if (uy1 <= EPSILON)
             error_weight3d(88, "");
@@ -682,7 +682,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
         {
             float dzvch = (float)0.;
           
-            if (v->z > 0)
+            if (v->z > h->z1)
             {
                 dzvch = mzdx - v->z;
             }
@@ -701,7 +701,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
 
             float ux1 = h->x1 - v->x1;
             float uy1 = myup - v->y1;
-            float uz1 = h->z1 + dzh - v->z;
+            float uz1 = h->z1 + dzh / 2.F - v->z;
 
             if (uy1 <= EPSILON)
             error_weight3d(88, "");
@@ -753,7 +753,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
         {
             float dxvch = (float)0.;
 
-            if (v->x1 > 0)
+            if (v->x1 > h->x1)
             {
                 dxvch = mxdx - v->x1;
             }
@@ -770,7 +770,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
 
             //...vector voxel-hole, angles and distances...............................
 
-            float ux1 = h->x1 + dxh - v->x1;
+            float ux1 = h->x1 + dxh / 2.F - v->x1;
             float uy1 = myup - v->y1;
             float uz1 = h->z1 - v->z;
 
