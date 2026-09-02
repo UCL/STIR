@@ -48,6 +48,8 @@
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/BinNormalisationFromConstantFactor.h"
 #include "stir/recon_buildblock/ChainedBinNormalisation.h"
+#include "stir/ProjDataInMemory.h"
+#include "stir/Viewgram.h"
 START_NAMESPACE_STIR
 
 template <typename TargetT>
@@ -425,6 +427,28 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::s
         const float gate_duration_fraction = static_cast<float>(this->get_time_gate_definitions().get_gate_duration(gate_num) / total_gate_duration);
         shared_ptr<BinNormalisation> gate_duration_norm_sptr(new BinNormalisationFromConstantFactor(gate_duration_fraction));
         current_gate_norm_factors_sptr.reset(new ChainedBinNormalisation(gate_duration_norm_sptr, current_gate_norm_factors_sptr));
+        // Apply the inverse of the gate-duration constant factor to additive projection data for this gate
+        if (!is_null_ptr(this->_additive_gated_proj_data_sptr) && gate_duration_fraction != 1.F && gate_duration_fraction > 0.F)
+          {
+            shared_ptr<ProjData> add_proj_data_sptr(this->_additive_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
+            if (!is_null_ptr(add_proj_data_sptr))
+              {
+                shared_ptr<ProjDataInMemory> scaled_add_proj_sptr(new ProjDataInMemory(add_proj_data_sptr->get_exam_info_sptr(),
+                                                                                         add_proj_data_sptr->get_proj_data_info_sptr(),
+                                                                                         /*initialise_with_0=*/true));
+                for (int segment_num = add_proj_data_sptr->get_min_segment_num();
+                     segment_num <= add_proj_data_sptr->get_max_segment_num(); ++segment_num)
+                  for (int view_num = add_proj_data_sptr->get_min_view_num(); view_num <= add_proj_data_sptr->get_max_view_num(); ++view_num)
+                    for (int timing_pos = add_proj_data_sptr->get_min_tof_pos_num();
+                         timing_pos <= add_proj_data_sptr->get_max_tof_pos_num(); ++timing_pos)
+                      {
+                        Viewgram<float> vg = add_proj_data_sptr->get_viewgram(view_num, segment_num, /*make_num_tangential_poss_odd=*/false, timing_pos);
+                        vg /= static_cast<float>(gate_duration_fraction);
+                        scaled_add_proj_sptr->set_viewgram(vg);
+                      }
+                this->_single_gate_obj_funcs[gate_num].set_additive_proj_data_sptr(scaled_add_proj_sptr);
+              }
+          }
         this->_single_gate_obj_funcs[gate_num].set_normalisation_sptr(current_gate_norm_factors_sptr);
         this->_single_gate_obj_funcs[gate_num].set_recompute_sensitivity(this->get_recompute_sensitivity());
         this->_single_gate_obj_funcs[gate_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
