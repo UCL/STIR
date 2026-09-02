@@ -49,6 +49,8 @@ static bool check_zang_par(const voxel_type* vox, const hole_type* h);
 
 // bool check_zang_obl( lor_type * l, voxel_type * vox, hole_type * h);
 
+static float channel_area_fraction(const hole_type* h, const float dxh, const float dzh);
+
 static void voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const wmh_mph_type& wmh);
 
 static void downsample_psf(const psf2d_type* psf_in, psf2d_type* psf_out, int factor, bool do_calc);
@@ -468,6 +470,45 @@ check_zang_par(const voxel_type* v, const hole_type* h)
 }
 
 //==========================================================================
+//=== channel_area_fraction ================================================
+//==========================================================================
+
+static float
+channel_area_fraction(const hole_type* h, const float dxh, const float dzh)
+{
+    if (h->do_round)
+    {
+        // Relative displacement of two identical elliptical/circular apertures.
+        const float qx = dxh / h->dxcm;
+        const float qz = dzh / h->dzcm;
+        const float q = (std::sqrt)(qx * qx + qz * qz);
+
+        if (q >= 1.F)
+            return 0.F;
+
+        constexpr float pi = 3.14159265358979323846F;
+
+        const float radicand = 1.F - q * q;
+
+        return (2.F / pi)
+               * ((std::acos)(q)
+                  - q * (std::sqrt)(radicand > 0.F ? radicand : 0.F));
+    }
+
+    // Rectangular aperture.
+    const float fx_raw
+        = 1.F - (std::abs)(dxh) / h->dxcm;
+
+    const float fz_raw
+        = 1.F - (std::abs)(dzh) / h->dzcm;
+
+    const float fx = fx_raw > 0.F ? fx_raw : 0.F;
+    const float fz = fz_raw > 0.F ? fz_raw : 0.F;
+
+    return fx * fz;
+}
+
+//==========================================================================
 //=== voxel_projection =====================================================
 //==========================================================================
 
@@ -677,6 +718,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
             //... effectiveness ......................................................
 
             l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+            l->eff *= channel_area_fraction(h, dxh, dzh);
         }
         else if ((v->x1 >= mxsx && v->x1 <= mxdx) && (v->z < mzsx || v->z > mzdx)) // x inside and z outside
         {
@@ -748,6 +790,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
             //... effectiveness ......................................................
 
             l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+            l->eff *= channel_area_fraction(h, 0.F, dzh);
         }
         else if ((v->x1 < mxsx || v->x1 > mxdx) && (v->z >= mzsx && v->z <= mzdx)) // x outside and z inside
         {
@@ -819,6 +862,7 @@ voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const
             //... effectiveness ......................................................
 
             l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+            l->eff *= channel_area_fraction(h, dxh, 0.F);
         }
 
 
