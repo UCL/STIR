@@ -61,6 +61,7 @@
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/KOSMAPOSL/KOSMAPOSLReconstruction.h"
 #include "stir/OSSPS/OSSPSReconstruction.h"
+#include "stir/PreconditionedGradient/PreconditionedGradientReconstruction.h"
 #include "stir/recon_buildblock/preconditioners/HessianDiagonalPreconditioner.h"
 #include "stir/recon_buildblock/preconditioners/EMPreconditioner.h"
 #include "stir/recon_buildblock/preconditioners/IdentityPreconditioner.h"
@@ -149,6 +150,7 @@ static FBP3DRPReconstruction::RegisterIt dummy602;
 static OSMAPOSLReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummy603;
 static KOSMAPOSLReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummyK;
 static OSSPSReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummy604;
+static PreconditionedGradientReconstruction<DiscretisedDensity<3, float>>::RegisterIt dummyPrecondGrad;
 
 static HessianDiagonalPreconditioner<DiscretisedDensity<3, float>>::RegisterIt dummyHessianDiagPrecond;
 static EMPreconditioner<DiscretisedDensity<3, float>>::RegisterIt dummyEMPrecond;
