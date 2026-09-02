@@ -77,6 +77,11 @@ if (NOT MINI_STIR)
         BinNormalisationPETFromComponents.cxx
         ML_estimate_component_based_normalisation.cxx
 	GeneralisedPrior.cxx
+	preconditioners/GeneralisedPreconditioner.cxx
+	preconditioners/HessianDiagonalPreconditioner.cxx
+	preconditioners/EMPreconditioner.cxx
+	preconditioners/IdentityPreconditioner.cxx
+	preconditioners/SPSPreconditioner.cxx
 	ProjDataRebinning.cxx
 	FourierRebinning.cxx
 	PLSPrior.cxx
