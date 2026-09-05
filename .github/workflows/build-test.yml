@@ -5,6 +5,7 @@ on:
     branches: 
       - master
       - release_6.3
+      - PETSIRD
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -16,7 +17,7 @@ on:
   pull_request:
     branches:
       - master
-      - tof_sino_UCL
+      - PETSIRD
     paths-ignore:
       - '.appveyor.yml'
       - 'CITATION.cff'
@@ -33,20 +34,27 @@ on:
         default: false
 jobs:
   build:
+    env:
+      YARDL_VERSION: 0.6.7
+    defaults:
+      run:
+        # All steps that don't have an explicit `shell` will activate any conda environment, see https://github.com/mamba-org/setup-micromamba#about-login-shells
+        shell: 'bash -leo pipefail {0}'
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
+        # Note: PETSIRD=ON will force mamba install with all packages. For clarity, we set
+        # compiler: conda-compiler, compiler_version: "", and all packages: "ON".
+        # Although those variables are ignored, this gives a more accurate name to the job.
         - os: ubuntu-24.04
           compiler: gcc
           # compiler_version: 9
           cuda_version: "0"
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
-          parallelproj: "ON"
-          ROOT: "ON"
-          ITK: "OFF"
+          PETSIRD: "ON"
         - os: ubuntu-24.04
           compiler: gcc
           # compiler_version: 9
@@ -56,6 +64,7 @@ jobs:
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           compiler: clang
           #compiler_version:
@@ -66,6 +75,7 @@ jobs:
           ROOT: "OFF"
           # currently using ITK 5.2 which doesn't like clang 14
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           compiler: gcc
           compiler_version: 10
@@ -75,6 +85,7 @@ jobs:
           parallelproj: "OFF"
           ROOT: "OFF"
           ITK: "ON"
+          PETSIRD: "OFF"
         # gcc-12, C++20 test (Interesting, as gcc-12 does not support all of C++20 yet).
         # However, commented out, as this seems to hang during install step for unknown reasons.
         # See https://github.com/UCL/STIR/pull/1605
@@ -97,6 +108,7 @@ jobs:
           ROOT: "OFF"
           # Currently disabled due to out of disk space, see https://github.com/UCL/STIR/issues/1618
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           # shared library build
           compiler: gcc
@@ -107,6 +119,7 @@ jobs:
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
+          PETSIRD: "OFF"
         - os: ubuntu-24.04
           compiler: gcc
           # currently CUDA doesn't support gcc 14 yet
@@ -117,6 +130,7 @@ jobs:
           parallelproj: "ON"
           ROOT: "OFF"
           ITK: "ON"
+          PETSIRD: "OFF"
         - os: macOS-latest
           compiler: gcc
           # compiler_version: 11
@@ -127,15 +141,16 @@ jobs:
           BUILD_TYPE: "Debug"
           ROOT: "OFF"
           ITK: "OFF"
+          PETSIRD: "OFF"
         - os: macOS-latest
-          compiler: clang
-          compiler_version: 18
+          compiler: conda-compiler
+          compiler_version: ""
           cuda_version: "0"
-          BUILD_FLAGS: "-DSTIR_OPENMP=OFF"
-          parallelproj: "OFF"
+          parallelproj: "ON"
           BUILD_TYPE: "Release"
-          ROOT: "OFF"
-          ITK: "OFF"
+          ROOT: "ON"
+          ITK: "ON"
+          PETSIRD: "ON"
         - os: macOS-latest
           compiler: clang
           compiler_version: 21
@@ -147,35 +162,15 @@ jobs:
           BUILD_TYPE: "Release"
           ROOT: "OFF"
           ITK: "OFF"
+          PETSIRD: "OFF"
 
       # let's run all of them, as opposed to aborting when one fails
       fail-fast: false
 
-    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+    name: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-petsird=${{ matrix.PETSIRD}}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
 
     steps:
-    - name: disk space
-      shell: bash
-      run: |
-          case ${{matrix.os}} in
-            (ubuntu* | macOS*)
-              df -h
-              # saves about 2GB
-              echo removing dotnet
-              sudo rm -rf /usr/share/dotnet
-              # saves about 10 GB
-              echo removing agent_tools
-              sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-              # saves about 10 GB
-              echo removing android files
-              sudo rm -rf /usr/local/lib/android
-              df -h
-              ;;
-            (windows*)
-              # no idea how to do this
-              ;;
-           esac
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: recursive
 
@@ -184,15 +179,91 @@ jobs:
       run: |
           case ${{matrix.os}} in
             (ubuntu* | macOS*)
-              sudo .github/workflows/GHA_increase_disk_space.sh
+              if [ "${ACT:-false}" = "false" ]; then
+                sudo .github/workflows/GHA_increase_disk_space.sh
+              fi
               ;;
             (windows*)
               # no idea what to do here
               ;;
            esac
 
-    - name: set_compiler_variables
-      shell: bash
+    - if: matrix.cuda_version != '0'
+      uses: Jimver/cuda-toolkit@v0.2.35
+      id: cuda-toolkit
+      with:
+          cuda: ${{ matrix.cuda_version }}
+          linux-local-args: '["--toolkit"]'
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}
+        max-size: "2G"
+
+    - name: Setup conda environment
+      if: matrix.PETSIRD == 'ON'
+      uses: mamba-org/setup-micromamba@v3
+      with:
+        environment-file: build_environment.yml
+        environment-name: stir
+        cache-environment: true
+        cache-downloads: true
+
+    - name: General env variables
+      run: |
+          if [[ '${{ matrix.os }}' == macOS* ]]; then
+            if test -n "$CONDA_PREFIX"; then
+              # see https://conda-forge.org/docs/maintainer/knowledge_base/#newer-c-features-with-old-sdk
+              echo CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY">> $GITHUB_ENV
+            fi
+          fi
+          # We will install all software, including some external dependencies, here
+          echo CMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/install" >> $GITHUB_ENV
+
+    - name: Checkout PETSIRD
+      if: matrix.PETSIRD == 'ON'
+      uses: actions/checkout@v7
+      with:
+        repository: ETSInitiative/PETSIRD
+        ref: v0.9.1
+        path: external/PETSIRD
+
+    - name: Install yardl
+      if: matrix.PETSIRD == 'ON'
+      run: |
+        OS="$(uname -s)"
+        ARCH="$(uname -m)"
+        echo $OS
+        echo $ARCH
+        case "$OS" in
+          Linux)
+            YARDL_OS="linux"
+            ;;
+          Darwin)
+            YARDL_OS="darwin"
+            ;;
+          Windows)
+            YARDL_OS="windows"
+            ;;
+        esac
+
+        curl -L https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz -o yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz
+        mkdir yardl
+        tar -xzf "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz" -C yardl
+        rm "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz"
+        echo "$PWD/yardl" >> "$GITHUB_PATH"
+
+    - name: Install PETSIRD
+      if: matrix.PETSIRD == 'ON'
+      run: |
+          set -e
+          micromamba install conda-forge::just
+          cd external/PETSIRD/
+          just cmake_install_prefix="${CMAKE_INSTALL_PREFIX}" build-cpp
+
+    - name: set_compiler_variables (no conda)
+      if: matrix.PETSIRD !='ON'
       run: |
           set -ex
           if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
@@ -206,7 +277,7 @@ jobs:
             CC=${CC}-${{ matrix.compiler_version }}
             CXX=${CXX}-${{ matrix.compiler_version }}            
           fi
-          if test 'XX${{ matrix.os }}' = 'XXmacOS-latest'; then
+          if [[ '${{ matrix.os }}' == macOS* ]]; then
             if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
               brew install llvm@${{ matrix.compiler_version }}
               if test XX${HOMEBREW_PREFIX} = XX; then
@@ -229,33 +300,26 @@ jobs:
           echo CC="$CC" >> $GITHUB_ENV
           echo CXX="$CXX" >> $GITHUB_ENV
 
-    - if: matrix.cuda_version != '0'
-      uses: Jimver/cuda-toolkit@v0.2.19
-      id: cuda-toolkit
-      with:
-          cuda: ${{ matrix.cuda_version }}
-          linux-local-args: '["--toolkit"]'
-
-    - name: install_dependencies
-      shell: bash
+    - name: install_dependencies (no conda)
+      if: matrix.PETSIRD !='ON'
       run: |
           set -ex
-          # We will install some external dependencies here
-          CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
+
           case ${{matrix.os}} in
             (ubuntu*)
               sudo apt update
               # install compiler
               if test 'XX${{ matrix.compiler }}' = 'XXclang'; then
                   # package is called clang, need libomp-dev for OpenMP support
-                  sudo apt install $CC libomp-dev
+                  sudo apt install -y $CC libomp-dev
               else
-                  sudo apt install $CXX
+                  sudo apt install -y $CXX
               fi
+
               # other dependencies
-              sudo apt install libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev ninja-build
+              sudo apt install -y cmake libboost-dev libhdf5-serial-dev swig python3-dev nlohmann-json3-dev ninja-build
               if test "${{matrix.ITK}}XX" == "ONXX"; then
-                sudo apt install libinsighttoolkit5-dev
+                sudo apt install -y libinsighttoolkit5-dev
               fi
               # free up some disk space
               apt autoremove --purge && sudo apt clean
@@ -268,12 +332,11 @@ jobs:
               if ! command -v swig > /dev/null; then
                   brew install swig
               fi
-              brew install boost nlohmann-json
               # Temp fix to 3.13 due to https://github.com/UCL/STIR/issues/1638
               #if ! command -v python3 > /dev/null; then
               #    brew install python
               #fi
-              brew install python@3.13
+              brew install boost nlohmann-json python@3.13
               brew ls python@3.13
               PYTHON_EXECUTABLE=$(find /opt/homebrew/Cellar/python@3.13 -type f -name python3.13)
               #PYTHON_EXECUTABLE=$(which python3)
@@ -286,10 +349,11 @@ jobs:
               PYTHON_EXECUTABLE=$(which python3)
               ;;
           esac
-          echo PYTHON_EXECUTABLE="$PYTHON_EXECUTABLE" >> $GITHUB_ENV
+
           ${PYTHON_EXECUTABLE} -m venv ${GITHUB_WORKSPACE}/my-env
           source ${GITHUB_WORKSPACE}/my-env/bin/activate
-          #python -m pip install -U pip
+          python -m pip install -U pip
+
           case ${{matrix.os}} in
             (macOS*)
               # attempt to get round buggy Accelerate builds, see https://github.com/numpy/numpy/issues/15947
@@ -325,30 +389,31 @@ jobs:
           if test "${{matrix.ROOT}}XX" == "ONXX"; then
              case ${{matrix.os}} in
                (ubuntu*)
-               sudo apt install libtbb-dev libvdt-dev libgif-dev
-               ROOT_file=root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz
-               #root_v6.34.00.Linux-ubuntu24.10-x86_64-gcc14.2.tar.gz
+               sudo apt install -y libtbb-dev libvdt-dev libgif-dev libxpm-dev
+               ROOT_file=root_v6.40.02.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
                ;;
                (macOS*)
-               ROOT_file=https://root.cern/download/root_v6.34.00.macos-15.1-arm64-clang160.tar.gz
+               ROOT_file=root_v6.40.02.macos-15.7-arm64-clang170.tar.gz
                ;;
              esac
              wget https://root.cern/download/"$ROOT_file"
              tar -xzvf "$ROOT_file"
              rm "$ROOT_file"
              source root/bin/thisroot.sh
-             echo ROOTSYS="$ROOTSYS" >> $GITHUB_ENV
+             # thisroot.sh adds ROOTSYS to CMAKE_PREFIX_PATH.
+             echo ROOTSYS="$ROOTSYS" >> "$GITHUB_ENV"
+             echo CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" >> "$GITHUB_ENV"
           fi
 
           # we'll install some dependencies with shared libraries, so need to let the OS know
           # thisroot.sh also modified the path, so save that for the recon_test_pack
           case ${{matrix.os}} in
             (ubuntu*)
-              echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+              echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
               echo PATH="$PATH" >> $GITHUB_ENV
               ;;
             (macOS*)
-              echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:$DYLD_FALLBACK_LIBRARY_PATH" >> $GITHUB_ENV
+              echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${DYLD_FALLBACK_LIBRARY_PATH}" >> "$GITHUB_ENV"
               echo PATH="$PATH" >> $GITHUB_ENV
               ;;
             (windows*)
@@ -356,36 +421,34 @@ jobs:
               ;;
           esac
 
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
-      with:
-        key: ${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}
-        max-size: "2G"
-
     - name: configure
-      shell: bash
       env:
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
           BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
       run: |
           set -ex
-          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          if test -f "${GITHUB_WORKSPACE}/my-env/bin/activate"; then
+            source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          fi
           #export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           cmake --version
           if test "XX$CC" != "XX"; then
               $CC --version
               $CXX --version
           fi
-          CMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install
-          # make available to jobs below
-          echo CMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" >> $GITHUB_ENV
           if [ -n "$ROOTSYS" ]; then
-            # make sure we find ROOT (and vdt, which is installed in the same place)
-            EXTRA_BUILD_FLAGS=-DCMAKE_PREFIX_PATH:PATH="$ROOTSYS"
+            if test -n "$CONDA_PREFIX"; then
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_PATH=${CONDA_PREFIX}"
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DHDF5_ROOT=${CONDA_PREFIX}"
+            else
+              # TODO probably not necessary
+              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_PATH=${ROOTSYS}"
+            fi
           fi
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DBUILD_SWIG_PYTHON=ON -DPython_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
+          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DGRAPHICS=None"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDISABLE_STIR_LOCAL=OFF -DSTIR_LOCAL=${GITHUB_WORKSPACE}/examples/C++/using_STIR_LOCAL"
           echo "cmake flags $BUILD_FLAGS $EXTRA_BUILD_FLAGS"          
           mkdir build
@@ -409,16 +472,16 @@ jobs:
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
 
     - name: build
-      shell: bash
       env:
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       run: |
           cd ${GITHUB_WORKSPACE}/build;
-          source ${GITHUB_WORKSPACE}/my-env/bin/activate
-          cmake --build . --config ${BUILD_TYPE}} --target install
+          if test -f "${GITHUB_WORKSPACE}/my-env/bin/activate"; then
+            source "${GITHUB_WORKSPACE}/my-env/bin/activate"
+          fi
+          cmake --build . --config ${BUILD_TYPE} --target install
 
     - name: ctest
-      shell: bash
       env:
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       run: |
@@ -448,7 +511,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: ctest_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        name: ctest_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-petsird=${{ matrix.PETSIRD}}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
         path: |
           ${{ github.workspace }}/build/**/*.log
           ${{ github.workspace }}/build/**/*.hv
@@ -458,9 +521,8 @@ jobs:
         retention-days: 7
 
     - name: C++ examples with STIR_LOCAL
-      shell: bash
       run: |
-          set -ex;
+          set -e
           PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
           # Run examples to see if they work
           cd ${GITHUB_WORKSPACE}/examples/PET_simulation
@@ -479,9 +541,7 @@ jobs:
           ${EXE_LOC}/demo4_obj_fun demo4_obj_fun.par
           ${EXE_LOC}/demo5_line_search demo5_line_search.par
 
-    - name: remove build
-      shell: bash
-         # remove to create some disk space
+    - name: remove build # remove to create some disk space
       run: |
           set -x
           cd ${GITHUB_WORKSPACE}
@@ -490,9 +550,8 @@ jobs:
           df -h .
 
     - name: C++ examples with installed STIR
-      shell: bash
       run: |
-          set -ex;
+          set -e
           # build and run C++/using_installed_STIR
           PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
           cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
@@ -505,12 +564,11 @@ jobs:
           rm -rf build
 
     - name: recon_test_pack
-      shell: bash
       env:
           BUILD_FLAGS: ${{ matrix.BUILD_FLAGS }}
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       run: |
-          set -ex;
+          set -e
           PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
           cd ${GITHUB_WORKSPACE}/recon_test_pack
           ./run_tests.sh --nointbp
@@ -532,7 +590,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        name: recon_test_pack_log_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-petsird=${{ matrix.PETSIRD}}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
         path: |
           ${{ github.workspace }}/recon_test_pack/**/*.log
           ${{ github.workspace }}/recon_test_pack/**/my_*v
@@ -550,10 +608,11 @@ jobs:
           mv ../tmp/* .
 
     - name: Python
-      shell: bash
       run: |
-          set -ex
-          source ${GITHUB_WORKSPACE}/my-env/bin/activate
+          set -e
+          if test -f "${GITHUB_WORKSPACE}/my-env/bin/activate"; then
+            source "${GITHUB_WORKSPACE}/my-env/bin/activate"
+          fi
           # Run Python tests, making sure we're using the correct Python interpreter
           which python
           export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/python

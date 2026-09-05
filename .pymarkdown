@@ -1,0 +1,18 @@
+{
+    "system" : {
+        // exclude these for now. Will add them later.
+        "exclude_path" : ["examples", "external_helpers", "scripts", ".github", "src/swig"]
+    },
+    "plugins": {
+        "MD013": {
+            "enabled": true,
+            "line_length": 120,
+            "code_block_line_length": 120
+        },
+        // disable "no-bare URL"
+        "MD034": {
+            "enabled": false
+        }
+      }
+}
+

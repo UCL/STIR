@@ -1,0 +1,124 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <title>Summary of changes in STIR release 6.5</title>
+</head>
+
+<body>
+  <h1>Summary of changes in STIR release 6.5</h1>
+
+
+  <h2>Overall summary</h2>
+
+    <p>
+      This version is 100% backwards compatible with STIR 6.4 (aside from bug fixes of course).
+    </p>
+    <p>
+      This is a release ...
+    </p>
+    <p>
+      Main code contributions were by Nikos Efthimiou (UMCG), Daniel Deidda (NPL), Kris Thielemans (UCL)
+      <br>
+      Overall overview and release management was by Kris Thielemans (UCL).
+    </p>
+
+    <h2>Patch release info</h2>
+    <ul>
+      <li>
+        6.5.0 released XXX<br>
+        <a href="https://github.com/UCL/STIR/milestone/14">GitHub Milestone 6.5</a>
+      </li>
+    </ul>
+
+  <h2> Summary for end users (also to be read by developers)</h2>
+
+  <h3>Bug fixes</h3>
+  <ul>
+    <li>
+      Fix incompatibility problem with ROOT 6.38 or later. Previous versions of STIR either
+      crashed or threw an error <tt>Entry is null</tt>.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1741>PR #1741</a>.
+    </li>
+ </ul>
+
+  <h3>New functionality</h3>
+  <h4>General</h4>
+  <ul>
+    <li>
+      Initial support for reading <a href=https://github.com/ETSInitiative/PETSIRD>PETSIRD</a> 0.9 list-mode data,
+      the proposed standard for PET list-mode data from the
+      <a href=https://etsinitiative.org/>Emission Tomography Standardization Initiative</a> (ETSI).
+      Some limitations include single layer, single module type geometry, no singles histogram, no dead-time.
+      See also <a href=https://github.com/ETSIhackers/STIR2PETSIRD>STIR2PETSIRD</a> for using STIR to write PETSIRD data.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+    </li>
+    <li>
+      Support for even number of TOF bins.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+    </li>
+  </ul>
+
+  <!--
+  <h3>Changed functionality</h3>
+  <ul>
+  </ul>
+
+  <h4>Changes to examples</h4>
+  <ul>
+
+  </ul>
+
+  <h3>Changes to documentation</h3>
+  <ul>
+  </ul>
+  -->
+
+  <h3>Build system</h3>
+  <ul>
+    <li>
+      CMake: fix problem compiling STIR registries where fmt.h is not found.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+    </li>
+    <li>
+      SWIG: update SWIG files for compatibility with SWIG 4.5
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1743>PR #1743</a>.
+    </li>
+  </ul>
+
+  <h3>Known problems</h3>
+  <p>See <a href=https://github.com/UCL/STIR/labels/bug>our issue tracker</a>.
+  </p>
+
+
+<H2>What is new for developers (aside from what should be obvious from the above):</H2>
+
+  <h3>Changed functionality</h3>
+  <ul>
+    <li>
+      Allow local running of a GitHub Action via <a href=https://github.com/nektos/act>act</a> (see 
+      <a href=https://github.com/UCL/STIR/blob/master/documentation/devel/local-CI.md>local-CI.md</a>.
+      <br>
+      a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+    </li>
+  </ul>
+<!--
+  <h3>New Deprecations and renames</h3>
+  <ul>
+  </ul>
+
+  <h3>Code improvements</h3>
+  <ul>
+  </ul>
+
+  <h3>Test changes</h3>
+  <p>All new features and most code changes were accompanied by new tests.</p>
+-->
+</body>
+
+</html>

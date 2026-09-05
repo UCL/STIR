@@ -127,9 +127,11 @@ InputStreamFromROOTFile::set_up(const std::string& header_path)
   stream_ptr = new TChain(this->chain_name.c_str());
   stream_ptr->Add(fullfilename.c_str());
   // Turn off all branches
-  stream_ptr->SetBranchStatus("*", 0);
+  // Can no longer do this from ROOT 6.38 as we'd need to re-enable it for all branches that we want.
+  // This would be tedious, and KT couldn't figure out how
+  // (`stream_ptr->SetBranchStatus("*time1", true);` and variations didn't work)
+  // stream_ptr->SetBranchStatus("*", false);
 
-  // Branches are turned back on by SetBranchAddress()
   stream_ptr->SetBranchAddress("time1", &time1, &br_time1);
   stream_ptr->SetBranchAddress("time2", &time2, &br_time2);
   stream_ptr->SetBranchAddress("eventID1", &eventID1, &br_eventID1);

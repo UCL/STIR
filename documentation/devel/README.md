@@ -1,8 +1,10 @@
 # Information specific for developers
 
-Please check files here for information/code practices for developers.
+You want to contribute to STIR? Great!
 
 - Do read our [contribution guidelines](../../CONTRIBUTING.md)
+- Read the documentation, including the STIR developers guide (PDFs are on https://stir.sourceforge.net/documentation)
+- Read our Git [guidelines and recommendations](git-recommendations.md)
+- Install git hooks (required for serious development): [instructions](git-hooks.md)
 - Set your editor settings appropriately: [instructions](editor-settings.md)
-- Install git hooks for serious development: [instructions](git-hooks.md)
-- Read the documentation, including the STIR developers guide
+- To run the CI workflow locally with `act`: [instructions](local-CI.md)

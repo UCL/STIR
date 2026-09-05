@@ -768,7 +768,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
                                                                 /*num_views=*/scanner_sptr->get_num_detectors_per_ring() / 8,
                                                                 /*num_tang_poss=*/64,
                                                                 /*arc_corrected*/ false,
-                                                                /*tof_mashing*/ 116));
+                                                                /*tof_mashing*/ 117));
 
         run_tests_for_1_projdata(proj_data_info_sptr);
       }
@@ -783,7 +783,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
                                                                 /*num_views=*/scanner_sptr->get_num_detectors_per_ring() / 8,
                                                                 /*num_tang_poss=*/16,
                                                                 /*arc_corrected*/ false,
-                                                                /*tof_mashing*/ 112));
+                                                                /*tof_mashing*/ 82));
         run_tests_for_1_projdata(proj_data_info_sptr);
       }
     }

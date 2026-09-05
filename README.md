@@ -1,4 +1,4 @@
-# STIR: Software for Tomographic Image Reconstruction.
+# STIR: Software for Tomographic Image Reconstruction
 
 [![GitHub Actions status](https://github.com/UCL/STIR/actions/workflows/build-test.yml/badge.svg)](https://github.com/UCL/STIR/actions/workflows/build-test.yml)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/ga9xd1vsy0ik1soq/branch/master?svg=true)](https://ci.appveyor.com/project/KrisThielemans/stir/branch/master)
@@ -12,13 +12,18 @@ manipulations in tomographic imaging. Currently, the emphasis is on
 areas and imaging modalities can and might be added.
 
 STIR is the successor of the PARAPET software library which was the result
-of a (European Union funded) collaboration between 6 different partners. It 
+of a (European Union funded) collaboration between 6 different partners. It
 has since received contributions from numerous institutions and individuals.
 Check the [CREDITS](documentation/credits.htm).
 
-Please check the STIR web-site at http://STIR.sourceforge.net for more
-information.
+Please check the STIR web-site at https://STIR.sourceforge.net for more
+information, as well as our [our wiki](https://github.com/UCL/STIR/wiki/).
 
 This software is distributed under an open source license, see [LICENSE.txt](LICENSE.txt)
 for details.
 
+Specific locations for help:
+
+- [Pointers to installation instructions](INSTALL.md)
+- [Information for contributors](CONTRIBUTING.md)
+- [Documentation folder](documentation/). (This is currently a mix of HTML, LaTeX files and Markdown.)
