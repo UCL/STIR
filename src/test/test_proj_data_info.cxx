@@ -1280,12 +1280,10 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
 
   auto scannerGeneric_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerGeneric_sptr->set_scanner_geometry("Generic");
-  //    scannerBlocks_reord_sptr->set_num_transaxial_blocks_per_bucket(1);
-  scannerGeneric_sptr->set_detector_coordinate_map_sptr(scannerBlocks_sptr->get_detector_coordinate_map_sptr());
+  scannerGeneric_sptr->set_detector_coordinate_map(scannerBlocks_sptr->get_detector_coordinate_map());
   scannerGeneric_sptr->set_up();
 
-  auto proj_data_info_generic_sptr = std::make_shared<ProjDataInfoGenericNoArcCorr>();
-  proj_data_info_generic_sptr = set_blocks_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerGeneric_sptr, 2);
+  auto proj_data_info_generic_sptr = set_blocks_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerGeneric_sptr, 2);
 
   Bin bin;
   CartesianCoordinate3D<float> det_cyl_1, det_cyl_2, det_gen_1, det_gen_2, det_blk_1, det_blk_2;
@@ -1299,9 +1297,9 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
       bin.view_num() = 0;
       bin.tangential_pos_num() = 0;
 
-      float m_cyl[2] = { 0., 0. };
-      float m_blk[2] = { 0., 0. };
-      float m_gen[2] = { 0., 0. };
+      float m_cyl[2] = { 0.F, 0.F };
+      float m_blk[2] = { 0.F, 0.F };
+      float m_gen[2] = { 0.F, 0.F };
 
       const int axial_positions[2]
           = { proj_data_info_cyl_sptr->get_min_axial_pos_num(seg), proj_data_info_cyl_sptr->get_max_axial_pos_num(seg) };
