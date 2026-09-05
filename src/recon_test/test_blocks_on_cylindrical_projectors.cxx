@@ -633,7 +633,7 @@ BlocksTests::run_map_orientation_test(ForwardProjectorByBin& forw_projector1, Fo
   auto scannerBlocks_reord_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
   scannerBlocks_reord_sptr->set_scanner_geometry("Generic");
   //    scannerBlocks_reord_sptr->set_num_transaxial_blocks_per_bucket(1);
-  scannerBlocks_reord_sptr->set_detector_map(coord_map_reordered);
+  scannerBlocks_reord_sptr->set_detector_coordinate_map(DetectorCoordinateMap(coord_map_reordered));
   scannerBlocks_reord_sptr->set_up();
 
   auto proj_data_info_blocks_reord_sptr = std::make_shared<ProjDataInfoGenericNoArcCorr>();
@@ -834,7 +834,6 @@ BlocksTests::run_intersection_with_cylinder_test()
   };
 
   const auto segment_sequence = ProjData::standard_segment_sequence(*proj_data_info);
-  std::size_t index(0);
   for (int seg : segment_sequence)
     {
       bin.segment_num() = seg;
