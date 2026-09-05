@@ -15,6 +15,7 @@
   \author Kris Thielemans
   \author Daniel Deidda
 */
+%shared_ptr(stir::DetectorCoordinateMap)
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
 %shared_ptr(stir::ProjDataInfoCylindrical);
@@ -36,6 +37,8 @@
 %shared_ptr(stir::Viewgram<float>);
 %shared_ptr(stir::RelatedViewgrams<float>);
 
+%include "stir/DetectorCoordinateMap.h"
+%ignore stir::Scanner::get_detector_coordinate_map_sptr;
 %newobject stir::Scanner::get_scanner_from_name;
 %include "stir/Scanner.h"
 
