@@ -107,18 +107,30 @@
       a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
     </li>
   </ul>
-<!--
+
   <h3>New Deprecations and renames</h3>
   <ul>
+    <code>Scanner::get_detector_map_sptr()</code> is now deprecated. Use
+    <code>get_detector_coordinate_map()</code> instead (or <code>get_detector_coordinate_map_sptr</code>
+    if you need to).
+    <br>
+      <a href=https://github.com/UCL/STIR/pull/1731>PR #1731</a>.
+    </li>
   </ul>
-
+<!--
   <h3>Code improvements</h3>
   <ul>
   </ul>
-
+-->
   <h3>Test changes</h3>
   <p>All new features and most code changes were accompanied by new tests.</p>
--->
+  <ul>
+    <li>
+      <code>ProjDataInfo*::get_m()</code> etc now have explicit consistency checks.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1731>PR #1731</a>.
+    </li>
+  </ul>
 </body>
 
 </html>
