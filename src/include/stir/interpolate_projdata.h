@@ -65,7 +65,8 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
 Succeeded interpolate_projdata_3d(ProjData& proj_data_out,
                                   const ProjData& proj_data_in,
                                   const BSpline::BSplineType& spline_type,
-                                  const bool use_view_offset = false);
+                                  const bool remove_interleaving = false,
+                                  bool clean_up = true);
 //@}
 
 END_NAMESPACE_STIR
