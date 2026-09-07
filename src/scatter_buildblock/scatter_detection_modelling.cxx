@@ -30,7 +30,7 @@
 
 START_NAMESPACE_STIR
 unsigned
-ScatterSimulation::find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
+ScatterSimulation::find_in_detection_points_vector(const CartesianCoordinate3D<float>& gantry_coord) const
 {
 #ifndef NDEBUG
   if (!this->_already_set_up)
@@ -39,19 +39,19 @@ ScatterSimulation::find_in_detection_points_vector(const CartesianCoordinate3D<f
   unsigned int ret_value = 0;
 #pragma omp critical(SCATTERESTIMATIONFINDDETECTIONPOINTS)
   {
-    std::vector<CartesianCoordinate3D<float>>::const_iterator iter
-        = std::find(detection_points_vector.begin(), detection_points_vector.end(), coord);
-    if (iter != detection_points_vector.end())
+    std::vector<CartesianCoordinate3D<float>>::const_iterator iter = std::find(
+        detection_points_in_gantry_coords_vector.begin(), detection_points_in_gantry_coords_vector.end(), gantry_coord);
+    if (iter != detection_points_in_gantry_coords_vector.end())
       {
-        ret_value = iter - detection_points_vector.begin();
+        ret_value = iter - detection_points_in_gantry_coords_vector.begin();
       }
     else
       {
-        if (detection_points_vector.size() == static_cast<std::size_t>(this->total_detectors))
+        if (detection_points_in_gantry_coords_vector.size() == static_cast<std::size_t>(this->total_detectors))
           error("More detection points than we think there are!\n");
 
-        detection_points_vector.push_back(coord);
-        ret_value = detection_points_vector.size() - 1;
+        detection_points_in_gantry_coords_vector.push_back(gantry_coord);
+        ret_value = detection_points_in_gantry_coords_vector.size() - 1;
       }
   }
   return ret_value;
@@ -82,8 +82,9 @@ ScatterSimulation::find_detectors(unsigned& det_num_A, unsigned& det_num_B, cons
           error("wrong type of projection data for scatter simulation");
         }
     }
-  det_num_A = this->find_in_detection_points_vector(detector_coord_A + this->shift_detector_coordinates_to_origin);
-  det_num_B = this->find_in_detection_points_vector(detector_coord_B + this->shift_detector_coordinates_to_origin);
+
+  det_num_A = this->find_in_detection_points_vector(detector_coord_A);
+  det_num_B = this->find_in_detection_points_vector(detector_coord_B);
 }
 
 float
@@ -166,8 +167,8 @@ ScatterSimulation::detection_efficiency_no_scatter(const unsigned det_num_A, con
                                            ? detection_efficiency(511.F)
                                            : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);
     }
-  const CartesianCoordinate3D<float>& detector_coord_A = detection_points_vector[det_num_A];
-  const CartesianCoordinate3D<float>& detector_coord_B = detection_points_vector[det_num_B];
+  const CartesianCoordinate3D<float>& detector_coord_A = detection_points_in_gantry_coords_vector[det_num_A];
+  const CartesianCoordinate3D<float>& detector_coord_B = detection_points_in_gantry_coords_vector[det_num_B];
   const CartesianCoordinate3D<float> detA_to_ring_center(0, -detector_coord_A[2], -detector_coord_A[3]);
   const CartesianCoordinate3D<float> detB_to_ring_center(0, -detector_coord_B[2], -detector_coord_B[3]);
   const float rAB_squared = static_cast<float>(norm_squared(detector_coord_A - detector_coord_B));
