@@ -31,6 +31,7 @@
 #include "stir/numerics/overlap_interpolate.h"
 #include <typeinfo>
 #include "stir/warning.h"
+#include "stir/format.h"
 
 START_NAMESPACE_STIR
 ArcCorrection::ArcCorrection()
@@ -73,7 +74,7 @@ ArcCorrection::set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data
       else
         {
           const auto& noarc_corr_proj_data_info = *noarc_corr_proj_data_info_sptr;
-          warning("ArcCorrection called with proj_data_info of the wrong type:\n\t%s", typeid(noarc_corr_proj_data_info).name());
+          warning(format("ArcCorrection called with proj_data_info of the wrong type: {}", typeid(noarc_corr_proj_data_info).name()));
         }
       return Succeeded::no;
     }

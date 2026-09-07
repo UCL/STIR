@@ -37,6 +37,7 @@
 #include "stir/ProjDataInfoGeneric.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 
 using std::min;
 using std::max;
@@ -262,9 +263,9 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
               dynamic_cast<const ProjDataInfoCylindrical*>(subset_proj_data_info_ptr->get_original_proj_data_info_sptr().get())))
         {
           const auto& original_proj_data_info = *subset_proj_data_info_ptr->get_original_proj_data_info_sptr();
-          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of original (non-subset) ProjDataInfo: %s\n"
+          error(format("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of original (non-subset) ProjDataInfo: {}\n"
                 "(can only handle projection data corresponding to a cylinder)\n",
-                typeid(original_proj_data_info).name());
+                typeid(original_proj_data_info).name()));
         }
 
       if (do_symmetry_90degrees_min_phi || do_symmetry_180degrees_min_phi)
@@ -282,9 +283,9 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
   if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
     {
       if (dynamic_cast<const ProjDataInfoCylindrical*>(pdi_cyl_ptr) == NULL)
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+        error(format("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: {}\n"
               "(can only handle projection data corresponding to a cylinder)\n",
-              typeid(*pdi_cyl_ptr).name());
+              typeid(*pdi_cyl_ptr).name()));
 
       const DiscretisedDensityOnCartesianGrid<3, float>* cartesian_grid_info_ptr
           = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, float>*>(image_info_ptr.get());
@@ -292,19 +293,19 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       if (is_null_ptr(cartesian_grid_info_ptr))
         {
           const auto& image_info = *image_info_ptr;
-          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-                typeid(image_info).name());
+          error(format("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: {}\n",
+                typeid(image_info).name()));
         }
 
       // WARNING get_grid_spacing()[1] == z
       const float z_origin_in_planes = image_info_ptr->get_origin().z() / cartesian_grid_info_ptr->get_grid_spacing()[1];
       // z_origin_in_planes should be an integer
       if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-3F)
-        error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
-              "z-direction of the origin (which is %g) should be a multiple of the plane "
-              "separation (%g)\n",
+        error(format("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
+              "z-direction of the origin (which is {}) should be a multiple of the plane "
+              "separation ({})\n",
               image_info_ptr->get_origin().z(),
-              cartesian_grid_info_ptr->get_grid_spacing()[1]);
+              cartesian_grid_info_ptr->get_grid_spacing()[1]));
 
       // check if unequal voxel size in x,y, if so, use less symmetry
       if (fabs(cartesian_grid_info_ptr->get_grid_spacing()[2] - cartesian_grid_info_ptr->get_grid_spacing()[3]) > 2.E-3F)
@@ -329,10 +330,10 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
         if (fabs(proj_data_info_ptr->get_tantheta(Bin(segment_num, 0, 0, 0))
                  + proj_data_info_ptr->get_tantheta(Bin(-segment_num, 0, 0, 0)))
             > 1.E-4F)
-          error("DataSymmetriesForBins_PET_CartesianGrid can only handle projection data "
+          error(format("DataSymmetriesForBins_PET_CartesianGrid can only handle projection data "
                 "with negative segment numbers corresponding to -theta of the positive segments. "
-                "This is not true for segment pair %d.\n",
-                segment_num);
+                "This is not true for segment pair {}.\n",
+                segment_num));
 
       // feable check on s-symmetry
       if (fabs(proj_data_info_ptr->get_s(Bin(0, 0, 0, 1)) + proj_data_info_ptr->get_s(Bin(0, 0, 0, -1))) > 1.E-4F)
@@ -389,9 +390,9 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
   if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical")
     {
       if (dynamic_cast<const ProjDataInfoBlocksOnCylindrical*>(pdi_cyl_ptr) == NULL)
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+        error(format("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: {}\n"
               "(can only handle projection data corresponding to blocks on a cylinder)\n",
-              typeid(*pdi_cyl_ptr).name());
+              typeid(*pdi_cyl_ptr).name()));
 
       const DiscretisedDensityOnCartesianGrid<3, float>* cartesian_grid_info_ptr
           = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, float>*>(image_info_ptr.get());
@@ -399,8 +400,8 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       if (cartesian_grid_info_ptr == NULL)
         {
           const auto& image_info = *image_info_ptr;
-          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-                typeid(image_info).name());
+          error(format("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: {}\n",
+                typeid(image_info).name()));
         }
 
       // WARNING get_grid_spacing()[1] == z
@@ -408,11 +409,11 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       const float z_origin_in_planes = image_info_ptr->get_origin().z() / cartesian_grid_info_ptr->get_grid_spacing()[1];
       // z_origin_in_planes should be an integer
       if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-3F)
-        error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
-              "z-direction of the origin (which is %g) should be a multiple of the plane "
-              "separation (%g)\n",
+        error(format("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
+              "z-direction of the origin (which is {}) should be a multiple of the plane "
+              "separation ({})\n",
               image_info_ptr->get_origin().z(),
-              cartesian_grid_info_ptr->get_grid_spacing()[1]);
+              cartesian_grid_info_ptr->get_grid_spacing()[1]));
 
       if (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi || this->do_symmetry_swap_segment
           || this->do_symmetry_swap_s)
@@ -436,9 +437,9 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
   if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry() == "Generic")
     {
       if (dynamic_cast<const ProjDataInfoGeneric*>(pdi_cyl_ptr) == NULL)
-        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+        error(format("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: {}\n"
               "(can only handle projection data corresponding to a generig geometry)\n",
-              typeid(*pdi_cyl_ptr).name());
+              typeid(*pdi_cyl_ptr).name()));
 
       const DiscretisedDensityOnCartesianGrid<3, float>* cartesian_grid_info_ptr
           = dynamic_cast<const DiscretisedDensityOnCartesianGrid<3, float>*>(image_info_ptr.get());
@@ -446,19 +447,19 @@ DataSymmetriesForBins_PET_CartesianGrid::DataSymmetriesForBins_PET_CartesianGrid
       if (cartesian_grid_info_ptr == NULL)
         {
           const auto& image_info = *image_info_ptr;
-          error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-                typeid(image_info).name());
+          error(format("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: {}\n",
+                typeid(image_info).name()));
         }
 
       // WARNING get_grid_spacing()[1] == z
       const float z_origin_in_planes = image_info_ptr->get_origin().z() / cartesian_grid_info_ptr->get_grid_spacing()[1];
       // z_origin_in_planes should be an integer
       if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-3F)
-        error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
-              "z-direction of the origin (which is %g) should be a multiple of the plane "
-              "separation (%g)\n",
+        error(format("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
+              "z-direction of the origin (which is {}) should be a multiple of the plane "
+              "separation ({})\n",
               image_info_ptr->get_origin().z(),
-              cartesian_grid_info_ptr->get_grid_spacing()[1]);
+              cartesian_grid_info_ptr->get_grid_spacing()[1]));
 
       if (this->do_symmetry_90degrees_min_phi || this->do_symmetry_180degrees_min_phi || this->do_symmetry_swap_segment
           || this->do_symmetry_swap_s || this->do_symmetry_shift_z)
