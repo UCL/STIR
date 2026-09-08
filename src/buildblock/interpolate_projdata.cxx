@@ -580,6 +580,39 @@ interpolate_blocks_on_cylindrical_projdata(ProjData& proj_data_out, const ProjDa
   return Succeeded::yes;
 }
 
+// Returns a copy of `other_segment` re-expressed in `target_segment_num`'s own
+// (axial, view, tangential) coordinate convention, via a detector-position swap.
+// After this transform, `result[axial][view][tang]` and a segment with
+// segment_num == target_segment_num can be compared index-for-index directly --
+// no further view/tang mirroring needed anywhere downstream.
+SegmentBySinogram<float>
+make_swapped_segment(const SegmentBySinogram<float>& other_segment,
+                     const ProjDataInfoCylindricalNoArcCorr& proj_data_info,
+                     const int target_segment_num)
+{
+  auto result = proj_data_info.get_empty_segment_by_sinogram(target_segment_num, false);
+
+  for (int axial_pos = result.get_min_index(); axial_pos <= result.get_max_index(); ++axial_pos)
+    for (int view = result.get_min_view_num(); view <= result.get_max_view_num(); ++view)
+      for (int tang = result.get_min_tangential_pos_num(); tang <= result.get_max_tangential_pos_num(); ++tang)
+        {
+          const Bin bin(target_segment_num, view, axial_pos, tang);
+          DetectionPositionPair<> det_pos_pair;
+          proj_data_info.get_det_pos_pair_for_bin(det_pos_pair, bin);
+          const DetectionPositionPair<> swapped(det_pos_pair.pos2(), det_pos_pair.pos1(), det_pos_pair.timing_pos());
+
+          Bin swapped_bin;
+          if (proj_data_info.get_bin_for_det_pos_pair(swapped_bin, swapped) == Succeeded::no)
+            {
+              result[axial_pos][view][tang] = 0.0F;
+              continue;
+            }
+          result[axial_pos][view][tang]
+              = other_segment[swapped_bin.axial_pos_num()][swapped_bin.view_num()][swapped_bin.tangential_pos_num()];
+        }
+  return result;
+}
+
 Succeeded
 interpolate_projdata_3d(ProjData& proj_data_out,
                         const ProjData& proj_data_in,
@@ -591,6 +624,11 @@ interpolate_projdata_3d(ProjData& proj_data_out,
   const ProjDataInfo& proj_data_info_out = *proj_data_out.get_proj_data_info_sptr();
 
   shared_ptr<Scanner> scanner_sptr(new Scanner(*proj_data_info_in.get_scanner_sptr()));
+
+  const auto proj_data_info_in_no_arc_corr_sptr
+      = dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(proj_data_in.get_proj_data_info_sptr());
+  if (!proj_data_info_in_no_arc_corr_sptr)
+    error("Expected the in projection data info to be a ProjDataInfoCylindricalNoArcCorr.");
 
   scanner_sptr->set_num_detectors_per_ring(proj_data_info_out.get_scanner_sptr()->get_num_detectors_per_ring());
   scanner_sptr->set_max_num_non_arccorrected_bins(proj_data_info_out.get_scanner_sptr()->get_max_num_non_arccorrected_bins());
@@ -720,8 +758,10 @@ interpolate_projdata_3d(ProjData& proj_data_out,
               if (i_seg_in != 0)
                 {
                   SegmentBySinogram<float> opposite_segment = proj_data_in.get_segment_by_sinogram(-i_seg_in);
+                  const SegmentBySinogram<float> swapped_opposite
+                      = make_swapped_segment(opposite_segment, *proj_data_info_in_no_arc_corr_sptr, segment.get_segment_num());
                   // views, axial, tangential
-                  return extend_segment(segment, 5, 0, 5, &opposite_segment);
+                  return extend_segment(segment, 5, 0, 5, &swapped_opposite);
                 }
               else
                 {

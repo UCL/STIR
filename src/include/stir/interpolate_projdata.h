@@ -67,6 +67,10 @@ Succeeded interpolate_projdata_3d(ProjData& proj_data_out,
                                   const BSpline::BSplineType& spline_type,
                                   const bool remove_interleaving = false,
                                   bool clean_up = true);
+SegmentBySinogram<float> make_swapped_segment(const SegmentBySinogram<float>& other_segment,
+                                              const ProjDataInfoCylindricalNoArcCorr& proj_data_info,
+                                              const int target_segment_num);
+
 //@}
 
 END_NAMESPACE_STIR

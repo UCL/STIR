@@ -110,13 +110,9 @@ extend_segment(const SegmentBySinogram<float>& segment,
     }
 
   auto flip_source = [&](int axial_pos, int view, int tang_pos) -> float {
-    if (!use_opposite_segment)
-      return out[axial_pos][view][tang_pos];
-
     if (tang_pos < opposite_segment_ptr->get_min_tangential_pos_num()
         || tang_pos > opposite_segment_ptr->get_max_tangential_pos_num())
       return 0.0F;
-
     const int src_axial
         = std::max(opposite_segment_ptr->get_min_index(), std::min(opposite_segment_ptr->get_max_index(), axial_pos));
     return (*opposite_segment_ptr)[src_axial][view][tang_pos];
@@ -132,29 +128,42 @@ extend_segment(const SegmentBySinogram<float>& segment,
               out[axial_pos][min_dim[2] + view_edge] = out[axial_pos][min_dim[2] + view_extension];
               out[axial_pos][max_dim[2] - view_edge] = out[axial_pos][max_dim[2] - view_extension];
             }
+          else if (flip_views && use_opposite_segment)
+            {
+              // swapped already has an exact value at every tangential position, computed via the
+              // real detector geometry in make_swapped_segment -- no sym_dim restriction or
+              // nearest-neighbour approximation is needed (or correct) here.
+              for (int tang_pos = min_dim[3]; tang_pos <= max_dim[3]; tang_pos++)
+                {
+                  out[axial_pos][min_dim[2] + view_edge][tang_pos]
+                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, tang_pos);
+                  out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
+                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, tang_pos);
+                }
+            }
           else if (flip_views)
             {
               const int sym_dim = std::min(std::abs(min_dim[3]), max_dim[3]);
               for (int tang_pos = -sym_dim; tang_pos <= sym_dim; tang_pos++)
                 {
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]
-                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, -tang_pos);
+                      = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][-tang_pos];
                   out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
-                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, -tang_pos);
+                      = out[axial_pos][min_dim[2] + view_extension + view_edge][-tang_pos];
                 }
               for (int tang_pos = min_dim[3]; tang_pos < -sym_dim; tang_pos++)
                 { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]
-                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, sym_dim);
+                      = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][sym_dim];
                   out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
-                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, sym_dim);
+                      = out[axial_pos][min_dim[2] + view_extension + view_edge][sym_dim];
                 }
               for (int tang_pos = max_dim[3]; tang_pos > sym_dim; tang_pos--)
                 { // fill in asymmetric tangential positions at the end by just picking the nearest existing element
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]
-                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, -sym_dim);
+                      = out[axial_pos][max_dim[2] - 2 * view_extension + view_edge + 1][-sym_dim];
                   out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
-                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, -sym_dim);
+                      = out[axial_pos][min_dim[2] + view_extension + view_edge][-sym_dim];
                 }
             }
           else
