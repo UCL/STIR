@@ -30,6 +30,7 @@
 #include "stir/Bin.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
+#include "stir/LORCoordinates.h"
 #include <iostream>
 #include <vector>
 
@@ -113,7 +114,7 @@ operator<<(std::ostream& out, const DetectionPosition<T>& det_pos)
 }
 
 /*!
-  \brief Outputs a DetectionPosition to a stream.
+  \brief Outputs a DetectionPositionPair to a stream.
   \ingroup projdata
 
   Output is of the form
@@ -128,6 +129,22 @@ operator<<(std::ostream& out, const DetectionPositionPair<T>& det_pos)
   return out << "[pos1=" << det_pos.pos1() << ", pos2=" << det_pos.pos2() << ", timing_pos=" << det_pos.timing_pos() << "]";
 }
 
+/*!
+  \brief Outputs a LORInAxialAndNoArcCorrSinogramCoordinates to a stream.
+  \ingroup LOR
+
+  Output is of the form
+  \verbatim
+  [z1=..., z2=..., phi=..., beta=..., is_swapped=...]
+  \endverbatim
+*/
+template <class T>
+inline std::ostream&
+operator<<(std::ostream& out, const LORInAxialAndNoArcCorrSinogramCoordinates<T>& lor)
+{
+  return out << "[z1=" << lor.z1() << ", z2=" << lor.z2() << ", phi=" << lor.phi() << ", beta=" << lor.beta()
+             << ", is_swapped=" << lor.is_swapped() << "]";
+}
 /*!
   \brief Inputs a vector from a stream.
 
