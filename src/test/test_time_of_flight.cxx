@@ -8,6 +8,7 @@
 */
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
@@ -17,6 +18,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
+#include "stir/geometry/line_distances.h"
 //#include "stir/stream.h"
 
 #ifdef HAVE_CERN_ROOT
@@ -67,6 +69,7 @@ public:
   void run_tests() override;
 
 private:
+  void run_tests_for_scanner();
   void test_tof_proj_data_info_kernel();
   void test_tof_proj_data_info_det_pos();
   void test_tof_proj_data_info();
@@ -95,6 +98,16 @@ TOF_Tests::run_tests()
 {
   // New Scanner
   test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
+  std::cerr << "Running tests for Signa (cylindrical)\n";
+  test_scanner_sptr->set_scanner_geometry("Cylindrical");
+  run_tests_for_scanner();
+  std::cerr << "Running tests for Signa (BlocksOnCylindrical)\n";
+  test_scanner_sptr->set_scanner_geometry("BlocksOnCylindrical");
+  run_tests_for_scanner();
+}
+void
+TOF_Tests::run_tests_for_scanner()
+{
   test_scanner_sptr->set_up();
 
   // New Proj_Data_Info
@@ -214,8 +227,8 @@ TOF_Tests::test_CListEventROOT()
 {
   std::cerr << "CListEventROOT tests\n";
   const auto old_tol = this->get_tolerance();
-  // set tolerance to ~1mm. It has to be surprisingly large at the moment. Problem in the LOR functions? (TODO)
-  this->set_tolerance(3.F);
+  // set tolerance to 1mm.
+  this->set_tolerance(1.F);
 
   test_proj_data_info_sptr->set_tof_mash_factor(1);
 
@@ -234,12 +247,39 @@ TOF_Tests::test_CListEventROOT()
   DetectionPositionPair<> det_pos;
   event.get_detection_position(det_pos);
   LORAs2Points<float> lor_2pts(event.get_LOR());
-  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc;
-  test_proj_data_info_sptr->get_LOR(lor_sc, bin);
-  LORAs2Points<float> test_lor(lor_sc);
-  check_if_equal(lor_2pts.p1(), test_lor.p1(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 1");
-  check_if_equal(lor_2pts.p2(), test_lor.p2(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 2");
+  // check if we get the same LOR by going via the proj_data_info and bin
+  {
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc;
+    test_proj_data_info_sptr->get_LOR(lor_sc, bin);
+    LORAs2Points<float> test_lor(lor_sc);
+    // test if colinear and same direction
+    check_if_zero(distance_between_line_and_point(lor_2pts, test_lor.p1()),
+                  "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check on LOR 1");
+    check_if_zero(distance_between_line_and_point(lor_2pts, test_lor.p2()),
+                  "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check on LOR 2");
+    check(inner_product(lor_2pts.p2() - lor_2pts.p1(), test_lor.p2() - test_lor.p1()) > 0,
+          "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check on LOR direction");
+    // same check, but by relying on LOR conversion functions
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> event_lor_sc;
+    lor_2pts.change_representation(event_lor_sc, lor_sc.radius());
+    check_if_equal(
+        lor_sc, event_lor_sc, "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check LOR sinogram coordinates");
+  }
 
+  if (auto pdi_sptr = dynamic_pointer_cast<ProjDataInfoPETScannerWithDiscreteDetectors>(test_proj_data_info_sptr))
+    {
+      // check back-and-forth between bin and det_pos_pair
+      DetectionPositionPair<> test_det_pos;
+      pdi_sptr->get_det_pos_pair_for_bin(test_det_pos, bin);
+      check_if_equal(det_pos, test_det_pos, "CListEventROOT::get_det_pos_pair_for_bin consistency");
+      Bin test_bin;
+      test_bin.time_frame_num() = bin.time_frame_num();
+      test_bin.set_bin_value(bin.get_bin_value());
+      pdi_sptr->get_bin_for_det_pos_pair(test_bin, det_pos);
+      check_if_equal(bin, test_bin, "CListEventROOT::get_bin_for_det_pos_pair consistency");
+    }
+
+  // swap detector and TOF bin (should therefore be the same)
   event.init_from_data(ring2, ring1, crystal2, crystal1, -delta_time);
   {
     Bin bin_swapped;
@@ -278,14 +318,18 @@ TOF_Tests::test_CListEventROOT()
     }
 
     LORAs2Points<float> lor_2pts_swapped(event.get_LOR());
-    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc_swapped;
-    test_proj_data_info_sptr->get_LOR(lor_sc_swapped, bin_swapped);
-    LORAs2Points<float> test_lor_swapped(lor_sc);
-    check_if_equal(
-        lor_2pts_swapped.p1(), test_lor_swapped.p1(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 3");
-    check_if_equal(
-        lor_2pts_swapped.p2(), test_lor_swapped.p2(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 4");
-
+    {
+      LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_sc_swapped;
+      test_proj_data_info_sptr->get_LOR(lor_sc_swapped, bin_swapped);
+      LORAs2Points<float> test_lor_swapped(lor_sc_swapped);
+      // test if colinear and same direction
+      check_if_zero(distance_between_line_and_point(lor_2pts_swapped, test_lor_swapped.p1()),
+                    "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check on LOR 1 (swapped)");
+      check_if_zero(distance_between_line_and_point(lor_2pts_swapped, test_lor_swapped.p2()),
+                    "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check on LOR 2 (swapped)");
+      check(inner_product(lor_2pts_swapped.p2() - lor_2pts_swapped.p1(), test_lor_swapped.p2() - test_lor_swapped.p1()) > 0,
+            "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check on LOR direction (swapped)");
+    }
     // now check if equal
     check_if_equal(bin, bin_swapped, "CListEventROOT:get_bin for reordered detectors");
     check_if_equal(lor_2pts_swapped.p1(), lor_2pts.p1(), "CListEventROOT::get_LOR and ProjDataInfo::get_LOR consistency check 5");

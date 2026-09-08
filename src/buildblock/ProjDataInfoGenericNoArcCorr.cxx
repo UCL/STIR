@@ -41,9 +41,15 @@ ProjDataInfoGenericNoArcCorr::ProjDataInfoGenericNoArcCorr(const shared_ptr<Scan
                                                            const VectorWithOffset<int>& min_ring_diff_v,
                                                            const VectorWithOffset<int>& max_ring_diff_v,
                                                            const int num_views,
-                                                           const int num_tangential_poss)
-    : ProjDataInfoCylindricalNoArcCorr(
-        scanner_sptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v, num_views, num_tangential_poss)
+                                                           const int num_tangential_poss,
+                                                           const int tof_mash_factor)
+    : ProjDataInfoCylindricalNoArcCorr(scanner_sptr,
+                                       num_axial_pos_per_segment,
+                                       min_ring_diff_v,
+                                       max_ring_diff_v,
+                                       num_views,
+                                       num_tangential_poss,
+                                       tof_mash_factor)
 {
   if (!scanner_sptr)
     error("ProjDataInfoGenericNoArcCorr: first argument (scanner_ptr) is zero");
@@ -181,9 +187,6 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
 
   if (timing_pos_num < 0)
     {
-#ifndef ENABLE_TOF_GENERIC
-      error("ProjDataInfoGenericNoArcCorr does not support TOF yet");
-#endif
       // Currently timing_pos is unsigned, so we need to swap if the input is negative
       std::swap(coord_1, coord_2);
     }
@@ -196,11 +199,6 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
 Bin
 ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_time) const
 {
-#ifndef ENABLE_TOF_GENERIC
-  if (delta_time != 0.)
-    error("ProjDataInfoGenericNoArcCorr does not support TOF yet");
-#endif
-
   Bin bin;
 
   if (!dynamic_cast<const LORAs2Points<float>*>(&lor))

@@ -1443,13 +1443,23 @@ InterfilePDFSHeader::post_processing()
     }
   else if (scanner_geometry == "BlocksOnCylindrical") // if block geometry
     {
-      data_info_sptr.reset(new ProjDataInfoBlocksOnCylindricalNoArcCorr(
-          scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
+      data_info_sptr.reset(new ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner_sptr_from_file,
+                                                                        sorted_num_rings_per_segment,
+                                                                        sorted_min_ring_diff,
+                                                                        sorted_max_ring_diff,
+                                                                        num_views,
+                                                                        num_bins,
+                                                                        tof_mash_factor));
     }
   else // if generic geometry
     {
-      data_info_sptr.reset(new ProjDataInfoGenericNoArcCorr(
-          scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
+      data_info_sptr.reset(new ProjDataInfoGenericNoArcCorr(scanner_sptr_from_file,
+                                                            sorted_num_rings_per_segment,
+                                                            sorted_min_ring_diff,
+                                                            sorted_max_ring_diff,
+                                                            num_views,
+                                                            num_bins,
+                                                            tof_mash_factor));
     }
   if (data_info_sptr->get_num_tof_poss() != num_timing_poss)
     error(format("Interfile header parsing with TOF: inconsistency between number of TOF bins in data ({}), "
