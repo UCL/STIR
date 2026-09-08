@@ -74,6 +74,8 @@ public:
   BackProjectorByBinUsingProjMatrixByBin* clone() const override;
 
 protected:
+  // un-hide remaining base overload(s)
+  using BackProjectorByBin::actual_back_project;
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
 
   // currently not exposed, but leaving this ine for the future

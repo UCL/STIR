@@ -327,7 +327,9 @@ TestProjDataInfoSubsetsSPECTUB::test_split(const ProjData& proj_data)
   cerr << "\t\tchecking Full subset should >= original ProjDataInfo" << endl;
   if (!(*full_pdi_sptr >= *proj_data.get_proj_data_info_sptr()))
     {
-      cerr << typeid(*full_pdi_sptr).name() << " " << typeid(*sub_a_pdi_sptr).name() << endl;
+      const auto& full_pdi = *full_pdi_sptr;
+      const auto& sub_a_pdi = *sub_a_pdi_sptr;
+      cerr << typeid(full_pdi).name() << " " << typeid(sub_a_pdi).name() << endl;
       cerr << "Failed: Expected full == original" << endl;
       everything_ok = false;
     }

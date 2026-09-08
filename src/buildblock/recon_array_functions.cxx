@@ -407,7 +407,7 @@ truncate_end_planes(DiscretisedDensity<3, float>& input_image, int input_num_pla
   // TODO this function does not make a lot of sense in general
 #  ifndef NDEBUG
   // this will throw an exception when the cast is invalid
-  dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>&>(input_image);
+  assert((dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>*>(&input_image) != nullptr));
 #  endif
 
   const int zs = input_image.get_min_index();

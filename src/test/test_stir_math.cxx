@@ -134,8 +134,8 @@ stir_mathTests::run_tests()
       }
     // add with power etc
     // range for rand() is 0 to RAND_MAX
-    const float min_threshold = RAND_MAX / 5.F;
-    const float max_threshold = RAND_MAX / 2.F;
+    const float min_threshold = static_cast<float>(RAND_MAX) / 5.F;
+    const float max_threshold = static_cast<float>(RAND_MAX) / 2.F;
     {
       char cmd_args[1000];
       snprintf(cmd_args,
@@ -265,8 +265,8 @@ stir_mathTests::run_tests()
       }
     // add with power etc
     // range for rand() is 0 to RAND_MAX
-    const float min_threshold = RAND_MAX / 5.F;
-    const float max_threshold = RAND_MAX / 2.F;
+    const float min_threshold = static_cast<float>(RAND_MAX) / 5.F;
+    const float max_threshold = static_cast<float>(RAND_MAX) / 2.F;
     {
       char cmd_args[1000];
       snprintf(cmd_args,
