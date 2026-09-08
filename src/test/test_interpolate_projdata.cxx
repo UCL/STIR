@@ -316,6 +316,7 @@ InterpolationTests::scatter_interpolation_test_blocks()
                          4.0,
                          24.83, // ring spacing multiplied by number of crystals per block
                          24.0);
+  scanner.set_up();
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
                                      "Some_symmetric_scanner",
                                      192,
@@ -344,6 +345,7 @@ InterpolationTests::scatter_interpolation_test_blocks()
                                      4.0,
                                      144.0, // ring spacing multiplied by number of crystals per block
                                      24.0);
+  downsampled_scanner.set_up();
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(
       std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 96, 150, false)));
@@ -396,6 +398,7 @@ InterpolationTests::scatter_interpolation_test_cyl()
                          4.0,
                          24.0,
                          24.0);
+  scanner.set_up();
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
                                      "Some_symmetric_scanner",
                                      64,
@@ -424,7 +427,7 @@ InterpolationTests::scatter_interpolation_test_cyl()
                                      12.0,
                                      120.0,
                                      72.0);
-
+  downsampled_scanner.set_up();
   auto proj_data_info = shared_ptr<ProjDataInfo>(
       std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 96, 150, false)));
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(
@@ -478,6 +481,7 @@ InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
                          16.0,
                          24.0,
                          96.0);
+  scanner.set_up();
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
                                      "Some_symmetric_scanner",
                                      96,
@@ -506,6 +510,7 @@ InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
                                      16.0,
                                      120.0,
                                      96.0);
+  downsampled_scanner.set_up();
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(
       std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 48, 75, false)));
@@ -574,6 +579,7 @@ InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
                          16.0,
                          24.0,
                          96.0);
+  scanner.set_up();
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
                                      "Some_symmetric_scanner",
                                      64,
@@ -602,6 +608,7 @@ InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
                                      12.0,
                                      60.0,
                                      72.0);
+  downsampled_scanner.set_up();
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(std::move(
       ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 48, int(150 * 96 / 192), false)));
@@ -668,6 +675,7 @@ InterpolationTests::scatter_interpolation_test_blocks_downsampled()
                          7.0,
                          20.0,
                          29.0);
+  scanner.set_up();
   auto downsampled_scanner = Scanner(Scanner::User_defined_scanner,
                                      "Some_Downsampled_BlocksOnCylindrical_Scanner",
                                      64,
@@ -696,6 +704,7 @@ InterpolationTests::scatter_interpolation_test_blocks_downsampled()
                                      15.4286,
                                      112.0,
                                      125.0);
+  downsampled_scanner.set_up();
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(std::move(
       ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 48, int(150 * 96 / 192), false)));
@@ -765,6 +774,7 @@ InterpolationTests::transaxial_upsampling_interpolation_test_blocks()
                          7.0,
                          20.0,
                          29.0);
+  scanner.set_up();
   auto proj_data_info = shared_ptr<ProjDataInfo>(
       std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 0, 48, 60, false)));
 

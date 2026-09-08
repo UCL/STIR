@@ -1,18 +1,12 @@
 
 /*
-Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
+  Copyright 2017, 2018 ETH Zurich, Institute of Particle Physics and Astrophysics
+  Copyright 2020, 2021, 2022, 2024, 2026, University College London
+  Copyright 2021-2022, National Physical Laboratory, UK
+  This file is part of STIR.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+  SPDX-License-Identifier: Apache-2.0
+  See STIR/LICENSE.txt for details
 */
 
 /*!
@@ -22,13 +16,19 @@ limitations under the License.
   \brief  Non-inline implementations of stir::GeometryBlocksOnCylindrical
 
   \author Parisa Khateri
-
+  \author Daniel Deidda
+  \author Markus Jehl
+  \author Robert Twyman Skelley
+  \author Kris Thielemans
 */
 
 #include "stir/DetectionPosition.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
+#include "stir/format.h"
+#include "stir/error.h"
+#include "stir/warning.h"
 #include "stir/GeometryBlocksOnCylindrical.h"
 #include <string>
 #include <cmath>
@@ -74,6 +74,23 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
   float axial_crystal_spacing = scanner.get_axial_crystal_spacing();
   float transaxial_crystal_spacing = scanner.get_transaxial_crystal_spacing();
 
+  if (transaxial_crystal_spacing <= 0)
+    error(format("GeometryBlocksOnCylindrical for scanner {}: transaxial_crystal_spacing should be > 0", scanner.get_name()));
+  if (axial_crystal_spacing <= 0)
+    error(format("GeometryBlocksOnCylindrical for scanner {}: axial_crystal_spacing should be > 0", scanner.get_name()));
+  if (transaxial_block_spacing < transaxial_crystal_spacing * num_transaxial_crystals_per_block - .01F)
+    error(format("GeometryBlocksOnCylindrical for scanner {}: transaxial_block_spacing {} should be at least "
+                 "transaxial_crystal_spacing * num_transaxial_crystals_per_block = {}",
+                 scanner.get_name(),
+                 transaxial_block_spacing,
+                 transaxial_crystal_spacing * num_transaxial_crystals_per_block));
+  if (axial_block_spacing < axial_crystal_spacing * num_axial_crystals_per_block - .01F)
+    error(format("GeometryBlocksOnCylindrical for scanner {}: axial_block_spacing {} should be at least "
+                 "axial_crystal_spacing * num_axial_crystals_per_block = {}",
+                 scanner.get_name(),
+                 axial_block_spacing,
+                 axial_crystal_spacing * num_axial_crystals_per_block));
+
   det_pos_to_coord_type cartesian_coord_map_given_detection_position_keys;
   /*Building starts from a bucket perpendicular to y axis, from its first crystal.
           see start_x*/
@@ -91,6 +108,15 @@ GeometryBlocksOnCylindrical::build_crystal_maps(const Scanner& scanner)
                   * (((num_transaxial_blocks_per_bucket - 1) / 2.) * transaxial_block_spacing
                      + ((num_transaxial_crystals_per_block - 1) / 2.) * transaxial_crystal_spacing);
 
+  // check consistency for ring_spacing
+  // see https://github.com/UCL/STIR/issues/1753
+  if (abs(-start_z - scanner.get_ring_spacing() * (scanner.get_num_rings() - 1) / 2) > .1)
+    warning(format("GeometryBlocksOnCylindrical for scanner {}: block-size/spacing and ring-spacing give different scanner "
+                   "length, which might affect some results in the future\n"
+                   "from blocks: {} and from ring_spacing: {}",
+                   scanner.get_name(),
+                   -start_z * 2,
+                   scanner.get_ring_spacing() * (scanner.get_num_rings() - 1)));
   stir::CartesianCoordinate3D<float> start_point(start_z, start_y, start_x);
 
   for (int ax_bucket_num = 0; ax_bucket_num < num_axial_buckets; ++ax_bucket_num)

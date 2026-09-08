@@ -95,6 +95,7 @@ TOF_Tests::run_tests()
 {
   // New Scanner
   test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
+  test_scanner_sptr->set_up();
 
   // New Proj_Data_Info
   const int test_tof_mashing_factor = 39; // to have 9 TOF bins (381/39=9)

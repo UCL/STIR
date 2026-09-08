@@ -193,6 +193,7 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
     this_scanner_sptr->set_num_virtual_axial_crystals_per_block(num_virtual_axial_crystals_per_block);
   if (num_virtual_transaxial_crystals_per_block >= 0)
     this_scanner_sptr->set_num_virtual_transaxial_crystals_per_block(num_virtual_transaxial_crystals_per_block);
+  this_scanner_sptr->set_up();
   // put virtual block info in root_file_sptr
   this->root_file_sptr->set_num_virtual_axial_crystals_per_block(this_scanner_sptr->get_num_virtual_axial_crystals_per_block());
   this->root_file_sptr->set_num_virtual_transaxial_crystals_per_block(
