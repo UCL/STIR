@@ -1096,7 +1096,7 @@ InterfilePDFSHeader::post_processing()
 
       // new variables for block geometry
       if (axial_distance_between_crystals_in_cm < 0)
-        axial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_transaxial_crystal_spacing() / 10;
+        axial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_axial_crystal_spacing() / 10;
       if (transaxial_distance_between_crystals_in_cm < 0)
         transaxial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_transaxial_crystal_spacing() / 10;
       if (axial_distance_between_blocks_in_cm < 0)
