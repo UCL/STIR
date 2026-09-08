@@ -103,7 +103,10 @@ private:
   shared_ptr<const DetectorCoordinateMap> map_sptr;
   shared_ptr<const Scanner> scanner_sptr;
 
-  const DetectorCoordinateMap& map_to_use() const { return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_map_sptr(); }
+  const DetectorCoordinateMap& map_to_use() const
+  {
+    return map_sptr ? *map_sptr : *this->scanner_sptr->get_detector_coordinate_map_sptr();
+  }
 };
 
 //! Class for record with coincidence data using SAFIR bitfield definition

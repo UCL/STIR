@@ -109,11 +109,12 @@ RadionuclideDB::get_radionuclide_from_json(ImagingModality rmodality, const std:
 
   std::string name = rname;
 
+#ifdef nlohmann_json_FOUND
+
   float keV;
   float h_life;
   float branching_ratio;
 
-#ifdef nlohmann_json_FOUND
   info("RadionuclideDB: finding record radionuclide: " + rname + " in file " + this->database_filename, 3);
 
   // convert modality string
@@ -137,9 +138,8 @@ RadionuclideDB::get_radionuclide_from_json(ImagingModality rmodality, const std:
   auto rnuclide_entry = all_nuclides.end();
   try
     {
-      rnuclide_entry = std::find_if(all_nuclides.begin(), all_nuclides.end(), [&rname](const nlohmann::json::reference& entry) {
-        return entry.at("name") == rname;
-      });
+      rnuclide_entry = std::find_if(
+          all_nuclides.begin(), all_nuclides.end(), [&rname](const nlohmann::json& entry) { return entry.at("name") == rname; });
     }
   catch (...)
     {
@@ -167,7 +167,7 @@ RadionuclideDB::get_radionuclide_from_json(ImagingModality rmodality, const std:
   auto decay_entry = decays.end();
   try
     {
-      decay_entry = std::find_if(decays.begin(), decays.end(), [&modality_string](const nlohmann::json::reference& entry) {
+      decay_entry = std::find_if(decays.begin(), decays.end(), [&modality_string](const nlohmann::json& entry) {
         return entry.at("modality") == modality_string;
       });
     }

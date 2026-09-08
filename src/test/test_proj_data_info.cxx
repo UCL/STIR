@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <math.h>
 #include "stir/CPUTimer.h"
+#include "stir/format.h"
 
 using std::cerr;
 using std::setw;
@@ -102,7 +103,7 @@ protected:
   void test_generic_proj_data_info(ProjDataInfo& proj_data_info);
 
   template <class TProjDataInfo>
-  shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr);
+  static shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction = 1);
   void run_coordinate_test();
   void run_coordinate_test_for_realistic_scanner();
   void run_Blocks_DOI_test();
@@ -113,7 +114,7 @@ protected:
  */
 template <class TProjDataInfo>
 shared_ptr<TProjDataInfo>
-ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
+ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction)
 {
   VectorWithOffset<int> num_axial_pos_per_segment(scanner_sptr->get_num_rings() * 2 - 1);
   VectorWithOffset<int> min_ring_diff_v(scanner_sptr->get_num_rings() * 2 - 1);
@@ -128,12 +129,13 @@ ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr)
         num_axial_pos_per_segment[i] = 2 * scanner_sptr->get_num_rings() - i - 1;
     }
 
-  auto proj_data_info_blocks_sptr = std::make_shared<TProjDataInfo>(scanner_sptr,
-                                                                    num_axial_pos_per_segment,
-                                                                    min_ring_diff_v,
-                                                                    max_ring_diff_v,
-                                                                    scanner_sptr->get_max_num_views(),
-                                                                    scanner_sptr->get_max_num_non_arccorrected_bins());
+  auto proj_data_info_blocks_sptr
+      = std::make_shared<TProjDataInfo>(scanner_sptr,
+                                        num_axial_pos_per_segment,
+                                        min_ring_diff_v,
+                                        max_ring_diff_v,
+                                        scanner_sptr->get_max_num_views(),
+                                        scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
 
   return proj_data_info_blocks_sptr;
 }
@@ -1189,6 +1191,7 @@ class ProjDataInfoCylindricalNoArcCorrTests : public ProjDataInfoCylindricalTest
 {
 public:
   void run_tests() override;
+  void run_get_m_test();
 
 private:
   void test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info);
@@ -1197,6 +1200,8 @@ private:
 void
 ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 {
+  std::cerr << "\n-------- Testing get_m for different Scanner models --------\n";
+  run_get_m_test();
   cerr << "\n-------- Testing ProjDataInfoCylindricalNoArcCorr --------\n";
   shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
   cerr << "Tests with proj_data_info without mashing and axial compression\n\n";
@@ -1240,6 +1245,121 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
                                                               /*arc_corrected*/ false,
                                                               /*tof_mashing*/ 5);
   test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr));
+}
+
+void
+ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
+{
+
+  // ExamInfo not required for get_m() consistency checks.
+  // auto exam_info_sptr = std::make_shared<ExamInfo>();
+  // exam_info_sptr->imaging_modality = ImagingModality::PT;
+
+  //-- create projadata info Blocks on Cylindrical
+  auto scannerCyl_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  scannerCyl_sptr->set_scanner_geometry("Cylindrical");
+  scannerCyl_sptr->set_up();
+
+  auto proj_data_info_cyl_sptr = set_blocks_projdata_info<ProjDataInfoCylindricalNoArcCorr>(scannerCyl_sptr, 2);
+
+  //-- create projdata info Blocks on Cylindrical
+  auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
+  scannerBlocks_sptr->set_num_axial_crystals_per_block(1);
+  scannerBlocks_sptr->set_num_axial_blocks_per_bucket(1);
+  scannerBlocks_sptr->set_num_transaxial_crystals_per_block(1);
+  scannerBlocks_sptr->set_num_transaxial_blocks_per_bucket(1);
+
+  scannerBlocks_sptr->set_axial_block_spacing(scannerBlocks_sptr->get_axial_crystal_spacing()
+                                              * scannerBlocks_sptr->get_num_axial_crystals_per_block());
+  scannerBlocks_sptr->set_transaxial_block_spacing(scannerBlocks_sptr->get_transaxial_crystal_spacing()
+                                                   * scannerBlocks_sptr->get_num_transaxial_crystals_per_block());
+  scannerBlocks_sptr->set_up();
+
+  auto proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
+
+  auto scannerGeneric_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  scannerGeneric_sptr->set_scanner_geometry("Generic");
+  scannerGeneric_sptr->set_detector_coordinate_map(scannerBlocks_sptr->get_detector_coordinate_map());
+  scannerGeneric_sptr->set_up();
+
+  auto proj_data_info_generic_sptr = set_blocks_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerGeneric_sptr, 2);
+
+  Bin bin;
+  CartesianCoordinate3D<float> det_cyl_1, det_cyl_2, det_gen_1, det_gen_2, det_blk_1, det_blk_2;
+  float z_shift_cyl = (scannerCyl_sptr->get_axial_length() - scannerCyl_sptr->get_ring_spacing()) / 2.F;
+  float z_shift_gen = -scannerGeneric_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
+  float z_shift_blk = -scannerBlocks_sptr->get_coordinate_for_det_pos(DetectionPosition<>(0, 0, 0)).z();
+
+  for (int seg = proj_data_info_cyl_sptr->get_min_segment_num(); seg <= proj_data_info_cyl_sptr->get_max_segment_num(); ++seg)
+    {
+      bin.segment_num() = seg;
+      bin.view_num() = 0;
+      bin.tangential_pos_num() = 0;
+
+      float m_cyl[2] = { 0.F, 0.F };
+      float m_blk[2] = { 0.F, 0.F };
+      float m_gen[2] = { 0.F, 0.F };
+
+      const int axial_positions[2]
+          = { proj_data_info_cyl_sptr->get_min_axial_pos_num(seg), proj_data_info_cyl_sptr->get_max_axial_pos_num(seg) };
+
+      for (int index = 0; index < 2; ++index)
+        {
+          bin.axial_pos_num() = axial_positions[index];
+
+          m_cyl[index] = proj_data_info_cyl_sptr->get_m(bin);
+          m_blk[index] = proj_data_info_blocks_sptr->get_m(bin);
+          m_gen[index] = proj_data_info_generic_sptr->get_m(bin);
+
+          {
+            proj_data_info_generic_sptr->find_cartesian_coordinates_of_detection(det_gen_1, det_gen_2, bin);
+
+            check_if_equal(m_gen[index],
+                           ((det_gen_1.z() + det_gen_2.z()) / 2.F) - z_shift_gen,
+                           format("Generic get_m() does not equal the LOR axial midpoint for segment {} and axial position {}",
+                                  seg,
+                                  bin.axial_pos_num()));
+          }
+
+          {
+            proj_data_info_cyl_sptr->find_cartesian_coordinates_of_detection(det_cyl_1, det_cyl_2, bin);
+
+            check_if_equal(
+                m_cyl[index],
+                ((det_cyl_1.z() + det_cyl_2.z()) / 2.F) - z_shift_cyl,
+                format("Cylindrical get_m() does not equal the LOR axial midpoint for segment {} and axial position {}",
+                       seg,
+                       bin.axial_pos_num()));
+          }
+
+          {
+            proj_data_info_blocks_sptr->find_cartesian_coordinates_of_detection(det_blk_1, det_blk_2, bin);
+
+            check_if_equal(m_blk[index],
+                           ((det_blk_1.z() + det_blk_2.z()) / 2.F) - z_shift_blk,
+                           format("Blocks get_m() does not equal the LOR axial midpoint for segment {} and axial position {}",
+                                  seg,
+                                  bin.axial_pos_num()));
+          }
+
+          check_if_equal(
+              m_cyl[index],
+              m_blk[index],
+              format("Cylindrical and Blocks get_m() differ for segment {} and axial position {}", seg, bin.axial_pos_num()));
+
+          check_if_equal(
+              m_cyl[index],
+              m_gen[index],
+              format("Cylindrical and Generic get_m() differ for segment {} and axial position {}", seg, bin.axial_pos_num()));
+        }
+
+      check_if_equal(m_cyl[0], -m_cyl[1], format("Cylindrical get_m() is not symmetric for segment {}", seg));
+
+      check_if_equal(m_blk[0], -m_blk[1], format("BlocksOnCylindrical get_m() is not symmetric for segment {}", seg));
+
+      check_if_equal(m_gen[0], -m_gen[1], format("Generic get_m() is not symmetric for segment {}", seg));
+    }
 }
 
 void

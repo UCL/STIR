@@ -556,7 +556,7 @@ DataSymmetriesForBins_PET_CartesianGrid::find_basic_bin(
                 }
             }
 
-          int segment_num_temp, axial_pos_num_temp;
+          int segment_num_temp = 0, axial_pos_num_temp = 0;
           proj_data_info_blk_ptr->get_segment_axial_pos_num_for_ring_pair(segment_num_temp, axial_pos_num_temp, ring1, ring2);
 
           // to check
@@ -637,7 +637,7 @@ DataSymmetriesForBins_PET_CartesianGrid::find_basic_bin(
                 }
             }
 
-          int segment_num_temp, axial_pos_num_temp;
+          int segment_num_temp = 0, axial_pos_num_temp = 0;
           proj_data_info_gen_ptr->get_segment_axial_pos_num_for_ring_pair(segment_num_temp, axial_pos_num_temp, ring1, ring2);
 
           if (segment_num_temp != segment_num)

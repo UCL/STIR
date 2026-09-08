@@ -61,9 +61,9 @@ ENDIF()
 
 ####### Set Version number etc
 set(VERSION_MAJOR   6)
-set(VERSION_MINOR   4)
+set(VERSION_MINOR   5)
 set(VERSION_PATCH   0)
-set(VERSION   060400) # only used in STIRConfig.h.in and swig/CMakeLists.txt
+set(VERSION   060500) # only used in STIRConfig.h.in and swig/CMakeLists.txt
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})

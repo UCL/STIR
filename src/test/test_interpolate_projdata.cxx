@@ -1,8 +1,6 @@
-//
-//
 /*
   Copyright 2023, Positrigo AG, Zurich
-  Copyright 2024, University College London
+  Copyright 2024, 2026 University College London
   This file is part of STIR.
 
   SPDX-License-Identifier: Apache-2.0
@@ -16,6 +14,7 @@
   \brief Tests for stir::ProjData interpolation as used by the scatter estimation.
 
   \author Markus Jehl
+  \author Kris Thielemans
 */
 
 #ifndef NDEBUG
@@ -54,6 +53,9 @@ public:
   void run_tests() override;
 
 private:
+  shared_ptr<ExamInfo> exam_info_sptr;
+  // need to call this first!
+  void create_exam_info();
   void scatter_interpolation_test_blocks();
   void scatter_interpolation_test_cyl();
   void scatter_interpolation_test_blocks_asymmetric();
@@ -65,6 +67,15 @@ private:
   void compare_segment(const SegmentBySinogram<float>& segment1, const SegmentBySinogram<float>& segment2, float maxDiff);
   void
   compare_segment_shape(const SegmentBySinogram<float>& shape_segment, const SegmentBySinogram<float>& test_segment, int erosion);
+  //! forward project emission_map
+  shared_ptr<ProjDataInMemory> create_data(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                           const VoxelsOnCartesianGrid<float>& emission_map,
+                                           const std::string& name);
+  //! forward project emission_map to downsampled data and upsample
+  shared_ptr<ProjDataInMemory> create_upsampled_data(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                                     const shared_ptr<const ProjDataInfo> downsampled_proj_data_info_sptr,
+                                                     const VoxelsOnCartesianGrid<float>& emission_map,
+                                                     const std::string& suffix);
 };
 
 void
@@ -220,16 +231,61 @@ make_symmetric_object(VoxelsOnCartesianGrid<float>& emission_map)
 }
 
 void
-InterpolationTests::scatter_interpolation_test_blocks()
+InterpolationTests::create_exam_info()
 {
-  info("Performing symmetric interpolation test for BlocksOnCylindrical scanner");
   auto time_frame_def = TimeFrameDefinitions();
   time_frame_def.set_num_time_frames(1);
   time_frame_def.set_time_frame(1, 0, 1e9);
-  auto exam_info = ExamInfo();
-  exam_info.set_high_energy_thres(650);
-  exam_info.set_low_energy_thres(425);
-  exam_info.set_time_frame_definitions(time_frame_def);
+  this->exam_info_sptr = std::make_shared<ExamInfo>(ImagingModality::PT);
+  this->exam_info_sptr->set_high_energy_thres(650);
+  this->exam_info_sptr->set_low_energy_thres(425);
+  this->exam_info_sptr->set_time_frame_definitions(time_frame_def);
+}
+
+shared_ptr<ProjDataInMemory>
+InterpolationTests::create_data(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                const VoxelsOnCartesianGrid<float>& emission_map,
+                                const std::string& name)
+{
+  // project the cylinder onto the full-scale scanner proj data
+  auto pm = ProjMatrixByBinUsingRayTracing();
+  pm.set_use_actual_detector_boundaries(true);
+  pm.enable_cache(false);
+  auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
+  forw_proj.set_up(proj_data_info_sptr, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
+  auto full_size_model_sino_sptr = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, proj_data_info_sptr);
+  forw_proj.forward_project(*full_size_model_sino_sptr, emission_map);
+
+  if (!name.empty())
+    full_size_model_sino_sptr->write_to_file(name + ".hs");
+  return full_size_model_sino_sptr;
+}
+
+shared_ptr<ProjDataInMemory>
+InterpolationTests::create_upsampled_data(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                          const shared_ptr<const ProjDataInfo> downsampled_proj_data_info_sptr,
+                                          const VoxelsOnCartesianGrid<float>& emission_map,
+                                          const std::string& suffix)
+{
+  auto downsampled_proj_data = this->create_data(downsampled_proj_data_info_sptr, emission_map, "downsampled_sino" + suffix);
+
+  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
+  // TODO reduce_segment
+  auto interpolated_direct_proj_data = ProjDataInMemory(this->exam_info_sptr, proj_data_info_sptr);
+  interpolate_projdata(interpolated_direct_proj_data, *downsampled_proj_data, BSpline::linear, false);
+  auto interpolated_proj_data_sptr = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, proj_data_info_sptr);
+  inverse_SSRB(*interpolated_proj_data_sptr, interpolated_direct_proj_data);
+
+  // write the proj data to file
+  interpolated_proj_data_sptr->write_to_file("interpolated_sino" + suffix + ".hs");
+
+  return interpolated_proj_data_sptr;
+}
+
+void
+InterpolationTests::scatter_interpolation_test_blocks()
+{
+  info("Performing symmetric interpolation test for BlocksOnCylindrical scanner");
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner,
@@ -294,49 +350,22 @@ InterpolationTests::scatter_interpolation_test_blocks()
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(
       std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(downsampled_scanner), 1, 0, 96, 150, false)));
 
-  auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
-  auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
-
   // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
-  auto emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  auto emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
   make_symmetric_object(emission_map);
   write_to_file("downsampled_cylinder_map", emission_map);
 
-  // project the cylinder onto the downsampled scanner proj data
-  auto pm = ProjMatrixByBinUsingRayTracing();
-  pm.set_use_actual_detector_boundaries(true);
-  pm.enable_cache(false);
-  auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
-  forw_proj.set_up(downsampled_proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto downsampled_model_sino = ProjDataInMemory(downsampled_proj_data);
-  downsampled_model_sino.fill(0);
-  forw_proj.forward_project(downsampled_model_sino, emission_map);
-
-  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
-  auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
-  auto interpolated_proj_data = ProjDataInMemory(proj_data);
-  inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
-
-  // write the proj data to file
-  downsampled_model_sino.write_to_file("downsampled_sino.hs");
-  interpolated_proj_data.write_to_file("interpolated_sino.hs");
+  auto interpolated_proj_data_sptr
+      = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "_block");
 
   // use symmetry to check that there are no significant errors in the interpolation
-  check_symmetry(interpolated_proj_data.get_segment_by_sinogram(0));
+  check_symmetry(interpolated_proj_data_sptr->get_segment_by_sinogram(0));
 }
 
 void
 InterpolationTests::scatter_interpolation_test_cyl()
 {
   info("Performing symmetric interpolation test for Cylindrical scanner");
-  auto time_frame_def = TimeFrameDefinitions();
-  time_frame_def.set_num_time_frames(1);
-  time_frame_def.set_time_frame(1, 0, 1e9);
-  auto exam_info = ExamInfo();
-  exam_info.set_high_energy_thres(650);
-  exam_info.set_low_energy_thres(425);
-  exam_info.set_time_frame_definitions(time_frame_def);
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner,
@@ -401,49 +430,24 @@ InterpolationTests::scatter_interpolation_test_cyl()
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(
       std::make_shared<Scanner>(downsampled_scanner), 1, 0, 32, int(150 * 64 / 192), false)));
 
-  auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
-  auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
+  auto proj_data = ProjDataInMemory(this->exam_info_sptr, proj_data_info);
 
   // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
-  auto emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  auto emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
   make_symmetric_object(emission_map);
   write_to_file("downsampled_cylinder_map_cyl", emission_map);
 
-  // project the cylinder onto the downsampled scanner proj data
-  auto pm = ProjMatrixByBinUsingRayTracing();
-  pm.set_use_actual_detector_boundaries(true);
-  pm.enable_cache(false);
-  auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
-  forw_proj.set_up(downsampled_proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto downsampled_model_sino = ProjDataInMemory(downsampled_proj_data);
-  downsampled_model_sino.fill(0);
-  forw_proj.forward_project(downsampled_model_sino, emission_map);
-
-  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
-  auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
-  auto interpolated_proj_data = ProjDataInMemory(proj_data);
-  inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
-
-  // write the proj data to file
-  downsampled_model_sino.write_to_file("downsampled_sino_cyl.hs");
-  interpolated_proj_data.write_to_file("interpolated_sino_cyl.hs");
+  auto interpolated_proj_data_sptr
+      = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "_cyl");
 
   // use symmetry to check that there are no significant errors in the interpolation
-  check_symmetry(interpolated_proj_data.get_segment_by_sinogram(0));
+  check_symmetry(interpolated_proj_data_sptr->get_segment_by_sinogram(0));
 }
 
 void
 InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
 {
   info("Performing asymmetric interpolation test for BlocksOnCylindrical scanner");
-  auto time_frame_def = TimeFrameDefinitions();
-  time_frame_def.set_num_time_frames(1);
-  time_frame_def.set_time_frame(1, 0, 1e9);
-  auto exam_info = ExamInfo();
-  exam_info.set_high_energy_thres(650);
-  exam_info.set_low_energy_thres(425);
-  exam_info.set_time_frame_definitions(time_frame_def);
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner,
@@ -508,12 +512,11 @@ InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(
       std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(downsampled_scanner), 1, 0, 48, 75, false)));
 
-  auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
-  auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
+  auto proj_data = ProjDataInMemory(this->exam_info_sptr, proj_data_info);
+  auto downsampled_proj_data = ProjDataInMemory(exam_info_sptr, downsampled_proj_data_info);
 
-  // define a cylinder precisely in the middle of the FOV, such that symmetry can be used for validation
-  auto emission_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
-  auto cyl_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
+  auto emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *proj_data_info, 1);
+  auto cyl_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *proj_data_info, 1);
   auto cylinder = EllipsoidalCylinder(40, 40, 20, CartesianCoordinate3D<float>(90, 100, 0));
   cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
   auto box = Box3D(20, 20, 20, CartesianCoordinate3D<float>(40, -20, 70));
@@ -521,52 +524,26 @@ InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
   emission_map += cyl_map;
 
   // project the cylinder onto the full-scale scanner proj data
-  auto pm = ProjMatrixByBinUsingRayTracing();
-  pm.set_use_actual_detector_boundaries(true);
-  pm.enable_cache(false);
-  auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
-  forw_proj.set_up(proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto full_size_model_sino = ProjDataInMemory(proj_data);
-  full_size_model_sino.fill(0);
-  forw_proj.forward_project(full_size_model_sino, emission_map);
+  auto full_size_model_sino_sptr = this->create_data(proj_data_info, emission_map, "full_size_sino_asym_block");
 
-  // also project onto the downsampled scanner
-  emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
-  cyl_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  // also project down-sampled, and upsample
+  emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
+  cyl_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
   cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
   box.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
   emission_map += cyl_map;
-  forw_proj.set_up(downsampled_proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto downsampled_model_sino = ProjDataInMemory(downsampled_proj_data);
-  downsampled_model_sino.fill(0);
-  forw_proj.forward_project(downsampled_model_sino, emission_map);
-
-  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
-  auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
-  auto interpolated_proj_data = ProjDataInMemory(proj_data);
-  inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
-
-  // write the proj data to file
-  downsampled_model_sino.write_to_file("downsampled_sino_asym.hs");
-  full_size_model_sino.write_to_file("full_size_sino_asym.hs");
-  interpolated_proj_data.write_to_file("interpolated_sino_asym.hs");
+  auto interpolated_proj_data_sptr
+      = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "asym_block");
 
   // compare to ground truth
-  compare_segment_shape(full_size_model_sino.get_segment_by_sinogram(0), interpolated_proj_data.get_segment_by_sinogram(0), 2);
+  compare_segment_shape(
+      full_size_model_sino_sptr->get_segment_by_sinogram(0), interpolated_proj_data_sptr->get_segment_by_sinogram(0), 2);
 }
 
 void
 InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
 {
   info("Performing asymmetric interpolation test for Cylindrical scanner");
-  auto time_frame_def = TimeFrameDefinitions();
-  time_frame_def.set_num_time_frames(1);
-  time_frame_def.set_time_frame(1, 0, 1e9);
-  auto exam_info = ExamInfo();
-  exam_info.set_high_energy_thres(650);
-  exam_info.set_low_energy_thres(425);
-  exam_info.set_time_frame_definitions(time_frame_def);
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner,
@@ -631,12 +608,9 @@ InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(
       std::make_shared<Scanner>(downsampled_scanner), 1, 0, 32, int(150 * 64 / 192), false)));
 
-  auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
-  auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
-
   // define asymetric object
-  auto emission_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
-  auto cyl_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
+  auto emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *proj_data_info, 1);
+  auto cyl_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *proj_data_info, 1);
   auto cylinder = EllipsoidalCylinder(40, 40, 20, CartesianCoordinate3D<float>(90, 100, 0));
   cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
   auto box = Box3D(20, 20, 20, CartesianCoordinate3D<float>(40, -20, 70));
@@ -644,52 +618,26 @@ InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
   emission_map += cyl_map;
 
   // project the cylinder onto the full-scale scanner proj data
-  auto pm = ProjMatrixByBinUsingRayTracing();
-  pm.set_use_actual_detector_boundaries(true);
-  pm.enable_cache(false);
-  auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
-  forw_proj.set_up(proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto full_size_model_sino = ProjDataInMemory(proj_data);
-  full_size_model_sino.fill(0);
-  forw_proj.forward_project(full_size_model_sino, emission_map);
+  auto full_size_model_sino_sptr = this->create_data(proj_data_info, emission_map, "full_size_sino_asym_cyl");
 
-  // also project onto the downsampled scanner
-  emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
-  cyl_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  // also project down-sampled, and upsample
+  emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
+  cyl_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
   cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
   box.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
   emission_map += cyl_map;
-  forw_proj.set_up(downsampled_proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto downsampled_model_sino = ProjDataInMemory(downsampled_proj_data);
-  downsampled_model_sino.fill(0);
-  forw_proj.forward_project(downsampled_model_sino, emission_map);
-
-  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
-  auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
-  auto interpolated_proj_data = ProjDataInMemory(proj_data);
-  inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
-
-  // write the proj data to file
-  downsampled_model_sino.write_to_file("downsampled_sino_cyl_asym.hs");
-  full_size_model_sino.write_to_file("full_size_sino_cyl_asym.hs");
-  interpolated_proj_data.write_to_file("interpolated_sino_cyl_asym.hs");
+  auto interpolated_proj_data_sptr
+      = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "asym_block");
 
   // compare to ground truth
-  compare_segment_shape(full_size_model_sino.get_segment_by_sinogram(0), interpolated_proj_data.get_segment_by_sinogram(0), 2);
+  compare_segment_shape(
+      full_size_model_sino_sptr->get_segment_by_sinogram(0), interpolated_proj_data_sptr->get_segment_by_sinogram(0), 2);
 }
 
 void
 InterpolationTests::scatter_interpolation_test_blocks_downsampled()
 {
   info("Performing downampled interpolation test for BlocksOnCylindrical scanner");
-  auto time_frame_def = TimeFrameDefinitions();
-  time_frame_def.set_num_time_frames(1);
-  time_frame_def.set_time_frame(1, 0, 1e9);
-  auto exam_info = ExamInfo();
-  exam_info.set_high_energy_thres(650);
-  exam_info.set_low_energy_thres(425);
-  exam_info.set_time_frame_definitions(time_frame_def);
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner,
@@ -754,67 +702,39 @@ InterpolationTests::scatter_interpolation_test_blocks_downsampled()
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(
       std::make_shared<Scanner>(downsampled_scanner), 1, 0, 32, int(150 * 64 / 192 + 1), false)));
 
-  auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
-  auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
+  auto proj_data = ProjDataInMemory(exam_info_sptr, proj_data_info);
+  auto downsampled_proj_data = ProjDataInMemory(exam_info_sptr, downsampled_proj_data_info);
 
   // define a cylinder and a box that are off-centre, such that the shapes in the sinogram can be compared
-  auto emission_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
-  auto cyl_map = VoxelsOnCartesianGrid<float>(*proj_data_info, 1);
+  auto emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *proj_data_info, 1);
+  auto cyl_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *proj_data_info, 1);
   auto cylinder = EllipsoidalCylinder(40, 40, 20, CartesianCoordinate3D<float>(80, 100, 0));
   cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
   auto box = Box3D(20, 20, 20, CartesianCoordinate3D<float>(30, -20, 70));
   box.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
   emission_map += cyl_map;
 
-  // project the emission map onto the full-scale scanner proj data
-  auto pm = ProjMatrixByBinUsingRayTracing();
-  pm.set_use_actual_detector_boundaries(true);
-  pm.enable_cache(false);
-  auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
-  forw_proj.set_up(proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto full_size_model_sino = ProjDataInMemory(proj_data);
-  full_size_model_sino.fill(0);
-  forw_proj.forward_project(full_size_model_sino, emission_map);
+  // project the cylinder onto the full-scale scanner proj data
+  auto full_size_model_sino_sptr = this->create_data(proj_data_info, emission_map, "full_size_sino_transaxial_block");
 
-  // also project onto the downsampled scanner
-  emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
-  cyl_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  // also project down-sampled, and upsample
+  emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
+  cyl_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
   cylinder.construct_volume(cyl_map, CartesianCoordinate3D<int>(1, 1, 1));
   box.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
   emission_map += cyl_map;
-  forw_proj.set_up(downsampled_proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto downsampled_model_sino = ProjDataInMemory(downsampled_proj_data);
-  downsampled_model_sino.fill(0);
-  forw_proj.forward_project(downsampled_model_sino, emission_map);
-
-  // write the proj data to file
-  downsampled_model_sino.write_to_file("transaxially_downsampled_sino.hs");
-  full_size_model_sino.write_to_file("transaxially_full_size_sino.hs");
-
-  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
-  auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
-  auto interpolated_proj_data = ProjDataInMemory(proj_data);
-  inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
-
-  // write the proj data to file
-  interpolated_proj_data.write_to_file("transaxially_interpolated_sino.hs");
+  auto interpolated_proj_data_sptr
+      = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "transaxial_block");
 
   // compare to ground truth
-  compare_segment_shape(full_size_model_sino.get_segment_by_sinogram(0), interpolated_proj_data.get_segment_by_sinogram(0), 3);
+  compare_segment_shape(
+      full_size_model_sino_sptr->get_segment_by_sinogram(0), interpolated_proj_data_sptr->get_segment_by_sinogram(0), 3);
 }
 
 void
 InterpolationTests::transaxial_upsampling_interpolation_test_blocks()
 {
   info("Performing transaxial downampled interpolation test for BlocksOnCylindrical scanner");
-  auto time_frame_def = TimeFrameDefinitions();
-  time_frame_def.set_num_time_frames(1);
-  time_frame_def.set_time_frame(1, 0, 1e9);
-  auto exam_info = ExamInfo();
-  exam_info.set_high_energy_thres(650);
-  exam_info.set_low_energy_thres(425);
-  exam_info.set_time_frame_definitions(time_frame_def);
 
   // define the original scanner and a downsampled one, as it would be used for scatter simulation
   auto scanner = Scanner(Scanner::User_defined_scanner,
@@ -851,56 +771,31 @@ InterpolationTests::transaxial_upsampling_interpolation_test_blocks()
   // use the code in scatter simulation to downsample the scanner
   auto scatter_simulation = SingleScatterSimulation();
   scatter_simulation.set_template_proj_data_info(proj_data_info);
-  scatter_simulation.set_exam_info(exam_info);
+  scatter_simulation.set_exam_info(*this->exam_info_sptr);
   scatter_simulation.downsample_scanner(-1, 96 / 4); // number of detectors per ring reduced by factor of four
   auto downsampled_proj_data_info = scatter_simulation.get_template_proj_data_info_sptr();
 
-  auto proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), proj_data_info);
-  auto downsampled_proj_data = ProjDataInMemory(std::make_shared<ExamInfo>(exam_info), downsampled_proj_data_info);
-
   // define a cylinder precisely in the middle of the FOV
-  auto emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  auto emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
   make_symmetric_object(emission_map);
 
   // project the cylinder onto the full-scale scanner proj data
-  auto pm = ProjMatrixByBinUsingRayTracing();
-  pm.set_use_actual_detector_boundaries(true);
-  pm.enable_cache(false);
-  auto forw_proj = ForwardProjectorByBinUsingProjMatrixByBin(std::make_shared<ProjMatrixByBinUsingRayTracing>(pm));
-  forw_proj.set_up(proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto full_size_model_sino = ProjDataInMemory(proj_data);
-  full_size_model_sino.fill(0);
-  forw_proj.forward_project(full_size_model_sino, emission_map);
+  auto full_size_model_sino_sptr = this->create_data(proj_data_info, emission_map, "full_size_sino_transaxial_block_for_LOR");
 
-  // also project onto the downsampled scanner
-  emission_map = VoxelsOnCartesianGrid<float>(*downsampled_proj_data_info, 1);
+  // also project down-sampled, and upsample
+  emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *downsampled_proj_data_info, 1);
   make_symmetric_object(emission_map);
-  forw_proj.set_up(downsampled_proj_data_info, std::make_shared<VoxelsOnCartesianGrid<float>>(emission_map));
-  auto downsampled_model_sino = ProjDataInMemory(downsampled_proj_data);
-  downsampled_model_sino.fill(0);
-  forw_proj.forward_project(downsampled_model_sino, emission_map);
-
-  // write the proj data to file
-  downsampled_model_sino.write_to_file("transaxially_downsampled_sino_for_LOR.hs");
-
-  // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
-  auto interpolated_direct_proj_data = ProjDataInMemory(proj_data);
-  interpolate_projdata(interpolated_direct_proj_data, downsampled_model_sino, BSpline::linear, false);
-  auto interpolated_proj_data = ProjDataInMemory(proj_data);
-  inverse_SSRB(interpolated_proj_data, interpolated_direct_proj_data);
-
-  // write the proj data to file
-  interpolated_proj_data.write_to_file("transaxially_interpolated_sino_for_LOR.hs");
+  auto downsampled_proj_data_sptr
+      = this->create_data(downsampled_proj_data_info, emission_map, "downsampled_transaxial_block_for_LOR");
 
   // Identify the bins which should be identical between the downsampled and the interpolated sinogram:
   // Each module has 96 / 8 = 12 crystal in the full size scanner, organised in 3 blocks of 4 crystals, while
   // the downsampled scanner has 3 crystals per module. The idea is that the centre of the outer two
   // is in exactly the same position than the centre of the first and last crystal in the full size scanner.
-  SegmentBySinogram<float> sinogram_downsampled = downsampled_proj_data.get_empty_segment_by_sinogram(0, false, 0);
-  SegmentBySinogram<float> sinogram_full_size = proj_data.get_empty_segment_by_sinogram(0, false, 0);
-  const auto pdi_downsampled
-      = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&(*downsampled_proj_data.get_proj_data_info_sptr()));
-  const auto pdi_full_size = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(&(*sinogram_full_size.get_proj_data_info_sptr()));
+  SegmentBySinogram<float> sinogram_downsampled = downsampled_proj_data_sptr->get_empty_segment_by_sinogram(0, false, 0);
+  SegmentBySinogram<float> sinogram_full_size = full_size_model_sino_sptr->get_empty_segment_by_sinogram(0, false, 0);
+  const auto pdi_downsampled = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(downsampled_proj_data_info.get());
+  const auto pdi_full_size = dynamic_cast<const ProjDataInfoGenericNoArcCorr*>(proj_data_info.get());
 
   int tested_LORs = 0;
   for (int det1_downsampled = 0; det1_downsampled < 3 * 8; det1_downsampled++)
@@ -956,6 +851,7 @@ InterpolationTests::transaxial_upsampling_interpolation_test_blocks()
 void
 InterpolationTests::run_tests()
 {
+  create_exam_info();
   scatter_interpolation_test_blocks();
   scatter_interpolation_test_cyl();
   scatter_interpolation_test_blocks_asymmetric();
