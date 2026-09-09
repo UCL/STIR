@@ -1398,6 +1398,16 @@ InterfilePDFSHeader::post_processing()
                                                          static_cast<float>(transaxial_distance_between_blocks_in_cm * 10.),
                                                          crystal_map));
 
+  try
+    {
+      scanner_sptr_from_file->set_up();
+    }
+  catch (const std::exception& e)
+    {
+      error(format("Interfile parsing ended up with the following incomplete/inconsistent scanner:\n{}\nPlease check.",
+                   scanner_sptr_from_file->parameter_info()));
+    }
+
   bool is_consistent = scanner_sptr_from_file->check_consistency() == Succeeded::yes;
   if (scanner_sptr_from_file->get_type() == Scanner::Unknown_scanner
       || scanner_sptr_from_file->get_type() == Scanner::User_defined_scanner || mismatch_between_header_and_guess

@@ -296,6 +296,7 @@ InterfileRawDataHeaderSiemens::post_processing()
         }
       warning("TOF mashing factor was not set. Using " + std::to_string(tof_mash_factor));
     }
+  scanner_sptr->set_up();
 
   data_info_ptr = ProjDataInfo::construct_proj_data_info(
       scanner_sptr, axial_compression, maximum_ring_difference, num_views, num_bins, is_arccorrected, tof_mash_factor);
