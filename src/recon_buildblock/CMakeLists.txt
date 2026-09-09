@@ -142,6 +142,14 @@ if (STIR_WITH_CUDA)
   list(APPEND ${dir_LIB_SOURCES}
 		CUDA/CudaRelativeDifferencePrior.cu
 		CUDA/CudaGibbsPenaltiesInstantiations.cu
+		SPECTGPU_projector/BackProjectorByBinSPECTGPU.cxx
+		SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.cxx
+		SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.cxx
+		SPECTGPU_projector/SPECTGPUHelper.cxx
+                SPECTGPU_projector/SPECTGPUForwardProjectorCUDA.cu
+                SPECTGPU_projector/SPECTGPUBackwardProjectorCUDA.cu
+                SPECTGPU_projector/SPECTGPUProjection.cu
+                SPECTGPU_projector/SPECTGPURotateAndGaussianInterpolate.cu
   )
 endif()
 

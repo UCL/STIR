@@ -1,0 +1,6 @@
+Forward Projector parameters:=
+   type := SPECTGPU
+   Forward projector Using SPECTGPU Parameters :=
+
+      End Forward Projector Using SPECTGPU Parameters :=
+End:=

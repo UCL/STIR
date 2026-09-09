@@ -81,6 +81,8 @@
 
 #ifdef STIR_WITH_CUDA
 #  include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/BackProjectorByBinSPECTGPU.h"
 #endif
 
 #ifdef HAVE_PETSIRD
@@ -155,6 +157,8 @@ static ProjectorByBinPairUsingNiftyPET::RegisterIt gpu_pair;
 static CudaRelativeDifferencePrior<float>::RegisterIt gpu_rdp;
 static CudaGibbsQuadraticPenalty<float>::RegisterIt gpu_gibbs_quadratic;
 static CudaGibbsRelativeDifferencePenalty<float>::RegisterIt gpu_gibbs_relative_difference;
+static ForwardProjectorByBinSPECTGPU::RegisterIt gpu_for;
+static BackProjectorByBinSPECTGPU::RegisterIt gpu_back;
 #endif
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR
