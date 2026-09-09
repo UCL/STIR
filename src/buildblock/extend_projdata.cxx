@@ -130,15 +130,19 @@ extend_segment(const SegmentBySinogram<float>& segment,
             }
           else if (flip_views && use_opposite_segment)
             {
-              // swapped already has an exact value at every tangential position, computed via the
-              // real detector geometry in make_swapped_segment -- no sym_dim restriction or
-              // nearest-neighbour approximation is needed (or correct) here.
+              // make_swapped_segment resolves which segment/axial/view the detector-pair-swapped
+              // LOR belongs to, but that swap alone does not apply the tangential sign flip that
+              // the view+pi wraparound itself requires (p(theta+pi, s) = p(theta, -s)). So we still
+              // need to read swapped_opposite at -tang_pos, not tang_pos, to get the correct value
+              // for this destination tangential position.
+              // This has been visually validated against the oblique sinograms.
+
               for (int tang_pos = min_dim[3]; tang_pos <= max_dim[3]; tang_pos++)
                 {
                   out[axial_pos][min_dim[2] + view_edge][tang_pos]
-                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, tang_pos);
+                      = flip_source(axial_pos, max_dim[2] - 2 * view_extension + view_edge + 1, -tang_pos);
                   out[axial_pos][max_dim[2] - view_extension + 1 + view_edge][tang_pos]
-                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, tang_pos);
+                      = flip_source(axial_pos, min_dim[2] + view_extension + view_edge, -tang_pos);
                 }
             }
           else if (flip_views)
