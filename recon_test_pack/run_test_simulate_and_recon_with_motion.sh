@@ -145,6 +145,27 @@ fi
 error_log_files=""
 cp my_template.gdef my_att_fwd_test_object.gdef
 cp my_template.gdef my_ACF_test_object.gdef
+    # adjusted to run to compare with RTA instead of ground truth because of Gibbs ringing artefacts around
+    # the edge of object.
+    echo "Running OSMAPOSL OSMAPOSL_with_motion_test_f1.par for 1 iteration (28 subsets)"
+    ${MPIRUN} OSMAPOSL OSMAPOSL_with_motion_test_f1.par > my_rec_test_object_f1.log 2>&1
+    if [ $? -ne 0 ]; then
+       echo "Error running reconstruction. CHECK RECONSTRUCTION LOG my_rec_test_object_f1.log"
+       error_log_files="${error_log_files} my_rec_test_object_f1.log"
+       exit 1
+    fi
+    echo "Running OSMAPOSL OSMAPOSL_with_motion_test_f2.par for 1 iteration (28 subsets)"
+    ${MPIRUN} OSMAPOSL OSMAPOSL_with_motion_test_f2.par > my_rec_test_object_f2.log 2>&1
+    if [ $? -ne 0 ]; then
+       echo "Error running reconstruction. CHECK RECONSTRUCTION LOG my_rec_test_object_f2.log"
+       error_log_files="${error_log_files} my_rec_test_object_f2.log"
+       exit 1
+    fi
+
+    mv my_rec_test_object_g1_46.hv my_rec_test_object_g1.hv
+    mv my_rec_test_object_g2_46.hv my_rec_test_object_g2.hv
+    cp my_template.gdef my_rec_test_object.gdef
+    warp_and_accumulate_gated_images my_twice_test_object_RTA my_rec_test_object my_reverse_translation
 
     echo "Running OSMAPOSL OSMAPOSL_with_motion_test.par for 1 iteration (28 subsets)"
     ${MPIRUN} OSMAPOSL OSMAPOSL_with_motion_test.par > my_rec_test_object.log 2>&1
@@ -153,7 +174,8 @@ cp my_template.gdef my_ACF_test_object.gdef
        error_log_files="${error_log_files} my_rec_test_object.log"
        exit 1
     fi
-    compare_image -t 0.25 my_rec_test_object_46.hv my_test_object_g1.hv
+
+    compare_image -t 0.25 my_rec_test_object_46.hv my_twice_test_object_RTA.hv
 if [ $? -ne 0 ]; then
   echo "ERROR comparison of reconstructed image fails"; exit 1;
 fi
@@ -167,13 +189,22 @@ fi
     fi
     # compare ROI value
     output_voxel_size_x=`stir_print_voxel_sizes.sh ${output_image}|awk '{print $3}'`
-    output_ROI_mean=`awk "NR>2 {print \\$2*${input_voxel_size_x}/${output_voxel_size_x}}" ${output_image}.roistats`
-    echo "Input ROI mean: $input_ROI_mean"
+    expected_image=my_twice_test_object_RTA.hv
+    list_ROI_values ${expected_image}.roistats ${expected_image} ${ROI} 0 > ${expected_image}.roistats.log 2>&1
+    if [ $? -ne 0 ]; then
+      echo "Error running list_ROI_values for reference image. CHECK LOG ${expected_image}.roistats.log"
+      error_log_files="${error_log_files} ${expected_image}.roistats.log"
+      break
+    fi
+    expected_voxel_size_x=`stir_print_voxel_sizes.sh ${expected_image}|awk '{print $3}'`
+    expected_ROI_mean=`awk "NR>2 {print \\$2*${expected_voxel_size_x}/${input_voxel_size_x}}" ${expected_image}.roistats`
+    output_ROI_mean=`awk "NR>2 {print \\$2*${output_voxel_size_x}/${input_voxel_size_x}}" ${output_image}.roistats`
+    echo "Expected ROI mean: $expected_ROI_mean"
     echo "Output ROI mean: $output_ROI_mean"
-    error_bigger_than_1percent=`echo $input_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
+    error_bigger_than_1percent=`echo $expected_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
     if [ ${error_bigger_than_1percent} -eq 1 ]; then
-      echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG ${parfile}.log"
-      error_log_files="${error_log_files} ${parfile}.log"
+      echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG ${output_image}.roistats.log"
+      error_log_files="${error_log_files} ${output_image}.roistats.log"
     else
       echo "This seems fine."
     fi
