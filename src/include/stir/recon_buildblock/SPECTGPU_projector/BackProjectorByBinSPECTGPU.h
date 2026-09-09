@@ -27,6 +27,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUHelper.h"
+#include "stir/cuda_utilities.h"
 
 START_NAMESPACE_STIR
 
@@ -48,7 +49,7 @@ public:
   virtual ~BackProjectorByBinSPECTGPU();
 
   /// Keymap
-  virtual void initialise_keymap();
+  virtual void initialise_keymap() override;
 
   //! Stores all necessary geometric info
   /*!
@@ -56,17 +57,17 @@ public:
    */
   virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
                       const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
-  );
+  ) override;
 
   /// Back project
-  void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
+//  void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1) override;
 
   /// Get output
-  virtual void get_output(DiscretisedDensity<3, float>&) const;
+//  virtual void get_output(DiscretisedDensity<3, float>&) const override;
 
   /*! \brief tell the back projector to start accumulating into a new target.
     This function has to be called before any back-projection is initiated.*/
-  virtual void start_accumulating_in_new_target();
+//  virtual void start_accumulating_in_new_target() override;
 
   /// Set verbosity
   void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
@@ -75,20 +76,45 @@ public:
   /// projection and after back projection
   void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
+  virtual BackProjectorByBin* clone() const override
+  {
+      return new BackProjectorByBinSPECTGPU(*this);
+  }
+
+  virtual const DataSymmetriesForViewSegmentNumbers*
+  get_symmetries_used() const override
+  {
+      return _symmetries_sptr.get();
+  }
+
 protected:
   virtual void actual_back_project(const RelatedViewgrams<float>&,
                                    const int min_axial_pos_num,
                                    const int max_axial_pos_num,
                                    const int min_tangential_pos_num,
-                                   const int max_tangential_pos_num);
+                                   const int max_tangential_pos_num) override;
 
   virtual void actual_back_project(DiscretisedDensity<3, float>& stir_image,
                                    const RelatedViewgrams<float>&,
                                    const int min_axial_pos_num,
                                    const int max_axial_pos_num,
                                    const int min_tangential_pos_num,
-                                   const int max_tangential_pos_num);
+                                   const int max_tangential_pos_num) override;
+protected:
 
+  int dim_z, dim_y, dim_x;
+  cuda_dim3 block_dim;
+  cuda_dim3 grid_dim;
+  float spacing_x;
+  float spacing_y;
+  float spacing_z;
+  float origin_x;
+  float origin_y;
+  float origin_z;
+  int min_z;
+  int min_y;
+  int min_x;
+  int num_views;
 private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   SPECTGPUHelper _helper;

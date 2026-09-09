@@ -139,6 +139,10 @@ if (STIR_WITH_CUDA)
 		SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.cxx
 		SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.cxx
 		SPECTGPU_projector/SPECTGPUHelper.cxx
+                SPECTGPU_projector/SPECTGPUForwardProjectorCUDA.cu
+                SPECTGPU_projector/SPECTGPUBackwardProjectorCUDA.cu
+                SPECTGPU_projector/SPECTGPUProjection.cu
+                SPECTGPU_projector/SPECTGPURotateAndGaussianInterpolate.cu
   )
 endif()
 
