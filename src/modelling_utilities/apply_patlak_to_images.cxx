@@ -13,6 +13,7 @@
   \ingroup utilities
   \brief Apply the Patlak linear fit using Dynamic Images
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
 
   \par Usage:

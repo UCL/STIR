@@ -19,6 +19,7 @@
   \author Kris Thielemans
   \author Robert Twyman Skelly
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -31,6 +32,7 @@
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 using std::string;
 
 START_NAMESPACE_STIR
@@ -42,6 +44,10 @@ GeneralisedObjectiveFunction<TargetT>::set_defaults()
   this->prior_sptr.reset();
   // note: cannot use set_num_subsets(1) here, as other parameters (such as projectors) are not set-up yet.
   this->num_subsets = 1;
+  // Number of nested iterations
+  this->num_nested_subiterations = 1;
+  // Number of nested initialization iterations
+  this->num_nested_initialization_subiterations = 0;
 }
 
 template <typename TargetT>
@@ -104,6 +110,23 @@ bool
 GeneralisedObjectiveFunction<TargetT>::prior_is_zero() const
 {
   return is_null_ptr(this->prior_sptr) || this->prior_sptr->get_penalisation_factor() == 0;
+}
+
+template <typename TargetT>
+bool
+GeneralisedObjectiveFunction<TargetT>::is_nested() const
+{
+  return !is_null_ptr(this->last_nested_estimate_sptr);
+}
+
+template <typename TargetT>
+void
+GeneralisedObjectiveFunction<TargetT>::set_nested_output_filename_prefix(std::string& filename_prefix,
+                                                                         int global_subiteration_num)
+{
+  std::string num = format("_{}", global_subiteration_num);
+
+  this->nested_output_filename_prefix = filename_prefix + num;
 }
 
 template <typename TargetT>
@@ -513,5 +536,6 @@ GeneralisedObjectiveFunction<TargetT>::subsets_are_approximately_balanced(std::s
 
 template class GeneralisedObjectiveFunction<DiscretisedDensity<3, float>>;
 template class GeneralisedObjectiveFunction<ParametricVoxelsOnCartesianGrid>;
+template class GeneralisedObjectiveFunction<Parametric3VoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR

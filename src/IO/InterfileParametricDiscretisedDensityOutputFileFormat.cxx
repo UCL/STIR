@@ -103,6 +103,7 @@ InterfileParamDiscDensity::actual_write_to_file(std::string& filename,
 #undef ParamDiscDensity
 #undef TEMPLATE
 
-template class InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;
+template class InterfileParametricDiscretisedDensityOutputFileFormat<Parametric2VoxelsOnCartesianGridBaseType>;
+template class InterfileParametricDiscretisedDensityOutputFileFormat<Parametric3VoxelsOnCartesianGridBaseType>;
 
 END_NAMESPACE_STIR

@@ -85,6 +85,8 @@ if (NOT MINI_STIR)
     iterative/KOSMAPOSL
     iterative/OSSPS
     iterative/POSMAPOSL  
+    iterative/NESTPOSMAPOSL
+    iterative/NESTGPOSMAPOSL	 
     iterative/POSSPS
     SimSET
     SimSET/scripts

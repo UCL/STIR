@@ -103,7 +103,7 @@ IOTests_ParametricDiscretisedDensity::create_image()
       scanner_sptr, num_axial_pos_per_segment, min_ring_diff, max_ring_diff, num_views, num_tangential_poss);
 
   _image_to_write_sptr.reset(new ParametricVoxelsOnCartesianGrid(
-      ParametricVoxelsOnCartesianGridBaseType(proj_data_info, zoom, dummy_im_sptr->get_grid_spacing(), sizes)));
+      Parametric2VoxelsOnCartesianGridBaseType(proj_data_info, zoom, dummy_im_sptr->get_grid_spacing(), sizes)));
 
   // Fill the first param
   param_2_sptr->fill(2.F);

@@ -80,7 +80,7 @@ main(int argc, char* argv[])
       if (params.size() == 2)
         {
           // Construct the parametric image
-          ParametricVoxelsOnCartesianGridBaseType base_type(
+          Parametric2VoxelsOnCartesianGridBaseType base_type(
               params[0].get_index_range(), params[0].get_origin(), params[0].get_grid_spacing());
           ParametricVoxelsOnCartesianGrid param_im(base_type);
 
