@@ -321,7 +321,6 @@ InterpolationTests::extend_projdata_test()
       auto ext = extend_segment(seg, extend_views, 0, 0, &swapped);
 
       {
-        float diff = 0.f;
         int i_view_o = 0;
         const int max_view = swapped[0].get_max_index();
         for (int i_view = ext[0].get_min_index(); i_view < 0; ++i_view, i_view_o++)
@@ -330,14 +329,13 @@ InterpolationTests::extend_projdata_test()
             for (int i_tang = ext[0][0].get_min_index() + 1; i_tang <= ext[0][0].get_max_index(); ++i_tang)
               {
                 const int src_view = max_view - extend_views + i_view_o + 1;
-                diff = ext[0][i_view][i_tang] - swapped[0][src_view][-i_tang];
+                float diff = ext[0][i_view][i_tang] - swapped[0][src_view][-i_tang];
                 check_if_equal(diff, 0.0, "The north extended sinogram does not match the swapped");
               }
           }
       }
 
       {
-        float diff = 0.f;
         for (int i_view = 0; i_view <= seg.get_max_view_num(); ++i_view)
           {
             for (int i_tang = ext[0][0].get_min_index() + 1; i_tang <= ext[0][0].get_max_index(); ++i_tang)
@@ -345,14 +343,13 @@ InterpolationTests::extend_projdata_test()
                 // std::cout << i_view << " " << i_tang << " " << " : ";
                 // std::cout << ext[0][i_view][i_tang]<< " "
                 //           << seg[0][i_view][i_tang] << std::endl;
-                diff = ext[0][i_view][i_tang] - seg[0][i_view][i_tang];
+                float diff = ext[0][i_view][i_tang] - seg[0][i_view][i_tang];
                 check_if_equal(diff, 0.0, "The central extended sinogram match the original");
               }
           }
       }
 
       {
-        float diff = 0.f;
         int i_view_o = 0;
         for (int i_view = seg.get_num_views(); i_view < ext[0].get_max_index(); ++i_view, i_view_o++)
           {
@@ -360,7 +357,7 @@ InterpolationTests::extend_projdata_test()
               {
                 // std::cout << i_view << " " << i_tang << " " << i_view_o << " : ";
                 // std::cout << ext[0][i_view][i_tang] << " " << swapped[0][i_view_o][-i_tang] << std::endl;
-                diff = ext[0][i_view][i_tang] - swapped[0][i_view_o][-i_tang];
+                float diff = ext[0][i_view][i_tang] - swapped[0][i_view_o][-i_tang];
                 check_if_equal(diff, 0.0, "The south extended sinogram matches the swapped");
               }
           }
