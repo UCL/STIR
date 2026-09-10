@@ -52,50 +52,66 @@ ScatterEstimation::upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_pr
                                                      const float max_scale_factor,
                                                      const unsigned half_filter_width,
                                                      BSpline::BSplineType spline_type,
-                                                     const bool remove_interleaving)
+                                                     const bool remove_interleaving,
+                                                     const bool do_3D)
 {
+
+  shared_ptr<ProjDataInfo> interpolated_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
+
   info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+  shared_ptr<ProjDataInMemory> interpolated_scatter(
+      new ProjDataInMemory(emission_proj_data.get_exam_info_sptr(), interpolated_scatter_proj_data_info_sptr));
 
-  shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_sptr()->clone());
-  interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0, 0);
+  bool actual_remove_interleaving = remove_interleaving;
 
-  ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
-                                               interpolated_direct_scatter_proj_data_info_sptr);
-  {
-    bool actual_remove_interleaving = remove_interleaving;
+  if (remove_interleaving
+      && emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry() != "Cylindrical")
+    {
+      warning("upsample_and_fit_scatter_estimate: forcing remove_interleaving to false as non-cylindrical projdata, or trying 3D "
+              "scatter estimation");
+      actual_remove_interleaving = false;
+    }
+  if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry() == "Cylindrical" && !do_3D)
+    {
+      interpolated_scatter_proj_data_info_sptr->reduce_segment_range(0, 0);
+      interpolate_projdata(*interpolated_scatter, scatter_proj_data, spline_type, actual_remove_interleaving);
+    }
+  else
+    interpolate_projdata_3d(*interpolated_scatter, scatter_proj_data, spline_type);
 
-    if (remove_interleaving
-        && emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry() != "Cylindrical")
-      {
-        warning("upsample_and_fit_scatter_estimate: forcing remove_interleaving to false as non-cylindrical projdata");
-        actual_remove_interleaving = false;
-      }
-
-    interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, actual_remove_interleaving);
-  }
-
-  // now call inverse_SSRB, and normalise/scale if we need to
   if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
-      ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
-                                            emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
-      inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
+      shared_ptr<ProjDataInMemory> _interpolated_scatter;
 
+      if (!do_3D)
+        {
+          _interpolated_scatter.reset(new ProjDataInMemory(emission_proj_data.get_exam_info_sptr(),
+                                                           emission_proj_data.get_proj_data_info_sptr()->create_shared_clone()));
+          if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry() != "Cylindrical")
+            {
+              _interpolated_scatter->fill_from(interpolated_scatter->begin());
+            }
+          else
+            {
+              inverse_SSRB(*_interpolated_scatter, *interpolated_scatter);
+            }
+        }
+      else
+        _interpolated_scatter = interpolated_scatter;
       scatter_normalisation.set_up(emission_proj_data.get_exam_info_sptr(),
                                    emission_proj_data.get_proj_data_info_sptr()->create_shared_clone());
-      scatter_normalisation.undo(interpolated_scatter);
+      // div
+      scatter_normalisation.undo(*_interpolated_scatter);
       Array<2, float> scale_factors;
 
       if (min_scale_factor == max_scale_factor)
         {
           if (min_scale_factor == 1.F)
             {
-              scaled_scatter_proj_data.fill(interpolated_scatter);
+              scaled_scatter_proj_data.fill(*_interpolated_scatter);
               return; // all done
             }
 
-          // Set all scale_factors to min_scale_factor (which is equal to max_scale_factor here)
-          // Sadly a bit complicated to get index range ok
           const ProjDataInfo& proj_data_info = *emission_proj_data.get_proj_data_info_sptr();
           IndexRange2D sinogram_range(proj_data_info.get_min_segment_num(), proj_data_info.get_max_segment_num(), 0, 0);
           for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num();
@@ -110,7 +126,7 @@ ScatterEstimation::upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_pr
       else
         {
           info("upsample_and_fit_scatter_estimate: Finding scale factors by sinogram", 3);
-          scale_factors = get_scale_factors_per_sinogram(emission_proj_data, interpolated_scatter, weights_proj_data);
+          scale_factors = get_scale_factors_per_sinogram(emission_proj_data, *_interpolated_scatter, weights_proj_data);
 
           info(boost::format("upsample_and_fit_scatter_estimate: scale factors before thresholding:\n%1%") % scale_factors, 2);
 
@@ -124,15 +140,22 @@ ScatterEstimation::upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_pr
           info(boost::format("upsample_and_fit_scatter_estimate: scale factors after filtering:\n%1%") % scale_factors, 2);
         }
       info("upsample_and_fit_scatter_estimate: applying scale factors", 3);
-      if (scale_sinograms(scaled_scatter_proj_data, interpolated_scatter, scale_factors) != Succeeded::yes)
+      if (scale_sinograms(scaled_scatter_proj_data, *_interpolated_scatter, scale_factors) != Succeeded::yes)
         {
           error("upsample_and_fit_scatter_estimate: writing of scaled sinograms failed");
         }
     }
-  else // min/max_scale_factor equal to 1 and no norm
+  else // min/max_scale_factor equal to 1 and no norm -> Go to 3D if not
     {
-      inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+      if (emission_proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry() != "Cylindrical")
+        scaled_scatter_proj_data.fill_from(interpolated_scatter->begin());
+      else
+        {
+          if (!do_3D)
+            inverse_SSRB(scaled_scatter_proj_data, *interpolated_scatter);
+        }
     }
+  info("Getting out of Upsampling");
 }
 
 END_NAMESPACE_STIR

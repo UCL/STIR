@@ -26,6 +26,7 @@
 #endif
 
 #include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Succeeded.h"
@@ -42,6 +43,9 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/format.h"
+#include "stir/extend_projdata.h"
+
+#include <unordered_set>
 
 #include "stir/RunTests.h"
 
@@ -56,17 +60,21 @@ private:
   shared_ptr<ExamInfo> exam_info_sptr;
   // need to call this first!
   void create_exam_info();
+  void swap_segments_test();
+  void extend_projdata_test();
   void scatter_interpolation_test_blocks();
-  void scatter_interpolation_test_cyl();
+  void scatter_interpolation_test_cyl(const bool do_3d = false);
   void scatter_interpolation_test_blocks_asymmetric();
-  void scatter_interpolation_test_cyl_asymmetric();
+  void scatter_interpolation_test_cyl_asymmetric(const bool do_3d = false);
   void scatter_interpolation_test_blocks_downsampled();
   void transaxial_upsampling_interpolation_test_blocks();
 
-  void check_symmetry(const SegmentBySinogram<float>& segment);
+  void check_symmetry(const SegmentBySinogram<float>& segment,
+                      const std::shared_ptr<SegmentBySinogram<float>> other_sptr = nullptr);
   void compare_segment(const SegmentBySinogram<float>& segment1, const SegmentBySinogram<float>& segment2, float maxDiff);
-  void
-  compare_segment_shape(const SegmentBySinogram<float>& shape_segment, const SegmentBySinogram<float>& test_segment, int erosion);
+  void compare_segment_shape(const SegmentBySinogram<float>& shape_segment,
+                             const SegmentBySinogram<float>& test_segment,
+                             int dilation);
   //! forward project emission_map
   shared_ptr<ProjDataInMemory> create_data(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
                                            const VoxelsOnCartesianGrid<float>& emission_map,
@@ -79,8 +87,11 @@ private:
 };
 
 void
-InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
+InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment,
+                                   const std::shared_ptr<SegmentBySinogram<float>> other_sptr)
 {
+  bool with_opposite = (other_sptr != nullptr);
+
   // compare lower half of slices with upper half - image should be axially symmetric
   auto maxAbsDifference = 0.0;
   auto sumAbsValues = 0.0;
@@ -94,7 +105,8 @@ InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
           for (auto tang = segment.get_min_tangential_pos_num(); tang <= segment.get_max_tangential_pos_num(); tang++)
             {
               auto voxel1 = std::abs(segment[increasing_index][view][tang]);
-              auto voxel2 = std::abs(segment[decreasing_index][view][tang]);
+              auto voxel2 = with_opposite ? std::abs((*other_sptr)[decreasing_index][view][tang])
+                                          : std::abs(segment[decreasing_index][view][tang]);
               if (std::abs(voxel1 - voxel2) > maxAbsDifference)
                 maxAbsDifference = std::abs(voxel1 - voxel2);
               if (voxel1 > 0)
@@ -117,38 +129,240 @@ InterpolationTests::check_symmetry(const SegmentBySinogram<float>& segment)
                 0.0001 * sumAbsValues / summedEntries,
                 "symmetry errors larger than 0.01\% of absolute values in axial direction");
 
-  // compare the first half of the views with the second half - even for the BlocksOnCylindrical scanner they should be identical
-  maxAbsDifference = 0.0;
-  sumAbsValues = 0.0;
-  summedEntries = 0.0;
-  for (auto view = 0; view < segment.get_num_views() / 2; view++)
+  if (!with_opposite)
     {
-      for (auto axial = segment.get_min_axial_pos_num(); axial <= segment.get_max_axial_pos_num(); axial++)
+      // compare the first half of the views with the second half - even for the BlocksOnCylindrical scanner they should be
+      // identical
+      maxAbsDifference = 0.0;
+      sumAbsValues = 0.0;
+      summedEntries = 0.0;
+      for (auto view = 0; view < segment.get_num_views() / 2; view++)
         {
-          for (auto tang = segment.get_min_tangential_pos_num(); tang <= segment.get_max_tangential_pos_num(); tang++)
+          for (auto axial = segment.get_min_axial_pos_num(); axial <= segment.get_max_axial_pos_num(); axial++)
             {
-              auto voxel1 = segment[axial][view][tang];
-              auto voxel2 = segment[axial][view + segment.get_num_views() / 2][tang];
-              if (std::abs(voxel1 - voxel2) > maxAbsDifference)
-                maxAbsDifference = std::abs(voxel1 - voxel2);
-              if (voxel1 > 0)
+              for (auto tang = segment.get_min_tangential_pos_num(); tang <= segment.get_max_tangential_pos_num(); tang++)
                 {
-                  sumAbsValues += voxel1;
-                  summedEntries++;
-                }
-              if (voxel2 > 0)
-                {
-                  sumAbsValues += voxel2;
-                  summedEntries++;
+                  auto voxel1 = segment[axial][view][tang];
+                  auto voxel2 = segment[axial][view + segment.get_num_views() / 2][tang];
+                  if (std::abs(voxel1 - voxel2) > maxAbsDifference)
+                    maxAbsDifference = std::abs(voxel1 - voxel2);
+                  if (voxel1 > 0)
+                    {
+                      sumAbsValues += voxel1;
+                      summedEntries++;
+                    }
+                  if (voxel2 > 0)
+                    {
+                      sumAbsValues += voxel2;
+                      summedEntries++;
+                    }
                 }
             }
         }
+      // if the largest symmetry error is larger than 0.1% of the mean absolute value, then there is something wrong
+      // TODO: this tolerance can be tightened to 0.01% if https://github.com/UCL/STIR/issues/1176 is resolved
+      check_if_less(maxAbsDifference,
+                    0.001 * sumAbsValues / summedEntries,
+                    "symmetry errors larger than 0.1\% of absolute values across views");
     }
-  // if the largest symmetry error is larger than 0.1% of the mean absolute value, then there is something wrong
-  // TODO: this tolerance can be tightened to 0.01% if https://github.com/UCL/STIR/issues/1176 is resolved
-  check_if_less(maxAbsDifference,
-                0.001 * sumAbsValues / summedEntries,
-                "symmetry errors larger than 0.1\% of absolute values across views");
+}
+
+void
+InterpolationTests::swap_segments_test()
+{
+  info("Performing tests on swapping ProjData segment");
+  auto small_scanner = Scanner(Scanner::User_defined_scanner,
+                               "Some_symmetric_scanner",
+                               64,
+                               6,
+                               int(150 * 64 / 192),
+                               int(150 * 64 / 192),
+                               127,
+                               4.3,
+                               20.0,
+                               133 * 3.14 / 64,
+                               -0.38956 /* 0.0 */,
+                               1,
+                               1,
+                               6,
+                               64,
+                               1,
+                               1,
+                               1,
+                               0.17,
+                               511,
+                               -1,
+                               01.F,
+                               -1.F,
+                               "Cylindrical",
+                               20.0,
+                               12.0,
+                               120.0,
+                               72.0);
+
+  auto small_proj_data_info = shared_ptr<ProjDataInfo>(std::move(
+      ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(small_scanner), 1, 5, 32, int(150 * 64 / 192), false)));
+
+  auto proj_data = ProjDataInMemory(this->exam_info_sptr, small_proj_data_info);
+
+  int counter = 1;
+  for (int i_seg = small_proj_data_info->get_min_segment_num(); i_seg <= small_proj_data_info->get_max_segment_num(); ++i_seg)
+    {
+      auto seg = proj_data.get_empty_segment_by_sinogram(i_seg);
+      for (int i_axial = seg.get_min_axial_pos_num(); i_axial <= seg.get_max_axial_pos_num(); ++i_axial)
+        {
+          for (int i_view = seg.get_min_view_num(); i_view <= seg.get_max_view_num(); ++i_view)
+            {
+              for (int i_tang = seg.get_min_tangential_pos_num(); i_tang <= seg.get_max_tangential_pos_num(); ++i_tang)
+                {
+                  seg[i_axial][i_view][i_tang] = counter;
+                  counter++;
+                }
+            }
+        }
+      proj_data.set_segment(seg);
+    }
+
+  auto no_arc = dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(small_proj_data_info);
+
+  for (int i_seg = small_proj_data_info->get_min_segment_num(); i_seg < 0; ++i_seg)
+    {
+      auto seg = proj_data.get_segment_by_sinogram(-i_seg);
+      auto swapped = make_swapped_segment(seg, *no_arc, i_seg);
+      std::unordered_set<float> seen_values;
+      int num_duplicates = 0;
+      int num_zero_fallback = 0;
+
+      for (auto it = swapped.begin_all(); it != swapped.end_all(); ++it)
+        {
+          if (*it == 0.0F)
+            {
+              ++num_zero_fallback; // the deliberate out-of-range fallback in find_swapped_bin, not a real swapped value
+              continue;
+            }
+          if (!seen_values.insert(*it).second)
+            {
+              ++num_duplicates;
+              std::cerr << "value " << *it << " appears more than once in the swapped segment (segment " << i_seg << ")\n";
+            }
+        }
+
+      check_if_equal(num_duplicates, 0, "The detector swap reused the same source bin for more than one destination bin.");
+      check_if_equal(num_zero_fallback, 0, "During segment swapping bins were unclaimed.");
+      check_if_equal(seg, swapped, "Segments are equal");
+    }
+}
+
+void
+InterpolationTests::extend_projdata_test()
+{
+  info("Performing tests on extending ProjData");
+  auto small_scanner = Scanner(Scanner::User_defined_scanner,
+                               "Some_symmetric_scanner",
+                               64,
+                               6,
+                               int(150 * 64 / 192),
+                               int(150 * 64 / 192),
+                               127,
+                               4.3,
+                               20.0,
+                               133 * 3.14 / 64,
+                               -0.38956 /* 0.0 */,
+                               1,
+                               1,
+                               6,
+                               64,
+                               1,
+                               1,
+                               1,
+                               0.17,
+                               511,
+                               -1,
+                               01.F,
+                               -1.F,
+                               "Cylindrical",
+                               20.0,
+                               12.0,
+                               120.0,
+                               72.0);
+
+  auto small_proj_data_info = shared_ptr<ProjDataInfo>(std::move(
+      ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(small_scanner), 1, 5, 32, int(150 * 64 / 192), false)));
+
+  auto proj_data = ProjDataInMemory(this->exam_info_sptr, small_proj_data_info);
+
+  int counter = 0;
+  for (int i_seg = small_proj_data_info->get_min_segment_num(); i_seg <= small_proj_data_info->get_max_segment_num(); ++i_seg)
+    {
+      auto seg = proj_data.get_empty_segment_by_sinogram(i_seg);
+      for (int i_axial = seg.get_min_axial_pos_num(); i_axial <= seg.get_max_axial_pos_num(); ++i_axial)
+        {
+          for (int i_view = seg.get_min_view_num(); i_view <= seg.get_max_view_num(); ++i_view)
+            {
+              for (int i_tang = seg.get_min_tangential_pos_num(); i_tang <= seg.get_max_tangential_pos_num(); ++i_tang)
+                {
+                  seg[i_axial][i_view][i_tang] = counter;
+                  counter++;
+                }
+            }
+        }
+      proj_data.set_segment(seg);
+    }
+
+  auto no_arc = dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(small_proj_data_info);
+
+  for (int i_seg = small_proj_data_info->get_min_segment_num(); i_seg <= small_proj_data_info->get_min_segment_num(); ++i_seg)
+    {
+      auto seg = proj_data.get_segment_by_sinogram(i_seg);
+      auto opp_seg = proj_data.get_segment_by_sinogram(-i_seg);
+      auto swapped = make_swapped_segment(opp_seg, *no_arc, i_seg);
+
+      int extend_views = seg.get_num_views() / 2;
+      auto ext = extend_segment(seg, extend_views, 0, 0, &swapped);
+
+      {
+        int i_view_o = 0;
+        const int max_view = swapped[0].get_max_index();
+        for (int i_view = ext[0].get_min_index(); i_view < 0; ++i_view, i_view_o++)
+          {
+            // Don't compare the first tang pos, it cannot align after full rotation
+            for (int i_tang = ext[0][0].get_min_index() + 1; i_tang <= ext[0][0].get_max_index(); ++i_tang)
+              {
+                const int src_view = max_view - extend_views + i_view_o + 1;
+                float diff = ext[0][i_view][i_tang] - swapped[0][src_view][-i_tang];
+                check_if_equal(diff, 0.0, "The north extended sinogram does not match the swapped");
+              }
+          }
+      }
+
+      {
+        for (int i_view = 0; i_view <= seg.get_max_view_num(); ++i_view)
+          {
+            for (int i_tang = ext[0][0].get_min_index() + 1; i_tang <= ext[0][0].get_max_index(); ++i_tang)
+              {
+                // std::cout << i_view << " " << i_tang << " " << " : ";
+                // std::cout << ext[0][i_view][i_tang]<< " "
+                //           << seg[0][i_view][i_tang] << std::endl;
+                float diff = ext[0][i_view][i_tang] - seg[0][i_view][i_tang];
+                check_if_equal(diff, 0.0, "The central extended sinogram match the original");
+              }
+          }
+      }
+
+      {
+        int i_view_o = 0;
+        for (int i_view = seg.get_num_views(); i_view < ext[0].get_max_index(); ++i_view, i_view_o++)
+          {
+            for (int i_tang = ext[0][0].get_min_index() + 1; i_tang <= ext[0][0].get_max_index(); ++i_tang)
+              {
+                // std::cout << i_view << " " << i_tang << " " << i_view_o << " : ";
+                // std::cout << ext[0][i_view][i_tang] << " " << swapped[0][i_view_o][-i_tang] << std::endl;
+                float diff = ext[0][i_view][i_tang] - swapped[0][i_view_o][-i_tang];
+                check_if_equal(diff, 0.0, "The south extended sinogram matches the swapped");
+              }
+          }
+      }
+    }
 }
 
 void
@@ -176,9 +390,11 @@ InterpolationTests::compare_segment(const SegmentBySinogram<float>& segment1,
 void
 InterpolationTests::compare_segment_shape(const SegmentBySinogram<float>& shape_segment,
                                           const SegmentBySinogram<float>& test_segment,
-                                          int erosion)
+                                          int dilation)
 {
-  auto maxTestValue = test_segment.find_max();
+  const float test_threshold = 0.1 * test_segment.find_max();
+  // const float shape_threshold = 0.1 * shape_segment.find_max();
+
   // compute difference and compare against empirically found value from visually validated sinograms
   auto sumVoxelsOutsideMask = 0U;
   for (auto axial = test_segment.get_min_axial_pos_num(); axial <= test_segment.get_max_axial_pos_num(); axial++)
@@ -187,21 +403,21 @@ InterpolationTests::compare_segment_shape(const SegmentBySinogram<float>& shape_
         {
           for (auto tang = test_segment.get_min_tangential_pos_num(); tang <= test_segment.get_max_tangential_pos_num(); tang++)
             {
-              if (test_segment[axial][view][tang] < 0.1 * maxTestValue)
+              if (test_segment[axial][view][tang] < test_threshold)
                 continue;
 
-              // now go through the erosion neighbourhood of the voxel to see if it is near a non-zero voxel
+              // now go through the dilation neighbourhood of the voxel to see if it is near a non-zero voxel
               bool isNearNonZero = false;
-              for (auto axialShape = std::max(axial - erosion, test_segment.get_min_axial_pos_num());
-                   axialShape <= std::min(axial + erosion, test_segment.get_max_axial_pos_num());
+              for (auto axialShape = std::max(axial - dilation, test_segment.get_min_axial_pos_num());
+                   axialShape <= std::min(axial + dilation, test_segment.get_max_axial_pos_num());
                    axialShape++)
                 {
-                  for (auto viewShape = std::max(view - erosion, test_segment.get_min_view_num());
-                       viewShape <= std::min(view + erosion, test_segment.get_max_view_num());
+                  for (auto viewShape = std::max(view - dilation, test_segment.get_min_view_num());
+                       viewShape <= std::min(view + dilation, test_segment.get_max_view_num());
                        viewShape++)
                     {
-                      for (auto tangShape = std::max(tang - erosion, test_segment.get_min_tangential_pos_num());
-                           tangShape <= std::min(tang + erosion, test_segment.get_max_tangential_pos_num());
+                      for (auto tangShape = std::max(tang - dilation, test_segment.get_min_tangential_pos_num());
+                           tangShape <= std::min(tang + dilation, test_segment.get_max_tangential_pos_num());
                            tangShape++)
                         {
                           if (shape_segment[axialShape][viewShape][tangShape] > 0)
@@ -271,15 +487,27 @@ InterpolationTests::create_upsampled_data(const shared_ptr<const ProjDataInfo>& 
 
   // interpolate the downsampled proj data to the original scanner size and fill in oblique sinograms
   // TODO reduce_segment
-  auto interpolated_direct_proj_data = ProjDataInMemory(this->exam_info_sptr, proj_data_info_sptr);
-  interpolate_projdata(interpolated_direct_proj_data, *downsampled_proj_data, BSpline::linear, false);
-  auto interpolated_proj_data_sptr = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, proj_data_info_sptr);
-  inverse_SSRB(*interpolated_proj_data_sptr, interpolated_direct_proj_data);
+  if (downsampled_proj_data->get_num_segments() == 1)
+    {
+      auto interpolated_direct_proj_data = ProjDataInMemory(this->exam_info_sptr, proj_data_info_sptr);
+      interpolate_projdata(interpolated_direct_proj_data, *downsampled_proj_data, BSpline::linear, false);
+      auto interpolated_proj_data_sptr = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, proj_data_info_sptr);
+      inverse_SSRB(*interpolated_proj_data_sptr, interpolated_direct_proj_data);
 
-  // write the proj data to file
-  interpolated_proj_data_sptr->write_to_file("interpolated_sino" + suffix + ".hs");
+      // write the proj data to file
+      interpolated_proj_data_sptr->write_to_file("interpolated_sino" + suffix + ".hs");
 
-  return interpolated_proj_data_sptr;
+      return interpolated_proj_data_sptr;
+    }
+  else
+    {
+      auto interpolated_proj_data_sptr = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, proj_data_info_sptr);
+      interpolate_projdata_3d(*interpolated_proj_data_sptr, *downsampled_proj_data, BSpline::linear, false);
+      // write the proj data to file
+      interpolated_proj_data_sptr->write_to_file("interpolated_sino" + suffix + ".hs");
+
+      return interpolated_proj_data_sptr;
+    }
 }
 
 void
@@ -363,7 +591,7 @@ InterpolationTests::scatter_interpolation_test_blocks()
 }
 
 void
-InterpolationTests::scatter_interpolation_test_cyl()
+InterpolationTests::scatter_interpolation_test_cyl(const bool do_3d)
 {
   info("Performing symmetric interpolation test for Cylindrical scanner");
 
@@ -427,8 +655,9 @@ InterpolationTests::scatter_interpolation_test_cyl()
 
   auto proj_data_info = shared_ptr<ProjDataInfo>(
       std::move(ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 96, 150, false)));
+  int downsampled_rings = do_3d ? 5 : 0;
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(
-      std::make_shared<Scanner>(downsampled_scanner), 1, 0, 32, int(150 * 64 / 192), false)));
+      std::make_shared<Scanner>(downsampled_scanner), 1, downsampled_rings, 32, int(150 * 64 / 192), false)));
 
   auto proj_data = ProjDataInMemory(this->exam_info_sptr, proj_data_info);
 
@@ -440,8 +669,20 @@ InterpolationTests::scatter_interpolation_test_cyl()
   auto interpolated_proj_data_sptr
       = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "_cyl");
 
-  // use symmetry to check that there are no significant errors in the interpolation
-  check_symmetry(interpolated_proj_data_sptr->get_segment_by_sinogram(0));
+  const auto proj_data_info_no_arc_corr_sptr
+      = dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(interpolated_proj_data_sptr->get_proj_data_info_sptr());
+  if (!proj_data_info_no_arc_corr_sptr)
+    error("Expected the in projection data info to be a ProjDataInfoCylindricalNoArcCorr.");
+
+  for (int i_seg = interpolated_proj_data_sptr->get_min_segment_num(); i_seg < 0; ++i_seg)
+    {
+      auto opp_sptr = std::make_shared<SegmentBySinogram<float>>(interpolated_proj_data_sptr->get_segment_by_sinogram(-i_seg));
+      // const SegmentBySinogram<float> swapped_opposite
+      //     = make_swapped_segment(opposite_segment, *proj_data_info_no_arc_corr_sptr, i_seg);
+
+      // use symmetry to check that there are no significant errors in the interpolation
+      check_symmetry(interpolated_proj_data_sptr->get_segment_by_sinogram(i_seg), opp_sptr);
+    }
 }
 
 void
@@ -541,7 +782,7 @@ InterpolationTests::scatter_interpolation_test_blocks_asymmetric()
 }
 
 void
-InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
+InterpolationTests::scatter_interpolation_test_cyl_asymmetric(const bool do_3d)
 {
   info("Performing asymmetric interpolation test for Cylindrical scanner");
 
@@ -603,10 +844,11 @@ InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
                                      60.0,
                                      72.0);
 
+  int downsampled_rings = do_3d ? 11 : 0;
   auto proj_data_info = shared_ptr<ProjDataInfo>(std::move(
       ProjDataInfo::construct_proj_data_info(std::make_shared<Scanner>(scanner), 1, 29, 48, int(150 * 96 / 192), false)));
   auto downsampled_proj_data_info = shared_ptr<ProjDataInfo>(std::move(ProjDataInfo::construct_proj_data_info(
-      std::make_shared<Scanner>(downsampled_scanner), 1, 0, 32, int(150 * 64 / 192), false)));
+      std::make_shared<Scanner>(downsampled_scanner), 1, downsampled_rings, 32, int(150 * 64 / 192), false)));
 
   // define asymetric object
   auto emission_map = VoxelsOnCartesianGrid<float>(this->exam_info_sptr, *proj_data_info, 1);
@@ -627,11 +869,25 @@ InterpolationTests::scatter_interpolation_test_cyl_asymmetric()
   box.construct_volume(emission_map, CartesianCoordinate3D<int>(1, 1, 1));
   emission_map += cyl_map;
   auto interpolated_proj_data_sptr
-      = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "asym_block");
+      = this->create_upsampled_data(proj_data_info, downsampled_proj_data_info, emission_map, "asym_cyl");
 
-  // compare to ground truth
-  compare_segment_shape(
-      full_size_model_sino_sptr->get_segment_by_sinogram(0), interpolated_proj_data_sptr->get_segment_by_sinogram(0), 2);
+  if (downsampled_proj_data_info->get_num_segments() == 1)
+    {
+      // compare to ground truth
+      compare_segment_shape(
+          full_size_model_sino_sptr->get_segment_by_sinogram(0), interpolated_proj_data_sptr->get_segment_by_sinogram(0), 2);
+    }
+  else
+    {
+      for (int i_seg = proj_data_info->get_min_segment_num(); i_seg <= proj_data_info->get_max_segment_num(); ++i_seg)
+        {
+          // compare to ground truth
+          std::cout << i_seg << std::endl;
+          compare_segment_shape(full_size_model_sino_sptr->get_segment_by_sinogram(i_seg),
+                                interpolated_proj_data_sptr->get_segment_by_sinogram(i_seg),
+                                2);
+        }
+    }
 }
 
 void
@@ -852,10 +1108,14 @@ void
 InterpolationTests::run_tests()
 {
   create_exam_info();
+  swap_segments_test();
+  extend_projdata_test();
   scatter_interpolation_test_blocks();
   scatter_interpolation_test_cyl();
+  scatter_interpolation_test_cyl(true); // 3D
   scatter_interpolation_test_blocks_asymmetric();
   scatter_interpolation_test_cyl_asymmetric();
+  scatter_interpolation_test_cyl_asymmetric(true); // 3D
   scatter_interpolation_test_blocks_downsampled();
   transaxial_upsampling_interpolation_test_blocks();
 }

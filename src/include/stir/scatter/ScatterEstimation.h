@@ -105,7 +105,8 @@ public:
                                                 const float max_scale_factor,
                                                 const unsigned half_filter_width,
                                                 BSpline::BSplineType spline_type = BSpline::BSplineType::linear,
-                                                const bool remove_interleaving = true);
+                                                const bool remove_interleaving = true,
+                                                const bool do_3D = false);
 
   //! Default constructor (calls set_defaults())
   ScatterEstimation();
