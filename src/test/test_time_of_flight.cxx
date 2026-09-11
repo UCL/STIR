@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016, 2022, 2025, UCL
+    Copyright (C) 2016, 2022, 2025, 2026, UCL
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
@@ -7,7 +7,6 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -198,7 +197,7 @@ void
 TOF_Tests::test_tof_proj_data_info_det_pos()
 {
 
-  auto pdi_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(test_proj_data_info_sptr.get());
+  auto pdi_ptr = dynamic_cast<ProjDataInfoPETScannerWithDiscreteDetectors const*>(test_proj_data_info_sptr.get());
 
   Bin b1(1, 2, 3, 4, 5);
   Bin b2 = b1;

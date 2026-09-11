@@ -20,7 +20,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
@@ -75,7 +75,7 @@ ML_normTests::run_tests()
                                                /*views*/ scanner_sptr->get_num_detectors_per_ring() / 2,
                                                /*tang_pos*/ 64,
                                                /*arc_corrected*/ false));
-    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(proj_data_info_sptr));
+    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoPETScannerWithDiscreteDetectors>(proj_data_info_sptr));
   }
   {
     std::cerr << "\n-------- Testing Block Scanner SAFIR --------\n";
@@ -89,7 +89,7 @@ ML_normTests::run_tests()
                                                /*views*/ scanner_sptr->get_num_detectors_per_ring() / 2,
                                                /*tang_pos*/ 64,
                                                /*arc_corrected*/ false));
-    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr>(proj_data_info_sptr));
+    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoPETScannerWithDiscreteDetectors>(proj_data_info_sptr));
   }
 }
 
