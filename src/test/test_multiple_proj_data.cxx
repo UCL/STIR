@@ -66,6 +66,7 @@ MultipleProjDataTests::run_tests()
 
   // Create single proj data
   shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+  scanner_sptr->set_up();
   shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 1, 10, 96, 128, true));
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
 

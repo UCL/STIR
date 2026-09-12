@@ -56,6 +56,7 @@ ML_normTests::run_tests()
   {
     std::cerr << "\n-------- Testing ECAT 953 --------\n";
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+    scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                /*span*/ 1,
@@ -68,6 +69,7 @@ ML_normTests::run_tests()
   {
     std::cerr << "\n-------- Testing ECAT E1080 (with gaps) --------\n";
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E1080));
+    scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                /*span*/ 1,

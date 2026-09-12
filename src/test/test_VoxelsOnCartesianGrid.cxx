@@ -191,8 +191,9 @@ VoxelsOnCartesianGridTests::run_tests()
                    "test on get_indices_closest_to_relative_coordinates (not on grid point)");
   }
 
-  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
-  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+  scanner_sptr->set_up();
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                             /*span=*/1,
                                                                             /*max_delta=*/5,
                                                                             /*num_views=*/8,
@@ -227,9 +228,9 @@ VoxelsOnCartesianGridTests::run_tests()
                        "test on index range: higher bounds");
       }
     check_if_equal(ob4.get_grid_spacing(),
-                   CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing() / 2,
-                                                scanner_ptr->get_default_bin_size() / zoom,
-                                                scanner_ptr->get_default_bin_size() / zoom),
+                   CartesianCoordinate3D<float>(scanner_sptr->get_ring_spacing() / 2,
+                                                scanner_sptr->get_default_bin_size() / zoom,
+                                                scanner_sptr->get_default_bin_size() / zoom),
                    "test on grid spacing");
     check_if_equal(ob4.get_origin(), origin);
     check(ob4.is_contiguous(), "test default ProjDataInfo constructor keeps contiguous storage");
@@ -256,9 +257,9 @@ VoxelsOnCartesianGridTests::run_tests()
     check_if_equal(low_bound, CartesianCoordinate3D<int>(0, min_xy, min_xy), "test on index range: lower bounds");
     check_if_equal(high_bound, CartesianCoordinate3D<int>(z_size - 1, max_xy, max_xy), "test on index range: higher bounds");
     check_if_equal(ob5.get_grid_spacing(),
-                   CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing() / 2,
-                                                scanner_ptr->get_default_bin_size() / zoom,
-                                                scanner_ptr->get_default_bin_size() / zoom),
+                   CartesianCoordinate3D<float>(scanner_sptr->get_ring_spacing() / 2,
+                                                scanner_sptr->get_default_bin_size() / zoom,
+                                                scanner_sptr->get_default_bin_size() / zoom),
                    "test on grid spacing");
     check_if_equal(ob5.get_origin(), origin);
     check(ob5.is_contiguous(), "test sized ProjDataInfo constructor keeps contiguous storage");
@@ -269,9 +270,9 @@ VoxelsOnCartesianGridTests::run_tests()
       VoxelsOnCartesianGrid<float> ob6(
           exam_info_sptr, *proj_data_info_ptr, zooms, origin, CartesianCoordinate3D<int>(z_size, xy_size, xy_size));
       check_if_equal(ob6.get_grid_spacing(),
-                     CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing() / 2 / zooms[1],
-                                                  scanner_ptr->get_default_bin_size() / zooms[2],
-                                                  scanner_ptr->get_default_bin_size() / zooms[3]),
+                     CartesianCoordinate3D<float>(scanner_sptr->get_ring_spacing() / 2 / zooms[1],
+                                                  scanner_sptr->get_default_bin_size() / zooms[2],
+                                                  scanner_sptr->get_default_bin_size() / zooms[3]),
                      "test on grid spacing (3 different zooms)");
       check_if_equal(ob6.get_origin(), origin);
       check(ob6.is_contiguous(), "test multi-zoom ProjDataInfo constructor keeps contiguous storage");

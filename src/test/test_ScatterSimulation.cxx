@@ -81,7 +81,7 @@ ScatterSimulationTests::test_downsampling_ProjDataInfo()
 
   Scanner::Type type = Scanner::E931;
   shared_ptr<Scanner> test_scanner(new Scanner(type));
-
+  test_scanner->set_up();
   // Create the original projdata
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> original_projdata(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(
       ProjDataInfo::ProjDataInfoCTI(test_scanner,
@@ -139,7 +139,7 @@ ScatterSimulationTests::test_downsampling_DiscretisedDensity()
 {
   Scanner::Type type = Scanner::E931;
   shared_ptr<Scanner> test_scanner(new Scanner(type));
-
+  test_scanner->set_up();
   // Create the original projdata
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> original_projdata(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(
       ProjDataInfo::ProjDataInfoCTI(test_scanner,
@@ -341,7 +341,7 @@ ScatterSimulationTests::test_scatter_simulation()
       test_scanner->set_reference_energy(511);
       test_scanner->set_energy_resolution(0.34f);
     }
-
+  test_scanner->set_up();
   check(test_scanner->has_energy_information() == true, "Check the scanner has energy information.");
 
   shared_ptr<ExamInfo> exam(new ExamInfo);

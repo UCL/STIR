@@ -492,6 +492,8 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
                               const bool arc_corrected,
                               const int tof_mash_factor)
 {
+  if (!scanner->is_already_setup())
+    error(format("The scanner has not been set_up"));
   const int num_ring = scanner->get_num_rings();
   if (max_delta > num_ring - 1)
     error(format("construct_proj_data_info: max_ring_difference {} is too large, number of rings is {}", max_delta, num_ring));
