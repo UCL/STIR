@@ -142,11 +142,12 @@ TestProjDataInfoSubsets::construct_test_proj_data(bool TOF)
   if (!TOF)
     {
       cerr << "\tGenerating default ProjData from E953" << endl;
-      shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
-      proj_data_info_sptr = ProjDataInfo::construct_proj_data_info(scanner_ptr,
+      shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+      scanner_sptr->set_up();
+      proj_data_info_sptr = ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                                    /*span*/ 5,
-                                                                   scanner_ptr->get_num_rings() - 1,
-                                                                   /*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
+                                                                   scanner_sptr->get_num_rings() - 1,
+                                                                   /*views*/ scanner_sptr->get_num_detectors_per_ring() / 2 / 8,
                                                                    /*tang_pos*/ 64,
                                                                    /*arc_corrected*/ false);
     }
@@ -154,6 +155,7 @@ TestProjDataInfoSubsets::construct_test_proj_data(bool TOF)
     {
       cerr << "\tGenerating default ProjData from D690" << endl;
       shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Discovery690));
+      scanner_sptr->set_up();
       proj_data_info_sptr = ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                                    /*span*/ 2,
                                                                    5,

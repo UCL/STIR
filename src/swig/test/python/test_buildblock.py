@@ -350,6 +350,7 @@ def test_DetectionPositionPair():
 
 def test_Scanner():
     scanner=Scanner.get_scanner_from_name("ECAT 962")
+    scanner.set_up()
     assert scanner.get_num_rings()==32
     assert scanner.get_num_detectors_per_ring()==576
     #l=scanner.get_all_names()
@@ -399,6 +400,7 @@ def test_Bin():
     
 def test_ProjDataInfo():
     s=Scanner.get_scanner_from_name("ECAT 962")
+    s.set_up()
     #construct_proj_data_info(const shared_ptr<Scanner>& scanner_ptr,
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
@@ -427,6 +429,7 @@ def test_ProjDataInfo():
 def test_ProjDataInMemory_numerics():
     # define a projection with some dummy data
     s = Scanner.get_scanner_from_name("ECAT 962")
+    s.set_up()
     projdatainfo = ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     a = ProjDataInMemory(ExamInfo(),projdatainfo)
     b = ProjDataInMemory(a)
@@ -494,6 +497,7 @@ def helper_ProjDataInMemory_from_to_Array(projdata, new_projdata):
 def test_ProjDataInMemory_from_to_Array():
     # define a projection with some dummy data (filled with segment no.)
     s = stir.Scanner.get_scanner_from_name("ECAT 962")
+    s.set_up()    
     projdatainfo = stir.ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     examinfo = stir.ExamInfo()
     projdata = stir.ProjDataInMemory(ExamInfo(),projdatainfo)
@@ -543,6 +547,7 @@ def test_xapyb_and_sapyb():
 
     # Test ProjData
     s=Scanner.get_scanner_from_name("ECAT 962")
+    s.set_up()
     projdatainfo=ProjDataInfo.construct_proj_data_info(s,3,9,8,6)
     projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
 
@@ -559,6 +564,7 @@ def test_xapyb_and_sapyb():
 def test_multiply_crystal_factors():
     # Create proj data
     s=Scanner.get_scanner_from_name("ECAT 962")
+    s.set_up()
     projdatainfo=ProjDataInfo.construct_proj_data_info(s,1,9,8,6,False)
     projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
     projdata.fill(1)

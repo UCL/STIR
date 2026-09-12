@@ -22,6 +22,8 @@
 #include <numeric>
 #include <functional>
 #include "stir/warning.h"
+#include "stir/error.h"
+#include "stir/format.h"
 
 using std::pair;
 using std::sort;
@@ -189,6 +191,16 @@ InterfilePDFSHeaderSPECT::post_processing()
             bin_size_in_cm,
             scanner_ptr_from_file->get_default_bin_size()/10);
 #endif
+  try
+    {
+      scanner_ptr_from_file->set_up();
+    }
+  catch (const std::exception& e)
+    {
+      error(format("Interfile parsing ended up with the following incomplete/inconsistent scanner:\n{}\nPlease check.",
+                   scanner_ptr_from_file->parameter_info()));
+    }
+
   ProjDataInfoCylindricalArcCorr* my_data_info_ptr = new ProjDataInfoCylindricalArcCorr(scanner_ptr_from_file,
                                                                                         float(bin_size_in_cm * 10.),
                                                                                         sorted_num_axial_poss_per_segment,

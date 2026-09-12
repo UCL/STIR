@@ -563,6 +563,8 @@ public:
   //! True if it is TOF compatible.
   inline bool is_tof_ready() const;
 
+  inline bool is_already_setup() const { return _already_setup; }
+
   //! Get the STIR detection position (det#, ring#, layer#) given the detection position id in the input crystal map
   // used in CListRecordSAFIR.inl for accessing the coordinates
   inline stir::DetectionPosition<> get_det_pos_for_index(const stir::DetectionPosition<>& det_pos) const;

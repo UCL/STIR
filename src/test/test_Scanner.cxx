@@ -24,6 +24,7 @@
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 #ifdef HAVE_LLN_MATRIX
 #  include "ecat_model.h"
 extern "C"
@@ -62,7 +63,18 @@ ScannerTests::run_tests()
   while (type != Scanner::Unknown_scanner)
     {
       if (type != Scanner::User_defined_scanner && type != Scanner::UPENN_5rings)
-        test_scanner(Scanner(type));
+        {
+          try
+            {
+              Scanner scanner(type);
+              scanner.set_up();
+              test_scanner(scanner);
+            }
+          catch (const std::exception& e)
+            {
+              check(false, format("Failed to construct or test next scanner type:\n{}", e.what()));
+            }
+        }
       // tricky business to find next type
       int int_type = type;
       ++int_type;

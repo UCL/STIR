@@ -31,7 +31,7 @@
 
 */
 
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/LORCoordinates.h"
 #include "stir/Bin.h"
 #include "stir/Scanner.h"
@@ -56,14 +56,17 @@ main(int argc, char* argv[])
       std::cerr << "I did not recognise the scanner\n";
       return (EXIT_FAILURE);
     }
+  scanner_sptr->set_up();
 
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(
-      ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                                    1,
-                                    scanner_sptr->get_num_rings() - 1,
-                                    scanner_sptr->get_num_detectors_per_ring() / 2,
-                                    scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                    false)));
+  shared_ptr<ProjDataInfoPETScannerWithDiscreteDetectors> proj_data_info_sptr(
+      dynamic_cast<ProjDataInfoPETScannerWithDiscreteDetectors*>(
+          ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                                 1,
+                                                 scanner_sptr->get_num_rings() - 1,
+                                                 scanner_sptr->get_num_detectors_per_ring() / 2,
+                                                 scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                 false)
+              .get()));
 
   {
     using std::cout;

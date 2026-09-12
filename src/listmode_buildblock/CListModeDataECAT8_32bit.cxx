@@ -38,6 +38,7 @@ CListModeDataECAT8_32bit::CListModeDataECAT8_32bit(const std::string& listmode_f
   shared_ptr<Scanner> this_scanner_sptr(Scanner::get_scanner_from_name(originating_system));
   if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
     error(format("Unknown value for originating_system keyword: '{}", originating_system));
+  this_scanner_sptr->set_up();
 
   this->set_proj_data_info_sptr(interfile_parser.data_info_ptr->create_shared_clone());
 

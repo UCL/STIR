@@ -27,6 +27,7 @@
 
 #include "stir/recon_buildblock/BinNormalisationFromGEHDF5.h"
 #include "stir/IO/GEHDF5Wrapper.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/shared_ptr.h"
@@ -69,7 +70,7 @@ namespace detail
 //
 
 static int
-calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoCylindricalNoArcCorr* proj_data_cyl)
+calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoPETScannerWithDiscreteDetectors* proj_data_cyl)
 {
 
   int segment_num = bin.segment_num();
@@ -86,7 +87,7 @@ calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoCylindricalNoArcCorr* pr
 }
 
 static void
-set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+set_detection_tangential_coords(shared_ptr<const ProjDataInfoPETScannerWithDiscreteDetectors> proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin,
                                 DetectionPositionPair<>& detection_position_pair)
 {
@@ -103,7 +104,7 @@ set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCor
 // out of range.
 // sets axial_coord of detection_position_pair
 static int
-set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr* proj_data_info_cyl,
+set_detection_axial_coords(const ProjDataInfoPETScannerWithDiscreteDetectors* proj_data_info_cyl,
                            int ring1_plus_ring2,
                            const Bin& uncomp_bin,
                            DetectionPositionPair<>& detection_position_pair)
@@ -232,7 +233,7 @@ BinNormalisationFromGEHDF5::set_up(const shared_ptr<const ExamInfo>& exam_info_s
 {
   base_type::set_up(exam_info_sptr, proj_data_info_ptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
-  proj_data_info_cyl_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_ptr.get());
+  proj_data_info_cyl_ptr = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors*>(proj_data_info_ptr.get());
   if (proj_data_info_cyl_ptr == 0)
     {
       warning("BinNormalisationFromGEHDF5 can only be used on non-arccorrected data\n");
@@ -272,14 +273,16 @@ BinNormalisationFromGEHDF5::read_norm_data(const string& filename)
   this->scanner_ptr = m_input_hdf5_sptr->get_scanner_sptr();
 
   // Generate a Projection data Info from the uncompressed scan,
-  proj_data_info_cyl_uncompressed_ptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(
-      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-                                    /*span=*/1,
-                                    /*max_delta*/ scanner_ptr->get_num_rings() - 1,
-                                    /*num_views,=*/scanner_ptr->get_num_detectors_per_ring() / 2,
-                                    /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(),
-                                    /*arc_corrected =*/false)));
-
+  {
+    shared_ptr<ProjDataInfo> uncompressed_sptr
+        = ProjDataInfo::construct_proj_data_info(scanner_ptr,
+                                                 /*span=*/1,
+                                                 /*max_delta*/ scanner_ptr->get_num_rings() - 1,
+                                                 /*num_views,=*/scanner_ptr->get_num_detectors_per_ring() / 2,
+                                                 /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(),
+                                                 /*arc_corrected =*/false);
+    proj_data_info_cyl_uncompressed_ptr = dynamic_pointer_cast<ProjDataInfoPETScannerWithDiscreteDetectors>(uncompressed_sptr);
+  }
   //
   // Read efficiency data from file
   //

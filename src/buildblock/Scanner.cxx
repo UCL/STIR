@@ -841,7 +841,18 @@ Scanner::Scanner(Type scanner_type)
                  511.F,
                  (short int)(351),
                  (float)(13.02),
-                 (float)(390.0F));
+                 (float)(390.0F),
+                 "Cylindrical",
+                 5.3F, // axial
+                 4.F   // transaxial
+      );
+      // note: crystal length: 25mm
+      // we want ring_spacing * (num_rings - 1) ==
+      //   (axial_block_spacing * (num_axial_blocks -1) + (num_axial_crystals_per_block - 1) * axial_crystal_spacing))
+      this->set_axial_block_spacing((this->get_ring_spacing() * (this->get_num_rings() - 1)
+                                     - (this->get_num_axial_crystals_per_block() - 1) * this->get_axial_crystal_spacing())
+                                    / (this->get_num_axial_blocks() - 1));
+      this->set_transaxial_block_spacing(this->get_transaxial_crystal_spacing() * this->get_num_transaxial_crystals_per_block());
       break;
 
     case Discovery690:
@@ -1550,8 +1561,6 @@ Scanner::set_params(Type type_v,
     set_scanner_geometry("Cylindrical");
   else
     set_scanner_geometry(scanner_geometry_v);
-
-  set_up();
 }
 
 void
@@ -2244,7 +2253,10 @@ Scanner::get_scanner_from_name(const string& name)
         {
           const string matching_scanner_name = standardise_interfile_keyword(*iter);
           if (matching_scanner_name == matching_name)
-            return scanner_ptr;
+            {
+              scanner_ptr->set_up();
+              return scanner_ptr;
+            }
         }
 
       // we didn't find it yet

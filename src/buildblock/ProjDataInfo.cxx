@@ -492,6 +492,8 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
                               const bool arc_corrected,
                               const int tof_mash_factor)
 {
+  if (!scanner->is_already_setup())
+    error(format("The scanner has not been set_up"));
   const int num_ring = scanner->get_num_rings();
   if (max_delta > num_ring - 1)
     error(format("construct_proj_data_info: max_ring_difference {} is too large, number of rings is {}", max_delta, num_ring));
@@ -576,11 +578,21 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   const float bin_size = scanner->get_default_bin_size();
 
   if (scanner->get_scanner_geometry() == "BlocksOnCylindrical")
-    return new ProjDataInfoBlocksOnCylindricalNoArcCorr(
-        scanner, num_axial_pos_per_segment, min_ring_difference, max_ring_difference, num_views, num_tangential_poss);
+    return new ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner,
+                                                        num_axial_pos_per_segment,
+                                                        min_ring_difference,
+                                                        max_ring_difference,
+                                                        num_views,
+                                                        num_tangential_poss,
+                                                        tof_mash_factor);
   else if (scanner->get_scanner_geometry() == "Generic")
-    return new ProjDataInfoGenericNoArcCorr(
-        scanner, num_axial_pos_per_segment, min_ring_difference, max_ring_difference, num_views, num_tangential_poss);
+    return new ProjDataInfoGenericNoArcCorr(scanner,
+                                            num_axial_pos_per_segment,
+                                            min_ring_difference,
+                                            max_ring_difference,
+                                            num_views,
+                                            num_tangential_poss,
+                                            tof_mash_factor);
   else if (scanner->get_scanner_geometry() == "Cylindrical" && arc_corrected)
     return new ProjDataInfoCylindricalArcCorr(scanner,
                                               bin_size,
@@ -625,6 +637,8 @@ ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
                              const int tof_mash_factor)
 
 {
+  if (scanner->get_scanner_geometry() != "Cylindrical")
+    error("ProjDataInfoGE only supports cylindrical scanners. Use construct_proj_data_info instead.");
   /* mixed span case:
      segment 0 has ring diff -1,0,1,
      other segments have no axial compression

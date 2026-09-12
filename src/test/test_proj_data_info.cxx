@@ -135,7 +135,8 @@ ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, in
                                         min_ring_diff_v,
                                         max_ring_diff_v,
                                         scanner_sptr->get_max_num_views(),
-                                        scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
+                                        scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction,
+                                        /* tof_mash_factor = */ 0);
 
   return proj_data_info_blocks_sptr;
 }
@@ -1051,6 +1052,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
   }
   {
     shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+    scanner_ptr->set_up();
 
     VectorWithOffset<int> num_axial_pos_per_segment(-1, 1);
     VectorWithOffset<int> min_ring_diff(-1, 1);
@@ -1136,6 +1138,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
   }
  {
     shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+    scanner_ptr->set_up();
     
     shared_ptr<ProjDataInfo> proj_data_info_ptr =
       ProjDataInfo::construct_proj_data_info(scanner_ptr,
@@ -1146,6 +1149,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
 #endif
 
   shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+  scanner_ptr->set_up();
   cerr << "Tests with proj_data_info without mashing and axial compression\n\n";
   // Note: test without axial compression requires that all ring differences
   // are in some segment, so use maximum ring difference
@@ -1204,6 +1208,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
   run_get_m_test();
   cerr << "\n-------- Testing ProjDataInfoCylindricalNoArcCorr --------\n";
   shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+  scanner_ptr->set_up();
   cerr << "Tests with proj_data_info without mashing and axial compression\n\n";
   // Note: test without axial compression requires that all ring differences
   // are in some segment, so use maximum ring difference
@@ -1237,6 +1242,7 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 #endif // STIR_TOF_DEBUG
   cerr << "\nTests with proj_data_info with time-of-flight\n\n";
   shared_ptr<Scanner> scanner_tof_ptr(new Scanner(Scanner::Discovery690));
+  scanner_tof_ptr->set_up();
   proj_data_info_ptr = ProjDataInfo::construct_proj_data_info(scanner_tof_ptr,
                                                               /*span*/ 11,
                                                               scanner_tof_ptr->get_num_rings() - 1,

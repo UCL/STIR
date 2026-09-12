@@ -16,7 +16,7 @@
 */
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/Bin.h"
 #include "stir/Viewgram.h"
 #include "stir/ViewSegmentNumbers.h"
@@ -42,7 +42,7 @@ void
 do_block(vector<Bin>& list_of_bins_in_block,
          const int axial_block_num,
          const int tangential_block_num,
-         const ProjDataInfoCylindricalNoArcCorr& proj_data_info,
+         const ProjDataInfoPETScannerWithDiscreteDetectors& proj_data_info,
          const int axial_num_crystals_in_block,
          const int tangential_num_crystals_in_block)
 {
@@ -118,8 +118,8 @@ main(int argc, char** argv)
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
   const int max_segment_num_to_process = argc <= 3 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[3]);
 
-  ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr
-      = dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(in_projdata_ptr->get_proj_data_info_sptr()->clone());
+  auto proj_data_info_ptr
+      = dynamic_cast<ProjDataInfoPETScannerWithDiscreteDetectors*>(in_projdata_ptr->get_proj_data_info_sptr()->clone());
   if (proj_data_info_ptr == NULL)
     {
       cerr << argv[0] << " can only work on not-arccorrected data\n";

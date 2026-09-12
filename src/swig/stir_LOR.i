@@ -44,6 +44,7 @@
 %include "stir/LORCoordinates.h"
 
 %template(LOR) stir::LOR<float>;
+ADD_REPR(stir::LORInAxialAndNoArcCorrSinogramCoordinates, %arg(*$self))
 %template(LORInAxialAndNoArcCorrSinogramCoordinates) stir::LORInAxialAndNoArcCorrSinogramCoordinates<float>;
 %template(LORAs2Points) stir::LORAs2Points<float>;
 %template(LORInAxialAndSinogramCoordinates) stir::LORInAxialAndSinogramCoordinates<float>;

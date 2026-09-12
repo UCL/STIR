@@ -259,7 +259,7 @@ GATEConsistencyTests::process_list_data()
           record.event().get_bin(bin, *lm_data_sptr->get_proj_data_info_sptr());
           if (bin.get_bin_value() > 0)
             {
-              // computes the non-TOF probabilities along the bin LOR
+              // computes the (TOF) probabilities along the bin LOR
               proj_matrix_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
 
               // Test event for non-TOF consistency

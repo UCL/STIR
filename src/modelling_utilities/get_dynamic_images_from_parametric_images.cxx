@@ -143,6 +143,7 @@ main(int argc, char* argv[])
           const TimeFrameDefinitions tdefs = patlak_plot.get_time_frame_definitions();
           const double time_since_1970 = exam_info.start_time_in_secs_since_1970;
           shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(par_image_sptr->get_exam_info().originating_system));
+          scanner_sptr->set_up();
           shared_ptr<VoxelsOnCartesianGrid<float>> voxels_sptr(par_image_sptr->construct_single_density(1).clone());
 
           // Construct the dynamic image
