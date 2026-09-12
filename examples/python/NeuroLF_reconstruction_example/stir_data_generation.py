@@ -76,6 +76,7 @@ scanner = stir.Scanner(
     axial_block_spacing_mm,
     transaxial_block_spacing_mm,
 )
+scanner.set_up()
 
 # define projection settings
 span = 1

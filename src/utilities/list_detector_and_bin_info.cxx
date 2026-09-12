@@ -56,6 +56,7 @@ main(int argc, char* argv[])
       std::cerr << "I did not recognise the scanner\n";
       return (EXIT_FAILURE);
     }
+  scanner_sptr->set_up();
 
   shared_ptr<ProjDataInfoPETScannerWithDiscreteDetectors> proj_data_info_sptr(
       dynamic_cast<ProjDataInfoPETScannerWithDiscreteDetectors*>(

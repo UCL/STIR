@@ -53,6 +53,7 @@ CListModeDataPENN::CListModeDataPENN(const std::string& listmode_filename)
   shared_ptr<Scanner> this_scanner_sptr(Scanner::get_scanner_from_name(originating_system));
   if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
     error(format("CListModeDataPENN: Unknown value for originating_system keyword: '{}", originating_system));
+  scanner_sptr->set_up();
 
   proj_data_info_sptr = ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                                1,

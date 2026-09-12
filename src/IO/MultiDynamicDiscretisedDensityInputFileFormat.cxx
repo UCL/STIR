@@ -83,6 +83,7 @@ MultiDynamicDiscretisedDensityInputFileFormat::read_from_file(const std::string&
           exam_info = t->get_exam_info();
           exam_info.time_frame_definitions.set_num_time_frames(header.get_num_data_sets());
           shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(exam_info.originating_system));
+          scanner_sptr->set_up();
           dyn_disc_den_ptr->set_scanner(*scanner_sptr);
         }
       exam_info.time_frame_definitions.set_time_frame(i, start, end);

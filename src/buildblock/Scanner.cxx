@@ -2253,7 +2253,10 @@ Scanner::get_scanner_from_name(const string& name)
         {
           const string matching_scanner_name = standardise_interfile_keyword(*iter);
           if (matching_scanner_name == matching_name)
-            return scanner_ptr;
+            {
+              scanner_ptr->set_up();
+              return scanner_ptr;
+            }
         }
 
       // we didn't find it yet
