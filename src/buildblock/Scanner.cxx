@@ -1103,15 +1103,35 @@ Scanner::Scanner(Type scanner_type)
                  0.F);
       break;
 
-#if 0
+#if 1
     case Vereos:
-    // Courtesy of Jesus Silva, Molecular Imaging Research Group, Health Research Institute of Santiago de Compostela, Galicia, Spain
-    // However, unchecked and possibly incompatible with recent changes, so currently commented out by KT
-    set_params(Vereos, string_list("Philips Vereos", "Vereos"),
-               40, 306, 612,
-               382.0F, 11.0F, 4.1026F, 2.2876F, 0.0F,
-               1, 1, 40, 34, 1, 1, 1);
-    break;
+      // Courtesy of Jesus Silva, Molecular Imaging Research Group, Health Research Institute of Santiago de Compostela, Galicia,
+      // Spain However, unchecked and possibly incompatible with recent changes, so currently commented out by KT N.E: This model
+      // might not be accurate, but it is my only test data for SimSET. We should fix it later based on actual Vereos data.
+      set_params(Vereos,
+                 string_list("Philips Vereos", "Vereos"),
+                 40,
+                 306,
+                 612,
+                 576,
+                 /*382.0F*/ 371.F,
+                 11.0F,
+                 4.1026F,
+                 2.2876F,
+                 0.0F,
+                 1,
+                 1,
+                 40,
+                 34,
+                 1,
+                 1,
+                 1,
+                 0.F,
+                 511.F,
+                 1,
+                 0.F,
+                 0.F);
+      break;
 #endif
 
     case GeminiTF:
