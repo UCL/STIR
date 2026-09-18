@@ -22,6 +22,7 @@
 
 #include "stir/IO/InputStreamFromROOTFile.h"
 #include "stir/RegisteredParsingObject.h"
+#include "RtypesCore.h"
 
 START_NAMESPACE_STIR
 
@@ -117,6 +118,10 @@ public:
   inline int get_num_axial_crystals_per_singles_unit() const override;
   //! Calculate the number of trans crystals per singles unit based on the repeaters numbers and the readout deptth
   inline int get_num_trans_crystals_per_singles_unit() const override;
+  //! Get the axial number of crystals per module
+  inline int get_num_axial_crystals_per_block_v() const override;
+  //! Get the transaxial number of crystals per module
+  inline int get_num_transaxial_crystals_per_block_v() const override;
 
   inline void set_submodule_repeater_x(int);
   inline void set_submodule_repeater_y(int);
@@ -141,6 +146,9 @@ protected:
   TBranch* br_moduleID2 = nullptr;
   TBranch* br_rsectorID1 = nullptr;
   TBranch* br_rsectorID2 = nullptr;
+  //! GATE 10
+  TBranch* br_pre_step_uniq_vol1 = nullptr;
+  TBranch* br_pre_step_uniq_vol2 = nullptr;
   //@}
 
   //! \name ROOT Variables, i.e. to hold data from each entry.
@@ -149,6 +157,8 @@ protected:
   std::int32_t submoduleID1, submoduleID2;
   std::int32_t moduleID1, moduleID2;
   std::int32_t rsectorID1, rsectorID2;
+  //! GATE 10
+  Char_t  pre_step_uniq_vol1[256], pre_step_uniq_vol2[256];
   //@}
 
   int submodule_repeater_x;
@@ -157,7 +167,7 @@ protected:
   int module_repeater_x;
   int module_repeater_y;
   int module_repeater_z;
-  int rsector_repeater;
+  int rsector_repeater; 
 
   //! In GATE, inside a block, the indeces start from the lower
   //! unit counting upwards. Therefore in order to align the

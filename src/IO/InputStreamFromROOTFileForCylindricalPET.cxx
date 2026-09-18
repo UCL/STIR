@@ -11,7 +11,7 @@
 #include <TChain.h>
 #include "stir/warning.h"
 #include "stir/error.h"
-
+#include <TLeaf.h>
 START_NAMESPACE_STIR
 
 const char* const InputStreamFromROOTFileForCylindricalPET::registered_name = "GATE_Cylindrical_PET";
@@ -77,6 +77,8 @@ InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& recor
         Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
         current_position++;
 
+        if(!is_gate10)
+        {
         if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
           continue;
 
@@ -96,6 +98,18 @@ InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& recor
 
         GetEntryCheck(br_rsectorID1->GetEntry(brentry));
         GetEntryCheck(br_rsectorID2->GetEntry(brentry));
+        }
+        else
+        {
+          warning("This is gate10"); 
+          br_pre_step_uniq_vol1->GetEntry(brentry);
+          br_pre_step_uniq_vol2->GetEntry(brentry);
+          br_pre_step_uniq_vol1->GetListOfLeaves()->Print();
+
+          std::cout << pre_step_uniq_vol1 << " " << pre_step_uniq_vol2 << std::endl; 
+
+          error("nikos stop"); 
+        }
 
         break;
       }
@@ -157,6 +171,7 @@ InputStreamFromROOTFileForCylindricalPET::set_defaults()
   module_repeater_y = -1;
   module_repeater_z = -1;
   rsector_repeater = -1;
+  num_osprey = -1; 
 #ifdef STIR_ROOT_ROTATION_AS_V4
   half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2 - 1;
   if (half_block < 0)
@@ -172,6 +187,8 @@ InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
   base_type::initialise_keymap();
   this->parser.add_start_key("GATE_Cylindrical_PET Parameters");
   this->parser.add_stop_key("End GATE_Cylindrical_PET Parameters");
+  this->parser.add_key("number of full scanner rings", &this->num_osprey); 
+
   this->parser.add_key("number of Rsectors", &this->rsector_repeater);
   this->parser.add_key("number of modules X", &this->module_repeater_x);
   this->parser.add_key("number of modules Y", &this->module_repeater_y);
@@ -203,14 +220,22 @@ InputStreamFromROOTFileForCylindricalPET::set_up(const std::string& header_path)
       return Succeeded::no;
     }
 
-  stream_ptr->SetBranchAddress("crystalID1", &crystalID1, &br_crystalID1);
-  stream_ptr->SetBranchAddress("crystalID2", &crystalID2, &br_crystalID2);
-  stream_ptr->SetBranchAddress("submoduleID1", &submoduleID1, &br_submoduleID1);
-  stream_ptr->SetBranchAddress("submoduleID2", &submoduleID2, &br_submoduleID2);
-  stream_ptr->SetBranchAddress("moduleID1", &moduleID1, &br_moduleID1);
-  stream_ptr->SetBranchAddress("moduleID2", &moduleID2, &br_moduleID2);
-  stream_ptr->SetBranchAddress("rsectorID1", &rsectorID1, &br_rsectorID1);
-  stream_ptr->SetBranchAddress("rsectorID2", &rsectorID2, &br_rsectorID2);
+  if (!is_gate10)
+    {
+      stream_ptr->SetBranchAddress("crystalID1", &crystalID1, &br_crystalID1);
+      stream_ptr->SetBranchAddress("crystalID2", &crystalID2, &br_crystalID2);
+      stream_ptr->SetBranchAddress("submoduleID1", &submoduleID1, &br_submoduleID1);
+      stream_ptr->SetBranchAddress("submoduleID2", &submoduleID2, &br_submoduleID2);
+      stream_ptr->SetBranchAddress("moduleID1", &moduleID1, &br_moduleID1);
+      stream_ptr->SetBranchAddress("moduleID2", &moduleID2, &br_moduleID2);
+      stream_ptr->SetBranchAddress("rsectorID1", &rsectorID1, &br_rsectorID1);
+      stream_ptr->SetBranchAddress("rsectorID2", &rsectorID2, &br_rsectorID2);
+    }
+  else
+    {
+      stream_ptr->SetBranchAddress("PreStepUniqueVolumeID1", &pre_step_uniq_vol1, &br_pre_step_uniq_vol1);
+      stream_ptr->SetBranchAddress("PreStepUniqueVolumeID2", &pre_step_uniq_vol2, &br_pre_step_uniq_vol2);
+    }
 
   nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
   if (nentries == 0)

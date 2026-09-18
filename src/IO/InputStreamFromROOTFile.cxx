@@ -75,12 +75,15 @@ InputStreamFromROOTFile::set_defaults()
   crystal_repeater_z = -1;
   num_virtual_axial_crystals_per_block = 0;
   num_virtual_transaxial_crystals_per_block = 0;
+  is_gate10 = false;
+  num_osprey = 1; 
 }
 
 void
 InputStreamFromROOTFile::initialise_keymap()
 {
   this->parser.add_key("name of data file", &this->filename);
+  this->parser.add_key("is Gate10", &this->is_gate10); 
   this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
   this->parser.add_key("name of input TChain", &this->chain_name);
   this->parser.add_key("exclude non-random events", &this->exclude_nonrandom);
@@ -113,6 +116,9 @@ InputStreamFromROOTFile::set_up(const std::string& header_path)
   if (!std::is_same<Int_t, std::int32_t>::value || !std::is_same<Float_t, float>::value || !std::is_same<Double_t, double>::value)
     error("Internal error: ROOT types are not what we think they are.");
 
+  if (this->is_gate10)
+    info("GATE 10 conventions will be applied.");
+
   FilePath f(filename, false);
   f.prepend_directory_name(header_path);
 
@@ -132,16 +138,28 @@ InputStreamFromROOTFile::set_up(const std::string& header_path)
   // (`stream_ptr->SetBranchStatus("*time1", true);` and variations didn't work)
   // stream_ptr->SetBranchStatus("*", false);
 
-  stream_ptr->SetBranchAddress("time1", &time1, &br_time1);
-  stream_ptr->SetBranchAddress("time2", &time2, &br_time2);
-  stream_ptr->SetBranchAddress("eventID1", &eventID1, &br_eventID1);
-  stream_ptr->SetBranchAddress("eventID2", &eventID2, &br_eventID2);
-  stream_ptr->SetBranchAddress("energy1", &energy1, &br_energy1);
-  stream_ptr->SetBranchAddress("energy2", &energy2, &br_energy2);
-  stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1, &br_comptonPhantom1);
-  stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2, &br_comptonPhantom2);
+  if (!is_gate10)
+    {
+      stream_ptr->SetBranchAddress("time1", &time1, &br_time1);
+      stream_ptr->SetBranchAddress("time2", &time2, &br_time2);
+      stream_ptr->SetBranchAddress("eventID1", &eventID1, &br_eventID1);
+      stream_ptr->SetBranchAddress("eventID2", &eventID2, &br_eventID2);
+      stream_ptr->SetBranchAddress("energy1", &energy1, &br_energy1);
+      stream_ptr->SetBranchAddress("energy2", &energy2, &br_energy2);
+      stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1, &br_comptonPhantom1);
+      stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2, &br_comptonPhantom2);
+    }
+  else
+    {
+      stream_ptr->SetBranchAddress("GlobalTime1", &time1, &br_time1);
+      stream_ptr->SetBranchAddress("GlobalTime2", &time2, &br_time2);
+      stream_ptr->SetBranchAddress("EventID1", &eventID1, &br_eventID1);
+      stream_ptr->SetBranchAddress("EventID2", &eventID2, &br_eventID2);
+      stream_ptr->SetBranchAddress("TotalEnergyDeposit1", &tot_energy_dep1, &br_energy1);
+      stream_ptr->SetBranchAddress("TotalEnergyDeposit2", &tot_energy_dep2, &br_energy2);
+    }
 
-  if (read_optional_root_fields)
+  if (read_optional_root_fields && !is_gate10)
     {
       stream_ptr->SetBranchAddress("axialPos", &axialPos, &br_axialPos);
       stream_ptr->SetBranchAddress("globalPosX1", &globalPosX1, &br_globalPosX1);

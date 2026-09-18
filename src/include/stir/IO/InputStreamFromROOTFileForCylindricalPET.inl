@@ -23,7 +23,8 @@ START_NAMESPACE_STIR
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_rings() const
 {
-  return static_cast<int>(this->crystal_repeater_z * this->module_repeater_z * this->submodule_repeater_z);
+  // currently we only know Quadra with ospreys so we quently introduce a virtual ring for every osprey
+  return static_cast<int>(this->num_osprey * this->crystal_repeater_z * this->module_repeater_z * this->submodule_repeater_z);
 }
 
 int
@@ -36,14 +37,37 @@ InputStreamFromROOTFileForCylindricalPET::get_num_dets_per_ring() const
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_transaxial_blocks_per_bucket_v() const
 {
+  if(this->num_osprey > 1)
+    return this->module_repeater_y; 
   return this->submodule_repeater_y;
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_axial_blocks_per_bucket_v() const
 {
+  if(this->num_osprey > 1)
+    return this->num_osprey; 
   return this->submodule_repeater_z;
 }
+
+int
+InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_block_v() const
+{
+    if(this->num_osprey == 1)
+      return InputStreamFromROOTFile::get_num_axial_crystals_per_block_v(); 
+
+  return (this->crystal_repeater_z * this->submodule_repeater_z * this->module_repeater_z) + this->num_virtual_axial_crystals_per_block;
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::get_num_transaxial_crystals_per_block_v() const
+{
+    if(this->num_osprey == 1)
+      return InputStreamFromROOTFile::get_num_transaxial_crystals_per_block_v(); 
+
+  return (this->crystal_repeater_y * this->submodule_repeater_y * this->module_repeater_y) + this->num_virtual_transaxial_crystals_per_block;
+}
+
 
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_singles_unit() const
@@ -57,7 +81,7 @@ InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_singles_uni
   else if (this->singles_readout_depth == 4) // One PMT per crystal
     return 1;
   else
-    error("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid");
+    warning("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid. But we permit it now.");
 
   return 0;
 }
@@ -74,7 +98,7 @@ InputStreamFromROOTFileForCylindricalPET::get_num_trans_crystals_per_singles_uni
   else if (this->singles_readout_depth == 4) // One PMT per crystal
     return 1;
   else
-    error("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid");
+    warning ("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid. But we permit it now.");
 
   return 0;
 }
