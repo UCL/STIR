@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2015-2016 University of Leeds
-    Copyright (C) 2016 UCL
+    Copyright (C) 2016, 2026 UCL
     Copyright (C) 2017, University of Hull
     This file is part of STIR.
 
@@ -11,10 +11,11 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes stir::ecat::CListEventROOT and stir::ecat::CListRecordROOT
+  \brief Implementation of classes stir::CListEventROOT and stir::CListRecordROOT
   for listmode events for the ROOT as listmode file format.
 
   \author Nikos Efthimiou
+  \author Kris Thielemans
   \author Harry Tsoumpas
 */
 
@@ -38,20 +39,53 @@ CListEventROOT::CListEventROOT(const shared_ptr<const ProjDataInfo>& proj_data_i
 void
 CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) const
 {
-
   DetectionPosition<> det1(this->det1, this->ring1, 0);
   DetectionPosition<> det2(this->det2, this->ring2, 0);
-
+  _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
+#if 0
   _det_pos.pos1() = det1;
   _det_pos.pos2() = det2;
-  _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
-  //    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_unmashed_tof_bin(delta_time);
+#else
+  // need to do this crazy swap to get test_time_of_flight to give a consistent LOR with ProjDataInfo::get_LOR
+  if (_det_pos.timing_pos() >= 0)
+    {
+      _det_pos.pos1() = det1;
+      _det_pos.pos2() = det2;
+    }
+  else
+    {
+      _det_pos.pos1() = det2;
+      _det_pos.pos2() = det1;
+    }
+#endif
 }
 
 void
-CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
+CListEventROOT::set_detection_position(const DetectionPositionPair<>& det_pos)
 {
-  error("Cannot set events in a ROOT file!");
+#if 0
+  this->det1 = det_pos.pos1().tangential_coord();
+  this->det2 = det_pos.pos2().tangential_coord();
+  this->ring1 = det_pos.pos1().axial_coord();
+  this->ring2 = det_pos.pos2().axial_coord();
+  Bin bin(0, 0, 0, 0);
+  bin.timing_pos_num() = det_pos.timing_pos(); // true for uncompressed
+  this->delta_time = this->get_uncompressed_proj_data_info_sptr()->get_tof_delta_time(bin);
+#else
+  this->det1 = det_pos.pos1().tangential_coord();
+  this->det2 = det_pos.pos2().tangential_coord();
+  this->ring1 = det_pos.pos1().axial_coord();
+  this->ring2 = det_pos.pos2().axial_coord();
+  Bin bin(0, 0, 0, 0);
+  bin.timing_pos_num() = det_pos.timing_pos(); // true for uncompressed
+  this->delta_time = this->get_uncompressed_proj_data_info_sptr()->get_tof_delta_time(bin);
+  // need to do this crazy swap to get test_time_of_flight to give a consistent LOR with ProjDataInfo::get_LOR
+  if (bin.timing_pos_num() < 0)
+    {
+      std::swap(this->det1, this->det2);
+      std::swap(this->ring1, this->ring2);
+    }
+#endif
 }
 
 void

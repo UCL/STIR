@@ -167,12 +167,9 @@ ScannerTests::test_scanner(const Scanner& scanner)
   if (scanner.get_scanner_geometry() == "BlocksOnCylindrical")
     {
       auto actual_length
-          = scanner
-                .get_coordinate_for_index(
-                    DetectionPosition<unsigned int>(0 /* tangential */, scanner.get_num_rings() - 1, 0 /* radial */))
+          = scanner.get_coordinate_for_index(DetectionPosition<>(0 /* tangential */, scanner.get_num_rings() - 1, 0 /* radial */))
                 .z()
-            - scanner.get_coordinate_for_index(DetectionPosition<unsigned int>(0 /* tangential */, 0 /* axial */, 0 /* radial */))
-                  .z();
+            - scanner.get_coordinate_for_index(DetectionPosition<>(0 /* tangential */, 0 /* axial */, 0 /* radial */)).z();
       check_if_equal(actual_length, scanner.get_axial_length(), "axial length of scanner does not match dectector coordinates");
     }
 }

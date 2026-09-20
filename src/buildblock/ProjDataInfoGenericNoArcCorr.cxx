@@ -25,7 +25,9 @@
 #include "stir/Bin.h"
 #include "stir/LORCoordinates.h"
 #include "stir/DetectionPosition.h"
+#include "stir/stream.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -124,14 +126,37 @@ ProjDataInfoGenericNoArcCorr::set_ring_spacing(float ring_spacing_v)
 void
 ProjDataInfoGenericNoArcCorr::get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor, const Bin& bin) const
 {
+#if 0
+  // This version fails the consistency test with GATE,
+  // but as it goes round via old functions, we prefer the new version below in any case.
+  // Note: CListEventScannerWithDiscreteDetectors<ProjDataInfoT>::get_LOR() calls
+  // CListEvent*::get_detection_position(dpp) followed by
+  // lm.get_uncompressed_proj_data_info_sptr()->find_cartesian_coordinates_given_scanner_coordinates(lor.p2, lor.p1, dpp.pos1, dpp.pos2))
+  // (i.e. it always swaps w.r.t. CListEvent*::get_detection_position)
+  // So, I've written the code below in the same way for clarity (?)
   CartesianCoordinate3D<float> _p1;
   CartesianCoordinate3D<float> _p2;
-  find_cartesian_coordinates_of_detection(_p1, _p2, bin);
+  find_cartesian_coordinates_of_detection(_p2, _p1, bin);
+  if (bin.timing_pos_num() >= 0) // need to swap like this to get test_consistency_with_GATE to work
+    std::swap(_p1, _p2);
+  // Note: the above is a call to
+  // ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_of_detection which calls
+  // get_det_pos_pair_for_bin -> find_cartesian_coordinates_given_scanner_coordinates(_p1, _p2, dpp.pos1, dpp.pos2)
+  // (without extra swap)
 
   _p1.z() += z_shift.z();
   _p2.z() += z_shift.z();
+  LORAs2Points<float> lor_as_2_points(_p1, _p2);
+#else
+  DetectionPositionPair<> dpp;
+  get_det_pos_pair_for_bin(dpp, bin);
+  auto _p1 = get_scanner_ptr()->get_coordinate_for_det_pos(dpp.pos1());
+  auto _p2 = get_scanner_ptr()->get_coordinate_for_det_pos(dpp.pos2());
+  if (bin.timing_pos_num() < 0) // need to swap to get test_consistency_with_GATE to work
+    std::swap(_p1, _p2);
 
   LORAs2Points<float> lor_as_2_points(_p1, _p2);
+#endif
   const double R = sqrt(std::max(square(_p1.x()) + square(_p1.y()), square(_p2.x()) + square(_p2.y())));
 
   lor_as_2_points.change_representation(lor, R);
@@ -172,6 +197,7 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
   assert(det1 < get_scanner_ptr()->get_num_detectors_per_ring());
   assert(0 <= det2);
   assert(det2 < get_scanner_ptr()->get_num_detectors_per_ring());
+  // TODO remove duplication with get_LOR above
 
   DetectionPosition<> det_pos1;
   DetectionPosition<> det_pos2;
@@ -187,7 +213,7 @@ ProjDataInfoGenericNoArcCorr::find_cartesian_coordinates_given_scanner_coordinat
 
   if (timing_pos_num < 0)
     {
-      // Currently timing_pos is unsigned, so we need to swap if the input is negative
+      // follow ProjDataInfoCylindricalNoArcCorr convention
       std::swap(coord_1, coord_2);
     }
 }
@@ -212,6 +238,7 @@ ProjDataInfoGenericNoArcCorr::get_bin(const LOR<float>& lor, const double delta_
   {
     const auto tof_bin = get_tof_bin(delta_time);
     // Currently timing_pos is unsigned, so we need to swap if the input is negative
+    // TODO This is no longer necessary, so simplify code.
     if (tof_bin < 0)
       {
         det_pos_pair.timing_pos() = -tof_bin;

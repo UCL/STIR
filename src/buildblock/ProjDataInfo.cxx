@@ -253,7 +253,8 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
                   tof_bin_boundaries_mm[k].high_lim,
                   tof_bin_boundaries_ps[k].low_lim,
                   tof_bin_boundaries_ps[k].high_lim,
-                  sampling));
+                  sampling),
+           3);
     }
 }
 
