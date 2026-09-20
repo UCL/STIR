@@ -130,6 +130,22 @@ operator<<(std::ostream& out, const DetectionPositionPair<T>& det_pos)
 }
 
 /*!
+  \brief Outputs a LORAs2Points to a stream.
+  \ingroup LOR
+
+  Output is of the form
+  \verbatim
+  [pos1=..., pos2=...]
+  \endverbatim
+*/
+template <class T>
+inline std::ostream&
+operator<<(std::ostream& out, const LORAs2Points<T>& lor)
+{
+  return out << "[pos1=" << lor.p1() << ", pos2=" << lor.p2() << "]";
+}
+
+/*!
   \brief Outputs a LORInAxialAndNoArcCorrSinogramCoordinates to a stream.
   \ingroup LOR
 
