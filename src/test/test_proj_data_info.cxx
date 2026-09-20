@@ -53,7 +53,7 @@ using std::min;
 using std::max;
 using std::size_t;
 
-//#define STIR_TOF_DEBUG 1
+#define STIR_TOF_DEBUG 1
 
 START_NAMESPACE_STIR
 
@@ -103,7 +103,8 @@ protected:
   void test_generic_proj_data_info(ProjDataInfo& proj_data_info);
 
   template <class TProjDataInfo>
-  static shared_ptr<TProjDataInfo> set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction = 1);
+  static shared_ptr<TProjDataInfo>
+  set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction = 1, int tof_mash_factor = 0);
   void run_coordinate_test();
   void run_coordinate_test_for_realistic_scanner();
   void run_Blocks_DOI_test();
@@ -114,7 +115,7 @@ protected:
  */
 template <class TProjDataInfo>
 shared_ptr<TProjDataInfo>
-ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction)
+ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_fraction, int tof_mash_factor)
 {
   VectorWithOffset<int> num_axial_pos_per_segment(scanner_sptr->get_num_rings() * 2 - 1);
   VectorWithOffset<int> min_ring_diff_v(scanner_sptr->get_num_rings() * 2 - 1);
@@ -136,7 +137,7 @@ ProjDataInfoTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, in
                                         max_ring_diff_v,
                                         scanner_sptr->get_max_num_views(),
                                         scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction,
-                                        /* tof_mash_factor = */ 0);
+                                        tof_mash_factor);
 
   return proj_data_info_blocks_sptr;
 }
@@ -1195,7 +1196,7 @@ class ProjDataInfoCylindricalNoArcCorrTests : public ProjDataInfoCylindricalTest
 {
 public:
   void run_tests() override;
-  void run_get_m_test();
+  void run_get_mk_test();
 
 private:
   void test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info);
@@ -1204,8 +1205,8 @@ private:
 void
 ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 {
-  std::cerr << "\n-------- Testing get_m for different Scanner models --------\n";
-  run_get_m_test();
+  std::cerr << "\n-------- Testing get_m/get_k for different Scanner geometries --------\n";
+  run_get_mk_test();
   cerr << "\n-------- Testing ProjDataInfoCylindricalNoArcCorr --------\n";
   shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
   scanner_ptr->set_up();
@@ -1254,42 +1255,45 @@ ProjDataInfoCylindricalNoArcCorrTests::run_tests()
 }
 
 void
-ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
+ProjDataInfoCylindricalNoArcCorrTests::run_get_mk_test()
 {
 
   // ExamInfo not required for get_m() consistency checks.
   // auto exam_info_sptr = std::make_shared<ExamInfo>();
   // exam_info_sptr->imaging_modality = ImagingModality::PT;
 
+  const auto scanner_type = Scanner::PETMR_Signa;
+
   //-- create projadata info Blocks on Cylindrical
-  auto scannerCyl_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  auto scannerCyl_sptr = std::make_shared<Scanner>(scanner_type);
   scannerCyl_sptr->set_scanner_geometry("Cylindrical");
   scannerCyl_sptr->set_up();
 
-  auto proj_data_info_cyl_sptr = set_blocks_projdata_info<ProjDataInfoCylindricalNoArcCorr>(scannerCyl_sptr, 2);
+  auto proj_data_info_cyl_sptr = set_blocks_projdata_info<ProjDataInfoCylindricalNoArcCorr>(scannerCyl_sptr, 2, 1);
 
   //-- create projdata info Blocks on Cylindrical
-  auto scannerBlocks_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  auto scannerBlocks_sptr = std::make_shared<Scanner>(scanner_type);
   scannerBlocks_sptr->set_scanner_geometry("BlocksOnCylindrical");
   scannerBlocks_sptr->set_num_axial_crystals_per_block(1);
   scannerBlocks_sptr->set_num_axial_blocks_per_bucket(1);
   scannerBlocks_sptr->set_num_transaxial_crystals_per_block(1);
   scannerBlocks_sptr->set_num_transaxial_blocks_per_bucket(1);
 
+  scannerBlocks_sptr->set_axial_crystal_spacing(scannerBlocks_sptr->get_ring_spacing());
   scannerBlocks_sptr->set_axial_block_spacing(scannerBlocks_sptr->get_axial_crystal_spacing()
                                               * scannerBlocks_sptr->get_num_axial_crystals_per_block());
   scannerBlocks_sptr->set_transaxial_block_spacing(scannerBlocks_sptr->get_transaxial_crystal_spacing()
                                                    * scannerBlocks_sptr->get_num_transaxial_crystals_per_block());
   scannerBlocks_sptr->set_up();
 
-  auto proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2);
+  auto proj_data_info_blocks_sptr = set_blocks_projdata_info<ProjDataInfoBlocksOnCylindricalNoArcCorr>(scannerBlocks_sptr, 2, 1);
 
-  auto scannerGeneric_sptr = std::make_shared<Scanner>(Scanner::SAFIRDualRingPrototype);
+  auto scannerGeneric_sptr = std::make_shared<Scanner>(scanner_type);
   scannerGeneric_sptr->set_scanner_geometry("Generic");
   scannerGeneric_sptr->set_detector_coordinate_map(scannerBlocks_sptr->get_detector_coordinate_map());
   scannerGeneric_sptr->set_up();
 
-  auto proj_data_info_generic_sptr = set_blocks_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerGeneric_sptr, 2);
+  auto proj_data_info_generic_sptr = set_blocks_projdata_info<ProjDataInfoGenericNoArcCorr>(scannerGeneric_sptr, 2, 1);
 
   Bin bin;
   CartesianCoordinate3D<float> det_cyl_1, det_cyl_2, det_gen_1, det_gen_2, det_blk_1, det_blk_2;
@@ -1358,6 +1362,31 @@ ProjDataInfoCylindricalNoArcCorrTests::run_get_m_test()
               m_cyl[index],
               m_gen[index],
               format("Cylindrical and Generic get_m() differ for segment {} and axial position {}", seg, bin.axial_pos_num()));
+
+          // check on get_k
+          for (int timing_pos_num = proj_data_info_cyl_sptr->get_min_tof_pos_num();
+               timing_pos_num <= proj_data_info_cyl_sptr->get_max_tof_pos_num();
+               ++timing_pos_num)
+            {
+              bin.timing_pos_num() = timing_pos_num;
+
+              const auto k_cyl = proj_data_info_cyl_sptr->get_k(bin);
+              const auto k_blk = proj_data_info_blocks_sptr->get_k(bin);
+              const auto k_gen = proj_data_info_generic_sptr->get_k(bin);
+              check_if_equal(k_cyl,
+                             k_blk,
+                             format("Cylindrical and Blocks get_k() differ for segment {} and axial position {} and TOF bin {}",
+                                    seg,
+                                    bin.axial_pos_num(),
+                                    bin.timing_pos_num()));
+
+              check_if_equal(k_cyl,
+                             k_gen,
+                             format("Cylindrical and Generic get_k() differ for segment {} and axial position {} and TOF bin {}",
+                                    seg,
+                                    bin.axial_pos_num(),
+                                    bin.timing_pos_num()));
+            }
         }
 
       check_if_equal(m_cyl[0], -m_cyl[1], format("Cylindrical get_m() is not symmetric for segment {}", seg));
