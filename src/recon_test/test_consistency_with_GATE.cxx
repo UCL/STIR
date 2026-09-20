@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2017, 2022, UCL
+    Copyright (C) 2017, 2022, 2026, UCL
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -74,7 +74,9 @@ public:
 class GATEConsistencyTests : public RunTests
 {
 public:
-  GATEConsistencyTests() = default;
+  GATEConsistencyTests(const std::string& extension = ".hroot")
+      : extension(extension)
+  {}
 
   /*!
    * \brief Run the tests with ROOT data
@@ -85,6 +87,7 @@ public:
   void run_tests() override;
 
 private:
+  std::string extension;
   /*! Initialise the original point source position by generating image and finding the centre of gravity
    * and sets TOF and non-TOF threshold distances and the number of events passed and failed counters
    */
@@ -129,7 +132,10 @@ private:
   void log_results_to_console();
 
   // Auxiliary methods
-  std::string get_root_header_filename() { return "pretest_output/root_header_test" + std::to_string(test_index) + ".hroot"; }
+  std::string get_root_header_filename()
+  {
+    return "pretest_output/root_header_test" + std::to_string(test_index) + this->extension;
+  }
   std::string get_generate_image_par_filename() { return "SourceFiles/generate_image" + std::to_string(test_index) + ".par"; }
 
   ///// Class VARIABLES /////
@@ -185,7 +191,7 @@ GATEConsistencyTests::run_tests()
   for (int i = 1; i <= num_tests; ++i)
     {
       test_index = i; // set the class variable to keep track of which test is being run
-      cerr << "\nTesting dataset " << std::to_string(test_index) << "...\n";
+      cerr << "\nTesting dataset " << get_root_header_filename() << "...\n";
       setup();
       process_list_data();
       post_processing();
@@ -319,7 +325,7 @@ GATEConsistencyTests::post_processing_nonTOF()
 
   test_results_nonTOF[test_index - 1] = check_if_less(num_failed_nonTOF_lor_events,
                                                       failure_tolerance_nonTOF * num_events_tested,
-                                                      "The number of failed TOF events is more than the tolerance("
+                                                      "The number of failed non-TOF events is more than the tolerance("
                                                           + std::to_string(100 * failure_tolerance_nonTOF) + "%)");
 
   { // Save the closest coordinate for each LOR to file.
@@ -346,7 +352,7 @@ GATEConsistencyTests::post_processing_nonTOF()
 void
 GATEConsistencyTests::post_processing()
 {
-  cerr << "\nResults for dataset: " << std::to_string(this->test_index) << std::endl;
+  cerr << "\nResults for dataset: " << get_root_header_filename() << std::endl;
   post_processing_nonTOF();
   post_processing_TOF();
 };
@@ -449,11 +455,17 @@ END_NAMESPACE_STIR
 int
 main(int argc, char** argv)
 {
-  USING_NAMESPACE_STIR
   // Should be called from `${STIR_SOURCE_PATH}/examples/ROOT_files/ROOT_STIR_consistency`
 
+  if (argc > 2)
+    {
+      std::cerr << "\nUsage: " << argv[0] << " [<extension>]\n"
+                << "<extension> (optional): defaults to .hroot\n";
+      return EXIT_FAILURE;
+    }
+
   // Tests in class GATEConsistencyTests
-  GATEConsistencyTests test;
+  stir::GATEConsistencyTests test(argc > 1 ? argv[1] : ".hroot");
   test.run_tests();
   return test.main_return_value();
 }

@@ -51,6 +51,8 @@ if (HAVE_CERN_ROOT)
         ## TOTAL SIZE: ~3MB
         set(ROOT_STIR_consistency_data_dir ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency/pretest_output)
         set(ROOT_DATA_URL "https://zenodo.org/record/22735777/files")
+        # files with .hroot corresponding to a cylindrical scanner
+        set(CYL_ROOT_DATA_URL "https://zenodo.org/record/6410309/files")
         message(STATUS "Downloading ROOT consistency test data [~3MB] (if not already done)... ")
 
 
@@ -61,6 +63,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test1.hroot"
                         "${ROOT_DATA_URL}/root_header_test1.hroot?download=1"
                         "f221ee00a97da29eccf86da50eca4d8f")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test1.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test1.hroot?download=1"
+                        "e1036f4cc527d6d4b05e47b059987eb7")
         # 2
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_data_test2.root"
                         "${ROOT_DATA_URL}/root_data_test2.root?download=1"
@@ -68,6 +73,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test2.hroot"
                         "${ROOT_DATA_URL}/root_header_test2.hroot?download=1"
                         "0baed56f7289284fcfbd107f76a914cf")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test2.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test2.hroot?download=1"
+                        "ece24f080d81b32679e3ae95361d41dd")
         # 3
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_data_test3.root"
                     "${ROOT_DATA_URL}/root_data_test3.root?download=1"
@@ -75,6 +83,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test3.hroot"
                     "${ROOT_DATA_URL}/root_header_test3.hroot?download=1"
                     "42533df79e36c5f9db8a7f3eeb9edad2")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test3.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test3.hroot?download=1"
+                        "9d4aa131344e887fbb15cd1004a8255e")
         # 4
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_data_test4.root"
                         "${ROOT_DATA_URL}/root_data_test4.root?download=1"
@@ -82,6 +93,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test4.hroot"
                         "${ROOT_DATA_URL}/root_header_test4.hroot?download=1"
                         "ae9ca49c43aeb45e0c76ef472fb875b4")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test4.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test4.hroot?download=1"
+                        "4533e5d010abe190704546f79e1b5b8d")
         # 5
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_data_test5.root"
                         "${ROOT_DATA_URL}/root_data_test5.root?download=1"
@@ -89,6 +103,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test5.hroot"
                         "${ROOT_DATA_URL}/root_header_test5.hroot?download=1"
                         "8a179f80b7ab55abbc8474b629f242d4")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test5.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test5.hroot?download=1"
+                        "af8d2fe7a0a4668aaed2b2977096629c")
         # 6
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_data_test6.root"
                         "${ROOT_DATA_URL}/root_data_test6.root?download=1"
@@ -96,6 +113,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test6.hroot"
                         "${ROOT_DATA_URL}/root_header_test6.hroot?download=1"
                         "95820e6f0507a8954c0f68fd846c0fb9")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test6.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test6.hroot?download=1"
+                        "6f6025593ef7891dbc4fa2a4964ad1f8")
         # 7
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_data_test7.root"
                         "${ROOT_DATA_URL}/root_data_test7.root?download=1"
@@ -103,6 +123,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test7.hroot"
                         "${ROOT_DATA_URL}/root_header_test7.hroot?download=1"
                         "fe0f7eb3b0aefb5c5bb2c82e105e3641")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test7.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test7.hroot?download=1"
+                        "174b9dfa3d88f9bbcaebc4c56e1ebf93")
         # 8
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_data_test8.root"
                         "${ROOT_DATA_URL}/root_data_test8.root?download=1"
@@ -110,6 +133,9 @@ if (HAVE_CERN_ROOT)
         get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test8.hroot"
                         "${ROOT_DATA_URL}/root_header_test8.hroot?download=1"
                         "07f9c226fecf83663a0570336658817a")
+        get_zenodo_file("${ROOT_STIR_consistency_data_dir}/root_header_test8.hrootcyl"
+                        "${CYL_ROOT_DATA_URL}/root_header_test8.hroot?download=1"
+                        "a821a3eac0000544f000cd5c74150023")
     endif()
 
     # Add test if the data is downloaded (only checking root_header_test1.hroot)
@@ -117,9 +143,12 @@ if (HAVE_CERN_ROOT)
         list(APPEND ${dir_INVOLVED_TEST_EXE_SOURCES} test_consistency_with_GATE.cxx)
         # test_consistency_with_GATE requires working directory to be examples/ROOT_files/ROOT_STIR_consistency
         # for output files to be written there
-        ADD_TEST(NAME test_consistency_with_GATE
+        ADD_TEST(NAME test_consistency_with_GATE_blocks
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
-                COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_consistency_with_GATE)
+                COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_consistency_with_GATE .hroot)
+        ADD_TEST(NAME test_consistency_with_GATE_cylindrical
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/ROOT_files/ROOT_STIR_consistency
+                COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_consistency_with_GATE .hrootcyl)
 
     endif()
 endif()
