@@ -74,7 +74,7 @@ public:
 class GATEConsistencyTests : public RunTests
 {
 public:
-  GATEConsistencyTests(const std::string& extension = ".hroot")
+  explicit GATEConsistencyTests(const std::string& extension = ".hroot")
       : extension(extension)
   {}
 

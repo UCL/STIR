@@ -17,9 +17,10 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, 2021, 2022, University College London
+    Copyright (C) 2018, 2021, 2022, 2026, University College London
     Copyright (C) 2018, University of Leeds
     Copyright (C) 2021, National Physical Laboratory
+    Copyright (C) 2026, UMCG
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -53,7 +54,7 @@ using std::min;
 using std::max;
 using std::size_t;
 
-#define STIR_TOF_DEBUG 1
+// #define STIR_TOF_DEBUG 1
 
 START_NAMESPACE_STIR
 
@@ -338,15 +339,9 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                         if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
 #endif
                           {
-                            cerr << "\tProblem at    segment = " << org_bin.segment_num() << ", axial pos "
-                                 << org_bin.axial_pos_num() << ", view = " << org_bin.view_num()
-                                 << ", tangential_pos_num = " << org_bin.tangential_pos_num()
-                                 << ", timing_pos = " << org_bin.timing_pos_num() << "\n";
+                            cerr << "\tProblem at " << org_bin << "\n";
                             if (new_bin.get_bin_value() > 0)
-                              cerr << "\tround-trip to segment = " << new_bin.segment_num() << ", axial pos "
-                                   << new_bin.axial_pos_num() << ", view = " << new_bin.view_num()
-                                   << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-                                   << ", timing_pos = " << new_bin.timing_pos_num() << '\n';
+                              cerr << "\tround-trip to " << new_bin << '\n';
                           }
                       }
                     }
@@ -354,7 +349,7 @@ ProjDataInfoTests::test_generic_proj_data_info(ProjDataInfo& proj_data_info)
             }
         }
     }
-  cerr << "Max Deviation:  segment = " << max_diff_segment_num << ", axial pos " << max_diff_axial_pos_num
+  cerr << "\tMax Deviation:  segment = " << max_diff_segment_num << ", axial pos " << max_diff_axial_pos_num
        << ", view = " << max_diff_view_num << ", tangential_pos_num = " << max_diff_tangential_pos_num
        << ", timing_pos_num = " << max_diff_timing_pos_num << "\n";
 
@@ -1506,15 +1501,18 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
 #  ifdef STIR_OPENMP
         // insert a parallel for here for testing.
         // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do
-        // note: for-loop writing somewhat awkwardly as openmp needs int variables for the loop
+        // note: for-loop writing somewhat awkwardly as openmp 2.0 (used by VC) needs int variables for the loop
 #    pragma omp parallel for firstprivate(det_pos_pair)
 #  endif
           for (int tangential_coord1 = 0; tangential_coord1 < num_detectors; tangential_coord1++)
             for (det_pos_pair.pos2().tangential_coord() = 0; det_pos_pair.pos2().tangential_coord() < (unsigned)num_detectors;
                  det_pos_pair.pos2().tangential_coord()++)
-              for (det_pos_pair.timing_pos() = 0; // currently unsigned so start from 0
-                   det_pos_pair.timing_pos() <= (unsigned)proj_data_info.get_max_tof_pos_num();
-                   det_pos_pair.timing_pos() += (unsigned)std::max(1, proj_data_info.get_max_tof_pos_num()))
+              for (det_pos_pair.timing_pos() = proj_data_info.get_min_tof_pos_num();
+                   det_pos_pair.timing_pos() <= proj_data_info.get_max_tof_pos_num();
+                   det_pos_pair.timing_pos()
+                   += std::max(1,
+                               (proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num())
+                                   / 2)) // take 3 or 1 steps, always going through 0)
                 {
 
                   // set from for-loop variable
@@ -1535,19 +1533,9 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
                   if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
                       || !check(det_pos_pair == new_det_pos_pair, "checking if we round-trip to the same detection positions"))
                     {
-                      cerr << "Problem at det1 = " << det_pos_pair.pos1().tangential_coord()
-                           << ", det2 = " << det_pos_pair.pos2().tangential_coord()
-                           << ", ring1 = " << det_pos_pair.pos1().axial_coord()
-                           << ", ring2 = " << det_pos_pair.pos2().axial_coord() << ", timing_pos = " << det_pos_pair.timing_pos()
-                           << endl;
+                      cerr << "Problem at " << det_pos_pair << '\n';
                       if (there_is_a_bin)
-                        cerr << "  dets,rings -> bin -> dets,rings, gives new numbers:\n\t"
-                             << "det1 = " << new_det_pos_pair.pos1().tangential_coord()
-
-                             << ", det2 = " << new_det_pos_pair.pos2().tangential_coord()
-                             << ", ring1 = " << new_det_pos_pair.pos1().axial_coord()
-                             << ", ring2 = " << new_det_pos_pair.pos2().axial_coord()
-                             << ", timing_pos = " << det_pos_pair.timing_pos() << endl;
+                        cerr << "  dets,rings -> bin -> dets,rings, gives new numbers:\n\t" << new_det_pos_pair << endl;
                     }
 
                 } // end of get_bin_for_det_pos_pair and vice versa code
@@ -1594,14 +1582,9 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
                     if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair")
                         || !check(bin == new_bin, "checking if we round-trip to the same bin"))
                       {
-                        cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
-                             << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num()
-                             << ", timing pos num = " << bin.timing_pos_num() << "\n";
+                        cerr << "Problem at  " << bin << "\n";
                         if (there_is_a_bin)
-                          cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
-                               << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
-                               << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-                               << ", timing pos num = " << new_bin.timing_pos_num() << endl;
+                          cerr << "  bin -> dets -> bin, gives new numbers:\n\t" << new_bin << endl;
                       }
 
                   } // end of get_det_pos_pair_for_bin and back code
@@ -1661,13 +1644,9 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
 #    pragma omp critical(TESTPROJDATAINFO)
 #  endif
                         {
-                          cerr << "Problem at  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
-                               << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+                          cerr << "Problem at " << bin << "\n";
                           if (there_is_a_bin)
-                            cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
-                                 << "segment = " << new_bin.segment_num() << ", axial pos " << new_bin.axial_pos_num()
-                                 << ", view = " << new_bin.view_num() << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-                                 << ", timing_pos - " << new_bin.timing_pos_num() << endl;
+                            cerr << "  bin -> dets -> bin, gives new numbers:\n\t" << new_bin << endl;
                         }
                       }
                   } // end of iteration of det_pos_pairs
