@@ -60,16 +60,14 @@ typedef int3 cuda_int3;
   \ingroup CUDA
 */
 template <int num_dimensions, typename elemT>
-void
-array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array);
+void array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array);
 
 //! copy an `Array` to pre-allocated CuVec
 /*!
   \ingroup CUDA
 */
 template <int num_dimensions, typename elemT>
-void
-array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array);
+void array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array);
 
 //! copy CUDA pointer to `Array`
 /*!
@@ -77,16 +75,14 @@ array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir
   The third argument is ignored, as `cudaMemcpy` always syncs device and host.
 */
 template <int num_dimensions, typename elemT>
-void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true);
+void array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true);
 //! copy CuVec to `Array`
 /*!
   \ingroup CUDA
   If \a sync = \c true, the function will call `cudaDeviceSynchronize()` before copying.
 */
 template <int num_dimensions, typename elemT>
-void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
+void array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
 
 //! \brief Performs a parallel reduction sum on shared memory within a CUDA thread block, final value stored in shared_mem[0].
 template <typename elemT>

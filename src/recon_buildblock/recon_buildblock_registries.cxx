@@ -81,9 +81,9 @@
 
 #ifdef STIR_WITH_CUDA
 #  include "stir/recon_buildblock/CUDA/CudaRelativeDifferencePrior.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/BackProjectorByBinSPECTGPU.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.h"
+#  include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
+#  include "stir/recon_buildblock/SPECTGPU_projector/BackProjectorByBinSPECTGPU.h"
+#  include "stir/recon_buildblock/SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.h"
 #endif
 
 #ifdef HAVE_PETSIRD

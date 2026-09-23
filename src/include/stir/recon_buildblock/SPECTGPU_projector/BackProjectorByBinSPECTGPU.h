@@ -9,9 +9,9 @@
 
   \author Daniel Deidda
 
-  \todo SPECTGPU limitations - 
+  \todo SPECTGPU limitations -
 
-  \todo STIR wrapper limitations - 
+  \todo STIR wrapper limitations -
 */
 /*
     Copyright (C) 2026, National Physical Laboratory
@@ -50,25 +50,11 @@ public:
   /// Keymap
   virtual void initialise_keymap() override;
 
+  void set_sigma0(const float sigma0) { _sigma0 = sigma0; }
 
-  void
-  set_sigma0(const float sigma0)
-  {
-      _sigma0 = sigma0;
-  }
+  void set_slope(const float slope) { _slope = slope; }
 
-  void
-  set_slope(const float slope)
-  {
-      _slope = slope;
-  }
-
-  void
-  set_attenuation_filename(
-      const std::string& filename)
-  {
-      _att_filename = filename;
-  }
+  void set_attenuation_filename(const std::string& filename) { _att_filename = filename; }
 
   //! Stores all necessary geometric info
   /*!
@@ -76,10 +62,10 @@ public:
    */
   virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
                       const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
-  ) override;
+                      ) override;
 
   /// Back project
-//  void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1) override;
+  //  void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1) override;
 
   /// Get output
   virtual void get_output(DiscretisedDensity<3, float>&) const override;
@@ -95,19 +81,11 @@ public:
   /// projection and after back projection
   void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
-  virtual BackProjectorByBin* clone() const override
-  {
-      return new BackProjectorByBinSPECTGPU(*this);
-  }
+  virtual BackProjectorByBin* clone() const override { return new BackProjectorByBinSPECTGPU(*this); }
 
-  virtual const DataSymmetriesForViewSegmentNumbers*
-  get_symmetries_used() const override
-  {
-      return _symmetries_sptr.get();
-  }
+  virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override { return _symmetries_sptr.get(); }
 
 protected:
-
   virtual void actual_back_project(const RelatedViewgrams<float>&,
                                    const int min_axial_pos_num,
                                    const int max_axial_pos_num,
@@ -120,8 +98,8 @@ protected:
                                    const int max_axial_pos_num,
                                    const int min_tangential_pos_num,
                                    const int max_tangential_pos_num) override;
-protected:
 
+protected:
   int dim_z, dim_y, dim_x;
   cuda_dim3 block_dim;
   cuda_dim3 grid_dim;
@@ -135,9 +113,10 @@ protected:
   int min_y;
   int min_x;
   int num_views;
+
 private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
-//  SPECTGPUHelper _helper;
+  //  SPECTGPUHelper _helper;
   int _cuda_device;
   bool _cuda_verbosity;
   bool _do_atten;

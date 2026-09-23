@@ -21,22 +21,8 @@
 
 #include <cuda_runtime.h>
 
-__global__
-void GaussianConvolutionKernel_pull(
-        float* out_im,
-        const float* in_im,
-        int3 image_dim,
-        float3 spacing,
-        float sigma0,
-        float slope);
+__global__ void
+GaussianConvolutionKernel_pull(float* out_im, const float* in_im, int3 image_dim, float3 spacing, float sigma0, float slope);
 
-
-
-__global__
-void GaussianConvolutionKernel_push(
-        float* out_im,
-        const float* in_im,
-        int3 image_dim,
-        float3 spacing,
-        float sigma0,
-        float slope);
+__global__ void
+GaussianConvolutionKernel_push(float* out_im, const float* in_im, int3 image_dim, float3 spacing, float sigma0, float slope);

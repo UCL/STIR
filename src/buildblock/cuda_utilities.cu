@@ -86,7 +86,7 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, b
 */
 template <int num_dimensions, typename elemT>
 void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync )
+array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync)
 {
   if (sync)
     cudaDeviceSynchronize();
@@ -95,76 +95,52 @@ array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_
   std::copy(dev_data.begin(), dev_data.end(), stir_array.begin_all());
 }
 
-template void
-array_to_device<3, float>(float*,const Array<3, float>&);
+template void array_to_device<3, float>(float*, const Array<3, float>&);
 
-template void
-array_to_host<3, float>(Array<3, float>&,const float*,bool);
+template void array_to_host<3, float>(Array<3, float>&, const float*, bool);
 
-template void
-array_to_device<3, float>(CuVec<float>&,const Array<3, float>&);
+template void array_to_device<3, float>(CuVec<float>&, const Array<3, float>&);
 
-template void
-array_to_host<3, float>(Array<3, float>&, const CuVec<float>&,  bool);
+template void array_to_host<3, float>(Array<3, float>&, const CuVec<float>&, bool);
 
-template void
-array_to_device<3, double>(double*,const Array<3, double>&);
+template void array_to_device<3, double>(double*, const Array<3, double>&);
 
-template void
-array_to_host<3, double>(Array<3, double>&,const double*,bool);
+template void array_to_host<3, double>(Array<3, double>&, const double*, bool);
 
-template void
-array_to_device<3, double>(CuVec<double>&,const Array<3, double>&);
+template void array_to_device<3, double>(CuVec<double>&, const Array<3, double>&);
 
-template void
-array_to_host<3, double>(Array<3, double>&, const CuVec<double>&,  bool);
+template void array_to_host<3, double>(Array<3, double>&, const CuVec<double>&, bool);
 
-template void
-array_to_device<2, float>(float*,const Array<2, float>&);
+template void array_to_device<2, float>(float*, const Array<2, float>&);
 
-template void
-array_to_host<2, float>(Array<2, float>&,const float*,bool);
+template void array_to_host<2, float>(Array<2, float>&, const float*, bool);
 
-template void
-array_to_device<2, float>(CuVec<float>&,const Array<2, float>&);
+template void array_to_device<2, float>(CuVec<float>&, const Array<2, float>&);
 
-template void
-array_to_host<2, float>(Array<2, float>&, const CuVec<float>&,  bool);
+template void array_to_host<2, float>(Array<2, float>&, const CuVec<float>&, bool);
 
-template void
-array_to_device<2, double>(double*,const Array<2, double>&);
+template void array_to_device<2, double>(double*, const Array<2, double>&);
 
-template void
-array_to_host<2, double>(Array<2, double>&,const double*,bool);
+template void array_to_host<2, double>(Array<2, double>&, const double*, bool);
 
-template void
-array_to_device<2, double>(CuVec<double>&,const Array<2, double>&);
+template void array_to_device<2, double>(CuVec<double>&, const Array<2, double>&);
 
-template void
-array_to_host<2, double>(Array<2, double>&, const CuVec<double>&,  bool);
+template void array_to_host<2, double>(Array<2, double>&, const CuVec<double>&, bool);
 
-template void
-array_to_device<1, float>(float*,const Array<1, float>&);
+template void array_to_device<1, float>(float*, const Array<1, float>&);
 
-template void
-array_to_host<1, float>(Array<1, float>&,const float*,bool);
+template void array_to_host<1, float>(Array<1, float>&, const float*, bool);
 
-template void
-array_to_device<1, float>(CuVec<float>&,const Array<1, float>&);
+template void array_to_device<1, float>(CuVec<float>&, const Array<1, float>&);
 
-template void
-array_to_host<1, float>(Array<1, float>&, const CuVec<float>&,  bool);
+template void array_to_host<1, float>(Array<1, float>&, const CuVec<float>&, bool);
 
-template void
-array_to_device<1, double>(double*,const Array<1, double>&);
+template void array_to_device<1, double>(double*, const Array<1, double>&);
 
-template void
-array_to_host<1, double>(Array<1, double>&,const double*,bool);
+template void array_to_host<1, double>(Array<1, double>&, const double*, bool);
 
-template void
-array_to_device<1, double>(CuVec<double>&,const Array<1, double>&);
+template void array_to_device<1, double>(CuVec<double>&, const Array<1, double>&);
 
-template void
-array_to_host<1, double>(Array<1, double>&, const CuVec<double>&,  bool);
+template void array_to_host<1, double>(Array<1, double>&, const CuVec<double>&, bool);
 
 END_NAMESPACE_STIR

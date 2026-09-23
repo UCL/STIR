@@ -8,7 +8,7 @@ OSMAPOSLParameters :=
     
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
-    input file := fimage_UB.hs
+    input file := peak.hs
 
     projector pair type := SPECTGPU
       Projector Pair Using SPECTGPU Parameters :=
@@ -22,20 +22,20 @@ OSMAPOSLParameters :=
             collimator slope := 0.0163
             collimator sigma 0(cm) := 0.1466
 
-            attenuation image filename := umap_inverted.hv
+            attenuation image filename := umap_zoomed.hv
 
      End Projector Pair Using SPECTGPU Parameters :=
   subset sensitivity filenames := sens_%d
   recompute sensitivity := 1
   z zoom := 0.5
-  xy output image size (in pixels) := 150
-  z output image size (in pixels) := 200
+  xy output image size (in pixels) := 128
+  z output image size (in pixels) := 128
   end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
   ; best to specifiy an initial image (e.g. filled with 1) for sizes
   ; or see OSMAPOSL_osem_with_interfiltering.par and FBP2D_SPECT.par for some keywords 
   ;initial estimate:= init.hv
-  output filename prefix := out
+  output filename prefix := outgpu
 
   ; needs to be a divisor of the number of views
   number of subsets:= 8

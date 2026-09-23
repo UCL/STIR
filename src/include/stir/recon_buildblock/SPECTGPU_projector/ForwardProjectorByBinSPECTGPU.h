@@ -12,9 +12,9 @@
 
   \author Daniel Deidda
 
-  \todo SPECTGPU limitations - 
+  \todo SPECTGPU limitations -
 
-  \todo STIR wrapper limitations - 
+  \todo STIR wrapper limitations -
 
 */
 /*
@@ -42,24 +42,11 @@ class DataSymmetriesForViewSegmentNumbers;
 class ForwardProjectorByBinSPECTGPU : public RegisteredParsingObject<ForwardProjectorByBinSPECTGPU, ForwardProjectorByBin>
 {
 public:
-    void
-    set_sigma0(const float sigma0)
-    {
-        _sigma0 = sigma0;
-    }
+  void set_sigma0(const float sigma0) { _sigma0 = sigma0; }
 
-    void
-    set_slope(const float slope)
-    {
-        _slope = slope;
-    }
+  void set_slope(const float slope) { _slope = slope; }
 
-    void
-    set_attenuation_filename(
-        const std::string& filename)
-    {
-        _att_filename = filename;
-    }
+  void set_attenuation_filename(const std::string& filename) { _att_filename = filename; }
   //! Name which will be used when parsing a ForwardProjectorByBin object
   static const char* const registered_name;
 
@@ -73,16 +60,12 @@ public:
   /// Keymap
   virtual void initialise_keymap() override;
 
-//  virtual ForwardProjectorByBin* clone() const override
-//  {
-//      return new ForwardProjectorByBinSPECTGPU(*this);
-//  }
+  //  virtual ForwardProjectorByBin* clone() const override
+  //  {
+  //      return new ForwardProjectorByBinSPECTGPU(*this);
+  //  }
 
-  virtual const DataSymmetriesForViewSegmentNumbers*
-  get_symmetries_used() const override
-  {
-      return _symmetries_sptr.get();
-  }
+  virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override { return _symmetries_sptr.get(); }
 
   //! Stores all necessary geometric info
   /*!
@@ -96,7 +79,7 @@ public:
    */
   virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
                       const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
-  ) override;
+                      ) override;
 
   /// Set input
   virtual void set_input(const DiscretisedDensity<3, float>&) override;
@@ -117,14 +100,10 @@ protected:
                                       const int min_tangential_pos_num,
                                       const int max_tangential_pos_num) override;
 
-  virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
-                                      const int min_ax,
-                                      const int max_ax,
-                                      const int min_tg,
-                                      const int max_tg) override;
+  virtual void actual_forward_project(
+      RelatedViewgrams<float>& viewgrams, const int min_ax, const int max_ax, const int min_tg, const int max_tg) override;
 
 protected:
-
   int dim_z, dim_y, dim_x;
   cuda_dim3 block_dim;
   cuda_dim3 grid_dim;
@@ -142,7 +121,7 @@ protected:
 private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   shared_ptr<ProjDataInMemory> _projected_data_sptr;
-//  SPECTGPUHelper _helper;
+  //  SPECTGPUHelper _helper;
   int _cuda_device;
   bool _cuda_verbosity;
   bool _use_truncation;

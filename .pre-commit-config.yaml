@@ -5,7 +5,7 @@ repos:
   - id: clang-format
     files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|inl|txx)$
 - repo: https://github.com/jackdewinter/pymarkdown
-  rev: v0.9.38
+  rev: v0.9.40
   hooks:
   - id: pymarkdown
 - repo: https://github.com/pre-commit/pre-commit-hooks
