@@ -28,9 +28,9 @@ namespace detail
 
 /***************** version for istream *******************************/
 
-template <int num_dimensions, class elemT>
+template <int num_dimensions, class elemT, class indexT>
 Succeeded
-read_data_1d(std::istream& s, ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order)
+read_data_1d(std::istream& s, ArrayType<num_dimensions, elemT, indexT>& data, const ByteOrder byte_order)
 {
   if (!s || (dynamic_cast<std::ifstream*>(&s) != 0 && !dynamic_cast<std::ifstream*>(&s)->is_open())
       || (dynamic_cast<std::fstream*>(&s) != 0 && !dynamic_cast<std::fstream*>(&s)->is_open()))
@@ -64,9 +64,9 @@ read_data_1d(std::istream& s, ArrayType<num_dimensions, elemT>& data, const Byte
 /***************** version for FILE *******************************/
 // largely a copy of above, but with calls to stdio function
 
-template <int num_dimensions, class elemT>
+template <int num_dimensions, class elemT, class indexT>
 Succeeded
-read_data_1d(FILE*& fptr_ref, ArrayType<num_dimensions, elemT>& data, const ByteOrder byte_order)
+read_data_1d(FILE*& fptr_ref, ArrayType<num_dimensions, elemT, indexT>& data, const ByteOrder byte_order)
 {
   FILE* fptr = fptr_ref;
   if (fptr == NULL || ferror(fptr))

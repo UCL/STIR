@@ -95,7 +95,7 @@ inline double norm_squared(Iter begin, Iter end);
 /*! The l2-norm is defined as the sqrt of the sum of squares of the norms
     of each element in the sequence.
 
-    \see norm(const Array<1,elemT>&) for a convenience function for Array objects.
+    \see norm(const Array<1,elemT, indexT>&) for a convenience function for Array objects.
 */
 template <class Iter>
 inline double norm(Iter begin, Iter end);
@@ -105,16 +105,16 @@ inline double norm(Iter begin, Iter end);
   This returns the sqrt of the sum of the square of the absolute values
   of the elements of \a v1.
  */
-template <class elemT>
-inline double norm(const Array<1, elemT>& v1);
+template <class elemT, class indexT>
+inline double norm(const Array<1, elemT, indexT>& v1);
 
 //! square of the l2 norm of a 1D array
 /*!
   This returns the sum of the square of the absolute values of the
   elements of \a v1.
  */
-template <class elemT>
-inline double norm_squared(const Array<1, elemT>& v1);
+template <class elemT, class indexT>
+inline double norm_squared(const Array<1, elemT, indexT>& v1);
 
 //@}
 

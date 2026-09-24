@@ -43,20 +43,20 @@ START_NAMESPACE_STIR
   \warning It is likely that the automatic growing feature will be removed at some point.
  */
 
-template <class T, class elemT>
-class NumericVectorWithOffset : public VectorWithOffset<T>
+template <class T, class elemT, class indexT = int>
+class NumericVectorWithOffset : public VectorWithOffset<T, indexT>
 {
 #ifdef SWIG
 public: // needs to be public for SWIG to be able to parse the "using" statement below
 #endif
 
-  typedef VectorWithOffset<T> base_type;
+  typedef VectorWithOffset<T, indexT> base_type;
 
 public:
   using base_type::base_type;
 
   //! Constructor from an object of this class' base_type
-  inline NumericVectorWithOffset(const VectorWithOffset<T>& t);
+  inline NumericVectorWithOffset(const VectorWithOffset<T, indexT>& t);
 
   //! Constructor from an object of this class' base_type
   inline NumericVectorWithOffset(const NumericVectorWithOffset& t)

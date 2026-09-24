@@ -26,6 +26,7 @@
 */
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
+#include "stir/IndexRangeFwd.h"
 
 START_NAMESPACE_STIR
 
@@ -64,11 +65,11 @@ START_NAMESPACE_STIR
   }
   \endcode
 */
-template <int num_dimensions>
-class IndexRange : public VectorWithOffset<IndexRange<num_dimensions - 1>>
+template <int num_dimensions, typename indexT>
+class IndexRange : public VectorWithOffset<IndexRange<num_dimensions - 1, indexT>, indexT>
 {
 protected:
-  typedef VectorWithOffset<IndexRange<num_dimensions - 1>> base_type;
+  typedef VectorWithOffset<IndexRange<num_dimensions - 1, indexT>, indexT> base_type;
 
 public:
   //! typedefs such that we do not need to have \a typename wherever we use iterators
@@ -78,17 +79,20 @@ public:
   //! Empty range
   inline IndexRange();
 
+#ifndef SWIG
+  // SWIG bug prevents using base_type here. Leads to problems with num_dimensions-1
   //! Make an IndexRange from the base type
-  inline IndexRange(const VectorWithOffset<IndexRange<num_dimensions - 1>>& range);
+  inline IndexRange(const base_type& range);
+#endif
 
   //! Copy constructor
-  inline IndexRange(const IndexRange<num_dimensions>& range);
+  inline IndexRange(const IndexRange<num_dimensions, indexT>& range);
 
   //! Construct a regular range given by all minimum indices and all maximum indices.
-  inline IndexRange(const BasicCoordinate<num_dimensions, int>& min, const BasicCoordinate<num_dimensions, int>& max);
+  inline IndexRange(const BasicCoordinate<num_dimensions, indexT>& min, const BasicCoordinate<num_dimensions, indexT>& max);
 
   //! Construct a regular range given by sizes (minimum indices will be 0)
-  inline IndexRange(const BasicCoordinate<num_dimensions, int>& sizes);
+  inline IndexRange(const BasicCoordinate<num_dimensions, indexT>& sizes);
 
   //! return the total number of elements in this range
   inline size_t size_all() const;
@@ -96,22 +100,23 @@ public:
   // these are derived from VectorWithOffset
   //  TODO these should be overloaded, to set regular_range as well.
   /*
-  const IndexRange<num_dimensions-1>& operator[](int i) const
+  const IndexRange<num_dimensions-1>& operator[](indexT i) const
   { return range[i]; }
 
-  IndexRange<num_dimensions-1>& operator[](int i)
+  IndexRange<num_dimensions-1>& operator[](indexT i)
   { return range[i]; }
   */
 
   //! comparison operator
-  inline bool operator==(const IndexRange<num_dimensions>&) const;
-  inline bool operator!=(const IndexRange<num_dimensions>&) const;
+  inline bool operator==(const IndexRange<num_dimensions, indexT>&) const;
+  inline bool operator!=(const IndexRange<num_dimensions, indexT>&) const;
 
   //! checks if the range is 'regular'
   inline bool is_regular() const;
+  inline bool empty() const override;
 
   //! find regular range, returns false if the range is not regular
-  bool get_regular_range(BasicCoordinate<num_dimensions, int>& min, BasicCoordinate<num_dimensions, int>& max) const;
+  inline bool get_regular_range(BasicCoordinate<num_dimensions, indexT>& min, BasicCoordinate<num_dimensions, indexT>& max) const;
 
 private:
   //! enum to encode the current knowledge about regularity
@@ -127,37 +132,41 @@ private:
 };
 
 //! The (simple) 1 dimensional specialisation of IndexRange
-template <>
-class IndexRange<1>
+template <class indexT>
+class IndexRange<1, indexT>
 {
 public:
+  typedef size_t size_type;
   inline IndexRange();
-  inline IndexRange(const int min, const int max);
+  inline IndexRange(const indexT min, const indexT max);
 
-  inline IndexRange(const BasicCoordinate<1, int>& min, const BasicCoordinate<1, int>& max);
+  inline IndexRange(const BasicCoordinate<1, indexT>& min, const BasicCoordinate<1, indexT>& max);
 
-  inline IndexRange(const int length);
-  inline IndexRange(const BasicCoordinate<1, int>& size);
+  inline IndexRange(const size_type length);
+  inline IndexRange(const BasicCoordinate<1, indexT>& size);
 
-  inline int get_min_index() const;
-  inline int get_max_index() const;
-  inline int get_length() const;
+  inline indexT get_min_index() const;
+  inline indexT get_max_index() const;
+  inline size_type get_length() const;
+  inline size_type size() const { return get_length(); }
   //! return the total number of elements in this range
   inline size_t size_all() const;
+  inline bool empty() const;
 
-  inline bool operator==(const IndexRange<1>& range2) const;
+  inline bool operator==(const IndexRange<1, indexT>& range2) const;
 
   //! checks if the range is 'regular' (always true for the 1d case)
   inline bool is_regular() const;
 
   //! fills in min and max, and returns true
-  inline bool get_regular_range(BasicCoordinate<1, int>& min, BasicCoordinate<1, int>& max) const;
+  inline bool get_regular_range(BasicCoordinate<1, indexT>& min, BasicCoordinate<1, indexT>& max) const;
   //! resets to new index range
-  inline void resize(const int min_index, const int max_index);
+  inline void resize(const indexT min_index, const indexT max_index);
 
 private:
-  int min;
-  int max;
+  indexT min;
+  indexT max;
+  inline void recycle();
 };
 
 END_NAMESPACE_STIR

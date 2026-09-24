@@ -16,6 +16,10 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(buildblock_simple_tests
         test_Array.cxx
         test_VectorWithOffset.cxx
+        test_NestedIterator.cxx
+        test_convert_array.cxx
+	test_IndexRange.cxx
+	test_coordinates.cxx
         )
       
 if (NOT MINI_STIR)
@@ -53,10 +57,6 @@ list (APPEND buildblock_simple_tests
         test_ArrayFilter.cxx
         test_SeparableMetzArrayFilter.cxx
         test_SeparableGaussianArrayFilter.cxx
-        test_NestedIterator.cxx
-        test_convert_array.cxx
-	test_IndexRange.cxx
-	test_coordinates.cxx
 	test_filename_functions.cxx
         test_KeyParser.cxx
 	test_VoxelsOnCartesianGrid.cxx

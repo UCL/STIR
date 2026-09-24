@@ -34,21 +34,21 @@ START_NAMESPACE_STIR
 
 //! an alternative for array indexing using BasicCoordinate objects
 /*! Case where the index has lower dimension than the array*/
-template <int num_dimensions, int num_dimensions2, typename elemT>
-inline const Array<num_dimensions - num_dimensions2, elemT>& get(const Array<num_dimensions, elemT>& a,
-                                                                 const BasicCoordinate<num_dimensions2, int>& c);
+template <int num_dimensions, int num_dimensions2, typename elemT, typename indexT>
+inline const Array<num_dimensions - num_dimensions2, elemT, indexT>& get(const Array<num_dimensions, elemT, indexT>& a,
+                                                                         const BasicCoordinate<num_dimensions2, indexT>& c);
 
 //! an alternative for array indexing using BasicCoordinate objects
 /*! Case where the index has the same dimension as the array*/
-template <int num_dimensions, typename elemT>
-inline const elemT& get(const Array<num_dimensions, elemT>& a, const BasicCoordinate<num_dimensions, int>& c);
+template <int num_dimensions, typename elemT, typename indexT>
+inline const elemT& get(const Array<num_dimensions, elemT, indexT>& a, const BasicCoordinate<num_dimensions, indexT>& c);
 
 //! Get the first multi-dimensional index of the array
 /*! \todo If the array \arg a is empty, we return an object where all indices are 0.
     It would be better to throw an exception.
 */
-template <int num_dimensions, typename T>
-inline BasicCoordinate<num_dimensions, int> get_min_indices(const Array<num_dimensions, T>& a);
+template <int num_dimensions, typename elemT, typename indexT>
+inline BasicCoordinate<num_dimensions, indexT> get_min_indices(const Array<num_dimensions, elemT, indexT>& a);
 
 //! Given an index into an array, increment it to the next one
 /*!
@@ -57,16 +57,15 @@ inline BasicCoordinate<num_dimensions, int> get_min_indices(const Array<num_dime
     This can be used to iterate through an array using code such as
     \code
     Array<num_dimensions2, T> array = ...;
-    BasicCoordinate<num_dimensions, int> indices =
-       get_min_indices(array);
+    auto indices = get_min_indices(array);
     do
     { something with indices }
     while (next(indices, array));
     \endcode
     \warning The above loop will fail for empty arrays
 */
-template <int num_dimensions, typename T, int num_dimensions2>
-inline bool next(BasicCoordinate<num_dimensions, int>& indices, const Array<num_dimensions2, T>& a);
+template <int num_dimensions, typename elemT, typename indexT, int num_dimensions2>
+inline bool next(BasicCoordinate<num_dimensions, indexT>& indices, const Array<num_dimensions2, elemT, indexT>& a);
 
 //@}
 

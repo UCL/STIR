@@ -138,8 +138,8 @@ public:
     return check_if_equal(a.real(), b.real(), str) && check_if_equal(a.imag(), b.imag(), str);
   }
   //! check equality by comparing ranges and calling check_if_equal on all elements
-  template <class T>
-  bool check_if_equal(const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2, const std::string& str = "")
+  template <class T, class indexT>
+  bool check_if_equal(const VectorWithOffset<T, indexT>& t1, const VectorWithOffset<T, indexT>& t2, const std::string& str = "")
   {
     if (t1.get_min_index() != t2.get_min_index() || t1.get_max_index() != t2.get_max_index())
       {
@@ -147,7 +147,7 @@ public:
         return everything_ok = false;
       }
 
-    for (int i = t1.get_min_index(); i <= t1.get_max_index(); i++)
+    for (auto i = t1.get_min_index(); i <= t1.get_max_index(); i++)
       {
         if (!check_if_equal(t1[i], t2[i], str))
           {
@@ -183,8 +183,8 @@ public:
   bool check_if_equal(const ProjDataInMemory& t1, const ProjDataInMemory& t2, const std::string& str = "");
 
   // VC 6.0 needs definition of template members in the class def unfortunately.
-  template <int n>
-  bool check_if_equal(const IndexRange<n>& t1, const IndexRange<n>& t2, const std::string& str = "")
+  template <int n, typename indexT>
+  bool check_if_equal(const IndexRange<n, indexT>& t1, const IndexRange<n, indexT>& t2, const std::string& str = "")
   {
     if (t1 != t2)
       {
@@ -230,10 +230,10 @@ public:
 
   // VC needs definition of template members in the class def unfortunately.
   //! use check_if_zero on all elements
-  template <class T>
-  bool check_if_zero(const VectorWithOffset<T>& t, const std::string& str = "")
+  template <class T, class indexT>
+  bool check_if_zero(const VectorWithOffset<T, indexT>& t, const std::string& str = "")
   {
-    for (int i = t.get_min_index(); i <= t.get_max_index(); i++)
+    for (auto i = t.get_min_index(); i <= t.get_max_index(); i++)
       {
         if (!check_if_zero(t[i], str))
           {
