@@ -59,6 +59,7 @@ private:
   bool _use_truncation;
   bool _do_atten;
   std::string _att_filename;
+  float _num_sigmas;
   float _slope, _sigma0;
   shared_ptr<DiscretisedDensity<3, float>> _att_coeff_sptr;
 };

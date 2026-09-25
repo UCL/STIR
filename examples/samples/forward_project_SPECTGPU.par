@@ -4,5 +4,6 @@ Forward Projector parameters:=
       attenuation image filename := umap_inverted.hv
       collimator slope := 0.01
       collimator sigma 0(cm) := 0.07
+      number of PSF sigmas := 2 ; default 2 (95% of the PSF)
       End Forward Projector Using SPECTGPU Parameters :=
 End:=

@@ -26,8 +26,13 @@
 
 // the following is a pull operation
 __global__ void
-GaussianConvolutionKernel_pull(
-    float* __restrict__ out_im, const float* __restrict__ in_im, int3 dim, float3 spacing, float sigma0, float slope)
+GaussianConvolutionKernel_pull(float* __restrict__ out_im,
+                               const float* __restrict__ in_im,
+                               int3 dim,
+                               float3 spacing,
+                               float sigma0,
+                               float num_sigmas,
+                               float slope)
 {
   // parallelise the operation across all image voxels
   int i = threadIdx.x + blockDim.x * blockIdx.x;
@@ -52,18 +57,21 @@ GaussianConvolutionKernel_pull(
 
   //  definition of 3*sigma radius;
   //  we could even do the number_of_sigmas like in SPECTUB
-  int Rz = max(2, (int)ceilf(3.f * sigma_z_vox));
-  int Rx = max(2, (int)ceilf(3.f * sigma_x_vox));
+  int Rz = max(2, (int)ceilf(num_sigmas * sigma_z_vox));
+  int Rx = max(2, (int)ceilf(num_sigmas * sigma_x_vox));
 
   for (int dz = -Rz; dz <= Rz; dz++)
     {
       int z = dz + k; // nearest neighbour z coordinate
 
+      if (z < 0 || z >= dim.z)
+        continue;
+
       for (int dx = -Rx; dx <= Rx; dx++)
         {
           int x = dx + i;
 
-          if (x < 0 || x >= dim.x || z < 0 || z >= dim.z)
+          if (x < 0 || x >= dim.x)
             continue;
 
           // caulculate gaussian kernel
@@ -79,10 +87,14 @@ GaussianConvolutionKernel_pull(
     {
       int z = dz + k; // nearest neighbour z coordinate
 
+      if (z < 0 || z >= dim.z)
+        continue;
+
       for (int dx = -Rx; dx <= Rx; dx++)
         {
           int x = dx + i;
-          if (x < 0 || x >= dim.x || z < 0 || z >= dim.z)
+
+          if (x < 0 || x >= dim.x)
             continue;
 
           int id_n = z * dim.x * dim.y + j * dim.x + x;
@@ -100,8 +112,13 @@ GaussianConvolutionKernel_pull(
 
 // the following is the adjoint operation (push)
 __global__ void
-GaussianConvolutionKernel_push(
-    float* __restrict__ out_im, const float* __restrict__ in_im, int3 dim, float3 spacing, float sigma0, float slope)
+GaussianConvolutionKernel_push(float* __restrict__ out_im,
+                               const float* __restrict__ in_im,
+                               int3 dim,
+                               float3 spacing,
+                               float sigma0,
+                               float num_sigmas,
+                               float slope)
 {
   // parallelise the operation across all image voxels
   int i = threadIdx.x + blockDim.x * blockIdx.x;
@@ -125,18 +142,21 @@ GaussianConvolutionKernel_push(
 
   //  definition of 3*sigma radius;
   //  we could even do the number_of_sigmas like in SPECTUB
-  int Rz = max(2, (int)ceilf(3.f * sigma_z_vox));
-  int Rx = max(2, (int)ceilf(3.f * sigma_x_vox));
+  int Rz = max(2, (int)ceilf(num_sigmas * sigma_z_vox));
+  int Rx = max(2, (int)ceilf(num_sigmas * sigma_x_vox));
 
   for (int dz = -Rz; dz <= Rz; dz++)
     {
       int z = dz + k; // nearest neighbour z coordinate
 
+      if (z < 0 || z >= dim.z)
+        continue;
+
       for (int dx = -Rx; dx <= Rx; dx++)
         {
           int x = dx + i;
 
-          if (x < 0 || x >= dim.x || z < 0 || z >= dim.z)
+          if (x < 0 || x >= dim.x)
             continue;
 
           // caulculate gaussian kernel
@@ -152,10 +172,14 @@ GaussianConvolutionKernel_push(
     {
       int z = dz + k; // nearest neighbour z coordinate
 
+      if (z < 0 || z >= dim.z)
+        continue;
+
       for (int dx = -Rx; dx <= Rx; dx++)
         {
           int x = dx + i;
-          if (x < 0 || x >= dim.x || z < 0 || z >= dim.z)
+
+          if (x < 0 || x >= dim.x)
             continue;
 
           int id_n = z * dim.x * dim.y + j * dim.x + x;

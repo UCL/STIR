@@ -33,6 +33,7 @@ ProjectorByBinPairUsingSPECTGPU::initialise_keymap()
   base_type::initialise_keymap();
   parser.add_start_key("Projector Pair Using SPECTGPU Parameters");
   parser.add_stop_key("End Projector Pair Using SPECTGPU Parameters");
+  parser.add_key("number of PSF sigmas", &_num_sigmas);
   parser.add_key("collimator slope", &_slope);
   parser.add_key("collimator sigma 0(cm)", &_sigma0);
   parser.add_key("attenuation image filename", &_att_filename);
@@ -48,6 +49,7 @@ ProjectorByBinPairUsingSPECTGPU::set_defaults()
   this->set_use_truncation(false);
   this->_sigma0 = -1;
   this->_slope = -1;
+  this->_num_sigmas = 2;
 }
 
 bool
@@ -61,10 +63,12 @@ ProjectorByBinPairUsingSPECTGPU::post_processing()
   auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
 
   fwd->set_sigma0(_sigma0);
+  fwd->set_num_sigmas(_sigma0);
   fwd->set_slope(_slope);
   fwd->set_attenuation_filename(_att_filename);
 
   bwd->set_sigma0(_sigma0);
+  bwd->set_num_sigmas(_num_sigmas);
   bwd->set_slope(_slope);
   bwd->set_attenuation_filename(_att_filename);
 

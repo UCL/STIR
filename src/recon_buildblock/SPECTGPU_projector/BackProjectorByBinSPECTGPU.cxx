@@ -212,6 +212,7 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
                                dev_umap,
                                _do_atten,
                                _sigma0,
+                               _num_sigmas,
                                _slope,
                                this->num_views,
                                this->block_dim.x,

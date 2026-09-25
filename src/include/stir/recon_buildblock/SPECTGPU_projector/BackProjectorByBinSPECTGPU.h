@@ -52,6 +52,8 @@ public:
 
   void set_sigma0(const float sigma0) { _sigma0 = sigma0; }
 
+  void set_num_sigmas(const float num_sigmas) { _num_sigmas = num_sigmas; }
+
   void set_slope(const float slope) { _slope = slope; }
 
   void set_attenuation_filename(const std::string& filename) { _att_filename = filename; }
@@ -122,7 +124,7 @@ private:
   bool _do_atten;
   std::vector<float> _np_sino;
   bool _use_truncation;
-  float _slope, _sigma0;
+  float _slope, _sigma0, _num_sigmas;
   std::string _att_filename;
   float* dev_image;
   float* dev_umap;

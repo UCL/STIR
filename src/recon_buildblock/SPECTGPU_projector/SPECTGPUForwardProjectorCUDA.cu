@@ -17,6 +17,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                             const float* dev_umap,
                             bool do_atten,
                             float coll_sigma0_cm,
+                            float num_sigmas,
                             float coll_slope,
                             int num_views,
                             int min_ax,
@@ -115,7 +116,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
           //            cudaMalloc(&dev_umap, stir_image.size_all() * sizeof(float));
           //            array_to_device(blurr_im, stir_umap);
           GaussianConvolutionKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
-              blurred_im.data(), out_im.data(), image_dim, spacing, coll_sigma0_cm, coll_slope);
+              blurred_im.data(), out_im.data(), image_dim, spacing, coll_sigma0_cm, num_sigmas, coll_slope);
 
           auto errpsf_f0 = cudaGetLastError();
           if (errpsf_f0 != cudaSuccess)

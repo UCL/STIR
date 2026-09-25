@@ -57,6 +57,7 @@ ForwardProjectorByBinSPECTGPU::initialise_keymap()
   parser.add_start_key("Forward Projector Using SPECTGPU Parameters");
   parser.add_stop_key("End Forward Projector Using SPECTGPU Parameters");
   parser.add_key("CUDA device", &_cuda_device);
+  parser.add_key("number of PSF sigmas", &_num_sigmas);
   parser.add_key("collimator slope", &_slope);
   parser.add_key("collimator sigma 0(cm)", &_sigma0);
   parser.add_key("attenuation image filename", &_att_filename);
@@ -203,6 +204,7 @@ ForwardProjectorByBinSPECTGPU::actual_forward_project(RelatedViewgrams<float>& s
                               this->dev_umap,
                               _do_atten,
                               _sigma0,
+                              _num_sigmas,
                               _slope,
                               this->num_views,
                               min_ax,

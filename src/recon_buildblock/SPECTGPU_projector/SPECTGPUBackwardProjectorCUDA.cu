@@ -53,6 +53,7 @@ run_backward_projection_cuda(float* dev_image,
                              const float* dev_umap,
                              bool do_atten,
                              float coll_sigma0_cm,
+                             float num_sigmas,
                              float coll_slope,
                              int num_views,
                              unsigned int block_x,
@@ -136,7 +137,7 @@ run_backward_projection_cuda(float* dev_image,
       cudaMemset(blurred_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
 
       GaussianConvolutionKernel_push<<<cuda_grid_dim, cuda_block_dim>>>(
-          blurred_im.data(), rotated_im.data(), image_dim, spacing, coll_sigma0_cm, coll_slope);
+          blurred_im.data(), rotated_im.data(), image_dim, spacing, coll_sigma0_cm, num_sigmas, coll_slope);
 
       auto errpsf_f0 = cudaGetLastError();
       if (errpsf_f0 != cudaSuccess)
