@@ -91,7 +91,7 @@ public:
   inline Succeeded reset();
   //! Must be called before calling for the first event.
   virtual Succeeded set_up(const std::string& header_path);
-  //! Save current position in a vector 
+  //! Save current position in a vector
   inline SavedPosition save_get_position();
   //! Set current position
   inline Succeeded set_get_position(const SavedPosition&);
@@ -110,8 +110,6 @@ public:
   //! Get the number of dets per ring as calculated from the number of repeaters
   virtual int get_num_dets_per_ring() const = 0;
   //! Get the number of axial modules
-  //! Following the Quadara example in the Scanner.h if osprey is defined then we 
-  //! consider the number of full rings repetitions os the axial blocks per bucket. 
   virtual int get_num_axial_blocks_per_bucket_v() const = 0;
   //! Get the number of transaxial modules
   virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
@@ -175,9 +173,7 @@ protected:
   bool post_processing() override;
 
   bool is_gate10;
-  // This is introduced in the quadra simulations as a complete "Vision" repeater. 
-  // Default value: 1. Meaning all the scanner exists once. 
-  int num_osprey;
+
   //! Input data file name
   std::string filename;
   //! The starting position.

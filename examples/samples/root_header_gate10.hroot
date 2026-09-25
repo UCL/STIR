@@ -1,0 +1,78 @@
+ROOT header := 
+
+; More information regarding .hroot files may be found in the UsersGuide
+originating system := User_defined_scanner
+Number of rings                          := 4
+Number of detectors per ring             := 504
+Inner ring diameter (cm)                 := 65.6
+Average depth of interaction (cm)        := 0.7
+Distance between rings (cm)              := 0.40625
+Default bin size (cm)                    := 0.208626
+Maximum number of non-arc-corrected bins := 344
+Default number of arc-corrected bins 	 := 344
+View offset (degrees)					 := 0
+
+; TOF information (optional)
+Maximum number of (unmashed) TOF time bins := 5
+Size of unmashed TOF time bins (ps)        := 820.0
+TOF timing resolution (ps)                 := 400.0
+
+; optional keywords to create "virtual" crystals to accomodate for gaps between blocks
+; if you do not specify these, the STIR defaults (determined by the "originating system")
+; will be used (which are zero for a User_defined_scanner)
+Number of virtual axial crystals per block := 0
+Number of virtual transaxial crystals per block:= 0
+
+
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+
+; Activate this for GATE10
+; Then you will need more stuff coming up
+is Gate10 := 1
+
+name of data file := benchmarkPET.root
+
+name of input TChain := XXXX_coincidences
+
+; Gate scanner geometry terminology used to check scanner properties
+Repeater Description :=
+    simplify upwards := <0 or 1>
+    tangential axis := <0, 1, or 2>
+    number of dimensions := <N>
+    repeater type [1] := translation
+    repeater level [1] := none
+    !repeater size [1] := { ... }
+    repeater type [2] := ring
+    repeater level [2] := Rsector
+    !repeater size [2] := { ... }
+    repeater type [3] := translation
+    repeater level [3] := module
+    !repeater size [3] := { ... }
+    repeater type [4] := translation
+    repeater level [4] := submodule
+    !repeater size [4] := { ... }
+    repeater type [5] := translation
+    repeater level [5] := none
+    !repeater size [5] := { ... }
+    repeater type [6] := translation
+    repeater level [6] := crystal
+    !repeater size [6] := { ... }
+  End Repeater Description :=
+
+
+;; The following will not work without the right actors. 
+exclude unscattered events := 0
+exclude non-random events := 0
+exclude scattered events := 0
+exclude random events := 0
+;;; 
+
+
+check energy window information := 1
+low energy window (keV) := 0  		; Default 0
+upper energy window (keV):= 10000	; Default 10000
+
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 

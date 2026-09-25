@@ -23,51 +23,50 @@ START_NAMESPACE_STIR
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_rings() const
 {
-  // currently we only know Quadra with ospreys so we quently introduce a virtual ring for every osprey
-  return static_cast<int>(this->num_osprey * this->crystal_repeater_z * this->module_repeater_z * this->submodule_repeater_z);
+  if (!is_gate10)
+    return static_cast<int>(this->crystal_repeater_z * this->module_repeater_z * this->submodule_repeater_z);
+  const int above_rsector_z = repeater_description.get_z_repeater_above_rsector();
+
+  return static_cast<int>(above_rsector_z * this->crystal_repeater_z * this->module_repeater_z * this->submodule_repeater_z)
+         + (repeater_description.simplify_upwards ? above_rsector_z * num_virtual_axial_crystals_per_block - 1 : 0);
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_dets_per_ring() const
 {
-  return static_cast<int>(this->rsector_repeater * this->module_repeater_y * this->submodule_repeater_y
-                          * this->crystal_repeater_y);
+  if (!is_gate10)
+    return static_cast<int>(this->rsector_repeater * this->module_repeater_y * this->submodule_repeater_y
+                            * this->crystal_repeater_y);
+
+  return (this->rsector_repeater + num_virtual_transaxial_crystals_per_block - 1)
+         + (repeater_description.tangential_axis == 0
+                ? static_cast<int>(this->rsector_repeater * this->module_repeater_x * this->submodule_repeater_x
+                                   * this->crystal_repeater_x)
+                : static_cast<int>(this->rsector_repeater * this->module_repeater_y * this->submodule_repeater_y
+                                   * this->crystal_repeater_y));
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_transaxial_blocks_per_bucket_v() const
 {
-  if(this->num_osprey > 1)
-    return this->module_repeater_y; 
-  return this->submodule_repeater_y;
+  if (!is_gate10)
+    return this->submodule_repeater_y;
+
+  return repeater_description.simplify_upwards       ? repeater_description.tangential_axis == 0
+                                                           ? repeater_description.get_x_repeater_above_rsector()
+                                                           : repeater_description.get_y_repeater_above_rsector()
+               : repeater_description.tangential_axis == 0 ? this->submodule_repeater_x
+                                                     : this->submodule_repeater_y;
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_axial_blocks_per_bucket_v() const
 {
-  if(this->num_osprey > 1)
-    return this->num_osprey; 
-  return this->submodule_repeater_z;
+  if (!is_gate10)
+    return this->submodule_repeater_z;
+
+  return repeater_description.simplify_upwards ? repeater_description.get_z_repeater_above_rsector() : this->submodule_repeater_z;
 }
-
-int
-InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_block_v() const
-{
-    if(this->num_osprey == 1)
-      return InputStreamFromROOTFile::get_num_axial_crystals_per_block_v(); 
-
-  return (this->crystal_repeater_z * this->submodule_repeater_z * this->module_repeater_z) + this->num_virtual_axial_crystals_per_block;
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::get_num_transaxial_crystals_per_block_v() const
-{
-    if(this->num_osprey == 1)
-      return InputStreamFromROOTFile::get_num_transaxial_crystals_per_block_v(); 
-
-  return (this->crystal_repeater_y * this->submodule_repeater_y * this->module_repeater_y) + this->num_virtual_transaxial_crystals_per_block;
-}
-
 
 int
 InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_singles_unit() const
@@ -98,7 +97,7 @@ InputStreamFromROOTFileForCylindricalPET::get_num_trans_crystals_per_singles_uni
   else if (this->singles_readout_depth == 4) // One PMT per crystal
     return 1;
   else
-    warning ("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid. But we permit it now.");
+    warning("Singles readout depth (" + std::to_string(this->singles_readout_depth) + ") is invalid. But we permit it now.");
 
   return 0;
 }
@@ -143,6 +142,25 @@ void
 InputStreamFromROOTFileForCylindricalPET::set_rsector_repeater(int val)
 {
   rsector_repeater = val;
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::get_num_axial_crystals_per_block_v() const
+{
+  if (!is_gate10)
+    return base_type::get_num_axial_crystals_per_block_v();
+  return this->module_repeater_z * this->submodule_repeater_z * this->crystal_repeater_z
+         + this->num_virtual_axial_crystals_per_block;
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::get_num_transaxial_crystals_per_block_v() const
+{
+  if (!is_gate10)
+    return base_type::get_num_transaxial_crystals_per_block_v();
+  return (repeater_description.tangential_axis == 0 ? this->crystal_repeater_x * this->submodule_repeater_x
+                                                    : this->crystal_repeater_y * this->submodule_repeater_y)
+         + this->num_virtual_transaxial_crystals_per_block;
 }
 
 END_NAMESPACE_STIR

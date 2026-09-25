@@ -76,14 +76,13 @@ InputStreamFromROOTFile::set_defaults()
   num_virtual_axial_crystals_per_block = 0;
   num_virtual_transaxial_crystals_per_block = 0;
   is_gate10 = false;
-  num_osprey = 1; 
 }
 
 void
 InputStreamFromROOTFile::initialise_keymap()
 {
   this->parser.add_key("name of data file", &this->filename);
-  this->parser.add_key("is Gate10", &this->is_gate10); 
+  this->parser.add_key("is Gate10", &this->is_gate10);
   this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
   this->parser.add_key("name of input TChain", &this->chain_name);
   this->parser.add_key("exclude non-random events", &this->exclude_nonrandom);

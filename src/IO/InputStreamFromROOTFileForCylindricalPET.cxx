@@ -9,9 +9,13 @@
 */
 #include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
 #include <TChain.h>
+#include <TLeaf.h>
+
 #include "stir/warning.h"
 #include "stir/error.h"
-#include <TLeaf.h>
+#include "stir/info.h"
+#include "stir/format.h"
+
 START_NAMESPACE_STIR
 
 const char* const InputStreamFromROOTFileForCylindricalPET::registered_name = "GATE_Cylindrical_PET";
@@ -58,9 +62,10 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
 Succeeded
 InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& record)
 {
-  int ring1, ring2, crystal1, crystal2;
+  int ring1 = 0, ring2 = 0, crystal1 = 0, crystal2 = 0;
   double delta_timing_bin;
   bool eof = false;
+  std::vector<int> coords1, coords2;
 
 #ifdef STIR_OPENMP
 #  pragma omp critical(LISTMODEIO)
@@ -77,79 +82,102 @@ InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& recor
         Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
         current_position++;
 
-        if(!is_gate10)
-        {
-        if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
-          continue;
+        if (!is_gate10)
+          {
+            if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
+              continue;
+
+            // Get positional ID information
+            GetEntryCheck(br_crystalID1->GetEntry(brentry));
+            GetEntryCheck(br_crystalID2->GetEntry(brentry));
+
+            GetEntryCheck(br_submoduleID1->GetEntry(brentry));
+            GetEntryCheck(br_submoduleID2->GetEntry(brentry));
+
+            GetEntryCheck(br_moduleID1->GetEntry(brentry));
+            GetEntryCheck(br_moduleID2->GetEntry(brentry));
+
+            GetEntryCheck(br_rsectorID1->GetEntry(brentry));
+            GetEntryCheck(br_rsectorID2->GetEntry(brentry));
+          }
+        else
+          {
+            // warning("This is gate10");
+            br_pre_step_uniq_vol1->GetEntry(brentry);
+            br_pre_step_uniq_vol2->GetEntry(brentry);
+
+            std::string volume1{ pre_step_uniq_vol1 };
+            std::string volume2{ pre_step_uniq_vol2 };
+
+            coords1 = repeater_description.extract_numbers_from_string(volume1);
+            coords2 = repeater_description.extract_numbers_from_string(volume2);
+
+            if (coords1.size() == 0 || coords2.size() == 0)
+              {
+                warning(format("InputStreamFromROOTFileForCylindricalPET: we could not extract the coordinates from {} or {}",
+                               volume1,
+                               volume2));
+                break;
+              }
+          }
 
         // Get time information
         GetEntryCheck(br_time1->GetEntry(brentry));
         GetEntryCheck(br_time2->GetEntry(brentry));
 
-        // Get positional ID information
-        GetEntryCheck(br_crystalID1->GetEntry(brentry));
-        GetEntryCheck(br_crystalID2->GetEntry(brentry));
-
-        GetEntryCheck(br_submoduleID1->GetEntry(brentry));
-        GetEntryCheck(br_submoduleID2->GetEntry(brentry));
-
-        GetEntryCheck(br_moduleID1->GetEntry(brentry));
-        GetEntryCheck(br_moduleID2->GetEntry(brentry));
-
-        GetEntryCheck(br_rsectorID1->GetEntry(brentry));
-        GetEntryCheck(br_rsectorID2->GetEntry(brentry));
-        }
-        else
-        {
-          warning("This is gate10"); 
-          br_pre_step_uniq_vol1->GetEntry(brentry);
-          br_pre_step_uniq_vol2->GetEntry(brentry);
-          br_pre_step_uniq_vol1->GetListOfLeaves()->Print();
-
-          std::cout << pre_step_uniq_vol1 << " " << pre_step_uniq_vol2 << std::endl; 
-
-          error("nikos stop"); 
-        }
-
         break;
       }
 
-    ring1 = static_cast<int>(crystalID1 / crystal_repeater_y)
-            + static_cast<int>(submoduleID1 / submodule_repeater_y) * get_num_axial_crystals_per_block_v()
-            + static_cast<int>(moduleID1 / module_repeater_y) * submodule_repeater_z * get_num_axial_crystals_per_block_v();
+    if (!is_gate10)
+      {
+        ring1 = static_cast<int>(crystalID1 / crystal_repeater_y)
+                + static_cast<int>(submoduleID1 / submodule_repeater_y) * get_num_axial_crystals_per_block_v()
+                + static_cast<int>(moduleID1 / module_repeater_y) * submodule_repeater_z * get_num_axial_crystals_per_block_v();
 
-    ring2 = static_cast<int>(crystalID2 / crystal_repeater_y)
-            + static_cast<int>(submoduleID2 / submodule_repeater_y) * get_num_axial_crystals_per_block_v()
-            + static_cast<int>(moduleID2 / module_repeater_y) * submodule_repeater_z * get_num_axial_crystals_per_block_v();
+        ring2 = static_cast<int>(crystalID2 / crystal_repeater_y)
+                + static_cast<int>(submoduleID2 / submodule_repeater_y) * get_num_axial_crystals_per_block_v()
+                + static_cast<int>(moduleID2 / module_repeater_y) * submodule_repeater_z * get_num_axial_crystals_per_block_v();
 
-    crystal1 = rsectorID1 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
-               + (moduleID1 % module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
-               + (submoduleID1 % submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
-               + (crystalID1 % crystal_repeater_y);
+        crystal1 = rsectorID1 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+                   + (moduleID1 % module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+                   + (submoduleID1 % submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
+                   + (crystalID1 % crystal_repeater_y);
 
-    crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
-               + (moduleID2 % module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
-               + (submoduleID2 % submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
-               + (crystalID2 % crystal_repeater_y);
+        crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+                   + (moduleID2 % module_repeater_y) * submodule_repeater_y * get_num_transaxial_crystals_per_block_v()
+                   + (submoduleID2 % submodule_repeater_y) * get_num_transaxial_crystals_per_block_v()
+                   + (crystalID2 % crystal_repeater_y);
 
-    // GATE counts crystal ID =0 the most negative. Therefore
-    // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
+        // GATE counts crystal ID =0 the most negative. Therefore
+        // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
 #ifdef STIR_ROOT_ROTATION_AS_V4
-    crystal1 -= half_block;
-    crystal2 -= half_block;
+        crystal1 -= half_block;
+        crystal2 -= half_block;
 
-    // Add offset
-    crystal1 += offset_dets;
-    crystal2 += offset_dets;
+        // Add offset
+        crystal1 += offset_dets;
+        crystal2 += offset_dets;
 #endif
 
-    delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+        delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
+      }
+      else
+      {
+        delta_timing_bin = (time2 - time1);
+        time1 /= 1e6; 
+
+         if (repeater_description.compute_ring_and_crystal(coords1, ring1, crystal1) == Succeeded::no
+          || repeater_description.compute_ring_and_crystal(coords2, ring2, crystal2) == Succeeded::no)
+        {
+          eof = true; 
+        }
+      
+      }
   }
 
   if (eof)
     return Succeeded::no;
-
-  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1, delta_timing_bin, eventID1, eventID2);
+  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1 , delta_timing_bin, eventID1, eventID2);
 }
 
 std::string
@@ -171,7 +199,6 @@ InputStreamFromROOTFileForCylindricalPET::set_defaults()
   module_repeater_y = -1;
   module_repeater_z = -1;
   rsector_repeater = -1;
-  num_osprey = -1; 
 #ifdef STIR_ROOT_ROTATION_AS_V4
   half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2 - 1;
   if (half_block < 0)
@@ -179,6 +206,11 @@ InputStreamFromROOTFileForCylindricalPET::set_defaults()
 #else
   half_block = 0;
 #endif
+  
+  repeater_description.num_dimensions = 0;
+  repeater_description.repeater_type.assign(RepeaterDescription::max_dimensions, std::string());
+  repeater_description.repeater_size.assign(RepeaterDescription::max_dimensions, std::vector<int>());
+  repeater_description.repeater_level.assign(RepeaterDescription::max_dimensions, std::string());
 }
 
 void
@@ -187,7 +219,6 @@ InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
   base_type::initialise_keymap();
   this->parser.add_start_key("GATE_Cylindrical_PET Parameters");
   this->parser.add_stop_key("End GATE_Cylindrical_PET Parameters");
-  this->parser.add_key("number of full scanner rings", &this->num_osprey); 
 
   this->parser.add_key("number of Rsectors", &this->rsector_repeater);
   this->parser.add_key("number of modules X", &this->module_repeater_x);
@@ -197,6 +228,16 @@ InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
   this->parser.add_key("number of submodules X", &this->submodule_repeater_x);
   this->parser.add_key("number of submodules Y", &this->submodule_repeater_y);
   this->parser.add_key("number of submodules Z", &this->submodule_repeater_z);
+
+  //! This is for GATE10
+  // this->parser.add_start_key("Repeater Description");
+  this->parser.add_key("number of dimensions", &this->repeater_description.num_dimensions);
+  this->parser.add_key("tangential axis", &this->repeater_description.tangential_axis);
+  this->parser.add_vectorised_key("repeater type", &this->repeater_description.repeater_type);
+  this->parser.add_vectorised_key("repeater level", &this->repeater_description.repeater_level);
+  this->parser.add_vectorised_key("repeater size", &this->repeater_description.repeater_size);
+  this->parser.add_key("simplify upwards", &this->repeater_description.simplify_upwards);
+  // this->parser.add_stop_key("End Repeater Description");
 }
 
 bool
@@ -204,6 +245,86 @@ InputStreamFromROOTFileForCylindricalPET::post_processing()
 {
   if (base_type::post_processing())
     return true;
+
+  if (is_gate10)
+    {
+      auto& rd = repeater_description;
+
+      if (rd.num_dimensions <= 0)
+        {
+          std::cerr << "RepeaterDescription: 'number of dimensions' must be > 0\n";
+          return true;
+        }
+      if (rd.num_dimensions > RepeaterDescription::max_dimensions)
+        {
+          std::cerr << "RepeaterDescription: 'number of dimensions' (" << rd.num_dimensions << ") exceeds the maximum supported ("
+                    << RepeaterDescription::max_dimensions << ")\n";
+          return true;
+        }
+
+      // anything set past num_dimensions means the header disagrees with itself
+      for (int i = rd.num_dimensions; i < RepeaterDescription::max_dimensions; ++i)
+        {
+          if (!rd.repeater_type[i].empty() || !rd.repeater_size[i].empty())
+            {
+              std::cerr << "RepeaterDescription: entry [" << (i + 1) << "] was set but 'number of dimensions' is only "
+                        << rd.num_dimensions << "\n";
+              return true;
+            }
+        }
+
+      rd.repeater_type.resize(rd.num_dimensions);
+      rd.repeater_size.resize(rd.num_dimensions);
+      rd.repeater_level.resize(rd.num_dimensions);
+
+      static const std::vector<std::string> allowed_levels = { "none", "Rsector", "module", "submodule", "crystal" };
+
+      int num_named_levels = 0;
+      for (int i = 0; i < rd.num_dimensions; ++i)
+        {
+
+          if (rd.repeater_size[i].empty())
+            {
+              std::cerr << "RepeaterDescription: 'repeater size [" << (i + 1) << "]' must have at least 1 value\n";
+              return true;
+            }
+          if (std::find(allowed_levels.begin(), allowed_levels.end(), rd.repeater_level[i]) == allowed_levels.end())
+            {
+              std::cerr << "RepeaterDescription: 'repeater level [" << (i + 1) << "]' = '" << rd.repeater_level[i]
+                        << "' is not one of: none, Rsector, module, submodule, crystal\n";
+              return true;
+            }
+          if (rd.repeater_level[i] != "none")
+            ++num_named_levels;
+        }
+
+      // if (num_named_levels != 4) // Rsector, module, submodule, crystal
+      //   {
+      //     std::cerr << "RepeaterDescription: expected exactly 4 named levels "
+      //               << "(Rsector, module, submodule, crystal), found " << num_named_levels << "\n";
+      //     return true;
+      //   }
+
+      for (int i = 0; i < rd.num_dimensions; ++i)
+        {
+          info(format("Repeater: {} with size {},{},{} assigned on level {}",
+                      rd.repeater_type[i],
+                      rd.repeater_size[i][0],
+                      rd.repeater_size[i][1],
+                      rd.repeater_size[i][2],
+                      rd.repeater_level[i]));
+        }
+
+      int tmp = 0;
+      rd.get_repeater_size_by_level("crystal", crystal_repeater_x, crystal_repeater_y, crystal_repeater_z);
+      rd.get_repeater_size_by_level("submodule", submodule_repeater_x, submodule_repeater_y, submodule_repeater_z);
+      std::cout << submodule_repeater_x << " " << submodule_repeater_y << " " << submodule_repeater_z << std::endl;
+      rd.get_repeater_size_by_level("module", module_repeater_x, module_repeater_y, module_repeater_z);
+      std::cout << module_repeater_x << " " << module_repeater_y << " " << module_repeater_z << std::endl;
+      rd.get_repeater_size_by_level("Rsector", tmp, tmp, rsector_repeater);
+      std::cout << rsector_repeater << std::endl;
+    }
+
   return false;
 }
 
@@ -259,55 +380,55 @@ InputStreamFromROOTFileForCylindricalPET::check_all_required_keywords_are_set(st
 
   if (crystal_repeater_y == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "crystal_repeater_y, ";
       ok = false;
     }
 
   if (crystal_repeater_z == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "crystal_repeater_z, ";
       ok = false;
     }
 
   if (submodule_repeater_x == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "submodule_repeater_x, ";
       ok = false;
     }
 
   if (submodule_repeater_y == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "submodule_repeater_y, ";
       ok = false;
     }
 
   if (submodule_repeater_z == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "submodule_repeater_z, ";
       ok = false;
     }
 
   if (module_repeater_x == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "module_repeater_x, ";
       ok = false;
     }
 
   if (module_repeater_y == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "module_repeater_x, ";
       ok = false;
     }
 
   if (module_repeater_z == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "module_repeater_x, ";
       ok = false;
     }
 
   if (rsector_repeater == -1)
     {
-      stream << "crystal_repeater_x, ";
+      stream << "rsector_repeater, ";
       ok = false;
     }
 
