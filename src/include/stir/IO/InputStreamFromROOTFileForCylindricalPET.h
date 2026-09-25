@@ -37,7 +37,7 @@ START_NAMESPACE_STIR
     * crystal
     * layer
 
-    ## Gate 9 
+    ## Gate 9
 
     The geometry is defined through the repeaters. In the example header file found below.
     The values in the repeaters must match the values in the simulation macro file.
@@ -72,13 +72,13 @@ START_NAMESPACE_STIR
 
     ## Gate 10
 
-    Gate 10 is more complicated and allows for nested repeaters that affect the orientation of the indeces. 
-    Therefore we introduced the "Repeaters Desciption" a nested class that can be very flexible, and yet simplify according to 
-    STIR's conventions. 
-    The new class is nested to limit its scope and has arbitrary depth. 
+    Gate 10 is more complicated and allows for nested repeaters that affect the orientation of the indeces.
+    Therefore we introduced the "Repeaters Desciption" a nested class that can be very flexible, and yet simplify according to
+    STIR's conventions.
+    The new class is nested to limit its scope and has arbitrary depth.
     For example one can defince rsector/module/submodule/crystal depths.
-    Bue also fullscanner/rsector/module/submodule/crystal can be used to "replicate" the structures below rsector axially, 
-    for example repetition of typical PET scanner models. 
+    Bue also fullscanner/rsector/module/submodule/crystal can be used to "replicate" the structures below rsector axially,
+    for example repetition of typical PET scanner models.
 
     Example shape (a 6-level hierarchy):
     \verbatim
@@ -107,14 +107,14 @@ START_NAMESPACE_STIR
     End Repeater Description :=
     \endverbatim
 
-    ### Keywords: 
+    ### Keywords:
     <b> number of dimentions </b> (int, req)
-    How many repeater levels follow. 
+    How many repeater levels follow.
 
     <b>repeater type [i]</b> (string: "translation" | "ring")
 
     <b>repeater level [i]</b> (string: "Rsector" | "module" | "submodule" | "crystal" | "none")
-    "none" marks a level that exists purely for geometric accuracy in the real detector. 
+    "none" marks a level that exists purely for geometric accuracy in the real detector.
      A "none"-level entry is always assumed to immediately follow (come directly after, i.e. be nested one step inside)
 
     <b>repeater size [i]</b> (list of 3 ints, required, "{x,y,z}")

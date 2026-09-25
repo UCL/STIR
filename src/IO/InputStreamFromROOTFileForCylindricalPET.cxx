@@ -161,23 +161,22 @@ InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& recor
 
         delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
       }
-      else
+    else
       {
         delta_timing_bin = (time2 - time1);
-        time1 /= 1e6; 
+        time1 /= 1e6;
 
-         if (repeater_description.compute_ring_and_crystal(coords1, ring1, crystal1) == Succeeded::no
-          || repeater_description.compute_ring_and_crystal(coords2, ring2, crystal2) == Succeeded::no)
-        {
-          eof = true; 
-        }
-      
+        if (repeater_description.compute_ring_and_crystal(coords1, ring1, crystal1) == Succeeded::no
+            || repeater_description.compute_ring_and_crystal(coords2, ring2, crystal2) == Succeeded::no)
+          {
+            eof = true;
+          }
       }
   }
 
   if (eof)
     return Succeeded::no;
-  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1 , delta_timing_bin, eventID1, eventID2);
+  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1, delta_timing_bin, eventID1, eventID2);
 }
 
 std::string
@@ -206,7 +205,7 @@ InputStreamFromROOTFileForCylindricalPET::set_defaults()
 #else
   half_block = 0;
 #endif
-  
+
   repeater_description.num_dimensions = 0;
   repeater_description.repeater_type.assign(RepeaterDescription::max_dimensions, std::string());
   repeater_description.repeater_size.assign(RepeaterDescription::max_dimensions, std::vector<int>());
