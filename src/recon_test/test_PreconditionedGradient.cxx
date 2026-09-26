@@ -54,9 +54,9 @@ private:
   typedef PoissonLLReconstructionTests<target_type> base_type;
 
 public:
-  TestPreconditionedGradient(const std::string& projector_pair_filename = "",
-                             const std::string& proj_data_filename = "",
-                             const std::string& density_filename = "")
+  explicit TestPreconditionedGradient(const std::string& projector_pair_filename = "",
+                                      const std::string& proj_data_filename = "",
+                                      const std::string& density_filename = "")
       : base_type(projector_pair_filename, proj_data_filename, density_filename)
   {}
   ~TestPreconditionedGradient() override {}
