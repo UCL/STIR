@@ -36,7 +36,6 @@
 #include <iomanip>
 
 using std::cerr;
-using std::setw;
 using std::endl;
 using std::min;
 using std::max;

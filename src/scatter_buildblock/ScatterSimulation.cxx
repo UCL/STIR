@@ -152,9 +152,9 @@ ScatterSimulation::process_data()
   bin_timer.stop();
   wall_clock_timer.stop();
 
-  if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
+  if (detection_points_in_gantry_coords_vector.size() != static_cast<unsigned int>(total_detectors))
     {
-      warning("Expected num detectors: %d, but found %d\n", total_detectors, detection_points_vector.size());
+      warning("Expected num detectors: %d, but found %d\n", total_detectors, detection_points_in_gantry_coords_vector.size());
       return Succeeded::no;
     }
 
@@ -340,56 +340,6 @@ ScatterSimulation::set_up()
     //        info("ScatterSimulation: output projection data created.");
     //    }
 
-    // Note: horrible shift used for detection_points_vector
-    /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
-     coordinate in a coordinate system where z=0 in the first ring of the scanner.
-     We want to shift this to a coordinate system where z=0 in the middle
-     of the scanner.
-     We can use get_m() as that uses the 'middle of the scanner' system.
-     (sorry)
-  */
-#ifndef NDEBUG
-  {
-    CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-    // check above statement
-    if (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
-      {
-        const auto* ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get());
-        ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
-      }
-    else
-      {
-        const auto* ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get());
-        ptr->find_cartesian_coordinates_of_detection(detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
-      }
-
-    //        if(this->proj_data_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical"){
-    assert(detector_coord_A.z() == 0);
-    assert(detector_coord_B.z() == 0);
-    //        }
-    // check that get_m refers to the middle of the scanner
-    const float m_first = this->proj_data_info_sptr->get_m(Bin(0, 0, this->proj_data_info_sptr->get_min_axial_pos_num(0), 0));
-    const float m_last = this->proj_data_info_sptr->get_m(Bin(0, 0, this->proj_data_info_sptr->get_max_axial_pos_num(0), 0));
-    //        if(this->proj_data_info_sptr->get_scanner_sptr()->get_scanner_geometry()=="Cylindrical")
-    assert(fabs(m_last + m_first) < m_last * 10E-4);
-  }
-#endif
-  if (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
-    {
-      this->shift_detector_coordinates_to_origin
-          = CartesianCoordinate3D<float>(this->proj_data_info_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
-    }
-  else
-    {
-      if (dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr*>(proj_data_info_sptr.get()))
-        {
-          // align BlocksOnCylindrical scanner ring 0 to z=0.
-          this->shift_detector_coordinates_to_origin
-              = CartesianCoordinate3D<float>(this->proj_data_info_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
-        }
-      // align Generic geometry here.
-    }
-
 #if 1
   // checks on image zooming to avoid getting incorrect results
   {
@@ -410,7 +360,7 @@ void
 ScatterSimulation::check_z_to_middle_consistent(const DiscretisedDensity<3, float>& _image, const std::string& name) const
 {
   const VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float> const&>(_image);
-  const float z_to_middle = (image.get_max_index() + image.get_min_index()) * image.get_voxel_size().z() / 2.F;
+  const float z_to_middle = image.get_image_centre_in_physical_coordinates().z();
 
 #if 0
   const Scanner& scanner = *this->proj_data_info_sptr->get_scanner_ptr();
@@ -418,8 +368,7 @@ ScatterSimulation::check_z_to_middle_consistent(const DiscretisedDensity<3, floa
     (scanner.get_num_rings()-1) * scanner.get_ring_spacing()/2;
 #endif
   const VoxelsOnCartesianGrid<float>& act_image = dynamic_cast<VoxelsOnCartesianGrid<float> const&>(*this->activity_image_sptr);
-  const float z_to_middle_standard
-      = (act_image.get_max_index() + act_image.get_min_index()) * act_image.get_voxel_size().z() / 2.F;
+  const float z_to_middle_standard = act_image.get_image_centre_in_physical_coordinates().z();
 
   if (abs(z_to_middle - z_to_middle_standard) > .1)
     error(format("ScatterSimulation: limitation in #planes and voxel-size for the {} image.\n"
@@ -768,9 +717,9 @@ ScatterSimulation::set_template_proj_data_info(shared_ptr<const ProjDataInfo> ar
                           * this->proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
 
   // get rid of any previously stored points
-  this->detection_points_vector.clear();
+  this->detection_points_in_gantry_coords_vector.clear();
   // reserve space to avoid reallocation, but the actual size will grow dynamically
-  this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
+  this->detection_points_in_gantry_coords_vector.reserve(static_cast<std::size_t>(this->total_detectors));
 
   // set to negative value such that this will be recomputed
   this->detector_efficiency_no_scatter = -1.F;
@@ -929,10 +878,10 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                          + 1;
 
       // preserve the length of the scanner the following includes no gaps
-      float scanner_length_cyl = new_scanner_sptr->get_num_rings() * new_scanner_sptr->get_ring_spacing();
+      float scanner_length_cyl = (new_scanner_sptr->get_num_rings() - 1) * new_scanner_sptr->get_ring_spacing();
       new_scanner_sptr->set_num_rings(new_num_rings);
       new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
-      new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length_cyl / new_scanner_sptr->get_num_rings()));
+      new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length_cyl / (new_scanner_sptr->get_num_rings() - 1)));
     }
 
   new_scanner_sptr->set_max_num_non_arccorrected_bins(approx_num_non_arccorrected_bins);

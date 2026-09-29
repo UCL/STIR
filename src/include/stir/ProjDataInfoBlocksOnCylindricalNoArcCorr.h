@@ -68,15 +68,13 @@ public:
   std::string parameter_info() const override;
 
 private:
-  //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
-  //@{
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1,
                                                                  int& det2,
                                                                  int& ring1,
                                                                  int& ring2,
                                                                  const CartesianCoordinate3D<float>& c1,
                                                                  const CartesianCoordinate3D<float>& c2) const override;
-  //@}
+
   // give test classes access to the private members
   friend class ProjDataInfoTests;
   friend class BlocksTests;
