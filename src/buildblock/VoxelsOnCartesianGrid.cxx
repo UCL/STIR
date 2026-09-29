@@ -284,7 +284,19 @@ VoxelsOnCartesianGrid<elemT>::construct_from_projdata_info(const shared_ptr<cons
 
   // Keep storage contiguous for array views: grow()/resize() usually breaks the
   // single-block allocation that Array(range) provides.
-  Array<3, elemT>::operator=(Array<3, elemT>(range));
+  
+  ///////////////////// MODIFIED///////////////////////
+  //Array<3, elemT>::operator=(Array<3, elemT>(range));
+  
+  // This change forces to allocate voxel storage in CUDA managed memory when creating images from proj data.
+  Array<3, elemT>::operator=(
+    Array<3, elemT>(
+        range,
+        std::allocate_shared<elemT[]>(
+            CuAlloc<elemT>(),
+            range.size_all())));
+  /////////////////// END /////////////////////////////
+  
 }
 
 /*!
