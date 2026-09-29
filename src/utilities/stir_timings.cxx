@@ -107,6 +107,9 @@ public:
   shared_ptr<ProjData> output_proj_data_sptr;
   shared_ptr<ProjDataInMemory> mem_proj_data_sptr;
   shared_ptr<ProjDataInMemory> mem_proj_data_sptr2;
+  // added for xapyb testing
+  shared_ptr<ProjDataInMemory> mem_proj_data_sptr3;
+  //
   std::vector<float> v1;
   std::vector<float> v2;
   shared_ptr<ProjectorByBinPair> projectors_sptr;
@@ -155,11 +158,59 @@ public:
     std::this_thread::sleep_for(std::chrono::milliseconds(1123));
   }
 
+  // Separating the copy and the operator timings
   template <class T>
   static void copy_add(T& t)
   {
+    using clock = std::chrono::high_resolution_clock;
+
+    auto t0 = clock::now();
+    clock::time_point t1, t2;
+    {
     T c(t);
+    t1 = clock::now();
+
     c += t;
+    t2 = clock::now();
+
+    }
+    // Measuring destructor
+    auto t3 = clock::now();
+
+    auto copy_ms =
+        std::chrono::duration<double, std::milli>(t1 - t0).count();
+
+    auto add_ms =
+        std::chrono::duration<double, std::milli>(t2 - t1).count();
+
+  }
+  //
+
+  // Copy Only
+  template <class T>
+  static void copy_only(T& t)
+  {
+    using clock = std::chrono::high_resolution_clock;
+
+    auto t0 = clock::now();
+    clock::time_point t1;
+    {
+
+    T c(t);
+
+    t1 = clock::now();
+
+    }
+    // This is when it should be destroyed
+    auto t2 = clock::now();
+
+    auto copy_ms =
+    std::chrono::duration<double, std::milli>(t1 - t0).count();
+
+    // Now measuring the destructor
+
+    auto copydes_ms =
+       std::chrono::duration<double, std::milli>(t2 - t1).count();
   }
 
   template <class T>
@@ -167,6 +218,14 @@ public:
   {
     T c(t);
     c *= t;
+  }
+
+
+  // operator sapyb/xapyb
+  template <class T>
+  static void do_xapyb(T& dst, T& x, T& y)
+  {
+    dst.xapyb(x, 2.F, y, 3.F);
   }
 
   void copy_image()
@@ -183,6 +242,14 @@ public:
   void copy_mult_image()
   {
     copy_mult(*this->image_sptr);
+  }
+
+  void xapyb_test()
+  {
+        this->mem_proj_data_sptr->xapyb(*this->mem_proj_data_sptr2,
+                                        2.F,
+                                        *this->mem_proj_data_sptr3,
+                                        3.F);
   }
 
   void copy_std_vector()
@@ -257,6 +324,12 @@ public:
   void copy_add_proj_data_mem()
   {
     copy_add(*this->mem_proj_data_sptr);
+  }
+
+
+  void copy_only_proj_data_mem()
+  {
+    copy_only(*this->mem_proj_data_sptr);
   }
 
   void copy_mult_proj_data_mem()
@@ -343,7 +416,7 @@ Timings::run_it(TimedFunction f, const std::string& item, const unsigned runs)
   this->start_timers(true);
   for (unsigned r = runs; r != 0; --r)
     (this->*f)();
-  this->stop_timers();
+  this->stop_timers();     
 
   std::cout << name << '\t' << std::setw(32) << std::left << item << '\t' << std::fixed << std::setprecision(3) << std::setw(24)
             << std::right << this->get_CPU_timer_value() / runs * 1000 << '\t' << std::fixed << std::setprecision(3)
@@ -377,6 +450,12 @@ Timings::run_all(const unsigned runs)
     {
       this->mem_proj_data_sptr2
           = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, this->template_proj_data_sptr->get_proj_data_info_sptr());
+      // added for xapyb    
+      this->mem_proj_data_sptr3
+          = std::make_shared<ProjDataInMemory>(this->exam_info_sptr, this->template_proj_data_sptr->get_proj_data_info_sptr());
+      // initialize the new object    
+      this->mem_proj_data_sptr3->fill(*this->mem_proj_data_sptr);    
+      ///////////////              
       this->v1.resize(this->template_proj_data_sptr->size_all());
       this->v2.resize(this->template_proj_data_sptr->size_all());
       this->run_it(&Timings::copy_image, "copy_image", runs * 20);
@@ -385,6 +464,9 @@ Timings::run_all(const unsigned runs)
       // reference timings: std::vector should be fast
       this->run_it(&Timings::create_std_vector, "create_vector_of_size_projdata", runs * 2);
       this->run_it(&Timings::copy_std_vector, "copy_std_vector_of_size_projdata", runs * 2);
+      // Testing xapyb operator timings
+      this->run_it(&Timings::xapyb_test, "xapyb_operator", runs * 2);
+      //
       v1.clear();
       v2.clear();
       this->run_it(&Timings::create_proj_data_in_mem_no_init, "create_proj_data_in_mem_no_init", runs * 2);
@@ -392,9 +474,15 @@ Timings::run_all(const unsigned runs)
       this->run_it(&Timings::copy_only_proj_data_mem_to_mem, "copy_proj_data_mem_to_mem", runs * 2);
       this->run_it(&Timings::copy_proj_data_mem_to_mem, "create_copy_proj_data_mem_to_mem", runs * 2);
       this->mem_proj_data_sptr2.reset(); // no longer used
+      // added for xapyb
+      this->mem_proj_data_sptr3.reset(); // no longer used  
+      //    
       this->run_it(&Timings::copy_proj_data_mem_to_file, "create_copy_proj_data_mem_to_file", runs * 2);
       this->run_it(&Timings::copy_proj_data_file_to_mem, "create_copy_proj_data_file_to_mem", runs * 2);
       this->run_it(&Timings::copy_proj_data_file_to_file, "create_copy_proj_data_file_to_file", runs * 2);
+      // Added timing of copy only
+      this->run_it(&Timings::copy_only_proj_data_mem, "copy_only_proj_data_mem", runs * 2);
+      // End of copy only timing    
       this->run_it(&Timings::copy_add_proj_data_mem, "copy_add_proj_data_mem", runs * 2);
       this->run_it(&Timings::copy_mult_proj_data_mem, "copy_mult_proj_data_mem", runs * 2);
     }
@@ -577,10 +665,25 @@ Timings::init()
       this->image_sptr = std::make_shared<VoxelsOnCartesianGrid<float>>(
           this->exam_info_sptr, *this->template_proj_data_sptr->get_proj_data_info_sptr());
       this->image_sptr->fill(1.F);
+
+      // fill with random values between 0 and 1
+        std::mt19937 rng(42);  // fixed seed for reproducibility
+        std::uniform_real_distribution<float> dist(0.01F, 20.F);
+        for (auto iter = this->image_sptr->begin_all();
+           iter != this->image_sptr->end_all();
+           ++iter)
+        {
+          *iter = dist(rng);
+        }
+    
+      this->output_sptr.reset(this->image_sptr->clone());
+      this->output_sptr->fill(0.F);
+      this->input_sptr.reset(this->image_sptr->clone());
+      this->input_sptr->fill(1.F);
+    
     }
   else
     {
-      // this->image_sptr->fill(1.F);
       this->exam_info_sptr = this->image_sptr->get_exam_info().create_shared_clone();
 
       if (this->image_sptr->get_exam_info().imaging_modality.is_unknown()

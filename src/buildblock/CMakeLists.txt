@@ -38,6 +38,7 @@ set(${dir_LIB_SOURCES}
   DynamicDiscretisedDensity.cxx
   ProjDataFromStream.cxx
   ProjDataInMemory.cxx
+  ProjDataInMemoryCUDA.cu
   ProjDataInterfile.cxx
   Scanner.cxx
   SegmentBySinogram.cxx
