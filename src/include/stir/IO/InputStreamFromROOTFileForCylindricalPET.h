@@ -248,6 +248,8 @@ protected:
           return Succeeded::no;
         }
 
+      ring_out = 0;
+      crystal_out = 0;
       int ring_jump = 1;
       int crystal_jump = 1;
       bool have_ring_axis = false;
@@ -280,7 +282,7 @@ protected:
       return Succeeded::yes;
     }
 
-    std::vector<int> extract_numbers_from_string(const std::string input) const
+    std::vector<int> extract_numbers_from_string(const std::string& input) const
     {
       std::vector<int> numbers;
       const auto pos = input.find("rep_");
@@ -306,6 +308,19 @@ protected:
                 }
             }
         }
+
+      if (static_cast<int>(numbers.size()) < this->num_dimensions)
+        {
+          error(format("extract_numbers_from_string: found only {} numbers in '{}', expected at least {}",
+                       numbers.size(),
+                       input,
+                       this->num_dimensions));
+          return {};
+        }
+
+      // keep the repeater hierarchy only
+      numbers.erase(numbers.begin(), numbers.end() - this->num_dimensions);
+
       return numbers;
     }
 
