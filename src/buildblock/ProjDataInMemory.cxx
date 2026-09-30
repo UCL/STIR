@@ -37,9 +37,16 @@
 #include <iostream>
 #include <cstring>
 #include <algorithm>
+#include <memory>
+#include "cuvec.cuh"
+#include <chrono>
+#include "stir/algebraic_kernels.h"
+#include "stir/cuda_utilities.h"
+
 
 using std::string;
 using std::streamoff;
+
 
 START_NAMESPACE_STIR
 
@@ -94,8 +101,29 @@ ProjDataInMemory::initialise_layout_metadata()
 void
 ProjDataInMemory::create_buffer(const bool initialise_with_0)
 {
-  this->buffer.resize(0, this->size_all() - 1, initialise_with_0);
+#ifdef STIR_WITH_CUDA
+    auto sp = std::allocate_shared<float[]>(
+        CuAlloc<float>(),
+        this->size_all());
+
+    Array<1,float> new_buffer(
+      IndexRange<1>(0, this->size_all() - 1),
+      sp);
+
+    swap(this->buffer, new_buffer);
+
+    if (initialise_with_0)
+    {
+        std::fill(this->buffer.begin_all(),
+                  this->buffer.end_all(),
+                  0.F);
+    }
+#else
+  this->buffer.resize(0, this->size_all() - 1, initialise_with_0);    
+#endif  
 }
+
+////////////////////////////////////////////////////////
 
 ///////////////// /set functions
 
@@ -361,8 +389,28 @@ ProjDataInMemory::ProjDataInMemory(const ProjData& proj_data)
 ProjDataInMemory::ProjDataInMemory(const ProjDataInMemory& proj_data)
     : ProjDataInMemory(proj_data.get_exam_info_sptr(), proj_data.get_proj_data_info_sptr()->create_shared_clone(), false)
 {
-  std::copy(proj_data.begin_all(), proj_data.end_all(), this->begin_all());
+  
+  // prefetching source to GPU
+  cudaMemPrefetchAsync(proj_data.get_const_data_ptr(),
+                     this->size_all()*sizeof(float),
+                     0);
+
+  // prefetching destination to GPU
+  cudaMemPrefetchAsync(this->get_data_ptr(),
+                     this->size_all()*sizeof(float),
+                     0);
+                
+
+  cudaMemcpy(this->get_data_ptr(),
+           proj_data.get_const_data_ptr(),
+           this->size_all() * sizeof(float),
+           cudaMemcpyDefault);
+
+  cudaDeviceSynchronize();
+       
 }
+/////////////////////////////
+
 
 shared_ptr<ProjDataInMemory>
 ProjDataInMemory::read_from_file(const std::string& filename)
@@ -412,46 +460,121 @@ ProjDataInMemory::norm_squared() const
   return stir::norm_squared(this->buffer);
 }
 
+// GPU version of the operator +=
 ProjDataInMemory&
 ProjDataInMemory::operator+=(const base_type& v)
 {
+
   if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    this->buffer += vp->buffer;
-  else
-    base_type::operator+=(v);
+  {    
 
-  return *this;
+        const bool gpu = onGPU(this->get_const_data_ptr());
+        if (gpu)
+        {
+            
+            AddAssign(this->get_data_ptr(),
+                      vp->get_const_data_ptr(),
+                      this->buffer.size_all());
+        }
+        else 
+        {
+            // Original STIR implementation
+            this->buffer += vp->buffer;
+        }
+    }
+    else
+    {
+        base_type::operator+=(v);
+    }
+
+    return *this;
 }
+// End
 
+// GPU version of the operator -=
 ProjDataInMemory&
 ProjDataInMemory::operator-=(const base_type& v)
 {
   if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    this->buffer -= vp->buffer;
-  else
-    base_type::operator-=(v);
-  return *this;
+  {    
+
+        const bool gpu = onGPU(this->get_const_data_ptr());
+        if (gpu)
+        { 
+
+            SubAssign(this->get_data_ptr(),
+                      vp->get_const_data_ptr(),
+                      this->buffer.size_all());
+        }
+        else
+        {
+            // Original STIR implementation
+            this->buffer -= vp->buffer;
+        }
+    }
+    else
+    {
+        base_type::operator-=(v);
+    }
+
+    return *this;
 }
 
+// GPU version of the operator *=
 ProjDataInMemory&
 ProjDataInMemory::operator*=(const base_type& v)
 {
   if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    this->buffer *= vp->buffer;
-  else
-    base_type::operator*=(v);
-  return *this;
+  {    
+
+        const bool gpu = onGPU(this->get_const_data_ptr());
+        if (gpu)
+        { 
+
+            MultAssign(this->get_data_ptr(),
+                      vp->get_const_data_ptr(),
+                      this->buffer.size_all());
+        }
+        else
+        {
+            // Original STIR implementation
+            this->buffer *= vp->buffer;
+        }
+    }
+    else
+    {
+        base_type::operator*=(v);
+    }
+
+    return *this;
 }
 
+// GPU version of the operator /=
 ProjDataInMemory&
 ProjDataInMemory::operator/=(const base_type& v)
 {
   if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    this->buffer /= vp->buffer;
-  else
-    base_type::operator/=(v);
+  {    
 
-  return *this;
+        const bool gpu = onGPU(this->get_const_data_ptr());
+        if (gpu)
+        {
+            MultAssign(this->get_data_ptr(),
+                      vp->get_const_data_ptr(),
+                      this->buffer.size_all());
+        }
+        else
+        {
+            // Original STIR implementation
+            this->buffer /= vp->buffer;
+        }
+    }
+    else
+    {
+        base_type::operator/=(v);
+    }
+
+    return *this;
 }
 
 ProjDataInMemory&
@@ -460,6 +583,7 @@ ProjDataInMemory::operator+=(const float v)
   this->buffer += v;
   return *this;
 }
+
 
 ProjDataInMemory&
 ProjDataInMemory::operator-=(const float v)
@@ -482,18 +606,24 @@ ProjDataInMemory::operator/=(const float v)
   return *this;
 }
 
+// For this operator it should not be necessary to have a specific kernel.
+// Since it ends up using += it should be calling the corresponding GPU version
+// of the operator defined above.
 ProjDataInMemory
 ProjDataInMemory::operator+(const ProjDataInMemory& iv) const
 {
   ProjDataInMemory c(*this);
+  std::cout << "operator+ called\n";
   return c += iv;
 }
+
 
 ProjDataInMemory
 ProjDataInMemory::operator-(const ProjDataInMemory& iv) const
 {
   ProjDataInMemory c(*this);
   return c -= iv;
+
 }
 
 ProjDataInMemory
@@ -544,9 +674,12 @@ ProjDataInMemory::axpby(const float a, const ProjData& x, const float b, const P
   xapyb(x, a, y, b);
 }
 
+// GPU version of the operator xapyb
+
 void
 ProjDataInMemory::xapyb(const ProjData& x, const float a, const ProjData& y, const float b)
 {
+  
   // To use this method, we require that all three proj data be ProjDataInMemory
   // So cast them. If any null pointers, fall back to default functionality
   const ProjDataInMemory* x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
@@ -556,27 +689,33 @@ ProjDataInMemory::xapyb(const ProjData& x, const float a, const ProjData& y, con
     {
       ProjData::xapyb(x, a, y, b);
       return;
-    }
-
-  // Else, all are ProjDataInMemory
-
+    }  
+  
   // First check that info match
   if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() || *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
     error("ProjDataInMemory::xapyb: ProjDataInfo don't match");
+  
+  const bool gpu = onGPU(this->get_const_data_ptr()) &&
+                   onGPU(x_pdm->get_const_data_ptr()) &&
+                   onGPU(y_pdm->get_const_data_ptr());
+  if (gpu)
+      {
+      CUDAxapyb(this->get_data_ptr(),
+              x_pdm->get_const_data_ptr(),
+              y_pdm->get_const_data_ptr(),
+              a,
+              b,
+              this->buffer.size_all());     
+      }
+    else
+      {
+      this->buffer.xapyb(x_pdm->buffer,
+              a,
+              y_pdm->buffer,
+              b);
+      }
 
-#if 0
-    // Get number of elements
-    const std::size_t numel = size_all();
-
-    float *buffer = this->buffer.get();
-    const float *x_buffer = x_pdm->buffer.get();
-    const float *y_buffer = y_pdm->buffer.get();
-
-    for (unsigned i=0; i<numel; ++i)
-        buffer[i] = a*x_buffer[i] + b*y_buffer[i];
-#else
-  this->buffer.xapyb(x_pdm->buffer, a, y_pdm->buffer, b);
-#endif
+    return;
 }
 
 void
@@ -619,6 +758,7 @@ ProjDataInMemory::xapyb(const ProjData& x, const ProjData& a, const ProjData& y,
   this->buffer.xapyb(x_pdm->buffer, a_pdm->buffer, y_pdm->buffer, b_pdm->buffer);
 #endif
 }
+
 
 void
 ProjDataInMemory::sapyb(const float a, const ProjData& y, const float b)

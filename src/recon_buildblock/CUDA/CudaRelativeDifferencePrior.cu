@@ -255,27 +255,16 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  elemT *d_image_data, *d_gradient_data;
-
-  // Allocate memory on the GPU
-  cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(elemT));
-  cudaMalloc(&d_gradient_data, prior_gradient.size_all() * sizeof(elemT));
-  {
-    cudaError_t cuda_error = cudaGetLastError();
-    if (cuda_error != cudaSuccess)
-      {
-        const char* err = cudaGetErrorString(cuda_error);
-        error(std::string("CUDA failed to allocate memory in compute_gradient kernel execution: ") + err);
-      }
-  }
-  // Copy data from host to device
-  array_to_device(d_image_data, current_image_estimate);
+  
+  const elemT* image_ptr = &*current_image_estimate.begin_all();
+  elemT* gradient_ptr = &*prior_gradient.begin_all();
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
     error("CudaRelativeDifferencePrior internal error: inconsistent CPU and device kappa");
-  computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_gradient_data,
-                                                                                      d_image_data,
+  computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(
+                                                                                      gradient_ptr,
+                                                                                      image_ptr,
                                                                                       this->d_weights_data,
                                                                                       do_kappa ? this->d_kappa_data : nullptr,
                                                                                       do_kappa,
@@ -290,16 +279,12 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
   cudaError_t cuda_error = cudaGetLastError();
   if (cuda_error != cudaSuccess)
     {
-      cudaFree(d_image_data);
-      cudaFree(d_gradient_data);
+
       const char* err = cudaGetErrorString(cuda_error);
       error(std::string("CUDA error in compute_gradient kernel execution: ") + err);
     }
 
-  array_to_host(prior_gradient, d_gradient_data);
-  // Cleanup
-  cudaFree(d_image_data);
-  cudaFree(d_gradient_data);
+  cudaDeviceSynchronize();
 }
 
 template <typename elemT>
@@ -322,12 +307,11 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  // GPU memory pointers
-  elemT* d_image_data;
+  const elemT* image_ptr = &*current_image_estimate.begin_all();      
+
   value_type* d_tmp_value;
 
   // Allocate memory on the GPU
-  cudaMalloc(&d_image_data, current_image_estimate.size_all() * sizeof(elemT));
   cudaMalloc(&d_tmp_value, current_image_estimate.size_all() * sizeof(value_type));
   {
     cudaError_t cuda_error = cudaGetLastError();
@@ -338,15 +322,12 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
       }
   }
 
-  // Copy data from host to device
-  array_to_device(d_image_data, current_image_estimate);
-
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
     error("CudaRelativeDifferencePrior internal error: inconsistent CPU and device kappa");
   // Launch the kernel
   computeCudaRelativeDifferencePriorValueKernel<<<cuda_grid_dim, cuda_block_dim>>>(d_tmp_value,
-                                                                                   d_image_data,
+                                                                                   image_ptr,
                                                                                    this->d_weights_data,
                                                                                    do_kappa ? this->d_kappa_data : nullptr,
                                                                                    do_kappa,
@@ -361,7 +342,6 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
   cudaError_t cuda_error = cudaGetLastError();
   if (cuda_error != cudaSuccess)
     {
-      cudaFree(d_image_data);
       cudaFree(d_tmp_value);
       const char* err = cudaGetErrorString(cuda_error);
       error(std::string("CUDA error in compute_value kernel execution: ") + err);
@@ -375,7 +355,6 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
   double totalValue = tmp_value.sum();
 
   // Cleanup
-  cudaFree(d_image_data);
   cudaFree(d_tmp_value);
   return totalValue;
 }
@@ -427,6 +406,7 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
         || (max_ind != make_coordinate(1, 1, 1)))
       error("CudaRelativeDifferencePrior: Currently only support 3x3x3 weights. Sorry.");
   }
+
 
   {
     if (this->d_kappa_data)
