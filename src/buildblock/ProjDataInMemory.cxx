@@ -40,41 +40,13 @@
 #include <memory>
 #include "cuvec.cuh"
 #include <chrono>
-#include "stir/ProjDataInMemoryCUDA.h"
+#include "stir/algebraic_kernels.h"
+#include "stir/cuda_utilities.h"
 
 
 using std::string;
 using std::streamoff;
 
-// Helper function to Check data is on GPU or CPU
-// Here just for testing, should go in cuda_utilities maybe (?)
-template <typename T>
-bool onGPU(const T* data)
-{
-    cudaPointerAttributes attr;
-    cudaError_t err = cudaPointerGetAttributes(&attr, data);
-
-    if (err != cudaSuccess)
-    {
-        cudaGetLastError(); // clear error state
-        return false;
-    }
-
-    switch (attr.type)
-    {
-    case cudaMemoryTypeDevice:
-    case cudaMemoryTypeManaged:
-        return true;
-
-    case cudaMemoryTypeHost:
-    case cudaMemoryTypeUnregistered:
-        return false;
-
-    default:
-        throw std::invalid_argument("Unknown CUDA memory type");
-    }
-}
-// End of Helper function onGPU
 
 START_NAMESPACE_STIR
 
@@ -126,11 +98,10 @@ ProjDataInMemory::initialise_layout_metadata()
     }
 }
 
-/////////////// Modified Version ////////////////////////
 void
 ProjDataInMemory::create_buffer(const bool initialise_with_0)
 {
-
+#ifdef STIR_WITH_CUDA
     auto sp = std::allocate_shared<float[]>(
         CuAlloc<float>(),
         this->size_all());
@@ -147,6 +118,9 @@ ProjDataInMemory::create_buffer(const bool initialise_with_0)
                   this->buffer.end_all(),
                   0.F);
     }
+#else
+  this->buffer.resize(0, this->size_all() - 1, initialise_with_0);    
+#endif  
 }
 
 ////////////////////////////////////////////////////////
@@ -412,7 +386,6 @@ ProjDataInMemory::ProjDataInMemory(const ProjData& proj_data)
   this->fill(proj_data);
 }
 
-// Modified version copy constructor
 ProjDataInMemory::ProjDataInMemory(const ProjDataInMemory& proj_data)
     : ProjDataInMemory(proj_data.get_exam_info_sptr(), proj_data.get_proj_data_info_sptr()->create_shared_clone(), false)
 {

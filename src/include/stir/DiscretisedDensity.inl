@@ -1,3 +1,30 @@
+//
+//
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, 2023, University College London
+    Copyright (C) 2018, CSIRO
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup densitydata
+  \brief  inline implementation for stir::DiscretisedDensity
+
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  \author Ashley Gillman
+  \author (help from Alexey Zverovich)
+  \author PARAPET project
+
+
+*/
 #include "stir/round.h"
 #include <string>
 #include <typeinfo>

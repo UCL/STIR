@@ -256,7 +256,6 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
     }
 
   
-  // Modified version
   const elemT* image_ptr = &*current_image_estimate.begin_all();
   elemT* gradient_ptr = &*prior_gradient.begin_all();
 
@@ -308,7 +307,6 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  // Modified version
   const elemT* image_ptr = &*current_image_estimate.begin_all();      
 
   value_type* d_tmp_value;
