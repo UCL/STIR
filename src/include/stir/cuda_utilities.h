@@ -22,13 +22,57 @@
 #include "stir/Array.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include <stdexcept>
 #ifdef __CUDACC__
 #  include <cuda_runtime.h>
 #  include "cuvec.cuh"
 #endif
+#ifdef STIR_WITH_CUDA
+#  include <cuda_runtime.h>
+#endif
 #include <vector>
 
 START_NAMESPACE_STIR
+
+#ifdef STIR_WITH_CUDA
+
+template <typename T>
+inline bool onGPU(const T* data)
+{
+    cudaPointerAttributes attr;
+    cudaError_t err = cudaPointerGetAttributes(&attr, data);
+
+    if (err != cudaSuccess)
+    {
+        cudaGetLastError();
+        return false;
+    }
+
+    switch (attr.type)
+    {
+    case cudaMemoryTypeDevice:
+    case cudaMemoryTypeManaged:
+        return true;
+
+    case cudaMemoryTypeHost:
+    case cudaMemoryTypeUnregistered:
+        return false;
+
+    default:
+        throw std::invalid_argument("Unknown CUDA memory type");
+    }
+}
+
+template <int num_dimensions, typename elemT>
+inline bool onGPU(const Array<num_dimensions, elemT>& arr)
+{
+    const elemT* ptr = arr.get_const_full_data_ptr();
+    bool result = onGPU(ptr);
+    arr.release_const_full_data_ptr();
+    return result;
+}
+#endif
+
 
 #ifndef __CUDACC__
 #  ifndef __host__

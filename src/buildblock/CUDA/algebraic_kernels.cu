@@ -1,7 +1,7 @@
 // CUDA kernels for element-wise operations on ProjData
 
 #include "stir/ProjDataInMemory.h"
-#include "stir/ProjDataInMemoryCUDA.h"
+#include "stir/algebraic_kernels.h"
 #include "cuvec.cuh"
 
 #include <cuda_runtime.h>

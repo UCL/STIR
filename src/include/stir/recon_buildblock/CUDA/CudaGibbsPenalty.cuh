@@ -473,8 +473,6 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, e
 
   d_scalar[0] = 0.0;
 
-  /////// Modified Code /////////////////
-
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
@@ -517,8 +515,7 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elem
 
   if (this->_already_set_up == false)
     error("CudaGibbsPenalty: set_up has not been called");
-
-  // Modified     
+ 
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!d_kappa_data.empty()))
@@ -563,8 +560,6 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const Discreti
     return 0.;
 
   d_scalar[0] = 0.0;
-
-  // Modified
 
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
@@ -611,7 +606,6 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
   if (this->_already_set_up == false)
     error("CudaGibbsPenalty: set_up has not been called");
 
-  // Modified
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!d_kappa_data.empty()))
@@ -655,7 +649,6 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
   if (this->_already_set_up == false)
     error("CudaGibbsPenalty: set_up has not been called");
 
-  // Modified
 
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
