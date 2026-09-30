@@ -44,7 +44,17 @@ if test "$1" = "--help"; then
     exit 1
 fi
 
-for SPECTtest in SPECTUB SPECTGPU PinholeSPECTUB; do
+ # Check if we have SPECTGPU
+  if stir_list_registries |grep -i SPECTGPU > /dev/null
+  then
+    if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+        # The code runs inside Travis or GHA
+        echo "Not running SPECTGPU due to no CUDA run-time"
+    else
+        GPU_tests="SPECTGPU"
+    fi
+  fi
+for SPECTtest in SPECTUB $GPU_tests PinholeSPECTUB; do
 
     echo
     echo "********************************************************************************"
