@@ -24,9 +24,14 @@
 #include "stir/error.h"
 #ifdef __CUDACC__
 #  include <cuda_runtime.h>
-#  include "cuvec.cuh"
+#else
+#  ifndef CUVEC_DISABLE_CUDA
+#    define CUVEC_DISABLE_CUDA
+#  endif
 #endif
+#include "cuvec.cuh"
 #include <vector>
+#include <memory>
 
 START_NAMESPACE_STIR
 
