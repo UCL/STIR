@@ -38,8 +38,6 @@
 #include <cstring>
 #include <algorithm>
 #include <memory>
-#include "cuvec.cuh"
-#include <chrono>
 #include "stir/algebraic_kernels.h"
 #include "stir/cuda_utilities.h"
 
@@ -389,28 +387,8 @@ ProjDataInMemory::ProjDataInMemory(const ProjData& proj_data)
 ProjDataInMemory::ProjDataInMemory(const ProjDataInMemory& proj_data)
     : ProjDataInMemory(proj_data.get_exam_info_sptr(), proj_data.get_proj_data_info_sptr()->create_shared_clone(), false)
 {
-  
-  // prefetching source to GPU
-  cudaMemPrefetchAsync(proj_data.get_const_data_ptr(),
-                     this->size_all()*sizeof(float),
-                     0);
-
-  // prefetching destination to GPU
-  cudaMemPrefetchAsync(this->get_data_ptr(),
-                     this->size_all()*sizeof(float),
-                     0);
-                
-
-  cudaMemcpy(this->get_data_ptr(),
-           proj_data.get_const_data_ptr(),
-           this->size_all() * sizeof(float),
-           cudaMemcpyDefault);
-
-  cudaDeviceSynchronize();
-       
+    stir::copy(this->buffer, proj_data.buffer);
 }
-/////////////////////////////
-
 
 shared_ptr<ProjDataInMemory>
 ProjDataInMemory::read_from_file(const std::string& filename)
@@ -460,27 +438,12 @@ ProjDataInMemory::norm_squared() const
   return stir::norm_squared(this->buffer);
 }
 
-// GPU version of the operator +=
 ProjDataInMemory&
 ProjDataInMemory::operator+=(const base_type& v)
 {
-
-  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-  {    
-
-        const bool gpu = onGPU(this->get_const_data_ptr());
-        if (gpu)
-        {
-            
-            AddAssign(this->get_data_ptr(),
-                      vp->get_const_data_ptr(),
-                      this->buffer.size_all());
-        }
-        else 
-        {
-            // Original STIR implementation
-            this->buffer += vp->buffer;
-        }
+    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    { 
+        stir::add_assign(this->buffer, vp->buffer);
     }
     else
     {
@@ -489,28 +452,13 @@ ProjDataInMemory::operator+=(const base_type& v)
 
     return *this;
 }
-// End
 
-// GPU version of the operator -=
 ProjDataInMemory&
 ProjDataInMemory::operator-=(const base_type& v)
 {
-  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-  {    
-
-        const bool gpu = onGPU(this->get_const_data_ptr());
-        if (gpu)
-        { 
-
-            SubAssign(this->get_data_ptr(),
-                      vp->get_const_data_ptr(),
-                      this->buffer.size_all());
-        }
-        else
-        {
-            // Original STIR implementation
-            this->buffer -= vp->buffer;
-        }
+    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    { 
+        stir::sub_assign(this->buffer, vp->buffer);
     }
     else
     {
@@ -520,26 +468,12 @@ ProjDataInMemory::operator-=(const base_type& v)
     return *this;
 }
 
-// GPU version of the operator *=
 ProjDataInMemory&
 ProjDataInMemory::operator*=(const base_type& v)
 {
-  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-  {    
-
-        const bool gpu = onGPU(this->get_const_data_ptr());
-        if (gpu)
-        { 
-
-            MultAssign(this->get_data_ptr(),
-                      vp->get_const_data_ptr(),
-                      this->buffer.size_all());
-        }
-        else
-        {
-            // Original STIR implementation
-            this->buffer *= vp->buffer;
-        }
+    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    { 
+        stir::mult_assign(this->buffer, vp->buffer);
     }
     else
     {
@@ -549,25 +483,12 @@ ProjDataInMemory::operator*=(const base_type& v)
     return *this;
 }
 
-// GPU version of the operator /=
 ProjDataInMemory&
 ProjDataInMemory::operator/=(const base_type& v)
 {
-  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-  {    
-
-        const bool gpu = onGPU(this->get_const_data_ptr());
-        if (gpu)
-        {
-            MultAssign(this->get_data_ptr(),
-                      vp->get_const_data_ptr(),
-                      this->buffer.size_all());
-        }
-        else
-        {
-            // Original STIR implementation
-            this->buffer /= vp->buffer;
-        }
+    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
+    { 
+        stir::div_assign(this->buffer, vp->buffer);
     }
     else
     {
@@ -606,9 +527,6 @@ ProjDataInMemory::operator/=(const float v)
   return *this;
 }
 
-// For this operator it should not be necessary to have a specific kernel.
-// Since it ends up using += it should be calling the corresponding GPU version
-// of the operator defined above.
 ProjDataInMemory
 ProjDataInMemory::operator+(const ProjDataInMemory& iv) const
 {
@@ -674,8 +592,6 @@ ProjDataInMemory::axpby(const float a, const ProjData& x, const float b, const P
   xapyb(x, a, y, b);
 }
 
-// GPU version of the operator xapyb
-
 void
 ProjDataInMemory::xapyb(const ProjData& x, const float a, const ProjData& y, const float b)
 {
@@ -694,28 +610,8 @@ ProjDataInMemory::xapyb(const ProjData& x, const float a, const ProjData& y, con
   // First check that info match
   if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() || *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
     error("ProjDataInMemory::xapyb: ProjDataInfo don't match");
-  
-  const bool gpu = onGPU(this->get_const_data_ptr()) &&
-                   onGPU(x_pdm->get_const_data_ptr()) &&
-                   onGPU(y_pdm->get_const_data_ptr());
-  if (gpu)
-      {
-      CUDAxapyb(this->get_data_ptr(),
-              x_pdm->get_const_data_ptr(),
-              y_pdm->get_const_data_ptr(),
-              a,
-              b,
-              this->buffer.size_all());     
-      }
-    else
-      {
-      this->buffer.xapyb(x_pdm->buffer,
-              a,
-              y_pdm->buffer,
-              b);
-      }
 
-    return;
+  stir::xapyb(this->buffer, x_pdm->buffer, y_pdm->buffer, a, b);    
 }
 
 void

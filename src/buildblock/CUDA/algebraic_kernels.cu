@@ -1,6 +1,5 @@
-// CUDA kernels for element-wise operations on ProjData
+// CUDA kernels for element-wise operations on arrays
 
-#include "stir/ProjDataInMemory.h"
 #include "stir/algebraic_kernels.h"
 #include "cuvec.cuh"
 
@@ -71,32 +70,31 @@ void BinaryAssign(float* dst,
     if (err != cudaSuccess)
         throw std::runtime_error(cudaGetErrorString(err));
 
-    cudaDeviceSynchronize();
 }
 
 // Public interface
-void AddAssign(float* dst,
+void add_assign(float* dst,
                const float* src,
                size_t N)
 {
     BinaryAssign<AddAssignOp>(dst, src, N);
 }
 
-void SubAssign(float* dst,
+void sub_assign(float* dst,
                const float* src,
                size_t N)
 {
     BinaryAssign<SubAssignOp>(dst, src, N);
 }
 
-void MultAssign(float* dst,
+void mult_assign(float* dst,
                 const float* src,
                 size_t N)
 {
     BinaryAssign<MultAssignOp>(dst, src, N);
 }
 
-void DivAssign(float* dst,
+void div_assign(float* dst,
                const float* src,
                size_t N)
 {
@@ -139,8 +137,6 @@ void CUDAxapyb(float *dst,
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess)
       throw std::runtime_error(cudaGetErrorString(err));
-
-    cudaDeviceSynchronize();
 
 }
 
