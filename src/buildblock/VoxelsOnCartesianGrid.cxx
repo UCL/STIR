@@ -44,6 +44,10 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include "stir/format.h"
+#ifdef STIR_WITH_CUDA
+#  include <cuda_runtime.h>
+#  include "cuvec.cuh"
+#endif 
 
 using std::ifstream;
 using std::max;
@@ -285,19 +289,20 @@ VoxelsOnCartesianGrid<elemT>::construct_from_projdata_info(const shared_ptr<cons
   // Keep storage contiguous for array views: grow()/resize() usually breaks the
   // single-block allocation that Array(range) provides.
   
-  ///////////////////// MODIFIED///////////////////////
-  //Array<3, elemT>::operator=(Array<3, elemT>(range));
-  
-  // This change forces to allocate voxel storage in CUDA managed memory when creating images from proj data.
+#ifdef STIR_WITH_CUDA
+  // Force voxel storage allocation in CUDA managed memory when built with CUDA support
   Array<3, elemT>::operator=(
-    Array<3, elemT>(
-        range,
-        std::allocate_shared<elemT[]>(
-            CuAlloc<elemT>(),
-            range.size_all())));
-  /////////////////// END /////////////////////////////
-  
+      Array<3, elemT>(
+          range,
+          std::allocate_shared<elemT[]>(
+              CuAlloc<elemT>(),
+              range.size_all())));
+#else
+  // Standard CPU host allocation for non-CUDA builds
+  Array<3, elemT>::operator=(Array<3, elemT>(range));
+#endif
 }
+
 
 /*!
   This member function will be unnecessary when all compilers can handle

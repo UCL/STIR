@@ -38,7 +38,6 @@ set(${dir_LIB_SOURCES}
   DynamicDiscretisedDensity.cxx
   ProjDataFromStream.cxx
   ProjDataInMemory.cxx
-  CUDA/algebraic_kernels.cu
   ProjDataInterfile.cxx
   Scanner.cxx
   SegmentBySinogram.cxx
@@ -53,6 +52,12 @@ set(${dir_LIB_SOURCES}
   utilities.cxx
   date_time_functions.cxx
   )
+
+if (STIR_WITH_CUDA)
+  list(APPEND ${dir_LIB_SOURCES}
+    CUDA/algebraic_kernels.cu
+    )
+endif()
 
 if (NOT MINI_STIR)
   list(APPEND ${dir_LIB_SOURCES}
@@ -155,3 +160,5 @@ endif()
 if (STIR_OPENMP)
   target_link_libraries(${TARGET} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 endif()
+
+

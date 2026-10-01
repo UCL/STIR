@@ -6,19 +6,19 @@
 
 START_NAMESPACE_STIR
 
-void AddAssign(float* dst,
+void add_assign(float* dst,
                const float* src,
                size_t N);
 
-void SubAssign(float* dst,
+void sub_assign(float* dst,
                const float* src,
                size_t N);               
 
-void MultAssign(float* dst,
+void mult_assign(float* dst,
                const float* src,
                size_t N);               
 
-void DivAssign(float* dst,
+void div_assign(float* dst,
                const float* src,
                size_t N);  
                
