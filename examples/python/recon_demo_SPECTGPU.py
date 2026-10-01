@@ -49,10 +49,10 @@ except:
 s = recon.set_up(target)
 if (s.succeeded()):
     pylab.figure()
-    for iter in range(1,num_subiterations+1):
-        print('\n--------------------- Subiteration ', iter)
-        recon.set_start_subiteration_num(iter)
-        recon.set_num_subiterations(iter)
+    for i in range(1,num_subiterations+1):
+        print('\n--------------------- Subiteration ', i)
+        recon.set_start_subiteration_num(i)
+        recon.set_num_subiterations(i)
         s = recon.reconstruct(target)
         # currently we need to explicitly prevent recomputing sensitivity
         # when we call reconstruct() again in the next iteration

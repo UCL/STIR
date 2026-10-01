@@ -16,6 +16,7 @@ OSMAPOSLParameters :=
                   ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
                   collimator slope := 0.0163
                   collimator sigma 0(cm) := 0.1466
+                  number of PSF sigmas := 2 ; default 2 (95% of the PSF)
 
                   attenuation image filename := ../SPECTUB/attMapRec.hv
 

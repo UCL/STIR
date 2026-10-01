@@ -44,7 +44,7 @@ do
     CACHEALLVIEWS2D=1
   elif test "$1" = "--help"
   then
-    echo "Usage: `basename $0` [--mpicmd somecmd] [--usecache] [install_dir]"
+    echo "Usage: `basename "$0"` [--mpicmd somecmd] [--usecache] [install_dir]"
     echo "(where [] means that an argument is optional)"
     echo "See README.txt for more info."
     exit 1
@@ -114,10 +114,10 @@ for reconpar in FBP2D OSEM_2DPSF OSEM_3DPSF; do
       output_filename=${output_filename}_${num_subiterations}
     fi
     output_image=${output_filename}.hv
-    invert_axis x ${output_image} ${output_image}
+    invert_axis x "${output_image}" "${output_image}"
 
     # horrible way to replace "out" with "org" (as we don't want to rely on bash)
-    org_output_image=org`echo ${output_image}|cut -c 4-`
+    org_output_image=org`echo "${output_image}"|cut -c 4-`
 
     if compare_image -t 0.005 ${org_output_image} ${output_image}
     then
