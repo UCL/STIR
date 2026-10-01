@@ -54,6 +54,8 @@ typedef short elem_type;
 
 #include "stir/utilities.h"
 
+#include "stir/listmode/CListRecordECAT8_32bit.h"
+#include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/LmToProjData.h"
 #include "stir/listmode/ListRecord.h"
 #include "stir/listmode/ListModeData.h"
@@ -703,6 +705,9 @@ LmToProjData::process_data()
       long num_prompts_in_frame = 0;
       long num_delayeds_in_frame = 0;
 
+      const int num_buckets = lm_data_ptr->get_scanner().get_num_singles_units();
+      std::vector<float> singles_per_bucket(num_buckets, 0.f);
+
       const double start_time = frame_defs.get_start_time(current_frame_num);
       const double end_time = frame_defs.get_end_time(current_frame_num);
 
@@ -781,6 +786,14 @@ LmToProjData::process_data()
                       {
                         // no more events in file for some reason
                         break; // get out of while loop
+                      }
+                    auto* crecord = dynamic_cast<CListRecord*>(&record);
+                    if (crecord != nullptr && crecord->is_singles()
+                        && start_segment_index == output_proj_data_sptr->get_min_segment_num())
+                      {
+                        const unsigned int ibck = crecord->singles().get_bucket_index();
+                        if (ibck < static_cast<unsigned int>(num_buckets))
+                          singles_per_bucket[ibck] += crecord->singles().get_singles_count();
                       }
                     if (record.is_time() && end_time > 0.01) // Direct comparison within doubles is unsafe.
                       {
@@ -885,6 +898,36 @@ LmToProjData::process_data()
                           }
                       } // end of spatial event processing
                   }     // end of while loop over all events
+                {
+                  const double frame_duration = (end_time - start_time) > 0 ? (end_time - start_time) : 3600.0;
+
+                  const std::vector<float>& buckets_to_write = singles_per_bucket;
+                  const int n_buckets_to_write = static_cast<int>(buckets_to_write.size());
+
+                  const std::string singles_filename
+                      = output_filename_prefix + "_f" + std::to_string(current_frame_num) + "_singles.json";
+                  std::ofstream singles_file(singles_filename);
+                  if (singles_file)
+                    {
+                      singles_file << "{\n";
+                      singles_file << "  \"num_buckets\": " << n_buckets_to_write << ",\n";
+                      singles_file << "  \"frame_duration\": " << frame_duration << ",\n";
+                      singles_file << "  \"end_time\": " << end_time << ",\n";
+                      // sum over transaxial buckets for each axial group
+                      singles_file << "  \"bucket_rates\": [";
+                      for (int i = 0; i < n_buckets_to_write; ++i)
+                        {
+                          if (i > 0)
+                            singles_file << ", ";
+                          singles_file << buckets_to_write[i] / frame_duration;
+                        }
+                      singles_file << "]\n";
+                      singles_file << "}\n";
+                      std::cerr << "INFO: Singles written to " << singles_filename << "\n";
+                    }
+
+                  std::fill(singles_per_bucket.begin(), singles_per_bucket.end(), 0.f);
+                }
 
                 time_of_last_stored_event = max(time_of_last_stored_event, current_time);
               }

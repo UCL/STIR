@@ -43,10 +43,34 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 
   ++m_time_block_index;
 
-  if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
-    curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
-  else
-    error("CListModeDataPETSIRD: holds_alternative not true. Abort.");
+  // initialise singles accumulator (224 buckets for mMR)
+  singles_per_bucket.resize(224, 0.f);
+
+  while (true)
+    {
+      if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
+        {
+          curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+          break;
+        }
+      else if (std::holds_alternative<petsird::SinglesHistogramTimeBlock>(curr_time_block))
+        {
+          const auto& sb = std::get<petsird::SinglesHistogramTimeBlock>(curr_time_block);
+          if (!sb.singles_histograms.empty())
+            {
+              const auto& counts = sb.singles_histograms[0];
+              for (std::size_t i = 0; i < std::min(counts.size(), singles_per_bucket.size()); ++i)
+                singles_per_bucket[i] += static_cast<float>(counts[i]);
+            }
+          if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+            error("CListModeDataPETSIRD: no EventTimeBlock found");
+          ++m_time_block_index;
+        }
+      else
+        {
+          error("CListModeDataPETSIRD: unhandled TimeBlock type");
+        }
+    }
 
   petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
@@ -93,6 +117,35 @@ CListModeDataPETSIRD::get_empty_record_sptr() const
 Succeeded
 CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 {
+  // helper to skip singles blocks and accumulate counts, then assign event block
+  const auto read_next_event_block = [&]() -> bool {
+    while (true)
+      {
+        if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+          {
+            current_lm_data_ptr->Close();
+            return false;
+          }
+        ++m_time_block_index;
+        if (std::holds_alternative<petsird::SinglesHistogramTimeBlock>(curr_time_block))
+          {
+            const auto& sb = std::get<petsird::SinglesHistogramTimeBlock>(curr_time_block);
+            if (!sb.singles_histograms.empty())
+              {
+                const auto& counts = sb.singles_histograms[0];
+                for (std::size_t i = 0; i < std::min(counts.size(), singles_per_bucket.size()); ++i)
+                  singles_per_bucket[i] += static_cast<float>(counts[i]);
+                singles_time_stop = sb.time_interval.stop;
+              }
+          }
+        else if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
+          {
+            curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+            return true;
+          }
+        // other block types silently skipped
+      }
+  };
   auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
   const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support multiple pairs of modules.
   const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events.at(0).at(0) : prompt_list;
@@ -108,13 +161,8 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
   if (event_list.size() == 0)
     {
       // no events, so read next Time block
-      if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-        {
-          current_lm_data_ptr->Close();
-          return Succeeded::no;
-        }
-      ++m_time_block_index;
-      curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+      if (!read_next_event_block())
+        return Succeeded::no;
       return get_next_record(record);
     }
 
@@ -145,25 +193,15 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
         }
       else
         {
-          if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-            {
-              current_lm_data_ptr->Close();
-              return Succeeded::no;
-            }
-          ++m_time_block_index;
-          curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+          if (!read_next_event_block())
+            return Succeeded::no;
         }
     }
   else
     {
       curr_is_prompt = true;
-      if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-        {
-          current_lm_data_ptr->Close();
-          return Succeeded::no;
-        }
-      ++m_time_block_index;
-      curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+      if (!read_next_event_block())
+        return Succeeded::no;
     }
 
   return Succeeded::yes;

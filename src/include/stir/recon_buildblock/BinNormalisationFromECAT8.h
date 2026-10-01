@@ -114,7 +114,11 @@ public:
   bool use_crystal_interference_factors() const;
   bool use_axial_effects_factors() const;
 
+  void set_singles_rates(const shared_ptr<SinglesRates>& sptr) { singles_rates_ptr = sptr; }
+
 private:
+  Array<1, float> rng_dtp_array;
+  Array<1, float> rng_dtnp_array;
   Array<1, float> axial_t1_array;
   Array<1, float> axial_t2_array;
   Array<1, float> trans_t1_array;
@@ -160,6 +164,7 @@ private:
   bool post_processing() override;
 
   string normalisation_ECAT8_filename;
+  std::string singles_filename;
 };
 
 END_NAMESPACE_ECAT
