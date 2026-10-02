@@ -39,6 +39,7 @@ name of input TChain := XXXX_coincidences
 Repeater Description :=
     simplify upwards := <0 or 1>
     tangential axis := <0, 1, or 2>
+    flip local tangential direction := <0 or 1> 
     number of dimensions := <N>
     repeater type [1] := translation
     repeater level [1] := none
