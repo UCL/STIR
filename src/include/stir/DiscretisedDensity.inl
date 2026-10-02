@@ -29,8 +29,7 @@
 #include <string>
 #include <typeinfo>
 #include <stdio.h> // for snprintf
-#include "cuvec.cuh"
-
+#include "stir/cuda_utilities.h"
 
 START_NAMESPACE_STIR
 
@@ -41,7 +40,12 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity()
 template <int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const IndexRange<num_dimensions>& range_v,
                                                               const CartesianCoordinate3D<float>& origin_v)
-    : base_type(range_v, std::allocate_shared<elemT[]>(CuAlloc<elemT>(), range_v.size_all())),
+    : base_type(range_v
+#ifdef STIR_WITH_CUDA
+                ,
+                std::allocate_shared<elemT[]>(CuAlloc<elemT>(), range_v.size_all())
+#endif
+                    ),
       origin(origin_v)
 {}
 
@@ -50,19 +54,21 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const shared_ptr<c
                                                               const IndexRange<num_dimensions>& range_v,
                                                               const CartesianCoordinate3D<float>& origin_v)
     : ExamData(exam_info_sptr),
-      base_type(range_v, std::allocate_shared<elemT[]>(CuAlloc<elemT>(), range_v.size_all())),
+      base_type(range_v
+#ifdef STIR_WITH_CUDA
+                ,
+                std::allocate_shared<elemT[]>(CuAlloc<elemT>(), range_v.size_all())
+#endif
+                    ),
       origin(origin_v)
 {}
 
-
-//// Copy constructor
 template <int num_dimensions, typename elemT>
 DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const self_type& org)
-: self_type(org.exam_info_sptr, org.get_index_range(), org.get_origin())
+    : self_type(org.exam_info_sptr, org.get_index_range(), org.get_origin())
 {
-  std::copy(org.begin_all(), org.end_all(), this->begin_all());
+  stir::copy(*this, org);
 }
-
 
 template <int num_dimensions, typename elemT>
 void

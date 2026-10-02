@@ -255,15 +255,13 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  
   const elemT* image_ptr = &*current_image_estimate.begin_all();
   elemT* gradient_ptr = &*prior_gradient.begin_all();
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
     error("CudaRelativeDifferencePrior internal error: inconsistent CPU and device kappa");
-  computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(
-                                                                                      gradient_ptr,
+  computeCudaRelativeDifferencePriorGradientKernel<<<cuda_grid_dim, cuda_block_dim>>>(gradient_ptr,
                                                                                       image_ptr,
                                                                                       this->d_weights_data,
                                                                                       do_kappa ? this->d_kappa_data : nullptr,
@@ -307,7 +305,7 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  const elemT* image_ptr = &*current_image_estimate.begin_all();      
+  const elemT* image_ptr = &*current_image_estimate.begin_all();
 
   value_type* d_tmp_value;
 
@@ -406,7 +404,6 @@ CudaRelativeDifferencePrior<elemT>::set_up(shared_ptr<const DiscretisedDensity<3
         || (max_ind != make_coordinate(1, 1, 1)))
       error("CudaRelativeDifferencePrior: Currently only support 3x3x3 weights. Sorry.");
   }
-
 
   {
     if (this->d_kappa_data)
