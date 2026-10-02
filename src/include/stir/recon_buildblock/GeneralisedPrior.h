@@ -77,6 +77,15 @@ public:
                                const BasicCoordinate<3, int>& coords,
                                const DataT& current_image_estimate) const;
 
+  //! Whether this prior implements compute_Hessian_diagonal().
+  /*! Capability query: the default compute_Hessian_diagonal() only calls error(), so callers that
+      need the Hessian diagonal (e.g. a Hessian-diagonal preconditioner) can check this \em before
+      set-up and fail with a clear message, instead of crashing mid-reconstruction on error().
+      Default returns \c false; a derived class that overrides compute_Hessian_diagonal() should
+      also override this to return \c true.
+   */
+  virtual bool provides_Hessian_diagonal() const { return false; }
+
   //! This computes the diagonal of the Hessian of the log of the prior function at the \a current_estimate and stores it in \a
   //! Hessian_diagonal.
   /*! The Hessian diagonal is already multiplied with the penalisation_factor.

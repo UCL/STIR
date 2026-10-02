@@ -123,6 +123,10 @@ public:
                        const BasicCoordinate<3, int>& coords,
                        const DiscretisedDensity<3, elemT>& current_image_estimate) const override;
 
+  //! GibbsPenalty implements compute_Hessian_diagonal (below), so it provides it. Covers CUDA too,
+  //! since CudaGibbsPenalty derives from GibbsPenalty.
+  bool provides_Hessian_diagonal() const override { return true; }
+
   //! Compute the diagonal of the Hessian matrix.
   void compute_Hessian_diagonal(DiscretisedDensity<3, elemT>& Hessian_diagonal,
                                 const DiscretisedDensity<3, elemT>& current_estimate) const override;
