@@ -126,14 +126,12 @@ public:
   //! Construct DiscretisedDensity from ExamInfo and a given range of indices & origin
   inline DiscretisedDensity(const shared_ptr<const ExamInfo>& exam_info_sptr,
                             const IndexRange<num_dimensions>& range,
-                            const CartesianCoordinate3D<float>& origin);                
-                              
-  
+                            const CartesianCoordinate3D<float>& origin);
+
   // Copy constructor
-    inline DiscretisedDensity(const self_type& org);
+  inline DiscretisedDensity(const self_type& org);
 
-
-   //! Return the origin
+  //! Return the origin
   inline const CartesianCoordinate3D<float>& get_origin() const;
 
   //! Set the origin

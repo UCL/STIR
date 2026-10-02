@@ -41,10 +41,8 @@
 #include "stir/algebraic_kernels.h"
 #include "stir/cuda_utilities.h"
 
-
 using std::string;
 using std::streamoff;
-
 
 START_NAMESPACE_STIR
 
@@ -100,25 +98,19 @@ void
 ProjDataInMemory::create_buffer(const bool initialise_with_0)
 {
 #ifdef STIR_WITH_CUDA
-    auto sp = std::allocate_shared<float[]>(
-        CuAlloc<float>(),
-        this->size_all());
+  auto sp = std::allocate_shared<float[]>(CuAlloc<float>(), this->size_all());
 
-    Array<1,float> new_buffer(
-      IndexRange<1>(0, this->size_all() - 1),
-      sp);
+  Array<1, float> new_buffer(IndexRange<1>(0, this->size_all() - 1), sp);
 
-    swap(this->buffer, new_buffer);
+  swap(this->buffer, new_buffer);
 
-    if (initialise_with_0)
+  if (initialise_with_0)
     {
-        std::fill(this->buffer.begin_all(),
-                  this->buffer.end_all(),
-                  0.F);
+      std::fill(this->buffer.begin_all(), this->buffer.end_all(), 0.F);
     }
 #else
-  this->buffer.resize(0, this->size_all() - 1, initialise_with_0);    
-#endif  
+  this->buffer.resize(0, this->size_all() - 1, initialise_with_0);
+#endif
 }
 
 ////////////////////////////////////////////////////////
@@ -387,7 +379,7 @@ ProjDataInMemory::ProjDataInMemory(const ProjData& proj_data)
 ProjDataInMemory::ProjDataInMemory(const ProjDataInMemory& proj_data)
     : ProjDataInMemory(proj_data.get_exam_info_sptr(), proj_data.get_proj_data_info_sptr()->create_shared_clone(), false)
 {
-    stir::copy(this->buffer, proj_data.buffer);
+  stir::copy(this->buffer, proj_data.buffer);
 }
 
 shared_ptr<ProjDataInMemory>
@@ -441,61 +433,61 @@ ProjDataInMemory::norm_squared() const
 ProjDataInMemory&
 ProjDataInMemory::operator+=(const base_type& v)
 {
-    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    { 
-        stir::add_assign(this->buffer, vp->buffer);
-    }
-    else
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
     {
-        base_type::operator+=(v);
+      stir::add_assign(this->buffer, vp->buffer);
+    }
+  else
+    {
+      base_type::operator+=(v);
     }
 
-    return *this;
+  return *this;
 }
 
 ProjDataInMemory&
 ProjDataInMemory::operator-=(const base_type& v)
 {
-    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    { 
-        stir::sub_assign(this->buffer, vp->buffer);
-    }
-    else
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
     {
-        base_type::operator-=(v);
+      stir::sub_assign(this->buffer, vp->buffer);
+    }
+  else
+    {
+      base_type::operator-=(v);
     }
 
-    return *this;
+  return *this;
 }
 
 ProjDataInMemory&
 ProjDataInMemory::operator*=(const base_type& v)
 {
-    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    { 
-        stir::mult_assign(this->buffer, vp->buffer);
-    }
-    else
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
     {
-        base_type::operator*=(v);
+      stir::mult_assign(this->buffer, vp->buffer);
+    }
+  else
+    {
+      base_type::operator*=(v);
     }
 
-    return *this;
+  return *this;
 }
 
 ProjDataInMemory&
 ProjDataInMemory::operator/=(const base_type& v)
 {
-    if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
-    { 
-        stir::div_assign(this->buffer, vp->buffer);
-    }
-    else
+  if (auto vp = dynamic_cast<const ProjDataInMemory*>(&v))
     {
-        base_type::operator/=(v);
+      stir::div_assign(this->buffer, vp->buffer);
+    }
+  else
+    {
+      base_type::operator/=(v);
     }
 
-    return *this;
+  return *this;
 }
 
 ProjDataInMemory&
@@ -504,7 +496,6 @@ ProjDataInMemory::operator+=(const float v)
   this->buffer += v;
   return *this;
 }
-
 
 ProjDataInMemory&
 ProjDataInMemory::operator-=(const float v)
@@ -535,13 +526,11 @@ ProjDataInMemory::operator+(const ProjDataInMemory& iv) const
   return c += iv;
 }
 
-
 ProjDataInMemory
 ProjDataInMemory::operator-(const ProjDataInMemory& iv) const
 {
   ProjDataInMemory c(*this);
   return c -= iv;
-
 }
 
 ProjDataInMemory
@@ -595,7 +584,7 @@ ProjDataInMemory::axpby(const float a, const ProjData& x, const float b, const P
 void
 ProjDataInMemory::xapyb(const ProjData& x, const float a, const ProjData& y, const float b)
 {
-  
+
   // To use this method, we require that all three proj data be ProjDataInMemory
   // So cast them. If any null pointers, fall back to default functionality
   const ProjDataInMemory* x_pdm = dynamic_cast<const ProjDataInMemory*>(&x);
@@ -605,13 +594,13 @@ ProjDataInMemory::xapyb(const ProjData& x, const float a, const ProjData& y, con
     {
       ProjData::xapyb(x, a, y, b);
       return;
-    }  
-  
+    }
+
   // First check that info match
   if (*get_proj_data_info_sptr() != *x.get_proj_data_info_sptr() || *get_proj_data_info_sptr() != *y.get_proj_data_info_sptr())
     error("ProjDataInMemory::xapyb: ProjDataInfo don't match");
 
-  stir::xapyb(this->buffer, x_pdm->buffer, y_pdm->buffer, a, b);    
+  stir::xapyb(this->buffer, x_pdm->buffer, y_pdm->buffer, a, b);
 }
 
 void
@@ -654,7 +643,6 @@ ProjDataInMemory::xapyb(const ProjData& x, const ProjData& a, const ProjData& y,
   this->buffer.xapyb(x_pdm->buffer, a_pdm->buffer, y_pdm->buffer, b_pdm->buffer);
 #endif
 }
-
 
 void
 ProjDataInMemory::sapyb(const float a, const ProjData& y, const float b)
