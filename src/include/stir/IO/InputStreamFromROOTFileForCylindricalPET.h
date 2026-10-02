@@ -269,7 +269,9 @@ protected:
           const int sx = this->repeater_size[i].front();
           const int sz = this->repeater_size[i].back();
 
-          ring_out += (ids[i] % sz) * ring_jump;
+          const int axial_stride = (i == 0) ? ring_jump + num_virtual_axial_crystals_per_block : ring_jump;
+
+          ring_out += (ids[i] % sz) * axial_stride;
           ring_jump *= sz;
 
           crystal_out += (ids[i] / sz) * crystal_jump;
@@ -277,7 +279,11 @@ protected:
         }
 
       if (have_ring_axis)
-        crystal_out += ring_axis_value * crystal_jump;
+        {
+          const int local_width = crystal_jump; // total real local combinations (20 here)
+          const int reversed_local = (local_width - 1) - crystal_out;
+          crystal_out = reversed_local + ring_axis_value * (crystal_jump + num_virtual_transaxial_crystals_per_block);
+        }
 
       return Succeeded::yes;
     }
@@ -444,6 +450,8 @@ protected:
     std::vector<std::string> repeater_type;      // e.g. "translation", "rotation", "circular"
     std::vector<std::vector<int>> repeater_size; // e.g. {1,1,8} per dimension
     std::vector<std::string> repeater_level;     // "none" | "Rsector" | "module" | "submodule" | "crystal"
+    int num_virtual_transaxial_crystals_per_block = 0;
+    int num_virtual_axial_crystals_per_block = 0;
   };
 
   RepeaterDescription repeater_description;

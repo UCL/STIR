@@ -95,6 +95,12 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
   if (!this->parser.parse(hroot_filename.c_str()))
     error("CListModeDataROOT: error parsing '%s'", hroot_filename.c_str());
 
+  // have to do this here currently as these variables should be present in set_up()
+  if (num_virtual_axial_crystals_per_block >= 0)
+    this->root_file_sptr->set_num_virtual_axial_crystals_per_block(num_virtual_axial_crystals_per_block);
+  if (num_virtual_transaxial_crystals_per_block >= 0)
+    this->root_file_sptr->set_num_virtual_transaxial_crystals_per_block(num_virtual_transaxial_crystals_per_block);
+
   FilePath f(hroot_filename);
   if (root_file_sptr->set_up(f.get_path_only()) == Succeeded::no)
     error("CListModeDataROOT: Unable to set_up() from the input Header file (.hroot).");
