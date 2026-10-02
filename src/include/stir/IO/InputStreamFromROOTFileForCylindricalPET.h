@@ -373,8 +373,11 @@ protected:
 
           return Succeeded::yes;
         }
-      stir::warning(stir::format("RepeaterDescription: no entry found with repeater level = {}. Setting to [1,1,1].", level_name)); 
-      out_x = 1; out_y = 1; out_z = 1; 
+      stir::warning(
+          stir::format("RepeaterDescription: no entry found with repeater level = {}. Setting to [1,1,1].", level_name));
+      out_x = 1;
+      out_y = 1;
+      out_z = 1;
       return Succeeded::no;
     }
 
