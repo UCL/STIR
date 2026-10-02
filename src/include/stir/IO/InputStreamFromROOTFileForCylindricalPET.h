@@ -84,26 +84,26 @@ START_NAMESPACE_STIR
     \verbatim
     Repeater Description :=
       simplify upwards := <0 or 1>
-      tangetial_axis := <0, 1, or 2>
+      tangetial_axis := <0, 1, or 2> -- Don't use 2
       number of dimensions := <N>
       repeater type [1] := translation
       repeater level [1] := none
-      !repeater size [1] := { ... }
+      repeater size [1] := { ... }
       repeater type [2] := ring
       repeater level [2] := Rsector
-      !repeater size [2] := { ... }
+      repeater size [2] := { ... }
       repeater type [3] := translation
       repeater level [3] := module
-      !repeater size [3] := { ... }
+      repeater size [3] := { ... }
       repeater type [4] := translation
       repeater level [4] := submodule
-      !repeater size [4] := { ... }
+      repeater size [4] := { ... }
       repeater type [5] := translation
       repeater level [5] := none
-      !repeater size [5] := { ... }
+      repeater size [5] := { ... }
       repeater type [6] := translation
       repeater level [6] := crystal
-      !repeater size [6] := { ... }
+      repeater size [6] := { ... }
     End Repeater Description :=
     \endverbatim
 

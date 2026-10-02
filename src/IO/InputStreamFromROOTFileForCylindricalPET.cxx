@@ -355,6 +355,8 @@ InputStreamFromROOTFileForCylindricalPET::set_up(const std::string& header_path)
     {
       stream_ptr->SetBranchAddress("PreStepUniqueVolumeID1", &pre_step_uniq_vol1, &br_pre_step_uniq_vol1);
       stream_ptr->SetBranchAddress("PreStepUniqueVolumeID2", &pre_step_uniq_vol2, &br_pre_step_uniq_vol2);
+      repeater_description.num_virtual_axial_crystals_per_block = get_num_virtual_axial_crystals_per_block();
+      repeater_description.num_virtual_transaxial_crystals_per_block = get_num_virtual_transaxial_crystals_per_block();
     }
 
   nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
