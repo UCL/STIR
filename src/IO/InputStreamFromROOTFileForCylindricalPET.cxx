@@ -318,11 +318,11 @@ InputStreamFromROOTFileForCylindricalPET::post_processing()
       int tmp = 0;
       rd.get_repeater_size_by_level("crystal", crystal_repeater_x, crystal_repeater_y, crystal_repeater_z);
       rd.get_repeater_size_by_level("submodule", submodule_repeater_x, submodule_repeater_y, submodule_repeater_z);
-      std::cout << submodule_repeater_x << " " << submodule_repeater_y << " " << submodule_repeater_z << std::endl;
+      // std::cout << submodule_repeater_x << " " << submodule_repeater_y << " " << submodule_repeater_z << std::endl;
       rd.get_repeater_size_by_level("module", module_repeater_x, module_repeater_y, module_repeater_z);
-      std::cout << module_repeater_x << " " << module_repeater_y << " " << module_repeater_z << std::endl;
+      // std::cout << module_repeater_x << " " << module_repeater_y << " " << module_repeater_z << std::endl;
       rd.get_repeater_size_by_level("Rsector", tmp, tmp, rsector_repeater);
-      std::cout << rsector_repeater << std::endl;
+      // std::cout << rsector_repeater << std::endl;
     }
 
   return false;
