@@ -23,43 +23,54 @@ TOF timing resolution (ps)                 := 400.0
 Number of virtual axial crystals per block := 0
 Number of virtual transaxial crystals per block:= 0
 
-; optional keywords to enable block geometry (defaults to cylindrical, in which case
-; crystals/block dimensions are effectively ignored.)
-; Note that the user of "virtual" crystals and block geometry likely will lead
-; to wrong results (untested).
-Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := BlocksOnCylindrical
-Distance between crystals in axial direction (cm)           := 0.63
-Distance between crystals in transaxial direction (cm)      := 0.42
-Distance between blocks in axial direction (cm)             := 3.78
-Distance between blocks in transaxial direction (cm)        := 3.78
-
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
 
+; Activate this for GATE10
+; Then you will need more stuff coming up
+is Gate10 := 1
+
 name of data file := benchmarkPET.root
 
-name of input TChain := Coincidences
+name of input TChain := XXXX_coincidences
 
 ; Gate scanner geometry terminology used to check scanner properties
-number of Rsectors := 504 
-number of modules_X := 1 
-number of modules_Y := 1
-number of modules_Z := 1
-number of submodules_X := 1
-number of submodules_Y := 1
-number of submodules_Z := 1
-number of crystals_X := 1
-number of crystals_Y := 1
-number of crystals_Z := 4
+Repeater Description :=
+    simplify upwards := <0 or 1>
+    tangential axis := <0, 1, or 2>
+    flip local tangential direction := <0 or 1> 
+    number of dimensions := <N>
+    repeater type [1] := translation
+    repeater level [1] := none
+    repeater size [1] := { ... }
+    repeater type [2] := ring
+    repeater level [2] := Rsector
+    repeater size [2] := { ... }
+    repeater type [3] := translation
+    repeater level [3] := module
+    repeater size [3] := { ... }
+    repeater type [4] := translation
+    repeater level [4] := submodule
+    repeater size [4] := { ... }
+    repeater type [5] := translation
+    repeater level [5] := none
+    repeater size [5] := { ... }
+    repeater type [6] := translation
+    repeater level [6] := crystal
+    repeater size [6] := { ... }
+  End Repeater Description :=
 
-Singles readout depth := 1
+
+;; The following will not work without the right actors. 
 exclude unscattered events := 0
 exclude non-random events := 0
 exclude scattered events := 0
 exclude random events := 0
-check energy window information := 1
+;;; 
 
+
+check energy window information := 1
 low energy window (keV) := 0  		; Default 0
 upper energy window (keV):= 10000	; Default 10000
 

@@ -82,11 +82,13 @@ ReconstructionTests<TargetT>::construct_default_proj_data_info_uptr() const
   // construct a small scanner and sinogram
   shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
   scanner_sptr->set_num_rings(5);
+  scanner_sptr->set_up();
   std::unique_ptr<ProjDataInfo> proj_data_info_uptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                                   /*span=*/3,
                                                                                   /*max_delta=*/4,
                                                                                   /*num_views=*/128,
-                                                                                  /*num_tang_poss=*/128));
+                                                                                  /*num_tang_poss=*/128,
+                                                                                  /* arc-corrected = */ false));
   return proj_data_info_uptr;
 }
 

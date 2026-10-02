@@ -63,6 +63,7 @@ ECAT7OutputFileFormat::post_processing()
     return true;
 
   shared_ptr<Scanner> scanner_ptr(Scanner::get_scanner_from_name(default_scanner_name));
+  scanner_ptr->set_up();
 
   if (find_ECAT_system_type(*scanner_ptr) == 0)
     {
@@ -106,6 +107,7 @@ Succeeded
 ECAT7OutputFileFormat::actual_write_to_file(std::string& filename, const DiscretisedDensity<3, float>& density) const
 {
   shared_ptr<Scanner> scanner_ptr(Scanner::get_scanner_from_name(default_scanner_name));
+  scanner_ptr->set_up();
 
   add_extension(filename, ".img");
 

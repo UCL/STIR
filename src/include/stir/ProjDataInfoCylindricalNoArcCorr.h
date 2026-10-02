@@ -4,6 +4,7 @@
     Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2015-2018, 2022, 2024, 2026, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -77,7 +78,9 @@ class Succeeded;
   \todo The detector specific functions possibly do not belong in this class.
   One can easily imagine a case where the theta,phi,s,t coordinates are as
   described, but there is no real correspondence with detectors (for instance,
-  a rotating system). Maybe they should be moved somewhere else?
+  a rotating system). These should be moved somewhere else. See
+  ProjDataInfoPETScannerWithDiscreteDetectors and
+  https://github.com/UCL/STIR/issues/1307 etc.
   */
 class ProjDataInfoCylindricalNoArcCorr : public ProjDataInfoCylindrical
 {

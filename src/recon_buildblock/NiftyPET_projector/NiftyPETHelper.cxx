@@ -764,6 +764,8 @@ NiftyPETHelper::create_stir_sino()
   shared_ptr<ExamInfo> ei_sptr = MAKE_SHARED<ExamInfo>();
   ei_sptr->imaging_modality = ImagingModality::PT;
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name("mMR"));
+  scanner_sptr->set_up();
+
   int num_views = scanner_sptr->get_num_detectors_per_ring() / 2 / view_mash_factor;
   int num_tang_pos = scanner_sptr->get_max_num_non_arccorrected_bins();
   shared_ptr<ProjDataInfo> pdi_sptr
