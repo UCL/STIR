@@ -77,7 +77,7 @@ rotateKernel_pull(float* __restrict__ out_im,
   float G = 0;     // accumulator variable
   float sigma = 2; // gaussian kernel sigma
 
-  for (int dr = -3; dr <= 3; dr++)
+  for (int dr = -2; dr <= 2; dr++)
     {
       int r = (int)roundf(r_r) + dr;                                   // nearest neighbour z coordinate in rotated voxel space
       float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z; // converted to image space
@@ -118,7 +118,7 @@ rotateKernel_pull(float* __restrict__ out_im,
   // loop again but this time actually fetch the image values
   float accumulation_im = 0;
 
-  for (int dr = -3; dr <= 3; dr++)
+  for (int dr = -2; dr <= 2; dr++)
     {
       float r = dr + (int)roundf(r_r);
       float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z;
@@ -209,7 +209,7 @@ rotateKernel_push(float* __restrict__ out_im,
   float G = 0;     // accumulator variable
   float sigma = 2; // gaussian kernel sigma
 
-  for (int dr = -3; dr <= 3; dr++)
+  for (int dr = -2; dr <= 2; dr++)
     {
       float r = dr + (int)roundf(r_r);                                 // nearest neighbour z coordinate in rotated  space
       float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z; // converted to original space
@@ -248,7 +248,7 @@ rotateKernel_push(float* __restrict__ out_im,
   // loop again but this time actually fetch the image values
   //  float accumulation_im = 0;
 
-  for (int dr = -3; dr <= 3; dr++)
+  for (int dr = -2; dr <= 2; dr++)
     {
       float r = dr + (int)roundf(r_r);
       float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z;

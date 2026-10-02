@@ -103,7 +103,8 @@ run_backward_projection_cuda(float* dev_image,
   float angle_rad = vg.get_proj_data_info().get_phi(
       bin); //-vg.get_view_num() * 2.f * M_PI / num_views;//vg.get_proj_data_info().get_phi(); //
   angle_rad = -std::fmod(angle_rad, 2.f * M_PI);
-
+  // Note that umap is rotated before because the BP needs to apply attenuation factors corresponding to the same rotation as the
+  // image
   if (do_atten)
     {
       rotateKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(

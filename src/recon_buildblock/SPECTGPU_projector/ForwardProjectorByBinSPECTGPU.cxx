@@ -45,6 +45,7 @@ ForwardProjectorByBinSPECTGPU::ForwardProjectorByBinSPECTGPU()
       _use_truncation(false),
       _slope(-1),
       _sigma0(-1),
+      _num_sigmas(2),
       dev_image(nullptr),
       dev_umap(nullptr)
 {

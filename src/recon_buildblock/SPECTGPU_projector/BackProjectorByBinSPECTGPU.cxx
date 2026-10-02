@@ -43,6 +43,7 @@ BackProjectorByBinSPECTGPU::BackProjectorByBinSPECTGPU()
       _use_truncation(false),
       _slope(-1),
       _sigma0(-1),
+      _num_sigmas(2),
       dev_image(nullptr),
       dev_umap(nullptr)
 {
@@ -60,6 +61,7 @@ BackProjectorByBinSPECTGPU::initialise_keymap()
   parser.add_key("CUDA device", &_cuda_device);
   parser.add_key("collimator slope", &_slope);
   parser.add_key("collimator sigma 0(cm)", &_sigma0);
+  parser.add_key("number of PSF sigmas", &_num_sigmas);
   parser.add_key("attenuation image filename", &_att_filename);
   parser.add_key("verbosity", &_cuda_verbosity);
 }

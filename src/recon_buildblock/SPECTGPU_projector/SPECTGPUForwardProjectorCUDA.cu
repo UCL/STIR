@@ -140,7 +140,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
           cudaMemset(dev_sino.data(), 0, sino_size * sizeof(float));
 
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
-              dev_sino.data(), blurred_im.data(), out_umap.data(), image_dim, spacing, do_atten);
+              dev_sino.data(), out_im.data(), out_umap.data(), image_dim, spacing, do_atten);
 
           err = cudaGetLastError();
           if (err != cudaSuccess)
