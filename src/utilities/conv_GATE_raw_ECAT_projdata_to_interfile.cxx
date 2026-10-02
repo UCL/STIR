@@ -65,6 +65,7 @@ main(int argc, char** argv)
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(scanner_name));
   if (is_null_ptr(scanner_sptr))
     error("Scanner '%s' is not a valid name", scanner_name);
+  scanner_sptr->set_up();
 
   FILE* GATE_file;
   if ((GATE_file = fopen(GATE_filename, "rb")) == NULL)
