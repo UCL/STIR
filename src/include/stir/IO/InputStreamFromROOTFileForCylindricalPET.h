@@ -85,6 +85,7 @@ START_NAMESPACE_STIR
     Repeater Description :=
       simplify upwards := <0 or 1>
       tangetial_axis := <0, 1, or 2> -- Don't use 2
+      flip local tangential direction := <0 or 1>
       number of dimensions := <N>
       repeater type [1] := translation
       repeater level [1] := none
@@ -125,6 +126,10 @@ START_NAMESPACE_STIR
   sat *above* Rsector (effectively as extra, independent axial ring segments
 
   <b>tangential_axis</b> (int: 0=x, 1=y)
+
+  <b> flip local tangential direction </b> (int: 0=false (default), 1=true)
+    In some GATE models the resction angle might incease in the opposite direction than the transaxial crystal id.
+    Use this to flip the crystal IDs.
 
   \author Nikos Efthimiou
 */
@@ -281,7 +286,7 @@ protected:
       if (have_ring_axis)
         {
           const int local_width = crystal_jump; // total real local combinations (20 here)
-          const int reversed_local = (local_width - 1) - crystal_out;
+          const int reversed_local = flip_local_tangential_direction == 1 ? (local_width - 1) - crystal_out : crystal_out;
           crystal_out = reversed_local + ring_axis_value * (crystal_jump + num_virtual_transaxial_crystals_per_block);
         }
 
@@ -452,6 +457,7 @@ protected:
     std::vector<std::string> repeater_level;     // "none" | "Rsector" | "module" | "submodule" | "crystal"
     int num_virtual_transaxial_crystals_per_block = 0;
     int num_virtual_axial_crystals_per_block = 0;
+    int flip_local_tangential_direction = 0;
   };
 
   RepeaterDescription repeater_description;

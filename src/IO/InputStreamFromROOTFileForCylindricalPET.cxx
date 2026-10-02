@@ -236,6 +236,7 @@ InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
   this->parser.add_vectorised_key("repeater level", &this->repeater_description.repeater_level);
   this->parser.add_vectorised_key("repeater size", &this->repeater_description.repeater_size);
   this->parser.add_key("simplify upwards", &this->repeater_description.simplify_upwards);
+  this->parser.add_key("flip local tangential direction", &this->repeater_description.flip_local_tangential_direction);
   // this->parser.add_stop_key("End Repeater Description");
 }
 
