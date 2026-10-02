@@ -50,16 +50,12 @@ main(int argc, char* argv[])
     }
 
   const std::string filename = argv[1];
-
-  bool export_single_segment = false;
   int segment_num_to_export = -1;
 
   if (argc == 3)
     {
-      export_single_segment = true;
       segment_num_to_export = std::atoi(argv[2]);
     }
-  std::cout << segment_num_to_export << std::endl;
 
   shared_ptr<ProjData> s3d = ProjData::read_from_file(filename);
 
