@@ -266,7 +266,7 @@ protected:
               continue; // azimuthal index; folded into 'crystal' after the loop, not into 'ring'
             }
 
-          const int sx = this->repeater_size[i].front();
+          const int sx = this->tangential_axis == 0 ? this->repeater_size[i].front() : this->repeater_size[i][1];
           const int sz = this->repeater_size[i].back();
 
           const int axial_stride = (i == 0) ? ring_jump + num_virtual_axial_crystals_per_block : ring_jump;
