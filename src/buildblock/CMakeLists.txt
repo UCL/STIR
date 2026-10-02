@@ -55,7 +55,7 @@ set(${dir_LIB_SOURCES}
 
 if (STIR_WITH_CUDA)
     list(APPEND ${dir_LIB_SOURCES}
-      cuda_utilities.cu
+      CUDA/cuda_utilities.cu
       )
 endif()
 
