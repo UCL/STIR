@@ -343,8 +343,11 @@ protected:
             continue;
           if (this->repeater_size[i].size() != 3)
             {
-              std::cerr << "RepeaterDescription: 'repeater size [" << (i + 1) << "]' (level '" << level_name
-                        << "') must have exactly 3 values {x,y,z}, got " << this->repeater_size[i].size() << "\n";
+              stir::error(
+                  stir::format("RepeaterDescription: repeater size [{}] (level {}) must have exactly 3 values (x,y,z), got {}.",
+                               (i + 1),
+                               level_name,
+                               this->repeater_size[i].size()));
               return Succeeded::no;
             }
 
@@ -357,9 +360,10 @@ protected:
             {
               if (this->repeater_size[j].size() != 3)
                 {
-                  std::cerr << "RepeaterDescription: 'repeater size [" << (j + 1)
-                            << "]' (level 'none') must have exactly 3 values {x,y,z}, got " << this->repeater_size[j].size()
-                            << "\n";
+                  stir::error(stir::format(
+                      "RepeaterDescription: repeater size [{}] (level 'none') must have exactly 3 values (x,y,z), got {}.",
+                      (j + 1),
+                      this->repeater_size[j].size()));
                   return Succeeded::no;
                 }
               out_x *= this->repeater_size[j][0];
@@ -369,7 +373,8 @@ protected:
 
           return Succeeded::yes;
         }
-      std::cerr << "RepeaterDescription: no entry found with 'repeater level' = '" << level_name << "'\n";
+      stir::warning(stir::format("RepeaterDescription: no entry found with repeater level = {}. Setting to [1,1,1].", level_name)); 
+      out_x = 1; out_y = 1; out_z = 1; 
       return Succeeded::no;
     }
 
