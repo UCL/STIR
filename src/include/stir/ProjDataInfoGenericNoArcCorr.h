@@ -144,6 +144,10 @@ public:
 
   Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 
+protected:
+  // give access to protected member find_cartesian_coordinates_given_scanner_coordinates
+  template <typename ProjDataInfoT>
+  friend class CListEventScannerWithDiscreteDetectors;
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
   /*! \warning These function take a different convention for the axial coordinate
