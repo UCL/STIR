@@ -50,7 +50,7 @@ main(int argc, char* argv[])
     }
 
   const std::string filename = argv[1];
-  int segment_num_to_export = numeric_limits<int>::max;
+  int segment_num_to_export = std::numeric_limits<int>::max();
 
   if (argc == 3)
     {
@@ -63,8 +63,8 @@ main(int argc, char* argv[])
 
   const bool is_tof = s3d->get_min_tof_pos_num() != s3d->get_max_tof_pos_num();
 
-  int min_seg = segment_num_to_export == numeric_limits<int>::max ? s3d->get_min_segment_num() : segment_num_to_export;
-  int max_seg = segment_num_to_export == numeric_limits<int>::max ? s3d->get_max_segment_num() : segment_num_to_export;
+  int min_seg = segment_num_to_export == std::numeric_limits<int>::max() ? s3d->get_min_segment_num() : segment_num_to_export;
+  int max_seg = segment_num_to_export == std::numeric_limits<int>::max() ? s3d->get_max_segment_num() : segment_num_to_export;
 
   for (int segment_num = min_seg; segment_num <= max_seg; ++segment_num)
     for (int tof_pos_num = s3d->get_min_tof_pos_num(); tof_pos_num <= s3d->get_max_tof_pos_num(); ++tof_pos_num)
