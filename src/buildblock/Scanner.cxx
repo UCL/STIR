@@ -492,8 +492,8 @@ Scanner::Scanner(Type scanner_type)
           1.6F,                                            // bin size (mm)
           0.0324F, // intrinsic tilt, use value for the Siemens Biograph Vision (same crystal size and geometry as the Quadra)
           // ONLY used for CTI scanners for normalisation. These values will be ignored here.
-          4,
-          1, // n axial/trans blocks per bucket
+          4, // n axial blocks per bucket
+          1, // n trans blocks per bucket
           10 * 8 + 1,
           20 + 1, // n axial/trans xtals per block
           0,
@@ -841,7 +841,18 @@ Scanner::Scanner(Type scanner_type)
                  511.F,
                  (short int)(351),
                  (float)(13.02),
-                 (float)(390.0F));
+                 (float)(390.0F),
+                 "Cylindrical",
+                 5.3F, // axial
+                 4.F   // transaxial
+      );
+      // note: crystal length: 25mm
+      // we want ring_spacing * (num_rings - 1) ==
+      //   (axial_block_spacing * (num_axial_blocks -1) + (num_axial_crystals_per_block - 1) * axial_crystal_spacing))
+      this->set_axial_block_spacing((this->get_ring_spacing() * (this->get_num_rings() - 1)
+                                     - (this->get_num_axial_crystals_per_block() - 1) * this->get_axial_crystal_spacing())
+                                    / (this->get_num_axial_blocks() - 1));
+      this->set_transaxial_block_spacing(this->get_transaxial_crystal_spacing() * this->get_num_transaxial_crystals_per_block());
       break;
 
     case Discovery690:
@@ -1551,7 +1562,10 @@ Scanner::set_params(Type type_v,
   else
     set_scanner_geometry(scanner_geometry_v);
 
-  set_up();
+#if STIR_VERSION < 070000
+  if (this->scanner_geometry == "Cylindrical")
+    this->set_up();
+#endif
 }
 
 void
@@ -2244,7 +2258,10 @@ Scanner::get_scanner_from_name(const string& name)
         {
           const string matching_scanner_name = standardise_interfile_keyword(*iter);
           if (matching_scanner_name == matching_name)
-            return scanner_ptr;
+            {
+              scanner_ptr->set_up();
+              return scanner_ptr;
+            }
         }
 
       // we didn't find it yet

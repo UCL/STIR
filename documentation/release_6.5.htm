@@ -60,18 +60,68 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
     </li>
+    <li>
+      enable TOF for <code>BlocksOnCylindrical/Generic</code>
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
+    </li>
+    <li>
+      Enable GATE ROOT support <code>BlocksOnCylindrical</code>.
+      This requires extra keywords in the headers for the ROOT file (<tt>.hroot</tt>).
+      The keywords are the same as in the Interfile header. For example
+      <pre>
+         Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := BlocksOnCylindrical
+         Distance between crystals in axial direction (cm)           := 0.63
+         Distance between crystals in transaxial direction (cm)      := 0.42
+         Distance between blocks in axial direction (cm)             := 3.78
+         Distance between blocks in transaxial direction (cm)        := 3.78
+      </pre>
+      This change makes STIR geometry much closer to GATE ROOT, which for
+      instance allowed us to decrease the tolerances in our tests.<br>
+      <strong>Warning:</strong> This is currently only supported for
+      <pre>
+        GATE scanner type := GATE_Cylindrical_PET
+      </pre>
+      <br>
+      Note that the user of "virtual" crystals and block geometry likely will lead
+      to wrong results (and is untested).
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
+    </li>
   </ul>
 
-  <!--
   <h3>Changed functionality</h3>
   <ul>
+    <li>
+      Add extra run-time checks for <code>BlocksOnCylindrical</code> scanners.
+      This includes basic checks on crystal/blocks spacing when constructing the
+      geometry (calling <code>error()</code> when they fail) and a
+      check on ring-distance (calling <code>warning()</code> when it fails), see
+      <a href="https://github.com/UCL/STIR/issues/1753">Issue 1753</a>.
+      <br>
+      The checks will be performed when calling <code>Scanner::set_up()</code>,
+      which for instance is called after parsing headers.
+      <br>
+      <strong>Warning for developers:</strong> <code>Scanner::set_up()</code> now
+      <strong>always</strong>needs to be called explicitly after construction of a scanner.
+      <br>
+      To enable testing, we have now added approximate block-info for the GE Signa PET/MR.
+      However, it still defaults to using Cylindrical geometry.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
+    </li>
   </ul>
 
   <h4>Changes to examples</h4>
   <ul>
-
+    <li>
+      Changed <tt>examples/ROOT_files/ROOT_STIR_consistency/root_header_test_template.hroot</tt>
+      to use BlocksOnCylindrical geometry.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
+    </li>
   </ul>
-
+  <!--
   <h3>Changes to documentation</h3>
   <ul>
   </ul>
@@ -110,18 +160,30 @@
 
   <h3>New Deprecations and renames</h3>
   <ul>
-    <code>Scanner::get_detector_map_sptr()</code> is now deprecated. Use
-    <code>get_detector_coordinate_map()</code> instead (or <code>get_detector_coordinate_map_sptr</code>
-    if you need to).
-    <br>
+    <li>
+      <code>Scanner::get_detector_map_sptr()</code> is now deprecated. Use
+      <code>get_detector_coordinate_map()</code> instead (or <code>get_detector_coordinate_map_sptr</code>
+      if you need to).
+      <br>
       <a href=https://github.com/UCL/STIR/pull/1731>PR #1731</a>.
     </li>
   </ul>
-<!--
+
   <h3>Code improvements</h3>
   <ul>
+    <li>
+      Added class <code>ProjDataInfoPETScannerWithDiscreteDetectors</code>.
+      This class should/can be used for accessing members such as
+      <code>get_det_pos_pair_for_bin</code> etc., i.e. any members that
+      assume the there is a correspondence between detection positions and bins.
+      <br>
+      While it's currently an alias for <code>ProjDataInfoCylindricalNoArcCorr</code>,
+      this is expected to change.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
+    </li>
   </ul>
--->
+
   <h3>Test changes</h3>
   <p>All new features and most code changes were accompanied by new tests.</p>
   <ul>
