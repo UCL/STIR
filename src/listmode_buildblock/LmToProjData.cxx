@@ -169,6 +169,7 @@ void
 LmToProjData::set_input_data(const std::string& filename)
 {
   shared_ptr<ListModeData> lm(stir::read_from_file<ListModeData>(filename));
+  this->_already_setup = false;
   this->set_input_data(lm);
   this->input_filename = filename;
 }

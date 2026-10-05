@@ -25,14 +25,18 @@
 #include <stdexcept>
 #ifdef __CUDACC__
 #  include <cuda_runtime.h>
-#  include "cuvec.cuh"
+#else
+#  ifndef CUVEC_DISABLE_CUDA
+#    define CUVEC_DISABLE_CUDA
+#  endif
 #endif
+#include "cuvec.cuh"
+#include <vector>
+#include <memory>
 #ifdef STIR_WITH_CUDA
 #  include <cuda_runtime.h>
-#  include "cuvec.cuh"
+#  include "stir/algebraic_kernels.h"
 #endif
-#include <vector>
-#include "stir/algebraic_kernels.h"
 
 START_NAMESPACE_STIR
 
@@ -260,43 +264,19 @@ typedef dim3 cuda_dim3;
 typedef int3 cuda_int3;
 #endif
 
-#ifdef __CUDACC__
-
 //! copy an `Array` to pre-allocated device memory
 /*!
   \ingroup CUDA
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
-{
-  if (stir_array.is_contiguous())
-    {
-      info("array_to_device contiguous", 100);
-      cudaMemcpy(dev_data, stir_array.get_const_full_data_ptr(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
-      stir_array.release_const_full_data_ptr();
-    }
-  else
-    {
-      info("array_to_device non-contiguous", 100);
-      // Allocate host memory to get contiguous vector, copy array to it and copy from device to host
-      std::vector<elemT> tmp_data(stir_array.size_all());
-      std::copy(stir_array.begin_all(), stir_array.end_all(), tmp_data.begin());
-      cudaMemcpy(dev_data, tmp_data.data(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
-    }
-}
+void array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array);
 
 //! copy an `Array` to pre-allocated CuVec
 /*!
   \ingroup CUDA
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array)
-{
-  dev_data.resize(stir_array.size_all());
-  std::copy(stir_array.begin_all(), stir_array.end_all(), dev_data.begin());
-}
+void array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array);
 
 //! copy CUDA pointer to `Array`
 /*!
@@ -304,41 +284,48 @@ array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir
   The third argument is ignored, as `cudaMemcpy` always syncs device and host.
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true)
-{
-  if (stir_array.is_contiguous())
-    {
-      info("array_to_host contiguous", 100);
-      cudaMemcpy(stir_array.get_full_data_ptr(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
-      stir_array.release_full_data_ptr();
-    }
-  else
-    {
-      info("array_to_host non-contiguous", 100);
-      // Allocate host memory for the result and copy from device to host
-      std::vector<elemT> tmp_data(stir_array.size_all());
-      cudaMemcpy(tmp_data.data(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
-      // Copy the data to the stir_array
-      std::copy(tmp_data.begin(), tmp_data.end(), stir_array.begin_all());
-    }
-}
-
+void array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true);
 //! copy CuVec to `Array`
 /*!
   \ingroup CUDA
   If \a sync = \c true, the function will call `cudaDeviceSynchronize()` before copying.
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true)
+void array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
+
+#ifdef STIR_WITH_CUDA
+namespace detail
 {
-  if (sync)
-    cudaDeviceSynchronize();
-  if (stir_array.size_all() != dev_data.size())
-    error("array_to_host: size mismatch between CuVec and Array");
-  std::copy(dev_data.begin(), dev_data.end(), stir_array.begin_all());
+//! Pointer a kernel can read: the array's own pointer if on the GPU, otherwise a device copy in \a tmp.
+template <int num_dimensions, typename elemT>
+const elemT*
+device_readable_ptr(const Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp)
+{
+  if (onGPU(arr))
+    return &*arr.begin_all();
+  array_to_device(tmp, arr);
+  return tmp.data();
 }
+
+//! Pointer a kernel can write to: the array's own pointer if on the GPU, otherwise \a tmp.
+//! If \a copy_in is true, \a tmp is first filled with the array's contents.
+//! If the array is not on the GPU, the caller must copy the result back afterwards.
+template <int num_dimensions, typename elemT>
+elemT*
+device_writable_ptr(Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp, const bool copy_in)
+{
+  if (onGPU(arr))
+    return &*arr.begin_all();
+  if (copy_in)
+    array_to_device(tmp, arr);
+  else
+    tmp.resize(arr.size_all());
+  return tmp.data();
+}
+} // namespace detail
+#endif
+
+#ifdef __CUDACC__
 
 //! \brief Performs a parallel reduction sum on shared memory within a CUDA thread block, final value stored in shared_mem[0].
 template <typename elemT>

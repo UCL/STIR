@@ -80,6 +80,12 @@ if (HAVE_HDF5)
  )
 endif()
 
+if (HAVE_PETSIRD)
+list(APPEND ${dir_LIB_SOURCES}
+  PETSIRDCListmodeInputFileFormat.cxx
+)
+endif()
+
 endif() # MINI_STIR
 
 target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
@@ -136,4 +142,8 @@ if (HAVE_JSON)
   #
   get_target_property(TMP nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
   target_include_directories(${TARGET} PRIVATE "${TMP}")
+endif()
+
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
 endif()

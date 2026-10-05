@@ -3,9 +3,10 @@
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
     Copyright (C) 2016, University of Hull
-    Copyright (C) 2016, 2019, 2021, 2023 UCL
+    Copyright (C) 2016, 2019, 2021, 2023, 2024, 2026 UCL
     Copyright 2017 ETH Zurich, Institute of Particle Physics and Astrophysics
     Copyright (C 2017-2018, University of Leeds
+    Copyright (C) 2026, UMCG
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -37,6 +38,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DetectorCoordinateMap.h"
 #include "stir/shared_ptr.h"
+#include "stir/deprecated.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -107,6 +109,7 @@ class Succeeded;
 class Scanner
 {
   friend class BlocksTests;
+  friend class ProjDataInfoCylindricalNoArcCorrTests;
 
 public:
   /************* static members*****************************/
@@ -573,7 +576,9 @@ public:
   inline Succeeded find_detection_position_given_cartesian_coordinate(DetectionPosition<>& det_pos,
                                                                       const CartesianCoordinate3D<float>& cart_coord) const;
 
-  shared_ptr<const DetectorCoordinateMap> get_detector_map_sptr() const { return detector_map_sptr; }
+  shared_ptr<const DetectorCoordinateMap> STIR_DEPRECATED get_detector_map_sptr() const { return detector_map_sptr; }
+  shared_ptr<const DetectorCoordinateMap> get_detector_coordinate_map_sptr() const { return detector_map_sptr; }
+  const DetectorCoordinateMap& get_detector_coordinate_map() const { return *detector_map_sptr; }
 
 private:
   bool _already_setup;
@@ -616,20 +621,22 @@ private:
   //! This number corresponds the the least significant clock digit.
   float size_timing_pos;
 
-  //!
-  //! \brief scanner info needed for block geometry
+  //! \name scanner info needed for block geometry
   //! \author Parisa Khateri
-  //! A negative value indicates unknown.
+  //@{ A negative value indicates unknown.
   std::string scanner_geometry;     /*! scanner geometry */
   float axial_crystal_spacing;      /*! crystal pitch in axial direction in mm*/
   float transaxial_crystal_spacing; /*! crystal pitch in transaxial direction in mm*/
   float axial_block_spacing;        /*! block pitch in axial direction in mm*/
   float transaxial_block_spacing;   /*! block pitch in transaxial direction in mm*/
-
+  //@}
   std::string crystal_map_file_name;
-  shared_ptr<DetectorCoordinateMap> detector_map_sptr; /*! effective detection positions including average DOI */
+  shared_ptr<const DetectorCoordinateMap> detector_map_sptr; /*! effective detection positions including average DOI */
 
-  void set_detector_map(const DetectorCoordinateMap::det_pos_to_coord_type& coord_map);
+  //! Directly set the \c shared_ptr (use with caution)
+  void set_detector_coordinate_map_sptr(shared_ptr<const DetectorCoordinateMap> new_map_sptr);
+  //! This function performs a deep copy of the object
+  void set_detector_coordinate_map(const DetectorCoordinateMap& coord_map);
   void initialise_max_FOV_radius();
 
   // function to create the maps

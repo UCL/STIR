@@ -22,12 +22,9 @@
   SWIGINTERN int
   SWIG_AsVal_dec(long)(PyObject * obj, long * val)
   {
-    if (PyInt_Check(obj)) {
-      if (val) *val = PyInt_AsLong(obj);
-      return SWIG_OK;
-    } else if (PyLong_Check(obj)) {
+    if (PyLong_Check(obj)) {
       long v = PyLong_AsLong(obj);
-      if (!PyErr_Occurred()) {
+      if (v != -1 || !PyErr_Occurred()) {
 	if (val) *val = v;
 	return SWIG_OK;
       } else {
@@ -37,8 +34,8 @@
 %#ifdef SWIG_PYTHON_CAST_MODE
     {
       int dispatch = 0;
-      long v = PyInt_AsLong(obj);
-      if (!PyErr_Occurred()) {
+      long v = PyLong_AsLong(obj);
+      if (v != -1 || !PyErr_Occurred()) {
 	if (val) *val = v;
 	return SWIG_AddCast(SWIG_OK);
       } else {
@@ -54,14 +51,12 @@
       }
     }
 %#endif
-    if (PyArray_IsScalar(obj,Integer))
-    {
-      PyArray_Descr * descr = PyArray_DescrNewFromType(NPY_LONG);
-      PyArray_CastScalarToCtype(obj, (void*)val, descr);
-      Py_DECREF(descr);
-      return SWIG_AddCast(SWIG_OK);
-    }
-    return SWIG_TypeError;
+    if (!PyArray_IsScalar(obj,Integer)) return SWIG_TypeError;
+    if (!val) return SWIG_OK;
+    PyArray_Descr * longDescr = PyArray_DescrFromType(NPY_LONG);
+    PyArray_CastScalarToCtype(obj, (void*)val, longDescr);
+    Py_DECREF(longDescr);
+    return SWIG_OK;
   }
 }
 
@@ -78,15 +73,7 @@
   SWIGINTERN int
   SWIG_AsVal_dec(unsigned long)(PyObject *obj, unsigned long *val)
   {
-    if (PyInt_Check(obj)) {
-      long v = PyInt_AsLong(obj);
-      if (v >= 0) {
-	if (val) *val = v;
-	return SWIG_OK;
-      } else {
-	return SWIG_OverflowError;
-      }
-    } else if (PyLong_Check(obj)) {
+    if (PyLong_Check(obj)) {
       unsigned long v = PyLong_AsUnsignedLong(obj);
       if (!PyErr_Occurred()) {
 	if (val) *val = v;
@@ -115,14 +102,12 @@
       }
     }
 %#endif
-    if (PyArray_IsScalar(obj,Integer))
-    {
-      PyArray_Descr * descr = PyArray_DescrNewFromType(NPY_ULONG);
-      PyArray_CastScalarToCtype(obj, (void*)val, descr);
-      Py_DECREF(descr);
-      return SWIG_AddCast(SWIG_OK);
-    }
-    return SWIG_TypeError;
+    if (!PyArray_IsScalar(obj,Integer)) return SWIG_TypeError;
+    if (!val) return SWIG_OK;
+    PyArray_Descr * ulongDescr = PyArray_DescrFromType(NPY_ULONG);
+    PyArray_CastScalarToCtype(obj, (void*)val, ulongDescr);
+    Py_DECREF(ulongDescr);
+    return SWIG_OK;
   }
 }
 
@@ -136,8 +121,8 @@ SWIG_AsVal_dec(double)(PyObject *obj, double *val)
   if (PyFloat_Check(obj)) {
     if (val) *val = PyFloat_AsDouble(obj);
     return SWIG_OK;
-  } else if (PyInt_Check(obj)) {
-    if (val) *val = PyInt_AsLong(obj);
+  } else if (PyLong_Check(obj)) {
+    if (val) *val = PyLong_AsLong(obj);
     return SWIG_OK;
   } else if (PyLong_Check(obj)) {
     double v = PyLong_AsDouble(obj);
@@ -171,7 +156,7 @@ SWIG_AsVal_dec(double)(PyObject *obj, double *val)
 %#endif
     if (PyArray_IsScalar(obj,Double))
     {
-      PyArray_Descr * descr = PyArray_DescrNewFromType(NPY_DOUBLE);
+      PyArray_Descr * descr = PyArray_DescrFromType(NPY_DOUBLE);
       PyArray_CastScalarToCtype(obj, (void*)val, descr);
       Py_DECREF(descr);
       return SWIG_AddCast(SWIG_OK);
@@ -179,7 +164,7 @@ SWIG_AsVal_dec(double)(PyObject *obj, double *val)
   if (PyArray_IsScalar(obj,Float))
     {
       float fval;
-      PyArray_Descr * descr = PyArray_DescrNewFromType(NPY_FLOAT32);
+      PyArray_Descr * descr = PyArray_DescrFromType(NPY_FLOAT32);
       PyArray_CastScalarToCtype(obj, (void*)&fval, descr);
       *val=(double)fval;
       Py_DECREF(descr);

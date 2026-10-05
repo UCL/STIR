@@ -32,6 +32,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
         test_DateTime.cxx
         test_radionuclide.cxx
+		test_cuda_utilities_from_cxx.cxx
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
@@ -76,6 +77,13 @@ list (APPEND buildblock_simple_tests
 	test_multiple_proj_data.cxx
         test_interpolate_projdata.cxx
 )
+
+if (HAVE_PETSIRD)
+  list (APPEND buildblock_simple_tests
+	test_PETSIRDInfo_helpers.cxx
+  )
+  endif()
+
 
 endif() # MINI_STIR
 

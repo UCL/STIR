@@ -31,7 +31,7 @@ static inline float
 random_point(const float low, const float high)
 {
   /* returns a pseudo random number which holds in the bounds low and high */
-  const float result = (rand() * (high - low)) / RAND_MAX + low;
+  const float result = static_cast<float>((static_cast<double>(rand()) * (high - low)) / RAND_MAX + low);
   assert(low <= result);
   assert(high >= result);
   return result;

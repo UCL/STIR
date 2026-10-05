@@ -56,6 +56,7 @@ set(${dir_LIB_SOURCES}
 if (STIR_WITH_CUDA)
   list(APPEND ${dir_LIB_SOURCES}
     CUDA/algebraic_kernels.cu
+    CUDA/cuda_utilities.cu
     )
 endif()
 
@@ -113,7 +114,12 @@ if (NOT MINI_STIR)
     list(APPEND ${dir_LIB_SOURCES}
       ProjDataGEHDF5.cxx
       )
-endif()
+  endif()
+  if (HAVE_PETSIRD)
+    list(APPEND ${dir_LIB_SOURCES}
+      PETSIRDInfo.cxx
+    )
+  endif()
 
 endif() # MINI_STIR
 
@@ -161,4 +167,6 @@ if (STIR_OPENMP)
   target_link_libraries(${TARGET} PUBLIC ${OpenMP_EXE_LINKER_FLAGS})
 endif()
 
-
+if(HAVE_PETSIRD)
+  target_link_libraries(${TARGET} PUBLIC PETSIRD::petsird)
+endif()

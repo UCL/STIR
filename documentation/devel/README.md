@@ -7,3 +7,4 @@ You want to contribute to STIR? Great!
 - Read our Git [guidelines and recommendations](git-recommendations.md)
 - Install git hooks (required for serious development): [instructions](git-hooks.md)
 - Set your editor settings appropriately: [instructions](editor-settings.md)
+- To run the CI workflow locally with `act`: [instructions](local-CI.md)

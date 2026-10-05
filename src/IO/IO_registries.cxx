@@ -1,4 +1,5 @@
 /*
+    Copyright 2025, 2026, University Medical Center Groningen
     Copyright (C) 2002-2011, Hammersmith Imanet Ltd
     Copyright (C) 2012, Kris Thielemans
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
@@ -64,6 +65,10 @@
 #    include "stir/IO/ROOTListmodeInputFileFormat.h"
 #    include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
 #    include "stir/IO/InputStreamFromROOTFileForECATPET.h"
+#  endif
+
+#  ifdef HAVE_PETSIRD
+#    include "stir/IO/PETSIRDCListmodeInputFileFormat.h"
 #  endif
 
 #  ifdef HAVE_UPENN
@@ -154,6 +159,10 @@ static InputStreamWithRecordsFromUPENNbin::RegisterIt dummy68606;
 static InputStreamWithRecordsFromUPENNtxt::RegisterIt dummy686062;
 // static RegisterInputFileFormat<PENNbinListmodeInputFileFormat> LMdummyPENNbin(9);
 // static RegisterInputFileFormat<PENNImageInputFileFormat> idummy1(2);
+#  endif
+
+#  ifdef HAVE_PETSIRD
+static RegisterInputFileFormat<PETSIRDCListmodeInputFileFormat> LMdummyPETSIRD(10);
 #  endif
 
 #endif // MINI_STIR

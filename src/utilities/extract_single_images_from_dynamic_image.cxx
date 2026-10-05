@@ -92,7 +92,7 @@ main(int argc, char* argv[])
           std::string current_filename;
           try
             {
-              if (std::string(argv[1]).find("%"))
+              if (std::string(argv[1]).find("%") != std::string::npos)
                 {
                   warning("The output_filename pattern is using the boost::format convention ('\%d')."
                           "It is recommended to use fmt::format/std::format style formatting ('{}').");
