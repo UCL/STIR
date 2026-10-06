@@ -49,14 +49,26 @@ public:
     return !_rates.empty();
   }
 
-  float get_singles_rate(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const override
-  {
-    const int ring = static_cast<int>(det_pos.axial_coord());
-    const int axial_bucket = ring / 8;
-    if (axial_bucket < 0 || axial_bucket >= static_cast<int>(_rates.size()))
+float get_singles_rate(const DetectionPosition<>& det_pos,
+                       const double /*start_time*/,
+                       const double /*end_time*/) const override
+{
+  const int ring       = static_cast<int>(det_pos.axial_coord());
+  const int tangential = static_cast<int>(det_pos.tangential_coord());
+
+  const int num_axial_buckets      = 8;
+  const int num_transaxial_buckets = 28;
+  const int rings_per_axial_bucket = 64 / num_axial_buckets;
+
+  const int axial_bucket      = std::min(ring / rings_per_axial_bucket, num_axial_buckets - 1);
+  const int transaxial_bucket = std::min((tangential * num_transaxial_buckets) / 504,
+                                          num_transaxial_buckets - 1);
+  const int bucket_idx        = transaxial_bucket + num_transaxial_buckets * axial_bucket;
+
+  if (bucket_idx < 0 || bucket_idx >= static_cast<int>(_rates.size()))
       return 0.f;
-    return _rates[axial_bucket];
-  }
+  return _rates[bucket_idx];
+}
 
   float get_singles(const int singles_bin_index, const double start_time, const double end_time) const override
   {
