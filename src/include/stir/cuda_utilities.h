@@ -27,8 +27,10 @@
 #  include <cuda_runtime.h>
 #  include "cuvec.cuh"
 #else
-#  ifndef CUVEC_DISABLE_CUDA
-#    define CUVEC_DISABLE_CUDA
+#  ifndef STIR_WITH_CUDA
+#    ifndef CUVEC_DISABLE_CUDA
+#      define CUVEC_DISABLE_CUDA
+#    endif
 #  endif
 #endif
 #include <memory>
@@ -289,6 +291,35 @@ void array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_da
 */
 template <int num_dimensions, typename elemT>
 void array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
+
+#ifdef STIR_WITH_CUDA
+// Pointer a kernel can read: the array's own pointer if on the GPU, otherwise a device copy in tmp.
+template <int num_dimensions, typename elemT>
+const elemT*
+device_readable_ptr(const Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp)
+{
+  if (onGPU(arr))
+    return &*arr.begin_all();
+  array_to_device(tmp, arr);
+  return tmp.data();
+}
+
+// Pointer a kernel can write to: the array's own pointer if on the GPU, otherwise tmp.
+// If copy_in is true, tmp is first filled with the array contents.
+// If the array is not on the GPU, the caller must copy the result back afterwards.
+template <int num_dimensions, typename elemT>
+elemT*
+device_writable_ptr(Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp, const bool copy_in)
+{
+  if (onGPU(arr))
+    return &*arr.begin_all();
+  if (copy_in)
+    array_to_device(tmp, arr);
+  else
+    tmp.resize(arr.size_all());
+  return tmp.data();
+}
+#endif
 
 #ifdef __CUDACC__
 
