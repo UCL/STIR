@@ -1,0 +1,74 @@
+PreconditionedGradientParameters :=
+; example file for the composable preconditioned-gradient engine:
+;   x <- [x + alpha_k P(x) g_tilde]_+
+; here g_tilde = SVRG (variance-reduced stochastic gradient) and P = the Hessian diagonal of the
+; Relative Difference Prior. This is the composition used by the PETRIC2 "psv" algorithm; see
+; PSV_RDP.par for the equivalent locked preset.
+; this is a minimal file. check other sample files and doc for more options
+
+objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+input file := test.hs
+; see User's Guide to see when you need this
+zero end planes of segment 0 := 0
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+; specify additive projection data to handle randoms or so
+additive sinogram := 0
+
+; the 'Hessian Diagonal' preconditioner needs a prior that implements
+; compute_Hessian_diagonal, i.e. one of the Gibbs priors. Any other prior is refused at set-up.
+prior type := Gibbs Relative Difference
+  Gibbs Relative Difference Penalty Parameters :=
+  penalisation factor := 1
+  gamma value := 2
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; kappa filename :=
+  End Gibbs Relative Difference Penalty Parameters :=
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+initial estimate := some_image
+output filename prefix := test_svrg_rdp
+number of subsets := 8
+number of subiterations := 160
+save estimates at subiteration intervals := 8
+
+; ---- the two composable axes ----
+
+gradient estimator type := SVRG
+  SVRG Parameters :=
+  ; recompute the full gradient snapshot every N epochs
+  complete gradient epoch interval := 2
+  End SVRG Parameters :=
+
+preconditioner type := Hessian Diagonal
+  Hessian Diagonal Preconditioner Parameters :=
+  hessian factor := 2
+  ; smooth the preconditioner image
+  filter fwhm (mm) := 5
+  ; delta rel := 0
+  End Hessian Diagonal Preconditioner Parameters :=
+
+; ---- step size and preconditioner schedule ----
+
+; step_k = (initial step size) / (1 + (step size decay) * k), with k the update number
+initial step size := 3.5
+step size decay := 0.01
+; smooth the initial image before the first update
+initial image filter fwhm (mm) := 6
+
+; the preconditioner is always computed before the first update. Recompute it every N updates
+; (0 disables). Alternatively, list the epochs and/or updates explicitly:
+;   precond update epochs := {1}
+;   precond update subiterations := {4}
+precond update interval := 8
+
+END :=
