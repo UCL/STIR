@@ -22,18 +22,226 @@
 #include "stir/Array.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include <stdexcept>
 #ifdef __CUDACC__
 #  include <cuda_runtime.h>
 #else
-#  ifndef CUVEC_DISABLE_CUDA
-#    define CUVEC_DISABLE_CUDA
+#  ifndef STIR_WITH_CUDA
+#    ifndef CUVEC_DISABLE_CUDA
+#      define CUVEC_DISABLE_CUDA
+#    endif
 #  endif
 #endif
 #include "cuvec.cuh"
 #include <vector>
 #include <memory>
+#ifdef STIR_WITH_CUDA
+#  include <cuda_runtime.h>
+#  include "stir/algebraic_kernels.h"
+#endif
 
 START_NAMESPACE_STIR
+
+#ifdef STIR_WITH_CUDA
+
+template <typename T>
+inline bool
+onGPU(const T* data)
+{
+  cudaPointerAttributes attr;
+  cudaError_t err = cudaPointerGetAttributes(&attr, data);
+
+  if (err != cudaSuccess)
+    {
+      cudaGetLastError();
+      return false;
+    }
+
+  switch (attr.type)
+    {
+    case cudaMemoryTypeDevice:
+    case cudaMemoryTypeManaged:
+      return true;
+
+    case cudaMemoryTypeHost:
+    case cudaMemoryTypeUnregistered:
+      return false;
+
+    default:
+      throw std::invalid_argument("Unknown CUDA memory type");
+    }
+}
+
+template <int num_dimensions, typename elemT>
+inline bool
+onGPU(const Array<num_dimensions, elemT>& arr)
+{
+  const elemT* ptr = arr.get_const_full_data_ptr();
+  bool result = onGPU(ptr);
+  arr.release_const_full_data_ptr();
+  return result;
+}
+
+template <typename T>
+inline bool
+onGPU(const CuVec<T>& vec)
+{
+  return onGPU(vec.data());
+}
+#endif
+
+template <int num_dimensions, typename elemT>
+void
+copy(Array<num_dimensions, elemT>& out, const Array<num_dimensions, elemT>& in, bool cuda_sync = true)
+{
+
+#ifdef STIR_WITH_CUDA
+  const bool out_on_gpu = onGPU(out.get_const_data_ptr());
+  const bool in_on_gpu = onGPU(in.get_const_data_ptr());
+
+  if ((out_on_gpu || in_on_gpu) && out.is_contiguous() && in.is_contiguous())
+    {
+      cudaMemcpyKind kind;
+      if (out_on_gpu && in_on_gpu)
+        kind = cudaMemcpyDeviceToDevice;
+      else if (out_on_gpu && !in_on_gpu)
+        kind = cudaMemcpyHostToDevice;
+      else
+        kind = cudaMemcpyDeviceToHost;
+
+      cudaError_t err = cudaMemcpy(out.get_data_ptr(), in.get_const_data_ptr(), out.size_all() * sizeof(elemT), kind);
+      if (err != cudaSuccess)
+        throw std::runtime_error(cudaGetErrorString(err));
+
+      if (cuda_sync)
+        cudaDeviceSynchronize();
+
+      return;
+    }
+#endif
+
+  // Fallback to CPU copy
+  std::copy(in.begin_all(), in.end_all(), out.begin_all());
+}
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>&
+add_assign(Array<num_dimensions, elemT>& inout, const Array<num_dimensions, elemT>& arg, bool cuda_sync = true)
+{
+
+#ifdef STIR_WITH_CUDA
+  if (onGPU(inout.get_const_data_ptr()) && inout.is_contiguous() && arg.is_contiguous())
+    {
+      add_assign(inout.get_data_ptr(), arg.get_const_data_ptr(), inout.size_all());
+
+      if (cuda_sync)
+        cudaDeviceSynchronize();
+
+      return inout;
+    }
+#endif
+
+  // Fallback for CPU memory or non-contiguous data
+  inout += arg;
+  return inout;
+}
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>&
+sub_assign(Array<num_dimensions, elemT>& inout, const Array<num_dimensions, elemT>& arg, bool cuda_sync = true)
+{
+
+#ifdef STIR_WITH_CUDA
+  if (onGPU(inout.get_const_data_ptr()) && inout.is_contiguous() && arg.is_contiguous())
+    {
+      sub_assign(inout.get_data_ptr(), arg.get_const_data_ptr(), inout.size_all());
+      if (cuda_sync)
+        cudaDeviceSynchronize();
+      return inout;
+    }
+#endif
+
+  inout -= arg;
+  return inout;
+}
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>&
+mult_assign(Array<num_dimensions, elemT>& inout, const Array<num_dimensions, elemT>& arg, bool cuda_sync = true)
+{
+
+#ifdef STIR_WITH_CUDA
+  if (onGPU(inout.get_const_data_ptr()) && inout.is_contiguous() && arg.is_contiguous())
+    {
+      mult_assign(inout.get_data_ptr(), arg.get_const_data_ptr(), inout.size_all());
+
+      if (cuda_sync)
+        cudaDeviceSynchronize();
+
+      return inout;
+    }
+#endif
+
+  // CPU fallback for standard C++ arrays or non-contiguous data
+  inout *= arg;
+  return inout;
+}
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>&
+div_assign(Array<num_dimensions, elemT>& inout, const Array<num_dimensions, elemT>& arg, bool cuda_sync = true)
+{
+
+#ifdef STIR_WITH_CUDA
+  if (onGPU(inout.get_const_data_ptr()) && inout.is_contiguous() && arg.is_contiguous())
+    {
+      div_assign(inout.get_data_ptr(), arg.get_const_data_ptr(), inout.size_all());
+
+      if (cuda_sync)
+        cudaDeviceSynchronize();
+
+      return inout;
+    }
+#endif
+
+  // CPU fallback for standard C++ arrays or non-contiguous data
+  inout /= arg;
+  return inout;
+}
+
+template <int num_dimensions, typename elemT>
+void
+xapyb(Array<num_dimensions, elemT>& dst,
+      const Array<num_dimensions, elemT>& x,
+      const Array<num_dimensions, elemT>& y,
+      const elemT a,
+      const elemT b,
+      bool cuda_sync = true)
+{
+
+#ifdef STIR_WITH_CUDA
+  if (onGPU(dst.get_const_data_ptr()) && dst.is_contiguous() && x.is_contiguous() && y.is_contiguous())
+    {
+      CUDAxapyb(dst.get_data_ptr(), x.get_const_data_ptr(), y.get_const_data_ptr(), a, b, dst.size_all());
+      if (cuda_sync)
+        cudaDeviceSynchronize();
+      return;
+    }
+#endif
+
+  // CPU fallback
+  typename Array<num_dimensions, elemT>::full_iterator dst_it = dst.begin_all();
+  typename Array<num_dimensions, elemT>::const_full_iterator x_it = x.begin_all();
+  typename Array<num_dimensions, elemT>::const_full_iterator y_it = y.begin_all();
+
+  while (dst_it != dst.end_all())
+    {
+      *dst_it = (*x_it) * a + (*y_it) * b;
+      ++dst_it;
+      ++x_it;
+      ++y_it;
+    }
+}
 
 #ifndef __CUDACC__
 #  ifndef __host__
@@ -86,6 +294,35 @@ void array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_da
 */
 template <int num_dimensions, typename elemT>
 void array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
+
+#ifdef STIR_WITH_CUDA
+// Pointer a kernel can read: the array's own pointer if on the GPU, otherwise a device copy in tmp.
+template <int num_dimensions, typename elemT>
+const elemT*
+device_readable_ptr(const Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp)
+{
+  if (onGPU(arr))
+    return &*arr.begin_all();
+  array_to_device(tmp, arr);
+  return tmp.data();
+}
+
+// Pointer a kernel can write to: the array's own pointer if on the GPU, otherwise tmp.
+// If copy_in is true, tmp is first filled with the array contents.
+// If the array is not on the GPU, the caller must copy the result back afterwards.
+template <int num_dimensions, typename elemT>
+elemT*
+device_writable_ptr(Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp, const bool copy_in)
+{
+  if (onGPU(arr))
+    return &*arr.begin_all();
+  if (copy_in)
+    array_to_device(tmp, arr);
+  else
+    tmp.resize(arr.size_all());
+  return tmp.data();
+}
+#endif
 
 #ifdef __CUDACC__
 
