@@ -202,6 +202,7 @@ main(int argc, char* argv[])
 
       shared_ptr<Scanner> scanner_ptr(strlen(scanner_name) == 0 ? Scanner::ask_parameters()
                                                                 : Scanner::get_scanner_from_name(scanner_name));
+      scanner_ptr->set_up();
 
       // read first image
       cerr << "Reading " << filenames[0] << endl;

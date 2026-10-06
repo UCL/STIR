@@ -211,8 +211,9 @@ stir_mathTests::run_tests()
     // to  keep testing code below as close as possible to the image case, we'll just
     // take a single segment in the data.
 
-    shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
-    shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+    scanner_sptr->set_up();
+    shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                               /*span=*/1,
                                                                               /*max_delta=*/0,
                                                                               /*num_views=*/8,

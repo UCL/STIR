@@ -124,6 +124,10 @@ main(int argc, char* argv[])
     {
       // force scanner
       shared_ptr<Scanner> scanner_ptr(Scanner::get_scanner_from_name(scanner_name_ptr));
+      scanner_ptr->set_up();
+
+      scanner_ptr->set_up();
+
       mhead.system_type = find_ECAT_system_type(*scanner_ptr);
     }
 

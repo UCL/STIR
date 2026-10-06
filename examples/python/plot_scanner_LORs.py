@@ -39,7 +39,7 @@ scanner.set_intrinsic_azimuthal_tilt(0)
 scanner.set_axial_block_spacing(scanner.get_axial_crystal_spacing()*scanner.get_num_axial_crystals_per_block()*1.2)
 # scanner.set_num_rings(1)
 scanner.set_scanner_geometry("BlocksOnCylindrical")
-# scanner.set_up()
+scanner.set_up()
 
 Nr = scanner.get_num_rings()
 Nv = scanner.get_max_num_views()
