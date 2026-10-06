@@ -34,6 +34,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Bin.h"
 #include "stir/format.h"
+#inlcue <limits>
 
 using std::cerr;
 
