@@ -255,11 +255,9 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  //const elemT* image_ptr = &*current_image_estimate.begin_all();
-  //elemT* gradient_ptr = &*prior_gradient.begin_all();
   CuVec<elemT> tmp_image, tmp_gradient;
-  const elemT* image_ptr = detail::device_readable_ptr(current_image_estimate, tmp_image);
-  elemT* gradient_ptr = detail::device_writable_ptr(prior_gradient, tmp_gradient, /*copy_in=*/false);
+  const elemT* image_ptr = device_readable_ptr(current_image_estimate, tmp_image);
+  elemT* gradient_ptr = device_writable_ptr(prior_gradient, tmp_gradient, /*copy_in=*/false);
 
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!is_null_ptr(this->d_kappa_data)))
@@ -314,10 +312,9 @@ CudaRelativeDifferencePrior<elemT>::compute_value(const DiscretisedDensity<3, el
       error("CudaRelativeDifferencePrior: set_up has not been called");
     }
 
-  //const elemT* image_ptr = &*current_image_estimate.begin_all();
   CuVec<elemT> tmp_image;
-  const elemT* image_ptr = detail::device_readable_ptr(current_image_estimate, tmp_image);
-  
+  const elemT* image_ptr = device_readable_ptr(current_image_estimate, tmp_image);
+
   value_type* d_tmp_value;
 
   // Allocate memory on the GPU

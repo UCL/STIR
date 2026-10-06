@@ -461,9 +461,6 @@ CudaGibbsPenalty<elemT, PotentialT>::CudaGibbsPenalty(const bool only_2D, float 
 {}
 
 template <typename elemT, typename PotentialT>
-CudaGibbsPenalty<elemT, PotentialT>::~CudaGibbsPenalty() = default;
-
-template <typename elemT, typename PotentialT>
 double
 CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, elemT>& current_image_estimate)
 {
@@ -479,10 +476,9 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_value(const DiscretisedDensity<3, e
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
- 
-  //const elemT* image_ptr = &*current_image_estimate.begin_all();  
+  
   CuVec<elemT> tmp_image;
-  const elemT* image_ptr = detail::device_readable_ptr(current_image_estimate, tmp_image);
+  const elemT* image_ptr = device_readable_ptr(current_image_estimate, tmp_image);
 
   CudaGibbsPenalty_value_kernel<elemT, PotentialT><<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar.data(),
                                                                                             image_ptr,                                                                                          
@@ -526,12 +522,9 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elem
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  //const elemT* image_ptr = &*current_image_estimate.begin_all();
-  //elemT* gradient_ptr = &*prior_gradient.begin_all();
-  CuVec<elemT> tmp_image, tmp_gradient;
-  const elemT* image_ptr = detail::device_readable_ptr(current_image_estimate, tmp_image);
-  elemT* gradient_ptr = detail::device_writable_ptr(prior_gradient, tmp_gradient, /*copy_in=*/false);  
- 
+  CuVec<elemT> tmp_image, tmp_gradient; 
+  const elemT* image_ptr = device_readable_ptr(current_image_estimate, tmp_image);
+  elemT* gradient_ptr = device_writable_ptr(prior_gradient, tmp_gradient, /*copy_in=*/false);   
 
   CudaGibbsPenalty_gradient_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(
                                                                              gradient_ptr,
@@ -576,12 +569,10 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient_times_input(const Discreti
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
-
-  //const elemT* image_ptr = &*current_image_estimate.begin_all();
-  //const elemT* input_ptr = &*input.begin_all();  
+ 
   CuVec<elemT> tmp_image, tmp_input;
-  const elemT* image_ptr = detail::device_readable_ptr(current_image_estimate, tmp_image);
-  const elemT* input_ptr = detail::device_readable_ptr(input, tmp_input);
+  const elemT* image_ptr = device_readable_ptr(current_image_estimate, tmp_image);
+  const elemT* input_ptr = device_readable_ptr(input, tmp_input);  
 
   CudaGibbsPenalty_gradient_dot_input_kernel<elemT, PotentialT>
       <<<grid_dim, block_dim, shared_mem_bytes>>>(d_scalar.data(),
@@ -625,11 +616,9 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
 
-  //const elemT* image_ptr = &*current_image_estimate.begin_all();
-  //elemT* hessian_ptr = &*Hessian_diag.begin_all(); 
-  CuVec<elemT> tmp_image, tmp_hessian;
-  const elemT* image_ptr = detail::device_readable_ptr(current_image_estimate, tmp_image);
-  elemT* hessian_ptr = detail::device_writable_ptr(Hessian_diag, tmp_hessian, /*copy_in=*/false); 
+  CuVec<elemT> tmp_image, tmp_hessian; 
+  const elemT* image_ptr = device_readable_ptr(current_image_estimate, tmp_image);
+  elemT* hessian_ptr = device_writable_ptr(Hessian_diag, tmp_hessian, /*copy_in=*/false);   
 
   CudaGibbsPenalty_Hessian_diagonal_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(
                                                                                      hessian_ptr,
@@ -672,14 +661,11 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
   const bool do_kappa = !is_null_ptr(this->get_kappa_sptr());
   if (do_kappa != (!d_kappa_data.empty()))
     error("CudaGibbsPenalty internal error: inconsistent CPU and device kappa");
-
-  //const elemT* image_ptr = &*current_image_estimate.begin_all();
-  //const elemT* input_ptr = &*input.begin_all();
-  //elemT* output_ptr = &*output.begin_all();  
+  
   CuVec<elemT> tmp_image, tmp_input, tmp_output;
-  const elemT* image_ptr = detail::device_readable_ptr(current_image_estimate, tmp_image);
-  const elemT* input_ptr = detail::device_readable_ptr(input, tmp_input);
-  elemT* output_ptr = detail::device_writable_ptr(output, tmp_output, /*copy_in=*/true);
+  const elemT* image_ptr = device_readable_ptr(current_image_estimate, tmp_image);
+  const elemT* input_ptr = device_readable_ptr(input, tmp_input);
+  elemT* output_ptr = device_writable_ptr(output, tmp_output, /*copy_in=*/true);  
 
   CudaGibbsPenalty_Hessian_Times_Input_kernel<elemT, PotentialT><<<grid_dim, block_dim>>>(output_ptr,
                                                                                         image_ptr,
