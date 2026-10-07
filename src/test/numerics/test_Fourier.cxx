@@ -51,7 +51,7 @@ typedef VectorWithOffset<ArrayC1> ArrayC2;
 inline float
 rand1()
 {
-  return 2 * (rand() - RAND_MAX / 2.F) / RAND_MAX;
+  return static_cast<float>(2.0 * (static_cast<double>(rand()) - RAND_MAX / 2.0) / RAND_MAX);
 }
 
 /*!

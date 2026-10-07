@@ -228,7 +228,7 @@
       {
 	PyObject* p = PyTuple_New(num_dimensions);
 	for (int d=1; d<=num_dimensions; ++d)
-	  PyTuple_SET_ITEM(p, d-1, PyInt_FromLong(c[d]));
+	  PyTuple_SET_ITEM(p, d-1, PyLong_FromLong(c[d]));
 	return p;
       }
     template <int num_dimensions>
@@ -236,7 +236,7 @@
       {
 	PyObject* p = PyTuple_New(num_dimensions);
 	for (int d=1; d<=num_dimensions; ++d)
-	  PyTuple_SET_ITEM(p, d-1, PyInt_FromSize_t(c[d]));
+	  PyTuple_SET_ITEM(p, d-1, PyLong_FromSize_t(c[d]));
 	return p;
       }
     template <int num_dimensions>

@@ -390,11 +390,10 @@ jobs:
              case ${{matrix.os}} in
                (ubuntu*)
                sudo apt install -y libtbb-dev libvdt-dev libgif-dev libxpm-dev
-               ROOT_file=root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz
-               #root_v6.34.00.Linux-ubuntu24.10-x86_64-gcc14.2.tar.gz
+               ROOT_file=root_v6.40.02.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
                ;;
                (macOS*)
-               ROOT_file=https://root.cern/download/root_v6.34.00.macos-15.1-arm64-clang160.tar.gz
+               ROOT_file=root_v6.40.02.macos-15.7-arm64-clang170.tar.gz
                ;;
              esac
              wget https://root.cern/download/"$ROOT_file"

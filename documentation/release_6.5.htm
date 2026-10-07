@@ -33,11 +33,16 @@
 
   <h2> Summary for end users (also to be read by developers)</h2>
 
-<!--
   <h3>Bug fixes</h3>
   <ul>
+    <li>
+      Fix incompatibility problem with ROOT 6.38 or later. Previous versions of STIR either
+      crashed or threw an error <tt>Entry is null</tt>.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1741>PR #1741</a>.
+    </li>
  </ul>
--->
+
   <h3>New functionality</h3>
   <h4>General</h4>
   <ul>
@@ -79,6 +84,11 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
     </li>
+    <li>
+      SWIG: update SWIG files for compatibility with SWIG 4.5
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1743>PR #1743</a>.
+    </li>
   </ul>
 
   <h3>Known problems</h3>
@@ -97,18 +107,30 @@
       a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
     </li>
   </ul>
-<!--
+
   <h3>New Deprecations and renames</h3>
   <ul>
+    <code>Scanner::get_detector_map_sptr()</code> is now deprecated. Use
+    <code>get_detector_coordinate_map()</code> instead (or <code>get_detector_coordinate_map_sptr</code>
+    if you need to).
+    <br>
+      <a href=https://github.com/UCL/STIR/pull/1731>PR #1731</a>.
+    </li>
   </ul>
-
+<!--
   <h3>Code improvements</h3>
   <ul>
   </ul>
-
+-->
   <h3>Test changes</h3>
   <p>All new features and most code changes were accompanied by new tests.</p>
--->
+  <ul>
+    <li>
+      <code>ProjDataInfo*::get_m()</code> etc now have explicit consistency checks.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1731>PR #1731</a>.
+    </li>
+  </ul>
 </body>
 
 </html>

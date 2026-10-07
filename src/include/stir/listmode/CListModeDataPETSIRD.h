@@ -104,7 +104,10 @@ public:
 
   SavedPosition save_get_position() override;
 
-  Succeeded reopen_and_prime();
+  //! Reopens the underlying reader and primes it at the first event block.
+  /*! Calls error() (which throws) if the file cannot be opened, the header cannot be read,
+      or no event time blocks are found in the file. */
+  void reopen_and_prime();
 
   Succeeded seek_to_event_block_index(std::size_t target_event_block_index) const;
 
