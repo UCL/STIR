@@ -26,6 +26,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUForwardProjectorCUDA.h"
 #include "stir/cuda_utilities.h"
 
 START_NAMESPACE_STIR
@@ -126,10 +127,19 @@ private:
   bool _use_truncation;
   float _slope, _sigma0, _num_sigmas;
   std::string _att_filename;
-  float* dev_image;
-  float* dev_umap;
 
   shared_ptr<DiscretisedDensity<3, float>> _att_coeff_sptr;
+  AllocatedStack _b_allocatedStack;
+public:
+  const AllocatedStack& get_allocated_stack() const
+  {
+      return this->_b_allocatedStack;
+  }
+
+   AllocatedStack& get_allocated_stack()
+  {
+      return this->_b_allocatedStack;
+  }
 };
 
 END_NAMESPACE_STIR

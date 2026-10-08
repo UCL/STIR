@@ -11,10 +11,12 @@
 
 START_NAMESPACE_STIR
 #ifdef __CUDACC__
+#ifdef CUVEC_DISABLE_CUDA
+#error CUVEC_DISABLE_CUDA defined in this TU
+#endif
 void
 run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
-                            float* dev_image,
-                            const float* dev_umap,
+                            AllocatedStack& stack,
                             bool do_atten,
                             float coll_sigma0_cm,
                             float num_sigmas,
@@ -47,9 +49,6 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
   dim3 cuda_block_dim(block_x, block_y, block_z);
   dim3 cuda_grid_dim(grid_x, grid_y, grid_z);
 
-  CuVec<float> out_im(dim_x * dim_y * dim_z);
-  CuVec<float> out_umap(dim_x * dim_y * dim_z);
-
   float3 spacing = make_float3(spacing_x, spacing_y, spacing_z);
 
   float3 origin = make_float3(origin_x, origin_y, origin_z);
@@ -62,14 +61,11 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
 
   Viewgram<float>& vg0 = *vg_iter;
   const auto sino_size = vg0.size_all();
-  CuVec<float> dev_sino(sino_size);
+//  fprintf(stderr, "dev_sino allocated %p\n", dev_sino.data());
+//  fflush(stderr);
   int dim_ax = vg0.get_num_axial_poss();
   int dim_tg = vg0.get_num_tangential_poss();
 
-  //    float* blurred_im;
-  CuVec<float> blurred_im(dim_x * dim_y * dim_z);
-  //    if(coll_sigma0_cm>=0 && coll_slope>=0)
-  //        cudaMalloc(&blurred_im, dim_x*dim_y*dim_z * sizeof(float));
   if (vg0.size_all() != dim_ax * dim_tg)
     error("SPECTGPU: Viewgram size does not match kernel output size.");
 
@@ -79,24 +75,29 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
   if (vg0.get_num_tangential_poss() != dim_tg)
     error("SPECTGPU: Viewgram tangential dimension does not match image x dimension.");
 
+  if (!stack.is_allocated())
+      error("SPECTGPUFP: Something is wrong the CuVecs are not initialised");
+
+
   for (auto vg_iter = stir_sino.begin(); vg_iter != stir_sino.end(); ++vg_iter)
     {
+      //  the viewgrams need to be filled by the kernel so need to set everything to zero
+        cudaMemset(stack.dev_sino.data(), 0, sino_size * sizeof(float));
+      cudaMemset(stack.out_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
+      cudaMemset(stack.out_umap.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
+      cudaMemset(stack.blurred_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
       Viewgram<float>& vg = *vg_iter;
       Bin bin(0, vg.get_view_num(), 0, 0, 0);
+
       // the following sign is introduced to match SPECTUB
       float angle_rad = vg.get_proj_data_info().get_phi(
           bin); //-vg.get_view_num() * 2.f * M_PI / num_views;//vg.get_proj_data_info().get_phi(); //
       angle_rad = -std::fmod(angle_rad, 2.f * M_PI);
-      //        if (angle_rad >2.f * M_PI)
-      //            angle_rad -=2.f * M_PI;
-
-      //        std::cout<<"view and angle = "<<-vg.get_view_num()* 2.f * M_PI / num_views<<" "<<angle_rad<<"
-      //        "<<vg.get_view_num()<<std::endl;
 
       if (do_atten)
         {
           rotateKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
-              out_umap.data(), dev_umap, image_dim, spacing, origin, min_indices, angle_rad);
+              stack.out_umap.data(), stack.dev_umap.data(), image_dim, spacing, origin, min_indices, angle_rad);
 
           auto err0 = cudaGetLastError();
           if (err0 != cudaSuccess)
@@ -104,7 +105,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
         }
 
       rotateKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
-          out_im.data(), dev_image, image_dim, spacing, origin, min_indices, angle_rad);
+          stack.out_im.data(), stack.dev_image.data(), image_dim, spacing, origin, min_indices, angle_rad);
 
       auto err = cudaGetLastError();
       if (err != cudaSuccess)
@@ -112,43 +113,49 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
 
       if (coll_sigma0_cm >= 0 && coll_slope >= 0)
         {
-
-          //            cudaMalloc(&dev_umap, stir_image.size_all() * sizeof(float));
-          //            array_to_device(blurr_im, stir_umap);
           GaussianConvolutionKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
-              blurred_im.data(), out_im.data(), image_dim, spacing, coll_sigma0_cm, num_sigmas, coll_slope);
+              stack.blurred_im.data(), stack.out_im.data(), image_dim, spacing, coll_sigma0_cm, num_sigmas, coll_slope);
 
           auto errpsf_f0 = cudaGetLastError();
           if (errpsf_f0 != cudaSuccess)
             error(cudaGetErrorString(errpsf_f0));
 
-          cudaMemset(dev_sino.data(), 0, sino_size * sizeof(float));
-
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
-              dev_sino.data(), blurred_im.data(), out_umap.data(), image_dim, spacing, do_atten);
-
+              stack.dev_sino.data(), stack.blurred_im.data(), stack.out_umap.data(), image_dim, spacing, do_atten);
+cudaDeviceSynchronize();
           auto errpsf_f = cudaGetLastError();
           if (errpsf_f != cudaSuccess)
             error(cudaGetErrorString(errpsf_f));
         }
       else
         {
-
-          // array_to_device(dev_sino, vg); don't need this asthe viewgrams need to be filled by the kernel
-          // so need to set everything to zero
-
-          cudaMemset(dev_sino.data(), 0, sino_size * sizeof(float));
-
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
-              dev_sino.data(), out_im.data(), out_umap.data(), image_dim, spacing, do_atten);
+              stack.dev_sino.data(), stack.out_im.data(), stack.out_umap.data(), image_dim, spacing, do_atten);
 
           err = cudaGetLastError();
           if (err != cudaSuccess)
             error(cudaGetErrorString(err));
         }
 
-      array_to_host(vg, dev_sino, true);
+      array_to_host(vg, stack.dev_sino, true);
     }
+//  out_im.clear();
+//  out_im.shrink_to_fit();
+//  fprintf(stderr, "out_im released\n");
+
+//  out_umap.clear();
+//  out_umap.shrink_to_fit();
+//  fprintf(stderr, "out_umap released\n");
+
+//  blurred_im.clear();
+//  blurred_im.shrink_to_fit();
+//  fprintf(stderr, "blurred_im released\n");
+
+//  dev_sino.clear();
+//  dev_sino.shrink_to_fit();
+//  fprintf(stderr, "dev_sino released\n");
+//  fprintf(stderr, "leaving run_forward_projection_cuda\n");
+//  fflush(stderr);
 }
 #endif
 
