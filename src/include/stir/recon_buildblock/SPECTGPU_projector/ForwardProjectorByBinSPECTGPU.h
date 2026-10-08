@@ -37,63 +37,54 @@ class DataSymmetriesForViewSegmentNumbers;
 
 struct AllocatedStack
 {
-    size_t image_size = 0;
-    size_t sino_size = 0;
+  size_t image_size = 0;
+  size_t sino_size = 0;
 
-    CuVec<float> dev_image;
-    CuVec<float> dev_umap;
-    CuVec<float> out_im;
-    CuVec<float> out_umap;
-    CuVec<float> dev_sino;
-    CuVec<float> blurred_im;
-    CuVec<float> rotated_im;
-    CuVec<float> rotated_umap;
+  CuVec<float> dev_image;
+  CuVec<float> dev_umap;
+  CuVec<float> out_im;
+  CuVec<float> out_umap;
+  CuVec<float> dev_sino;
+  CuVec<float> blurred_im;
+  CuVec<float> rotated_im;
+  CuVec<float> rotated_umap;
 
-    void allocate(size_t image_size_,
-                  size_t sino_size_)
-    {
-        if (image_size == image_size_
-                && sino_size == sino_size_)
-            return;
+  void allocate(size_t image_size_, size_t sino_size_)
+  {
+    if (image_size == image_size_ && sino_size == sino_size_)
+      return;
 
-        image_size = image_size_;
-        sino_size = sino_size_;
+    image_size = image_size_;
+    sino_size = sino_size_;
 
-        out_im.resize(image_size);
-        out_umap.resize(image_size);
-        blurred_im.resize(image_size);
-        rotated_im.resize(image_size);
-        rotated_umap.resize(image_size);
-        dev_image.resize(image_size);
-        dev_umap.resize(image_size);
-        dev_sino.resize(sino_size);
-    }
+    out_im.resize(image_size);
+    out_umap.resize(image_size);
+    blurred_im.resize(image_size);
+    rotated_im.resize(image_size);
+    rotated_umap.resize(image_size);
+    dev_image.resize(image_size);
+    dev_umap.resize(image_size);
+    dev_sino.resize(sino_size);
+  }
 
-    void deallocate()
-    {
-        out_im.resize(0);
-        out_umap.resize(0);
-        blurred_im.resize(0);
-        rotated_im.resize(0);
-        rotated_umap.resize(0);
-        dev_image.resize(0);
-        dev_umap.resize(0);
-        dev_sino.resize(0);
+  void deallocate()
+  {
+    out_im.resize(0);
+    out_umap.resize(0);
+    blurred_im.resize(0);
+    rotated_im.resize(0);
+    rotated_umap.resize(0);
+    dev_image.resize(0);
+    dev_umap.resize(0);
+    dev_sino.resize(0);
 
-        image_size = 0;
-        sino_size = 0;
-    }
+    image_size = 0;
+    sino_size = 0;
+  }
 
+  bool is_allocated() const { return image_size != 0; }
 
-    bool is_allocated() const
-    {
-        return image_size != 0;
-    }
-
-    ~AllocatedStack()
-    {
-        deallocate();
-    }
+  ~AllocatedStack() { deallocate(); }
 };
 
 /*!
@@ -182,7 +173,6 @@ protected:
   int num_views;
 
 private:
-
   AllocatedStack _f_allocatedStack;
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
@@ -197,15 +187,9 @@ private:
   shared_ptr<DiscretisedDensity<3, float>> _att_coeff_sptr;
 
 public:
-  const AllocatedStack& get_allocated_stack() const
-  {
-      return this->_f_allocatedStack;
-  }
+  const AllocatedStack& get_allocated_stack() const { return this->_f_allocatedStack; }
 
-   AllocatedStack& get_allocated_stack()
-  {
-      return this->_f_allocatedStack;
-  }
+  AllocatedStack& get_allocated_stack() { return this->_f_allocatedStack; }
 };
 
 END_NAMESPACE_STIR

@@ -11,9 +11,9 @@
 
 START_NAMESPACE_STIR
 #ifdef __CUDACC__
-#ifdef CUVEC_DISABLE_CUDA
-#error CUVEC_DISABLE_CUDA defined in this TU
-#endif
+#  ifdef CUVEC_DISABLE_CUDA
+#    error CUVEC_DISABLE_CUDA defined in this TU
+#  endif
 void
 run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                             AllocatedStack& stack,
@@ -61,8 +61,8 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
 
   Viewgram<float>& vg0 = *vg_iter;
   const auto sino_size = vg0.size_all();
-//  fprintf(stderr, "dev_sino allocated %p\n", dev_sino.data());
-//  fflush(stderr);
+  //  fprintf(stderr, "dev_sino allocated %p\n", dev_sino.data());
+  //  fflush(stderr);
   int dim_ax = vg0.get_num_axial_poss();
   int dim_tg = vg0.get_num_tangential_poss();
 
@@ -76,13 +76,12 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
     error("SPECTGPU: Viewgram tangential dimension does not match image x dimension.");
 
   if (!stack.is_allocated())
-      error("SPECTGPUFP: Something is wrong the CuVecs are not initialised");
-
+    error("SPECTGPUFP: Something is wrong the CuVecs are not initialised");
 
   for (auto vg_iter = stir_sino.begin(); vg_iter != stir_sino.end(); ++vg_iter)
     {
       //  the viewgrams need to be filled by the kernel so need to set everything to zero
-        cudaMemset(stack.dev_sino.data(), 0, sino_size * sizeof(float));
+      cudaMemset(stack.dev_sino.data(), 0, sino_size * sizeof(float));
       cudaMemset(stack.out_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
       cudaMemset(stack.out_umap.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
       cudaMemset(stack.blurred_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
@@ -122,7 +121,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
 
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
               stack.dev_sino.data(), stack.blurred_im.data(), stack.out_umap.data(), image_dim, spacing, do_atten);
-cudaDeviceSynchronize();
+          cudaDeviceSynchronize();
           auto errpsf_f = cudaGetLastError();
           if (errpsf_f != cudaSuccess)
             error(cudaGetErrorString(errpsf_f));
@@ -139,23 +138,23 @@ cudaDeviceSynchronize();
 
       array_to_host(vg, stack.dev_sino, true);
     }
-//  out_im.clear();
-//  out_im.shrink_to_fit();
-//  fprintf(stderr, "out_im released\n");
+  //  out_im.clear();
+  //  out_im.shrink_to_fit();
+  //  fprintf(stderr, "out_im released\n");
 
-//  out_umap.clear();
-//  out_umap.shrink_to_fit();
-//  fprintf(stderr, "out_umap released\n");
+  //  out_umap.clear();
+  //  out_umap.shrink_to_fit();
+  //  fprintf(stderr, "out_umap released\n");
 
-//  blurred_im.clear();
-//  blurred_im.shrink_to_fit();
-//  fprintf(stderr, "blurred_im released\n");
+  //  blurred_im.clear();
+  //  blurred_im.shrink_to_fit();
+  //  fprintf(stderr, "blurred_im released\n");
 
-//  dev_sino.clear();
-//  dev_sino.shrink_to_fit();
-//  fprintf(stderr, "dev_sino released\n");
-//  fprintf(stderr, "leaving run_forward_projection_cuda\n");
-//  fflush(stderr);
+  //  dev_sino.clear();
+  //  dev_sino.shrink_to_fit();
+  //  fprintf(stderr, "dev_sino released\n");
+  //  fprintf(stderr, "leaving run_forward_projection_cuda\n");
+  //  fflush(stderr);
 }
 #endif
 

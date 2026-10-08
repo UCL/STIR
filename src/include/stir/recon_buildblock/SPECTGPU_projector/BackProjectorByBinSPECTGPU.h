@@ -130,16 +130,11 @@ private:
 
   shared_ptr<DiscretisedDensity<3, float>> _att_coeff_sptr;
   AllocatedStack _b_allocatedStack;
-public:
-  const AllocatedStack& get_allocated_stack() const
-  {
-      return this->_b_allocatedStack;
-  }
 
-   AllocatedStack& get_allocated_stack()
-  {
-      return this->_b_allocatedStack;
-  }
+public:
+  const AllocatedStack& get_allocated_stack() const { return this->_b_allocatedStack; }
+
+  AllocatedStack& get_allocated_stack() { return this->_b_allocatedStack; }
 };
 
 END_NAMESPACE_STIR

@@ -9,58 +9,48 @@
 
 START_NAMESPACE_STIR
 
-__global__
-void add_arrays(float* dst,
-                const float* src,
-                size_t n)
+__global__ void
+add_arrays(float* dst, const float* src, size_t n)
 {
-    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+  size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i < n)
-        dst[i] += src[i];
+  if (i < n)
+    dst[i] += src[i];
 }
 
 void
 accumulate_image_omp_contrib(float* dev_image,
-                                  const float* thread_image,
-                                  unsigned int block_x,
-                                  unsigned int block_y,
-                                  unsigned int block_z,
-                                  unsigned int grid_x,
-                                  unsigned int grid_y,
-                                  unsigned int grid_z,
-                                  unsigned int image_size)
+                             const float* thread_image,
+                             unsigned int block_x,
+                             unsigned int block_y,
+                             unsigned int block_z,
+                             unsigned int grid_x,
+                             unsigned int grid_y,
+                             unsigned int grid_z,
+                             unsigned int image_size)
 {
 
-    const int threads =block_x* block_y* block_z;
-    const int blocks = (image_size + threads - 1) / threads;
+  const int threads = block_x * block_y * block_z;
+  const int blocks = (image_size + threads - 1) / threads;
 
-    add_arrays<<<blocks, threads>>>(dev_image,
-                                                  thread_image,
-                                                  image_size);
+  add_arrays<<<blocks, threads>>>(dev_image, thread_image, image_size);
 
-    auto err0 = cudaGetLastError();
-    if (err0 != cudaSuccess)
-      error(cudaGetErrorString(err0));
+  auto err0 = cudaGetLastError();
+  if (err0 != cudaSuccess)
+    error(cudaGetErrorString(err0));
 }
 
 void
-initialise_im_buffers(AllocatedStack& stack,
-                      bool do_atten,
-                      bool do_density)
+initialise_im_buffers(AllocatedStack& stack, bool do_atten, bool do_density)
 {
-    if(do_density)
+  if (do_density)
     {
-        cudaMemset(stack.dev_image.data(),
-                   0,
-                   stack.image_size * sizeof(float));
+      cudaMemset(stack.dev_image.data(), 0, stack.image_size * sizeof(float));
     }
 
-    if (do_atten)
+  if (do_atten)
     {
-        cudaMemset(stack.dev_umap.data(),
-                   0,
-                   stack.image_size * sizeof(float));
+      cudaMemset(stack.dev_umap.data(), 0, stack.image_size * sizeof(float));
     }
 }
 void
@@ -90,7 +80,7 @@ run_backward_projection_cuda(AllocatedStack& stack,
                              int min_y,
                              int min_x)
 {
-//    cudaDeviceSynchronize();
+  //    cudaDeviceSynchronize();
   //    std::cout << "ENTER BP CUDA" << std::endl;
   dim3 cuda_block_dim(block_x, block_y, block_z);
 
@@ -106,9 +96,8 @@ run_backward_projection_cuda(AllocatedStack& stack,
   auto vg_iter = stir_sino.begin();
   const Viewgram<float>& vg = *vg_iter;
 
-
   if (!stack.is_allocated())
-      error("SPECTGPUBP: Something is wrong the CuVecs are not initialised");
+    error("SPECTGPUBP: Something is wrong the CuVecs are not initialised");
 
   Bin bin(0, vg.get_view_num(), 0, 0, 0);
   // the following sign is introduced to match SPECTUB
@@ -118,11 +107,11 @@ run_backward_projection_cuda(AllocatedStack& stack,
   // Note that umap is rotated before because the BP needs to apply attenuation factors corresponding to the same rotation as the
   // image
 
-//  reinitialise evrything
+  //  reinitialise evrything
   cudaMemset(stack.rotated_umap.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
   cudaMemset(stack.rotated_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
   array_to_device(stack.dev_sino, vg);
-//  cudaMemset(stack.rotated_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
+  //  cudaMemset(stack.rotated_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
   cudaMemset(stack.blurred_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
 
   if (do_atten)
@@ -171,6 +160,6 @@ run_backward_projection_cuda(AllocatedStack& stack,
       if (err1 != cudaSuccess)
         error(cudaGetErrorString(err1));
     }
-  }
+}
 
 END_NAMESPACE_STIR

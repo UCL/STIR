@@ -8,21 +8,17 @@
 START_NAMESPACE_STIR
 // BPBuffers.h
 
-void
-accumulate_image_omp_contrib(float* dev_image,
-                             const float* thread_image,
-                             unsigned int block_x,
-                             unsigned int block_y,
-                             unsigned int block_z,
-                             unsigned int grid_x,
-                             unsigned int grid_y,
-                             unsigned int grid_z,
-                             unsigned int image_dim);
+void accumulate_image_omp_contrib(float* dev_image,
+                                  const float* thread_image,
+                                  unsigned int block_x,
+                                  unsigned int block_y,
+                                  unsigned int block_z,
+                                  unsigned int grid_x,
+                                  unsigned int grid_y,
+                                  unsigned int grid_z,
+                                  unsigned int image_dim);
 
-
-void initialise_im_buffers(AllocatedStack& stack,
-                           bool do_atten,
-                           bool do_density=true);
+void initialise_im_buffers(AllocatedStack& stack, bool do_atten, bool do_density = true);
 
 void run_backward_projection_cuda(AllocatedStack& stack,
                                   const RelatedViewgrams<float>& stir_sino,

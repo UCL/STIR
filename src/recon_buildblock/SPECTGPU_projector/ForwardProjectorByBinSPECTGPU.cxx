@@ -35,7 +35,7 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUBackwardProjectorCUDA.h"
 
 #ifdef STIR_OPENMP
-#include <omp.h>
+#  include <omp.h>
 #endif
 
 START_NAMESPACE_STIR
@@ -141,12 +141,11 @@ ForwardProjectorByBinSPECTGPU::set_up(const shared_ptr<const ProjDataInfo>& proj
 
   int dim_ax = proj_data_info_sptr->get_num_axial_poss(0);
   int dim_tg = proj_data_info_sptr->get_num_tangential_poss();
-  const size_t view_size =
-  static_cast<size_t>(dim_ax) * dim_tg;
+  const size_t view_size = static_cast<size_t>(dim_ax) * dim_tg;
 
-  this->_f_allocatedStack.allocate(density_info_sptr->size_all(),view_size);
+  this->_f_allocatedStack.allocate(density_info_sptr->size_all(), view_size);
   if (_do_atten)
-      array_to_device(_f_allocatedStack.dev_umap, *_att_coeff_sptr);
+    array_to_device(_f_allocatedStack.dev_umap, *_att_coeff_sptr);
 
   float tg_spacing = proj_data_info_sptr->get_scanner_sptr()->get_default_bin_size();
   float ax_spacing = proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
@@ -204,80 +203,77 @@ ForwardProjectorByBinSPECTGPU::actual_forward_project(RelatedViewgrams<float>& s
                                                       const int max_tg)
 {
 #ifdef STIR_OPENMP
-    thread_local AllocatedStack tls_stack;
+  thread_local AllocatedStack tls_stack;
 
-    if (!tls_stack.is_allocated())
+  if (!tls_stack.is_allocated())
     {
-        tls_stack.allocate(
-                    _f_allocatedStack.image_size,
-                    _f_allocatedStack.sino_size);
+      tls_stack.allocate(_f_allocatedStack.image_size, _f_allocatedStack.sino_size);
 
-        if (_do_atten)
-            array_to_device(tls_stack.dev_umap,
-                            *_att_coeff_sptr);
+      if (_do_atten)
+        array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
     }
 
-    array_to_device(tls_stack.dev_image, stir_image);
+  array_to_device(tls_stack.dev_image, stir_image);
 
-    run_forward_projection_cuda(stir_sino,
-                                tls_stack,//this->_f_allocatedStack,
-                                _do_atten,
-                                _sigma0,
-                                _num_sigmas,
-                                _slope,
-                                this->num_views,
-                                min_ax,
-                                max_ax,
-                                min_tg,
-                                max_tg,
-                                this->block_dim.x,
-                                this->block_dim.y,
-                                this->block_dim.z,
-                                this->grid_dim.x,
-                                this->grid_dim.y,
-                                this->grid_dim.z,
-                                this->spacing_x,
-                                this->spacing_y,
-                                this->spacing_z,
-                                this->origin_x,
-                                this->origin_y,
-                                this->origin_z,
-                                this->dim_x,
-                                this->dim_y,
-                                this->dim_z,
-                                this->min_z,
-                                this->min_y,
-                                this->min_x);
+  run_forward_projection_cuda(stir_sino,
+                              tls_stack, // this->_f_allocatedStack,
+                              _do_atten,
+                              _sigma0,
+                              _num_sigmas,
+                              _slope,
+                              this->num_views,
+                              min_ax,
+                              max_ax,
+                              min_tg,
+                              max_tg,
+                              this->block_dim.x,
+                              this->block_dim.y,
+                              this->block_dim.z,
+                              this->grid_dim.x,
+                              this->grid_dim.y,
+                              this->grid_dim.z,
+                              this->spacing_x,
+                              this->spacing_y,
+                              this->spacing_z,
+                              this->origin_x,
+                              this->origin_y,
+                              this->origin_z,
+                              this->dim_x,
+                              this->dim_y,
+                              this->dim_z,
+                              this->min_z,
+                              this->min_y,
+                              this->min_x);
 #else
-    run_forward_projection_cuda(stir_sino,
-                                this->_f_allocatedStack,
-                                _do_atten,
-                                _sigma0,
-                                _num_sigmas,
-                                _slope,
-                                this->num_views,
-                                min_ax,
-                                max_ax,
-                                min_tg,
-                                max_tg,
-                                this->block_dim.x,
-                                this->block_dim.y,
-                                this->block_dim.z,
-                                this->grid_dim.x,
-                                this->grid_dim.y,
-                                this->grid_dim.z,
-                                this->spacing_x,
-                                this->spacing_y,
-                                this->spacing_z,
-                                this->origin_x,
-                                this->origin_y,
-                                this->origin_z,
-                                this->dim_x,
-                                this->dim_y,
-                                this->dim_z,
-                                this->min_z,
-                                this->min_y,
-                                this->min_x);
+  run_forward_projection_cuda(stir_sino,
+                              this->_f_allocatedStack,
+                              _do_atten,
+                              _sigma0,
+                              _num_sigmas,
+                              _slope,
+                              this->num_views,
+                              min_ax,
+                              max_ax,
+                              min_tg,
+                              max_tg,
+                              this->block_dim.x,
+                              this->block_dim.y,
+                              this->block_dim.z,
+                              this->grid_dim.x,
+                              this->grid_dim.y,
+                              this->grid_dim.z,
+                              this->spacing_x,
+                              this->spacing_y,
+                              this->spacing_z,
+                              this->origin_x,
+                              this->origin_y,
+                              this->origin_z,
+                              this->dim_x,
+                              this->dim_y,
+                              this->dim_z,
+                              this->min_z,
+                              this->min_y,
+                              this->min_x);
 #endif
 }
 
@@ -296,11 +292,11 @@ ForwardProjectorByBinSPECTGPU::set_input(const DiscretisedDensity<3, float>& den
 {
   ForwardProjectorByBin::set_input(density);
 
-//  initialise_im_buffers(this->_f_allocatedStack, _do_atten);
-
+  //  initialise_im_buffers(this->_f_allocatedStack, _do_atten);
 
   array_to_device(_f_allocatedStack.dev_image, density);
 }
 
-ForwardProjectorByBinSPECTGPU::~ForwardProjectorByBinSPECTGPU(){}
+ForwardProjectorByBinSPECTGPU::~ForwardProjectorByBinSPECTGPU()
+{}
 END_NAMESPACE_STIR

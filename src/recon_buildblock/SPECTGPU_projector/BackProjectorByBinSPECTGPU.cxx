@@ -32,9 +32,8 @@
 #include "stir/IO/read_from_file.h"
 //#include "stir/cuda_utilities.h"
 #ifdef STIR_OPENMP
-#include <omp.h>
+#  include <omp.h>
 #endif
-
 
 START_NAMESPACE_STIR
 
@@ -47,9 +46,9 @@ BackProjectorByBinSPECTGPU::BackProjectorByBinSPECTGPU()
       _use_truncation(false),
       _slope(-1),
       _sigma0(-1),
-      _num_sigmas(2)/*,
-      dev_image(nullptr),
-      dev_umap(nullptr)*/
+      _num_sigmas(2) /*,
+       dev_image(nullptr),
+       dev_umap(nullptr)*/
 {
   this->_already_set_up = false;
 }
@@ -148,12 +147,11 @@ BackProjectorByBinSPECTGPU::set_up(const shared_ptr<const ProjDataInfo>& proj_da
   int dim_ax = proj_data_info_sptr->get_num_axial_poss(0);
   int dim_tg = proj_data_info_sptr->get_num_tangential_poss();
 
-  const size_t view_size =
-  static_cast<size_t>(dim_ax) * dim_tg;
+  const size_t view_size = static_cast<size_t>(dim_ax) * dim_tg;
 
-  this->_b_allocatedStack.allocate(density_info_sptr->size_all(),view_size);
+  this->_b_allocatedStack.allocate(density_info_sptr->size_all(), view_size);
   if (_do_atten)
-      array_to_device(_b_allocatedStack.dev_umap, *_att_coeff_sptr);
+    array_to_device(_b_allocatedStack.dev_umap, *_att_coeff_sptr);
 
   float tg_spacing = proj_data_info_sptr->get_scanner_sptr()->get_default_bin_size();
   float ax_spacing = proj_data_info_sptr->get_scanner_sptr()->get_ring_spacing();
@@ -202,10 +200,10 @@ BackProjectorByBinSPECTGPU::set_up(const shared_ptr<const ProjDataInfo>& proj_da
 void
 BackProjectorByBinSPECTGPU::get_output(DiscretisedDensity<3, float>& density) const
 {
-//  copy_im_to_stir(density, dev_image);
-    array_to_host(density, _b_allocatedStack.dev_image, true);
+  //  copy_im_to_stir(density, dev_image);
+  array_to_host(density, _b_allocatedStack.dev_image, true);
 
-//  free_im_buffers(dev_image, dev_umap, _do_atten);
+  //  free_im_buffers(dev_image, dev_umap, _do_atten);
 }
 
 void
@@ -214,13 +212,11 @@ BackProjectorByBinSPECTGPU::start_accumulating_in_new_target()
   // Call base level
   BackProjectorByBin::start_accumulating_in_new_target();
 
-    initialise_im_buffers(this->_b_allocatedStack,
-                          false);
+  initialise_im_buffers(this->_b_allocatedStack, false);
 
-//  if (_do_atten)
-//    array_to_device(_b_allocatedStack.dev_umap, *_att_coeff_sptr);
-//  array_to_device(_b_allocatedStack.dev_image, *_density_sptr);
-
+  //  if (_do_atten)
+  //    array_to_device(_b_allocatedStack.dev_umap, *_att_coeff_sptr);
+  //  array_to_device(_b_allocatedStack.dev_image, *_density_sptr);
 }
 
 void
@@ -233,24 +229,20 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
 {
 #ifdef STIR_OPENMP
 
-    thread_local AllocatedStack tls_stack;
+  thread_local AllocatedStack tls_stack;
 
-    if (!tls_stack.is_allocated())
+  if (!tls_stack.is_allocated())
     {
-        tls_stack.allocate(
-                    _b_allocatedStack.image_size,
-                    _b_allocatedStack.sino_size);
+      tls_stack.allocate(_b_allocatedStack.image_size, _b_allocatedStack.sino_size);
 
-        if (_do_atten)
-            array_to_device(tls_stack.dev_umap,
-                            *_att_coeff_sptr);
+      if (_do_atten)
+        array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
     }
 
-//    array_to_device(tls_stack.dev_image, stir_image);
+  //    array_to_device(tls_stack.dev_image, stir_image);
 
-    initialise_im_buffers(tls_stack,
-                          false);
-  run_backward_projection_cuda(tls_stack,//this->_b_allocatedStack,
+  initialise_im_buffers(tls_stack, false);
+  run_backward_projection_cuda(tls_stack, // this->_b_allocatedStack,
                                stir_sino,
                                _do_atten,
                                _sigma0,
@@ -275,61 +267,61 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
                                this->min_z,
                                this->min_y,
                                this->min_x);
-//  float s =
-//      std::accumulate(
-//          tls_stack.dev_image.begin(),
-//          tls_stack.dev_image.end(),
-//          0.f);
+  //  float s =
+  //      std::accumulate(
+  //          tls_stack.dev_image.begin(),
+  //          tls_stack.dev_image.end(),
+  //          0.f);
 
-//  fprintf(stderr,
-//          "tid=%d image_sum=%e\n",
-//          omp_get_thread_num(),
-//          s);
+  //  fprintf(stderr,
+  //          "tid=%d image_sum=%e\n",
+  //          omp_get_thread_num(),
+  //          s);
 
-#pragma omp critical
+#  pragma omp critical
   {
-//      const size_t n = omp_get_num_threads();
-//      fprintf(stderr,
-//              "num omp t=%zu \n",
-//              n);
+    //      const size_t n = omp_get_num_threads();
+    //      fprintf(stderr,
+    //              "num omp t=%zu \n",
+    //              n);
 
-      accumulate_image_omp_contrib(_b_allocatedStack.dev_image.data(),
-                                   tls_stack.dev_image.data(),
-                                   this->block_dim.x,
-                                   this->block_dim.y,
-                                   this->block_dim.z,
-                                   this->grid_dim.x,
-                                   this->grid_dim.y,
-                                   this->grid_dim.z,
-                                   _b_allocatedStack.image_size);
-}
+    accumulate_image_omp_contrib(_b_allocatedStack.dev_image.data(),
+                                 tls_stack.dev_image.data(),
+                                 this->block_dim.x,
+                                 this->block_dim.y,
+                                 this->block_dim.z,
+                                 this->grid_dim.x,
+                                 this->grid_dim.y,
+                                 this->grid_dim.z,
+                                 _b_allocatedStack.image_size);
+  }
 
 #else
-      run_backward_projection_cuda(this->_b_allocatedStack,
-                                   stir_sino,
-                                   _do_atten,
-                                   _sigma0,
-                                   _num_sigmas,
-                                   _slope,
-                                   this->num_views,
-                                   this->block_dim.x,
-                                   this->block_dim.y,
-                                   this->block_dim.z,
-                                   this->grid_dim.x,
-                                   this->grid_dim.y,
-                                   this->grid_dim.z,
-                                   this->spacing_x,
-                                   this->spacing_y,
-                                   this->spacing_z,
-                                   this->origin_x,
-                                   this->origin_y,
-                                   this->origin_z,
-                                   this->dim_x,
-                                   this->dim_y,
-                                   this->dim_z,
-                                   this->min_z,
-                                   this->min_y,
-                                   this->min_x);
+  run_backward_projection_cuda(this->_b_allocatedStack,
+                               stir_sino,
+                               _do_atten,
+                               _sigma0,
+                               _num_sigmas,
+                               _slope,
+                               this->num_views,
+                               this->block_dim.x,
+                               this->block_dim.y,
+                               this->block_dim.z,
+                               this->grid_dim.x,
+                               this->grid_dim.y,
+                               this->grid_dim.z,
+                               this->spacing_x,
+                               this->spacing_y,
+                               this->spacing_z,
+                               this->origin_x,
+                               this->origin_y,
+                               this->origin_z,
+                               this->dim_x,
+                               this->dim_y,
+                               this->dim_z,
+                               this->min_z,
+                               this->min_y,
+                               this->min_x);
 #endif
 }
 
