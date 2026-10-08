@@ -3,12 +3,12 @@
 #include "stir/cuda_utilities.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
 
 START_NAMESPACE_STIR
 
 void run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
-                                 float* dev_image,
-                                 const float* dev_umap,
+                                 AllocatedStack& stack,
                                  bool do_atten,
                                  float coll_sigma0_cm,
                                  float num_sigmas,
