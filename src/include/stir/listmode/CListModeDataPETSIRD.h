@@ -116,6 +116,10 @@ public:
   virtual bool has_delayeds() const override { return m_has_delayeds; }
 
   Succeeded reset() override;
+  // expose singles for dead time correction
+  const std::vector<float>& get_singles_per_bucket() const { return singles_per_bucket; }
+  double get_singles_time_start() const { return singles_time_start; }
+  double get_singles_time_stop() const { return singles_time_stop; }
 
 protected:
   virtual Succeeded open_lm_file() const override;
@@ -149,6 +153,10 @@ private:
     list-mode stream.
   */
   mutable std::vector<PetsirdCursor> m_saved_positions;
+  // accumulated singles per bucket from SinglesHistogramTimeBlock entries
+  mutable std::vector<float> singles_per_bucket;
+  mutable double singles_time_start = 0.0;
+  mutable double singles_time_stop = 0.0;
 };
 
 END_NAMESPACE_STIR

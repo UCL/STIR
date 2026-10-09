@@ -113,9 +113,13 @@ private:
   std::vector<int> sizes;
 };
 
-//! A class for decoding a raw events that is neither time or coincidence in a listmode file from the ECAT 8_32bit scanner
+//! Bit-field struct for the PETLINK time marker word (type=1, deadtimeetc=0)
 /*! \ingroup listmode
- */
+    PETLINK 32-bit layout (little-endian):
+      bits [28:0]  = time in milliseconds since scan start
+      bits [30:29] = deadtimeetc (0 = pure time tick)
+      bit  [31]    = type (1 = non-event)
+*/
 class CListTimeDataECAT8_32bit
 {
 public:
@@ -131,6 +135,37 @@ public:
 #endif
 };
 
+//! Bit-field struct for the PETLINK singles word (type=1, deadtimeetc=2)
+/*! \ingroup listmode
+    PETLINK 32-bit layout (little-endian):
+      bits [18:0]  = singles count (NiftyPET stores this pre-shifted left by 3)
+      bits [28:19] = bucket index (0-based, up to NBUCKTS buckets)
+      bits [30:29] = subtype/deadtimeetc = 0b10 (singles marker)
+      bit  [31]    = type = 1 (non-event)
+*/
+class CListSinglesDataECAT8_32bit
+{
+public:
+#if STIRIsNativeByteOrderBigEndian
+  unsigned type : 1;     /* 1 = non-event */
+  unsigned subtype : 2;  /* 0b10 = singles record */
+  unsigned bucket : 10;  /* singles bucket index */
+  unsigned singles : 19; /* singles count */
+#else
+  // Do byteswapping first before using this bit field.
+  unsigned singles : 19; /* singles count */
+  unsigned bucket : 10;  /* singles bucket index */
+  unsigned subtype : 2;  /* 0b10 = singles record */
+  unsigned type : 1;     /* 1 = non-event */
+#endif
+};
+
+//! A class for decoding a raw "other" word (neither time nor coincidence) from the ECAT 8_32bit listmode stream
+/*! \ingroup listmode
+    Used purely to classify the word type before dispatching to the appropriate handler.
+    Reuses CListTimeDataECAT8_32bit's bit fields since type and deadtimeetc occupy the
+    same bit positions across all non-event word subtypes.
+*/
 class CListDataAnyECAT8_32bit
 {
 public:
@@ -183,9 +218,43 @@ private:
   };
 };
 
+//! A class for storing and using a singles bucket record from a listmode file from the ECAT 8_32bit scanner
+/*! \ingroup listmode
+    Singles records are emitted by the scanner approximately once per second per bucket.
+    Each record encodes the singles count for one detector bucket over the preceding interval.
+    These are used to estimate dead time and randoms.
+
+    The PETLINK singles word has type=1, deadtimeetc=0b10 (i.e. is_other() == true in
+    CListDataAnyECAT8_32bit), so it falls through the existing time/event checks.
+*/
+class CListSinglesECAT8_32bit : public ListSingles
+{
+public:
+  Succeeded init_from_data_ptr(const void* const ptr)
+  {
+    const char* const data_ptr = reinterpret_cast<const char* const>(ptr);
+    std::copy(data_ptr, data_ptr + sizeof(this->raw), reinterpret_cast<char*>(&this->raw));
+    return Succeeded::yes;
+  }
+
+  //! Returns true if this word is a singles record (type=1, subtype=0b10)
+  bool is_singles() const { return this->data.type == 1U && this->data.subtype == 1U; }
+
+  unsigned int get_bucket_index() const override { return this->data.bucket; }
+  float get_singles_count() const override { return static_cast<float>(this->data.singles); }
+
+private:
+  BOOST_STATIC_ASSERT(sizeof(CListSinglesDataECAT8_32bit) == 4);
+  union
+  {
+    CListSinglesDataECAT8_32bit data;
+    boost::int32_t raw;
+  };
+};
+
 //! A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
 /*! \ingroup listmode
-   We currently only support coincidence events and  a timing flag.
+   Supports coincidence events, timing records, and singles bucket records.
    Here we only support the 32bit version specified by the PETLINK protocol.
 
    This class is based on Siemens information on the PETLINK protocol, available at
@@ -195,8 +264,7 @@ private:
 class CListRecordECAT8_32bit : public CListRecord // currently no gating yet
 {
 
-  // public:
-
+public:
   bool is_time() const override { return this->any_data.is_time(); }
   /*
   bool is_gating_input() const
@@ -207,6 +275,9 @@ class CListRecordECAT8_32bit : public CListRecord // currently no gating yet
   const CListEventECAT8_32bit& event() const override { return this->event_data; }
   CListTimeECAT8_32bit& time() override { return this->time_data; }
   const CListTimeECAT8_32bit& time() const override { return this->time_data; }
+  bool is_singles() const override { return this->singles_data.is_singles(); }
+  CListSinglesECAT8_32bit& singles() override { return this->singles_data; }
+  const CListSinglesECAT8_32bit& singles() const override { return this->singles_data; }
 
   bool operator==(const CListRecord& e2) const
   {
@@ -236,6 +307,8 @@ public:
       return this->time_data.init_from_data_ptr(&raw);
     else if (this->any_data.is_event())
       return this->event_data.init_from_data_ptr(&raw);
+    else if (this->any_data.is_other())
+      return this->singles_data.init_from_data_ptr(&raw);
     else
       return Succeeded::yes;
   }
@@ -250,6 +323,7 @@ private:
   CListEventECAT8_32bit event_data;
   CListTimeECAT8_32bit time_data;
   CListDataAnyECAT8_32bit any_data;
+  CListSinglesECAT8_32bit singles_data;
   boost::int32_t raw; // this raw field isn't strictly necessary, get rid of it?
 };
 

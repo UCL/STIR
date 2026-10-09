@@ -54,6 +54,8 @@ typedef short elem_type;
 
 #include "stir/utilities.h"
 
+#include "stir/listmode/CListRecordECAT8_32bit.h"
+#include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/LmToProjData.h"
 #include "stir/listmode/ListRecord.h"
 #include "stir/listmode/ListModeData.h"
@@ -169,7 +171,6 @@ void
 LmToProjData::set_input_data(const std::string& filename)
 {
   shared_ptr<ListModeData> lm(stir::read_from_file<ListModeData>(filename));
-  this->_already_setup = false;
   this->set_input_data(lm);
   this->input_filename = filename;
 }
@@ -704,6 +705,10 @@ LmToProjData::process_data()
       long num_prompts_in_frame = 0;
       long num_delayeds_in_frame = 0;
 
+      const int num_buckets = lm_data_ptr->get_scanner().get_num_singles_units();
+      std::vector<float> singles_per_bucket(num_buckets, 0.f);
+      std::vector<unsigned long> singles_nrecords(num_buckets, 0);
+
       const double start_time = frame_defs.get_start_time(current_frame_num);
       const double end_time = frame_defs.get_end_time(current_frame_num);
 
@@ -782,6 +787,21 @@ LmToProjData::process_data()
                       {
                         // no more events in file for some reason
                         break; // get out of while loop
+                      }
+                    auto* crecord = dynamic_cast<CListRecord*>(&record);
+                    // Accumulate singles only on the first pass (first segment and TOF batch),
+                    // to avoid double-counting when the listmode data is re-read for additional batches.
+                    if (crecord != nullptr && !record.is_time() && !record.is_event() && crecord->is_singles()
+                        && start_segment_index == output_proj_data_sptr->get_min_segment_num()
+                        && start_timing_pos_index == output_proj_data_sptr->get_min_tof_pos_num())
+                      {
+                        const unsigned int ibck = crecord->singles().get_bucket_index();
+                        //const float cnt = static_cast<float>(crecord->singles().get_singles_count());
+                        const float cnt = 8.F * crecord->singles().get_singles_count();
+                        if (ibck < static_cast<unsigned int>(num_buckets)){
+                          singles_per_bucket[ibck] += cnt;
+                          ++singles_nrecords[ibck];
+                        }
                       }
                     if (record.is_time() && end_time > 0.01) // Direct comparison within doubles is unsafe.
                       {
@@ -901,6 +921,33 @@ LmToProjData::process_data()
             } // end of for loop for segment range
 
         } // end of for loop for timing positions
+
+      // Write singles JSON once per frame, after all segment and TOF passes are complete.
+      // singles_per_bucket now contains the true total counts for this frame (accumulated
+      // only on the first pass through the listmode data).
+      {
+        const double frame_duration = (end_time - start_time) > 0 ? (end_time - start_time) : 3600.0;
+        const std::string singles_filename
+            = output_filename_prefix + "_f" + std::to_string(current_frame_num) + "_singles.json";
+        std::ofstream singles_file(singles_filename);
+        if (singles_file)
+          {
+            singles_file << "{\n";
+            singles_file << "  \"num_buckets\": " << num_buckets << ",\n";
+            singles_file << "  \"frame_duration\": " << frame_duration << ",\n";
+            singles_file << "  \"end_time\": " << end_time << ",\n";
+            singles_file << "  \"bucket_rates\": [";
+            for (int i = 0; i < num_buckets; ++i)
+              {
+                if (i > 0)
+                  singles_file << ", ";
+                singles_file << (singles_per_bucket[i] / singles_nrecords[i]);
+              }
+            singles_file << "]\n";
+            singles_file << "}\n";
+            std::cerr << "INFO: Singles written to " << singles_filename << "\n";
+          }
+      }
       cerr << "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
            << "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame << '\n';
 
