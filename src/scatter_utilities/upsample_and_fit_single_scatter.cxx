@@ -61,6 +61,7 @@ print_usage_and_exit(const char* const prog_name)
             << "\t[--min-scale-factor <number>]\\\n"
             << "\t[--max-scale-factor <number>]\\\n"
             << "\t[--remove-interleaving <1|0>]\\\n"
+            << "\t[--do-3D <1|0>]\\\n"
             << "\t[--half-filter-width <number>]\\\n"
             << "\t--output-filename <filename>\\\n"
             << "\t--data-to-fit <filename>\\\n"
@@ -86,6 +87,7 @@ main(int argc, const char* argv[])
   float min_scale_factor = 1.E-5F;
   float max_scale_factor = 1.E5F;
   bool remove_interleaving = true;
+  bool do_3D = false; 
   unsigned int half_filter_width = 1;
   stir::BSpline::BSplineType spline_type = stir::BSpline::linear;
   std::string data_to_fit_filename;
@@ -124,6 +126,12 @@ main(int argc, const char* argv[])
       else if (strcmp(argv[1], "--remove-interleaving") == 0)
         {
           remove_interleaving = atoi(argv[2]) != 0;
+          argc -= 2;
+          argv += 2;
+        }
+      else if (strcmp(argv[1], "--do-3D") == 0)
+        {
+          do_3D = atoi(argv[2]) != 0;
           argc -= 2;
           argv += 2;
         }
@@ -202,14 +210,14 @@ main(int argc, const char* argv[])
       data_to_fit_proj_data_sptr->get_exam_info_sptr(), data_to_fit_proj_data_info_sptr, output_filename);
 
   stir::ScatterEstimation::upsample_and_fit_scatter_estimate(output_proj_data,
-                                                             *data_to_fit_proj_data_sptr,
-                                                             *data_to_scale_proj_data_sptr,
+                                                             *data_to_fit_proj_data_sptr, //emission_proj_data
+                                                             *data_to_scale_proj_data_sptr, //scatter_proj_data
                                                              *normalisation_sptr,
                                                              *weights_proj_data_sptr,
                                                              min_scale_factor,
                                                              max_scale_factor,
                                                              half_filter_width,
                                                              spline_type,
-                                                             remove_interleaving);
+                                                             remove_interleaving, do_3D);
   return EXIT_SUCCESS;
 }
