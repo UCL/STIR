@@ -190,8 +190,7 @@ BinNormalisationFromPETSIRD::get_alive_fractions_for_frame(double start_time_s, 
 
   if (count == 0)
     {
-      // no blocks in window — return all ones (no correction)
-      return std::vector<float>(num_buckets_dt, 1.f);
+      error("BinNormalisationFromPETSIRD: no dead time blocks overlap the frame [%g, %g] s", start_time_s, end_time_s);
     }
 
   for (auto& f : fraction_sum)
@@ -201,32 +200,33 @@ BinNormalisationFromPETSIRD::get_alive_fractions_for_frame(double start_time_s, 
 }
 float
 BinNormalisationFromPETSIRD::get_dead_time_efficiency(const DetectionPosition<>& det_pos,
-                                                      const double start_time,
-                                                      const double end_time) const
+                                                       const double start_time,
+                                                       const double end_time) const
 {
-  if (!m_with_dead_time || dead_time_entries.empty())
+  if (!m_with_dead_time)
+    return 1.0F;
+  if (dead_time_entries.empty())
+    error("BinNormalisationFromPETSIRD: dead time requested but the file contains no dead time blocks");
+  const auto fracs = get_alive_fractions_for_frame(start_time, end_time);
+  const int ring       = static_cast<int>(det_pos.axial_coord());
+  const int tangential = static_cast<int>(det_pos.tangential_coord());
+
+  const int num_rings                  = 64;
+  const int num_axial_buckets          = 8;
+  const int num_transaxial_buckets     = 28;
+  const int detectors_per_ring         = 504;
+  const int rings_per_axial_bucket     = num_rings / num_axial_buckets;                 // 8
+  const int detectors_per_trans_bucket = detectors_per_ring / num_transaxial_buckets;   // 18
+
+  const int axial_bucket      = ring / rings_per_axial_bucket;
+  const int transaxial_bucket = tangential / detectors_per_trans_bucket;
+  const int bucket_idx        = transaxial_bucket + num_transaxial_buckets * axial_bucket;
+
+  const int num_buckets = static_cast<int>(fracs.size());
+  if (bucket_idx < 0 || bucket_idx >= num_buckets)
     return 1.0F;
 
-  const auto fracs = get_alive_fractions_for_frame(start_time, end_time);
-  const int rings_per_axial_bucket = 64 / 8;
-  const int ring = static_cast<int>(det_pos.axial_coord());
-  const int axial_group = ring / rings_per_axial_bucket;
-  const int num_axial_buckets = 8;
-  const int num_buckets = static_cast<int>(fracs.size());
-  const int num_transaxial = num_buckets / num_axial_buckets;
-
-  float avg = 0.f;
-  int count = 0;
-  for (int t = 0; t < num_transaxial; ++t)
-    {
-      const int ibck = t * num_axial_buckets + axial_group;
-      if (ibck < num_buckets)
-        {
-          avg += fracs[ibck];
-          ++count;
-        }
-    }
-  return count > 0 ? avg / count : 1.0F;
+  return fracs[bucket_idx];
 }
 
 END_NAMESPACE_STIR
