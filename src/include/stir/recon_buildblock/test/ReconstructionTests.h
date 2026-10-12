@@ -15,6 +15,7 @@
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/Reconstruction.h"
 #include "stir/IO/read_from_file.h"
@@ -23,6 +24,7 @@
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/Verbosity.h"
 #include "stir/error.h"
+#include "stir/IndexRange3D.h"
 
 START_NAMESPACE_STIR
 
@@ -113,10 +115,29 @@ ReconstructionTests<TargetT>::construct_input_data()
   if (this->_input_density_filename.empty())
     {
       CartesianCoordinate3D<float> origin(0, 0, 0);
-      const float zoom = .7F;
+      shared_ptr<VoxelsOnCartesianGrid<float>> vox_sptr;
 
-      shared_ptr<VoxelsOnCartesianGrid<float>> vox_sptr(new VoxelsOnCartesianGrid<float>(
-          this->_proj_data_sptr->get_exam_info_sptr(), *this->_proj_data_sptr->get_proj_data_info_sptr(), zoom, origin));
+      if (this->_proj_data_sptr->get_exam_info_sptr()->imaging_modality.get_modality() == ImagingModality::NM)
+        {
+
+          const auto proj_info = this->_proj_data_sptr->get_proj_data_info_sptr();
+          Bin bin(0, 0, 0, 0);
+
+          const int nx = this->_proj_data_sptr->get_proj_data_info_sptr()->get_num_tangential_poss();
+          const int nz = this->_proj_data_sptr->get_proj_data_info_sptr()->get_num_axial_poss(0);
+
+          const float sx = this->_proj_data_sptr->get_proj_data_info_sptr()->get_sampling_in_t(bin);
+          const float sz = this->_proj_data_sptr->get_proj_data_info_sptr()->get_sampling_in_m(bin);
+
+          IndexRange3D range(0, nz - 1, -nx / 2, nx / 2 - 1, -nx / 2, nx / 2 - 1);
+
+          vox_sptr = std::make_shared<VoxelsOnCartesianGrid<float>>(range, origin, CartesianCoordinate3D<float>(sz, sx, sx));
+        }
+      else
+        {
+          vox_sptr.reset(new VoxelsOnCartesianGrid<float>(
+              this->_proj_data_sptr->get_exam_info_sptr(), *this->_proj_data_sptr->get_proj_data_info_sptr(), 0.7F, origin));
+        }
 
       // create very long cylinder, such that we don't have to think about origin
       EllipsoidalCylinder cylinder(/*length_z*/ 1000.F,
@@ -140,7 +161,16 @@ ReconstructionTests<TargetT>::construct_input_data()
 
   // forward project
   {
-    shared_ptr<ProjMatrixByBin> PM_sptr(new ProjMatrixByBinUsingRayTracing);
+    shared_ptr<ProjMatrixByBin> PM_sptr;
+    if (this->_proj_data_sptr->get_exam_info_sptr()->imaging_modality.get_modality() == ImagingModality::NM)
+      {
+        PM_sptr.reset(new ProjMatrixByBinSPECTUB);
+      }
+    else
+      {
+        PM_sptr.reset(new ProjMatrixByBinUsingRayTracing);
+      }
+
     shared_ptr<ForwardProjectorByBin> fwd_proj_sptr = MAKE_SHARED<ForwardProjectorByBinUsingProjMatrixByBin>(PM_sptr);
     fwd_proj_sptr->set_up(this->_proj_data_sptr->get_proj_data_info_sptr(), this->_input_density_sptr);
     fwd_proj_sptr->set_input(*this->_input_density_sptr);

@@ -90,12 +90,13 @@ BackProjectorByBinSPECTGPU::set_up(const shared_ptr<const ProjDataInfo>& proj_da
 
       const auto o1 = _density_sptr->get_origin();
       const auto o2 = _att_coeff_sptr->get_origin();
+      const auto& r1 = _density_sptr->get_index_range();
+      const auto& r2 = _att_coeff_sptr->get_index_range();
 
-      if (o1 != o2)
+      float abs_tol = 1e-3F; // 0.001 mm
+      if (std::fabs(o1.x() - o2.x()) > abs_tol || std::fabs(o1.y() - o2.y()) > abs_tol || std::fabs(o1.z() - o2.z()) > abs_tol
+          || r1 != r2)
         {
-          const auto& r1 = _density_sptr->get_index_range();
-          const auto& r2 = _att_coeff_sptr->get_index_range();
-
           error(format("SPECTGPU:: Attenuation coefficient image expected to match characteristics of Activity image\n"
                        "Image origin:\n"
                        "  x={} y={} z={} \n"
