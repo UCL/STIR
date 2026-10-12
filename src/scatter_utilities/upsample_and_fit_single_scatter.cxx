@@ -87,7 +87,7 @@ main(int argc, const char* argv[])
   float min_scale_factor = 1.E-5F;
   float max_scale_factor = 1.E5F;
   bool remove_interleaving = true;
-  bool do_3D = false; 
+  bool do_3D = false;
   unsigned int half_filter_width = 1;
   stir::BSpline::BSplineType spline_type = stir::BSpline::linear;
   std::string data_to_fit_filename;
@@ -210,14 +210,15 @@ main(int argc, const char* argv[])
       data_to_fit_proj_data_sptr->get_exam_info_sptr(), data_to_fit_proj_data_info_sptr, output_filename);
 
   stir::ScatterEstimation::upsample_and_fit_scatter_estimate(output_proj_data,
-                                                             *data_to_fit_proj_data_sptr, //emission_proj_data
-                                                             *data_to_scale_proj_data_sptr, //scatter_proj_data
+                                                             *data_to_fit_proj_data_sptr,   // emission_proj_data
+                                                             *data_to_scale_proj_data_sptr, // scatter_proj_data
                                                              *normalisation_sptr,
                                                              *weights_proj_data_sptr,
                                                              min_scale_factor,
                                                              max_scale_factor,
                                                              half_filter_width,
                                                              spline_type,
-                                                             remove_interleaving, do_3D);
+                                                             remove_interleaving,
+                                                             do_3D);
   return EXIT_SUCCESS;
 }

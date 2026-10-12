@@ -77,10 +77,11 @@ ScatterEstimation::upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_pr
       interpolate_projdata(*interpolated_scatter, scatter_proj_data, spline_type, actual_remove_interleaving);
     }
   else
-  {
-    std::cout << " In 3D ... " << std::endl; 
-    interpolate_projdata_3d(*interpolated_scatter, scatter_proj_data, spline_type);
-  }
+    {
+      std::cout << " In 3D ... " << std::endl;
+      interpolate_projdata_3d(*interpolated_scatter, scatter_proj_data, spline_type);
+      scaled_scatter_proj_data.fill_from(interpolated_scatter->begin());
+    }
 
   if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
