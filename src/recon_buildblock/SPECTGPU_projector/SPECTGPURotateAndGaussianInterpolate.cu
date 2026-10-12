@@ -76,20 +76,33 @@ rotateKernel_pull(float* __restrict__ out_im,
   // of each NN contribution in the next loop.
   float G = 0;     // accumulator variable
   float sigma = 2; // gaussian kernel sigma
+  float accumulation_im = 0;
+  int rr_r = (int)roundf(r_r);
+  int rq_r = (int)roundf(q_r);
+  int rp_r = (int)roundf(p_r);
 
   for (int dr = -2; dr <= 2; dr++)
     {
-      int r = (int)roundf(r_r) + dr;                                   // nearest neighbour z coordinate in rotated voxel space
+      int r = rr_r + dr;
+      if (r < 0 || r >= dim.z)
+        continue; // nearest neighbour z coordinate in rotated voxel space
+
       float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z; // converted to image space
 
       for (int dq = -2; dq <= 2; dq++)
         {
-          int q = (int)roundf(q_r) + dq;
+          int q = rq_r + dq;
+          if (q < 0 || q >= dim.y)
+            continue;
+
           float x_q = ((q + min_indices.y + 0.5f) * spacing.y) - origin.y;
 
           for (int dp = -2; dp <= 2; dp++)
             {
-              int p = (int)roundf(p_r) + dp;
+              int p = rp_r + dp;
+              if (p < 0 || p >= dim.x)
+                continue;
+
               float x_p = ((p + min_indices.x + 0.5f) * spacing.x) - origin.x;
 
               // get distance between nearest neighbour and central voxel
@@ -97,68 +110,70 @@ rotateKernel_pull(float* __restrict__ out_im,
               float delta_x = Xr_x - x_p;
               float delta_y = Xr_y - x_q;
               float delta_z = Xr_z - x_r;
+              // get input image voxel index that we are at
+              int i_idx = p + (q * dim.x) + (r * dim.x * dim.y);
 
               // caulculate gaussian kernel
               float g = expf(-1. * ((delta_x * delta_x) + (delta_y * delta_y) + (delta_z * delta_z)) / (2 * sigma * sigma));
-              //              if(i==dim.x/2+20 && j==dim.y/2 && k==dim.z/2) {
-              //                  printf("dp=%d dq=%d dr=%d g=%e\n", dp,dq,dr,g);
-              //                  printf("dx=%f dy=%f dz=%f\n",
-              //                         delta_x, delta_y, delta_z);
-              //                  printf("Xr_z=%f\n", Xr_z);
-              //                  printf("x_r=%f\n", x_r);
-              //                  printf("origin.z=%f\n", origin.z);
-              //                  printf("min_z=%d\n", min_indices.z);
-              //              }
 
               G += g;
+              accumulation_im += in_im[i_idx] * g;
             };
         };
     };
 
   // loop again but this time actually fetch the image values
-  float accumulation_im = 0;
+  //  float accumulation_im = 0;
 
-  for (int dr = -2; dr <= 2; dr++)
-    {
-      float r = dr + (int)roundf(r_r);
-      float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z;
+  //  for (int dr = -2; dr <= 2; dr++)
+  //    {
+  //      int r = (int)roundf(r_r) + dr;
+  //      if (r < 0 || r >= dim.z)
+  //        continue;// nearest neighbour z coordinate in rotated voxel space
 
-      for (int dq = -2; dq <= 2; dq++)
-        {
-          float q = dq + (int)roundf(q_r);
-          float x_q = ((q + min_indices.y + 0.5f) * spacing.y) - origin.y;
+  //      float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z; // converted to image space
 
-          for (int dp = -2; dp <= 2; dp++)
-            {
-              float p = dp + (int)roundf(p_r);
-              float x_p = ((p + min_indices.x + 0.5f) * spacing.x) - origin.x;
+  //      for (int dq = -2; dq <= 2; dq++)
+  //        {
+  //          int q = (int)roundf(q_r) + dq;
+  //          if (q < 0 || q >= dim.y)
+  //            continue;
 
-              float delta_x = Xr_x - x_p;
-              float delta_y = Xr_y - x_q;
-              float delta_z = Xr_z - x_r;
+  //          float x_q = ((q + min_indices.y + 0.5f) * spacing.y) - origin.y;
 
-              if (p < 0 || p >= dim.x)
-                continue;
+  //          for (int dp = -2; dp <= 2; dp++)
+  //            {
+  //              int p = (int)roundf(p_r) + dp;
+  //              if (p < 0 || p >= dim.x)
+  //                  continue;
+  //              float x_p = ((p + min_indices.x + 0.5f) * spacing.x) - origin.x;
 
-              if (q < 0 || q >= dim.y)
-                continue;
+  //              float delta_x = Xr_x - x_p;
+  //              float delta_y = Xr_y - x_q;
+  //              float delta_z = Xr_z - x_r;
 
-              if (r < 0 || r >= dim.z)
-                continue;
+  //              if (p < 0 || p >= dim.x)
+  //                continue;
 
-              // get input image voxel index that we are at
-              int i_idx = p + (q * dim.x) + (r * dim.x * dim.y);
+  //              if (q < 0 || q >= dim.y)
+  //                continue;
 
-              // calculate gaussian weighting for this voxel
-              float g = expf(-1. * ((delta_x * delta_x) + (delta_y * delta_y) + (delta_z * delta_z)) / (2 * sigma * sigma));
+  //              if (r < 0 || r >= dim.z)
+  //                continue;
 
-              // record the weighted value from this voxel
-              accumulation_im += in_im[i_idx] * g / G;
-            };
-        };
-    };
+  //              // get input image voxel index that we are at
+  //              int i_idx = p + (q * dim.x) + (r * dim.x * dim.y);
+
+  //              // calculate gaussian weighting for this voxel
+  //              float g = expf(-1. * ((delta_x * delta_x) + (delta_y * delta_y) + (delta_z * delta_z)) / (2 * sigma * sigma));
+
+  //              // record the weighted value from this voxel
+  //              accumulation_im += in_im[i_idx] * g / G;
+  //            };
+  //        };
+  //    };
   // assign the pulled voxel values to a single voxel in the output image
-  out_im[idx] = accumulation_im;
+  out_im[idx] = (G > 0.f) ? accumulation_im / G : 0.f; //  out_im[idx] = accumulation_im/G;
 };
 
 // the following is the adjoint operation (push)
@@ -208,20 +223,31 @@ rotateKernel_push(float* __restrict__ out_im,
   // of each NN contribution in the next loop.
   float G = 0;     // accumulator variable
   float sigma = 2; // gaussian kernel sigma
+  int rr_r = (int)roundf(r_r);
+  int rq_r = (int)roundf(q_r);
+  int rp_r = (int)roundf(p_r);
 
   for (int dr = -2; dr <= 2; dr++)
     {
-      float r = dr + (int)roundf(r_r);                                 // nearest neighbour z coordinate in rotated  space
-      float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z; // converted to original space
+      int r = rr_r + dr;
+      if (r < 0 || r >= dim.z)
+        continue; // nearest neighbour z coordinate in rotated voxel space
+
+      float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z; // converted to image space
 
       for (int dq = -2; dq <= 2; dq++)
         {
-          float q = dq + (int)roundf(q_r);
+          int q = rq_r + dq;
+          if (q < 0 || q >= dim.y)
+            continue;
+
           float x_q = ((q + min_indices.y + 0.5f) * spacing.y) - origin.y;
 
           for (int dp = -2; dp <= 2; dp++)
             {
-              float p = dp + (int)roundf(p_r);
+              int p = rp_r + dp;
+              if (p < 0 || p >= dim.x)
+                continue;
               float x_p = ((p + min_indices.x + 0.5f) * spacing.x) - origin.x;
 
               // get distance between nearest neighbour and central voxel
@@ -250,31 +276,30 @@ rotateKernel_push(float* __restrict__ out_im,
 
   for (int dr = -2; dr <= 2; dr++)
     {
-      float r = dr + (int)roundf(r_r);
-      float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z;
+      int r = rr_r + dr;
+      if (r < 0 || r >= dim.z)
+        continue; // nearest neighbour z coordinate in rotated voxel space
+
+      float x_r = ((r + min_indices.z + 0.5f) * spacing.z) - origin.z; // converted to image space
 
       for (int dq = -2; dq <= 2; dq++)
         {
-          float q = dq + (int)roundf(q_r);
+          int q = rq_r + dq;
+          if (q < 0 || q >= dim.y)
+            continue;
+
           float x_q = ((q + min_indices.y + 0.5f) * spacing.y) - origin.y;
 
           for (int dp = -2; dp <= 2; dp++)
             {
-              float p = dp + (int)roundf(p_r);
+              int p = rp_r + dp;
+              if (p < 0 || p >= dim.x)
+                continue;
               float x_p = ((p + min_indices.x + 0.5f) * spacing.x) - origin.x;
 
               float delta_x = Xr_x - x_p;
               float delta_y = Xr_y - x_q;
               float delta_z = Xr_z - x_r;
-
-              if (p < 0 || p >= dim.x)
-                continue;
-
-              if (q < 0 || q >= dim.y)
-                continue;
-
-              if (r < 0 || r >= dim.z)
-                continue;
 
               // get input image voxel index that we are at
               int i_idx = p + (q * dim.x) + (r * dim.x * dim.y);
