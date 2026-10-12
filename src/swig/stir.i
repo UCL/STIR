@@ -1200,6 +1200,7 @@ ADD_REPR(stir::Succeeded, %arg($self->succeeded() ? "yes" : "no"));
 %include "stir/scatter/SingleScatterSimulation.h"
 
 %shared_ptr(stir::ScatterEstimation);
+%include "stir/numerics/BSplines.h"
 %include "stir/scatter/ScatterEstimation.h"
 
 %shared_ptr(stir::CreateTailMaskFromACFs);

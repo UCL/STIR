@@ -45,7 +45,14 @@ This is probably only useful before calling interpolation routines, or for FORE.
 Array<3, float> extend_segment(const SegmentBySinogram<float>& segment,
                                const int view_extension = 5,
                                const int axial_extension = 5,
-                               const int tangential_extension = 5);
+                               const int tangential_extension = 5,
+                               const SegmentBySinogram<float>* opposite_segment_ptr = nullptr);
+
+// Array<3, float> extend_segment(const SegmentBySinogram<float>& segment,
+//                                const SegmentBySinogram<float>& inv_segment,
+//                                const int view_extension = 5,
+//                                const int axial_extension = 5,
+//                                const int tangential_extension = 5);
 //@}
 
 END_NAMESPACE_STIR
