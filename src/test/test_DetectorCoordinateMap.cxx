@@ -111,7 +111,8 @@ DetectionPosMapTests::run_coordinate_test_for_flat_first_bucket()
                                                                    min_ring_diff_v,
                                                                    max_ring_diff_v,
                                                                    scannerBlocks_ptr->get_max_num_views(),
-                                                                   scannerBlocks_ptr->get_max_num_non_arccorrected_bins());
+                                                                   scannerBlocks_ptr->get_max_num_non_arccorrected_bins(),
+                                                                   /* tof_mash_factor = */ 0);
 
   Bin bin, bin0 = Bin(0, 0, 0, 0);
   CartesianCoordinate3D<float> b1, b2, b01, b02;
@@ -132,7 +133,8 @@ DetectionPosMapTests::run_coordinate_test_for_flat_first_bucket()
       min_ring_diff_v,
       max_ring_diff_v,
       scannerBlocks_firstFlat_ptr->get_max_num_views(),
-      scannerBlocks_firstFlat_ptr->get_max_num_non_arccorrected_bins());
+      scannerBlocks_firstFlat_ptr->get_max_num_non_arccorrected_bins(),
+      /* tof_mash_factor = */ 0);
   timer.reset();
   timer.start();
 

@@ -18,6 +18,7 @@
 #include "stir/detail/PETSIRDInfo_helpers.h"
 
 #include "stir/warning.h"
+#include "stir/format.h"
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"
@@ -482,6 +483,15 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
       is_cylindrical = false;
       is_generic_geometry = false;
       is_block_configuration = true;
+    }
+  try
+    {
+      stir_scanner_sptr->set_up();
+    }
+  catch (const std::exception& e)
+    {
+      error(format("Interfile parsing ended up with the following incomplete/inconsistent scanner:\n{}\nPlease check.",
+                   stir_scanner_sptr->parameter_info()));
     }
 
   /// Now let's create the PETISIRD - STIR geometry mapping

@@ -21,7 +21,8 @@
 #define __stir_listmode_CListRecordROOT_H__
 
 #include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
+#include "stir/listmode/CListEventScannerWithDiscreteDetectors.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
 #include "stir/round.h"
 #include "boost/static_assert.hpp"
@@ -31,9 +32,13 @@
 
 START_NAMESPACE_STIR
 
-class CListEventROOT : public CListEventCylindricalScannerWithDiscreteDetectors
+class CListEventROOT : public CListEventScannerWithDiscreteDetectors<ProjDataInfoPETScannerWithDiscreteDetectors>
 {
+private:
+  using base_type = CListEventScannerWithDiscreteDetectors<ProjDataInfoPETScannerWithDiscreteDetectors>;
+
 public:
+  //! Constructor (will call error() if type of \a proj_data_info is incorrect)
   CListEventROOT(const shared_ptr<const ProjDataInfo>& proj_data_info);
 
   //! This routine returns the corresponding detector pair
