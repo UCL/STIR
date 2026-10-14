@@ -96,5 +96,5 @@ STR	detector_params_file = "OUTPUT_DIRECTORY/DET.REC"
 STR	bin_params_file  = "OUTPUT_DIRECTORY/BIN.REC"
 
 # HISTORY FILE
-STR	history_file = ""
+STR	history_file = "OUTPUT_DIRECTORY/history.lm"
 
