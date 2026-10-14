@@ -73,12 +73,13 @@ private:
   bool do_symmetry_swap_s;
   bool do_symmetry_shift_z;
 
-  // explicitly list necessary members for image details (should use an Info object instead)
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const DiscretisedDensity<3, float>> density_info_ptr;
+
+  // cache a few density_info_ptr-derived params
   CartesianCoordinate3D<float> voxel_size;
   CartesianCoordinate3D<float> origin;
   IndexRange<3> densel_range;
-
-  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
 
   // for Jacobian
   const ProjDataInfoCylindrical& proj_data_info_cyl() const

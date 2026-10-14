@@ -195,10 +195,6 @@ static VoxelsOnCartesianGrid ask_parameters();
 
   inline int get_max_z() const;
 
-  BasicCoordinate<3, int> get_lengths() const;
-  BasicCoordinate<3, int> get_min_indices() const;
-  BasicCoordinate<3, int> get_max_indices() const;
-
   //@}
 
   //! \name Numerical operations

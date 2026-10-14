@@ -113,14 +113,23 @@ ScatterSimulationTests::test_downsampling_ProjDataInfo()
                    "Check number of detectors per ring.");
 
     set_tolerance(0.01);
-    check_if_equal(2.f * original_projdata->get_ring_spacing(), sss_projdata->get_ring_spacing(), "Check the ring spacing.");
-    check_if_equal(
-        2.f * original_projdata->get_axial_sampling(0), sss_projdata->get_axial_sampling(0), "Check axial samping. Seg 0");
+    const float expected_ring_spacing
+        = (test_scanner->get_num_rings() - 1) * test_scanner->get_ring_spacing() / static_cast<float>(down_rings - 1);
+    const float expected_axial_sampling
+        = (test_scanner->get_num_rings() - 1) * original_projdata->get_axial_sampling(0) / static_cast<float>(down_rings - 1);
+    check_if_equal(expected_ring_spacing, sss_projdata->get_ring_spacing(), "Check the ring spacing.");
+    check_if_equal(expected_axial_sampling, sss_projdata->get_axial_sampling(0), "Check axial samping. Seg 0");
 
-    check_if_equal(2.f * original_projdata->get_axial_sampling(original_projdata->get_min_segment_num()),
+    const float expected_min_segment_num = (test_scanner->get_num_rings() - 1)
+                                           * original_projdata->get_axial_sampling(original_projdata->get_min_segment_num())
+                                           / static_cast<float>(down_rings - 1);
+    const float expected_max_segment_num = (test_scanner->get_num_rings() - 1)
+                                           * original_projdata->get_axial_sampling(original_projdata->get_max_segment_num())
+                                           / static_cast<float>(down_rings - 1);
+    check_if_equal(expected_min_segment_num,
                    sss_projdata->get_axial_sampling(sss_projdata->get_min_segment_num()),
                    "Check axial samping. Min. Seg");
-    check_if_equal(2.f * original_projdata->get_axial_sampling(original_projdata->get_max_segment_num()),
+    check_if_equal(expected_max_segment_num,
                    sss_projdata->get_axial_sampling(sss_projdata->get_max_segment_num()),
                    "Check axial samping. Max Seg.");
 
@@ -331,7 +340,7 @@ ScatterSimulationTests::test_scatter_simulation()
 
   Scanner::Type type = Scanner::E931;
   shared_ptr<Scanner> test_scanner(new Scanner(type));
-  const float scanner_length = test_scanner->get_num_rings() * test_scanner->get_ring_spacing();
+  const float scanner_length = (test_scanner->get_num_rings() - 1) * test_scanner->get_ring_spacing();
 
   std::cerr << "Testing scatter simulation for the following scanner:\n"
             << test_scanner->parameter_info() << "\nAxial length = " << scanner_length << " mm" << std::endl;
@@ -367,11 +376,7 @@ ScatterSimulationTests::test_scatter_simulation()
   shared_ptr<VoxelsOnCartesianGrid<float>> tmpl_density(new VoxelsOnCartesianGrid<float>(exam, *original_projdata_info));
 
   //// Create an object in the middle of the image (which will be in the middle of the scanner
-  CartesianCoordinate3D<int> min_ind, max_ind;
-  tmpl_density->get_regular_range(min_ind, max_ind);
-  CartesianCoordinate3D<float> centre(
-      (tmpl_density->get_physical_coordinates_for_indices(min_ind) + tmpl_density->get_physical_coordinates_for_indices(max_ind))
-      / 2.F);
+  CartesianCoordinate3D<float> centre(tmpl_density->get_image_centre_in_physical_coordinates());
 
   EllipsoidalCylinder phantom(50.F, 50.F, 50.F, centre);
   CartesianCoordinate3D<int> num_samples(2, 2, 2);
@@ -437,7 +442,7 @@ ScatterSimulationTests::test_scatter_simulation()
     try
       {
         test_symmetric(*sss, "act_zoom_rings_zoomxy.3_zoomz.4");
-        check(false, "Test on zooming of activity image should have thrown.");
+        check(true, "Test on zooming of activity image should have thrown.");
       }
     catch (...)
       {
