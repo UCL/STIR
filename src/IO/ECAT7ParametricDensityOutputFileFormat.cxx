@@ -14,6 +14,7 @@
   \brief Implementation of class stir::ecat::ecat7::ECAT7ParametricDensityOutputFileFormat
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 #include "stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
@@ -155,7 +156,8 @@ ECAT7ParametricDensityOutputFileFormat<DiscretisedDensityT>::actual_write_to_fil
   return Succeeded::yes;
 }
 
-template class ECAT7ParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;
+template class ECAT7ParametricDensityOutputFileFormat<Parametric2VoxelsOnCartesianGridBaseType>;
+template class ECAT7ParametricDensityOutputFileFormat<Parametric3VoxelsOnCartesianGridBaseType>;
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT

@@ -20,6 +20,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
   \author PARAPET project
   \author Richard Brown
 
@@ -32,6 +33,8 @@
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
 #include "stir/ArrayFwd.h"
+#include "stir/IO/InterfileHeader.h"
+
 #include <iostream>
 #include <string>
 
@@ -109,11 +112,13 @@ DynamicDiscretisedDensity* read_interfile_dynamic_image(std::istream& input, con
 DynamicDiscretisedDensity* read_interfile_dynamic_image(const std::string& filename);
 
 /// Read parametric image
-ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2, float>>>*
+template <int num_params>
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>*
 read_interfile_parametric_image(std::istream& input, const std::string& directory_for_data);
 
 /// Read parametric image
-ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2, float>>>*
+template <int num_params>
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>*
 read_interfile_parametric_image(const std::string& filename);
 
 //! This outputs an Interfile header for an image.
@@ -234,11 +239,13 @@ Succeeded write_basic_interfile(const std::string& filename,
                                 const float scale = 0,
                                 const ByteOrder byte_order = ByteOrder::native);
 
-Succeeded write_basic_interfile(const std::string& filename,
-                                const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2, float>>>& image,
-                                const NumericType output_type = NumericType::FLOAT,
-                                const float scale = 0,
-                                const ByteOrder byte_order = ByteOrder::native);
+template <int num_params>
+Succeeded
+write_basic_interfile(const std::string& filename,
+                      const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<num_params, float>>>& image,
+                      const NumericType output_type = NumericType::FLOAT,
+                      const float scale = 0,
+                      const ByteOrder byte_order = ByteOrder::native);
 
 Succeeded write_basic_interfile(const std::string& filename,
                                 const DynamicDiscretisedDensity& image,

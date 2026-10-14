@@ -68,6 +68,24 @@ public:
   void warp_image(DiscretisedDensity<3, float>& new_reference_image, const GatedDiscretisedDensity& gated_image) const;
   void warp_image(GatedDiscretisedDensity& gated_image, const DiscretisedDensity<3, float>& reference_image) const;
   void accumulate_warp_image(DiscretisedDensity<3, float>& new_reference_image, const GatedDiscretisedDensity& gated_image) const;
+
+  // Nicolas A Karakatsanis: After warping of each gate, averaging (instead of accumulation) takes place
+  void average_warp_image(DiscretisedDensity<3, float>& new_reference_image, const GatedDiscretisedDensity& gated_image) const;
+
+  // Nicolas A Karakatsanis: After warping of each gate, averaging (instead of accumulation) takes place
+  // and accumulates over previous calls of the same function
+  void accumulate_average_warp_image(DiscretisedDensity<3, float>& new_reference_image,
+                                     const GatedDiscretisedDensity& gated_image) const;
+
+  //! Nicolas A Karakatsanis: Warping functions from to non-gated images.
+  // Create a convolved (motion-blurred) image according to the designated motion vectors
+  // Designed for use within Richardson-Lucy deconvolution EM iterative process for intra-gate/frame motion correction
+  void average_warp_image(DiscretisedDensity<3, float>& avg_warped_image,
+                          const DiscretisedDensity<3, float>& reference_image) const;
+
+  void accumulate_average_warp_image(DiscretisedDensity<3, float>& avg_warped_image,
+                                     const DiscretisedDensity<3, float>& reference_image) const;
+
   void set_defaults() override;
   Succeeded set_up() override;
   //!@}
@@ -75,6 +93,7 @@ private:
   typedef RegisteredParsingObject<GatedSpatialTransformation, SpatialTransformation> base_type;
   void initialise_keymap() override;
   bool post_processing() override;
+
   std::string _transformation_filename_prefix;
   GatedDiscretisedDensity _spatial_transformation_z;
   GatedDiscretisedDensity _spatial_transformation_y;
