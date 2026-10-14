@@ -138,10 +138,10 @@ BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
   petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
 
   // read pre-computed alive fractions from DeadTimeTimeBlock entries
-  const int num_buckets = static_cast<int>(header.scanner.scanner_geometry.replicated_modules[0].transforms.size()) / 2;
-  // num_buckets = 224 for mMR (448 modules / 2, since each singles unit covers 2 modules)
+  // alive fractions are stored per module
+  const int num_modules = static_cast<int>(header.scanner.scanner_geometry.replicated_modules[0].transforms.size());
+  num_buckets_dt = num_modules;
 
-  num_buckets_dt = num_buckets;
   int n_dt_blocks = 0;
 
   petsird::TimeBlock tb;
@@ -157,8 +157,11 @@ BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
               DeadTimeEntry entry;
               entry.start_ms = db.time_interval.start;
               entry.stop_ms = db.time_interval.stop;
-              entry.fractions.resize(num_buckets, 1.f);
-              for (std::size_t i = 0; i < std::min(fracs.size(), static_cast<std::size_t>(num_buckets)); ++i)
+              if (static_cast<int>(fracs.size()) != num_modules)
+                error("BinNormalisationFromPETSIRD: a dead time block has %d alive fractions, the scanner has %d modules",
+                      static_cast<int>(fracs.size()), num_modules);
+              entry.fractions.resize(num_modules);
+              for (int i = 0; i < num_modules; ++i)
                 entry.fractions[i] = static_cast<float>(fracs[i]);
               dead_time_entries.push_back(std::move(entry));
               ++n_dt_blocks;
@@ -207,26 +210,19 @@ BinNormalisationFromPETSIRD::get_dead_time_efficiency(const DetectionPosition<>&
     return 1.0F;
   if (dead_time_entries.empty())
     error("BinNormalisationFromPETSIRD: dead time requested but the file contains no dead time blocks");
-  const auto fracs = get_alive_fractions_for_frame(start_time, end_time);
-  const int ring       = static_cast<int>(det_pos.axial_coord());
+
+  // module of this detector, same convention as the convertor's detector IDs
+  const Scanner& sc = *proj_data_info_sptr->get_scanner_ptr();
+  const int ring = static_cast<int>(det_pos.axial_coord());
   const int tangential = static_cast<int>(det_pos.tangential_coord());
+  const int module = ring / sc.get_num_axial_crystals_per_block()
+                     + (tangential / sc.get_num_transaxial_crystals_per_block()) * sc.get_num_axial_blocks();
 
-  const int num_rings                  = 64;
-  const int num_axial_buckets          = 8;
-  const int num_transaxial_buckets     = 28;
-  const int detectors_per_ring         = 504;
-  const int rings_per_axial_bucket     = num_rings / num_axial_buckets;                 // 8
-  const int detectors_per_trans_bucket = detectors_per_ring / num_transaxial_buckets;   // 18
-
-  const int axial_bucket      = ring / rings_per_axial_bucket;
-  const int transaxial_bucket = tangential / detectors_per_trans_bucket;
-  const int bucket_idx        = transaxial_bucket + num_transaxial_buckets * axial_bucket;
-
-  const int num_buckets = static_cast<int>(fracs.size());
-  if (bucket_idx < 0 || bucket_idx >= num_buckets)
-    return 1.0F;
-
-  return fracs[bucket_idx];
+  const auto fracs = get_alive_fractions_for_frame(start_time, end_time);
+  if (module < 0 || module >= static_cast<int>(fracs.size()))
+    error("BinNormalisationFromPETSIRD: module %d (ring %d, tangential %d) outside the %d stored modules",
+          module, ring, tangential, static_cast<int>(fracs.size()));
+  return fracs[module];
 }
 
 END_NAMESPACE_STIR
