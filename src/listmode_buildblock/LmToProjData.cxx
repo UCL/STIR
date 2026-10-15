@@ -796,12 +796,13 @@ LmToProjData::process_data()
                         && start_timing_pos_index == output_proj_data_sptr->get_min_tof_pos_num())
                       {
                         const unsigned int ibck = crecord->singles().get_bucket_index();
-                        //const float cnt = static_cast<float>(crecord->singles().get_singles_count());
+                        // const float cnt = static_cast<float>(crecord->singles().get_singles_count());
                         const float cnt = 8.F * crecord->singles().get_singles_count();
-                        if (ibck < static_cast<unsigned int>(num_buckets)){
-                          singles_per_bucket[ibck] += cnt;
-                          ++singles_nrecords[ibck];
-                        }
+                        if (ibck < static_cast<unsigned int>(num_buckets))
+                          {
+                            singles_per_bucket[ibck] += cnt;
+                            ++singles_nrecords[ibck];
+                          }
                       }
                     if (record.is_time() && end_time > 0.01) // Direct comparison within doubles is unsafe.
                       {
@@ -927,8 +928,7 @@ LmToProjData::process_data()
       // only on the first pass through the listmode data).
       {
         const double frame_duration = (end_time - start_time) > 0 ? (end_time - start_time) : 3600.0;
-        const std::string singles_filename
-            = output_filename_prefix + "_f" + std::to_string(current_frame_num) + "_singles.json";
+        const std::string singles_filename = output_filename_prefix + "_f" + std::to_string(current_frame_num) + "_singles.json";
         std::ofstream singles_file(singles_filename);
         if (singles_file)
           {
@@ -941,7 +941,7 @@ LmToProjData::process_data()
               {
                 if (i > 0)
                   singles_file << ", ";
-                singles_file << (singles_per_bucket[i] / singles_nrecords[i]);
+                singles_file << (singles_nrecords[i] > 0 ? singles_per_bucket[i] / singles_nrecords[i] : 0.F);
               }
             singles_file << "]\n";
             singles_file << "}\n";

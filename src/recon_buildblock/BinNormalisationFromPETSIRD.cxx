@@ -105,7 +105,6 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
           if (dbg)
             {
               dbg = false;
-              std::cerr << "DEBUG PETSIRD DT frame: start=" << start_time << " end=" << end_time << "\n";
             }
           eff *= get_dead_time_efficiency(dp.pos1(), start_time, end_time)
                  * get_dead_time_efficiency(dp.pos2(), start_time, end_time);
@@ -159,7 +158,8 @@ BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
               entry.stop_ms = db.time_interval.stop;
               if (static_cast<int>(fracs.size()) != num_modules)
                 error("BinNormalisationFromPETSIRD: a dead time block has %d alive fractions, the scanner has %d modules",
-                      static_cast<int>(fracs.size()), num_modules);
+                      static_cast<int>(fracs.size()),
+                      num_modules);
               entry.fractions.resize(num_modules);
               for (int i = 0; i < num_modules; ++i)
                 entry.fractions[i] = static_cast<float>(fracs[i]);
@@ -221,7 +221,10 @@ BinNormalisationFromPETSIRD::get_dead_time_efficiency(const DetectionPosition<>&
   const auto fracs = get_alive_fractions_for_frame(start_time, end_time);
   if (module < 0 || module >= static_cast<int>(fracs.size()))
     error("BinNormalisationFromPETSIRD: module %d (ring %d, tangential %d) outside the %d stored modules",
-          module, ring, tangential, static_cast<int>(fracs.size()));
+          module,
+          ring,
+          tangential,
+          static_cast<int>(fracs.size()));
   return fracs[module];
 }
 
