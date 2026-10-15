@@ -25,6 +25,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
 #include "stir/PETSIRDInfo.h"
+#include "stir/Array.h"
 
 using std::string;
 
@@ -77,6 +78,18 @@ private:
   shared_ptr<petsird::ScannerInformation> scanner_info_sptr;
 
   shared_ptr<const PETSIRDInfo> petsird_info_sptr;
+  // time-indexed dead time blocks: each entry is {start_ms, stop_ms, fractions}
+  struct DeadTimeEntry
+  {
+    double start_ms;
+    double stop_ms;
+    std::vector<float> fractions;
+  };
+  std::vector<DeadTimeEntry> dead_time_entries;
+  int num_buckets_dt = 0;
+
+  std::vector<float> get_alive_fractions_for_frame(double start_time_s, double end_time_s) const;
+  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
 };
 
 END_NAMESPACE_STIR
