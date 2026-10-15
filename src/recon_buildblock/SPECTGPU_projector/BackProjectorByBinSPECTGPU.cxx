@@ -237,7 +237,10 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
       tls_stack.allocate(_b_allocatedStack.image_size, _b_allocatedStack.sino_size);
 
       if (_do_atten)
-        array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
+#  pragma omp critical(BP_stir_array_access)
+        {
+          array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
+        }
     }
 
   //    array_to_device(tls_stack.dev_image, stir_image);
@@ -279,15 +282,15 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
   //          omp_get_thread_num(),
   //          s);
 
-#  pragma omp critical
+#  pragma omp critical(accumulate)
   {
     //      const size_t n = omp_get_num_threads();
     //      fprintf(stderr,
     //              "num omp t=%zu \n",
     //              n);
 
-    accumulate_image_omp_contrib(_b_allocatedStack.dev_image.data(),
-                                 tls_stack.dev_image.data(),
+    accumulate_image_omp_contrib(_b_allocatedStack.dev_image,
+                                 tls_stack.dev_image,
                                  this->block_dim.x,
                                  this->block_dim.y,
                                  this->block_dim.z,

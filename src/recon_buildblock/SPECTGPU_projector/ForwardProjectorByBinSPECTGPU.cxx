@@ -43,6 +43,52 @@ START_NAMESPACE_STIR
 //////////////////////////////////////////////////////////
 const char* const ForwardProjectorByBinSPECTGPU::registered_name = "SPECTGPU";
 
+void
+AllocatedStack::allocate(size_t image_size_, size_t sino_size_)
+{
+  if (image_size == image_size_ && sino_size == sino_size_)
+    return;
+
+  image_size = image_size_;
+  sino_size = sino_size_;
+
+  cu_allocate(out_im, image_size);
+  cu_allocate(out_umap, image_size);
+  cu_allocate(blurred_im, image_size);
+  cu_allocate(rotated_im, image_size);
+  cu_allocate(rotated_umap, image_size);
+  cu_allocate(dev_image, image_size);
+  cu_allocate(dev_umap, image_size);
+  cu_allocate(dev_sino, sino_size);
+}
+
+void
+AllocatedStack::deallocate()
+{
+  cu_free(out_im);
+  cu_free(out_umap);
+  cu_free(blurred_im);
+  cu_free(rotated_im);
+  cu_free(rotated_umap);
+  cu_free(dev_image);
+  cu_free(dev_umap);
+  cu_free(dev_sino);
+
+  image_size = 0;
+  sino_size = 0;
+}
+
+bool
+AllocatedStack::is_allocated() const
+{
+  return image_size != 0;
+}
+
+AllocatedStack::~AllocatedStack()
+{
+  deallocate();
+}
+
 ForwardProjectorByBinSPECTGPU::ForwardProjectorByBinSPECTGPU()
     : _cuda_device(0),
       _cuda_verbosity(true),
@@ -211,10 +257,16 @@ ForwardProjectorByBinSPECTGPU::actual_forward_project(RelatedViewgrams<float>& s
       tls_stack.allocate(_f_allocatedStack.image_size, _f_allocatedStack.sino_size);
 
       if (_do_atten)
-        array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
+#  pragma omp critical(stir_array_access)
+        {
+          array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
+        }
     }
 
-  array_to_device(tls_stack.dev_image, stir_image);
+#  pragma omp critical(stir_array_access)
+  {
+    array_to_device(tls_stack.dev_image, stir_image);
+  }
 
   run_forward_projection_cuda(stir_sino,
                               tls_stack, // this->_f_allocatedStack,

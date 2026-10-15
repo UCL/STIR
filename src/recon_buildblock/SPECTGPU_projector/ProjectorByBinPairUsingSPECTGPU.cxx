@@ -63,7 +63,7 @@ ProjectorByBinPairUsingSPECTGPU::post_processing()
   auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
 
   fwd->set_sigma0(_sigma0);
-  fwd->set_num_sigmas(_sigma0);
+  fwd->set_num_sigmas(_num_sigmas);
   fwd->set_slope(_slope);
   fwd->set_attenuation_filename(_att_filename);
 
