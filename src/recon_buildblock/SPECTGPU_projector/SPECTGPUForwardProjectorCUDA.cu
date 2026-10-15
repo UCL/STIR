@@ -10,10 +10,25 @@
 #include <cmath>
 
 START_NAMESPACE_STIR
-#ifdef __CUDACC__
-#  ifdef CUVEC_DISABLE_CUDA
-#    error CUVEC_DISABLE_CUDA defined in this TU
-#  endif
+void
+cu_allocate(float*& array, size_t size)
+{
+  auto err = cudaMalloc((void**)&array, size * sizeof(float));
+  if (err != cudaSuccess)
+    error(cudaGetErrorString(err));
+
+  //        cudaMemset(dev_image,
+  //                   0,
+  //                   image.size_all() * sizeof(float));
+}
+
+void
+cu_free(float*& array)
+{
+  cudaFree(array);
+  array = nullptr;
+}
+
 void
 run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                             AllocatedStack& stack,
@@ -61,7 +76,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
 
   Viewgram<float>& vg0 = *vg_iter;
   const auto sino_size = vg0.size_all();
-  //  fprintf(stderr, "dev_sino allocated %p\n", dev_sino.data());
+  //  fprintf(stderr, "dev_sino allocated %p\n", dev_sino);
   //  fflush(stderr);
   int dim_ax = vg0.get_num_axial_poss();
   int dim_tg = vg0.get_num_tangential_poss();
@@ -81,10 +96,10 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
   for (auto vg_iter = stir_sino.begin(); vg_iter != stir_sino.end(); ++vg_iter)
     {
       //  the viewgrams need to be filled by the kernel so need to set everything to zero
-      cudaMemset(stack.dev_sino.data(), 0, sino_size * sizeof(float));
-      cudaMemset(stack.out_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
-      cudaMemset(stack.out_umap.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
-      cudaMemset(stack.blurred_im.data(), 0, dim_x * dim_y * dim_z * sizeof(float));
+      cudaMemset(stack.dev_sino, 0, sino_size * sizeof(float));
+      cudaMemset(stack.out_im, 0, dim_x * dim_y * dim_z * sizeof(float));
+      cudaMemset(stack.out_umap, 0, dim_x * dim_y * dim_z * sizeof(float));
+      cudaMemset(stack.blurred_im, 0, dim_x * dim_y * dim_z * sizeof(float));
       Viewgram<float>& vg = *vg_iter;
       Bin bin(0, vg.get_view_num(), 0, 0, 0);
 
@@ -96,7 +111,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
       if (do_atten)
         {
           rotateKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
-              stack.out_umap.data(), stack.dev_umap.data(), image_dim, spacing, origin, min_indices, angle_rad);
+              stack.out_umap, stack.dev_umap, image_dim, spacing, origin, min_indices, angle_rad);
 
           auto err0 = cudaGetLastError();
           if (err0 != cudaSuccess)
@@ -104,7 +119,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
         }
 
       rotateKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
-          stack.out_im.data(), stack.dev_image.data(), image_dim, spacing, origin, min_indices, angle_rad);
+          stack.out_im, stack.dev_image, image_dim, spacing, origin, min_indices, angle_rad);
 
       auto err = cudaGetLastError();
       if (err != cudaSuccess)
@@ -113,14 +128,14 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
       if (coll_sigma0_cm >= 0 && coll_slope >= 0)
         {
           GaussianConvolutionKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
-              stack.blurred_im.data(), stack.out_im.data(), image_dim, spacing, coll_sigma0_cm, num_sigmas, coll_slope);
+              stack.blurred_im, stack.out_im, image_dim, spacing, coll_sigma0_cm, num_sigmas, coll_slope);
 
           auto errpsf_f0 = cudaGetLastError();
           if (errpsf_f0 != cudaSuccess)
             error(cudaGetErrorString(errpsf_f0));
 
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
-              stack.dev_sino.data(), stack.blurred_im.data(), stack.out_umap.data(), image_dim, spacing, do_atten);
+              stack.dev_sino, stack.blurred_im, stack.out_umap, image_dim, spacing, do_atten);
           cudaDeviceSynchronize();
           auto errpsf_f = cudaGetLastError();
           if (errpsf_f != cudaSuccess)
@@ -129,8 +144,8 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
       else
         {
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
-              stack.dev_sino.data(), stack.out_im.data(), stack.out_umap.data(), image_dim, spacing, do_atten);
-
+              stack.dev_sino, stack.out_im, stack.out_umap, image_dim, spacing, do_atten);
+          cudaDeviceSynchronize();
           err = cudaGetLastError();
           if (err != cudaSuccess)
             error(cudaGetErrorString(err));
@@ -156,6 +171,5 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
   //  fprintf(stderr, "leaving run_forward_projection_cuda\n");
   //  fflush(stderr);
 }
-#endif
 
 END_NAMESPACE_STIR
