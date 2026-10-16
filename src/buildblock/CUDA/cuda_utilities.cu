@@ -50,8 +50,10 @@ template <int num_dimensions, typename elemT>
 void
 array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array)
 {
-  dev_data.resize(stir_array.size_all());
-  std::copy(stir_array.begin_all(), stir_array.end_all(), dev_data.begin());
+
+  if (stir_array.size_all() != dev_data.size())
+    error("array_to_device: size mismatch between CuVec and Array");
+  array_to_device(dev_data.data(), stir_array);
 }
 
 //! copy CUDA pointer to `Array`
@@ -63,6 +65,8 @@ template <int num_dimensions, typename elemT>
 void
 array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool sync)
 {
+  if (sync)
+    cudaDeviceSynchronize();
   if (stir_array.is_contiguous())
     {
       info("array_to_host contiguous", 100);
@@ -89,11 +93,25 @@ template <int num_dimensions, typename elemT>
 void
 array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync)
 {
-  if (sync)
-    cudaDeviceSynchronize();
+
   if (stir_array.size_all() != dev_data.size())
     error("array_to_host: size mismatch between CuVec and Array");
-  std::copy(dev_data.begin(), dev_data.end(), stir_array.begin_all());
+  array_to_host(stir_array, dev_data.data(), sync);
+}
+
+void
+cu_allocate(float*& array, size_t size)
+{
+  auto err = cudaMalloc((void**)&array, size * sizeof(float));
+  if (err != cudaSuccess)
+    error(cudaGetErrorString(err));
+}
+
+void
+cu_free(float*& array)
+{
+  cudaFree(array);
+  array = nullptr;
 }
 
 template void array_to_device<3, float>(float*, const Array<3, float>&);

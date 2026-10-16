@@ -10,24 +10,6 @@
 #include <cmath>
 
 START_NAMESPACE_STIR
-void
-cu_allocate(float*& array, size_t size)
-{
-  auto err = cudaMalloc((void**)&array, size * sizeof(float));
-  if (err != cudaSuccess)
-    error(cudaGetErrorString(err));
-
-  //        cudaMemset(dev_image,
-  //                   0,
-  //                   image.size_all() * sizeof(float));
-}
-
-void
-cu_free(float*& array)
-{
-  cudaFree(array);
-  array = nullptr;
-}
 
 void
 run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
@@ -104,8 +86,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
       Bin bin(0, vg.get_view_num(), 0, 0, 0);
 
       // the following sign is introduced to match SPECTUB
-      float angle_rad = vg.get_proj_data_info().get_phi(
-          bin); //-vg.get_view_num() * 2.f * M_PI / num_views;//vg.get_proj_data_info().get_phi(); //
+      float angle_rad = vg.get_proj_data_info().get_phi(bin);
       angle_rad = -std::fmod(angle_rad, 2.f * M_PI);
 
       if (do_atten)
@@ -136,7 +117,6 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
 
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
               stack.dev_sino, stack.blurred_im, stack.out_umap, image_dim, spacing, do_atten);
-          cudaDeviceSynchronize();
           auto errpsf_f = cudaGetLastError();
           if (errpsf_f != cudaSuccess)
             error(cudaGetErrorString(errpsf_f));
@@ -145,7 +125,6 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
         {
           forwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
               stack.dev_sino, stack.out_im, stack.out_umap, image_dim, spacing, do_atten);
-          cudaDeviceSynchronize();
           err = cudaGetLastError();
           if (err != cudaSuccess)
             error(cudaGetErrorString(err));
@@ -153,23 +132,6 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
 
       array_to_host(vg, stack.dev_sino, true);
     }
-  //  out_im.clear();
-  //  out_im.shrink_to_fit();
-  //  fprintf(stderr, "out_im released\n");
-
-  //  out_umap.clear();
-  //  out_umap.shrink_to_fit();
-  //  fprintf(stderr, "out_umap released\n");
-
-  //  blurred_im.clear();
-  //  blurred_im.shrink_to_fit();
-  //  fprintf(stderr, "blurred_im released\n");
-
-  //  dev_sino.clear();
-  //  dev_sino.shrink_to_fit();
-  //  fprintf(stderr, "dev_sino released\n");
-  //  fprintf(stderr, "leaving run_forward_projection_cuda\n");
-  //  fflush(stderr);
 }
 
 END_NAMESPACE_STIR

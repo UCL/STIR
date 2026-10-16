@@ -75,7 +75,6 @@ forwardKernel(float* __restrict__ out_sino,
         }
 
       atten = expf(-mu_integral);
-      //        atten = expf(-in_umap[voxel_idx]*spacing.y);
     }
   else
     atten = 1;
@@ -100,11 +99,6 @@ backwardKernel(float* __restrict__ out_im,
 
   if (idz < dim.z && idy < dim.y && idx < dim.x)
     {
-      //        if(idx==95 && idy==75 && idz==100)
-      //        {
-      //        printf("sino=%f\n",
-      //        in_sino[idz * dim.x + (dim.x - 1 - idx)]);
-      //        }
       if (do_atten)
         {
           float mu_integral = 0.0f;
@@ -118,16 +112,9 @@ backwardKernel(float* __restrict__ out_im,
             }
 
           atten = expf(-mu_integral);
-          //            if(idx==75 && idy==75 && idz==90)
-          //            {
-          //                printf("mu=%f atten=%f\n",
-          //                       mu_integral,
-          //                       atten);
-          //            }
         }
       else
         atten = 1;
-      out_im[(idz * dim.y + idy) * dim.x + idx]
-          += atten * in_sino[idz * dim.x + (dim.x - 1 - idx)]; // in_sino[idz * dim.y + idy] * spacing.x;
+      out_im[(idz * dim.y + idy) * dim.x + idx] += atten * in_sino[idz * dim.x + (dim.x - 1 - idx)];
     }
 }

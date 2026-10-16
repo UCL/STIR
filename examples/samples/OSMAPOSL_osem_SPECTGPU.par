@@ -21,7 +21,7 @@ OSMAPOSLParameters :=
             ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
             collimator slope := 0.0163
             collimator sigma 0(cm) := 0.1466
-            number of PSF sigmas := 2 ; default 2 (95% of the PSF)
+            number of PSF sigmas := 1.13 ; default 2 (95% of the PSF)
 
             attenuation image filename := umap_zoomed.hv
 
@@ -41,6 +41,6 @@ OSMAPOSLParameters :=
   ; needs to be a divisor of the number of views
   number of subsets:= 8
   number of subiterations:= 16
-  Save estimates at subiteration intervals:= 16
+  Save estimates at subiteration intervals:= 8
 
 END :=

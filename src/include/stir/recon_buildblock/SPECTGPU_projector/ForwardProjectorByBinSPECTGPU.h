@@ -42,14 +42,6 @@ struct AllocatedStack
   size_t image_size = 0;
   size_t sino_size = 0;
 
-  //  CuVec<float> dev_image;
-  //  CuVec<float> dev_umap;
-  //  CuVec<float> out_im;
-  //  CuVec<float> out_umap;
-  //  CuVec<float> dev_sino;
-  //  CuVec<float> blurred_im;
-  //  CuVec<float> rotated_im;
-  //  CuVec<float> rotated_umap;
   float* dev_image = nullptr;
   float* dev_umap = nullptr;
   float* out_im = nullptr;
