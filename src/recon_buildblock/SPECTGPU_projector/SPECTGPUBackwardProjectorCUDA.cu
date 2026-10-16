@@ -80,8 +80,6 @@ run_backward_projection_cuda(AllocatedStack& stack,
                              int min_y,
                              int min_x)
 {
-  //    cudaDeviceSynchronize();
-  //    std::cout << "ENTER BP CUDA" << std::endl;
   dim3 cuda_block_dim(block_x, block_y, block_z);
 
   dim3 cuda_grid_dim(grid_x, grid_y, grid_z);
@@ -101,8 +99,7 @@ run_backward_projection_cuda(AllocatedStack& stack,
 
   Bin bin(0, vg.get_view_num(), 0, 0, 0);
   // the following sign is introduced to match SPECTUB
-  float angle_rad = vg.get_proj_data_info().get_phi(
-      bin); //-vg.get_view_num() * 2.f * M_PI / num_views;//vg.get_proj_data_info().get_phi(); //
+  float angle_rad = vg.get_proj_data_info().get_phi(bin);
   angle_rad = -std::fmod(angle_rad, 2.f * M_PI);
   // Note that umap is rotated before because the BP needs to apply attenuation factors corresponding to the same rotation as the
   // image
@@ -111,14 +108,13 @@ run_backward_projection_cuda(AllocatedStack& stack,
   cudaMemset(stack.rotated_umap, 0, dim_x * dim_y * dim_z * sizeof(float));
   cudaMemset(stack.rotated_im, 0, dim_x * dim_y * dim_z * sizeof(float));
   array_to_device(stack.dev_sino, vg);
-  //  cudaMemset(stack.rotated_im, 0, dim_x * dim_y * dim_z * sizeof(float));
   cudaMemset(stack.blurred_im, 0, dim_x * dim_y * dim_z * sizeof(float));
 
   if (do_atten)
     {
       rotateKernel_pull<<<cuda_grid_dim, cuda_block_dim>>>(
           stack.rotated_umap, stack.dev_umap, image_dim, spacing, origin, min_indices, angle_rad);
-      cudaDeviceSynchronize();
+
       auto err0 = cudaGetLastError();
       if (err0 != cudaSuccess)
         error(cudaGetErrorString(err0));
@@ -127,7 +123,7 @@ run_backward_projection_cuda(AllocatedStack& stack,
   // Actual BP
   backwardKernel<<<cuda_grid_dim, cuda_block_dim>>>(
       stack.rotated_im, stack.dev_sino, stack.rotated_umap, image_dim, spacing, do_atten);
-  cudaDeviceSynchronize();
+
   auto err = cudaGetLastError();
   if (err != cudaSuccess)
     error(cudaGetErrorString(err));
@@ -137,7 +133,7 @@ run_backward_projection_cuda(AllocatedStack& stack,
     {
       GaussianConvolutionKernel_push<<<cuda_grid_dim, cuda_block_dim>>>(
           stack.blurred_im, stack.rotated_im, image_dim, spacing, coll_sigma0_cm, num_sigmas, coll_slope);
-      cudaDeviceSynchronize();
+
       auto errpsf_f0 = cudaGetLastError();
       if (errpsf_f0 != cudaSuccess)
         error(cudaGetErrorString(errpsf_f0));
@@ -145,7 +141,7 @@ run_backward_projection_cuda(AllocatedStack& stack,
       // Rotation+Interpolation
       rotateKernel_push<<<cuda_grid_dim, cuda_block_dim>>>(
           stack.dev_image, stack.blurred_im, image_dim, spacing, origin, min_indices, angle_rad);
-      cudaDeviceSynchronize();
+
       auto errpsf_r = cudaGetLastError();
       if (errpsf_r != cudaSuccess)
         error(cudaGetErrorString(errpsf_r));
@@ -155,7 +151,7 @@ run_backward_projection_cuda(AllocatedStack& stack,
       // Rotation+Interpolation
       rotateKernel_push<<<cuda_grid_dim, cuda_block_dim>>>(
           stack.dev_image, stack.rotated_im, image_dim, spacing, origin, min_indices, angle_rad);
-      cudaDeviceSynchronize();
+
       auto err1 = cudaGetLastError();
       if (err1 != cudaSuccess)
         error(cudaGetErrorString(err1));

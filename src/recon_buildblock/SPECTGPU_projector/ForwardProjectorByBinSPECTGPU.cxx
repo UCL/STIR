@@ -60,14 +60,6 @@ AllocatedStack::allocate(size_t image_size_, size_t sino_size_)
   cu_allocate(dev_image, image_size);
   cu_allocate(dev_umap, image_size);
   cu_allocate(dev_sino, sino_size);
-  //    fprintf(stderr, "dev_image=%p\n", dev_image.data());
-  //    fprintf(stderr, "dev_umap=%p\n", dev_umap.data());
-  //    fprintf(stderr, "rotated_im=%p\n", rotated_im.data());
-  //    fprintf(stderr, "blurred_image=%p\n", blurred_im.data());
-  //    fprintf(stderr, "out_umap=%p\n", out_umap.data());
-  //    fprintf(stderr, "out_im=%p\n", out_im.data());
-  //    fprintf(stderr, "dev_sino=%p\n", dev_sino.data());
-  //    fprintf(stderr, "rotated_umap=%p\n", rotated_umap.data());
 }
 
 void

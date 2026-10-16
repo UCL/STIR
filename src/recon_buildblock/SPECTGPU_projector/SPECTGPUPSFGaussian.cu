@@ -60,29 +60,6 @@ GaussianConvolutionKernel_pull(float* __restrict__ out_im,
   int Rz = max(2, (int)ceilf(num_sigmas * sigma_z_vox));
   int Rx = max(2, (int)ceilf(num_sigmas * sigma_x_vox));
 
-  //  for (int dz = -Rz; dz <= Rz; dz++)
-  //    {
-  //      int z = dz + k; // nearest neighbour z coordinate
-
-  //      if (z < 0 || z >= dim.z)
-  //        continue;
-
-  //      for (int dx = -Rx; dx <= Rx; dx++)
-  //        {
-  //          int x = dx + i;
-
-  //          if (x < 0 || x >= dim.x)
-  //            continue;
-
-  //          // caulculate gaussian kernel
-  //          float dx_cm = dx * spacing.x * 0.1f;
-  //          float dz_cm = dz * spacing.z * 0.1f;
-
-  //          float g = expf(-(dx_cm * dx_cm + dz_cm * dz_cm) / (2.f * sigma * sigma));
-  //          G += g;
-  //        };
-  //    };
-
   for (int dz = -Rz; dz <= Rz; dz++)
     {
       int z = dz + k; // nearest neighbour z coordinate

@@ -17,12 +17,13 @@
   \par Usage
 
   <pre>
-  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData [proj_data_filename [ density_filename ] ]
+  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData [proj_data_filename [Projector_pair_name][ density_filename ] ]
   </pre>
-  where the 2 arguments are optional. See the class documentation for more info.
+  where the 3 arguments are optional. See the class documentation for more info.
 
   \author Kris Thielemans
   \author Robert Twyman Skelly
+  \author Daniel Deidda
 */
 
 #include "stir/recon_buildblock/test/ObjectiveFunctionTests.h"
@@ -36,8 +37,12 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.h"
+
+#ifdef STIR_WITH_CUDA
+#  include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
+#  include "stir/recon_buildblock/SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.h"
+#endif
+
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
@@ -497,24 +502,6 @@ main(int argc, char** argv)
     }
 
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(proj_data_filename, density_filename, projector_type);
-
-  //  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType projector_type =
-  //          PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::RayTracing;
-
-  //      if (argc > 3)
-  //      {
-  //          const std::string projector_name(argv[3]);
-
-  //          if (projector_name == "SPECTUB")
-  //              projector_type = PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::SPECTUB;
-  //          else if (projector_name == "SPECTGPU")
-  //              projector_type = PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::SPECTGPU;
-  //      }
-
-  //      PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(
-  //                  argc > 1 ? argv[1] : nullptr,
-  //                  argc > 2 ? argv[2] : nullptr,
-  //                  projector_type);
 
   tests.run_tests();
   return tests.main_return_value();
