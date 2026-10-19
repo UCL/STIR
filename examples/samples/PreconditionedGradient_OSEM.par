@@ -1,0 +1,55 @@
+PreconditionedGradientParameters :=
+; example file showing that OSEM is a composition of the preconditioned-gradient engine:
+; ordered-subsets gradient + the EM preconditioner P = x / (M A_s^T 1) with a unit step gives
+; exactly the OSEM update (the additive form of a multiplicative algorithm).
+; For MLEM, set 'number of subsets := 1', 'gradient estimator type := Full Gradient' and
+; 'use subset sensitivity := 0'.
+; this is a minimal file. check other sample files and doc for more options
+
+objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+input file := test.hs
+zero end planes of segment 0 := 0
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+additive sinogram := 0
+
+; no prior: this is maximum likelihood
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+initial estimate := some_image
+output filename prefix := test_osem
+number of subsets := 12
+number of subiterations := 24
+save estimates at subiteration intervals := 12
+
+; ---- the two composable axes ----
+
+gradient estimator type := Ordered Subsets
+  Ordered Subsets Parameters :=
+  End Ordered Subsets Parameters :=
+
+preconditioner type := EM
+  EM Preconditioner Parameters :=
+  ; use the sensitivity of the current subset. This is what makes the composition equal to OSEM;
+  ; it is only compatible with the 'Ordered Subsets' estimator (refused at set-up otherwise).
+  use subset sensitivity := 1
+  End EM Preconditioner Parameters :=
+
+; ---- step size and preconditioner schedule ----
+
+; a unit step is what makes this an EM algorithm
+initial step size := 1
+step size decay := 0
+
+; P depends on the current image, so it has to be recomputed at every update
+precond update interval := 1
+
+END :=

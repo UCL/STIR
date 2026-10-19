@@ -62,6 +62,57 @@
     </li>
   </ul>
 
+  <h4>Reconstruction</h4>
+  <ul>
+    <li>
+      New <tt>PreconditionedGradientReconstruction</tt> (registered name <tt>Preconditioned Gradient</tt>),
+      a composable reconstruction that implements the preconditioned update
+      <tt>x &lt;- [x + alpha_k P(x) g]_+</tt> and delegates its two ingredients to registered families,
+      selected at run time with the <tt>.par</tt> keys <tt>gradient estimator type</tt> and
+      <tt>preconditioner type</tt>:
+      <ul>
+        <li><tt>GeneralisedGradientEstimator</tt>: <tt>Full Gradient</tt>, <tt>Ordered Subsets</tt>,
+            <tt>SVRG</tt>, <tt>SAGA</tt>;</li>
+        <li><tt>GeneralisedPreconditioner</tt>: <tt>Identity</tt>, <tt>EM</tt> (with the full or the
+            per-subset sensitivity), <tt>Hessian Diagonal</tt> (the Hessian diagonal of the prior),
+            <tt>SPS</tt> (the separable paraboloidal surrogate curvature).</li>
+      </ul>
+      Multiplicative algorithms are the special case <tt>P = diag(x/sensitivity)</tt>: with a unit step,
+      <tt>Full Gradient</tt> + <tt>EM</tt> is MLEM and <tt>Ordered Subsets</tt> + <tt>EM</tt> (per-subset
+      sensitivity) is OSEM, while <tt>Ordered Subsets</tt> + <tt>SPS</tt> with a relaxed step is OSSPS.
+      Compositions that make no sense are refused by <tt>set_up()</tt> with a message naming the offending
+      axis: an estimator of the full gradient cannot be combined with a per-subset preconditioner, and
+      <tt>Hessian Diagonal</tt> and <tt>SPS</tt> each require a prior exposing the curvature they use
+      (respectively <tt>compute_Hessian_diagonal()</tt>, i.e. a Gibbs prior, and a parabolic surrogate,
+      i.e. <tt>Quadratic</tt> or <tt>Logcosh</tt>).
+      See <tt>examples/samples/PreconditionedGradient_*.par</tt>.
+    </li>
+    <li>
+      New <tt>PreconditionedSVRGReconstruction</tt> (registered name <tt>PSV</tt>), a locked preset of the
+      above: preconditioned SVRG with the Hessian diagonal of the Relative Difference Prior, as submitted
+      to the PETRIC2 challenge. See <tt>examples/samples/PSV_RDP.par</tt>.
+    </li>
+    <li>
+      <tt>GeneralisedPrior</tt> gained <tt>provides_Hessian_diagonal()</tt>, a capability query that lets a
+      caller find out whether a prior implements <tt>compute_Hessian_diagonal()</tt> before asking for it
+      (it returns <tt>false</tt> by default, and <tt>true</tt> for the Gibbs priors). This turns what used
+      to be a run-time error deep inside an iteration into a diagnosis at set-up.
+    </li>
+  </ul>
+
+  <h3>Changed functionality</h3>
+  <ul>
+    <li>
+      STIR now requires SWIG 4.2 or later to build the Python interface. Recent SWIG versions
+      (verified with 4.5) no longer generate the module-level aliases that SWIG 4.0 generated for
+      static member functions. Python code using the flattened form
+      <tt>stir.ClassName_method(...)</tt> &mdash; for instance <tt>stir.Verbosity_set(0)</tt>,
+      <tt>stir.ProjData_read_from_file(...)</tt> or <tt>stir.Scanner_get_scanner_from_name(...)</tt>
+      &mdash; fails with an <tt>AttributeError</tt> and has to call the static method on the class
+      instead, e.g. <tt>stir.Verbosity.set(0)</tt>. The class form works with old and new SWIG versions.
+    </li>
+  </ul>
+
   <!--
   <h3>Changed functionality</h3>
   <ul>
@@ -129,6 +180,12 @@
       <code>ProjDataInfo*::get_m()</code> etc now have explicit consistency checks.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1731>PR #1731</a>.
+    </li>
+    <li>
+      New <code>test_PreconditionedGradient</code> for the composable reconstruction: the compositions
+      that <tt>set_up()</tt> has to refuse, MLEM and OSEM composed with the engine against
+      <tt>OSMAPOSL</tt>, exact identities of the SVRG and SAGA gradient estimators, and the
+      <tt>PSV</tt> preset against the composition it stands for.
     </li>
   </ul>
 </body>
