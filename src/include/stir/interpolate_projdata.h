@@ -18,12 +18,11 @@
 */
 
 #include "stir/numerics/BSplines.h"
+#include "stir/BasicCoordinateFwd.h"
 
 START_NAMESPACE_STIR
 
 class ProjData;
-template <int num_dimensions, class T>
-class BasicCoordinate;
 template <class elemT>
 class Sinogram;
 template <class elemT>

@@ -22,12 +22,10 @@
 #ifndef __stir_recon_buildblock_SymmetryOperation_H__
 #define __stir_recon_buildblock_SymmetryOperation_H__
 
-#include "stir/common.h"
+#include "stir/BasicCoordinateFwd.h"
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, class coordT>
-class BasicCoordinate;
 class ViewSegmentNumbers;
 class ProjMatrixElemsForOneBin;
 class ProjMatrixElemsForOneDensel;

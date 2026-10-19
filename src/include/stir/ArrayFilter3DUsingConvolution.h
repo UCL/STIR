@@ -24,9 +24,6 @@
 START_NAMESPACE_STIR
 
 template <typename elemT>
-class VectorWithOffset;
-
-template <typename elemT>
 class ArrayFilter3DUsingConvolution : public ArrayFunctionObject_2ArgumentImplementation<3, elemT>
 {
 public:

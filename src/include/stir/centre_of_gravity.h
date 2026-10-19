@@ -22,10 +22,6 @@
 START_NAMESPACE_STIR
 // predeclerations to avoid having to include the files and create unnecessary
 // dependencies
-template <int num_dimensions, class T>
-class BasicCoordinate;
-template <typename elemT>
-class VectorWithOffset;
 template <class coordT>
 class CartesianCoordinate3D;
 template <class elemT>

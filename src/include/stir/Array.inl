@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-01-11, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2023 - 2025, University College London
+    Copyright (C) 2023 - 2026, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -37,11 +37,11 @@
 START_NAMESPACE_STIR
 
 /**********************************************
- inlines for Array<num_dimensions, elemT>
+ inlines for Array<num_dimensions, elemT, indexT>
  **********************************************/
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 bool
-Array<num_dimensions, elemT>::is_contiguous() const
+Array<num_dimensions, elemT, indexT>::is_contiguous() const
 {
   auto mem = &(*this->begin_all());
   for (auto i = this->get_min_index(); i <= this->get_max_index(); ++i)
@@ -57,21 +57,26 @@ Array<num_dimensions, elemT>::is_contiguous() const
   return true;
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::resize(const IndexRange<num_dimensions>& range)
+Array<num_dimensions, elemT, indexT>::resize(const IndexRange<num_dimensions, indexT>& range)
 {
   base_type::resize(range.get_min_index(), range.get_max_index());
   typename base_type::iterator iter = this->begin();
-  typename IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
+  typename IndexRange<num_dimensions, indexT>::const_iterator range_iter = range.begin();
   for (; iter != this->end(); ++iter, ++range_iter)
     (*iter).resize(*range_iter);
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elemT* const data_ptr, bool copy_data)
+Array<num_dimensions, elemT, indexT>::init(const IndexRange<num_dimensions, indexT>& range, elemT* const data_ptr, bool copy_data)
 {
+  if (range.empty())
+    {
+      this->recycle();
+      return;
+    }
   base_type::resize(range.get_min_index(), range.get_max_index());
   auto iter = this->begin();
   auto range_iter = range.begin();
@@ -83,10 +88,15 @@ Array<num_dimensions, elemT>::init(const IndexRange<num_dimensions>& range, elem
     }
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::init_with_copy(const IndexRange<num_dimensions>& range, elemT const* const data_ptr)
+Array<num_dimensions, elemT, indexT>::init_with_copy(const IndexRange<num_dimensions, indexT>& range, elemT const* const data_ptr)
 {
+  if (range.empty())
+    {
+      this->recycle();
+      return;
+    }
   base_type::resize(range.get_min_index(), range.get_max_index());
   auto iter = this->begin();
   auto range_iter = range.begin();
@@ -98,21 +108,21 @@ Array<num_dimensions, elemT>::init_with_copy(const IndexRange<num_dimensions>& r
     }
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
+Array<num_dimensions, elemT, indexT>::grow(const IndexRange<num_dimensions, indexT>& range)
 {
   resize(range);
 }
 
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::Array()
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>::Array()
     : base_type(),
       _allocated_full_data_ptr(nullptr)
 {}
 
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>::Array(const IndexRange<num_dimensions, indexT>& range)
     : base_type(),
       _allocated_full_data_ptr(new elemT[range.size_all()])
 {
@@ -125,15 +135,15 @@ Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range)
   this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
 
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::Array(const IndexRange<num_dimensions>& range, shared_ptr<elemT[]> data_sptr)
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>::Array(const IndexRange<num_dimensions, indexT>& range, shared_ptr<elemT[]> data_sptr)
 {
   this->_allocated_full_data_ptr = data_sptr;
   this->init(range, this->_allocated_full_data_ptr.get(), false);
 }
 
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::Array(const self& t)
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>::Array(const self& t)
     : base_type(),
       _allocated_full_data_ptr(new elemT[t.size_all()])
 {
@@ -144,8 +154,8 @@ Array<num_dimensions, elemT>::Array(const self& t)
 
 #ifndef SWIG
 // swig cannot parse this ATM, but we don't need it anyway in the wrappers
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::Array(const base_type& t)
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>::Array(const base_type& t)
     : base_type(t),
       _allocated_full_data_ptr(nullptr)
 {
@@ -153,8 +163,8 @@ Array<num_dimensions, elemT>::Array(const base_type& t)
 }
 #endif
 
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::~Array()
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>::~Array()
 {
   if (this->_allocated_full_data_ptr)
     {
@@ -163,103 +173,97 @@ Array<num_dimensions, elemT>::~Array()
     }
 }
 
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::Array(Array<num_dimensions, elemT>&& other) noexcept
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>::Array(Array<num_dimensions, elemT, indexT>&& other) noexcept
     : Array()
 {
   swap(*this, other);
   DEBINFO("move constructor " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
 }
 
-template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>&
-Array<num_dimensions, elemT>::operator=(Array<num_dimensions, elemT> other)
+template <int num_dimensions, typename elemT, typename indexT>
+Array<num_dimensions, elemT, indexT>&
+Array<num_dimensions, elemT, indexT>::operator=(Array<num_dimensions, elemT, indexT> other)
 {
   swap(*this, other);
   DEBINFO("Array= " + std::to_string(num_dimensions) + "copy of size " + std::to_string(this->size_all()));
   return *this;
 }
 
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::full_iterator
-Array<num_dimensions, elemT>::end_all()
+template <int num_dimensions, typename elemT, typename indexT>
+typename Array<num_dimensions, elemT, indexT>::full_iterator
+Array<num_dimensions, elemT, indexT>::end_all()
 {
   // note this value is fixed by the current convention in full_iterator::operator++()
   return full_iterator(this->end(),
                        this->end(),
-                       typename Array<num_dimensions - 1, elemT>::full_iterator(0),
-                       typename Array<num_dimensions - 1, elemT>::full_iterator(0));
+                       typename Array<num_dimensions - 1, elemT, indexT>::full_iterator(0),
+                       typename Array<num_dimensions - 1, elemT, indexT>::full_iterator(0));
 }
 
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::const_full_iterator
-Array<num_dimensions, elemT>::end_all_const() const
+template <int num_dimensions, typename elemT, typename indexT>
+typename Array<num_dimensions, elemT, indexT>::const_full_iterator
+Array<num_dimensions, elemT, indexT>::end_all_const() const
 {
   return const_full_iterator(this->end(),
                              this->end(),
-                             typename Array<num_dimensions - 1, elemT>::const_full_iterator(0),
-                             typename Array<num_dimensions - 1, elemT>::const_full_iterator(0));
+                             typename Array<num_dimensions - 1, elemT, indexT>::const_full_iterator(0),
+                             typename Array<num_dimensions - 1, elemT, indexT>::const_full_iterator(0));
 }
 
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::const_full_iterator
-Array<num_dimensions, elemT>::end_all() const
+template <int num_dimensions, typename elemT, typename indexT>
+typename Array<num_dimensions, elemT, indexT>::const_full_iterator
+Array<num_dimensions, elemT, indexT>::end_all() const
 {
   return this->end_all_const();
 }
 
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::full_iterator
-Array<num_dimensions, elemT>::begin_all()
+template <int num_dimensions, typename elemT, typename indexT>
+typename Array<num_dimensions, elemT, indexT>::full_iterator
+Array<num_dimensions, elemT, indexT>::begin_all()
 {
-  if (this->begin() == this->end())
-    {
-      // empty array
-      return end_all();
-    }
+  if (this->empty())
+    return end_all();
   else
     return full_iterator(this->begin(), this->end(), this->begin()->begin_all(), this->begin()->end_all());
 }
 
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::const_full_iterator
-Array<num_dimensions, elemT>::begin_all_const() const
+template <int num_dimensions, typename elemT, typename indexT>
+typename Array<num_dimensions, elemT, indexT>::const_full_iterator
+Array<num_dimensions, elemT, indexT>::begin_all_const() const
 {
-  if (this->begin() == this->end())
-    {
-      // empty array
-      return end_all();
-    }
+  if (this->empty())
+    return end_all();
   else
     return const_full_iterator(this->begin(), this->end(), this->begin()->begin_all_const(), this->begin()->end_all_const());
 }
 
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::const_full_iterator
-Array<num_dimensions, elemT>::begin_all() const
+template <int num_dimensions, typename elemT, typename indexT>
+typename Array<num_dimensions, elemT, indexT>::const_full_iterator
+Array<num_dimensions, elemT, indexT>::begin_all() const
 {
   return begin_all_const();
 }
 
-template <int num_dimensions, class elemT>
-IndexRange<num_dimensions>
-Array<num_dimensions, elemT>::get_index_range() const
+template <int num_dimensions, typename elemT, typename indexT>
+IndexRange<num_dimensions, indexT>
+Array<num_dimensions, elemT, indexT>::get_index_range() const
 {
-  VectorWithOffset<IndexRange<num_dimensions - 1>> range(this->get_min_index(), this->get_max_index());
+  VectorWithOffset<IndexRange<num_dimensions - 1, indexT>, indexT> range(this->get_min_index(), this->get_max_index());
 
-  typename VectorWithOffset<IndexRange<num_dimensions - 1>>::iterator range_iter = range.begin();
-  const_iterator array_iter = this->begin();
+  auto range_iter = range.begin();
+  auto array_iter = this->begin();
 
   for (; range_iter != range.end(); range_iter++, array_iter++)
     {
       *range_iter = (*array_iter).get_index_range();
     }
-  return IndexRange<num_dimensions>(range);
+  return IndexRange<num_dimensions, indexT>(range);
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 size_t
-Array<num_dimensions, elemT>::size_all() const
+Array<num_dimensions, elemT, indexT>::size_all() const
 {
   this->check_state();
   size_t acc = 0;
@@ -268,9 +272,23 @@ Array<num_dimensions, elemT>::size_all() const
 #    pragma omp parallel for reduction(+ : acc)
 #  endif
 #endif
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].size_all();
   return acc;
+}
+
+template <int num_dimensions, typename elemT, typename indexT>
+bool
+Array<num_dimensions, elemT, indexT>::empty() const
+{
+  this->check_state();
+  if (base_type::empty())
+    return true;
+  // else
+  for (auto i : *this)
+    if (i.empty())
+      return true;
+  return false;
 }
 
 /*!
@@ -287,9 +305,9 @@ Array<num_dimensions, elemT>::size_all() const
       get_const_full_data_ptr() and release_const_full_data_ptr().
   (This is checked with assert() in DEBUG mode.)
 */
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 elemT*
-Array<num_dimensions, elemT>::get_full_data_ptr()
+Array<num_dimensions, elemT, indexT>::get_full_data_ptr()
 {
   this->_full_pointer_access = true;
   if (!this->is_contiguous())
@@ -306,9 +324,9 @@ Array<num_dimensions, elemT>::get_full_data_ptr()
 
   \see get_full_data_ptr()
 */
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 const elemT*
-Array<num_dimensions, elemT>::get_const_full_data_ptr() const
+Array<num_dimensions, elemT, indexT>::get_const_full_data_ptr() const
 {
   this->_full_pointer_access = true;
   if (!this->is_contiguous())
@@ -324,9 +342,9 @@ Array<num_dimensions, elemT>::get_const_full_data_ptr() const
 
   \see get_full_data_ptr()
 */
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::release_full_data_ptr()
+Array<num_dimensions, elemT, indexT>::release_full_data_ptr()
 {
   assert(this->_full_pointer_access);
 
@@ -340,17 +358,17 @@ Array<num_dimensions, elemT>::release_full_data_ptr()
   \see get_const_full_data_ptr()
 */
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::release_const_full_data_ptr() const
+Array<num_dimensions, elemT, indexT>::release_const_full_data_ptr() const
 {
   assert(this->_full_pointer_access);
   this->_full_pointer_access = false;
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 elemT
-Array<num_dimensions, elemT>::sum() const
+Array<num_dimensions, elemT, indexT>::sum() const
 {
   this->check_state();
   typename HigherPrecision<elemT>::type acc;
@@ -360,14 +378,14 @@ Array<num_dimensions, elemT>::sum() const
 #    pragma omp parallel for reduction(+ : acc)
 #  endif
 #endif
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum();
   return static_cast<elemT>(acc);
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 elemT
-Array<num_dimensions, elemT>::sum_positive() const
+Array<num_dimensions, elemT, indexT>::sum_positive() const
 {
   this->check_state();
   typename HigherPrecision<elemT>::type acc;
@@ -377,14 +395,14 @@ Array<num_dimensions, elemT>::sum_positive() const
 #    pragma omp parallel for reduction(+ : acc)
 #  endif
 #endif
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     acc += this->num[i].sum_positive();
   return static_cast<elemT>(acc);
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 elemT
-Array<num_dimensions, elemT>::find_max() const
+Array<num_dimensions, elemT, indexT>::find_max() const
 {
   this->check_state();
   if (this->size() > 0)
@@ -395,7 +413,7 @@ Array<num_dimensions, elemT>::find_max() const
 #    pragma omp parallel for reduction(max : maxval)
 #  endif
 #endif
-      for (int i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
+      for (auto i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
         {
           maxval = std::max(this->num[i].find_max(), maxval);
         }
@@ -408,9 +426,9 @@ Array<num_dimensions, elemT>::find_max() const
     }
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 elemT
-Array<num_dimensions, elemT>::find_min() const
+Array<num_dimensions, elemT, indexT>::find_min() const
 {
   this->check_state();
   if (this->size() > 0)
@@ -421,7 +439,7 @@ Array<num_dimensions, elemT>::find_min() const
 #    pragma omp parallel for reduction(min : minval)
 #  endif
 #endif
-      for (int i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
+      for (auto i = this->get_min_index() + 1; i <= this->get_max_index(); i++)
         {
           minval = std::min(this->num[i].find_min(), minval);
         }
@@ -434,116 +452,116 @@ Array<num_dimensions, elemT>::find_min() const
     }
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::fill(const elemT& n)
+Array<num_dimensions, elemT, indexT>::fill(const elemT& n)
 {
   this->check_state();
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     this->num[i].fill(n);
   this->check_state();
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::apply_lower_threshold(const elemT& l)
+Array<num_dimensions, elemT, indexT>::apply_lower_threshold(const elemT& l)
 {
   this->check_state();
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     this->num[i].apply_lower_threshold(l);
   this->check_state();
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::apply_upper_threshold(const elemT& u)
+Array<num_dimensions, elemT, indexT>::apply_upper_threshold(const elemT& u)
 {
   this->check_state();
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     this->num[i].apply_upper_threshold(u);
   this->check_state();
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 bool
-Array<num_dimensions, elemT>::is_regular() const
+Array<num_dimensions, elemT, indexT>::is_regular() const
 {
   return get_index_range().is_regular();
 }
 
 // TODO terribly inefficient at the moment
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 bool
-Array<num_dimensions, elemT>::get_regular_range(BasicCoordinate<num_dimensions, int>& min,
-                                                BasicCoordinate<num_dimensions, int>& max) const
+Array<num_dimensions, elemT, indexT>::get_regular_range(BasicCoordinate<num_dimensions, indexT>& min,
+                                                        BasicCoordinate<num_dimensions, indexT>& max) const
 {
-  const IndexRange<num_dimensions> range = get_index_range();
+  const auto range = get_index_range();
   return range.get_regular_range(min, max);
 }
 
-template <int num_dimension, typename elemT>
-Array<num_dimension - 1, elemT>&
-Array<num_dimension, elemT>::operator[](int i)
+template <int num_dimension, typename elemT, typename indexT>
+Array<num_dimension - 1, elemT, indexT>&
+Array<num_dimension, elemT, indexT>::operator[](indexT i)
 {
   return base_type::operator[](i);
 }
 
-template <int num_dimension, typename elemT>
-const Array<num_dimension - 1, elemT>&
-Array<num_dimension, elemT>::operator[](int i) const
+template <int num_dimension, typename elemT, typename indexT>
+const Array<num_dimension - 1, elemT, indexT>&
+Array<num_dimension, elemT, indexT>::operator[](indexT i) const
 {
   return base_type::operator[](i);
 }
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 elemT&
-Array<num_dimensions, elemT>::operator[](const BasicCoordinate<num_dimensions, int>& c)
+Array<num_dimensions, elemT, indexT>::operator[](const BasicCoordinate<num_dimensions, indexT>& c)
 {
   return (*this)[c[1]][cut_first_dimension(c)];
 }
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 const elemT&
-Array<num_dimensions, elemT>::operator[](const BasicCoordinate<num_dimensions, int>& c) const
+Array<num_dimensions, elemT, indexT>::operator[](const BasicCoordinate<num_dimensions, indexT>& c) const
 {
   return (*this)[c[1]][cut_first_dimension(c)];
 }
 
-template <int num_dimension, typename elemT>
-Array<num_dimension - 1, elemT>&
-Array<num_dimension, elemT>::at(int i)
+template <int num_dimension, typename elemT, typename indexT>
+Array<num_dimension - 1, elemT, indexT>&
+Array<num_dimension, elemT, indexT>::at(indexT i)
 {
   return base_type::at(i);
 }
 
-template <int num_dimension, typename elemT>
-const Array<num_dimension - 1, elemT>&
-Array<num_dimension, elemT>::at(int i) const
+template <int num_dimension, typename elemT, typename indexT>
+const Array<num_dimension - 1, elemT, indexT>&
+Array<num_dimension, elemT, indexT>::at(indexT i) const
 {
   return base_type::at(i);
 }
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 elemT&
-Array<num_dimensions, elemT>::at(const BasicCoordinate<num_dimensions, int>& c)
+Array<num_dimensions, elemT, indexT>::at(const BasicCoordinate<num_dimensions, indexT>& c)
 {
   return (*this).at(c[1]).at(cut_first_dimension(c));
 }
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 const elemT&
-Array<num_dimensions, elemT>::at(const BasicCoordinate<num_dimensions, int>& c) const
+Array<num_dimensions, elemT, indexT>::at(const BasicCoordinate<num_dimensions, indexT>& c) const
 {
   return (*this).at(c[1]).at(cut_first_dimension(c));
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 template <typename elemT2>
 void
-Array<num_dimensions, elemT>::axpby(const elemT2 a, const Array& x, const elemT2 b, const Array& y)
+Array<num_dimensions, elemT, indexT>::axpby(const elemT2 a, const Array& x, const elemT2 b, const Array& y)
 {
-  Array<num_dimensions, elemT>::xapyb(x, a, y, b);
+  Array<num_dimensions, elemT, indexT>::xapyb(x, a, y, b);
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::xapyb(const Array& x, const elemT a, const Array& y, const elemT b)
+Array<num_dimensions, elemT, indexT>::xapyb(const Array& x, const elemT a, const Array& y, const elemT b)
 {
   this->check_state();
   if ((this->get_index_range() != x.get_index_range()) || (this->get_index_range() != y.get_index_range()))
@@ -558,9 +576,9 @@ Array<num_dimensions, elemT>::xapyb(const Array& x, const elemT a, const Array& 
     }
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 void
-Array<num_dimensions, elemT>::xapyb(const Array& x, const Array& a, const Array& y, const Array& b)
+Array<num_dimensions, elemT, indexT>::xapyb(const Array& x, const Array& a, const Array& y, const Array& b)
 {
   this->check_state();
   if ((this->get_index_range() != x.get_index_range()) || (this->get_index_range() != y.get_index_range())
@@ -579,42 +597,42 @@ Array<num_dimensions, elemT>::xapyb(const Array& x, const Array& a, const Array&
     }
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 template <class T>
 void
-Array<num_dimensions, elemT>::sapyb(const T& a, const Array& y, const T& b)
+Array<num_dimensions, elemT, indexT>::sapyb(const T& a, const Array& y, const T& b)
 {
   this->xapyb(*this, a, y, b);
 }
 
 /**********************************************
- inlines for Array<1, elemT>
+ inlines for Array<1, elemT, indexT>
  **********************************************/
-template <class elemT>
+template <typename elemT, typename indexT>
 void
-Array<1, elemT>::init_with_copy(const IndexRange<1>& range, elemT const* const data_ptr)
+Array<1, elemT, indexT>::init_with_copy(const IndexRange<1, indexT>& range, elemT const* const data_ptr)
 {
   base_type::init_with_copy(range.get_min_index(), range.get_max_index(), data_ptr);
 }
 
-template <class elemT>
+template <typename elemT, typename indexT>
 void
-Array<1, elemT>::init(const IndexRange<1>& range, elemT* const data_ptr, bool copy_data)
+Array<1, elemT, indexT>::init(const IndexRange<1, indexT>& range, elemT* const data_ptr, bool copy_data)
 {
   base_type::init(range.get_min_index(), range.get_max_index(), data_ptr, copy_data);
 }
 
-template <class elemT>
+template <typename elemT, typename indexT>
 void
-Array<1, elemT>::resize(const int min_index, const int max_index, bool initialise_with_0)
+Array<1, elemT, indexT>::resize(const indexT min_index, const indexT max_index, bool initialise_with_0)
 {
   this->check_state();
-  const int oldstart = this->get_min_index();
+  const indexT oldstart = this->get_min_index();
   const size_type oldlength = this->size();
 
   base_type::resize(min_index, max_index);
 
-  if (!initialise_with_0)
+  if (!initialise_with_0 || this->size() == 0)
     {
       this->check_state();
       return;
@@ -622,165 +640,165 @@ Array<1, elemT>::resize(const int min_index, const int max_index, bool initialis
 
   if (oldlength == 0)
     {
-      for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
-        assign(this->num[i], 0);
+      for (auto& i : *this)
+        assign(i, 0);
     }
   else
     {
-      for (int i = this->get_min_index(); i < oldstart && i <= this->get_max_index(); ++i)
+      for (auto i = this->get_min_index(); i < oldstart && i <= this->get_max_index(); ++i)
         assign(this->num[i], 0);
-      for (int i = std::max(static_cast<int>(oldstart + oldlength), this->get_min_index()); i <= this->get_max_index(); ++i)
+      for (auto i = std::max(static_cast<indexT>(oldstart + oldlength), this->get_min_index()); i <= this->get_max_index(); ++i)
         assign(this->num[i], 0);
     }
   this->check_state();
 }
 
-template <class elemT>
+template <typename elemT, typename indexT>
 void
-Array<1, elemT>::resize(const int min_index, const int max_index)
+Array<1, elemT, indexT>::resize(const indexT min_index, const indexT max_index)
 {
   resize(min_index, max_index, true);
 }
 
-template <class elemT>
+template <typename elemT, typename indexT>
 void
-Array<1, elemT>::resize(const IndexRange<1>& range)
+Array<1, elemT, indexT>::resize(const IndexRange<1, indexT>& range)
 {
   resize(range.get_min_index(), range.get_max_index());
 }
 
-template <class elemT>
+template <typename elemT, typename indexT>
 void
-Array<1, elemT>::grow(const int min_index, const int max_index)
+Array<1, elemT, indexT>::grow(const indexT min_index, const indexT max_index)
 {
   resize(min_index, max_index);
 }
 
-template <class elemT>
+template <typename elemT, typename indexT>
 void
-Array<1, elemT>::grow(const IndexRange<1>& range)
+Array<1, elemT, indexT>::grow(const IndexRange<1, indexT>& range)
 {
   grow(range.get_min_index(), range.get_max_index());
 }
 
-template <class elemT>
-Array<1, elemT>::Array()
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array()
     : base_type()
 {}
 
-template <class elemT>
-Array<1, elemT>::Array(const IndexRange<1>& range)
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array(const IndexRange<1, indexT>& range)
     : base_type()
 {
   grow(range);
 }
 
-template <class elemT>
-Array<1, elemT>::Array(const int min_index, const int max_index)
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array(const indexT min_index, const indexT max_index)
     : base_type()
 {
   grow(min_index, max_index);
 }
 
-template <class elemT>
-Array<1, elemT>::Array(const IndexRange<1>& range, shared_ptr<elemT[]> data_sptr)
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array(const IndexRange<1, indexT>& range, shared_ptr<elemT[]> data_sptr)
     : base_type(range.get_min_index(), range.get_max_index(), data_sptr)
 {}
 
-template <class elemT>
-Array<1, elemT>::Array(const IndexRange<1>& range, const elemT* const data_ptr)
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array(const IndexRange<1, indexT>& range, const elemT* const data_ptr)
     : base_type(range.get_min_index(), range.get_max_index(), data_ptr)
 {}
 
-template <class elemT>
-Array<1, elemT>::Array(const base_type& il)
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array(const base_type& il)
     : base_type(il)
 {}
 
-template <typename elemT>
-Array<1, elemT>::Array(const Array<1, elemT>& other)
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array(const Array<1, elemT, indexT>& other)
     : base_type(other)
 {}
 
-template <typename elemT>
-Array<1, elemT>::~Array()
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::~Array()
 {}
 
-template <typename elemT>
-Array<1, elemT>::Array(Array<1, elemT>&& other) noexcept
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>::Array(Array<1, elemT, indexT>&& other) noexcept
     : Array()
 {
   swap(*this, other);
 }
 
-template <typename elemT>
-Array<1, elemT>&
-Array<1, elemT>::operator=(const Array<1, elemT>& other)
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>&
+Array<1, elemT, indexT>::operator=(const Array<1, elemT, indexT>& other)
 {
   // use the base_type assignment, as this tries to avoid reallocating memory
   base_type::operator=(other);
   return *this;
 }
 
-template <typename elemT>
-typename Array<1, elemT>::full_iterator
-Array<1, elemT>::begin_all()
+template <typename elemT, typename indexT>
+typename Array<1, elemT, indexT>::full_iterator
+Array<1, elemT, indexT>::begin_all()
 {
   return this->begin();
 }
 
-template <typename elemT>
-typename Array<1, elemT>::const_full_iterator
-Array<1, elemT>::begin_all() const
+template <typename elemT, typename indexT>
+typename Array<1, elemT, indexT>::const_full_iterator
+Array<1, elemT, indexT>::begin_all() const
 {
   return this->begin();
 }
 
-template <typename elemT>
-typename Array<1, elemT>::full_iterator
-Array<1, elemT>::end_all()
+template <typename elemT, typename indexT>
+typename Array<1, elemT, indexT>::full_iterator
+Array<1, elemT, indexT>::end_all()
 {
   return this->end();
 }
 
-template <typename elemT>
-typename Array<1, elemT>::const_full_iterator
-Array<1, elemT>::end_all() const
+template <typename elemT, typename indexT>
+typename Array<1, elemT, indexT>::const_full_iterator
+Array<1, elemT, indexT>::end_all() const
 {
   return this->end();
 }
 
-template <typename elemT>
-typename Array<1, elemT>::const_full_iterator
-Array<1, elemT>::begin_all_const() const
+template <typename elemT, typename indexT>
+typename Array<1, elemT, indexT>::const_full_iterator
+Array<1, elemT, indexT>::begin_all_const() const
 {
   return this->begin();
 }
 
-template <typename elemT>
-typename Array<1, elemT>::const_full_iterator
-Array<1, elemT>::end_all_const() const
+template <typename elemT, typename indexT>
+typename Array<1, elemT, indexT>::const_full_iterator
+Array<1, elemT, indexT>::end_all_const() const
 {
   return this->end();
 }
 
-template <typename elemT>
-IndexRange<1>
-Array<1, elemT>::get_index_range() const
+template <typename elemT, typename indexT>
+IndexRange<1, indexT>
+Array<1, elemT, indexT>::get_index_range() const
 {
-  return IndexRange<1>(this->get_min_index(), this->get_max_index());
+  return IndexRange<1, indexT>(this->get_min_index(), this->get_max_index());
 }
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 size_t
-Array<1, elemT>::size_all() const
+Array<1, elemT, indexT>::size_all() const
 {
   return this->size();
 }
 
-template <class elemT>
+template <typename elemT, typename indexT>
 elemT
-Array<1, elemT>::sum() const
+Array<1, elemT, indexT>::sum() const
 {
   this->check_state();
   typename HigherPrecision<elemT>::type acc;
@@ -790,14 +808,14 @@ Array<1, elemT>::sum() const
 #    pragma omp parallel for reduction(+ : acc)
 #  endif
 #endif
-  for (int i = this->get_min_index(); i <= this->get_max_index(); ++i)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); ++i)
     acc += this->num[i];
   return static_cast<elemT>(acc);
 };
 
-template <class elemT>
+template <typename elemT, typename indexT>
 elemT
-Array<1, elemT>::sum_positive() const
+Array<1, elemT, indexT>::sum_positive() const
 {
   this->check_state();
   typename HigherPrecision<elemT>::type acc;
@@ -807,7 +825,7 @@ Array<1, elemT>::sum_positive() const
 #    pragma omp parallel for reduction(+ : acc)
 #  endif
 #endif
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     {
       if (this->num[i] > 0)
         acc += this->num[i];
@@ -815,9 +833,9 @@ Array<1, elemT>::sum_positive() const
   return static_cast<elemT>(acc);
 };
 
-template <class elemT>
+template <typename elemT, typename indexT>
 elemT
-Array<1, elemT>::find_max() const
+Array<1, elemT, indexT>::find_max() const
 {
   this->check_state();
   if (this->size() > 0)
@@ -832,9 +850,9 @@ Array<1, elemT>::find_max() const
   this->check_state();
 };
 
-template <class elemT>
+template <typename elemT, typename indexT>
 elemT
-Array<1, elemT>::find_min() const
+Array<1, elemT, indexT>::find_min() const
 {
   this->check_state();
   if (this->size() > 0)
@@ -849,18 +867,18 @@ Array<1, elemT>::find_min() const
   this->check_state();
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 bool
-Array<1, elemT>::is_regular() const
+Array<1, elemT, indexT>::is_regular() const
 {
   return true;
 }
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 bool
-Array<1, elemT>::get_regular_range(BasicCoordinate<1, int>& min, BasicCoordinate<1, int>& max) const
+Array<1, elemT, indexT>::get_regular_range(BasicCoordinate<1, indexT>& min, BasicCoordinate<1, indexT>& max) const
 {
-  const IndexRange<1> range = get_index_range();
+  const IndexRange<1, indexT> range = get_index_range();
   return range.get_regular_range(min, max);
 }
 
@@ -873,129 +891,129 @@ its base_type (which happens if these function are not repeated
 in this class).
 Complicated...
 */
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator+(const base_type& iv) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator+(const base_type& iv) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return retval += iv;
 };
 
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator-(const base_type& iv) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator-(const base_type& iv) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return retval -= iv;
 }
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator*(const base_type& iv) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator*(const base_type& iv) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return retval *= iv;
 }
 
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator/(const base_type& iv) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator/(const base_type& iv) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return retval /= iv;
 }
 
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator+(const elemT a) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator+(const elemT a) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return (retval += a);
 };
 
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator-(const elemT a) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator-(const elemT a) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return (retval -= a);
 };
 
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator*(const elemT a) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator*(const elemT a) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return (retval *= a);
 };
 
-template <class elemT>
-Array<1, elemT>
-Array<1, elemT>::operator/(const elemT a) const
+template <typename elemT, typename indexT>
+Array<1, elemT, indexT>
+Array<1, elemT, indexT>::operator/(const elemT a) const
 {
   this->check_state();
-  Array<1, elemT> retval(*this);
+  Array<1, elemT, indexT> retval(*this);
   return (retval /= a);
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 const elemT&
-Array<1, elemT>::operator[](int i) const
+Array<1, elemT, indexT>::operator[](indexT i) const
 {
   return base_type::operator[](i);
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 elemT&
-Array<1, elemT>::operator[](int i)
+Array<1, elemT, indexT>::operator[](indexT i)
 {
   return base_type::operator[](i);
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 const elemT&
-Array<1, elemT>::operator[](const BasicCoordinate<1, int>& c) const
+Array<1, elemT, indexT>::operator[](const BasicCoordinate<1, indexT>& c) const
 {
   return (*this)[c[1]];
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 elemT&
-Array<1, elemT>::operator[](const BasicCoordinate<1, int>& c)
+Array<1, elemT, indexT>::operator[](const BasicCoordinate<1, indexT>& c)
 {
   return (*this)[c[1]];
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 const elemT&
-Array<1, elemT>::at(int i) const
+Array<1, elemT, indexT>::at(indexT i) const
 {
   return base_type::at(i);
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 elemT&
-Array<1, elemT>::at(int i)
+Array<1, elemT, indexT>::at(indexT i)
 {
   return base_type::at(i);
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 const elemT&
-Array<1, elemT>::at(const BasicCoordinate<1, int>& c) const
+Array<1, elemT, indexT>::at(const BasicCoordinate<1, indexT>& c) const
 {
   return (*this).at(c[1]);
 };
 
-template <typename elemT>
+template <typename elemT, typename indexT>
 elemT&
-Array<1, elemT>::at(const BasicCoordinate<1, int>& c)
+Array<1, elemT, indexT>::at(const BasicCoordinate<1, indexT>& c)
 {
   return (*this).at(c[1]);
 };

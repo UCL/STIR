@@ -35,9 +35,9 @@ START_NAMESPACE_STIR
 namespace detail
 {
 
-template <int num_dimensions, typename T>
-inline BasicCoordinate<num_dimensions, int>
-get_min_indices_help(is_not_1d, const Array<num_dimensions, T>& a)
+template <int num_dimensions, typename elemT, typename indexT>
+inline BasicCoordinate<num_dimensions, indexT>
+get_min_indices_help(is_not_1d, const Array<num_dimensions, elemT, indexT>& a)
 {
   if (a.get_min_index() <= a.get_max_index())
     return join(a.get_min_index(), get_min_indices(*a.begin()));
@@ -45,23 +45,23 @@ get_min_indices_help(is_not_1d, const Array<num_dimensions, T>& a)
     {
       // a is empty.  Not clear what to return, so we just return 0
       // It would be better to throw an exception.
-      BasicCoordinate<num_dimensions, int> tmp(0);
+      BasicCoordinate<num_dimensions, indexT> tmp(0);
       return tmp;
     }
 }
 
-template <typename T>
-inline BasicCoordinate<1, int>
-get_min_indices_help(is_1d, const Array<1, T>& a)
+template <typename elemT, typename indexT>
+inline BasicCoordinate<1, indexT>
+get_min_indices_help(is_1d, const Array<1, elemT, indexT>& a)
 {
-  BasicCoordinate<1, int> result;
+  BasicCoordinate<1, indexT> result;
   result[1] = a.get_min_index();
   return result;
 }
 
-template <int num_dimensions2, typename T>
+template <int num_dimensions2, typename elemT, typename indexT>
 inline bool
-next_help(is_1d, BasicCoordinate<1, int>& index, const Array<num_dimensions2, T>& a)
+next_help(is_1d, BasicCoordinate<1, indexT>& index, const Array<num_dimensions2, elemT, indexT>& a)
 {
   if (a.get_min_index() > a.get_max_index())
     return false;
@@ -71,13 +71,13 @@ next_help(is_1d, BasicCoordinate<1, int>& index, const Array<num_dimensions2, T>
   return index[1] <= a.get_max_index();
 }
 
-template <typename T, int num_dimensions, int num_dimensions2>
+template <typename elemT, typename indexT, int num_dimensions, int num_dimensions2>
 inline bool
-next_help(is_not_1d, BasicCoordinate<num_dimensions, int>& index, const Array<num_dimensions2, T>& a)
+next_help(is_not_1d, BasicCoordinate<num_dimensions, indexT>& index, const Array<num_dimensions2, elemT, indexT>& a)
 {
   if (a.get_min_index() > a.get_max_index())
     return false;
-  BasicCoordinate<num_dimensions - 1, int> upper_index = cut_last_dimension(index);
+  auto upper_index = cut_last_dimension(index);
   assert(index[num_dimensions] >= get(a, upper_index).get_min_index());
   assert(index[num_dimensions] <= get(a, upper_index).get_max_index());
   index[num_dimensions]++;
@@ -95,36 +95,36 @@ next_help(is_not_1d, BasicCoordinate<num_dimensions, int>& index, const Array<nu
    Also define get() for which I didn't bother to try the work-arounds,
    as they don't work for VC 6.0 anyway...
 */
-template <int num_dimensions, typename T>
-inline BasicCoordinate<num_dimensions, int>
-get_min_indices(const Array<num_dimensions, T>& a)
+template <int num_dimensions, typename elemT, typename indexT>
+inline BasicCoordinate<num_dimensions, indexT>
+get_min_indices(const Array<num_dimensions, elemT, indexT>& a)
 {
   return detail::get_min_indices_help(detail::test_if_1d<num_dimensions>(), a);
 }
 
-template <int num_dimensions, typename T, int num_dimensions2>
+template <int num_dimensions, typename elemT, typename indexT, int num_dimensions2>
 inline bool
-next(BasicCoordinate<num_dimensions, int>& index, const Array<num_dimensions2, T>& a)
+next(BasicCoordinate<num_dimensions, indexT>& index, const Array<num_dimensions2, elemT, indexT>& a)
 {
   return detail::next_help(detail::test_if_1d<num_dimensions>(), index, a);
 }
 
-template <int num_dimensions, int num_dimensions2, typename elemT>
-inline const Array<num_dimensions - num_dimensions2, elemT>&
-get(const Array<num_dimensions, elemT>& a, const BasicCoordinate<num_dimensions2, int>& c)
+template <int num_dimensions, int num_dimensions2, typename elemT, typename indexT>
+inline const Array<num_dimensions - num_dimensions2, elemT, indexT>&
+get(const Array<num_dimensions, elemT, indexT>& a, const BasicCoordinate<num_dimensions2, indexT>& c)
 {
   return get(a[c[1]], cut_first_dimension(c));
 }
 
-template <int num_dimensions, typename elemT>
+template <int num_dimensions, typename elemT, typename indexT>
 inline const elemT&
-get(const Array<num_dimensions, elemT>& a, const BasicCoordinate<num_dimensions, int>& c)
+get(const Array<num_dimensions, elemT, indexT>& a, const BasicCoordinate<num_dimensions, indexT>& c)
 {
   return a[c];
 }
-template <int num_dimensions, typename elemT>
-inline const Array<num_dimensions - 1, elemT>&
-get(const Array<num_dimensions, elemT>& a, const BasicCoordinate<1, int>& c)
+template <int num_dimensions, typename elemT, typename indexT>
+inline const Array<num_dimensions - 1, elemT, indexT>&
+get(const Array<num_dimensions, elemT, indexT>& a, const BasicCoordinate<1, indexT>& c)
 {
   return a[c[1]];
 }
