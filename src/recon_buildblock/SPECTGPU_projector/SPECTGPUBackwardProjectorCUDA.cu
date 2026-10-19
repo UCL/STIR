@@ -1,3 +1,24 @@
+//
+//
+/*!
+  \file
+  \ingroup projection
+  \ingroup SPECTGPU
+
+  \brief wrapper functions for stir::BackProjectorByBinSPECTGPU
+
+  \author Daniel Deidda
+
+*/
+/*
+    Copyright (C) 2026, National Physical Laboratory
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUBackwardProjectorCUDA.h"
 
 #include <cuda_runtime.h>

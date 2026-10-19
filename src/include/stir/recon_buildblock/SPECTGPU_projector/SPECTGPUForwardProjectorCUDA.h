@@ -1,4 +1,23 @@
-#pragma once
+//
+//
+/*!
+  \file
+  \ingroup projection
+  \ingroup SPECTGPU
+
+  \brief wrapper functions for stir::ForwardProjectorByBinSPECTGPU
+
+  \author Daniel Deidda
+
+*/
+/*
+    Copyright (C) 2026, National Physical Laboratory
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
 
 #include "stir/cuda_utilities.h"
 #include "stir/RelatedViewgrams.h"
