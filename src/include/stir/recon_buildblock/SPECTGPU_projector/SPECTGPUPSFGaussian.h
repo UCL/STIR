@@ -20,9 +20,14 @@
 */
 
 #include <cuda_runtime.h>
-
+namespace stir
+{
+namespace SPECTGPU
+{
 __global__ void GaussianConvolutionKernel_pull(
     float* out_im, const float* in_im, int3 image_dim, float3 spacing, float sigma0, float num_sigmas, float slope);
 
 __global__ void GaussianConvolutionKernel_push(
     float* out_im, const float* in_im, int3 image_dim, float3 spacing, float sigma0, float num_sigmas, float slope);
+} // namespace SPECTGPU
+} // namespace stir

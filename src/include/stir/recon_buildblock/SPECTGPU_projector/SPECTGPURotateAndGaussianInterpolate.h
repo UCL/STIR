@@ -24,9 +24,14 @@
 */
 
 #include <cuda_runtime.h>
-
+namespace stir
+{
+namespace SPECTGPU
+{
 __global__ void rotateKernel_pull(
     float* out_im, const float* in_im, int3 image_dim, float3 spacing, float3 origin, int3 min_indeces, float angle_rad);
 
 __global__ void rotateKernel_push(
     float* out_im, const float* in_im, int3 image_dim, float3 spacing, float3 origin, int3 min_indeces, float angle_rad);
+} // namespace SPECTGPU
+} // namespace stir

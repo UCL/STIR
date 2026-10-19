@@ -1,13 +1,33 @@
-#pragma once
+//
+//
+/*!
+  \file
+  \ingroup projection
+  \ingroup SPECTGPU
 
-#include "stir/cuda_utilities.h"
-#include "stir/RelatedViewgrams.h"
+  \brief wrapper functions for stir::BackProjectorByBinSPECTGPU
+
+  \author Daniel Deidda
+
+*/
+/*
+    Copyright (C) 2026, National Physical Laboratory
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+
 #include "stir/DiscretisedDensity.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
+
+template <typename elemT>
+class RelatedViewgrams;
 
 START_NAMESPACE_STIR
-// BPBuffers.h
-
+namespace SPECTGPU
+{
+struct AllocatedStack;
 void accumulate_image_omp_contrib(float* dev_image,
                                   const float* thread_image,
                                   unsigned int block_x,
@@ -45,5 +65,5 @@ void run_backward_projection_cuda(AllocatedStack& stack,
                                   int min_z,
                                   int min_y,
                                   int min_x);
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

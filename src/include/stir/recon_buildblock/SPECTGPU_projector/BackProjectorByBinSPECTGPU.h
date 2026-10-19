@@ -8,10 +8,6 @@
   \brief Back projection class using SPECTGPU's GPU implementation.
 
   \author Daniel Deidda
-
-  \todo SPECTGPU limitations -
-
-  \todo STIR wrapper limitations -
 */
 /*
     Copyright (C) 2026, National Physical Laboratory
@@ -26,12 +22,13 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUForwardProjectorCUDA.h"
 #include "stir/cuda_utilities.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 
 START_NAMESPACE_STIR
-
 class DataSymmetriesForViewSegmentNumbers;
+namespace SPECTGPU
+{
 
 /*!
   \ingroup projection
@@ -84,7 +81,7 @@ public:
   /// projection and after back projection
   void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
-  virtual BackProjectorByBin* clone() const override { return new BackProjectorByBinSPECTGPU(*this); }
+  virtual BackProjectorByBin* clone() const override { return new SPECTGPU::BackProjectorByBinSPECTGPU(*this); }
 
   virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override { return _symmetries_sptr.get(); }
 
@@ -119,7 +116,6 @@ protected:
 
 private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
-  //  SPECTGPUHelper _helper;
   int _cuda_device;
   bool _cuda_verbosity;
   bool _do_atten;
@@ -136,7 +132,7 @@ public:
 
   AllocatedStack& get_allocated_stack() { return this->_b_allocatedStack; }
 };
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR
 
 #endif // __stir_gpu_BackProjectorByBinSPECTGPU_h__

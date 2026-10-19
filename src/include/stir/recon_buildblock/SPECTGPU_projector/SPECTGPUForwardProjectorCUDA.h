@@ -1,14 +1,33 @@
-#pragma once
+//
+//
+/*!
+  \file
+  \ingroup projection
+  \ingroup SPECTGPU
 
-#include "stir/cuda_utilities.h"
-#include "stir/RelatedViewgrams.h"
+  \brief wrapper functions for stir::ForwardProjectorByBinSPECTGPU
+
+  \author Daniel Deidda
+
+*/
+/*
+    Copyright (C) 2026, National Physical Laboratory
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+
 #include "stir/DiscretisedDensity.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
+
+template <typename elemT>
+class RelatedViewgrams;
 
 START_NAMESPACE_STIR
-void cu_allocate(float*& array, size_t size);
-
-void cu_free(float*& array);
+namespace SPECTGPU
+{
+struct AllocatedStack;
 
 void run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                                  AllocatedStack& stack,
@@ -39,4 +58,5 @@ void run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                                  int min_z,
                                  int min_y,
                                  int min_x);
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

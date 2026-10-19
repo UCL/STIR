@@ -23,7 +23,10 @@
 #include <cuda_runtime.h>
 #include <numeric>
 #include <cstdio>
-
+namespace stir
+{
+namespace SPECTGPU
+{
 // the following is a pull operation
 __global__ void
 GaussianConvolutionKernel_pull(float* __restrict__ out_im,
@@ -170,3 +173,5 @@ GaussianConvolutionKernel_push(float* __restrict__ out_im,
         };
     };
 }
+} // namespace SPECTGPU
+} // namespace stir

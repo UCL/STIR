@@ -12,9 +12,9 @@
 
   \author Daniel Deidda
 
-  \todo SPECTGPU limitations -
-
-  \todo STIR wrapper limitations -
+  \todo SPECTGPU limitations: the prjector only works if the data and the image have the
+  same dimensions, in particular  tangential and axial. Interpolation would need  to be
+  added to support different  voxels sizes
 
 */
 /*
@@ -28,7 +28,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
-
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 #include "stir/cuda_utilities.h"
 
 START_NAMESPACE_STIR
@@ -36,29 +36,8 @@ START_NAMESPACE_STIR
 class ProjDataInMemory;
 class DataSymmetriesForViewSegmentNumbers;
 
-struct AllocatedStack
+namespace SPECTGPU
 {
-
-  size_t image_size = 0;
-  size_t sino_size = 0;
-
-  float* dev_image = nullptr;
-  float* dev_umap = nullptr;
-  float* out_im = nullptr;
-  float* out_umap = nullptr;
-  float* dev_sino = nullptr;
-  float* blurred_im = nullptr;
-  float* rotated_im = nullptr;
-  float* rotated_umap = nullptr;
-
-  void allocate(size_t image_size_, size_t sino_size_);
-
-  void deallocate();
-
-  bool is_allocated() const;
-
-  ~AllocatedStack();
-};
 
 /*!
   \ingroup projection
@@ -81,16 +60,13 @@ public:
   // inline
   ForwardProjectorByBinSPECTGPU();
 
-  /// Constructor
-  virtual ~ForwardProjectorByBinSPECTGPU();
+  /// Destructor
+  virtual ~ForwardProjectorByBinSPECTGPU() override;
 
   /// Keymap
   virtual void initialise_keymap() override;
 
-  //  virtual ForwardProjectorByBin* clone() const override
-  //  {
-  //      return new ForwardProjectorByBinSPECTGPU(*this);
-  //  }
+  virtual ForwardProjectorByBin* clone() const { return new ForwardProjectorByBinSPECTGPU(*this); }
 
   virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override { return _symmetries_sptr.get(); }
 
@@ -164,7 +140,7 @@ public:
 
   AllocatedStack& get_allocated_stack() { return this->_f_allocatedStack; }
 };
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR
 
 #endif // __stir_gpu_ForwardProjectorByBinSPECTGPU_h__

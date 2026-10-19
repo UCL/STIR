@@ -1,7 +1,30 @@
+//
+//
+/*!
+  \file
+  \ingroup projection
+  \ingroup SPECTGPU
+
+  \brief wrapper functions for stir::ForwardProjectorByBinSPECTGPU
+
+  \author Daniel Deidda
+
+*/
+/*
+    Copyright (C) 2026, National Physical Laboratory
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
+    See STIR/LICENSE.txt for details
+*/
+
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUForwardProjectorCUDA.h"
 
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include <cuda_runtime.h>
+#include "stir/RelatedViewgrams.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
+#include "stir/cuda_utilities.h"
 
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPURotateAndGaussianInterpolate.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUPSFGaussian.h"
@@ -10,7 +33,8 @@
 #include <cmath>
 
 START_NAMESPACE_STIR
-
+namespace SPECTGPU
+{
 void
 run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                             AllocatedStack& stack,
@@ -73,7 +97,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
     error("SPECTGPU: Viewgram tangential dimension does not match image x dimension.");
 
   if (!stack.is_allocated())
-    error("SPECTGPUFP: Something is wrong the CuVecs are not initialised");
+    error("SPECTGPUFP: Something is wrong, the arrays are not initialised");
 
   for (auto vg_iter = stir_sino.begin(); vg_iter != stir_sino.end(); ++vg_iter)
     {
@@ -133,5 +157,5 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
       array_to_host(vg, stack.dev_sino, true);
     }
 }
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

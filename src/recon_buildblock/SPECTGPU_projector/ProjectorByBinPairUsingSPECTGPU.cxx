@@ -24,7 +24,8 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/BackProjectorByBinSPECTGPU.h"
 
 START_NAMESPACE_STIR
-
+namespace SPECTGPU
+{
 const char* const ProjectorByBinPairUsingSPECTGPU::registered_name = "SPECTGPU";
 
 void
@@ -58,19 +59,10 @@ ProjectorByBinPairUsingSPECTGPU::post_processing()
   this->set_verbosity(this->_verbosity);
   this->set_use_truncation(this->_use_truncation);
 
-  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
-
-  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
-
-  fwd->set_sigma0(_sigma0);
-  fwd->set_num_sigmas(_num_sigmas);
-  fwd->set_slope(_slope);
-  fwd->set_attenuation_filename(_att_filename);
-
-  bwd->set_sigma0(_sigma0);
-  bwd->set_num_sigmas(_num_sigmas);
-  bwd->set_slope(_slope);
-  bwd->set_attenuation_filename(_att_filename);
+  set_sigma0(_sigma0);
+  set_num_sigmas(_num_sigmas);
+  set_slope(_slope);
+  set_attenuation_filename(_att_filename);
 
   if (base_type::post_processing())
     return true;
@@ -82,6 +74,70 @@ ProjectorByBinPairUsingSPECTGPU::ProjectorByBinPairUsingSPECTGPU()
   this->forward_projector_sptr.reset(new ForwardProjectorByBinSPECTGPU);
   this->back_projector_sptr.reset(new BackProjectorByBinSPECTGPU);
   set_defaults();
+}
+
+void
+ProjectorByBinPairUsingSPECTGPU::set_sigma0(const float sigma0)
+{
+  _sigma0 = sigma0;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_sigma0(_sigma0);
+
+  if (bwd)
+    bwd->set_sigma0(_sigma0);
+}
+
+void
+ProjectorByBinPairUsingSPECTGPU::set_num_sigmas(const float num_sigmas)
+{
+  _num_sigmas = num_sigmas;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_num_sigmas(_num_sigmas);
+
+  if (bwd)
+    bwd->set_num_sigmas(_num_sigmas);
+}
+
+void
+ProjectorByBinPairUsingSPECTGPU::set_slope(const float slope)
+{
+  _slope = slope;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_slope(_slope);
+
+  if (bwd)
+    bwd->set_slope(_slope);
+}
+
+void
+ProjectorByBinPairUsingSPECTGPU::set_attenuation_filename(const std::string& filename)
+{
+  _att_filename = filename;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_attenuation_filename(_att_filename);
+
+  if (bwd)
+    bwd->set_attenuation_filename(_att_filename);
 }
 
 void
@@ -115,5 +171,5 @@ ProjectorByBinPairUsingSPECTGPU::set_use_truncation(const bool use_truncation)
   if (bck_prj_downcast_sptr)
     bck_prj_downcast_sptr->set_use_truncation(_use_truncation);
 }
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

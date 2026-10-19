@@ -29,6 +29,10 @@
 #include <numeric>
 #include <cstdio>
 
+namespace stir
+{
+namespace SPECTGPU
+{
 // the following is a pull operation
 __global__ void
 rotateKernel_pull(float* __restrict__ out_im,
@@ -253,3 +257,5 @@ rotateKernel_push(float* __restrict__ out_im,
         };
     };
 }
+} // namespace SPECTGPU
+} // namespace stir

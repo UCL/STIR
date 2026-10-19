@@ -31,6 +31,10 @@
 #include <numeric>
 #include <cstdio>
 
+namespace stir
+{
+namespace SPECTGPU
+{
 // the following is a pull operation
 __global__ void
 forwardKernel(float* __restrict__ out_sino,
@@ -118,3 +122,5 @@ backwardKernel(float* __restrict__ out_im,
       out_im[(idz * dim.y + idy) * dim.x + idx] += atten * in_sino[idz * dim.x + (dim.x - 1 - idx)];
     }
 }
+} // namespace SPECTGPU
+} // namespace stir
