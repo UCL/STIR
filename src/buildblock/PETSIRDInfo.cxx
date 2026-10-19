@@ -389,9 +389,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       (num_transaxial_blocks * unique_elements_vertical_values.size()),
                       unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
                       /* number of non arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* number of maximum arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* inner ring radius */
                       radius,
                       /* doi */ average_doi, // average_doi,
@@ -437,9 +437,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       (num_transaxial_blocks * unique_elements_vertical_values.size()),
                       unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
                       /* number of non arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* number of maximum arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* inner ring radius */
                       radius,
                       /* doi */ average_doi,
