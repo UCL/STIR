@@ -8,20 +8,21 @@ OSMAPOSLParameters :=
     
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
-    input file := peak.hs
+    input file := input.hs
 
     projector pair type := SPECTGPU
       Projector Pair Using SPECTGPU Parameters :=
             ; width of PSF
 
             ;PSF type of correction {  3D  }
-            ; next 2 parameters define the PSF. They are ignored if psf_type is "Geometrical"
+            ; next 2 parameters define the PSF.
             ; These values are mostly dependent on your collimator.
+            ; If you want a 2D PSF you can set collimator sigma 0(cm) to 0
             ; the PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
             ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
             collimator slope := 0.0163
             collimator sigma 0(cm) := 0.1466
-            number of PSF sigmas := 1.13 ; default 2 (95% of the PSF)
+            number of PSF sigmas := 3 ; default 2 (95% of the PSF)
 
             attenuation image filename := umap_zoomed.hv
 

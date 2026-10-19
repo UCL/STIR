@@ -28,6 +28,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 
 #include "stir/cuda_utilities.h"
 
@@ -35,30 +36,6 @@ START_NAMESPACE_STIR
 
 class ProjDataInMemory;
 class DataSymmetriesForViewSegmentNumbers;
-
-struct AllocatedStack
-{
-
-  size_t image_size = 0;
-  size_t sino_size = 0;
-
-  float* dev_image = nullptr;
-  float* dev_umap = nullptr;
-  float* out_im = nullptr;
-  float* out_umap = nullptr;
-  float* dev_sino = nullptr;
-  float* blurred_im = nullptr;
-  float* rotated_im = nullptr;
-  float* rotated_umap = nullptr;
-
-  void allocate(size_t image_size_, size_t sino_size_);
-
-  void deallocate();
-
-  bool is_allocated() const;
-
-  ~AllocatedStack();
-};
 
 /*!
   \ingroup projection

@@ -139,7 +139,7 @@ ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTGP
 
 # test_SPECTUB
 ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTUB
-  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData "${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input.hs"  "SPECTUB")
+  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData "${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input_small.hs"  "SPECTUB")
 
 # fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
 if (BUILD_TESTING)

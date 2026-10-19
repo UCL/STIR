@@ -6,9 +6,6 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
 
 START_NAMESPACE_STIR
-void cu_allocate(float*& array, size_t size);
-
-void cu_free(float*& array);
 
 void run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                                  AllocatedStack& stack,
