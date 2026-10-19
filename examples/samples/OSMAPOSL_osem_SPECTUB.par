@@ -8,7 +8,7 @@ OSMAPOSLParameters :=
     
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
-    input file := peak.hs
+    input file := input.hs
 
     projector pair type := Matrix
       Projector Pair Using Matrix Parameters :=

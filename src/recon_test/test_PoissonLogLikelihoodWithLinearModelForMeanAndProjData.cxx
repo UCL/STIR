@@ -38,8 +38,8 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
+#include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 #ifdef STIR_WITH_CUDA
-#  include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 #  include "stir/recon_buildblock/SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.h"
 #endif
 
