@@ -133,10 +133,6 @@ create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.
 ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin
   test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin "${CMAKE_SOURCE_DIR}/recon_test_pack/PET_ACQ_small.l.hdr.STIR")
 
-# test_SPECTGPU
-ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTGPU
-  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData "${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input_small.hs" "SPECTGPU")
-
 # test_SPECTUB
 ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTUB
   test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData "${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input_small.hs"  "SPECTUB")
@@ -160,6 +156,10 @@ endif()
 
 if (STIR_WITH_CUDA)
   ADD_TEST(test_OSMAPOSL_spect_gpu  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_SPECTGPU.par ${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input.hs)
+  # test_SPECTGPU
+  ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTGPU
+    test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData "${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input_small.hs" "SPECTGPU")
+
 endif()
 
 if (SKIP_CUDA_TESTS)
