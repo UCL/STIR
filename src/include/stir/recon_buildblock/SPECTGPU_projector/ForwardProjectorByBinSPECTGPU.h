@@ -12,9 +12,9 @@
 
   \author Daniel Deidda
 
-  \todo SPECTGPU limitations -
-
-  \todo STIR wrapper limitations -
+  \todo SPECTGPU limitations: the prjector only works if the data and the image have the
+  same dimensions, in particular  tnagential and axial. Interpolation would need  to be
+  added to support different  voxels sizes
 
 */
 /*

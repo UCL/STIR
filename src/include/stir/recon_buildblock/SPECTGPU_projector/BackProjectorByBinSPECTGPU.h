@@ -8,10 +8,6 @@
   \brief Back projection class using SPECTGPU's GPU implementation.
 
   \author Daniel Deidda
-
-  \todo SPECTGPU limitations -
-
-  \todo STIR wrapper limitations -
 */
 /*
     Copyright (C) 2026, National Physical Laboratory
@@ -26,8 +22,8 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-#include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUForwardProjectorCUDA.h"
 #include "stir/cuda_utilities.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 
 START_NAMESPACE_STIR
 
