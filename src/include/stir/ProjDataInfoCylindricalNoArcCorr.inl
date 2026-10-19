@@ -182,7 +182,9 @@ ProjDataInfoCylindricalNoArcCorr::get_det_pos_pair_for_bin(DetectionPositionPair
       dp.pos2().axial_coord() = a1;
     }
 
-  dp.timing_pos() = std::abs(bin.timing_pos_num()) * this->get_tof_mash_factor();
+  dp.timing_pos()
+      = (bin.timing_pos_num() >= 0 ? bin.timing_pos_num() : -bin.timing_pos_num() - (this->get_num_tof_poss() % 2 == 0))
+        * this->get_tof_mash_factor();
 }
 
 END_NAMESPACE_STIR

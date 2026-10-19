@@ -93,11 +93,106 @@ private:
 void
 TOF_Tests::run_tests()
 {
+  info("Test conversion between -N/2 ... +N/2 for odd or -(N/2) ... +(N/2 - 1) for even TOF bins to 0 -> Max Detector "
+       "Positions. ");
+  {
+    // From odd number 351 to odd 9
+    test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
+    const int test_tof_mashing_factor1 = 1; // to have 9 TOF bins (351/39=9)
+    const int test_tof_mashing_factor = 39; // to have 9 TOF bins (351/39=9)
+    test_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
+                                                                 1,
+                                                                 0,
+                                                                 test_scanner_sptr->get_num_detectors_per_ring() / 2,
+                                                                 test_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                 /* arc_correction*/ false));
+    Bin b_1(0, 0, 0, 0, -1);
+    Bin b0(0, 0, 0, 0, 0);
+    Bin b1(0, 0, 0, 0, 1);
+    DetectionPositionPair<> dp;
+    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor1);
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b_1);
+    check_if_equal(dp.timing_pos(), 1, "tBin -1 is not correctly the 1 in [0->MAX), without TOF mashing for ODD N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b0);
+    check_if_equal(dp.timing_pos(), 0, "tBin 0 is not correctly the 0 in [0->MAX), without TOF mashing for ODD N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b1);
+    check_if_equal(dp.timing_pos(), 1, "Bin 1 is not correctly the 1 in [0->MAX), without TOF mashing for ODD N_TOF_bins");
+
+    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b_1);
+    check_if_equal(dp.timing_pos(), 39, "tBin -1 is not correctly the 39 in [0->MAX), with TOF mashing 39 for ODD N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b0);
+    check_if_equal(dp.timing_pos(), 0, "tBin 0 is not correctly the 0 in [0->MAX), with TOF mashing 39 for ODD N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b1);
+    check_if_equal(dp.timing_pos(), 39, "tBin -1 is not correctly the 39 in [0->MAX), with TOF mashing 39 for ODD N_TOF_bins");
+  }
+
+  {
+    // From even number 350 to even 10
+    test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
+    test_scanner_sptr->set_max_num_timing_poss(350);
+    test_scanner_sptr->set_up();
+    const int test_tof_mashing_factor1 = 1; // to have 350
+    const int test_tof_mashing_factor = 35; // to have 10 TOF bins (350/35=10)
+    test_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
+                                                                 1,
+                                                                 0,
+                                                                 test_scanner_sptr->get_num_detectors_per_ring() / 2,
+                                                                 test_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                 /* arc_correction*/ false));
+    Bin b_1(0, 0, 0, 0, -1);
+    Bin b0(0, 0, 0, 0, 0);
+    Bin b1(0, 0, 0, 0, 1);
+    Bin o_b;
+
+    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor1);
+    DetectionPositionPair<> dp_1, dp;
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp_1, b_1);
+    check_if_equal(
+        dp_1.timing_pos(), 0, "tBin -1 is not correctly the 0 in [0->MAX - 1), without TOF mashing for EVEN N_TOF_bins");
+
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_bin_for_det_pos_pair(o_b, dp_1);
+    check_if_equal(b_1, o_b, "Round-trip, broken");
+
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b0);
+    check_if_equal(dp.timing_pos(), 0, "tBin 0 is not correctly the 0 in [0->MAX - 1), without TOF mashing for EVEN N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_bin_for_det_pos_pair(o_b, dp);
+    check_if_equal(b0, o_b, "Round-trip, broken");
+    check_if_equal(dp_1.pos1(), dp.pos2(), "Detectors in positions -1 and 0 with even TOF bins should be inverted.");
+    check_if_equal(dp_1.pos2(), dp.pos1(), "Detectors in positions -1 and 0 with even TOF bins should be inverted.");
+
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b1);
+    check_if_equal(dp.timing_pos(), 1, "tBin 1 is not correctly the 1 in [0->MAX - 1), without TOF mashing for EVEN N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_bin_for_det_pos_pair(o_b, dp);
+    check_if_equal(b1, o_b, "Round-trip, broken");
+
+    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
+
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp_1, b_1);
+    check_if_equal(
+        dp_1.timing_pos(), 0, "tBin -1 is not correctly the 0 in [0->MAX - 1), with 35 TOF mashing for EVEN N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_bin_for_det_pos_pair(o_b, dp_1);
+    check_if_equal(b_1, o_b, "Round-trip, broken");
+
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b0);
+    check_if_equal(dp.timing_pos(), 0, "tBin 0 is not correctly the 0 in [0->MAX - 1), with 35 TOF mashing for EVEN N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_bin_for_det_pos_pair(o_b, dp);
+    check_if_equal(b0, o_b, "Round-trip, broken");
+
+    check_if_equal(dp_1.pos1(), dp.pos2(), "Detectors in positions -1 and 0 with even TOF bins should be inverted.");
+    check_if_equal(dp_1.pos2(), dp.pos1(), "Detectors in positions -1 and 0 with even TOF bins should be inverted.");
+
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_det_pos_pair_for_bin(dp, b1);
+    check_if_equal(dp.timing_pos(), 35, "tBin 1 is not correctly the 1 in [0->MAX - 1), with 35 TOF mashing for EVEN N_TOF_bins");
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(test_proj_data_info_sptr)->get_bin_for_det_pos_pair(o_b, dp);
+    check_if_equal(b1, o_b, "Round-trip, broken");
+  }
+
   // New Scanner
   test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
-
+  test_scanner_sptr->set_up();
   // New Proj_Data_Info
-  const int test_tof_mashing_factor = 39; // to have 9 TOF bins (381/39=9)
+  const int test_tof_mashing_factor = 39; // to have 9 TOF bins (351/39=9)
   test_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
                                                                1,
                                                                test_scanner_sptr->get_num_rings() - 1,
