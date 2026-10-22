@@ -165,8 +165,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_object
       std::cerr << "Writing diagnostic files proj_data.hs, mult_proj_data.hs and add_proj_data.hs";
 
       proj_data_sptr->write_to_file("proj_data.hs");
-      mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
-      add_proj_data_sptr->write_to_file("add_proj_data.hs");
+      if (mult_proj_data_sptr)
+          mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
+
+      if (add_proj_data_sptr)
+          add_proj_data_sptr->write_to_file("add_proj_data.hs");
     }
 }
 
@@ -406,14 +409,13 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
     void set_frame_num(const int);
     void set_frame_definitions(const TimeFrameDefinitions&);
   */
+  objective_function.set_num_subsets(proj_data_sptr->get_num_views() / 2);
   if (proj_data_sptr->get_exam_info_sptr()->imaging_modality.get_modality() != ImagingModality::NM)
     {
       objective_function.set_normalisation_sptr(bin_norm_sptr);
       objective_function.set_additive_proj_data_sptr(add_proj_data_sptr);
-      objective_function.set_num_subsets(2);
     }
-  else
-    objective_function.set_num_subsets(proj_data_sptr->get_num_views() / 2);
+
   //  objective_function.set_use_subset_sensitivities(false);
   if (!check(objective_function.set_up(density_sptr) == Succeeded::yes, "set-up of objective function"))
     return;
