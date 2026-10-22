@@ -166,10 +166,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_object
 
       proj_data_sptr->write_to_file("proj_data.hs");
       if (mult_proj_data_sptr)
-          mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
+        mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
 
       if (add_proj_data_sptr)
-          add_proj_data_sptr->write_to_file("add_proj_data.hs");
+        add_proj_data_sptr->write_to_file("add_proj_data.hs");
     }
 }
 
