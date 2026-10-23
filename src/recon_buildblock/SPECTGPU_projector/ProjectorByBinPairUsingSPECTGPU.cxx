@@ -85,6 +85,70 @@ ProjectorByBinPairUsingSPECTGPU::ProjectorByBinPairUsingSPECTGPU()
 }
 
 void
+ProjectorByBinPairUsingSPECTGPU::set_sigma0(const float sigma0)
+{
+  _sigma0 = sigma0;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_sigma0(_sigma0);
+
+  if (bwd)
+    bwd->set_sigma0(_sigma0);
+}
+
+void
+ProjectorByBinPairUsingSPECTGPU::set_num_sigmas(const float num_sigmas)
+{
+  _num_sigmas = num_sigmas;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_num_sigmas(_num_sigmas);
+
+  if (bwd)
+    bwd->set_num_sigmas(_num_sigmas);
+}
+
+void
+ProjectorByBinPairUsingSPECTGPU::set_slope(const float slope)
+{
+  _slope = slope;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_slope(_slope);
+
+  if (bwd)
+    bwd->set_slope(_slope);
+}
+
+void
+ProjectorByBinPairUsingSPECTGPU::set_attenuation_filename(const std::string& filename)
+{
+  _att_filename = filename;
+
+  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
+
+  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
+
+  if (fwd)
+    fwd->set_attenuation_filename(_att_filename);
+
+  if (bwd)
+    bwd->set_attenuation_filename(_att_filename);
+}
+
+void
 ProjectorByBinPairUsingSPECTGPU::set_verbosity(const bool verbosity)
 {
   _verbosity = verbosity;
