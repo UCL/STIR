@@ -1,0 +1,35 @@
+OSMAPOSLParameters :=
+
+    objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+    PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+        input file := ../SPECTUB/input.hs
+
+        projector pair type := SPECTGPU
+              Projector Pair Using SPECTGPU Parameters :=
+                    ; width of PSF
+
+                    ;PSF type of correction {  2D  }
+                    ;
+                    ; These values are mostly dependent on your collimator.
+                    ; the PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
+                    ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
+                    collimator slope := 0
+                    collimator sigma 0(cm) := 0.1466
+                    number of PSF sigmas := 2 ; default 2 (95% of the PSF)
+
+                    attenuation image filename := ../SPECTUB/attMapRec.hv
+
+             End Projector Pair Using SPECTGPU Parameters :=
+
+    end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+    initial estimate:= ../SPECTUB/init.hv
+    output filename prefix := out/OSEM_2DPSF
+
+    number of subsets:= 8
+    number of subiterations:= 16
+    Save estimates at subiteration intervals:= 16
+
+
+END :=

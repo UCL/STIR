@@ -3,6 +3,8 @@
 #
 #  Copyright (C) 2011, Hammersmith Imanet Ltd
 #  Copyright (C) 2014, University College London
+#  Copyright (C) 2026, National Physical Laboratory
+
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -19,6 +21,7 @@
 #      
 # Authors:  Kris Thielemans
 #           Matthew Strugari
+#           Daniel Deidda
 
 echo This script should work with STIR version 5.1. If you have
 echo a later version, you might have to update your test pack.
@@ -41,7 +44,17 @@ if test "$1" = "--help"; then
     exit 1
 fi
 
-for SPECTtest in SPECTUB PinholeSPECTUB; do
+ # Check if we have SPECTGPU
+  if stir_list_registries |grep -i SPECTGPU > /dev/null
+  then
+    if [ -n "$TRAVIS" -o -n "$GITHUB_WORKSPACE" ]; then
+        # The code runs inside Travis or GHA
+        echo "Not running SPECTGPU due to no CUDA run-time"
+    else
+        GPU_tests="SPECTGPU"
+    fi
+  fi
+for SPECTtest in SPECTUB $GPU_tests PinholeSPECTUB; do
 
     echo
     echo "********************************************************************************"
