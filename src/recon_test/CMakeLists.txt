@@ -154,7 +154,7 @@ if (parallelproj_FOUND)
   ADD_TEST(test_OSMAPOSL_parallelproj  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_parallelproj.par)
 endif()
 
-if (STIR_WITH_CUDA)
+if (STIR_WITH_CUDA AND NOT SKIP_CUDA_TESTS)
   ADD_TEST(test_OSMAPOSL_spect_gpu  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_SPECTGPU.par ${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input.hs)
   # test_SPECTGPU
   ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTGPU
