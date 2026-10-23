@@ -63,7 +63,6 @@ CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) const
 void
 CListEventROOT::set_detection_position(const DetectionPositionPair<>& det_pos)
 {
-#if 0
   this->det1 = det_pos.pos1().tangential_coord();
   this->det2 = det_pos.pos2().tangential_coord();
   this->ring1 = det_pos.pos1().axial_coord();
@@ -71,14 +70,7 @@ CListEventROOT::set_detection_position(const DetectionPositionPair<>& det_pos)
   Bin bin(0, 0, 0, 0);
   bin.timing_pos_num() = det_pos.timing_pos(); // true for uncompressed
   this->delta_time = this->get_uncompressed_proj_data_info_sptr()->get_tof_delta_time(bin);
-#else
-  this->det1 = det_pos.pos1().tangential_coord();
-  this->det2 = det_pos.pos2().tangential_coord();
-  this->ring1 = det_pos.pos1().axial_coord();
-  this->ring2 = det_pos.pos2().axial_coord();
-  Bin bin(0, 0, 0, 0);
-  bin.timing_pos_num() = det_pos.timing_pos(); // true for uncompressed
-  this->delta_time = this->get_uncompressed_proj_data_info_sptr()->get_tof_delta_time(bin);
+#if 1
   // need to do this crazy swap to get test_time_of_flight to give a consistent LOR with ProjDataInfo::get_LOR
   if (bin.timing_pos_num() < 0)
     {

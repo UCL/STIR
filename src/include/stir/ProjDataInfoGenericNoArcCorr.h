@@ -22,7 +22,7 @@
 #ifndef __stir_ProjDataInfoGenericNoArcCorr_H__
 #define __stir_ProjDataInfoGenericNoArcCorr_H__
 
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -66,10 +66,10 @@ class Succeeded;
   \todo change ProjDataInfoCylindrical hierarchy order.
 
   */
-class ProjDataInfoGenericNoArcCorr : public ProjDataInfoCylindricalNoArcCorr
+class ProjDataInfoGenericNoArcCorr : public ProjDataInfoPETScannerWithDiscreteDetectors
 {
 private:
-  typedef ProjDataInfoCylindricalNoArcCorr base_type;
+  typedef ProjDataInfoPETScannerWithDiscreteDetectors base_type;
 #ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
 public:
@@ -154,7 +154,6 @@ public:
 
     \obsolete
   */
-
   // This version uses the coordinate map
   virtual void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
                                                                     CartesianCoordinate3D<float>& coord_2,
