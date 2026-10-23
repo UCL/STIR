@@ -51,6 +51,14 @@ public:
   /// projection and after back projection
   void set_use_truncation(const bool use_truncation);
 
+  void set_sigma0(const float sigma0);
+
+  void set_num_sigmas(const float num_sigmas);
+
+  void set_slope(const float slope);
+
+  void set_attenuation_filename(const std::string& filename);
+
 private:
   void set_defaults();
   void initialise_keymap();
