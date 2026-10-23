@@ -27,6 +27,7 @@
 */
 
 #include "stir/recon_buildblock/BinNormalisationFromECAT8.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/shared_ptr.h"
@@ -63,7 +64,7 @@ namespace detail
 //
 
 static int
-calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoCylindricalNoArcCorr* proj_data_cyl)
+calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoPETScannerWithDiscreteDetectors* proj_data_cyl)
 {
 
   int segment_num = bin.segment_num();
@@ -80,7 +81,7 @@ calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoCylindricalNoArcCorr* pr
 }
 
 static void
-set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+set_detection_tangential_coords(shared_ptr<const ProjDataInfoPETScannerWithDiscreteDetectors> proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin,
                                 DetectionPositionPair<>& detection_position_pair)
 {
@@ -97,7 +98,7 @@ set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCor
 // out of range.
 // sets axial_coord of detection_position_pair
 static int
-set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr* proj_data_info_cyl,
+set_detection_axial_coords(const ProjDataInfoPETScannerWithDiscreteDetectors* proj_data_info_cyl,
                            int ring1_plus_ring2,
                            const Bin& uncomp_bin,
                            DetectionPositionPair<>& detection_position_pair)
@@ -194,7 +195,7 @@ BinNormalisationFromECAT8::set_up(const shared_ptr<const ExamInfo>& exam_info_sp
 
   set_exam_info_sptr(exam_info_sptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
-  proj_data_info_cyl_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_ptr.get());
+  proj_data_info_cyl_ptr = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors*>(proj_data_info_ptr.get());
   if (proj_data_info_cyl_ptr == 0)
     {
       warning("BinNormalisationFromECAT8 can only be used on non-arccorrected data\n");
@@ -212,7 +213,7 @@ BinNormalisationFromECAT8::set_up(const shared_ptr<const ExamInfo>& exam_info_sp
       const int data_max_ring_diff
           = proj_data_info_cyl_ptr->get_max_ring_difference(proj_data_info_cyl_ptr->get_max_segment_num());
       auto norm_proj_data_info_no_arccorr_ptr
-          = dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(norm_proj_data_info_sptr.get());
+          = dynamic_cast<ProjDataInfoPETScannerWithDiscreteDetectors const*>(norm_proj_data_info_sptr.get());
       const int norm_max_ring_diff = norm_proj_data_info_no_arccorr_ptr->get_max_ring_difference(
           norm_proj_data_info_no_arccorr_ptr->get_max_segment_num());
       if (data_max_ring_diff > norm_max_ring_diff)
@@ -269,13 +270,14 @@ BinNormalisationFromECAT8::read_norm_data(const string& filename)
           "number of detectors per ring determined from subheader is %d, while the scanner object says it is %d\n",
            nrm_subheader_ptr->crystals_per_ring, scanner_ptr->get_num_detectors_per_ring());
 #endif
-  proj_data_info_cyl_uncompressed_ptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(ProjDataInfo::ProjDataInfoCTI(
-      scanner_ptr,
-      /*span=*/1,
-      scanner_ptr->get_num_rings() - 1,
-      /*num_views,=*/scanner_ptr->get_num_detectors_per_ring() / 2,
-      /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(), // XXXnrm_subheader_ptr->num_r_elements,
-      /*arc_corrected =*/false)));
+  proj_data_info_cyl_uncompressed_ptr.reset(
+      dynamic_cast<ProjDataInfoPETScannerWithDiscreteDetectors*>(ProjDataInfo::ProjDataInfoCTI(
+          scanner_ptr,
+          /*span=*/1,
+          scanner_ptr->get_num_rings() - 1,
+          /*num_views,=*/scanner_ptr->get_num_detectors_per_ring() / 2,
+          /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(), // XXXnrm_subheader_ptr->num_r_elements,
+          /*arc_corrected =*/false)));
 
   this->construct_sino_lookup_table();
   /*
@@ -610,10 +612,11 @@ BinNormalisationFromECAT8::construct_sino_lookup_table()
   // see find_axial_effects
   this->sino_index.fill(-1);
 
-  auto proj_data_info_no_arccorr_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(norm_proj_data_info_sptr.get());
+  auto proj_data_info_no_arccorr_ptr
+      = dynamic_cast<ProjDataInfoPETScannerWithDiscreteDetectors const*>(norm_proj_data_info_sptr.get());
 
   if (!proj_data_info_no_arccorr_ptr)
-    error("BinNormalisationFromECAT8: internal error. Data should be of type ProjDataInfoCylindricalNoArcCorr");
+    error("BinNormalisationFromECAT8: internal error. Data should be of type ProjDataInfoPETScannerWithDiscreteDetectors");
 
   this->num_Siemens_sinograms = proj_data_info_no_arccorr_ptr->get_num_non_tof_sinograms();
 

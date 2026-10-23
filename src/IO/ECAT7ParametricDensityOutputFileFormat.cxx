@@ -69,6 +69,7 @@ ECAT7ParametricDensityOutputFileFormat<DiscretisedDensityT>::post_processing()
     return true;
 
   shared_ptr<Scanner> scanner_ptr(Scanner::get_scanner_from_name(this->default_scanner_name));
+  scanner_ptr->set_up();
 
   if (find_ECAT_system_type(*scanner_ptr) == 0)
     {
@@ -118,6 +119,7 @@ ECAT7ParametricDensityOutputFileFormat<DiscretisedDensityT>::actual_write_to_fil
     std::string& filename, const ParametricDiscretisedDensity<DiscretisedDensityT>& parametric_density) const
 {
   shared_ptr<Scanner> scanner_ptr(Scanner::get_scanner_from_name(this->default_scanner_name));
+  scanner_ptr->set_up();
 
   add_extension(filename, ".img");
 

@@ -20,7 +20,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
@@ -56,6 +56,7 @@ ML_normTests::run_tests()
   {
     std::cerr << "\n-------- Testing ECAT 953 --------\n";
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+    scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                /*span*/ 1,
@@ -68,6 +69,7 @@ ML_normTests::run_tests()
   {
     std::cerr << "\n-------- Testing ECAT E1080 (with gaps) --------\n";
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E1080));
+    scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                /*span*/ 1,
@@ -75,7 +77,7 @@ ML_normTests::run_tests()
                                                /*views*/ scanner_sptr->get_num_detectors_per_ring() / 2,
                                                /*tang_pos*/ 64,
                                                /*arc_corrected*/ false));
-    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(proj_data_info_sptr));
+    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoPETScannerWithDiscreteDetectors>(proj_data_info_sptr));
   }
   {
     std::cerr << "\n-------- Testing Block Scanner SAFIR --------\n";
@@ -89,7 +91,7 @@ ML_normTests::run_tests()
                                                /*views*/ scanner_sptr->get_num_detectors_per_ring() / 2,
                                                /*tang_pos*/ 64,
                                                /*arc_corrected*/ false));
-    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoBlocksOnCylindricalNoArcCorr>(proj_data_info_sptr));
+    test_proj_data_info(dynamic_pointer_cast<ProjDataInfoPETScannerWithDiscreteDetectors>(proj_data_info_sptr));
   }
 }
 

@@ -42,10 +42,10 @@ void
 ProjectorByBinPairUsingParallelproj::set_defaults()
 {
   base_type::set_defaults();
+  this->_already_set_up = false;
   this->set_verbosity(true);
   this->set_restrict_to_cylindrical_FOV(true);
   this->set_num_gpu_chunks(1);
-  this->_already_set_up = false;
 }
 
 bool

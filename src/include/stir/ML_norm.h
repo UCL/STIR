@@ -46,10 +46,7 @@
 
 #include "stir/ProjData.h"
 #include "stir/Array.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 #include "stir/IndexRange2D.h"
-#include "stir/Sinogram.h"
 #include "stir/warning.h"
 #include <iostream>
 

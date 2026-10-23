@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2016, 2020, 2021, University College London
+    Copyright (C) 2016, 2020, 2021, 2026, University College London
     Copyright (C) 2016-2017, PETsys Electronics
     Copyright (C) 2021, Gefei Chen
     Copyright (C) 2022, National Physical Laboratory
@@ -25,7 +25,9 @@
 */
 
 #include "stir/ML_norm.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/SegmentBySinogram.h"
+#include "stir/Sinogram.h"
 #include "stir/stream.h"
 #include "stir/warning.h"
 #include "stir/error.h"
@@ -175,18 +177,9 @@ make_det_pair_data(DetPairData& det_pair_data,
                    const int segment_num,
                    const int ax_pos_num)
 {
-  if (proj_data_info_general_type.get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      auto proj_data_info = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info_general_type);
+  auto proj_data_info = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors&>(proj_data_info_general_type);
 
-      make_det_pair_data_help(det_pair_data, proj_data_info, segment_num, ax_pos_num);
-    }
-  else
-    {
-      auto proj_data_info = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info_general_type);
-
-      make_det_pair_data_help(det_pair_data, proj_data_info, segment_num, ax_pos_num);
-    }
+  make_det_pair_data_help(det_pair_data, proj_data_info, segment_num, ax_pos_num);
 }
 
 template <class TProjDataInfo>
@@ -224,18 +217,9 @@ make_det_pair_data_help(DetPairData& det_pair_data,
 void
 make_det_pair_data(DetPairData& det_pair_data, const ProjData& proj_data, const int segment_num, const int ax_pos_num)
 {
-  if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      auto proj_data_info = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_sptr());
+  auto proj_data_info = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors&>(*proj_data.get_proj_data_info_sptr());
 
-      make_det_pair_data_help(det_pair_data, proj_data_info, proj_data, segment_num, ax_pos_num);
-    }
-  else
-    {
-      auto proj_data_info = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_sptr());
-
-      make_det_pair_data_help(det_pair_data, proj_data_info, proj_data, segment_num, ax_pos_num);
-    }
+  make_det_pair_data_help(det_pair_data, proj_data_info, proj_data, segment_num, ax_pos_num);
 }
 
 void
@@ -1032,20 +1016,8 @@ void
 set_det_pair_data(ProjData& proj_data, const DetPairData& det_pair_data, const int segment_num, const int ax_pos_num)
 {
   const shared_ptr<const ProjDataInfo> proj_data_info_sptr = proj_data.get_proj_data_info_sptr();
-
-  if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      auto proj_data_info = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
-
-      set_det_pair_data_help<ProjDataInfoCylindricalNoArcCorr>(proj_data, proj_data_info, det_pair_data, segment_num, ax_pos_num);
-    }
-  else
-    {
-      auto proj_data_info = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(*proj_data_info_sptr);
-
-      set_det_pair_data_help<ProjDataInfoBlocksOnCylindricalNoArcCorr>(
-          proj_data, proj_data_info, det_pair_data, segment_num, ax_pos_num);
-    }
+  auto proj_data_info = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors&>(*proj_data_info_sptr);
+  set_det_pair_data_help(proj_data, proj_data_info, det_pair_data, segment_num, ax_pos_num);
 }
 
 /// **** This function make fan_data from projecion file while removing the intermodule gaps **** ////
@@ -1147,21 +1119,10 @@ make_fan_data_remove_gaps(FanProjData& fan_data, const ProjData& proj_data)
 
   const ProjDataInfo& proj_data_info = *proj_data.get_proj_data_info_sptr();
   get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, proj_data_info);
+  auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors* const>(&proj_data_info);
 
-  if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&proj_data_info);
-
-      make_fan_data_remove_gaps_help(
-          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
-    }
-  else
-    {
-      auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&proj_data_info);
-
-      make_fan_data_remove_gaps_help(
-          fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
-    }
+  make_fan_data_remove_gaps_help(
+      fan_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
 }
 
 /// **** This function make proj_data from fan_data while adding the intermodule gaps **** ////
@@ -1252,22 +1213,11 @@ set_fan_data_add_gaps(ProjData& proj_data, const FanProjData& fan_data, const fl
   int max_delta;
   get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
 
-  if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      auto proj_data_info_ptr
-          = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&(*proj_data.get_proj_data_info_sptr()));
+  auto proj_data_info_ptr
+      = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors* const>(&(*proj_data.get_proj_data_info_sptr()));
 
-      set_fan_data_add_gaps_help(
-          proj_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, fan_data, gap_value);
-    }
-  else
-    {
-      auto proj_data_info_ptr
-          = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&(*proj_data.get_proj_data_info_sptr()));
-
-      set_fan_data_add_gaps_help(
-          proj_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, fan_data, gap_value);
-    }
+  set_fan_data_add_gaps_help(
+      proj_data, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, fan_data, gap_value);
 }
 
 void
@@ -1524,20 +1474,9 @@ make_fan_sum_data(Array<2, float>& data_fan_sums, const ProjData& proj_data)
   int max_delta;
   get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
 
-  if (proj_data.get_proj_data_info_sptr()->get_scanner_sptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      auto proj_data_info_ptr
-          = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(&(*proj_data.get_proj_data_info_sptr()));
-      make_fan_sum_data_help(
-          data_fan_sums, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
-    }
-  else
-    {
-      auto proj_data_info_ptr
-          = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(&(*proj_data.get_proj_data_info_sptr()));
-      make_fan_sum_data_help(
-          data_fan_sums, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
-    }
+  auto proj_data_info_ptr
+      = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors* const>(&(*proj_data.get_proj_data_info_sptr()));
+  make_fan_sum_data_help(data_fan_sums, num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data_info_ptr, proj_data);
 }
 
 void
