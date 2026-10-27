@@ -23,6 +23,8 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 #include "stir/cuda_utilities.h"
 START_NAMESPACE_STIR
+namespace SPECTGPU
+{
 void
 AllocatedStack::allocate(size_t image_size_, size_t sino_size_)
 {
@@ -68,4 +70,5 @@ AllocatedStack::~AllocatedStack()
 {
   deallocate();
 }
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

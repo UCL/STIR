@@ -6,6 +6,7 @@ z zoom:=.5
 xy output image size (in pixels) := 128
 back projector type := SPECTGPU
       Back projector Using SPECTGPU Parameters :=
+          ; Note the following parameters are not relevant for FBP
           ; width of PSF
 
           ;PSF type of correction {  3D  }

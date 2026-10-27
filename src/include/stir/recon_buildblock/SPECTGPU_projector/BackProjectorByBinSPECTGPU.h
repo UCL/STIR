@@ -26,6 +26,7 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 
 START_NAMESPACE_STIR
+using SPECTGPU::AllocatedStack;
 
 class DataSymmetriesForViewSegmentNumbers;
 
@@ -115,7 +116,6 @@ protected:
 
 private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
-  //  SPECTGPUHelper _helper;
   int _cuda_device;
   bool _cuda_verbosity;
   bool _do_atten;

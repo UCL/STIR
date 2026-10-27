@@ -36,6 +36,7 @@
 #endif
 
 START_NAMESPACE_STIR
+using SPECTGPU::AllocatedStack;
 
 //////////////////////////////////////////////////////////
 const char* const BackProjectorByBinSPECTGPU::registered_name = "SPECTGPU";
@@ -46,10 +47,9 @@ BackProjectorByBinSPECTGPU::BackProjectorByBinSPECTGPU()
       _use_truncation(false),
       _slope(-1),
       _sigma0(-1),
-      _num_sigmas(2) /*,
-       dev_image(nullptr),
-       dev_umap(nullptr)*/
+      _num_sigmas(2)
 {
+  this->set_defaults();
   this->_already_set_up = false;
 }
 

@@ -1283,7 +1283,7 @@ zero end planes of segment 0 := 1
 Projector pair type := Matrix 
  Projector Pair Using Matrix Parameters := 
    ; Use the PET Ray-tracing matrix.
-   ;  Change to SPECT UB when using SPECT data with parallel-hole collimators
+   ;  Change to SPECT UB or SPECT GPU when using SPECT data with parallel-hole collimators
    ;  Change to Pinhole SPECT UB when using SPECT data with pinhole collimators
    Matrix type := Ray Tracing
      Ray Tracing Matrix Parameters:=
@@ -5306,6 +5306,61 @@ h4:	4	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
 \end{description}
 \end{description}
 
+{ \subsubsubsection{SPECT GPU} }
+\label{sec:projmatrixSPECTGPU}
+This is a flexible implementation specific to SPECT data. See [Wall97] for some information.
+It is only available if STIR has been compiled with CUDA support.
+A sample is given below:
+
+\begin{verbatim}
+projector pair type := SPECTGPU
+      Projector Pair Using SPECTGPU Parameters :=
+            ; width of PSF
+            ;PSF type of correction {  3D  }
+            ; next 2 parameters define the PSF.
+            ; These values are mostly dependent on your collimator.
+            ; If you want a 2D PSF you can set collimator sigma 0(cm) to 0
+            ; the PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
+            ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
+            collimator slope := 0.0163
+            collimator sigma 0(cm) := 0.1466
+            number of PSF sigmas := 3 ; default 2 (95% of the PSF)
+
+            attenuation image filename := umap_zoomed.hv
+
+     End Projector Pair Using SPECTGPU Parameters :=
+\end{verbatim}
+
+The weight matrix or system matrix in tomographic reconstruction in SPECT is the matrix that stores the
+percentual contribution of each voxel of the object into each bin in the projections. In the MLE
+framework, weight ij can be thought of as the probability of one photon being emitted in the voxel i reached
+the bin j. Each weight can be factorized in three components: geometry (PSF), attenuation and scattering.
+This software can calculate the geometrical and the attenuation component. The correction for scattering
+should be done using alternative strategies. The geometrical part is calculated as the integral of the
+PSF (area 1) within the bin. The geometrical part is multiplied by the attenuation factor calculated
+using a modified version of the Siddon algorithm.  
+
+{ \subsubsubsubsection{Parameters} }
+\begin{description}
+
+\item[ number of sigmas] [0, $\infty$, 2{]}
+
+This is the number of sigmas to consider in PSF correction (float, typically 1.5 to 2.5). PSF are modelled by Gaussian functions whose extension is infinite. To increase unnecessarily the number of sigmas would produce an increase of the weight matrix size that would not result in a better correction for PSF. It does not make sense to take into account very small contributions. A balance between the precision of the correction for PSF and the size of the matrix and the time of the reconstruction process should be done.
+
+\item[collimator slope, collimator sigma 0 (cm)] (default -1, PSF switched off)
+
+These two 2 parameters define the PSF. They are ignored if the value is -1. These values are mostly dependent on your collimator. The PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
+\begin{equation}
+ \sigma(d) = \mathrm{slope} * d + \mathrm{\sigma_0}
+\end{equation} 
+\noindent with $d$ the distance (in cm) of the voxel to the collimator radius.
+
+In the range of usual distances between the object and the detector, the dependence of the sigma with the distance keeps perfectly linear for parallel collimators. You can adjust this dependence experimentally or use analytical methods to determine it.
+
+\item[attenuation filename] \{full path of attenuation coefficients image, empty (default)\}
+
+Attenuation is calculated as the negative exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation coefficient. It requires an attenuation map. Contrary to SPECT UB this only has the full option i.e. a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained along the voxel-bin pathway). 
+\end{description}
 
 { \subsubsubsection{From File} }
 \label{sec:projmatrixfromfile}
@@ -6066,6 +6121,8 @@ Roy. Stat. Soc}., 52: 271-324.
 
 [Str22b] Strugari M, DeBay D, Beyea S, and Brewer K, \textbf{(2022)} NEMA NU 1-2018 performance characterization and Monte Carlo model validation 
 of the Cubresa Spark SiPM-based preclinical spect scanner. \textit{EJNMMI Phys}. Preprint. \url{https://doi.org/10.21203/rs.3.rs-1946160/v1}{doi /10.21203/rs.3.rs-1946160/v1}.
+
+[wall97] Jerold W. Wallis and Tom R. Miller, \textbf{(1997)} An Optimal Rotator for Iterative Reconstruction. \textit{IEEE TMI}.  \url{https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=552061}{doi 10.1109/42.552061}.
 
 {[}Thi07{]} Thielemans K, Manjeshwar R, Tsoumpas C and Jansen F\textbf{(2007)}, 
 A new algorithm for scaling of PET scatter estimates using all coincidence events. 

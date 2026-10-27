@@ -17,7 +17,7 @@ type:=Matrix
         ;Attenuation correction { Simple // Full // No }
         attenuation type := Simple      
         ;Values in attenuation map in cm-1 (float file)                         
-        attenuation map := attMapRec.hv
+        attenuation map := SPECTUB/attMapRec.hv
 
         ;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
         mask type := Attenuation Map

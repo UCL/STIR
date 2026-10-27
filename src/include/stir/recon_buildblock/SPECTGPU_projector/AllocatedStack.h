@@ -13,6 +13,8 @@
 #include "stir/common.h"
 
 START_NAMESPACE_STIR
+namespace SPECTGPU
+{
 struct AllocatedStack
 {
 
@@ -36,6 +38,6 @@ struct AllocatedStack
 
   ~AllocatedStack();
 };
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR
 #endif // ALLOCATEDSTACK_H

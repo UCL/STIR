@@ -58,19 +58,10 @@ ProjectorByBinPairUsingSPECTGPU::post_processing()
   this->set_verbosity(this->_verbosity);
   this->set_use_truncation(this->_use_truncation);
 
-  auto fwd = dynamic_pointer_cast<ForwardProjectorByBinSPECTGPU>(this->forward_projector_sptr);
-
-  auto bwd = dynamic_pointer_cast<BackProjectorByBinSPECTGPU>(this->back_projector_sptr);
-
-  fwd->set_sigma0(_sigma0);
-  fwd->set_num_sigmas(_num_sigmas);
-  fwd->set_slope(_slope);
-  fwd->set_attenuation_filename(_att_filename);
-
-  bwd->set_sigma0(_sigma0);
-  bwd->set_num_sigmas(_num_sigmas);
-  bwd->set_slope(_slope);
-  bwd->set_attenuation_filename(_att_filename);
+  set_sigma0(_sigma0);
+  set_num_sigmas(_num_sigmas);
+  set_slope(_slope);
+  set_attenuation_filename(_att_filename);
 
   if (base_type::post_processing())
     return true;

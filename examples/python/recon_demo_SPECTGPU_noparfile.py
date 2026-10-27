@@ -1,11 +1,11 @@
-# Demo of how to use STIR from python to reconstruct some data
+# Demo of how to use STIR from python to reconstruct some data withouth using a parameter file
 # To run in "normal" Python, you would type the following in the command line
-#  execfile('recon_demo.py')
+#  python /your/path/to/STIR/examples/python/recon_demo_SPECTGPU_noparfile.py
 # In ipython, you can use
-#  %run recon_demo.py
+#  %run recon_demo_SPECTGPU_noparfile.py
 
-# Copyright 2012-06-05 - 2013 Kris Thielemans
-# Copyright 2015 University College London
+# Copyright 2026 Daniel Deidda
+# Copyright 2026 National Physical Laboratory
 
 # This file is part of STIR.
 #
@@ -14,7 +14,8 @@
 # See STIR/LICENSE.txt for details
 
 import stir
-import matplotlib.pyplot as pylab
+
+import matplotlib.pyplot as plt
 from pathlib import Path
 import os
 
@@ -46,7 +47,7 @@ proj.set_attenuation_filename('../../recon_test_pack/SPECT/SPECTUB/attMapRec.hv'
 # checkout set parameters for the projector
 print(proj.parameter_info())
 
-poissonobj.set_subsensitivity_filenames('sens_subset%d.hv')
+poissonobj.set_subsensitivity_filenames('sens_subset{}.hv')
 poissonobj.set_recompute_sensitivity(True)
 
 # if you have scatter
@@ -67,13 +68,13 @@ recon.set_objective_function(poissonobj)
 # Without it, the python shell will wait after every pylab.show() for you
 # to close the window.
 try:
-    pylab.ion()
+    plt.ion()
 except:
     print("Enabling interactive-mode for plotting failed. Continuing.")
 
 s = recon.set_up(target)
 if (s.succeeded()):
-    pylab.figure()
+    fig,  ax = plt.subplots()
     for i in range(1,num_subiterations+1):
         print('\n--------------------- Subiteration ', i)
         recon.set_start_subiteration_num(i)
@@ -84,18 +85,42 @@ if (s.succeeded()):
         poissonobj.set_recompute_sensitivity(False)
         # extract to python for plotting
         npimage = target.as_array()
-        pylab.plot(npimage[10, 30, :])
-        pylab.show()
+        slice_idx = npimage.shape[0] // 2
+        row_idx = npimage.shape[1] // 2
+        ax.clear()
+        ax.plot(npimage[slice_idx, row_idx, :])
+        ax.set_title(f"Subiteration {i}")
+        ax.set_xlabel("Voxel")
+        ax.set_ylabel("Value")
+
+        plt.draw()
+        plt.pause(0.01)
 
     # Save the final image
     recon_filename = f"recon_image_{num_subiterations}.hv"
     print(f"Saving Image as: {recon_filename}")
     target.write_to_file(recon_filename)
 
-    # # plot slice of final image
-    pylab.figure()
-    pylab.imshow(npimage[10, :, :])
-    # # Keep figures open until user closes them
-    pylab.show(block=True)
+    # display a reconstructed slice
+    
+
+    fig2, ax2 = plt.subplots()
+
+    im = ax2.imshow(npimage[slice_idx, :, :],
+                    cmap="gray",
+                    origin="lower")
+
+    ax2.axhline(row_idx,
+                color="red",
+                linewidth=2,
+                label=f"Profile row {row_idx}")
+
+    ax2.set_title(f"Slice {slice_idx}")
+    ax2.legend()
+
+    fig2.colorbar(im, ax=ax2)
+    
+
+    plt.show(block=True)
 else:
     print('Error setting-up reconstruction object')
