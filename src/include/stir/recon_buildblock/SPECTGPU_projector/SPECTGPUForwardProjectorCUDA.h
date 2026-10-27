@@ -19,13 +19,13 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/cuda_utilities.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 
 START_NAMESPACE_STIR
-
+using SPECTGPU::AllocatedStack;
 void run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                                  AllocatedStack& stack,
                                  bool do_atten,

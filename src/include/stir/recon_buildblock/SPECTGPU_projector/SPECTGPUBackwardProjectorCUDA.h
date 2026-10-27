@@ -19,14 +19,13 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/cuda_utilities.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 
 START_NAMESPACE_STIR
-// BPBuffers.h
-
+using SPECTGPU::AllocatedStack;
 void accumulate_image_omp_contrib(float* dev_image,
                                   const float* thread_image,
                                   unsigned int block_x,

@@ -8,7 +8,7 @@ OSMAPOSLParameters :=
     
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
-    input file := input.hs
+    input file := peak.hs
 
     projector pair type := SPECTGPU
       Projector Pair Using SPECTGPU Parameters :=

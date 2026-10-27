@@ -31,7 +31,7 @@
 #include <cmath>
 
 START_NAMESPACE_STIR
-
+using SPECTGPU::AllocatedStack;
 void
 run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                             AllocatedStack& stack,

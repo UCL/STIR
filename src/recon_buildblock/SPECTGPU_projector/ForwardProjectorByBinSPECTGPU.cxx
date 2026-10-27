@@ -40,6 +40,7 @@
 #endif
 
 START_NAMESPACE_STIR
+using SPECTGPU::AllocatedStack;
 
 //////////////////////////////////////////////////////////
 const char* const ForwardProjectorByBinSPECTGPU::registered_name = "SPECTGPU";
@@ -52,6 +53,7 @@ ForwardProjectorByBinSPECTGPU::ForwardProjectorByBinSPECTGPU()
       _sigma0(-1),
       _num_sigmas(2)
 {
+  this->set_defaults();
   this->_already_set_up = false;
 }
 

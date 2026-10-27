@@ -29,7 +29,7 @@
 #include <cmath>
 
 START_NAMESPACE_STIR
-
+using SPECTGPU::AllocatedStack;
 __global__ void
 add_arrays(float* dst, const float* src, size_t n)
 {

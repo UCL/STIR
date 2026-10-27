@@ -13,7 +13,7 @@
   \author Daniel Deidda
 
   \todo SPECTGPU limitations: the prjector only works if the data and the image have the
-  same dimensions, in particular  tnagential and axial. Interpolation would need  to be
+  same dimensions, in particular  tangential and axial. Interpolation would need  to be
   added to support different  voxels sizes
 
 */
@@ -33,6 +33,7 @@
 #include "stir/cuda_utilities.h"
 
 START_NAMESPACE_STIR
+using SPECTGPU::AllocatedStack;
 
 class ProjDataInMemory;
 class DataSymmetriesForViewSegmentNumbers;
@@ -58,16 +59,13 @@ public:
   // inline
   ForwardProjectorByBinSPECTGPU();
 
-  /// Constructor
-  virtual ~ForwardProjectorByBinSPECTGPU();
+  /// Destructor
+  virtual ~ForwardProjectorByBinSPECTGPU() override;
 
   /// Keymap
   virtual void initialise_keymap() override;
 
-  //  virtual ForwardProjectorByBin* clone() const override
-  //  {
-  //      return new ForwardProjectorByBinSPECTGPU(*this);
-  //  }
+  virtual ForwardProjectorByBin* clone() const { return new ForwardProjectorByBinSPECTGPU(*this); }
 
   virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override { return _symmetries_sptr.get(); }
 

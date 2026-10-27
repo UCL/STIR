@@ -4,8 +4,8 @@
 # In ipython, you can use
 #  %run recon_demo.py
 
-# Copyright 2012-06-05 - 2013 Kris Thielemans
-# Copyright 2015 University College London
+# Copyright 2026 Daniel Deidda
+# Copyright 2026 National Physical Laboratory
 
 # This file is part of STIR.
 #
@@ -13,12 +13,16 @@
 #
 # See STIR/LICENSE.txt for details
 
+from matplotlib import pylab
+
 import stir
-import matplotlib.pyplot as pylab
+import matplotlib.pyplot as plt
+from pathlib import Path
 import os
 
-# go to directory with input files
-os.chdir('../recon_demo')
+script_dir = Path(__file__).resolve().parent
+
+os.chdir(script_dir / ".." / "recon_demo")
 
 # initialise reconstruction object
 # we will do this here via a .par file
@@ -42,13 +46,13 @@ target.fill(1)
 # Without it, the python shell will wait after every pylab.show() for you
 # to close the window.
 try:
-    pylab.ion()
+    plt.ion()
 except:
     print("Enabling interactive-mode for plotting failed. Continuing.")
 
 s = recon.set_up(target)
 if (s.succeeded()):
-    pylab.figure()
+    fig,  ax = plt.subplots()
     for i in range(1,num_subiterations+1):
         print('\n--------------------- Subiteration ', i)
         recon.set_start_subiteration_num(i)
@@ -59,18 +63,43 @@ if (s.succeeded()):
         poissonobj.set_recompute_sensitivity(False)
         # extract to python for plotting
         npimage = target.as_array()
-        pylab.plot(npimage[10, 30, :])
-        pylab.show()
+        slice_idx = npimage.shape[0] // 2
+        row_idx = npimage.shape[1] // 2
+        ax.clear()
+        ax.plot(npimage[slice_idx, row_idx, :])
+        ax.set_title(f"Subiteration {i}")
+        ax.set_xlabel("Voxel")
+        ax.set_ylabel("Value")
+
+        plt.draw()
+        plt.pause(0.01)
 
     # Save the final image
     recon_filename = f"recon_image_{num_subiterations}.hv"
     print(f"Saving Image as: {recon_filename}")
     target.write_to_file(recon_filename)
 
-    # plot slice of final image
-    pylab.figure()
-    pylab.imshow(npimage[10, :, :])
-    # Keep figures open until user closes them
-    pylab.show(block=True)
+    # display a reconstructed slice
+    
+
+    fig2, ax2 = plt.subplots()
+
+    im = ax2.imshow(npimage[slice_idx, :, :],
+                    cmap="gray",
+                    origin="lower")
+
+    ax2.axhline(row_idx,
+                color="red",
+                linewidth=2,
+                label=f"Profile row {row_idx}")
+
+    ax2.set_title(f"Slice {slice_idx}")
+    ax2.legend()
+
+    fig2.colorbar(im, ax=ax2)
+    
+
+    plt.show(block=True)
 else:
     print('Error setting-up reconstruction object')
+
