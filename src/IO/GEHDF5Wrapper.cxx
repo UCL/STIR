@@ -65,7 +65,7 @@ read_float(const H5::H5File& file, const std::string& dataset)
   return tmp;
 }
 
-std::string
+static std::string
 read_string(const H5::H5File& file, const std::string& dataset)
 {
   H5::DataSet ds = file.openDataSet(dataset.c_str());
