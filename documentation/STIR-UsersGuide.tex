@@ -5309,6 +5309,7 @@ h4:	4	0.	0.	0.	round	0.1	0.1	0.	0.	45.	45.
 { \subsubsubsection{SPECT GPU} }
 \label{sec:projmatrixSPECTGPU}
 This is a flexible implementation specific to SPECT data. See [Wall97] for some information.
+It is only available if STIR has been compiled with CUDA support.
 A sample is given below:
 
 \begin{verbatim}
@@ -5332,7 +5333,7 @@ projector pair type := SPECTGPU
 
 The weight matrix or system matrix in tomographic reconstruction in SPECT is the matrix that stores the
 percentual contribution of each voxel of the object into each bin in the projections. In the MLE
-framework, weight ij can be though as the probability of one photon being emitted in the voxel i reached
+framework, weight ij can be thought of as the probability of one photon being emitted in the voxel i reached
 the bin j. Each weight can be factorized in three components: geometry (PSF), attenuation and scattering.
 This software can calculate the geometrical and the attenuation component. The correction for scattering
 should be done using alternative strategies. The geometrical part is calculated as the integral of the

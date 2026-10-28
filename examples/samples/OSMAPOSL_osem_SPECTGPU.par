@@ -27,7 +27,7 @@ OSMAPOSLParameters :=
             attenuation image filename := umap_zoomed.hv
 
      End Projector Pair Using SPECTGPU Parameters :=
-  subset sensitivity filenames := sens_%d
+  subset sensitivity filenames := sens_subset{}
   recompute sensitivity := 1
   z zoom := 0.5
   xy output image size (in pixels) := 128
