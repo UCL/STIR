@@ -133,6 +133,10 @@ create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.
 ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin
   test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin "${CMAKE_SOURCE_DIR}/recon_test_pack/PET_ACQ_small.l.hdr.STIR")
 
+# test_SPECTUB
+#ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTUB
+#  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData "${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input_small.hs"  "SPECTUB")
+
 # fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
 if (BUILD_TESTING)
   install(TARGETS fwdtest bcktest DESTINATION bin)
@@ -144,9 +148,18 @@ ADD_TEST(test_data_processor_projectors test_data_processor_projectors ${CMAKE_S
 
 # test_OSMAPOSL can take input argument
 ADD_TEST(test_OSMAPOSL_ray_tracing_matrix  test_OSMAPOSL)
+ADD_TEST(test_OSMAPOSL_spectub  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_SPECTUB.par ${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input.hs)
 
 if (parallelproj_FOUND)
   ADD_TEST(test_OSMAPOSL_parallelproj  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_parallelproj.par)
+endif()
+
+if (STIR_WITH_CUDA AND NOT SKIP_CUDA_TESTS)
+  ADD_TEST(test_OSMAPOSL_spect_gpu  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_SPECTGPU.par ${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input.hs)
+  # test_SPECTGPU
+  ADD_TEST(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTGPU
+    test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData "${CMAKE_SOURCE_DIR}/recon_test_pack/SPECT/SPECTUB/input_small.hs" "SPECTGPU")
+
 endif()
 
 if (SKIP_CUDA_TESTS)

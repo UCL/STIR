@@ -17,12 +17,13 @@
   \par Usage
 
   <pre>
-  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData [proj_data_filename [ density_filename ] ]
+  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData [proj_data_filename [Projector_pair_name][ density_filename ] ]
   </pre>
-  where the 2 arguments are optional. See the class documentation for more info.
+  where the 3 arguments are optional. See the class documentation for more info.
 
   \author Kris Thielemans
   \author Robert Twyman Skelly
+  \author Daniel Deidda
 */
 
 #include "stir/recon_buildblock/test/ObjectiveFunctionTests.h"
@@ -36,6 +37,12 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+
+#include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
+#ifdef STIR_WITH_CUDA
+#  include "stir/recon_buildblock/SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.h"
+#endif
+
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
@@ -53,6 +60,7 @@
 #include <boost/random/variate_generator.hpp>
 #include <iostream>
 #include <memory>
+#include "stir/IndexRange3D.h"
 
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/recon_buildblock/distributable_main.h"
@@ -93,8 +101,20 @@ public:
       \todo it would be better to parse an objective function. That would allow us to set
       all parameters from the command line.
   */
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const* const proj_data_filename = 0,
-                                                             char const* const density_filename = 0);
+
+  enum class ProjectorType
+  {
+    RayTracing,
+    SPECTUB,
+    SPECTGPU
+  };
+
+  ProjectorType _projector_type;
+
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const* proj_data_filename = 0,
+                                                             char const* density_filename = 0,
+                                                             ProjectorType projector_type = ProjectorType::RayTracing);
+
   void construct_input_data(shared_ptr<target_type>& density_sptr, const bool TOF_or_not);
 
   void run_tests() override;
@@ -115,15 +135,18 @@ protected:
 };
 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(
-    char const* proj_data_filename, char const* const density_filename)
+    char const* proj_data_filename, char const* const density_filename, ProjectorType projector_type)
     : proj_data_filename(proj_data_filename),
-      density_filename(density_filename)
+      density_filename(density_filename),
+      _projector_type(projector_type)
 {}
 
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_objective_function(
     objective_function_type& objective_function, target_type& target)
 {
+  const bool is_spect = _projector_type == ProjectorType::SPECTUB || _projector_type == ProjectorType::SPECTGPU;
+
   std::cerr << "----- testing Gradient\n";
   test_gradient("PoissonLLProjData", objective_function, target, 0.01F);
 
@@ -134,15 +157,19 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_object
   test_approximate_Hessian_concavity(objective_function, target);
 
   std::cerr << "----- testing Hessian-vector product (accumulate_Hessian_times_input)\n";
-  test_Hessian("PoissonLLProjData", objective_function, target, 0.5F);
+
+  test_Hessian("PoissonLLProjData", objective_function, target, is_spect ? 0.001F : 0.5F);
 
   if (!this->is_everything_ok())
     {
       std::cerr << "Writing diagnostic files proj_data.hs, mult_proj_data.hs and add_proj_data.hs";
 
       proj_data_sptr->write_to_file("proj_data.hs");
-      mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
-      add_proj_data_sptr->write_to_file("add_proj_data.hs");
+      if (mult_proj_data_sptr)
+        mult_proj_data_sptr->write_to_file("mult_proj_data.hs");
+
+      if (add_proj_data_sptr)
+        add_proj_data_sptr->write_to_file("add_proj_data.hs");
     }
 }
 
@@ -178,7 +205,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data(shared_ptr<target_type>& density_sptr,
                                                                                  const bool TOF_or_not)
 {
-  if (this->proj_data_filename == 0)
+
+  if (this->proj_data_filename == 0 && this->_projector_type == ProjectorType::RayTracing)
     {
       shared_ptr<ProjDataInfo> proj_data_info_sptr;
       // construct a small scanner and sinogram
@@ -228,7 +256,26 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
     }
   else
     {
+      if (this->proj_data_filename == nullptr)
+        error("SPECTUB/SPECTGPU tests require a projection data file");
+
       proj_data_sptr = ProjData::read_from_file(this->proj_data_filename);
+
+      if (proj_data_sptr->get_exam_info_sptr()->imaging_modality.get_modality() == ImagingModality::NM)
+        {
+          Bin bin(0, 0, 0, 0);
+          CartesianCoordinate3D<float> origin(0, 0, 0);
+
+          const int nx = proj_data_sptr->get_proj_data_info_sptr()->get_num_tangential_poss();
+          const int nz = proj_data_sptr->get_proj_data_info_sptr()->get_num_axial_poss(0);
+
+          const float sx = proj_data_sptr->get_proj_data_info_sptr()->get_sampling_in_t(bin);
+          const float sz = proj_data_sptr->get_proj_data_info_sptr()->get_sampling_in_m(bin);
+
+          IndexRange3D range(0, nz - 1, -nx / 2, nx / 2 - 1, -nx / 2, nx / 2 - 1);
+
+          density_sptr = std::make_shared<VoxelsOnCartesianGrid<float>>(range, origin, CartesianCoordinate3D<float>(sz, sx, sx));
+        }
     }
 
   if (this->density_filename == 0)
@@ -238,8 +285,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
       CartesianCoordinate3D<float> origin(0, 0, 0);
       const float zoom = 1.F;
 
-      density_sptr.reset(new VoxelsOnCartesianGrid<float>(
-          proj_data_sptr->get_exam_info_sptr(), *proj_data_sptr->get_proj_data_info_sptr(), zoom, origin));
+      if (!density_sptr)
+        {
+          density_sptr.reset(new VoxelsOnCartesianGrid<float>(
+              proj_data_sptr->get_exam_info_sptr(), *proj_data_sptr->get_proj_data_info_sptr(), zoom, origin));
+        }
+
       // fill with random numbers between 0 and 1
       typedef boost::mt19937 base_generator_type;
       // initialize by reproducible seed
@@ -255,81 +306,117 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
     }
 
   // make odd to avoid difficulties with outer-bin that isn't filled-in when using symmetries
-  {
-    BasicCoordinate<3, int> min_ind, max_ind;
-    if (density_sptr->get_regular_range(min_ind, max_ind))
-      {
-        for (int d = 2; d <= 3; ++d)
-          {
-            min_ind[d] = std::min(min_ind[d], -max_ind[d]);
-            max_ind[d] = std::max(-min_ind[d], max_ind[d]);
-          }
-        density_sptr->grow(IndexRange<3>(min_ind, max_ind));
-      }
-  }
+  if (proj_data_sptr->get_exam_info_sptr()->imaging_modality.get_modality() != ImagingModality::NM)
+    {
+      BasicCoordinate<3, int> min_ind, max_ind;
+      if (density_sptr->get_regular_range(min_ind, max_ind))
+        {
+          for (int d = 2; d <= 3; ++d)
+            {
+              min_ind[d] = std::min(min_ind[d], -max_ind[d]);
+              max_ind[d] = std::max(-min_ind[d], max_ind[d]);
+            }
+          density_sptr->grow(IndexRange<3>(min_ind, max_ind));
+        }
+    }
 
   // multiplicative term
-  shared_ptr<BinNormalisation> bin_norm_sptr(new TrivialBinNormalisation());
-  {
-
-    mult_proj_data_sptr.reset(new ProjDataInMemory(proj_data_sptr->get_exam_info_sptr(),
-                                                   proj_data_sptr->get_proj_data_info_sptr()->create_non_tof_clone()));
-    for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num)
+  shared_ptr<BinNormalisation> bin_norm_sptr;
+  if (proj_data_sptr->get_exam_info_sptr()->imaging_modality.get_modality() != ImagingModality::NM)
+    {
+      bin_norm_sptr.reset(new TrivialBinNormalisation());
       {
-        {
-          auto segment = mult_proj_data_sptr->get_empty_segment_by_view(seg_num);
-          // fill in some crazy values
-          float value = 0;
-          for (auto iter = segment.begin_all(); iter != segment.end_all(); ++iter)
-            {
-              value = float(fabs(seg_num * value - .2)); // needs to be positive for Poisson
-              *iter = value;
-            }
-          segment /= 0.5F * segment.find_max(); // normalise to 2 (to avoid large numbers)
-          mult_proj_data_sptr->set_segment(segment);
-        }
-      }
-    bin_norm_sptr.reset(new BinNormalisationFromProjData(mult_proj_data_sptr));
-  }
 
-  // additive term
-  add_proj_data_sptr.reset(new ProjDataInMemory(proj_data_sptr->get_exam_info_sptr(),
-                                                proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
-  {
-    for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num)
-      {
-        for (int timing_pos_num = proj_data_sptr->get_min_tof_pos_num(); timing_pos_num <= proj_data_sptr->get_max_tof_pos_num();
-             ++timing_pos_num)
+        mult_proj_data_sptr.reset(new ProjDataInMemory(proj_data_sptr->get_exam_info_sptr(),
+                                                       proj_data_sptr->get_proj_data_info_sptr()->create_non_tof_clone()));
+        for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num)
           {
-            SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num, false, timing_pos_num);
-            // fill in some crazy values
-            float value = 0;
-            for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter)
+            {
+              auto segment = mult_proj_data_sptr->get_empty_segment_by_view(seg_num);
+              // fill in some crazy values
+              float value = 0;
+              for (auto iter = segment.begin_all(); iter != segment.end_all(); ++iter)
+                {
+                  value = float(fabs(seg_num * value - .2)); // needs to be positive for Poisson
+                  *iter = value;
+                }
+              segment /= 0.5F * segment.find_max(); // normalise to 2 (to avoid large numbers)
+              mult_proj_data_sptr->set_segment(segment);
+            }
+          }
+        bin_norm_sptr.reset(new BinNormalisationFromProjData(mult_proj_data_sptr));
+      }
+
+      // additive term
+      add_proj_data_sptr.reset(new ProjDataInMemory(proj_data_sptr->get_exam_info_sptr(),
+                                                    proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+      {
+        for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num)
+          {
+            for (int timing_pos_num = proj_data_sptr->get_min_tof_pos_num();
+                 timing_pos_num <= proj_data_sptr->get_max_tof_pos_num();
+                 ++timing_pos_num)
               {
-                value = float(fabs(seg_num * value - .3)); // needs to be positive for Poisson
-                *iter = value;
+                SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num, false, timing_pos_num);
+                // fill in some crazy values
+                float value = 0;
+                for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter)
+                  {
+                    value = float(fabs(seg_num * value - .3)); // needs to be positive for Poisson
+                    *iter = value;
+                  }
+                segment /= 0.333F * segment.find_max(); // normalise to 3 (to avoid large numbers)
+                add_proj_data_sptr->set_segment(segment);
               }
-            segment /= 0.333F * segment.find_max(); // normalise to 3 (to avoid large numbers)
-            add_proj_data_sptr->set_segment(segment);
           }
       }
-  }
-
+    }
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>& objective_function
       = reinterpret_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>&>(*objective_function_sptr);
   objective_function.set_proj_data_sptr(proj_data_sptr);
   objective_function.set_use_subset_sensitivities(true);
-  shared_ptr<ProjMatrixByBin> proj_matrix_sptr(new ProjMatrixByBinUsingRayTracing());
-  shared_ptr<ProjectorByBinPair> proj_pair_sptr(new ProjectorByBinPairUsingProjMatrixByBin(proj_matrix_sptr));
+
+  shared_ptr<ProjectorByBinPair> proj_pair_sptr;
+
+  switch (this->_projector_type)
+    {
+      case ProjectorType::RayTracing: {
+        auto pm = std::make_shared<ProjMatrixByBinUsingRayTracing>();
+
+        proj_pair_sptr = std::make_shared<ProjectorByBinPairUsingProjMatrixByBin>(pm);
+        break;
+      }
+
+      case ProjectorType::SPECTUB: {
+        auto pm = std::make_shared<ProjMatrixByBinSPECTUB>();
+
+        proj_pair_sptr = std::make_shared<ProjectorByBinPairUsingProjMatrixByBin>(pm);
+        break;
+      }
+#ifdef STIR_WITH_CUDA
+      case ProjectorType::SPECTGPU: {
+        proj_pair_sptr = std::make_shared<ProjectorByBinPairUsingSPECTGPU>();
+        break;
+      }
+#endif
+    }
+
+  //  shared_ptr<ProjMatrixByBin> proj_matrix_sptr(new ProjMatrixByBinUsingRayTracing());
+  //  shared_ptr<ProjectorByBinPair> proj_pair_sptr(new ProjectorByBinPairUsingProjMatrixByBin(proj_matrix_sptr));
   objective_function.set_projector_pair_sptr(proj_pair_sptr);
   /*
     void set_frame_num(const int);
     void set_frame_definitions(const TimeFrameDefinitions&);
   */
-  objective_function.set_normalisation_sptr(bin_norm_sptr);
-  objective_function.set_additive_proj_data_sptr(add_proj_data_sptr);
   objective_function.set_num_subsets(proj_data_sptr->get_num_views() / 2);
+  if (proj_data_sptr->get_exam_info_sptr()->imaging_modality.get_modality() != ImagingModality::NM)
+    {
+      objective_function.set_normalisation_sptr(bin_norm_sptr);
+      objective_function.set_additive_proj_data_sptr(add_proj_data_sptr);
+    }
+
+  //  objective_function.set_use_subset_sensitivities(false);
   if (!check(objective_function.set_up(density_sptr) == Succeeded::yes, "set-up of objective function"))
     return;
 }
@@ -352,7 +439,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests()
     this->objective_function_sptr->set_prior_sptr(std::dynamic_pointer_cast<GeneralisedPrior<target_type>>(qp_sptr));
     this->run_tests_for_objective_function(*this->objective_function_sptr, *density_sptr);
   }
-  if (this->proj_data_filename == 0)
+  if (this->proj_data_filename == 0 && this->_projector_type == ProjectorType::RayTracing)
     {
       shared_ptr<target_type> density_sptr;
       construct_input_data(density_sptr, /*TOF_or_not=*/true);
@@ -385,7 +472,40 @@ main(int argc, char** argv)
 {
   set_default_num_threads();
 
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc > 1 ? argv[1] : 0, argc > 2 ? argv[2] : 0);
+  const char* proj_data_filename = nullptr;
+  const char* density_filename = nullptr;
+
+  auto projector_type = PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::RayTracing;
+
+  if (argc > 1)
+    proj_data_filename = argv[1];
+
+  if (argc > 2)
+    {
+      const std::string arg(argv[2]);
+
+      if (arg == "SPECTUB")
+        projector_type = PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::SPECTUB;
+      else if (arg == "SPECTGPU")
+        projector_type = PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::SPECTGPU;
+      else
+        density_filename = argv[2];
+    }
+
+  if (argc > 3)
+    {
+      const std::string arg(argv[3]);
+
+      if (arg == "SPECTUB")
+        projector_type = PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::SPECTUB;
+      else if (arg == "SPECTGPU")
+        projector_type = PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::ProjectorType::SPECTGPU;
+      else
+        density_filename = argv[3];
+    }
+
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(proj_data_filename, density_filename, projector_type);
+
   tests.run_tests();
   return tests.main_return_value();
 }
