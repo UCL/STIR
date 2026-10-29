@@ -27,7 +27,7 @@ target.fill(1)
 
 %% run a few iterations and plot intermediate results
 s=recon.set_up(target);
-if (isequal(s,stir.Succeeded(stir.Succeeded.yes)))
+if (eq(s,stir.Succeeded(stir.Succeeded.yes))) % changed
     figure()
     hold on;
     for iter=1:4
