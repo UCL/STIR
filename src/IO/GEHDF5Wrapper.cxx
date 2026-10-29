@@ -73,6 +73,9 @@ read_string(const H5::H5File& file, const std::string& dataset)
 
   std::string value;
   ds.read(value, datatype);
+  const auto end = value.find('\0');
+  if (end != std::string::npos)
+    value.erase(end);
   return value;
 }
 
