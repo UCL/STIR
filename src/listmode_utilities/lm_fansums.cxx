@@ -176,24 +176,25 @@ LmFansums::compute()
             break; // get out of while loop
           }
         if (record.is_time())
-          {
-            const double new_time = record.time().get_time_in_secs();
-            if (new_time >= frame_defs.get_end_time(current_frame_num))
-              {
-                while (current_frame_num <= frame_defs.get_num_frames() && new_time >= frame_defs.get_end_time(current_frame_num))
-                  {
-                    write_fan_sums(data_fan_sums, current_frame_num++);
-                    data_fan_sums.fill(0);
-                  }
-                if (current_frame_num > frame_defs.get_num_frames())
-                  break; // get out of while loop
-              }
-            current_time = new_time;
-          }
-        else if (record.is_event() && frame_defs.get_start_time(current_frame_num) <= current_time)
+        {
+          const double new_time = record.time().get_time_in_secs();
+          if (new_time >= frame_defs.get_end_time(current_frame_num))
+            {
+              while (current_frame_num <= frame_defs.get_num_frames() && new_time >= frame_defs.get_end_time(current_frame_num))
+                {
+                  write_fan_sums(data_fan_sums, current_frame_num++);
+                  data_fan_sums.fill(0);
+                }
+              if (current_frame_num > frame_defs.get_num_frames())
+                break; // get out of while loop
+            }
+          current_time = new_time;
+        }
+        if (current_frame_num <= frame_defs.get_num_frames()
+          && record.is_event() && frame_defs.get_start_time(current_frame_num) <= current_time)
           {
             // do a consistency check with dynamic_cast first
-            if (first_event && dynamic_cast<const CListEventCylindricalScannerWithDiscreteDetectors*>(&record.event()) == 0)
+            if (first_event && dynamic_cast<const CListEventScannerWithDiscreteDetectorsBase*>(&record.event()) == 0)
               error("Currently only works for scanners with discrete detectors.");
             first_event = false;
 
@@ -206,7 +207,7 @@ LmFansums::compute()
 
             DetectionPositionPair<> det_pos;
             // because of above consistency check, we can use static_cast here (saving a bit of time)
-            dynamic_cast<const CListEventCylindricalScannerWithDiscreteDetectors&>(record.event())
+            dynamic_cast<const CListEventScannerWithDiscreteDetectorsBase&>(record.event())
                 .get_detection_position(det_pos);
             const int ra = det_pos.pos1().axial_coord();
             const int rb = det_pos.pos2().axial_coord();

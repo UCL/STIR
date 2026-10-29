@@ -66,6 +66,17 @@ public:
 class CListRecord : public ListRecord
 {
 public:
+  virtual bool is_singles() const { return false; }
+  virtual ListSingles& singles()
+  {
+    error("singles() not supported");
+    return *static_cast<ListSingles*>(nullptr);
+  }
+  virtual const ListSingles& singles() const
+  {
+    error("singles() not supported");
+    return *static_cast<ListSingles*>(nullptr);
+  }
 };
 
 class CListRecordWithGatingInput : public CListRecord

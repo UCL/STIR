@@ -26,6 +26,7 @@
 
 #include "stir/listmode/ListEvent.h"
 #include "stir/listmode/ListTime.h"
+#include "stir/listmode/ListSingles.h"
 
 START_NAMESPACE_STIR
 

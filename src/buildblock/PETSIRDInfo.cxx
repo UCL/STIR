@@ -585,7 +585,8 @@ PETSIRDInfo::get_detection_efficiency_for_bin(const stir::DetectionPositionPair<
 {
   const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
 
-  if (!detection_bin_efficiencies)
+  if (!detection_bin_efficiencies
+    && !petsird_scanner_info_sptr->detection_efficiencies.module_pair_efficiencies_vectors)
     {
       return 1.f; // no efficiencies available
     }
