@@ -3,16 +3,31 @@ ROOT header :=
 originating system := User_defined_scanner
 Number of rings                          := 24
 Number of detectors per ring             := 576
-Inner ring diameter (cm)                 := 81.02
+; Macro has
+; /gate/rsector/placement/setTranslation           41.76 0 0 cm
+; /gate/rsector/geometry/setXLength                5  mm
+; so (assuming that the rsector is centred at the "translation")
+; inner ring diameter = (41.76 - .25)*2
+; See https://github.com/OpenGATE/Gate/issues/772
+Inner ring diameter (cm)                 := 83.02
+; probably ok for a 5mm crystal, although likely should be a bit larger
 Average depth of interaction (cm)        := 0.25
 Distance between rings (cm)              := 0.654
 Default bin size (cm)                    := 0.21306
 View offset (degrees)                    := -5.021
 Maximum number of non-arc-corrected bins := 381
 Default number of arc-corrected bins     := 331
-Number of TOF time bins :=275
-Size of timing bin (ps) :=17.8
-Timing resolution (ps) :=75
+maximum number of (unmashed) tof time bins :=275
+size of unmashed tof time bins (ps) :=17.8
+tof timing resolution (ps) :=75
+Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := BlocksOnCylindrical
+Distance between crystals in axial direction (cm)           := 0.63
+Distance between crystals in transaxial direction (cm)      := 0.42
+Distance between blocks in axial direction (cm)             := 3.78
+Distance between blocks in transaxial direction (cm)        := 3.78
+; very small, as disabled in the Macro
+energy resolution := .001
+reference energy := 511
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
@@ -56,8 +71,8 @@ exclude random events := 1
 
 
 ; If want to deactivate set to [0, 10000]
-low energy window (keV) := 0
-upper energy window (keV):= 10000
+low energy window (keV) := 500
+upper energy window (keV):= 522
 
 End GATE_Cylindrical_PET Parameters :=
 

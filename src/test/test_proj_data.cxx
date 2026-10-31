@@ -415,7 +415,7 @@ ProjDataTests::run_tests()
 
   {
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
-
+    scanner_sptr->set_up();
     // the test uses a non-standard number of views at the moment.
     // Just to see if that works as well :-)
     shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
@@ -445,7 +445,7 @@ ProjDataTests::run_tests()
 
   {
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Discovery690));
-
+    scanner_sptr->set_up();
     shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                /*span*/ 2,

@@ -47,9 +47,10 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr::ProjDataInfoBlocksOnCylindricalNoArcCo
     const VectorWithOffset<int>& min_ring_diff_v,
     const VectorWithOffset<int>& max_ring_diff_v,
     const int num_views,
-    const int num_tangential_poss)
+    const int num_tangential_poss,
+    const int tof_mash_factor)
     : ProjDataInfoGenericNoArcCorr(
-        scanner_ptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v, num_views, num_tangential_poss)
+        scanner_ptr, num_axial_pos_per_segment, min_ring_diff_v, max_ring_diff_v, num_views, num_tangential_poss, tof_mash_factor)
 {
   if (is_null_ptr(scanner_ptr))
     error("ProjDataInfoBlocksOnCylindricalNoArcCorr needs to be initialised with a non-empty Scanner");

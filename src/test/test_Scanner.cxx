@@ -24,6 +24,7 @@
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #include "stir/warning.h"
+#include "stir/format.h"
 #ifdef HAVE_LLN_MATRIX
 #  include "ecat_model.h"
 extern "C"
@@ -62,7 +63,18 @@ ScannerTests::run_tests()
   while (type != Scanner::Unknown_scanner)
     {
       if (type != Scanner::User_defined_scanner && type != Scanner::UPENN_5rings)
-        test_scanner(Scanner(type));
+        {
+          try
+            {
+              Scanner scanner(type);
+              scanner.set_up();
+              test_scanner(scanner);
+            }
+          catch (const std::exception& e)
+            {
+              check(false, format("Failed to construct or test next scanner type:\n{}", e.what()));
+            }
+        }
       // tricky business to find next type
       int int_type = type;
       ++int_type;
@@ -155,12 +167,9 @@ ScannerTests::test_scanner(const Scanner& scanner)
   if (scanner.get_scanner_geometry() == "BlocksOnCylindrical")
     {
       auto actual_length
-          = scanner
-                .get_coordinate_for_index(
-                    DetectionPosition<unsigned int>(0 /* tangential */, scanner.get_num_rings() - 1, 0 /* radial */))
+          = scanner.get_coordinate_for_index(DetectionPosition<>(0 /* tangential */, scanner.get_num_rings() - 1, 0 /* radial */))
                 .z()
-            - scanner.get_coordinate_for_index(DetectionPosition<unsigned int>(0 /* tangential */, 0 /* axial */, 0 /* radial */))
-                  .z();
+            - scanner.get_coordinate_for_index(DetectionPosition<>(0 /* tangential */, 0 /* axial */, 0 /* radial */)).z();
       check_if_equal(actual_length, scanner.get_axial_length(), "axial length of scanner does not match dectector coordinates");
     }
 }

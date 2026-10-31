@@ -19,8 +19,7 @@
 
 #include "stir/multiply_crystal_factors.h"
 #include "stir/ProjData.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/Bin.h"
 #include "stir/Sinogram.h"
 #include "stir/error.h"
@@ -122,32 +121,13 @@ multiply_crystal_factors_help(ProjData& proj_data,
 void
 multiply_crystal_factors(ProjData& proj_data, const Array<2, float>& efficiencies, const float global_factor)
 {
-  if (proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_scanner_geometry() == "Cylindrical")
-    {
-      auto proj_data_info_ptr
-          = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(proj_data.get_proj_data_info_sptr().get());
+  auto proj_data_info_ptr
+      = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors* const>(proj_data.get_proj_data_info_sptr().get());
 
-      if (proj_data_info_ptr == 0)
-        {
-          error("Can only process not arc-corrected data\n");
-        }
-      multiply_crystal_factors_help(proj_data, *proj_data_info_ptr, efficiencies, global_factor);
-    }
-  else
+  if (proj_data_info_ptr == 0)
     {
-      auto proj_data_info_ptr
-          = dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr* const>(proj_data.get_proj_data_info_sptr().get());
-
-      if (proj_data_info_ptr == 0)
-        {
-          error("Can only process not arc-corrected data\n");
-        }
-      multiply_crystal_factors_help(proj_data, *proj_data_info_ptr, efficiencies, global_factor);
+      error("Can only process not arc-corrected data\n");
     }
+  multiply_crystal_factors_help(proj_data, *proj_data_info_ptr, efficiencies, global_factor);
 }
-
-template void
-multiply_crystal_factors_help(ProjData&, const ProjDataInfoCylindricalNoArcCorr&, const Array<2, float>&, const float);
-template void
-multiply_crystal_factors_help(ProjData&, const ProjDataInfoBlocksOnCylindricalNoArcCorr&, const Array<2, float>&, const float);
 END_NAMESPACE_STIR

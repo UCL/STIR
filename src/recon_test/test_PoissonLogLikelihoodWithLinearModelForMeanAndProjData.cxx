@@ -187,6 +187,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
           std::cerr << "------ TOF data ----\n";
           shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Discovery690));
           scanner_sptr->set_num_rings(4);
+          scanner_sptr->set_up();
           proj_data_info_sptr = std::move(ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                                                  /*span=*/3,
                                                                                  /*max_delta=*/2,
@@ -200,6 +201,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
           std::cerr << "------ non-TOF data ----\n";
           shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
           scanner_sptr->set_num_rings(5);
+          scanner_sptr->set_up();
           proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                   /*span=*/3,
                                                                   /*max_delta=*/4,
