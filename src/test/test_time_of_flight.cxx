@@ -73,6 +73,11 @@ private:
   void test_tof_proj_data_info_det_pos();
   void test_tof_proj_data_info();
 #ifdef HAVE_CERN_ROOT
+  //! test swapping of detectors and TOF.
+  /*!
+   It would be better to have these tests use CListEventScannerWithDiscreteDetectors,
+   but as that's an abstract base class, we cannot.
+  */
   void test_CListEventROOT();
   void test_CListEventROOT_event(CListEventROOT& event);
 #endif

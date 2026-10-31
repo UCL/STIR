@@ -47,6 +47,8 @@ CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) const
   _det_pos.pos2() = det2;
 #else
   // need to do this crazy swap to get test_time_of_flight to give a consistent LOR with ProjDataInfo::get_LOR
+  // note that ROOT files always have time1>=time2, so the swap is never used outside of the test.
+  // See also https://github.com/UCL/STIR/issues/1775
   if (_det_pos.timing_pos() >= 0)
     {
       _det_pos.pos1() = det1;
