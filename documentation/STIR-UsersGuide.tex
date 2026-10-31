@@ -1184,6 +1184,17 @@ and capabilities. See [Jac00] for a description of many details of the
 implementation.
 \item[OSSPS] an implementation of the Ordered Subsets Paraboloidal
 Surrogate algorithm by Erdogan and Fessler, and Ahn and Fessler [Ahn2003]. 
+\item[Preconditioned Gradient] a composable implementation of the preconditioned update
+$x^{(k+1)}=\left[x^{(k)}+\alpha_k P(x^{(k)})\tilde g_k\right]_+$, where the gradient estimate
+$\tilde g$ and the diagonal preconditioner $P$ are chosen at run time with the keys
+\texttt{gradient estimator type} (\texttt{Full Gradient}, \texttt{Ordered Subsets},
+\texttt{SVRG}, \texttt{SAGA}) and \texttt{preconditioner type} (\texttt{Identity},
+\texttt{EM}, \texttt{Hessian Diagonal}, \texttt{SPS}). Multiplicative algorithms are the
+special case $P=\mathrm{diag}(x/s)$ with $s$ the sensitivity image, so that MLEM, OSEM and
+OSSPS are particular compositions; combinations that are not meaningful are refused at set-up.
+See Section~\ref{sec:PreconditionedGradient}.
+\item[PSV] a locked preset of the above, reproducing the preconditioned SVRG algorithm submitted
+to the PETRIC2 challenge (SVRG with the Hessian diagonal of the Relative Difference Prior).
 \end{description}
 
 Since \textit{STIR} 2.0, all iterative algorithms use a \textit{generalised objective 
@@ -1840,6 +1851,175 @@ See [Bei08] for some info on performance.
   you can give an upper bound on the image values (the lower bound is always zero). The upper
   bound defaults to a very large value.
 \end{description}
+
+{ \subsubsubsection{Preconditioned Gradient (composable) and PSV}
+}
+\label{sec:PreconditionedGradient}
+  { \subsubsubsubsection{Algorithm description}
+  }
+  \texttt{PreconditionedGradient} implements a single update,
+  \begin{equation}
+    \lambda^{(k+1)} = \left[ \lambda^{(k)} + \alpha_k \, P(\lambda^{(k)}) \, \tilde g_k \right]_+
+    \label{eq:PGupdate}
+  \end{equation}
+  with $\tilde g_k$ an estimate of the gradient $\nabla\Psi$ of the objective function,
+  $P$ a diagonal preconditioner (an image, multiplied voxel by voxel), $\alpha_k$ a step size and
+  $[\cdot]_+$ setting negative values to zero. It does not fix $\tilde g$ nor $P$: each is chosen in the
+  parameter file from a list of registered options, so that one class covers several algorithms.
+
+  The \textbf{gradient estimator} decides how much data is used for each update:
+  \begin{description}
+  \item[Full Gradient] the gradient over all the data (one full pass per update);
+  \item[Ordered Subsets] the gradient of one subset, times the number of subsets $M$ (cheap, but noisy);
+  \item[SVRG] the subset gradient corrected by a stored ``snapshot'' of all subset gradients, refreshed
+    every few epochs (variance-reduced);
+  \item[SAGA] the subset gradient corrected by a table of the most recent gradient of each subset,
+    updated one entry at a time (variance-reduced, no snapshot).
+  \end{description}
+  The \textbf{preconditioner} scales the gradient voxel by voxel:
+  \begin{description}
+  \item[Identity] $P=1$, plain gradient ascent;
+  \item[EM] $P=\lambda/s$ with $s$ the sensitivity image (or, with \texttt{use subset sensitivity},
+    the sensitivity of the current subset times $M$);
+  \item[Hessian Diagonal] $P=(\lambda+\delta)/(s + c\,H\,\lambda)$, with $H$ the diagonal of the Hessian of
+    the prior, evaluated on a smoothed copy of $\lambda$;
+  \item[SPS] the inverse of the separable paraboloidal surrogate curvature, as in OSSPS
+    (Section~\ref{sec:OSSPS}).
+  \end{description}
+  With $P=\lambda/s$ and $\alpha_k=1$, the $\lambda$ cancels in Eq.~\eqref{eq:PGupdate} and the update is
+  the familiar multiplicative EM update. Several existing algorithms are therefore particular
+  choices:
+
+  \begin{center}
+  \begin{tabular}{llll}
+  \hline
+  gradient estimator & preconditioner & step & reproduces \\
+  \hline
+  \texttt{Full Gradient} & \texttt{EM} & 1, no prior & MLEM \\
+  \texttt{Ordered Subsets} & \texttt{EM}, subset sensitivity & 1, no prior & OSEM \\
+  \texttt{Ordered Subsets} & \texttt{SPS} & relaxed (as OSSPS) & OSSPS \\
+  \texttt{SVRG} & \texttt{Hessian Diagonal} & $3.5/(1+0.01k)$ & PSV (below) \\
+  \hline
+  \end{tabular}
+  \end{center}
+
+  { \subsubsubsubsection{Writing a parameter file}
+  }
+  The easiest way is to start from an OSMAPOSL (or OSSPS) parameter file (Section~\ref{sec:OSMAPOSL}) and
+  change four things.
+
+  \textbf{1. The block name.} Replace \texttt{OSMAPOSLParameters :=} by
+  \texttt{PreconditionedGradientParameters :=}. Everything that describes the problem stays as it
+  is: the objective function block (data, projectors, normalisation, additive sinogram, prior),
+  \texttt{initial estimate}, \texttt{output filename prefix}, \texttt{number of subsets},
+  \texttt{number of subiterations} and \texttt{save estimates at subiteration intervals}. Keys that
+  only make sense for OSMAPOSL (for instance \texttt{MAP model} or the inter-update filter) are
+  removed.
+
+  \textbf{2. The gradient estimator.} Add \texttt{gradient estimator type :=} followed by its
+  (possibly empty) parameter block. The only estimator with a parameter is \texttt{SVRG}:
+  \texttt{complete gradient epoch interval} (default 2) is the number of epochs between two snapshots.
+
+  \textbf{3. The preconditioner.} Add \texttt{preconditioner type :=} followed by its block.
+  \texttt{EM} has \texttt{use subset sensitivity} (default 0). \texttt{Hessian Diagonal} has
+  \texttt{hessian factor} ($c$, default 2), \texttt{filter fwhm (mm)} (the smoothing before computing
+  $H$, default 5) and \texttt{delta rel} ($\delta$ relative to the image maximum, default 0).
+  \texttt{EM} and \texttt{Hessian Diagonal} set $P=0$ outside the field of view, found by thresholding
+  $s$ (\texttt{FOV threshold}, default $10^{-3}$) or read from \texttt{FOV mask filename}.
+  \texttt{SPS} has \texttt{denominator floor} (default $10^{-6}$).
+
+  \textbf{4. The step and the preconditioner schedule.} The step is
+  $\alpha_k = \alpha_0/(1+\eta k)$, set by \texttt{initial step size} ($\alpha_0$, default 1) and
+  \texttt{step size decay} ($\eta$, default 0), where $k$ counts updates, or epochs if
+  \texttt{step size decay per epoch := 1} (this is the OSSPS relaxation of
+  Eq.~\eqref{eq:OSSPSrelaxation}). $P$ is always computed before the first update;
+  \texttt{precond update interval := N} recomputes it every $N$ updates. Preconditioners that depend on
+  the current image in a simple way (\texttt{EM}, \texttt{SPS}) are normally recomputed at every update
+  (\texttt{N=1}); \texttt{Hessian Diagonal} is more expensive and changes slowly, so it is recomputed rarely
+  (the keys \texttt{precond update epochs} and \texttt{precond update subiterations} give an explicit list
+  instead). Optionally, \texttt{initial image filter fwhm (mm)} smooths the initial image.
+
+  For example, the part of a parameter file that makes this class run OSEM is
+
+{ \small
+\begin{verbatim}
+PreconditionedGradientParameters :=
+  ; ... objective function (no prior), initial estimate, output prefix, as for OSMAPOSL
+  number of subsets := 12
+  number of subiterations := 24
+
+  gradient estimator type := Ordered Subsets
+    Ordered Subsets Parameters :=
+    End Ordered Subsets Parameters :=
+  preconditioner type := EM
+    EM Preconditioner Parameters :=
+      use subset sensitivity := 1
+    End EM Preconditioner Parameters :=
+  initial step size := 1
+  precond update interval := 1
+END :=
+\end{verbatim}
+}
+  \noindent To turn it into preconditioned SVRG with a Relative Difference Prior, add a Gibbs prior to
+  the objective function (\texttt{prior type := Gibbs Relative Difference}) and replace the algorithm
+  part by
+
+{ \small
+\begin{verbatim}
+  gradient estimator type := SVRG
+    SVRG Parameters :=
+      complete gradient epoch interval := 2
+    End SVRG Parameters :=
+  preconditioner type := Hessian Diagonal
+    Hessian Diagonal Preconditioner Parameters :=
+      hessian factor := 2
+      filter fwhm (mm) := 5
+    End Hessian Diagonal Preconditioner Parameters :=
+  initial step size := 3.5
+  step size decay := 0.01
+  initial image filter fwhm (mm) := 6
+  precond update interval := 8
+\end{verbatim}
+}
+  \noindent Run it with
+  \cmdline{PreconditionedGradient my\_file.par}
+  The log states which composition ran. Complete examples (OSEM, OSSPS and preconditioned SVRG) are
+  the files \texttt{PreconditionedGradient\_*.par} in \texttt{examples/samples/}.
+
+  { \subsubsubsubsection{Combinations that are refused}
+  }
+  Both keys are required: there is no default estimator or preconditioner. In addition,
+  \texttt{set\_up} stops with a message naming the problem, before any projection is computed, when
+  \begin{itemize}
+  \item \texttt{EM} with \texttt{use subset sensitivity} is combined with \texttt{Full Gradient},
+    \texttt{SVRG} or \texttt{SAGA}. These estimate the full gradient, and scaling it with the
+    sensitivity of one subset would make the steps about $M$ times too large. (The opposite, a full
+    sensitivity with \texttt{Ordered Subsets}, is allowed: it is exact for balanced subsets.)
+  \item the prior does not provide the curvature the preconditioner needs. With a prior,
+    \texttt{Hessian Diagonal} needs one that computes its Hessian diagonal, i.e.\ one of the Gibbs
+    priors (\texttt{Gibbs Relative Difference}, \texttt{Gibbs Quadratic}, and their CUDA versions).
+    \texttt{SPS} needs a parabolic surrogate, i.e.\ \texttt{Quadratic} or \texttt{Logcosh}, or no
+    prior. No Relative Difference Prior provides a parabolic surrogate, so
+    \texttt{SPS}, like OSSPS, cannot be used with it.
+  \end{itemize}
+  Other combinations are accepted, but whether they converge depends on the step size: for instance
+  \texttt{Identity} diverges with steps that suit a preconditioned update.
+
+  { \subsubsubsubsection{The PSV preset}
+  }
+  \texttt{PSV} runs the preconditioned SVRG algorithm submitted to the PETRIC2 challenge by
+  H.~S.~Wong, M.~Duff, M.~Ehrhardt and G.~Schramm (\texttt{SVRG} with \texttt{Hessian Diagonal}, as
+  in the second excerpt above) with the challenge's settings as defaults. Its block is
+  \texttt{PSVParameters :=}, and the estimator and preconditioner cannot be changed; its keys are
+  those of the second excerpt, the preconditioner ones prefixed with \texttt{precond}
+  (\texttt{precond hessian factor}, \texttt{precond filter fwhm (mm)}, \texttt{precond delta rel}), plus
+  \texttt{precond update epochs} and \texttt{precond update subiterations} (defaults: recompute $P$ at
+  the start of epoch 1 and at update 4). The default step size of 3.5 assumes that the prior
+  contributes substantially to $P$: with a weak prior, $P$ approaches the \texttt{EM}
+  preconditioner, whose natural step size is 1, and the reconstruction can diverge. Reduce
+  \texttt{initial step size} in that case. Run it with
+  \cmdline{PSV my\_file.par}
+  See \texttt{examples/samples/PSV\_RDP.par}.
 
 { \subsubsubsection{Using list mode data as input}
 }
