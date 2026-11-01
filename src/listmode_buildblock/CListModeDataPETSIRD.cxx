@@ -34,8 +34,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
 
   current_lm_data_ptr->ReadHeader(header);
-
-  m_has_delayeds = header.scanner.delayed_events_are_stored;
+  m_has_delayeds = header.scanner.delayed_event_policy != petsird::CoincidencePolicy::kNone;
 
   if (reset() == Succeeded::no)
     error(format("CListModeDataPETSIRD: Could not read the PETSIRD header from file {}.", listmode_filename));
@@ -188,7 +187,6 @@ CListModeDataPETSIRD::reopen_and_prime()
 
   petsird::Header header;
   current_lm_data_ptr->ReadHeader(header); // let it throw naturally if it fails
-  m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   curr_event_in_event_block = 0;
   curr_is_prompt = true;
