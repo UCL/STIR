@@ -125,6 +125,29 @@ copy(Array<num_dimensions, elemT>& out, const Array<num_dimensions, elemT>& in, 
 }
 
 template <int num_dimensions, typename elemT>
+void
+fill_with_zero(Array<num_dimensions, elemT>& out, bool cuda_sync = true)
+{
+#ifdef STIR_WITH_CUDA
+  if (onGPU(out.get_const_data_ptr()) && out.is_contiguous())
+    {
+      cudaError_t err = cudaMemset(out.get_data_ptr(), 0, out.size_all() * sizeof(elemT));
+      if (err != cudaSuccess)
+        throw std::runtime_error(cudaGetErrorString(err));
+
+      if (cuda_sync)
+        cudaDeviceSynchronize();
+
+      return;
+    }
+#endif
+
+  // Fallback to CPU fill
+  std::fill(out.begin_all(), out.end_all(), elemT(0));
+}
+////////////////////////////////////////////////////////
+
+template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>&
 add_assign(Array<num_dimensions, elemT>& inout, const Array<num_dimensions, elemT>& arg, bool cuda_sync = true)
 {

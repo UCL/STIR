@@ -106,7 +106,7 @@ ProjDataInMemory::create_buffer(const bool initialise_with_0)
 
   if (initialise_with_0)
     {
-      std::fill(this->buffer.begin_all(), this->buffer.end_all(), 0.F);
+      stir::fill_with_zero(this->buffer);
     }
 #else
   this->buffer.resize(0, this->size_all() - 1, initialise_with_0);
