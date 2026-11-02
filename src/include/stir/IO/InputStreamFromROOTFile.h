@@ -105,6 +105,7 @@ public:
   inline std::string get_ROOT_filename() const;
 
   //! Get the number of rings as calculated from the number of repeaters
+  //! currently we only know Quadra with ospreys so we quently introduce a virtual ring for every osprey
   virtual int get_num_rings() const = 0;
   //! Get the number of dets per ring as calculated from the number of repeaters
   virtual int get_num_dets_per_ring() const = 0;
@@ -113,9 +114,9 @@ public:
   //! Get the number of transaxial modules
   virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
   //! Get the axial number of crystals per module
-  inline int get_num_axial_crystals_per_block_v() const;
+  virtual inline int get_num_axial_crystals_per_block_v() const;
   //! Get the transaxial number of crystals per module
-  inline int get_num_transaxial_crystals_per_block_v() const;
+  virtual inline int get_num_transaxial_crystals_per_block_v() const;
   //! Get the number of axial crystals per singles unit
   virtual int get_num_axial_crystals_per_singles_unit() const = 0;
   //! Get the number of transaxial crystals per singles unit
@@ -171,6 +172,8 @@ protected:
   void initialise_keymap() override;
   bool post_processing() override;
 
+  bool is_gate10;
+
   //! Input data file name
   std::string filename;
   //! The starting position.
@@ -211,6 +214,9 @@ protected:
   int32_t comptonphantom1, comptonphantom2;
   float globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
   float sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
+
+  //! GATE10
+  double tot_energy_dep1, tot_energy_dep2;
   //@}
 
   //! \name ROOT Branch address variables.

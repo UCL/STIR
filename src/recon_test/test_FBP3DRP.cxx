@@ -49,6 +49,7 @@ TestFBP3DRP::construct_default_proj_data_info_uptr() const
   // currently need this for limitation in the backprojector
   scanner_sptr->set_intrinsic_azimuthal_tilt(0.F);
   scanner_sptr->set_num_rings(5);
+  scanner_sptr->set_up();
   std::unique_ptr<ProjDataInfo> proj_data_info_uptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                                   /*span=*/3,
                                                                                   /*max_delta=*/4,

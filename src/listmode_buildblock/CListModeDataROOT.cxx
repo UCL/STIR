@@ -81,16 +81,19 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
 #if STIR_VERSION < 070000
   this->parser.add_alias_key("TOF mashing factor", "%TOF mashing factor");
 #endif
-  //
+  // keys for blocks
+  this->parser.add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)", &this->scanner_geometry);
+  this->parser.add_key("distance between crystals in axial direction (cm)", &this->axial_distance_between_crystals_in_cm);
+  this->parser.add_key("distance between crystals in transaxial direction (cm)",
+                       &this->transaxial_distance_between_crystals_in_cm);
+  this->parser.add_key("distance between blocks in axial direction (cm)", &this->axial_distance_between_blocks_in_cm);
+  this->parser.add_key("distance between blocks in transaxial direction (cm)", &this->transaxial_distance_between_blocks_in_cm);
+  // end of new keys for block geometry
 
   // ROOT related
   this->parser.add_parsing_key("GATE scanner type", &this->root_file_sptr);
   if (!this->parser.parse(hroot_filename.c_str()))
     error("CListModeDataROOT: error parsing '%s'", hroot_filename.c_str());
-
-  FilePath f(hroot_filename);
-  if (root_file_sptr->set_up(f.get_path_only()) == Succeeded::no)
-    error("CListModeDataROOT: Unable to set_up() from the input Header file (.hroot).");
 
   // ExamInfo initialisation
   shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
@@ -174,17 +177,27 @@ CListModeDataROOT::CListModeDataROOT(const std::string& hroot_filename)
                                           /* size of basic TOF bin */
                                           size_timing_bin,
                                           /* Scanner's timing resolution */
-                                          timing_resolution));
+                                          timing_resolution,
+                                          scanner_geometry,
+                                          static_cast<float>(axial_distance_between_crystals_in_cm * 10.),
+                                          static_cast<float>(transaxial_distance_between_crystals_in_cm * 10.),
+                                          static_cast<float>(axial_distance_between_blocks_in_cm * 10.),
+                                          static_cast<float>(transaxial_distance_between_blocks_in_cm * 10.)));
     }
   // have to do this here currently as these variables cannot be set via the constructor
   if (num_virtual_axial_crystals_per_block >= 0)
     this_scanner_sptr->set_num_virtual_axial_crystals_per_block(num_virtual_axial_crystals_per_block);
   if (num_virtual_transaxial_crystals_per_block >= 0)
     this_scanner_sptr->set_num_virtual_transaxial_crystals_per_block(num_virtual_transaxial_crystals_per_block);
+  this_scanner_sptr->set_up();
   // put virtual block info in root_file_sptr
   this->root_file_sptr->set_num_virtual_axial_crystals_per_block(this_scanner_sptr->get_num_virtual_axial_crystals_per_block());
   this->root_file_sptr->set_num_virtual_transaxial_crystals_per_block(
       this_scanner_sptr->get_num_virtual_transaxial_crystals_per_block());
+
+  FilePath f(hroot_filename);
+  if (root_file_sptr->set_up(f.get_path_only()) == Succeeded::no)
+    error("CListModeDataROOT: Unable to set_up() from the input Header file (.hroot).");
 
   // Compare with InputStreamFromROOTFile scanner generated geometry and throw error if wrong.
   if (check_scanner_match_geometry(error_str, this_scanner_sptr) == Succeeded::no)
@@ -275,60 +288,84 @@ CListModeDataROOT::set_defaults()
   tof_mash_factor = 1;
   reference_energy = 511.F;
   energy_resolution = -1.F;
+  scanner_geometry = "Cylindrical";
+  axial_distance_between_crystals_in_cm = -0.1F;
+  transaxial_distance_between_crystals_in_cm = -0.1F;
+  axial_distance_between_blocks_in_cm = -0.1F;
+  transaxial_distance_between_blocks_in_cm = -0.1F;
 }
 
 Succeeded
 CListModeDataROOT::check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr)
 {
   std::ostringstream stream;
-  stream << "CListModeDataROOT: The Scanner does not match the GATE geometry. Check: ";
+  warning("CListModeDataROOT: The Scanner does not match the GATE geometry. Check: ");
   bool ok = true;
 
-  if (scanner_sptr->get_num_rings() != root_file_sptr->get_num_rings())
+  // int physical_rings = scanner_sptr->get_num_axial_blocks() * scanner_sptr->get_num_axial_crystals_per_block()
+  //            - scanner_sptr->get_num_virtual_axial_crystals_per_block() * scanner_sptr->get_num_axial_blocks();
+  if (scanner_sptr->get_num_rings() != (root_file_sptr->get_num_rings()))
     {
-      stream << "the number of rings, ";
+      error(stir::format("the number of rings ({}, {})", scanner_sptr->get_num_rings(), root_file_sptr->get_num_rings()));
       ok = false;
     }
 
+  // int physical_crystals
+  // = scanner_sptr->get_num_transaxial_blocks() * scanner_sptr->get_num_transaxial_crystals_per_block()
+  //   - scanner_sptr->get_num_virtual_transaxial_crystals_per_block() * scanner_sptr->get_num_transaxial_blocks();
   if (scanner_sptr->get_num_detectors_per_ring() != root_file_sptr->get_num_dets_per_ring())
     {
-      stream << "the number of detector per ring, ";
+      error(stir::format("the number of detector per ring ({}, {})",
+                         scanner_sptr->get_num_detectors_per_ring(),
+                         root_file_sptr->get_num_dets_per_ring()));
       ok = false;
     }
 
   if (scanner_sptr->get_num_axial_blocks_per_bucket() != root_file_sptr->get_num_axial_blocks_per_bucket_v())
     {
-      stream << "the number of axial blocks per bucket, ";
+      error(stir::format("the number of axial blocks per bucket ({}, {})",
+                         scanner_sptr->get_num_axial_blocks_per_bucket(),
+                         root_file_sptr->get_num_axial_blocks_per_bucket_v()));
       ok = false;
     }
 
   if (scanner_sptr->get_num_transaxial_blocks_per_bucket() != root_file_sptr->get_num_transaxial_blocks_per_bucket_v())
     {
-      stream << "the number of transaxial blocks per bucket, ";
+      error(stir::format("the number of transaxial blocks per bucket ({}, {})",
+                         scanner_sptr->get_num_transaxial_blocks_per_bucket(),
+                         root_file_sptr->get_num_transaxial_blocks_per_bucket_v()));
       ok = false;
     }
 
   if (scanner_sptr->get_num_axial_crystals_per_block() != root_file_sptr->get_num_axial_crystals_per_block_v())
     {
-      stream << "the number of axial crystals per block, ";
+      error(stir::format("the number of axial crystals per block ({}, {})",
+                         scanner_sptr->get_num_axial_crystals_per_block(),
+                         root_file_sptr->get_num_axial_crystals_per_block_v()));
       ok = false;
     }
 
   if (scanner_sptr->get_num_transaxial_crystals_per_block() != root_file_sptr->get_num_transaxial_crystals_per_block_v())
     {
-      stream << "the number of transaxial crystals per block, ";
+      error(stir::format("the number of transaxial crystals per block ({}, {})",
+                         scanner_sptr->get_num_transaxial_crystals_per_block(),
+                         root_file_sptr->get_num_transaxial_crystals_per_block_v()));
       ok = false;
     }
 
   if (scanner_sptr->get_num_axial_crystals_per_singles_unit() != root_file_sptr->get_num_axial_crystals_per_singles_unit())
     {
-      stream << "the number of axial crystals per singles unit, ";
+      warning(stir::format("the number of axial crystals per singles unit ({}, {})",
+                           scanner_sptr->get_num_axial_crystals_per_singles_unit(),
+                           root_file_sptr->get_num_axial_crystals_per_singles_unit()));
       ok = false;
     }
 
   if (scanner_sptr->get_num_transaxial_crystals_per_singles_unit() != root_file_sptr->get_num_trans_crystals_per_singles_unit())
     {
-      stream << "the number of transaxial crystals per singles unit, ";
+      warning(stir::format("the number of transaxial crystals per singles unit ({}, {})",
+                           scanner_sptr->get_num_transaxial_crystals_per_singles_unit(),
+                           root_file_sptr->get_num_trans_crystals_per_singles_unit()));
       ok = false;
     }
 
