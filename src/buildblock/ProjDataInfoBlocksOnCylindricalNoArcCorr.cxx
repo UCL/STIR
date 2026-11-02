@@ -100,8 +100,8 @@ ProjDataInfoBlocksOnCylindricalNoArcCorr::find_scanner_coordinates_given_cartesi
 
   DetectionPosition<> det_pos1;
   DetectionPosition<> det_pos2;
-  if (get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos1, c1 + this->z_shift) == Succeeded::no
-      || get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos2, c2 + this->z_shift) == Succeeded::no)
+  if (get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos1, c1) == Succeeded::no
+      || get_scanner_ptr()->find_detection_position_given_cartesian_coordinate(det_pos2, c2) == Succeeded::no)
     {
       return Succeeded::no;
     }

@@ -55,6 +55,8 @@ public:
   bool operator!=(const Succeeded& v2) const { return v != v2.v; }
   //! convenience function returns if it is equal to Succeeded::yes
   bool succeeded() const { return this->v == yes; }
+  Succeeded operator&(const Succeeded& v2) const { return (v == yes && v2.v == yes) ? yes : no; }
+  Succeeded operator&=(const Succeeded& v2) const { return *this & v2; }
 
 private:
   value v;

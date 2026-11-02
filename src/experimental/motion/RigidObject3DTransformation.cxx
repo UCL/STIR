@@ -290,6 +290,7 @@ RigidObject3DTransformation::transform_bin(Bin& bin,
   in_proj_data_info.get_LOR(lor, bin);
   LORAs2Points<float> lor_as_points;
   lor.get_intersections_with_cylinder(lor_as_points, lor.radius());
+#  if 0 // AG: No longer needed? so commented out
   // TODO origin
   // currently, the origin used for  proj_data_info is in the centre of the scanner,
   // while for standard images it is in the centre of the first ring.
@@ -300,6 +301,9 @@ RigidObject3DTransformation::transform_bin(Bin& bin,
   // also uses an origin in the centre of the first ring
   const float z_shift = (in_proj_data_info.get_scanner_ptr()->get_num_rings() - 1) / 2.F
                         * in_proj_data_info.get_scanner_ptr()->get_ring_spacing();
+#  else
+  constexpr float z_shift = 0.F;
+#  endif
   lor_as_points.p1().z() += z_shift;
   lor_as_points.p2().z() += z_shift;
   LORAs2Points<float> transformed_lor_as_points(transform_point(lor_as_points.p1()), transform_point(lor_as_points.p2()));
