@@ -158,9 +158,12 @@ static ProjectorByBinPairUsingNiftyPET::RegisterIt gpu_pair;
 static CudaRelativeDifferencePrior<float>::RegisterIt gpu_rdp;
 static CudaGibbsQuadraticPenalty<float>::RegisterIt gpu_gibbs_quadratic;
 static CudaGibbsRelativeDifferencePenalty<float>::RegisterIt gpu_gibbs_relative_difference;
-static ForwardProjectorByBinSPECTGPU::RegisterIt gpu_for;
+namespace SPECTGPU
+{
 static BackProjectorByBinSPECTGPU::RegisterIt gpu_back;
 static ProjectorByBinPairUsingSPECTGPU::RegisterIt spect_gpu_pair;
+static ForwardProjectorByBinSPECTGPU::RegisterIt gpu_for;
+} // namespace SPECTGPU
 #endif
 
 #ifdef STIR_WITH_Parallelproj_PROJECTOR

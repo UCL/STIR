@@ -25,7 +25,8 @@
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 
 START_NAMESPACE_STIR
-
+namespace SPECTGPU
+{
 class Succeeded;
 /*!
   \ingroup projection
@@ -71,7 +72,7 @@ private:
   float _slope, _sigma0;
   shared_ptr<DiscretisedDensity<3, float>> _att_coeff_sptr;
 };
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR
 
 #endif // __stir_recon_buildblock_ProjectorByBinPairUsingSPECTGPU_h_

@@ -23,7 +23,7 @@
 #           Matthew Strugari
 #           Daniel Deidda
 
-echo This script should work with STIR version 5.1. If you have
+echo This script should work with STIR version 6.5. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -54,7 +54,7 @@ fi
         GPU_tests="SPECTGPU"
     fi
   fi
-for SPECTtest in SPECTUB $GPU_tests PinholeSPECTUB; do
+for SPECTtest in $GPU_tests PinholeSPECTUB; do
 
     echo
     echo "********************************************************************************"

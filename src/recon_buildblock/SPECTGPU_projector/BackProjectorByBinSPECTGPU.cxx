@@ -36,7 +36,8 @@
 #endif
 
 START_NAMESPACE_STIR
-using SPECTGPU::AllocatedStack;
+namespace SPECTGPU
+{
 
 //////////////////////////////////////////////////////////
 const char* const BackProjectorByBinSPECTGPU::registered_name = "SPECTGPU";
@@ -342,4 +343,5 @@ BackProjectorByBinSPECTGPU::actual_back_project(const RelatedViewgrams<float>& v
   this->actual_back_project(
       *_density_sptr, viewgrams, min_axial_pos_num, max_axial_pos_num, min_tangential_pos_num, max_tangential_pos_num);
 }
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

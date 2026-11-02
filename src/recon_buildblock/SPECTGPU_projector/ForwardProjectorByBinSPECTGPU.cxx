@@ -40,7 +40,8 @@
 #endif
 
 START_NAMESPACE_STIR
-using SPECTGPU::AllocatedStack;
+namespace SPECTGPU
+{
 
 //////////////////////////////////////////////////////////
 const char* const ForwardProjectorByBinSPECTGPU::registered_name = "SPECTGPU";
@@ -309,4 +310,5 @@ ForwardProjectorByBinSPECTGPU::set_input(const DiscretisedDensity<3, float>& den
 
 ForwardProjectorByBinSPECTGPU::~ForwardProjectorByBinSPECTGPU()
 {}
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

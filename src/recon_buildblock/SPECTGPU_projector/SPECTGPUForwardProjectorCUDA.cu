@@ -22,7 +22,9 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUForwardProjectorCUDA.h"
 
 #include "stir/VoxelsOnCartesianGrid.h"
-//#include <cuda_runtime.h>
+#include "stir/RelatedViewgrams.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
+#include "stir/cuda_utilities.h"
 
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPURotateAndGaussianInterpolate.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUPSFGaussian.h"
@@ -31,7 +33,8 @@
 #include <cmath>
 
 START_NAMESPACE_STIR
-using SPECTGPU::AllocatedStack;
+namespace SPECTGPU
+{
 void
 run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
                             AllocatedStack& stack,
@@ -154,5 +157,5 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
       array_to_host(vg, stack.dev_sino, true);
     }
 }
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

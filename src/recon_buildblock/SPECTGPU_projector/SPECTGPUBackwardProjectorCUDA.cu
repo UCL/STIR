@@ -22,14 +22,17 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUBackwardProjectorCUDA.h"
 
 #include <cuda_runtime.h>
-
+#include "stir/RelatedViewgrams.h"
+#include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
+#include "stir/cuda_utilities.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPURotateAndGaussianInterpolate.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUPSFGaussian.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/SPECTGPUProjection.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
-using SPECTGPU::AllocatedStack;
+namespace SPECTGPU
+{
 __global__ void
 add_arrays(float* dst, const float* src, size_t n)
 {
@@ -178,5 +181,5 @@ run_backward_projection_cuda(AllocatedStack& stack,
         error(cudaGetErrorString(err1));
     }
 }
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR

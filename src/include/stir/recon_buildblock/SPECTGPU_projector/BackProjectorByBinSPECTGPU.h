@@ -26,9 +26,9 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
 
 START_NAMESPACE_STIR
-using SPECTGPU::AllocatedStack;
-
 class DataSymmetriesForViewSegmentNumbers;
+namespace SPECTGPU
+{
 
 /*!
   \ingroup projection
@@ -81,7 +81,7 @@ public:
   /// projection and after back projection
   void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
 
-  virtual BackProjectorByBin* clone() const override { return new BackProjectorByBinSPECTGPU(*this); }
+  virtual BackProjectorByBin* clone() const override { return new SPECTGPU::BackProjectorByBinSPECTGPU(*this); }
 
   virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const override { return _symmetries_sptr.get(); }
 
@@ -132,7 +132,7 @@ public:
 
   AllocatedStack& get_allocated_stack() { return this->_b_allocatedStack; }
 };
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR
 
 #endif // __stir_gpu_BackProjectorByBinSPECTGPU_h__

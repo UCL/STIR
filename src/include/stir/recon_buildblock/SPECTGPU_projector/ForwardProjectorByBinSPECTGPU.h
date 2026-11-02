@@ -29,14 +29,15 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/SPECTGPU_projector/AllocatedStack.h"
-
 #include "stir/cuda_utilities.h"
 
 START_NAMESPACE_STIR
-using SPECTGPU::AllocatedStack;
 
 class ProjDataInMemory;
 class DataSymmetriesForViewSegmentNumbers;
+
+namespace SPECTGPU
+{
 
 /*!
   \ingroup projection
@@ -139,7 +140,7 @@ public:
 
   AllocatedStack& get_allocated_stack() { return this->_f_allocatedStack; }
 };
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR
 
 #endif // __stir_gpu_ForwardProjectorByBinSPECTGPU_h__

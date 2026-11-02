@@ -396,7 +396,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
       }
 #ifdef STIR_WITH_CUDA
       case ProjectorType::SPECTGPU: {
-        proj_pair_sptr = std::make_shared<ProjectorByBinPairUsingSPECTGPU>();
+        proj_pair_sptr = std::make_shared<SPECTGPU::ProjectorByBinPairUsingSPECTGPU>();
         break;
       }
 #endif

@@ -39,7 +39,7 @@ import argparse
 import os
 import shutil
 
-import matplotlib.pyplot as pylab
+import matplotlib.pyplot as plt
 import stir
 
 try:
@@ -178,7 +178,7 @@ for name, image in images.items():
 arrays = {name: image.as_array() for name, image in images.items()}
 nz, ny, nx = next(iter(arrays.values())).shape
 vmax = max(a.max() for a in arrays.values())
-fig, axes = pylab.subplots(len(arrays), 3, figsize=(12, 4 * len(arrays)), squeeze=False)
+fig, axes = plt.subplots(len(arrays), 3, figsize=(12, 4 * len(arrays)), squeeze=False)
 for row, (name, a) in zip(axes, arrays.items()):
     for ax, plane, img in zip(row, ["axial", "coronal", "sagittal"],
                               [a[nz // 2], a[:, ny // 2], a[:, :, nx // 2]]):
@@ -186,11 +186,11 @@ for row, (name, a) in zip(axes, arrays.items()):
         ax.set_title(f"{name}: {plane}")
 fig.savefig(os.path.join(output_dir, "slices.png"))
 
-pylab.figure()
+plt.figure()
 for name, a in arrays.items():
-    pylab.plot(a[nz // 2, ny // 2, :], label=name)
-pylab.title("central profile")
-pylab.legend()
-pylab.savefig(os.path.join(output_dir, "profiles.png"))
+    plt.plot(a[nz // 2, ny // 2, :], label=name)
+plt.title("central profile")
+plt.legend()
+plt.savefig(os.path.join(output_dir, "profiles.png"))
 
 print(f"\nDone. Outputs are in {os.path.abspath(output_dir)}")

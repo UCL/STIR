@@ -24,7 +24,8 @@
 #include "stir/recon_buildblock/SPECTGPU_projector/BackProjectorByBinSPECTGPU.h"
 
 START_NAMESPACE_STIR
-
+namespace SPECTGPU
+{
 const char* const ProjectorByBinPairUsingSPECTGPU::registered_name = "SPECTGPU";
 
 void
@@ -170,5 +171,5 @@ ProjectorByBinPairUsingSPECTGPU::set_use_truncation(const bool use_truncation)
   if (bck_prj_downcast_sptr)
     bck_prj_downcast_sptr->set_use_truncation(_use_truncation);
 }
-
+} // namespace SPECTGPU
 END_NAMESPACE_STIR
