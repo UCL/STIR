@@ -77,6 +77,16 @@ if (NOT MINI_STIR)
         BinNormalisationPETFromComponents.cxx
         ML_estimate_component_based_normalisation.cxx
 	GeneralisedPrior.cxx
+	preconditioners/GeneralisedPreconditioner.cxx
+	preconditioners/HessianDiagonalPreconditioner.cxx
+	preconditioners/EMPreconditioner.cxx
+	preconditioners/IdentityPreconditioner.cxx
+	preconditioners/SPSPreconditioner.cxx
+	gradient_estimators/GeneralisedGradientEstimator.cxx
+	gradient_estimators/SVRGGradientEstimator.cxx
+	gradient_estimators/OrderedSubsetsGradientEstimator.cxx
+	gradient_estimators/FullGradientEstimator.cxx
+	gradient_estimators/SAGAGradientEstimator.cxx
 	ProjDataRebinning.cxx
 	FourierRebinning.cxx
 	PLSPrior.cxx

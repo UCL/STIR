@@ -1,0 +1,60 @@
+PSVParameters :=
+; example file for PSV, the preconditioned SVRG algorithm of the PETRIC2 "psv" contribution.
+; PSV is a locked preset of the composable preconditioned-gradient engine: the gradient estimator
+; (SVRG) and the preconditioner (the Hessian diagonal of the prior) are fixed, and only the psv
+; hyper-parameters are exposed. Use the PreconditionedGradient executable (see
+; PreconditionedGradient_SVRG_RDP.par) if you want to choose the two axes yourself.
+; this is a minimal file. check other sample files and doc for more options
+
+objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+input file := test.hs
+zero end planes of segment 0 := 0
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+additive sinogram := 0
+
+; PSV needs a prior implementing compute_Hessian_diagonal, i.e. a Gibbs prior
+prior type := Gibbs Relative Difference
+  Gibbs Relative Difference Penalty Parameters :=
+  penalisation factor := 1
+  gamma value := 2
+  ; kappa filename :=
+  End Gibbs Relative Difference Penalty Parameters :=
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+initial estimate := some_image
+output filename prefix := test_psv
+number of subsets := 8
+number of subiterations := 160
+save estimates at subiteration intervals := 8
+
+; ---- psv hyper-parameters ----
+
+; step_k = (initial step size) / (1 + (step size decay) * k), with k the update number
+initial step size := 3.5
+step size decay := 0.01
+initial image filter fwhm (mm) := 6
+
+; full gradient snapshot every N epochs
+complete gradient epoch interval := 2
+
+; the preconditioner is computed before the first update, then at the start of the listed epochs
+; and at the listed updates
+precond update epochs := {1}
+precond update subiterations := {4}
+
+; preconditioner (Hessian diagonal of the prior)
+precond hessian factor := 2
+precond filter fwhm (mm) := 5
+precond delta rel := 0
+
+END :=

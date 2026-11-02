@@ -1,0 +1,60 @@
+PreconditionedGradientParameters :=
+; example file showing that OSSPS is a composition of the preconditioned-gradient engine:
+; ordered-subsets gradient + the SPS preconditioner P = 1/(2 surrogate(x) + likelihood curvature)
+; with a relaxed step. Compare with OSSPS_QuadraticPrior.par, which uses the dedicated class.
+; this is a minimal file. check other sample files and doc for more options
+
+objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+input file := test.hs
+zero end planes of segment 0 := 0
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+additive sinogram := 0
+
+; the 'SPS' preconditioner needs a prior that provides a parabolic surrogate curvature, i.e. one
+; derived from PriorWithParabolicSurrogate (currently Quadratic or Logcosh). No implementation of the
+; Relative Difference Prior provides one; using an RDP here is refused at set-up.
+prior type := quadratic
+  Quadratic Prior Parameters :=
+  penalisation factor := 1
+  End Quadratic Prior Parameters :=
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
+
+initial estimate := some_image
+output filename prefix := test_ossps
+number of subsets := 12
+number of subiterations := 24
+save estimates at subiteration intervals := 12
+
+; ---- the two composable axes ----
+
+gradient estimator type := Ordered Subsets
+  Ordered Subsets Parameters :=
+  End Ordered Subsets Parameters :=
+
+preconditioner type := SPS
+  SPS Preconditioner Parameters :=
+  ; denominator floor := 1e-6
+  End SPS Preconditioner Parameters :=
+
+; ---- step size and preconditioner schedule ----
+
+; the OSSPS relaxation lambda = relaxation_parameter / (1 + relaxation_gamma * epoch) is obtained
+; by making the decay count epochs instead of updates
+initial step size := 1
+step size decay := 0.1
+step size decay per epoch := 1
+
+; the surrogate depends on the current image
+precond update interval := 1
+
+END :=

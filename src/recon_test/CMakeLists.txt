@@ -35,6 +35,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         recontest.cxx
         test_data_processor_projectors.cxx
         test_OSMAPOSL.cxx
+        test_PreconditionedGradient.cxx
         test_PoissonLogLikelihoodWithLinearModelForMeanAndListModeWithProjMatrixByBin.cxx
         test_priors.cxx
 )
@@ -144,6 +145,9 @@ ADD_TEST(test_data_processor_projectors test_data_processor_projectors ${CMAKE_S
 
 # test_OSMAPOSL can take input argument
 ADD_TEST(test_OSMAPOSL_ray_tracing_matrix  test_OSMAPOSL)
+
+# test_PreconditionedGradient can take the same input arguments as test_OSMAPOSL
+ADD_TEST(test_PreconditionedGradient_ray_tracing_matrix  test_PreconditionedGradient)
 
 if (parallelproj_FOUND)
   ADD_TEST(test_OSMAPOSL_parallelproj  test_OSMAPOSL ${CMAKE_SOURCE_DIR}/examples/samples/projector_pair_parallelproj.par)
