@@ -1,7 +1,7 @@
-#pragma once
+#ifndef __stir_CUDA_ALGEBRAIC_KERNELS_H__
+#define __stir_CUDA_ALGEBRAIC_KERNELS_H__
 
 #include "stir/common.h"
-
 #include <cstddef>
 
 START_NAMESPACE_STIR
@@ -17,3 +17,5 @@ void div_assign(float* dst, const float* src, size_t N);
 void CUDAxapyb(float* dst, const float* x, const float* y, float a, float b, const size_t N);
 
 END_NAMESPACE_STIR
+
+#endif // __stir_CUDA_ALGEBRAIC_KERNELS_H__
