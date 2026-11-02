@@ -128,6 +128,9 @@ public:
                             const IndexRange<num_dimensions>& range,
                             const CartesianCoordinate3D<float>& origin);
 
+  // Copy constructor
+  inline DiscretisedDensity(const self_type& org);
+
   //! Return the origin
   inline const CartesianCoordinate3D<float>& get_origin() const;
 
