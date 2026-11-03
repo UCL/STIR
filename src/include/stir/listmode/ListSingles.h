@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2025, University College London
+    Copyright (C) 2025, London South Bank University
     This file is part of STIR.
     SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details

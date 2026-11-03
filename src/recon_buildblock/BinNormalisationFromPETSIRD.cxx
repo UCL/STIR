@@ -38,7 +38,7 @@ BinNormalisationFromPETSIRD::set_defaults()
   normalisation_filename = "";
   use_hdf5 = false;
   m_with_detector_efficiencies = true;
-  m_with_dead_time = true;
+  m_use_dead_time = true;
   m_with_geometric_factors = true;
 }
 
@@ -49,7 +49,7 @@ BinNormalisationFromPETSIRD::initialise_keymap()
   parser.add_start_key("Bin Normalisation From PETSIRD");
   parser.add_key("normalisation_filename", &normalisation_filename);
   parser.add_key("use hdf5", &use_hdf5);
-  parser.add_key("with_dead_time", &m_with_dead_time);
+  parser.add_key("use_dead_time", &m_use_dead_time);
   parser.add_stop_key("End Bin Normalisation From PETSIRD");
 }
 
@@ -97,15 +97,10 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
   for (const auto& dp : dps)
     {
       float eff = petsird_info_sptr->get_detection_efficiency_for_bin(dp);
-      if (m_with_dead_time)
+      if (m_use_dead_time)
         {
           const double start_time = get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
           const double end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
-          static bool dbg = true;
-          if (dbg)
-            {
-              dbg = false;
-            }
           eff *= get_dead_time_efficiency(dp.pos1(), start_time, end_time)
                  * get_dead_time_efficiency(dp.pos2(), start_time, end_time);
         }
@@ -149,6 +144,8 @@ BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
       if (std::holds_alternative<petsird::DeadTimeTimeBlock>(tb))
         {
           const auto& db = std::get<petsird::DeadTimeTimeBlock>(tb);
+          if (db.alive_time_fractions.module_coincidence_alive_time_fractions)
+            error("BinNormalisationFromPETSIRD: module-coincidence alive-time fractions are not supported yet");
           const auto& sat = db.alive_time_fractions.singles_alive_time_fractions;
           if (!sat.empty())
             {
@@ -203,10 +200,10 @@ BinNormalisationFromPETSIRD::get_alive_fractions_for_frame(double start_time_s, 
 }
 float
 BinNormalisationFromPETSIRD::get_dead_time_efficiency(const DetectionPosition<>& det_pos,
-                                                       const double start_time,
-                                                       const double end_time) const
+                                                      const double start_time,
+                                                      const double end_time) const
 {
-  if (!m_with_dead_time)
+  if (!m_use_dead_time)
     return 1.0F;
   if (dead_time_entries.empty())
     error("BinNormalisationFromPETSIRD: dead time requested but the file contains no dead time blocks");

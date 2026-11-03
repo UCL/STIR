@@ -110,6 +110,7 @@ public:
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
+  float get_dead_time_efficiency(int ring, float singles_rate) const;
   bool use_geometric_factors() const;
   bool use_crystal_interference_factors() const;
   bool use_axial_effects_factors() const;
@@ -153,7 +154,6 @@ private:
   bool _write_components_to_file;
 
   void read_norm_data(const string& filename);
-  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
 
   //! initialise sino_index and num_Siemens_sinograms
   void construct_sino_lookup_table();

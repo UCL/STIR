@@ -27,52 +27,23 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 {
   CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
 
-  petsird::Header header;
   if (use_hdf5)
     current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
   else
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
 
-  current_lm_data_ptr->ReadHeader(header);
+  {
+    // scoped: the header can be several GB, so the only copy kept is the one in PETSIRDInfo
+    petsird::Header header;
+    current_lm_data_ptr->ReadHeader(header);
+    m_has_delayeds = header.scanner.delayed_events_are_stored;
+    // list-mode reading does not use the module-pair efficiencies (several GB), so do not keep them
+    header.scanner.detection_efficiencies.module_pair_efficiencies_vectors.reset();
+    petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
+  }
 
-  m_has_delayeds = header.scanner.delayed_events_are_stored;
-
-  // Get the first TimeBlock
-  if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-    error("CListModeDataPETSIRD: Could not read the first TimeBlock. Abort.");
-
-  ++m_time_block_index;
-
-  // initialise singles accumulator (224 buckets for mMR)
-  singles_per_bucket.resize(224, 0.f);
-
-  while (true)
-    {
-      if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
-        {
-          curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
-          break;
-        }
-      else if (std::holds_alternative<petsird::SinglesHistogramTimeBlock>(curr_time_block))
-        {
-          const auto& sb = std::get<petsird::SinglesHistogramTimeBlock>(curr_time_block);
-          if (!sb.singles_histograms.empty())
-            {
-              const auto& counts = sb.singles_histograms[0];
-              for (std::size_t i = 0; i < std::min(counts.size(), singles_per_bucket.size()); ++i)
-                singles_per_bucket[i] += static_cast<float>(counts[i]);
-            }
-          if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-            error("CListModeDataPETSIRD: no EventTimeBlock found");
-          ++m_time_block_index;
-        }
-      else
-        {
-          error("CListModeDataPETSIRD: unhandled TimeBlock type");
-        }
-    }
-
-  petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
+  if (reset() == Succeeded::no)
+    error(format("CListModeDataPETSIRD: Could not read the PETSIRD header from file {}.", listmode_filename));
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
 
   int tof_mash_factor = 1;
@@ -127,20 +98,12 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
             return false;
           }
         ++m_time_block_index;
-        if (std::holds_alternative<petsird::SinglesHistogramTimeBlock>(curr_time_block))
-          {
-            const auto& sb = std::get<petsird::SinglesHistogramTimeBlock>(curr_time_block);
-            if (!sb.singles_histograms.empty())
-              {
-                const auto& counts = sb.singles_histograms[0];
-                for (std::size_t i = 0; i < std::min(counts.size(), singles_per_bucket.size()); ++i)
-                  singles_per_bucket[i] += static_cast<float>(counts[i]);
-                singles_time_stop = sb.time_interval.stop;
-              }
-          }
-        else if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
+        if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
           {
             curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+            // every new event block starts with its prompts
+            curr_is_prompt = true;
+            curr_event_in_event_block = 0;
             return true;
           }
         // other block types silently skipped

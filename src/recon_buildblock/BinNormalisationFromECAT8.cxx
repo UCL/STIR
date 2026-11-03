@@ -589,8 +589,11 @@ BinNormalisationFromECAT8::get_uncalibrated_bin_efficiency(const Bin& bin) const
                 const float start_time = get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
                 const float end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
-                lor_efficiency_this_pair *= get_dead_time_efficiency(pos1, start_time, end_time)
-                                            * get_dead_time_efficiency(pos2, start_time, end_time);
+                lor_efficiency_this_pair
+                    *= get_dead_time_efficiency(pos1.axial_coord(),
+                                                singles_rates_ptr->get_singles_rate(pos1, start_time, end_time))
+                       * get_dead_time_efficiency(pos2.axial_coord(),
+                                                  singles_rates_ptr->get_singles_rate(pos2, start_time, end_time));
               }
             if (this->use_geometric_factors())
               {
@@ -680,34 +683,14 @@ BinNormalisationFromECAT8::find_axial_effects(int ring1, int ring2) const
 }
 
 float
-BinNormalisationFromECAT8::get_dead_time_efficiency(const DetectionPosition<>& det_pos,
-                                                    const double start_time,
-                                                    const double end_time) const
+BinNormalisationFromECAT8::get_dead_time_efficiency(const int ring, const float singles_rate) const
 {
-  if (!this->_use_dead_time)
-    {
-      std::cerr << "early stop";
-      return 1.0F;
-    }
-
-  // guard against uninitialised arrays
-  if (rng_dtp_array.size() == 0 || rng_dtnp_array.size() == 0)
-    {
-      static bool warned = false;
-      if (!warned)
-        {
-          warned = true;
-          std::cerr << "WARNING: dead time arrays empty, returning 1\n";
-        }
-      return 1.0F;
-    }
-  const int ring = det_pos.axial_coord();
-  const float S = singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time);
-  const float dtp = rng_dtp_array[ring];
-  const float dtnp = rng_dtnp_array[ring];
-  const float denom = 1.0F + 0.5F * S * dtnp;
-  const float eff = std::exp(0.5F * S * dtp / denom) / denom;
-  return eff;
+  if (this->rng_dtp_array.size() == 0 || this->rng_dtnp_array.size() == 0)
+    error("BinNormalisationFromECAT8: dead-time parameters were not read from the normalisation file");
+  const float dtp = this->rng_dtp_array[ring];
+  const float dtnp = this->rng_dtnp_array[ring];
+  const float denom = 1.0F + 0.5F * singles_rate * dtnp;
+  return std::exp(0.5F * singles_rate * dtp / denom) / denom;
 }
 
 END_NAMESPACE_ECAT

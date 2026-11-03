@@ -54,7 +54,6 @@ typedef short elem_type;
 
 #include "stir/utilities.h"
 
-#include "stir/listmode/CListRecordECAT8_32bit.h"
 #include "stir/listmode/CListModeDataPETSIRD.h"
 #include "stir/listmode/LmToProjData.h"
 #include "stir/listmode/ListRecord.h"
@@ -796,8 +795,7 @@ LmToProjData::process_data()
                         && start_timing_pos_index == output_proj_data_sptr->get_min_tof_pos_num())
                       {
                         const unsigned int ibck = crecord->singles().get_bucket_index();
-                        // const float cnt = static_cast<float>(crecord->singles().get_singles_count());
-                        const float cnt = 8.F * crecord->singles().get_singles_count();
+                        const float cnt = crecord->singles().get_singles_count();
                         if (ibck < static_cast<unsigned int>(num_buckets))
                           {
                             singles_per_bucket[ibck] += cnt;
@@ -933,7 +931,12 @@ LmToProjData::process_data()
         if (singles_file)
           {
             singles_file << "{\n";
+            const Scanner& scanner = lm_data_ptr->get_scanner();
             singles_file << "  \"num_buckets\": " << num_buckets << ",\n";
+            singles_file << "  \"num_axial_buckets\": " << scanner.get_num_axial_singles_units() << ",\n";
+            singles_file << "  \"num_transaxial_buckets\": " << scanner.get_num_transaxial_singles_units() << ",\n";
+            singles_file << "  \"num_rings\": " << scanner.get_num_rings() << ",\n";
+            singles_file << "  \"num_detectors_per_ring\": " << scanner.get_num_detectors_per_ring() << ",\n";
             singles_file << "  \"frame_duration\": " << frame_duration << ",\n";
             singles_file << "  \"end_time\": " << end_time << ",\n";
             singles_file << "  \"bucket_rates\": [";

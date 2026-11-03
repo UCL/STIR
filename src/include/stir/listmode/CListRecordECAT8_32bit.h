@@ -112,7 +112,7 @@ private:
   std::vector<int> timing_poss_sequence;
   std::vector<int> sizes;
 };
-
+//! A class for decoding a raw events that is neither time or coincidence in a listmode file from the ECAT 8_32bit scanner
 //! Bit-field struct for the PETLINK time marker word (type=1, deadtimeetc=0)
 /*! \ingroup listmode
     PETLINK 32-bit layout (little-endian):
@@ -241,7 +241,10 @@ public:
   bool is_singles() const { return this->data.type == 1U && this->data.subtype == 1U; }
 
   unsigned int get_bucket_index() const override { return this->data.bucket; }
-  float get_singles_count() const override { return static_cast<float>(this->data.singles); }
+  //! Number of singles in this record
+  /*! The ECAT8 record stores this count divided by 8 (the 3 lowest bits are not stored),
+      so it is scaled back here. */
+  float get_singles_count() const override { return 8.F * static_cast<float>(this->data.singles); }
 
 private:
   BOOST_STATIC_ASSERT(sizeof(CListSinglesDataECAT8_32bit) == 4);

@@ -129,11 +129,12 @@ private:
                                                 const int rotation_axis);
 
   //! Scanner information as provided by PETSIRD.
+  //! The PETSIRD header. This is the only copy; it can be several GB when it contains efficiency tables.
+  shared_ptr<const petsird::Header> petsird_header_sptr;
+  //! Scanner information as provided by PETSIRD (points into petsird_header_sptr, no copy).
   shared_ptr<const petsird::ScannerInformation> petsird_scanner_info_sptr;
   //! Active scanner instance.
   shared_ptr<Scanner> stir_scanner_sptr;
-
-  shared_ptr<const petsird::Header> petsird_header_sptr;
   //! Number of replicated modules.
   uint32_t numberOfModules;
   //! Number of element indices per module.

@@ -189,8 +189,8 @@ PETSIRDInfo::figure_out_block_angles(std::set<float>& unique_angle_modules, cons
 }
 
 PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geometry)
-    : petsird_scanner_info_sptr(std::make_shared<const petsird::ScannerInformation>(header.scanner)),
-      petsird_header_sptr(std::make_shared<const petsird::Header>(header)),
+    : petsird_header_sptr(std::make_shared<const petsird::Header>(header)),
+      petsird_scanner_info_sptr(petsird_header_sptr, &petsird_header_sptr->scanner),
       forced_geometry(scanner_geometry)
 {
 
@@ -389,9 +389,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       (num_transaxial_blocks * unique_elements_vertical_values.size()),
                       unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
                       /* number of non arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* number of maximum arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* inner ring radius */
                       radius,
                       /* doi */ average_doi, // average_doi,
@@ -437,9 +437,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       (num_transaxial_blocks * unique_elements_vertical_values.size()),
                       unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
                       /* number of non arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* number of maximum arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* inner ring radius */
                       radius,
                       /* doi */ average_doi,
@@ -585,8 +585,7 @@ PETSIRDInfo::get_detection_efficiency_for_bin(const stir::DetectionPositionPair<
 {
   const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
 
-  if (!detection_bin_efficiencies
-    && !petsird_scanner_info_sptr->detection_efficiencies.module_pair_efficiencies_vectors)
+  if (!detection_bin_efficiencies && !petsird_scanner_info_sptr->detection_efficiencies.module_pair_efficiencies_vectors)
     {
       return 1.f; // no efficiencies available
     }
