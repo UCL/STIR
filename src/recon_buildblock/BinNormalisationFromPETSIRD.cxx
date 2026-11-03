@@ -144,8 +144,8 @@ BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
       if (std::holds_alternative<petsird::DeadTimeTimeBlock>(tb))
         {
           const auto& db = std::get<petsird::DeadTimeTimeBlock>(tb);
-          if (db.alive_time_fractions.module_coincidence_alive_time_fractions)
-            error("BinNormalisationFromPETSIRD: module-coincidence alive-time fractions are not supported yet");
+          if (!db.alive_time_fractions.module_pair_alive_time_fractions.empty())
+            error("BinNormalisationFromPETSIRD: module-pair alive-time fractions are not supported yet");
           const auto& sat = db.alive_time_fractions.singles_alive_time_fractions;
           if (!sat.empty())
             {

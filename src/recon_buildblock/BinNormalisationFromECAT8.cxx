@@ -43,6 +43,7 @@
 #include "stir/utilities.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <algorithm>
 #include <fstream>
 #include <cctype>
@@ -137,7 +138,7 @@ BinNormalisationFromECAT8::set_defaults()
   this->normalisation_ECAT8_filename = "";
   this->_use_gaps = true;
   this->_use_detector_efficiencies = true;
-  this->_use_dead_time = true;
+  this->_use_dead_time = false;
   this->_use_geometric_factors = true;
   this->_use_crystal_interference_factors = true;
   this->_use_axial_effects_factors = true;
@@ -181,7 +182,8 @@ BinNormalisationFromECAT8::post_processing()
           singles_rates_ptr = sptr;
         }
       else
-        warning("BinNormalisationFromECAT8: could not read singles file %s", singles_filename.c_str());
+        warning(
+            format("BinNormalisationFromECAT8: could not read singles file {} so dead-time will be disabled", singles_filename));
     }
   return false;
 }

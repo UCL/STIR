@@ -227,7 +227,7 @@ private:
     The PETLINK singles word has type=1, deadtimeetc=0b10 (i.e. is_other() == true in
     CListDataAnyECAT8_32bit), so it falls through the existing time/event checks.
 */
-class CListSinglesECAT8_32bit : public ListSingles
+class CListSinglesECAT8_32bit : public ListAccumulatedSingles
 {
 public:
   Succeeded init_from_data_ptr(const void* const ptr)

@@ -583,9 +583,10 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 float
 PETSIRDInfo::get_detection_efficiency_for_bin(const stir::DetectionPositionPair<>& dp) const
 {
-  const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
+  const auto& detection_efficiencies = petsird_scanner_info_sptr->detection_efficiencies;
 
-  if (detection_bin_efficiencies.empty())
+  if (detection_efficiencies.detection_bin_efficiencies.empty()
+      && detection_efficiencies.module_pair_efficiencies_vectors.empty())
     {
       return 1.f; // no efficiencies available
     }
@@ -630,7 +631,10 @@ PETSIRDInfo::get_detection_efficiency_for_bin(const stir::DetectionPositionPair<
 
   const auto det1 = petsird_helpers::make_detection_bin(*petsird_scanner_info_sptr, type_of_module, it1->second);
 
-  return petsird_helpers::get_detection_efficiency(*petsird_scanner_info_sptr.get(), module_pair, det0, det1);
+  // the module-pair efficiencies are only stored for ordered detection bins (first >= second), see petsird_helpers
+  if (det0 >= det1)
+    return petsird_helpers::get_detection_efficiency(*petsird_scanner_info_sptr.get(), module_pair, det0, det1);
+  return petsird_helpers::get_detection_efficiency(*petsird_scanner_info_sptr.get(), module_pair, det1, det0);
 }
 
 float
