@@ -36,7 +36,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     // scoped: the header can be several GB, so the only copy kept is the one in PETSIRDInfo
     petsird::Header header;
     current_lm_data_ptr->ReadHeader(header);
-    m_has_delayeds = header.scanner.delayed_events_are_stored;
+    m_has_delayeds = header.scanner.delayed_event_policy != petsird::CoincidencePolicy::kNone;
     // list-mode reading does not use the module-pair efficiencies (several GB), so do not keep them
     header.scanner.detection_efficiencies.module_pair_efficiencies_vectors.reset();
     petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
@@ -197,7 +197,6 @@ CListModeDataPETSIRD::reopen_and_prime()
 
   petsird::Header header;
   current_lm_data_ptr->ReadHeader(header); // let it throw naturally if it fails
-  m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   curr_event_in_event_block = 0;
   curr_is_prompt = true;
