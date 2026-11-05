@@ -19,6 +19,7 @@
 #define __stir_listmode_CListRecordECAT8_32bit_H__
 
 #include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListAccumulatedSingles.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/Succeeded.h"

@@ -33,6 +33,7 @@ START_NAMESPACE_STIR
 class Bin;
 class ProjDataInfo;
 class Succeeded;
+class ListAccumulatedSingles;
 template <typename coordT>
 class CartesianCoordinate3D;
 template <typename coordT>

@@ -55,6 +55,7 @@ typedef short elem_type;
 #include "stir/utilities.h"
 
 #include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListAccumulatedSingles.h"
 #include "stir/listmode/LmToProjData.h"
 #include "stir/listmode/ListRecord.h"
 #include "stir/listmode/ListModeData.h"
