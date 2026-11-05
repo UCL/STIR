@@ -129,7 +129,10 @@ private:
                                                 const int rotation_axis);
 
   //! Scanner information as provided by PETSIRD.
-  //! The PETSIRD header. This is the only copy; it can be several GB when it contains efficiency tables.
+  /*!
+   The PETSIRD header. This should be the only copy as it can be several GB
+   when it contains efficiency tables.
+  */
   shared_ptr<const petsird::Header> petsird_header_sptr;
   //! Scanner information as provided by PETSIRD (points into petsird_header_sptr, no copy).
   shared_ptr<const petsird::ScannerInformation> petsird_scanner_info_sptr;
