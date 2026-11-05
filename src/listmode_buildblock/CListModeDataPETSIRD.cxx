@@ -38,7 +38,7 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     m_has_delayeds = header_sptr->scanner.delayed_event_policy != petsird::CoincidencePolicy::kNone;
     // list-mode reading does not use the module-pair efficiencies (several GB), so do not keep them
     header_sptr->scanner.detection_efficiencies.module_pair_efficiencies_vectors.clear();
-    petsird_info_sptr = std::make_shared<PETSIRDInfo>(header_sptr);
+    petsird_info_sptr = header_sptr;
   }
 
   if (reset() == Succeeded::no)
