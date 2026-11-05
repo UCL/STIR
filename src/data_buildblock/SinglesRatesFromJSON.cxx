@@ -19,105 +19,69 @@
 #include "stir/DetectionPosition.h"
 #include "stir/error.h"
 
+#include "stir/IndexRange2D.h"
+
+#include <algorithm>
 #include <fstream>
 #ifdef HAVE_JSON
 #  include <nlohmann/json.hpp>
-#else
-#  include <iterator>
-#  include <sstream>
-#endif
-#ifndef HAVE_JSON
-static bool
-find_int(const std::string& content, const std::string& key, int& value)
-{
-  std::size_t pos = content.find("\"" + key + "\":");
-  if (pos == std::string::npos)
-    return false;
-  try
-    {
-      value = std::stoi(content.substr(pos + key.size() + 3));
-    }
-  catch (const std::exception&)
-    {
-      return false;
-    }
-  return true;
-}
 #endif
 
 START_NAMESPACE_STIR
 bool
 SinglesRatesFromJSON::read_from_file(const std::string& filename)
 {
+#ifndef HAVE_JSON
+  error("SinglesRatesFromJSON: STIR needs to be compiled with the nlohmann JSON library to read '" + filename + "'");
+  return false;
+#else
   std::ifstream f(filename);
   if (!f)
     return false;
 
-  _rates.clear();
-#ifdef HAVE_JSON
   try
     {
       const nlohmann::json j = nlohmann::json::parse(f);
-      _rates = j.at("bucket_rates").get<std::vector<float>>();
+      const auto interval_rates = j.at("bucket_rates").get<std::vector<std::vector<float>>>();
+      const auto start_times = j.at("interval_start").get<std::vector<double>>();
+      const auto end_times = j.at("interval_end").get<std::vector<double>>();
       _num_axial_buckets = j.at("num_axial_buckets").get<int>();
       _num_transaxial_buckets = j.at("num_transaxial_buckets").get<int>();
       _num_rings = j.at("num_rings").get<int>();
       _num_detectors_per_ring = j.at("num_detectors_per_ring").get<int>();
+
+      // the layout must be consistent with the number of rates
+      const int num_intervals = static_cast<int>(interval_rates.size());
+      const int num_buckets = _num_axial_buckets * _num_transaxial_buckets;
+      if (num_intervals == 0 || static_cast<int>(start_times.size()) != num_intervals
+          || static_cast<int>(end_times.size()) != num_intervals || num_buckets <= 0 || _num_rings <= 0
+          || _num_detectors_per_ring <= 0)
+        return false;
+
+      std::vector<std::pair<double, double>> intervals;
+      _singles = Array<2, float>(IndexRange2D(1, num_intervals, 0, num_buckets - 1));
+      for (int k = 0; k < num_intervals; ++k)
+        {
+          if (static_cast<int>(interval_rates[k].size()) != num_buckets)
+            return false;
+          intervals.emplace_back(start_times[k], end_times[k]);
+          // SinglesRates works with the counts in an interval, i.e. rate * duration
+          for (int b = 0; b < num_buckets; ++b)
+            _singles[k + 1][b] = interval_rates[k][b] * static_cast<float>(end_times[k] - start_times[k]);
+        }
+      _time_frame_defs = TimeFrameDefinitions(intervals);
     }
   catch (const nlohmann::json::exception&)
     {
-      // not valid JSON, no "bucket_rates" entry, or entries that are not numbers
-      _rates.clear();
-      return false;
-    }
-#else
-  // without the nlohmann JSON library: find the array of "bucket_rates" in the text
-  const std::string content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-  if (!find_int(content, "num_axial_buckets", _num_axial_buckets)
-      || !find_int(content, "num_transaxial_buckets", _num_transaxial_buckets) || !find_int(content, "num_rings", _num_rings)
-      || !find_int(content, "num_detectors_per_ring", _num_detectors_per_ring))
-    return false;
-  const std::string key = "\"bucket_rates\": [";
-  std::size_t pos = content.find(key);
-  if (pos == std::string::npos)
-    return false;
-  pos += key.size();
-  const std::size_t end = content.find("]", pos);
-  if (end == std::string::npos)
-    return false;
-
-  std::istringstream ss(content.substr(pos, end - pos));
-  std::string token;
-  try
-    {
-      while (std::getline(ss, token, ','))
-        {
-          token.erase(0, token.find_first_not_of(" \t\n\r"));
-          token.erase(token.find_last_not_of(" \t\n\r") + 1);
-          if (!token.empty())
-            _rates.push_back(std::stof(token));
-        }
-    }
-  catch (const std::exception&)
-    {
-      _rates.clear();
-      return false;
-    }
-#endif
-  // the layout must be consistent with the number of rates
-  if (_num_axial_buckets <= 0 || _num_transaxial_buckets <= 0 || _num_rings <= 0 || _num_detectors_per_ring <= 0
-      || static_cast<int>(_rates.size()) != _num_axial_buckets * _num_transaxial_buckets)
-    {
-      _rates.clear();
+      // not valid JSON, an entry is missing, or entries that are not numbers
       return false;
     }
   return true;
+#endif
 }
 
 float
-SinglesRatesFromJSON::get_singles_rate(const DetectionPosition<>& det_pos,
-                                       const double /*start_time*/,
-                                       const double /*end_time*/) const
+SinglesRatesFromJSON::get_singles_rate(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const
 {
   const int ring = static_cast<int>(det_pos.axial_coord());
   const int tangential = static_cast<int>(det_pos.tangential_coord());
@@ -130,17 +94,24 @@ SinglesRatesFromJSON::get_singles_rate(const DetectionPosition<>& det_pos,
   const int transaxial_bucket = tangential / detectors_per_trans_bucket;
   const int bucket_idx = transaxial_bucket + _num_transaxial_buckets * axial_bucket;
 
-  if (bucket_idx < 0 || bucket_idx >= static_cast<int>(_rates.size()))
+  if (bucket_idx < 0 || bucket_idx >= _num_axial_buckets * _num_transaxial_buckets)
     return 0.f;
-  return _rates[bucket_idx];
-}
 
-float
-SinglesRatesFromJSON::get_singles(const int singles_bin_index, const double /*start_time*/, const double /*end_time*/) const
-{
-  if (singles_bin_index < 0 || singles_bin_index >= static_cast<int>(_rates.size()))
-    return 0.f;
-  return _rates[singles_bin_index];
+  // average of the rates of the overlapping intervals, weighted by the overlap
+  double sum = 0;
+  double total_time = 0;
+  for (unsigned int f = 1; f <= get_num_frames(); ++f)
+    {
+      const double interval_start = _time_frame_defs.get_start_time(f);
+      const double interval_end = _time_frame_defs.get_end_time(f);
+      const double overlap = std::min(end_time, interval_end) - std::max(start_time, interval_start);
+      if (overlap > 0)
+        {
+          sum += get_singles(bucket_idx, f) / (interval_end - interval_start) * overlap;
+          total_time += overlap;
+        }
+    }
+  return total_time > 0 ? static_cast<float>(sum / total_time) : 0.f;
 }
 void
 SinglesRatesFromJSON::initialise_keymap()

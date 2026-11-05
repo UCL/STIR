@@ -67,7 +67,7 @@ using STIRToPETSIRDDetectorIndexMap = std::map<stir::DetectionPosition<>, petsir
 class PETSIRDInfo
 {
 public:
-  explicit PETSIRDInfo(const petsird::Header& header, std::string scanner_geometry = "");
+  explicit PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::string scanner_geometry = "");
 
   // void initialize();
 

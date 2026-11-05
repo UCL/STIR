@@ -54,7 +54,7 @@ typedef short elem_type;
 
 #include "stir/utilities.h"
 
-#include "stir/listmode/CListModeDataPETSIRD.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/listmode/LmToProjData.h"
 #include "stir/listmode/ListRecord.h"
 #include "stir/listmode/ListModeData.h"
@@ -170,6 +170,7 @@ void
 LmToProjData::set_input_data(const std::string& filename)
 {
   shared_ptr<ListModeData> lm(stir::read_from_file<ListModeData>(filename));
+  this->_already_setup = false;
   this->set_input_data(lm);
   this->input_filename = filename;
 }
@@ -706,10 +707,17 @@ LmToProjData::process_data()
 
       const int num_buckets = lm_data_ptr->get_scanner().get_num_singles_units();
       std::vector<float> singles_per_bucket(num_buckets, 0.f);
-      std::vector<unsigned long> singles_nrecords(num_buckets, 0);
+      std::vector<unsigned long> num_singles_records(num_buckets, 0);
 
       const double start_time = frame_defs.get_start_time(current_frame_num);
       const double end_time = frame_defs.get_end_time(current_frame_num);
+
+      // singles are accumulated per interval: an interval is closed once every singles unit has a record
+      int num_buckets_with_record = 0;
+      double singles_interval_start = start_time;
+      std::vector<double> interval_start_times;
+      std::vector<double> interval_end_times;
+      std::vector<std::vector<float>> interval_rates;
 
       VectorWithOffset<VectorWithOffset<segment_type*>> segments(template_proj_data_info_ptr->get_min_tof_pos_num(),
                                                                  template_proj_data_info_ptr->get_max_tof_pos_num());
@@ -799,7 +807,8 @@ LmToProjData::process_data()
                         if (ibck < static_cast<unsigned int>(num_buckets))
                           {
                             singles_per_bucket[ibck] += cnt;
-                            ++singles_nrecords[ibck];
+                            if (num_singles_records[ibck]++ == 0)
+                              ++num_buckets_with_record;
                           }
                       }
                     if (record.is_time() && end_time > 0.01) // Direct comparison within doubles is unsafe.
@@ -808,6 +817,18 @@ LmToProjData::process_data()
                         if (do_time_frame && current_time >= end_time)
                           break; // get out of while loop
                         assert(current_time >= start_time);
+                        if (num_buckets > 0 && num_buckets_with_record >= num_buckets)
+                          {
+                            interval_start_times.push_back(singles_interval_start);
+                            interval_end_times.push_back(current_time);
+                            interval_rates.emplace_back(num_buckets);
+                            for (int i = 0; i < num_buckets; ++i)
+                              interval_rates.back()[i] = singles_per_bucket[i] / num_singles_records[i];
+                            std::fill(singles_per_bucket.begin(), singles_per_bucket.end(), 0.f);
+                            std::fill(num_singles_records.begin(), num_singles_records.end(), 0UL);
+                            num_buckets_with_record = 0;
+                            singles_interval_start = current_time;
+                          }
                         process_new_time_event(record.time());
                       }
                     // note: could do "else if" here if we would be sure that
@@ -921,36 +942,44 @@ LmToProjData::process_data()
 
         } // end of for loop for timing positions
 
-      // Write singles JSON once per frame, after all segment and TOF passes are complete.
-      // singles_per_bucket now contains the true total counts for this frame (accumulated
-      // only on the first pass through the listmode data).
-      {
-        const double frame_duration = (end_time - start_time) > 0 ? (end_time - start_time) : 3600.0;
-        const std::string singles_filename = output_filename_prefix + "_f" + std::to_string(current_frame_num) + "_singles.json";
-        std::ofstream singles_file(singles_filename);
-        if (singles_file)
-          {
-            singles_file << "{\n";
-            const Scanner& scanner = lm_data_ptr->get_scanner();
-            singles_file << "  \"num_buckets\": " << num_buckets << ",\n";
-            singles_file << "  \"num_axial_buckets\": " << scanner.get_num_axial_singles_units() << ",\n";
-            singles_file << "  \"num_transaxial_buckets\": " << scanner.get_num_transaxial_singles_units() << ",\n";
-            singles_file << "  \"num_rings\": " << scanner.get_num_rings() << ",\n";
-            singles_file << "  \"num_detectors_per_ring\": " << scanner.get_num_detectors_per_ring() << ",\n";
-            singles_file << "  \"frame_duration\": " << frame_duration << ",\n";
-            singles_file << "  \"end_time\": " << end_time << ",\n";
-            singles_file << "  \"bucket_rates\": [";
-            for (int i = 0; i < num_buckets; ++i)
-              {
-                if (i > 0)
-                  singles_file << ", ";
-                singles_file << (singles_nrecords[i] > 0 ? singles_per_bucket[i] / singles_nrecords[i] : 0.F);
-              }
-            singles_file << "]\n";
-            singles_file << "}\n";
-            std::cerr << "INFO: Singles written to " << singles_filename << "\n";
-          }
-      }
+      // Write singles JSON once per frame, after all segment and TOF passes are complete,
+      // with the singles rates of each interval (only if the data has singles records).
+      if (!interval_start_times.empty())
+        {
+          const std::string singles_filename
+              = output_filename_prefix + "_f" + std::to_string(current_frame_num) + "_singles.json";
+          std::ofstream singles_file(singles_filename);
+          singles_file.precision(std::numeric_limits<double>::max_digits10);
+          if (singles_file)
+            {
+              singles_file << "{\n";
+              const Scanner& scanner = lm_data_ptr->get_scanner();
+              singles_file << "  \"num_buckets\": " << num_buckets << ",\n";
+              singles_file << "  \"num_axial_buckets\": " << scanner.get_num_axial_singles_units() << ",\n";
+              singles_file << "  \"num_transaxial_buckets\": " << scanner.get_num_transaxial_singles_units() << ",\n";
+              singles_file << "  \"num_rings\": " << scanner.get_num_rings() << ",\n";
+              singles_file << "  \"num_detectors_per_ring\": " << scanner.get_num_detectors_per_ring() << ",\n";
+              singles_file << "  \"interval_start\": [";
+              for (std::size_t k = 0; k < interval_start_times.size(); ++k)
+                singles_file << (k > 0 ? ", " : "") << interval_start_times[k];
+              singles_file << "],\n";
+              singles_file << "  \"interval_end\": [";
+              for (std::size_t k = 0; k < interval_end_times.size(); ++k)
+                singles_file << (k > 0 ? ", " : "") << interval_end_times[k];
+              singles_file << "],\n";
+              singles_file << "  \"bucket_rates\": [\n";
+              for (std::size_t k = 0; k < interval_rates.size(); ++k)
+                {
+                  singles_file << "    [";
+                  for (int i = 0; i < num_buckets; ++i)
+                    singles_file << (i > 0 ? ", " : "") << interval_rates[k][i];
+                  singles_file << (k + 1 < interval_rates.size() ? "],\n" : "]\n");
+                }
+              singles_file << "  ]\n";
+              singles_file << "}\n";
+              std::cerr << "INFO: Singles written to " << singles_filename << "\n";
+            }
+        }
       cerr << "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
            << "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame << '\n';
 

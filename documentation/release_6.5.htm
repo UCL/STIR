@@ -67,11 +67,20 @@
     </li>
   </ul>
 
-  <!--
+  
   <h3>Changed functionality</h3>
   <ul>
+        <li>
+      The singles-unit layout of the Siemens mMR in <code>Scanner</code> was corrected: a bucket is now
+      1 axial x 2 transaxial blocks (a singles unit of 8 x 18 crystals), i.e. 8 x 28 singles units,
+      instead of 2 x 1 blocks (16 x 9 crystals), i.e. 4 x 56. This changes the mapping from a detector to its
+      singles unit (e.g. <code>Scanner::get_singles_bin_index()</code>), and therefore the singles-based dead-time
+      correction and any singles rates that are looked up per bucket for this scanner.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
+    </li>
   </ul>
-
+<!--
   <h4>Changes to examples</h4>
   <ul>
 

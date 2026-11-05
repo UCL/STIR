@@ -10,7 +10,8 @@
   \author Alan Osys
 */
 /*
-    Copyright (C) 2025, 2026, University Medical Center Groningen, London South Bank University
+    Copyright (C) 2025, 2026, University Medical Center Groningen
+    Copyright (C) 2025, 2026, London South Bank University
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0

@@ -368,14 +368,14 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  4.0625F,
                  2.08626F,
-                 0.0F,
-                 1,
-                 2,
-                 8,
-                 9,
-                 8,
-                 18,
-                 1,
+                 0.0F, // intrinsic_tilt_v
+                 1,    // num_axial_blocks_per_bucket_v
+                 2,    // num_transaxial_blocks_per_bucket_v
+                 8,    // num_axial_crystals_per_block_v
+                 9,    // num_transaxial_crystals_per_block_v
+                 8,    // num_axial_crystals_per_singles_unit_v
+                 18,   // num_transaxial_crystals_per_singles_unit_v
+                 1,    // num_detector_layers_v
                  0.145F,
                  511.F,
                  1,

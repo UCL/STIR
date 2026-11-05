@@ -18,7 +18,7 @@
 #ifndef __stir_data_SinglesRatesFromJSON_H__
 #define __stir_data_SinglesRatesFromJSON_H__
 
-#include "stir/data/SinglesRates.h"
+#include "stir/data/SinglesRatesForTimeFrames.h"
 #include "stir/RegisteredParsingObject.h"
 #include <string>
 #include <vector>
@@ -29,16 +29,18 @@ START_NAMESPACE_STIR
   \ingroup singles_buildblock
   \brief A class that gets the singles rates of the singles units ("buckets") from a JSON file.
 
-  The file needs the entries "bucket_rates" (an array with the singles rate of each singles unit), "num_axial_buckets",
+  The file needs the entries "interval_start" and "interval_end" (the times in seconds of each singles interval),
+  "bucket_rates" (for each interval, an array with the singles rate of each singles unit), "num_axial_buckets",
   "num_transaxial_buckets", "num_rings" and "num_detectors_per_ring". Bucket \c i is at
   transaxial + num_transaxial_buckets * axial. This is what lm_to_projdata writes for list-mode data with singles records,
   for instance
   \code
   { "num_buckets": 224, "num_axial_buckets": 8, "num_transaxial_buckets": 28, "num_rings": 64,
-    "num_detectors_per_ring": 504, "frame_duration": 60, "end_time": 60, "bucket_rates": [ 115378.4, 115102.2, ... ] }
+    "num_detectors_per_ring": 504, "interval_start": [0, 1.0], "interval_end": [1.0, 2.0],
+    "bucket_rates": [ [115378.4, 115102.2, ... ], [115280.1, 115015.7, ... ] ] }
   \endcode
-  The rates do not depend on time: the file holds the mean rates of one time frame, so the start and end times given to the
-  functions below are ignored.
+  get_singles_rate() averages the rates of the intervals that overlap the requested times, weighted by the overlap.
+  The singles of a single interval are given by get_singles() with the start and end time of that interval.
 
   In the parameter file, use
     \code
@@ -48,7 +50,7 @@ START_NAMESPACE_STIR
   End SinglesRatesFromJSON :=
   \endcode
 */
-class SinglesRatesFromJSON : public RegisteredParsingObject<SinglesRatesFromJSON, SinglesRates>
+class SinglesRatesFromJSON : public RegisteredParsingObject<SinglesRatesFromJSON, SinglesRates, SinglesRatesForTimeFrames>
 {
 public:
   //! Name which will be used when parsing a SinglesRatesFromJSON object
@@ -65,9 +67,6 @@ public:
   //! Singles rate of the singles unit that contains the detector
   float get_singles_rate(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const override;
 
-  //! Singles rate of a singles unit, given by its index
-  float get_singles(const int singles_bin_index, const double start_time, const double end_time) const override;
-
 private:
 private:
   void set_defaults() override;
@@ -75,7 +74,6 @@ private:
   bool post_processing() override;
 
   std::string _filename;
-  std::vector<float> _rates;
   int _num_axial_buckets = 0;
   int _num_transaxial_buckets = 0;
   int _num_rings = 0;

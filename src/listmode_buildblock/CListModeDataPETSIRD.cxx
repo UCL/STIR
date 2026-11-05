@@ -33,13 +33,12 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
 
   {
-    // scoped: the header can be several GB, so the only copy kept is the one in PETSIRDInfo
-    petsird::Header header;
-    current_lm_data_ptr->ReadHeader(header);
-    m_has_delayeds = header.scanner.delayed_event_policy != petsird::CoincidencePolicy::kNone;
+    auto header_sptr = std::make_shared<petsird::Header>();
+    current_lm_data_ptr->ReadHeader(*header_sptr);
+    m_has_delayeds = header_sptr->scanner.delayed_event_policy != petsird::CoincidencePolicy::kNone;
     // list-mode reading does not use the module-pair efficiencies (several GB), so do not keep them
-    header.scanner.detection_efficiencies.module_pair_efficiencies_vectors.clear();
-    petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
+    header_sptr->scanner.detection_efficiencies.module_pair_efficiencies_vectors.clear();
+    petsird_info_sptr = std::make_shared<PETSIRDInfo>(header_sptr);
   }
 
   if (reset() == Succeeded::no)

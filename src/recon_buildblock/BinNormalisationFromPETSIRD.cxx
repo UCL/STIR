@@ -27,6 +27,9 @@
 #include "stir/ByteOrder.h"
 #include <cmath>
 
+#include "stir/info.h"
+#include "stir/format.h"
+
 START_NAMESPACE_STIR
 
 const char* const BinNormalisationFromPETSIRD::registered_name = "From PETSIRD";
@@ -103,6 +106,8 @@ BinNormalisationFromPETSIRD::get_uncalibrated_bin_efficiency(const Bin& bin) con
           const double end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
           eff *= get_dead_time_efficiency(dp.pos1(), start_time, end_time)
                  * get_dead_time_efficiency(dp.pos2(), start_time, end_time);
+          // TODO at some point ModulePairs will need to be added here,
+          // mMR doesn't use them, but Signa does
         }
       total += eff;
     }
@@ -121,15 +126,15 @@ BinNormalisationFromPETSIRD::set_up(const shared_ptr<const ExamInfo>& exam_info_
 void
 BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
 {
-  petsird::Header header;
+  auto header_sptr = std::make_shared<petsird::Header>();
   if (use_hdf5)
     petsird_data_sptr.reset(new petsird::hdf5::PETSIRDReader(filename));
   else
     petsird_data_sptr.reset(new petsird::binary::PETSIRDReader(filename));
 
-  petsird_data_sptr->ReadHeader(header);
+  petsird_data_sptr->ReadHeader(*header_sptr);
 
-  petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
+  petsird_info_sptr = std::make_shared<PETSIRDInfo>(header_sptr);
 
   petsird::TimeBlock tb;
   while (petsird_data_sptr->ReadTimeBlocks(tb))
@@ -143,7 +148,7 @@ BinNormalisationFromPETSIRD::read_norm_data(const string& filename)
         }
     }
 
-  std::cerr << "INFO BinNormalisationFromPETSIRD: read " << dead_time_blocks.size() << " dead time blocks\n";
+  info(format("BinNormalisationFromPETSIRD: read {} dead time blocks", dead_time_blocks.size()));
 }
 float
 BinNormalisationFromPETSIRD::get_dead_time_efficiency(const DetectionPosition<>& det_pos,
@@ -162,18 +167,22 @@ BinNormalisationFromPETSIRD::get_dead_time_efficiency(const DetectionPosition<>&
     error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR->PETSIRD map");
   const auto crystal = petsird_helpers::make_detection_bin(*petsird_info_sptr->get_petsird_scanner_info_sptr(), 0, it->second);
 
-  // average over the dead time blocks that overlap the frame
+  // time-weighted average over the dead time blocks that overlap the frame
   double sum = 0;
-  int count = 0;
+  double total_time_ms = 0;
   for (const auto& b : dead_time_blocks)
-    if (b.time_interval.stop > start_time * 1000. && b.time_interval.start < end_time * 1000.)
-      {
-        sum += b.alive_time_fractions.singles_alive_time_fractions[0][crystal];
-        ++count;
-      }
-  if (count == 0)
+    {
+      const double overlap_ms = std::min<double>(b.time_interval.stop, end_time * 1000.)
+                                - std::max<double>(b.time_interval.start, start_time * 1000.);
+      if (overlap_ms > 0)
+        {
+          sum += b.alive_time_fractions.singles_alive_time_fractions[0][crystal] * overlap_ms;
+          total_time_ms += overlap_ms;
+        }
+    }
+  if (total_time_ms <= 0)
     error("BinNormalisationFromPETSIRD: no dead time blocks overlap the frame [%g, %g] s", start_time, end_time);
-  return static_cast<float>(sum / count);
+  return static_cast<float>(sum / total_time_ms);
 }
 
 END_NAMESPACE_STIR

@@ -591,11 +591,8 @@ BinNormalisationFromECAT8::get_uncalibrated_bin_efficiency(const Bin& bin) const
                 const float start_time = get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
                 const float end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
-                lor_efficiency_this_pair
-                    *= get_dead_time_efficiency(pos1.axial_coord(),
-                                                singles_rates_ptr->get_singles_rate(pos1, start_time, end_time))
-                       * get_dead_time_efficiency(pos2.axial_coord(),
-                                                  singles_rates_ptr->get_singles_rate(pos2, start_time, end_time));
+                lor_efficiency_this_pair *= get_dead_time_efficiency(pos1, start_time, end_time)
+                                            * get_dead_time_efficiency(pos2, start_time, end_time);
               }
             if (this->use_geometric_factors())
               {
@@ -693,6 +690,17 @@ BinNormalisationFromECAT8::get_dead_time_efficiency(const int ring, const float 
   const float dtnp = this->rng_dtnp_array[ring];
   const float denom = 1.0F + 0.5F * singles_rate * dtnp;
   return std::exp(0.5F * singles_rate * dtp / denom) / denom;
+}
+
+float
+BinNormalisationFromECAT8::get_dead_time_efficiency(const DetectionPosition<>& det_pos,
+                                                    const double start_time,
+                                                    const double end_time) const
+{
+  if (is_null_ptr(singles_rates_ptr))
+    return 1;
+  return get_dead_time_efficiency(static_cast<int>(det_pos.axial_coord()),
+                                  singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time));
 }
 
 END_NAMESPACE_ECAT

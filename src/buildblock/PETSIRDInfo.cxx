@@ -188,9 +188,9 @@ PETSIRDInfo::figure_out_block_angles(std::set<float>& unique_angle_modules, cons
       }
 }
 
-PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geometry)
-    : petsird_header_sptr(std::make_shared<const petsird::Header>(header)),
-      petsird_scanner_info_sptr(petsird_header_sptr, &petsird_header_sptr->scanner),
+PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::string scanner_geometry)
+    : petsird_header_sptr(header_sptr),
+      petsird_scanner_info_sptr(header_sptr, &header_sptr->scanner),
       forced_geometry(scanner_geometry)
 {
 

@@ -111,6 +111,7 @@ public:
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
   float get_dead_time_efficiency(int ring, float singles_rate) const;
+  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
   bool use_geometric_factors() const;
   bool use_crystal_interference_factors() const;
   bool use_axial_effects_factors() const;
