@@ -33,7 +33,13 @@ BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT, constantsT>::set_privat
 {
   this->_spline_types = this_type;
   for (int i = 1; i <= num_dimensions; ++i)
-    detail::set_BSpline_values(this->_z1s[i], this->_z2s[i], this->_lambdas[i], this_type[i]);
+    {
+      constantsT z1{}, z2{}, lambda{};
+      detail::set_BSpline_values(z1, z2, lambda, this_type[i]);
+      this->_z1s[i] = z1;
+      this->_z2s[i] = z2;
+      this->_lambdas[i] = lambda;
+    }
 }
 
 template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
