@@ -97,7 +97,7 @@ run_forward_projection_cuda(RelatedViewgrams<float>& stir_sino,
     error("SPECTGPU: Viewgram tangential dimension does not match image x dimension.");
 
   if (!stack.is_allocated())
-    error("SPECTGPUFP: Something is wrong the CuVecs are not initialised");
+    error("SPECTGPUFP: Something is wrong, the arrays are not initialised");
 
   for (auto vg_iter = stir_sino.begin(); vg_iter != stir_sino.end(); ++vg_iter)
     {

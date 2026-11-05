@@ -202,10 +202,7 @@ BackProjectorByBinSPECTGPU::set_up(const shared_ptr<const ProjDataInfo>& proj_da
 void
 BackProjectorByBinSPECTGPU::get_output(DiscretisedDensity<3, float>& density) const
 {
-  //  copy_im_to_stir(density, dev_image);
   array_to_host(density, _b_allocatedStack.dev_image, true);
-
-  //  free_im_buffers(dev_image, dev_umap, _do_atten);
 }
 
 void
@@ -215,10 +212,6 @@ BackProjectorByBinSPECTGPU::start_accumulating_in_new_target()
   BackProjectorByBin::start_accumulating_in_new_target();
 
   initialise_im_buffers(this->_b_allocatedStack, false);
-
-  //  if (_do_atten)
-  //    array_to_device(_b_allocatedStack.dev_umap, *_att_coeff_sptr);
-  //  array_to_device(_b_allocatedStack.dev_image, *_density_sptr);
 }
 
 void
@@ -238,13 +231,11 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
       tls_stack.allocate(_b_allocatedStack.image_size, _b_allocatedStack.sino_size);
 
       if (_do_atten)
-#  pragma omp critical(BP_stir_array_access)
+#  pragma omp critical(SPECTGPU_BP_stir_array_access)
         {
           array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
         }
     }
-
-  //    array_to_device(tls_stack.dev_image, stir_image);
 
   initialise_im_buffers(tls_stack, false);
   run_backward_projection_cuda(tls_stack, // this->_b_allocatedStack,
@@ -272,24 +263,9 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
                                this->min_z,
                                this->min_y,
                                this->min_x);
-  //  float s =
-  //      std::accumulate(
-  //          tls_stack.dev_image.begin(),
-  //          tls_stack.dev_image.end(),
-  //          0.f);
 
-  //  fprintf(stderr,
-  //          "tid=%d image_sum=%e\n",
-  //          omp_get_thread_num(),
-  //          s);
-
-#  pragma omp critical(accumulate)
+#  pragma omp critical(SPECTGPU_BP_accumulate)
   {
-    //      const size_t n = omp_get_num_threads();
-    //      fprintf(stderr,
-    //              "num omp t=%zu \n",
-    //              n);
-
     accumulate_image_omp_contrib(_b_allocatedStack.dev_image,
                                  tls_stack.dev_image,
                                  this->block_dim.x,
@@ -300,7 +276,6 @@ BackProjectorByBinSPECTGPU::actual_back_project(DiscretisedDensity<3, float>& st
                                  this->grid_dim.z,
                                  _b_allocatedStack.image_size);
   }
-
 #else
   run_backward_projection_cuda(this->_b_allocatedStack,
                                stir_sino,

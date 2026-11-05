@@ -215,13 +215,18 @@ ForwardProjectorByBinSPECTGPU::actual_forward_project(RelatedViewgrams<float>& s
       tls_stack.allocate(_f_allocatedStack.image_size, _f_allocatedStack.sino_size);
 
       if (_do_atten)
-#  pragma omp critical(stir_array_access)
+      // the following critical is needed to protect STIR array access:
+      // array_to_device() accesses STIR Array storage through get_const_full_data_ptr()/release_const_full_data_ptr(),
+      // which is not thread-safe. Concurrent calls trigger the _full_pointer_access assertion.
+      // The critical protects STIR array access, not the CUDA buffers.
+      // TODO check of `get_const_full_data_ptr()` could avoid doing the check, as it is read-only access
+#  pragma omp critical(SPECTGPU_stir_array_access)
         {
           array_to_device(tls_stack.dev_umap, *_att_coeff_sptr);
         }
     }
 
-#  pragma omp critical(stir_array_access)
+#  pragma omp critical(SPECTGPU_stir_array_access)
   {
     array_to_device(tls_stack.dev_image, stir_image);
   }
