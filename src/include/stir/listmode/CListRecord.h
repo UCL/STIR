@@ -67,15 +67,15 @@ public:
 class CListRecord : public ListRecord
 {
 public:
-  virtual bool is_singles() const { return false; }
-  virtual ListAccumulatedSingles& singles()
+  virtual bool is_accumulated_singles() const { return false; }
+  virtual ListAccumulatedSingles& accumulated_singles()
   {
-    error("singles() not supported");
+    error("accumulated_singles() not supported");
     return *static_cast<ListAccumulatedSingles*>(nullptr);
   }
-  virtual const ListAccumulatedSingles& singles() const
+  virtual const ListAccumulatedSingles& accumulated_singles() const
   {
-    error("singles() not supported");
+    error("accumulated_singles() not supported");
     return *static_cast<ListAccumulatedSingles*>(nullptr);
   }
 };

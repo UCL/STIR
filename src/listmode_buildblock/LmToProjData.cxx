@@ -799,12 +799,12 @@ LmToProjData::process_data()
                     auto* crecord = dynamic_cast<CListRecord*>(&record);
                     // Accumulate singles only on the first pass (first segment and TOF batch),
                     // to avoid double-counting when the listmode data is re-read for additional batches.
-                    if (crecord != nullptr && !record.is_time() && !record.is_event() && crecord->is_singles()
+                    if (crecord != nullptr && !record.is_time() && !record.is_event() && crecord->is_accumulated_singles()
                         && start_segment_index == output_proj_data_sptr->get_min_segment_num()
                         && start_timing_pos_index == output_proj_data_sptr->get_min_tof_pos_num())
                       {
-                        const unsigned int ibck = crecord->singles().get_bucket_index();
-                        const float cnt = crecord->singles().get_singles_count();
+                        const unsigned int ibck = crecord->accumulated_singles().get_bucket_index();
+                        const float cnt = crecord->accumulated_singles().get_singles_count();
                         if (ibck < static_cast<unsigned int>(num_buckets))
                           {
                             singles_per_bucket[ibck] += cnt;

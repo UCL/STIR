@@ -239,7 +239,7 @@ public:
   }
 
   //! Returns true if this word is a singles record (type=1, subtype=0b10)
-  bool is_singles() const { return this->data.type == 1U && this->data.subtype == 1U; }
+  bool is_accumulated_singles() const { return this->data.type == 1U && this->data.subtype == 1U; }
 
   unsigned int get_bucket_index() const override { return this->data.bucket; }
   //! Number of singles in this record
@@ -279,9 +279,9 @@ public:
   const CListEventECAT8_32bit& event() const override { return this->event_data; }
   CListTimeECAT8_32bit& time() override { return this->time_data; }
   const CListTimeECAT8_32bit& time() const override { return this->time_data; }
-  bool is_singles() const override { return this->singles_data.is_singles(); }
-  CListSinglesECAT8_32bit& singles() override { return this->singles_data; }
-  const CListSinglesECAT8_32bit& singles() const override { return this->singles_data; }
+  bool is_accumulated_singles() const override { return this->singles_data.is_accumulated_singles(); }
+  CListSinglesECAT8_32bit& accumulated_singles() override { return this->singles_data; }
+  const CListSinglesECAT8_32bit& accumulated_singles() const override { return this->singles_data; }
 
   bool operator==(const CListRecord& e2) const
   {
