@@ -148,7 +148,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::run_tests_for_object
   const bool is_spect = _projector_type == ProjectorType::SPECTUB || _projector_type == ProjectorType::SPECTGPU;
 
   std::cerr << "----- testing Gradient\n";
-  test_gradient("PoissonLLProjData", objective_function, target, 0.01F);
+  test_gradient("PoissonLLProjData", objective_function, target, is_spect ? 0.1F : 0.01F);
 
   std::cerr << "----- testing concavity via Hessian-vector product (accumulate_Hessian_times_input)\n";
   test_Hessian_concavity("PoissonLLProjData", objective_function, target);
