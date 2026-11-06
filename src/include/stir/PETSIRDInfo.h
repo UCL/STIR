@@ -73,7 +73,7 @@ public:
 
   inline std::shared_ptr<Scanner> get_scanner_sptr() const { return stir_scanner_sptr; }
 
-  inline shared_ptr<const petsird::ScannerInformation> get_petsird_scanner_info_sptr() const { return petsird_scanner_info_sptr; }
+  inline const petsird::ScannerInformation& get_petsird_scanner_info() const { return petsird_header_sptr->scanner; }
 
   inline shared_ptr<PETSIRDToSTIRDetectorIndexMap> get_petsird_to_stir_map() const { return petsird_to_stir; }
 
@@ -134,8 +134,6 @@ private:
    when it contains efficiency tables.
   */
   shared_ptr<const petsird::Header> petsird_header_sptr;
-  //! Scanner information as provided by PETSIRD (points into petsird_header_sptr, no copy).
-  shared_ptr<const petsird::ScannerInformation> petsird_scanner_info_sptr;
   //! Active scanner instance.
   shared_ptr<Scanner> stir_scanner_sptr;
   //! Number of replicated modules.

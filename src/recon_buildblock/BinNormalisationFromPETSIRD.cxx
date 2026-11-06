@@ -165,7 +165,7 @@ BinNormalisationFromPETSIRD::get_dead_time_efficiency(const DetectionPosition<>&
   const auto it = map.find(det_pos);
   if (it == map.end())
     error("BinNormalisationFromPETSIRD: DetectionPosition not found in STIR->PETSIRD map");
-  const auto crystal = petsird_helpers::make_detection_bin(*petsird_info_sptr->get_petsird_scanner_info_sptr(), 0, it->second);
+  const auto crystal = petsird_helpers::make_detection_bin(petsird_info_sptr->get_petsird_scanner_info(), 0, it->second);
 
   // time-weighted average over the dead time blocks that overlap the frame
   double sum = 0;
