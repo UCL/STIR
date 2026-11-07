@@ -46,6 +46,14 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1777>PR #1777</a>.
     </li>
+    <li>
+      Fix <tt>ProjMatrixByBinSPECTUB</tt> and <tt>ProjMatrixByBinPinholeSPECTUB</tt> returning an empty LOR for the
+      first bin that is requested in each view (when not all views are kept in the cache). This made forward and back
+      projection inconsistent when they are used one after the other on the same view, as in the gradient of the
+      Poisson log-likelihood.
+      <br>
+      See <a href=https://github.com/UCL/STIR/issues/1576>issue #1576</a>.
+    </li>
  </ul>
 
   <h3>New functionality</h3>
