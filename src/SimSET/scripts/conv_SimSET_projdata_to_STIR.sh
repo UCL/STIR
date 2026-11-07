@@ -61,7 +61,25 @@ fi
 
 # find min and max scatter bins in the SimSET file
 min_scatter_bin_num=`${PRINTHEADER} ${simset_file} |grep "Binning: min number of scatters" |awk '{ print $6 }'`
+
+echo "Min scatter bin number: $min_scatter_bin_num"
+
 max_scatter_bin_num=`${PRINTHEADER} ${simset_file} |grep "Binning: max number of scatters" |awk '{ print $6 }'`
+
+echo "Max scatter bin number: $max_scatter_bin_num"
+
+en1_bin_num=`${PRINTHEADER} ${simset_file} |grep "Binning: number of Eenergy(1) bins" |awk '{ print $6 }'`
+
+echo "Energy(1) bin number: $en1_bin_num"
+
+en2_bin_num=`${PRINTHEADER} ${simset_file} |grep "Binning: number of Energy(2) bins" |awk '{ print $6 }'`
+
+echo "Energy(2) bin number: $en2_bin_num"
+
+
+echo "DEBUG: All energy-related lines:"
+${PRINTHEADER} ${simset_file} | grep -i "energy"
+
 
 # find scatter_parameter (maybe called scatter_randoms_parameter in the future)
 scatter_parameter=`${PRINTHEADER} ${simset_file} |grep "Binning: scatter.*parameter" |awk '{ print $4 }'`
@@ -83,23 +101,34 @@ all_scatter_bin_nums=`count $min_scatter_bin_num $max_scatter_bin_num`
 
 echo Executing ${conv_cmdline}
 
+for en1 in `count 0 $(($en1_bin_num - 1))` ;
+    do for en2 in `count 0 $(($en2_bin_num - 1))` ; do
+      en_bin_num=$(( ${en2_bin_num} * $en1 + $en2 ))
+      en_dataset=$(( ${en_bin_num} * ${num_scatter_bins}))
+      en_name=__${en1}_${en2}
+         echo "extracting energy bin $en_bin_num, dataset ${en_dataset}, corresponding to $en1, $en2"
+
 case $scatter_parameter in 
 
   0)
-    eval ${conv_cmdline}  0 total
+    eval ${conv_cmdline}  0 total${en_name}
     ;;
 
   1|6)
     if [ $min_scatter_bin_num == 0 ]; then
-      eval ${conv_cmdline}  0 noscatter
+      dataset=$(( ${en_dataset} + 0))
+      eval ${conv_cmdline}  ${dataset} noscatter${en_name}
       if [ $max_scatter_bin_num -ge 1 ]; then
-        eval ${conv_cmdline} 1 scatter
+        dataset=$(( ${en_dataset} + 1))
+        eval ${conv_cmdline} ${dataset} scatter${en_name}
         if [ $scatter_parameter == 6 ]; then
-	  eval ${conv_cmdline} 2 randoms
+        dataset=$(( ${en_dataset} + 2))
+	      eval ${conv_cmdline} ${dataset} randoms${en_name}
         fi
       else
         if [ $scatter_parameter == 6 ]; then
-          eval ${conv_cmdline} 1 randoms
+          dataset=$(( ${en_dataset} + 1))
+          eval ${conv_cmdline} ${dataset} randoms${en_name}
         fi
       fi
     fi
@@ -113,8 +142,9 @@ case $scatter_parameter in
       do 
          scatter_bin_num=$(( ${num_scatter_bins} * $i + $j ))
          echo extracting scatter bin $scatter_bin_num
-         echo ${conv_cmdline} ${scatter_bin_num} blue${i}_pink${j};
-         eval ${conv_cmdline} ${scatter_bin_num} blue${i}_pink${j};
+         dataset=$(( ${en_dataset} + ${scatter_bin_num} ))
+         echo ${conv_cmdline} ${dataset} blue${i}_pink${j}${en_name};
+         eval ${conv_cmdline} ${dataset} blue${i}_pink${j}${en_name};
       done 
     done 
     
@@ -131,7 +161,7 @@ case $scatter_parameter in
       do for j in $all_scatter_bin_nums
         do     
           k=$(( $i + $j )) 
-          current=blue${i}_pink${j}.hs
+          current=blue${i}_pink${j}${en_name}.hs
           if [ $k -eq 0 ]; then all_trues="$all_trues $current"; fi
           if [ $k -eq 1 ]; then all_singles="$all_singles $current"; fi
           if [ $k -eq 2 ]; then  if [ $i -eq 1 ]; then all_singles12="$all_singles12 $current";fi; fi;
@@ -142,15 +172,15 @@ case $scatter_parameter in
     done
 
     # TODO we currently pipe all output to /dev/null because there's a lot of stuff because blocksizes do not work
-    stir_math -s --add trues $all_trues >& /dev/null
-    stir_math -s --add singles $all_singles >& /dev/null
+    stir_math -s --add trues${en_name} $all_trues >& /dev/null
+    stir_math -s --add singles${en_name} $all_singles >& /dev/null
     if [ ! -z "$all_singles12" ]; then
-      stir_math -s --add doubles11 $all_singles12 >& /dev/null
+      stir_math -s --add doubles11${en_name} $all_singles12 >& /dev/null
     fi
     if [ ! -z "$all_doubles1" ]; then
-      stir_math -s --add doubles20 $all_doubles1 $all_doubles2 >& /dev/null
+      stir_math -s --add doubles20${en_name} $all_doubles1 $all_doubles2 >& /dev/null
     fi
-    stir_math -s --add multiples $all_multiples >& /dev/null
+    stir_math -s --add multiples${en_name} $all_multiples >& /dev/null
     
     rm -f blue*s
 
@@ -169,12 +199,13 @@ case $scatter_parameter in
     do 
         echo extracting scatter bin $scatter_bin_num
         idx=$((scatter_bin_num - min_scatter_bin_num))
-        echo ${conv_cmdline} ${idx} scatter${scatter_bin_num};
-        eval ${conv_cmdline} ${idx} scatter${scatter_bin_num};
+        dataset=$(( ${en_dataset} + ${idx} ))
+        echo ${conv_cmdline} ${dataset} scatter${scatter_bin_num}${en_name};
+        eval ${conv_cmdline} ${dataset} scatter${scatter_bin_num}${en_name};
     done
     if [ $scatter_parameter == 10 -o $scatter_parameter == 9  ]; then
-        echo ${conv_cmdline} $((max_scatter_bin_num - min_scatter_bin_num + 1)) randoms
-        eval ${conv_cmdline} $((max_scatter_bin_num - min_scatter_bin_num + 1)) randoms
+        dataset=$(( ${en_dataset} + max_scatter_bin_num - min_scatter_bin_num + 1 ))
+        echo ${conv_cmdline}  ${dataset} randoms${en_name}
     fi 
     ;;
 
@@ -184,3 +215,6 @@ case $scatter_parameter in
     ;;
 
 esac
+
+done
+done
