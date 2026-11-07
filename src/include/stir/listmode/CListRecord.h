@@ -33,6 +33,7 @@ START_NAMESPACE_STIR
 class Bin;
 class ProjDataInfo;
 class Succeeded;
+class ListAccumulatedSingles;
 template <typename coordT>
 class CartesianCoordinate3D;
 template <typename coordT>
@@ -66,6 +67,17 @@ public:
 class CListRecord : public ListRecord
 {
 public:
+  virtual bool is_accumulated_singles() const { return false; }
+  virtual ListAccumulatedSingles& accumulated_singles()
+  {
+    error("accumulated_singles() not supported");
+    return *static_cast<ListAccumulatedSingles*>(nullptr);
+  }
+  virtual const ListAccumulatedSingles& accumulated_singles() const
+  {
+    error("accumulated_singles() not supported");
+    return *static_cast<ListAccumulatedSingles*>(nullptr);
+  }
 };
 
 class CListRecordWithGatingInput : public CListRecord

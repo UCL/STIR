@@ -25,7 +25,7 @@
   \author Sanida Mustafovic
   \author Daniel Deidda
 */
-
+#include "stir/data/SinglesRatesFromJSON.h"
 #include "stir/recon_buildblock/BinNormalisationFromECAT8.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
@@ -43,6 +43,7 @@
 #include "stir/utilities.h"
 #include "stir/warning.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <algorithm>
 #include <fstream>
 #include <cctype>
@@ -155,7 +156,8 @@ BinNormalisationFromECAT8::initialise_keymap()
   this->parser.add_parsing_key("singles rates", &this->singles_rates_ptr);
   this->parser.add_key("use_gaps", &this->_use_gaps);
   this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
-  // this->parser.add_key("use_dead_time", &this->_use_dead_time);
+  this->parser.add_key("use_dead_time", &this->_use_dead_time);
+  this->parser.add_key("singles filename", &this->singles_filename);
   this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
   this->parser.add_key("use_crystal_interference_factors", &this->_use_crystal_interference_factors);
   this->parser.add_key("use_axial_effects_factors", &this->_use_axial_effects_factors);
@@ -172,6 +174,17 @@ BinNormalisationFromECAT8::post_processing()
   //  this->set_calibration_factor(cross_calib_factor*calib_factor);   TODO understand if we need to use cross calib factor. Let's
   //  set 1 for now
   this->set_calibration_factor(1);
+  if (!singles_filename.empty())
+    {
+      auto sptr = std::make_shared<SinglesRatesFromJSON>();
+      if (sptr->read_from_file(singles_filename))
+        {
+          singles_rates_ptr = sptr;
+        }
+      else
+        warning(
+            format("BinNormalisationFromECAT8: could not read singles file {} so dead-time will be disabled", singles_filename));
+    }
   return false;
 }
 
@@ -326,6 +339,14 @@ BinNormalisationFromECAT8::read_norm_data(const string& filename)
   if (read_data(binary_data, axial_effects, ByteOrder::little_endian) != Succeeded::yes)
     error("failed reading axial_effects_factors from '%s'", full_data_file_name);
 
+  const int num_rings = scanner_ptr->get_num_rings(); // Paralyzable/non-paralyzable counts
+  rng_dtp_array = Array<1, float>(0, num_rings - 1);
+  rng_dtnp_array = Array<1, float>(0, num_rings - 1);
+  if (read_data(binary_data, rng_dtp_array, ByteOrder::little_endian) != Succeeded::yes)
+    warning("BinNormalisationFromECAT8: failed reading paralyzing DT parameters");
+  if (read_data(binary_data, rng_dtnp_array, ByteOrder::little_endian) != Succeeded::yes)
+    warning("BinNormalisationFromECAT8: failed reading non-paralyzing DT parameters");
+
   if (scanner_ptr->get_type() == Scanner::Siemens_mMR)
     {
       // for mMR, we need to shift the efficiencies for 1 crystal. This is probably because of where the gap is inserted
@@ -375,6 +396,8 @@ BinNormalisationFromECAT8::read_norm_data(const string& filename)
   /* Set up equation parameters for dead_time correction */
   float *axial_t1 = nrm_subheader_ptr->ring_dtcor1 ;		/* 'Paralyzing dead_times' for each axial Xstal */
   float *axial_t2 = nrm_subheader_ptr->ring_dtcor2 ;		/* 'Non-paralyzing dead_times' for each axial Xstal */
+  Array<1,float> rng_dtp_array;   // paralyzing DT per ring
+  Array<1,float> rng_dtnp_array;  // non-paralyzing DT per ring
   /* for 966
      24 entries for axial_t1 & axial_t2
      Each entry accounts for 2 crystal rings
@@ -484,7 +507,6 @@ BinNormalisationFromECAT8::use_crystal_interference_factors() const
 float
 BinNormalisationFromECAT8::get_uncalibrated_bin_efficiency(const Bin& bin) const
 {
-
   float total_efficiency = 0;
 
   /* Correct dead time */
@@ -660,22 +682,25 @@ BinNormalisationFromECAT8::find_axial_effects(int ring1, int ring2) const
 }
 
 float
+BinNormalisationFromECAT8::get_dead_time_efficiency(const int ring, const float singles_rate) const
+{
+  if (this->rng_dtp_array.size() == 0 || this->rng_dtnp_array.size() == 0)
+    error("BinNormalisationFromECAT8: dead-time parameters were not read from the normalisation file");
+  const float dtp = this->rng_dtp_array[ring];
+  const float dtnp = this->rng_dtnp_array[ring];
+  const float denom = 1.0F + 0.5F * singles_rate * dtnp;
+  return std::exp(0.5F * singles_rate * dtp / denom) / denom;
+}
+
+float
 BinNormalisationFromECAT8::get_dead_time_efficiency(const DetectionPosition<>& det_pos,
                                                     const double start_time,
                                                     const double end_time) const
 {
   if (is_null_ptr(singles_rates_ptr))
-    {
-      return 1;
-    }
-
-  // Get singles rate per block (rate per singles unit / blocks per singles unit).
-  const float rate = singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time) / num_blocks_per_singles_unit;
-
-  return (1.0F + axial_t1_array[det_pos.axial_coord() / num_axial_blocks_per_singles_unit] * rate
-          + axial_t2_array[det_pos.axial_coord() / num_axial_blocks_per_singles_unit] * rate * rate);
-
-  //* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % num_transaxial_crystals_per_block ] * rate ) ) ;
+    return 1;
+  return get_dead_time_efficiency(static_cast<int>(det_pos.axial_coord()),
+                                  singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time));
 }
 
 END_NAMESPACE_ECAT

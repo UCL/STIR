@@ -67,13 +67,13 @@ using STIRToPETSIRDDetectorIndexMap = std::map<stir::DetectionPosition<>, petsir
 class PETSIRDInfo
 {
 public:
-  explicit PETSIRDInfo(const petsird::Header& header, std::string scanner_geometry = "");
+  explicit PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::string scanner_geometry = "");
 
   // void initialize();
 
   inline std::shared_ptr<Scanner> get_scanner_sptr() const { return stir_scanner_sptr; }
 
-  inline shared_ptr<const petsird::ScannerInformation> get_petsird_scanner_info_sptr() const { return petsird_scanner_info_sptr; }
+  inline const petsird::ScannerInformation& get_petsird_scanner_info() const { return petsird_header_sptr->scanner; }
 
   inline shared_ptr<PETSIRDToSTIRDetectorIndexMap> get_petsird_to_stir_map() const { return petsird_to_stir; }
 
@@ -129,11 +129,13 @@ private:
                                                 const int rotation_axis);
 
   //! Scanner information as provided by PETSIRD.
-  shared_ptr<const petsird::ScannerInformation> petsird_scanner_info_sptr;
+  /*!
+   The PETSIRD header. This should be the only copy as it can be several GB
+   when it contains efficiency tables.
+  */
+  shared_ptr<const petsird::Header> petsird_header_sptr;
   //! Active scanner instance.
   shared_ptr<Scanner> stir_scanner_sptr;
-
-  shared_ptr<const petsird::Header> petsird_header_sptr;
   //! Number of replicated modules.
   uint32_t numberOfModules;
   //! Number of element indices per module.
