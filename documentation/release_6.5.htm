@@ -63,7 +63,7 @@
       Initial support for reading <a href=https://github.com/ETSInitiative/PETSIRD>PETSIRD</a> 0.9 list-mode data,
       the proposed standard for PET list-mode data from the
       <a href=https://etsinitiative.org/>Emission Tomography Standardization Initiative</a> (ETSI).
-      Some limitations include single layer, single module type geometry, no singles histogram, no dead-time.
+      Some limitations include single layer, single module type geometry, no singles histogram.
       See also <a href=https://github.com/ETSIhackers/STIR2PETSIRD>STIR2PETSIRD</a> for using STIR to write PETSIRD data.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
@@ -72,6 +72,21 @@
       Support for even number of TOF bins.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+    </li>
+    <li>
+      Dead-time correction for Siemens mMR (ECAT8) data. <code>lm_to_projdata</code> now writes the singles rates
+      of each time frame to a JSON file (<code>&lt;output prefix&gt;_f&lt;frame&gt;_singles.json</code>), which can be
+      given to <code>BinNormalisationFromECAT8</code> with the keywords <code>use_dead_time</code> and
+      <code>singles filename</code>. See the User's Guide.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
+    </li>
+    <li>
+      Dead-time correction for PETSIRD data, using the alive-time fractions per crystal that are stored in the
+      PETSIRD file. <a href=https://github.com/ETSIhackers/STIR2PETSIRD>STIR2PETSIRD</a> writes these when converting
+      mMR data. Module-pair alive-time fractions are not supported yet.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
     </li>
   </ul>
 
