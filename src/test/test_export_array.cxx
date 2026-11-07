@@ -104,7 +104,7 @@ ExportArrayTests::test_dynamic_data()
   //- ProjDataInfo
   //-- Scanner
   shared_ptr<Scanner> test_scanner_sptr(new Scanner(Scanner::Siemens_mMR));
-
+  test_scanner_sptr->set_up();
   //-- ExamInfo
   shared_ptr<ExamInfo> test_exam_info_sptr(new ExamInfo());
   // TODO, Currently all stir::Scanner types are PET.
@@ -293,6 +293,7 @@ ExportArrayTests ::test_static_data()
   //- ProjDataInfo
   //-- Scanner
   shared_ptr<Scanner> test_scanner_sptr(new Scanner(Scanner::Siemens_mMR));
+  test_scanner_sptr->set_up();
 
   //-- ExamInfo
   shared_ptr<ExamInfo> test_exam_info_sptr(new ExamInfo());

@@ -15,6 +15,7 @@ print(stir.Scanner.get_names_of_predefined_scanners())
 
 #%% create a scanner
 scanner=stir.Scanner.get_scanner_from_name("Siemens mMR")
+scanner.set_up()
 
 #%% create a ProjDataInfo, describing the geometry of the data acquired for that scanner
 span = 11

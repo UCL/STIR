@@ -23,6 +23,17 @@ TOF timing resolution (ps)                 := 400.0
 Number of virtual axial crystals per block := 0
 Number of virtual transaxial crystals per block:= 0
 
+; optional keywords to enable block geometry (defaults to cylindrical, in which case
+; crystals/block dimensions are effectively ignored.)
+; Note that the user of "virtual" crystals and block geometry likely will lead
+; to wrong results (untested).
+Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := BlocksOnCylindrical
+Distance between crystals in axial direction (cm)           := 0.63
+Distance between crystals in transaxial direction (cm)      := 0.42
+Distance between blocks in axial direction (cm)             := 3.78
+Distance between blocks in transaxial direction (cm)        := 3.78
+
+
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
 

@@ -144,9 +144,9 @@ ArcCorrectionTests::run_tests()
 {
   cerr << "-------- Testing ArcCorrection --------\n";
   ArcCorrection arc_correction;
-  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E962));
-
-  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E962));
+  scanner_sptr->set_up();
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                             /*span*/ 7,
                                                                             10,
                                                                             /*views*/ 96,
@@ -159,7 +159,7 @@ ArcCorrectionTests::run_tests()
   }
   cerr << "Using non-default range and bin-size\n";
   {
-    arc_correction.set_up(proj_data_info_ptr, 128, scanner_ptr->get_default_bin_size() * 2);
+    arc_correction.set_up(proj_data_info_ptr, 128, scanner_sptr->get_default_bin_size() * 2);
     run_tests_for_specific_proj_data_info(arc_correction);
   }
 }
@@ -169,9 +169,9 @@ ArcCorrectionTests::run_tests_tof()
 {
   cerr << "-------- Testing ArcCorrection for TOF scanner --------\n";
   ArcCorrection arc_correction;
-  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::PETMR_Signa));
-
-  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoGE(scanner_ptr,
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::PETMR_Signa));
+  scanner_sptr->set_up();
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoGE(scanner_sptr,
                                                                            /*max_delta*/ 5,
                                                                            /*views*/ 112,
                                                                            /*tang_pos*/ 357,
@@ -185,7 +185,7 @@ ArcCorrectionTests::run_tests_tof()
   }
   cerr << "Using non-default range and bin-size\n";
   {
-    arc_correction.set_up(proj_data_info_ptr, 357, scanner_ptr->get_default_bin_size() * 2);
+    arc_correction.set_up(proj_data_info_ptr, 357, scanner_sptr->get_default_bin_size() * 2);
     run_tests_for_specific_proj_data_info(arc_correction);
   }
 }

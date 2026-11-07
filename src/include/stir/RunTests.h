@@ -27,7 +27,9 @@
 #include "stir/stream.h"
 #include "stir/Bin.h"
 #include "stir/DetectionPosition.h"
+#include "stir/DetectionPositionPair.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/LORCoordinates.h"
 #include <iostream>
 #include <typeinfo>
 #include <vector>
@@ -129,6 +131,15 @@ public:
   {
     return this->check_if_equal_generic(a, b, str);
   }
+  template <class T>
+  bool check_if_equal(const DetectionPositionPair<T>& a, const DetectionPositionPair<T>& b, const std::string& str = "")
+  {
+    return this->check_if_equal_generic(a, b, str);
+  }
+  template <class T>
+  bool check_if_equal(const LORInAxialAndNoArcCorrSinogramCoordinates<T>& a,
+                      const LORInAxialAndNoArcCorrSinogramCoordinates<T>& b,
+                      const std::string& str = "");
 
   // VC 6.0 needs definition of template members in the class def unfortunately.
   //! check equality by calling check_if_equal on real and imaginary parts
@@ -275,7 +286,7 @@ protected:
   {
     if (a != b)
       {
-        std::cerr << "Error : unequal values are " << a << " and " << b << ". " << str << std::endl;
+        std::cerr << "Error : unequal values are \n\t" << a << "\n\tand\n\t" << b << "\n\t" << str << std::endl;
         everything_ok = false;
         return false;
       }
@@ -435,6 +446,21 @@ RunTests::check_if_equal(const unsigned long long a, const unsigned long long b,
   return this->check_if_equal_generic(a, b, str);
 }
 #endif
+
+template <class T>
+bool
+RunTests::check_if_equal(const LORInAxialAndNoArcCorrSinogramCoordinates<T>& a,
+                         const LORInAxialAndNoArcCorrSinogramCoordinates<T>& b,
+                         const std::string& str)
+{
+  bool ok = this->check_if_equal(a.radius(), b.radius(), str + ": radius") && this->check_if_equal(a.z1(), b.z1(), str + ": z1")
+            && this->check_if_equal(a.z2(), b.z2(), str + ": z2") && this->check_if_equal(a.beta(), b.beta(), str + ": beta")
+            && this->check_if_equal(a.phi(), b.phi(), str + ": phi")
+            && this->check_if_equal(a.is_swapped(), b.is_swapped(), str + ": is_swapped");
+  if (!ok)
+    std::cerr << "\t(comparing " << a << " and " << b << ")\n";
+  return ok;
+}
 
 bool
 RunTests::check_if_equal(const ProjDataInMemory& t1, const ProjDataInMemory& t2, const std::string& str)
