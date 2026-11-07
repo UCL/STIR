@@ -41,12 +41,17 @@ OSMAPOSLParameters :=
         End Projection Matrix By Bin SPECT UB Parameters:=
 
      End Projector Pair Using Matrix Parameters :=
+     subset sensitivity filenames := UBsens__subset{}
+  recompute sensitivity := 1
+  z zoom := 0.5
+  xy output image size (in pixels) := 128
+  z output image size (in pixels) := 128
 
   end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
   ; best to specifiy an initial image (e.g. filled with 1) for sizes
   ; or see OSMAPOSL_osem_with_interfiltering.par and FBP2D_SPECT.par for some keywords 
-  initial estimate:= init.hv
+  ;initial estimate:= init.hv
   output filename prefix := out
 
   ; needs to be a divisor of the number of views
