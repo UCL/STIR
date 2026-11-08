@@ -15,6 +15,10 @@ Naming of these variables is currently almost random, sorry.
 The scripts don't do proper error handling. If they suddenly stop without diagnostics, go
 and look for a log file.
 
+TODO: the example scripts do not use dead-time correction yet. To add it, run `lm_to_projdata` to get the
+`_singles.json` file of each frame and add `use_dead_time := 1` and `singles filename := ...` to the
+`Bin Normalisation From ECAT8` section of the normalisation par file (see the User's Guide).
+
 The scripts need template files from this directory. By default
 they assume they are located in the `Siemens-mMR` directory of the STIR
 examples folder, as obtained by `stir_config --examples-dir`.
