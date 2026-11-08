@@ -17,21 +17,21 @@
 
   \par Usage
   \code
-  conv_SimSET_crystal_pairs_to_STIR output_prefix template_projdata weight_file mode \
-      num_block_rings num_blocks_per_ring crystals_per_block_axial crystals_per_block_transaxial
+  conv_SimSET_crystal_pairs_to_STIR output_prefix template_projdata weight_file mode
   \endcode
   \param output_prefix outputs are written as <tt>output_prefix_<label>.hs</tt>
   \param template_projdata projection data describing the scanner and the output sinogram
   \param weight_file SimSET's <tt>weight_image_path</tt> from the \c bin.rec file
   \param mode \c multiples or \c singles_scat, see below
 
-  The last four arguments describe the simulated SimSET detector, and have to agree with
-  the template's scanner:
-  - \c num_block_rings : number of block rings in \c det.rec that contain active crystals
-    (rings with only shielding do not count)
-  - \c num_blocks_per_ring : \c ring_num_blocks_in_ring in the ring parameter file
-  - \c crystals_per_block_axial : number of active crystals per block along z
-  - \c crystals_per_block_transaxial : number of active crystals per block along y
+  The block layout is taken from the template's scanner, which has to agree with the
+  simulated SimSET detector:
+  - number of rings / crystals per block in axial direction: number of block rings in
+    \c det.rec that contain active crystals (rings with only shielding do not count)
+  - number of detectors per ring / crystals per block in transaxial direction:
+    \c ring_num_blocks_in_ring in the ring parameter file
+  - crystals per block in axial direction: number of active crystals per block along z
+  - crystals per block in transaxial direction: number of active crystals per block along y
 
   When every element of the block is an active crystal, the last two are
   <tt>block_layer_num_z_changes + 1</tt> and <tt>block_layer_num_y_changes + 1</tt>.
@@ -40,9 +40,10 @@
   A weight file is a SimSET header of 32768 bytes, followed by one or more grids
   of <tt>num_crystals x num_crystals</tt> native-endian \c floats. How many grids
   there are was decided at simulation time by the \c bin.rec file.
-  - \c multiples expects 1 grid, written as label \c multiples.
+  - \c multiples expects 1 grid (e.g. <tt>scatter_param = 5</tt>, <tt>min_s = max_s = 2</tt>),
+    written as label \c multiples.
   - \c singles_scat expects 2 grids, <tt>[unscattered][single scatter]</tt>
-    (e.g. <tt>scatter_param = 5</tt>, <tt>min_s = max_s = 2</tt>), written as labels
+    (e.g. <tt>scatter_param = 4</tt>, <tt>min_s = 0</tt>, <tt>max_s = 1</tt>), written as labels
     \c unscattered and \c singles_scat.
   The number of grids in the file has to match the mode.
 
@@ -55,8 +56,7 @@
   \endcode
   with <tt>block_index = axial_block * num_transaxial_blocks + transaxial_block</tt>.
   A template with the right total number of crystals but a different block
-  subdivision would give a permuted, wrong, sinogram without any error, which is
-  why the SimSET detector has to be given on the command line.
+  subdivision would give a permuted, wrong, sinogram without any error.
   Only the upper triangle of each grid (<tt>crystal1 < crystal2</tt>) is used.
 
   The views of the output are stored in reverse order (<tt>view -> num_views - 1 - view</tt>).
@@ -69,6 +69,8 @@
 
   \warning The whole grid is read into memory (4 num_crystals^2 bytes, 5.8 GB for 38016 crystals).
   \warning Only Cylindrical and BlocksOnCylindrical non-arc-corrected, non-TOF, templates are supported.
+
+  \author Antonia Reeves
 */
 
 #include "stir/ProjData.h"
@@ -165,7 +167,6 @@ rebin_grid(ProjDataInMemory& proj_data,
                     std::swap(c1, c2);
                   sum += grid[c1 * num_crystals + c2];
                 }
-              // every output bin is written by exactly one iteration, so no synchronisation is needed
               proj_data.set_bin_value(Bin(seg, num_views - 1 - view, ax, tang, sum));
             }
       }
@@ -176,19 +177,13 @@ rebin_grid(ProjDataInMemory& proj_data,
 int
 main(int argc, char** argv)
 {
-  if (argc != 9)
+  if (argc != 5)
     {
-      std::cerr << "Usage: " << argv[0] << " output_prefix template_projdata weight_file mode \\\n"
-                << "    num_block_rings num_blocks_per_ring crystals_per_block_axial crystals_per_block_transaxial\n"
+      std::cerr << "Usage: " << argv[0] << " output_prefix template_projdata weight_file mode\n"
                 << "  mode = multiples | singles_scat\n"
                 << "    multiples    : 1-grid weight file, writes <output_prefix>_multiples.hs\n"
                 << "    singles_scat : 2-grid weight file [unscattered][single scatter],\n"
-                << "                   writes <output_prefix>_unscattered.hs and <output_prefix>_singles_scat.hs\n"
-                << "  The last four describe the simulated SimSET detector:\n"
-                << "    num_block_rings              : block rings in det.rec that contain active crystals\n"
-                << "    num_blocks_per_ring          : ring_num_blocks_in_ring in the ring parameter file\n"
-                << "    crystals_per_block_axial     : active crystals per block along z\n"
-                << "    crystals_per_block_transaxial: active crystals per block along y\n";
+                << "                   writes <output_prefix>_unscattered.hs and <output_prefix>_singles_scat.hs\n";
       return EXIT_FAILURE;
     }
 
@@ -196,10 +191,6 @@ main(int argc, char** argv)
   const std::string template_filename = argv[2];
   const std::string weight_filename = argv[3];
   const std::string mode = argv[4];
-  const int simset_num_block_rings = std::stoi(argv[5]);
-  const int simset_num_blocks_per_ring = std::stoi(argv[6]);
-  const int simset_crystals_per_block_axial = std::stoi(argv[7]);
-  const int simset_crystals_per_block_trans = std::stoi(argv[8]);
 
   std::vector<std::string> labels;
   if (mode == "multiples")
@@ -211,6 +202,7 @@ main(int argc, char** argv)
 
   const auto template_sptr = ProjData::read_from_file(template_filename);
   const auto proj_data_info_sptr = template_sptr->get_proj_data_info_sptr();
+  // TODO use ProjDataInfoPETWithDiscreteDetectors (here and in rebin_grid()) once #1746 is merged
   const auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get());
   if (!proj_data_info_ptr)
     error("conv_SimSET_crystal_pairs_to_STIR: the template has to be non-arc-corrected projection data");
@@ -227,21 +219,6 @@ main(int argc, char** argv)
   const CrystalIndexer crystal_index{ scanner.get_num_axial_crystals_per_block(),
                                       scanner.get_num_transaxial_crystals_per_block(),
                                       dets_per_ring / scanner.get_num_transaxial_crystals_per_block() };
-  if (simset_crystals_per_block_axial != crystal_index.crystals_per_block_axial
-      || simset_crystals_per_block_trans != crystal_index.crystals_per_block_trans
-      || simset_num_block_rings * simset_crystals_per_block_axial != num_rings
-      || simset_num_blocks_per_ring * simset_crystals_per_block_trans != dets_per_ring)
-    error(format("conv_SimSET_crystal_pairs_to_STIR: the template does not describe the SimSET detector.\n"
-                 "SimSET: {} block rings of {} blocks of {} x {} (axial x transaxial) crystals\n"
-                 "STIR template: {} rings of {} detectors, blocks of {} x {} (axial x transaxial) crystals",
-                 simset_num_block_rings,
-                 simset_num_blocks_per_ring,
-                 simset_crystals_per_block_axial,
-                 simset_crystals_per_block_trans,
-                 num_rings,
-                 dets_per_ring,
-                 crystal_index.crystals_per_block_axial,
-                 crystal_index.crystals_per_block_trans));
 
   const std::uint64_t num_crystals = static_cast<std::uint64_t>(num_rings) * dets_per_ring;
 

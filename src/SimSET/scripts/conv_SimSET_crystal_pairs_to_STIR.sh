@@ -19,6 +19,8 @@
 #  SPDX-License-Identifier: Apache-2.0
 #
 #  See STIR/LICENSE.txt for details
+#
+# Author: Antonia Reeves
 
 if [ $# -ne 3 ]; then
     echo "usage:"
@@ -71,24 +73,6 @@ case "${scatter_parameter} ${min_s} ${max_s}" in
     ;;
 esac
 
-# find the block layout from the STIR template
-template_value() {
-  value=$(grep -i "^ *$1 *:=" "${template}" | head -1 | awk -F':=' '{ print $2 }' | tr -d ' \r')
-  if [ -z "$value" ]; then
-    echo "ERROR: \"$1\" not found in ${template}" >&2
-    exit 1
-  fi
-  echo "$value"
-}
-num_rings=$(template_value "Number of rings")
-num_detectors_per_ring=$(template_value "Number of detectors per ring")
-crystals_per_block_axial=$(template_value "Number of crystals per block in axial direction")
-crystals_per_block_transaxial=$(template_value "Number of crystals per block in transaxial direction")
-
-num_block_rings=$(( num_rings / crystals_per_block_axial ))
-num_blocks_per_ring=$(( num_detectors_per_ring / crystals_per_block_transaxial ))
-
-conv_cmdline="conv_SimSET_crystal_pairs_to_STIR ${output_prefix} ${template} ${weight_file} ${mode} \
-  ${num_block_rings} ${num_blocks_per_ring} ${crystals_per_block_axial} ${crystals_per_block_transaxial}"
+conv_cmdline="conv_SimSET_crystal_pairs_to_STIR ${output_prefix} ${template} ${weight_file} ${mode}"
 echo Executing ${conv_cmdline}
 ${conv_cmdline}
