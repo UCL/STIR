@@ -66,7 +66,7 @@ PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique
   int detected_axis = -1;
 
   std::vector<petsird::ReplicatedDetectorModule> replicated_module_list
-      = petsird_scanner_info_sptr->scanner_geometry.replicated_modules;
+      = get_petsird_scanner_info().scanner_geometry.replicated_modules;
   for (const auto& module : replicated_module_list)
     for (const auto& mod_trans : module.transforms)
       {
@@ -146,7 +146,7 @@ PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_di
     return false;
   };
 
-  for (const auto& module : petsird_scanner_info_sptr->scanner_geometry.replicated_modules)
+  for (const auto& module : get_petsird_scanner_info().scanner_geometry.replicated_modules)
     {
       for (const auto& el_trans : module.object.detecting_elements.transforms)
         {
@@ -173,7 +173,7 @@ void
 PETSIRDInfo::figure_out_block_angles(std::set<float>& unique_angle_modules, const int rot_axis)
 {
 
-  for (const auto& module : petsird_scanner_info_sptr->scanner_geometry.replicated_modules)
+  for (const auto& module : get_petsird_scanner_info().scanner_geometry.replicated_modules)
     for (const auto& transform : module.transforms)
       {
         if (rot_axis == 0)
@@ -188,16 +188,15 @@ PETSIRDInfo::figure_out_block_angles(std::set<float>& unique_angle_modules, cons
       }
 }
 
-PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geometry)
-    : petsird_scanner_info_sptr(std::make_shared<const petsird::ScannerInformation>(header.scanner)),
-      petsird_header_sptr(std::make_shared<const petsird::Header>(header)),
+PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::string scanner_geometry)
+    : petsird_header_sptr(header_sptr),
       forced_geometry(scanner_geometry)
 {
 
-  if (!petsird_scanner_info_sptr)
-    error("PETSIRDInfo: Null PETSIRD ScannerInformation pointer provided.");
+  if (!petsird_header_sptr)
+    error("PETSIRDInfo: Null PETSIRD Header pointer provided.");
 
-  const auto& geom = petsird_scanner_info_sptr->scanner_geometry;
+  const auto& geom = get_petsird_scanner_info().scanner_geometry;
 
   if (geom.replicated_modules.empty())
     error("PETSIRDInfo: scanner_geometry.replicated_modules is empty.");
@@ -210,14 +209,14 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
   //! TODO: Determine the DOI based on material
   float average_doi = 0.0;
-  if (petsird_scanner_info_sptr->bulk_materials.size() > 0)
+  if (get_petsird_scanner_info().bulk_materials.size() > 0)
     {
-      const std::string& material = petsird_scanner_info_sptr->bulk_materials[0].name;
+      const std::string& material = get_petsird_scanner_info().bulk_materials[0].name;
       if (material.size() > 0)
         average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
     }
 
-  type_of_module = petsird_scanner_info_sptr->scanner_geometry.replicated_modules.size() - 1;
+  type_of_module = get_petsird_scanner_info().scanner_geometry.replicated_modules.size() - 1;
   if (type_of_module > 0)
     {
       error("Multiple types of PETSIRD modules are not supported. Abort.");
@@ -225,7 +224,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 
   module_pair = petsird::TypeOfModulePair{ type_of_module, type_of_module };
 
-  const auto& tof_bin_edges = petsird_scanner_info_sptr->tof_bin_edges[type_of_module][type_of_module];
+  const auto& tof_bin_edges = get_petsird_scanner_info().tof_bin_edges[type_of_module][type_of_module];
   info(format("Num. of TOF bins in PETSIRD {}", tof_bin_edges.NumberOfBins()));
   if (tof_bin_edges.NumberOfBins() > 1)
     {
@@ -235,12 +234,12 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
     }
 
   std::set<float> unique_tof_values;
-  vector_utils::find_unique_values_2D(unique_tof_values, petsird_scanner_info_sptr->tof_resolution);
+  vector_utils::find_unique_values_2D(unique_tof_values, get_petsird_scanner_info().tof_resolution);
   //! TODO: Supports only single type of module
-  numberOfModules = petsird_scanner_info_sptr->scanner_geometry.replicated_modules[0].NumberOfObjects();
+  numberOfModules = get_petsird_scanner_info().scanner_geometry.replicated_modules[0].NumberOfObjects();
   //! TODO: Supports only single type of module
   numberOfElementsIndices
-      = petsird_scanner_info_sptr->scanner_geometry.replicated_modules[0].object.detecting_elements.NumberOfObjects();
+      = get_petsird_scanner_info().scanner_geometry.replicated_modules[0].object.detecting_elements.NumberOfObjects();
   std::set<float> unique_dim1_values, unique_dim2_values, unique_dim3_values;
   std::set<float> unique_tof_resolutions;
 
@@ -281,7 +280,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
           {
             petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, 1 };
             auto box_shape = petsird_helpers::geometry::get_detecting_box(
-                *petsird_scanner_info_sptr, type_of_module, expanded_detection_bin);
+                get_petsird_scanner_info(), type_of_module, expanded_detection_bin);
             CartesianCoordinate3D<float> mean_coord;
             for (auto& corner : box_shape.corners)
               { // if STIR (z,y,x) -> PETSIRD (-y, -x, z) pheraps  the order below needs to be changed
@@ -389,9 +388,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       (num_transaxial_blocks * unique_elements_vertical_values.size()),
                       unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
                       /* number of non arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* number of maximum arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* inner ring radius */
                       radius,
                       /* doi */ average_doi, // average_doi,
@@ -415,7 +414,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       unique_elements_vertical_values.size() / blocks_per_bucket_transaxial,
                       /*num_detector_layers_v*/
                       1,                                                           // num_detector_layers_v
-                      petsird_scanner_info_sptr->energy_resolution_at_511.front(), // energy_resolution_v
+                      get_petsird_scanner_info().energy_resolution_at_511.front(), // energy_resolution_v
                       511,                                                         // reference_energy_v
                       tof_bin_edges.NumberOfBins(),
                       (tof_bin_edges.edges[1] - tof_bin_edges.edges[0]) / speed_of_light_in_mm_per_ps_div2,
@@ -437,9 +436,9 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       (num_transaxial_blocks * unique_elements_vertical_values.size()),
                       unique_dim3_values.size() * unique_elements_horizontal_values.size() /* num of rings */,
                       /* number of non arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* number of maximum arccor bins */
-                      (num_transaxial_blocks * unique_elements_vertical_values.size()) / 2,
+                      (num_transaxial_blocks * unique_elements_vertical_values.size()) - 1,
                       /* inner ring radius */
                       radius,
                       /* doi */ average_doi,
@@ -463,7 +462,7 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
                       unique_elements_vertical_values.size() / blocks_per_bucket_transaxial,
                       /*num_detector_layers_v*/
                       1,                                                           // num_detector_layers_v
-                      petsird_scanner_info_sptr->energy_resolution_at_511.front(), // energy_resolution_v
+                      get_petsird_scanner_info().energy_resolution_at_511.front(), // energy_resolution_v
                       511,                                                         // reference_energy_v
                       1,
                       0.F,
@@ -583,9 +582,10 @@ PETSIRDInfo::PETSIRDInfo(const petsird::Header& header, std::string scanner_geom
 float
 PETSIRDInfo::get_detection_efficiency_for_bin(const stir::DetectionPositionPair<>& dp) const
 {
-  const auto& detection_bin_efficiencies = petsird_scanner_info_sptr->detection_efficiencies.detection_bin_efficiencies;
+  const auto& detection_efficiencies = get_petsird_scanner_info().detection_efficiencies;
 
-  if (!detection_bin_efficiencies)
+  if (detection_efficiencies.detection_bin_efficiencies.empty()
+      && detection_efficiencies.module_pair_efficiencies_vectors.empty())
     {
       return 1.f; // no efficiencies available
     }
@@ -626,20 +626,23 @@ PETSIRDInfo::get_detection_efficiency_for_bin(const stir::DetectionPositionPair<
     }
 
   const auto det0 = petsird_helpers::make_detection_bin(
-      *petsird_scanner_info_sptr, type_of_module, it0->second); // it0->second is ExpandedDetectionBin
+      get_petsird_scanner_info(), type_of_module, it0->second); // it0->second is ExpandedDetectionBin
 
-  const auto det1 = petsird_helpers::make_detection_bin(*petsird_scanner_info_sptr, type_of_module, it1->second);
+  const auto det1 = petsird_helpers::make_detection_bin(get_petsird_scanner_info(), type_of_module, it1->second);
 
-  return petsird_helpers::get_detection_efficiency(*petsird_scanner_info_sptr.get(), module_pair, det0, det1);
+  // the module-pair efficiencies are only stored for ordered detection bins (first >= second), see petsird_helpers
+  if (det0 >= det1)
+    return petsird_helpers::get_detection_efficiency(get_petsird_scanner_info(), module_pair, det0, det1);
+  return petsird_helpers::get_detection_efficiency(get_petsird_scanner_info(), module_pair, det1, det0);
 }
 
 float
 PETSIRDInfo::get_lower_energy_threshold() const
 {
-  if (petsird_scanner_info_sptr->event_energy_bin_edges.size() == 0)
+  if (get_petsird_scanner_info().event_energy_bin_edges.size() == 0)
     return 0.0f;
   float min_energy = std::numeric_limits<float>::max();
-  for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
+  for (const auto& bin_edges : get_petsird_scanner_info().event_energy_bin_edges)
     {
       if (bin_edges.edges.front() < min_energy)
         min_energy = bin_edges.edges.front();
@@ -650,10 +653,10 @@ PETSIRDInfo::get_lower_energy_threshold() const
 float
 PETSIRDInfo::get_upper_energy_threshold() const
 {
-  if (petsird_scanner_info_sptr->event_energy_bin_edges.size() == 0)
+  if (get_petsird_scanner_info().event_energy_bin_edges.size() == 0)
     return 0.0f;
   float max_energy = std::numeric_limits<float>::lowest();
-  for (const auto& bin_edges : petsird_scanner_info_sptr->event_energy_bin_edges)
+  for (const auto& bin_edges : get_petsird_scanner_info().event_energy_bin_edges)
     {
       if (bin_edges.edges.back() > max_energy)
         max_energy = bin_edges.edges.back();

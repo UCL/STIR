@@ -32,6 +32,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
         test_DateTime.cxx
         test_radionuclide.cxx
+		test_cuda_utilities_from_cxx.cxx
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}

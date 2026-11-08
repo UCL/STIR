@@ -5449,7 +5449,32 @@ End Bin Normalisation From ECAT7:=
 In addition, you currently have to set the time frame information in the .par file.
 
 See also online documentation for class BinNormalisationFromECAT7.
+{ \subsubsubsection{From ECAT8}
+}
+This can be used when normalising Siemens mMR data. The normalisation data are
+stored by the scanner in a file ending on \texttt{.n.hdr} (or \texttt{.n}).
 
+Dead-time correction needs the singles rates of the acquisition. \textit{STIR} gets
+these from the list-mode data: run \texttt{lm\_to\_projdata} on the list-mode file, with
+the same time frame definitions you use for the projection data. For every frame this
+writes a file called \texttt{<output prefix>\_f<frame number>\_singles.json}
+(e.g. \texttt{my\_sinogram\_f1\_singles.json}). This file is only written if the
+list-mode data contain singles records. Give the file of the frame that you are
+normalising to \texttt{Bin Normalisation From ECAT8}, and switch dead-time on.
+The singles rates are averaged over the frame (weighted by time).
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Bin Normalisation From ECAT8:=
+  normalisation filename:= STUDY.n.hdr
+  use_dead_time := 1
+  singles filename := my_sinogram_f1_singles.json
+End Bin Normalisation From ECAT8:=
+\end{verbatim}
+
+Dead-time correction is off by default (\texttt{use\_dead\_time} defaults to 0).
+
+See also online documentation for class BinNormalisationFromECAT8.
 { \subsubsubsection{From Attenuation Image}
 }
 \label{sec:binnormalisationfromattenuationimage}

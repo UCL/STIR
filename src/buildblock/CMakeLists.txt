@@ -53,6 +53,12 @@ set(${dir_LIB_SOURCES}
   date_time_functions.cxx
   )
 
+if (STIR_WITH_CUDA)
+    list(APPEND ${dir_LIB_SOURCES}
+      CUDA/cuda_utilities.cu
+      )
+endif()
+
 if (NOT MINI_STIR)
   list(APPEND ${dir_LIB_SOURCES}
     scale_sinograms.cxx

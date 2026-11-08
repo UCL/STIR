@@ -25,6 +25,7 @@
 #ifdef HAVE_HDF5
 #  include "stir/data/SinglesRatesFromGEHDF5.h"
 #endif
+#include "stir/data/SinglesRatesFromJSON.h"
 START_NAMESPACE_STIR
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
@@ -37,5 +38,6 @@ END_NAMESPACE_ECAT
 #ifdef HAVE_HDF5
 static GE::RDF_HDF5::SinglesRatesFromGEHDF5::RegisterIt dummy300;
 #endif
+static SinglesRatesFromJSON::RegisterIt dummy400;
 
 END_NAMESPACE_STIR
