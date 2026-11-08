@@ -18,6 +18,7 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 set(${dir_EXE_SOURCES}
 	conv_SimSET_projdata_to_STIR.cxx
 	conv_to_SimSET_att_image.cxx
+	conv_SimSET_crystal_pairs_to_STIR.cxx
 )
 
 include(stir_exe_targets)

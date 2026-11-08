@@ -60,7 +60,7 @@
   <h4>General</h4>
   <ul>
     <li>
-      Initial support for reading <a href=https://github.com/ETSInitiative/PETSIRD>PETSIRD</a> 0.9 list-mode data,
+      Initial support for reading <a href=https://github.com/ETSInitiative/PETSIRD>PETSIRD</a> 0.12 list-mode data,
       the proposed standard for PET list-mode data from the
       <a href=https://etsinitiative.org/>Emission Tomography Standardization Initiative</a> (ETSI).
       Some limitations include single layer, single module type geometry, no singles histogram.
@@ -72,6 +72,13 @@
       Support for even number of TOF bins.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+    </li>
+    <li>
+      New utility <tt>conv_SimSET_crystal_pairs_to_STIR</tt> and script <tt>conv_SimSET_crystal_pairs_to_STIR.sh</tt>
+      to convert SimSET block-detector output binned by crystal pair into STIR projection data,
+      for Cylindrical and BlocksOnCylindrical scanners.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1774>PR #1774</a>.
     </li>
     <li>
       Dead-time correction for Siemens mMR (ECAT8) data. <code>lm_to_projdata</code> now writes the singles rates

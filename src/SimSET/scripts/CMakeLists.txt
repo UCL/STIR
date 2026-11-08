@@ -15,6 +15,7 @@ set(dir_scripts ${dir}_SCRIPTS)
 
 set(${dir_scripts}
 add_SimSET_results.sh
+conv_SimSET_crystal_pairs_to_STIR.sh
 conv_SimSET_projdata_to_STIR.sh
 make_hv_from_Simset_params.sh
 mult_num_photons.sh
