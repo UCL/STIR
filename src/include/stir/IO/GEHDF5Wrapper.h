@@ -51,7 +51,7 @@ class GEHDF5Wrapper
 {
 public:
   //! check signature to see if this is a GE RDF9 or higher file
-  /*! calls current_GE_signature(H5::H5file&) */
+  /*! calls check_GE_signature(H5::H5file&) */
   static bool check_GE_signature(const std::string& filename);
 
   //! check signature to see if this is a GE RDF9 or higher HDF5 file
