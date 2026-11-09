@@ -210,6 +210,13 @@ jobs:
         cache-environment: true
         cache-downloads: true
 
+    - name: Cache Zenodo ROOT downloads
+      id: cache-zenodo
+      uses: actions/cache@v6
+      with:
+        path: examples/ROOT_files/ROOT_STIR_consistency/pretest_output
+        key: Zenodo-6410309
+
     - name: General env variables
       run: |
           if [[ '${{ matrix.os }}' == macOS* ]]; then
