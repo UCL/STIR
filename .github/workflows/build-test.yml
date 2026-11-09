@@ -488,6 +488,17 @@ jobs:
           fi
           cmake --build . --config ${BUILD_TYPE} --target install
 
+    - name: Upload some build files for debugging
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-petsird=${{ matrix.PETSIRD}}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: |
+          ${{ github.workspace }}/build/**/*.log
+          ${{ github.workspace }}/build/**/STIR_DOXY2SWIG.i
+          ${{ github.workspace }}/build/CMakeCache.txt
+        retention-days: 7
+
     - name: ctest
       env:
           BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
