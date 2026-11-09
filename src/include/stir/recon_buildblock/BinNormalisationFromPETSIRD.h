@@ -7,9 +7,11 @@
   \brief Declaration of class stir::BinNormalisationFromPETSIRD
 
   \author Nikos Efthimiou
+  \author Alan Osys
 */
 /*
     Copyright (C) 2025, 2026, University Medical Center Groningen
+    Copyright (C) 2025, 2026, London South Bank University
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -25,6 +27,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
 #include "stir/PETSIRDInfo.h"
+#include "stir/Array.h"
 
 using std::string;
 
@@ -49,7 +52,7 @@ public:
   float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   inline bool with_detector_efficiencies() const { return m_with_detector_efficiencies; }
-  inline bool with_dead_time() const { return m_with_dead_time; }
+  inline bool use_dead_time() const { return m_use_dead_time; }
   inline bool with_geometric_factors() const { return m_with_geometric_factors; }
 
 private:
@@ -68,7 +71,7 @@ private:
   //! Flag to enable/disable detector efficiency
   bool m_with_detector_efficiencies;
   //! Flag to enable/disable dead time correction
-  bool m_with_dead_time;
+  bool m_use_dead_time;
   //! Flag to enable/disable geometric factors
   bool m_with_geometric_factors;
   //   shared_ptr<PETSIRDInfo> petsird_info_sptr;
@@ -77,6 +80,9 @@ private:
   shared_ptr<petsird::ScannerInformation> scanner_info_sptr;
 
   shared_ptr<const PETSIRDInfo> petsird_info_sptr;
+  // dead time blocks copied as stored in the PETSIRD file
+  std::vector<petsird::DeadTimeTimeBlock> dead_time_blocks;
+  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
 };
 
 END_NAMESPACE_STIR

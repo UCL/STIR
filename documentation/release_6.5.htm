@@ -41,16 +41,29 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1741>PR #1741</a>.
     </li>
+    <li>
+      Fix GE Signa PET/MR (and other RDF9 scanners?) header reading problem. Previous version of STIR got caught on the \0's present in the header and threw an error and stopped.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1777>PR #1777</a>.
+    </li>
+    <li>
+      Fix <tt>ProjMatrixByBinSPECTUB</tt> and <tt>ProjMatrixByBinPinholeSPECTUB</tt> returning an empty LOR for the
+      first bin that is requested in each view (when not all views are kept in the cache). This made forward and back
+      projection inconsistent when they are used one after the other on the same view, as in the gradient of the
+      Poisson log-likelihood.
+      <br>
+      See <a href=https://github.com/UCL/STIR/issues/1576>issue #1576</a>.
+    </li>
  </ul>
 
   <h3>New functionality</h3>
   <h4>General</h4>
   <ul>
     <li>
-      Initial support for reading <a href=https://github.com/ETSInitiative/PETSIRD>PETSIRD</a> 0.9 list-mode data,
+      Initial support for reading <a href=https://github.com/ETSInitiative/PETSIRD>PETSIRD</a> 0.12 list-mode data,
       the proposed standard for PET list-mode data from the
       <a href=https://etsinitiative.org/>Emission Tomography Standardization Initiative</a> (ETSI).
-      Some limitations include single layer, single module type geometry, no singles histogram, no dead-time.
+      Some limitations include single layer, single module type geometry, no singles histogram.
       See also <a href=https://github.com/ETSIhackers/STIR2PETSIRD>STIR2PETSIRD</a> for using STIR to write PETSIRD data.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
@@ -88,10 +101,50 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
     </li>
+    <li>
+      New utility <tt>conv_SimSET_crystal_pairs_to_STIR</tt> and script <tt>conv_SimSET_crystal_pairs_to_STIR.sh</tt>
+      to convert SimSET block-detector output binned by crystal pair into STIR projection data,
+      for Cylindrical and BlocksOnCylindrical scanners.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1774>PR #1774</a>.
+    </li>
+    <li>
+      Dead-time correction for Siemens mMR (ECAT8) data. <code>lm_to_projdata</code> now writes the singles rates
+      of each time frame to a JSON file (<code>&lt;output prefix&gt;_f&lt;frame&gt;_singles.json</code>), which can be
+      given to <code>BinNormalisationFromECAT8</code> with the keywords <code>use_dead_time</code> and
+      <code>singles filename</code>. See the User's Guide.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
+    </li>
+    <li>
+      Dead-time correction for PETSIRD data, using the alive-time fractions per crystal that are stored in the
+      PETSIRD file. <a href=https://github.com/ETSIhackers/STIR2PETSIRD>STIR2PETSIRD</a> writes these when converting
+      mMR data. Module-pair alive-time fractions are not supported yet.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
+    </li>
   </ul>
-
+  
   <h3>Changed functionality</h3>
   <ul>
+    <li>
+      The singles-unit layout of the Siemens mMR in <code>Scanner</code> was corrected: a bucket is now
+      1 axial x 2 transaxial blocks (a singles unit of 8 x 18 crystals), i.e. 8 x 28 singles units,
+      instead of 2 x 1 blocks (16 x 9 crystals), i.e. 4 x 56. This changes the mapping from a detector to its
+      singles unit (e.g. <code>Scanner::get_singles_bin_index()</code>), and therefore the singles-based dead-time
+      correction and any singles rates that are looked up per bucket for this scanner.<br>
+      <strong>WARNING</strong>: This means that the information on the Interfile header
+      for the projection has now changed to
+      <pre>
+      Number of blocks per bucket in transaxial direction      := 2 ; was 1
+      Number of blocks per bucket in axial direction              := 1; was 2
+      Number of crystals per singles unit in axial direction         := 8; was 16
+      Number of crystals per singles unit in transaxial direction := 18; was 9
+      </pre>
+      The Siemens-mMR examples have been updated accordingly.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
+    </li>
     <li>
       Add extra run-time checks for <code>BlocksOnCylindrical</code> scanners.
       This includes basic checks on crystal/blocks spacing when constructing the
@@ -99,19 +152,20 @@
       check on ring-distance (calling <code>warning()</code> when it fails), see
       <a href="https://github.com/UCL/STIR/issues/1753">Issue 1753</a>.
       <br>
-      The checks will be performed when calling <code>Scanner::set_up()</code>,
+      The checks are performed when calling <code>Scanner::set_up()</code>,
       which for instance is called after parsing headers.
       <br>
       <strong>Warning for developers:</strong> <code>Scanner::set_up()</code> now
       <strong>always</strong>needs to be called explicitly after construction of a scanner.
+      This will be enforced in the next release.
       <br>
       To enable testing, we have now added approximate block-info for the GE Signa PET/MR.
       However, it still defaults to using Cylindrical geometry.
       <br>
       <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
-    </li>
+      </li>
   </ul>
-
+<!--
   <h4>Changes to examples</h4>
   <ul>
     <li>
@@ -181,7 +235,7 @@
       Added class <code>ProjDataInfoPETScannerWithDiscreteDetectors</code>.
       This class should/can be used for accessing members such as
       <code>get_det_pos_pair_for_bin</code> etc., i.e. any members that
-      assume the there is a correspondence between detection positions and bins.
+      assume that there is a correspondence between detection positions and bins.
       <br>
       While it's currently an alias for <code>ProjDataInfoCylindricalNoArcCorr</code>,
       this is expected to change.

@@ -24,9 +24,14 @@
 #include "stir/error.h"
 #ifdef __CUDACC__
 #  include <cuda_runtime.h>
-#  include "cuvec.cuh"
+#else
+#  ifndef CUVEC_DISABLE_CUDA
+#    define CUVEC_DISABLE_CUDA
+#  endif
 #endif
+#include "cuvec.cuh"
 #include <vector>
+#include <memory>
 
 START_NAMESPACE_STIR
 
@@ -53,43 +58,19 @@ typedef dim3 cuda_dim3;
 typedef int3 cuda_int3;
 #endif
 
-#ifdef __CUDACC__
-
 //! copy an `Array` to pre-allocated device memory
 /*!
   \ingroup CUDA
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array)
-{
-  if (stir_array.is_contiguous())
-    {
-      info("array_to_device contiguous", 100);
-      cudaMemcpy(dev_data, stir_array.get_const_full_data_ptr(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
-      stir_array.release_const_full_data_ptr();
-    }
-  else
-    {
-      info("array_to_device non-contiguous", 100);
-      // Allocate host memory to get contiguous vector, copy array to it and copy from device to host
-      std::vector<elemT> tmp_data(stir_array.size_all());
-      std::copy(stir_array.begin_all(), stir_array.end_all(), tmp_data.begin());
-      cudaMemcpy(dev_data, tmp_data.data(), stir_array.size_all() * sizeof(elemT), cudaMemcpyHostToDevice);
-    }
-}
+void array_to_device(elemT* dev_data, const Array<num_dimensions, elemT>& stir_array);
 
 //! copy an `Array` to pre-allocated CuVec
 /*!
   \ingroup CUDA
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array)
-{
-  dev_data.resize(stir_array.size_all());
-  std::copy(stir_array.begin_all(), stir_array.end_all(), dev_data.begin());
-}
+void array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir_array);
 
 //! copy CUDA pointer to `Array`
 /*!
@@ -97,41 +78,16 @@ array_to_device(CuVec<elemT>& dev_data, const Array<num_dimensions, elemT>& stir
   The third argument is ignored, as `cudaMemcpy` always syncs device and host.
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true)
-{
-  if (stir_array.is_contiguous())
-    {
-      info("array_to_host contiguous", 100);
-      cudaMemcpy(stir_array.get_full_data_ptr(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
-      stir_array.release_full_data_ptr();
-    }
-  else
-    {
-      info("array_to_host non-contiguous", 100);
-      // Allocate host memory for the result and copy from device to host
-      std::vector<elemT> tmp_data(stir_array.size_all());
-      cudaMemcpy(tmp_data.data(), dev_data, stir_array.size_all() * sizeof(elemT), cudaMemcpyDeviceToHost);
-      // Copy the data to the stir_array
-      std::copy(tmp_data.begin(), tmp_data.end(), stir_array.begin_all());
-    }
-}
-
+void array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_data, bool /* sync */ = true);
 //! copy CuVec to `Array`
 /*!
   \ingroup CUDA
   If \a sync = \c true, the function will call `cudaDeviceSynchronize()` before copying.
 */
 template <int num_dimensions, typename elemT>
-inline void
-array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true)
-{
-  if (sync)
-    cudaDeviceSynchronize();
-  if (stir_array.size_all() != dev_data.size())
-    error("array_to_host: size mismatch between CuVec and Array");
-  std::copy(dev_data.begin(), dev_data.end(), stir_array.begin_all());
-}
+void array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
+
+#ifdef __CUDACC__
 
 //! \brief Performs a parallel reduction sum on shared memory within a CUDA thread block, final value stored in shared_mem[0].
 template <typename elemT>

@@ -51,9 +51,9 @@ please by mindful about the resources used, as these are substantial:
   (ideally you have sensible commit messages at every stage)
 - Use specific keywords in the *first line* of the last commit that you push to prevent CI being run:
   - `[ci skip]` skips all CI runs (e.g. when you only change documentation, or when your update isn't ready yet)
-  - `[actions skip]` does not run GitHub Actions, see [here](https://github.blog/changelog/2021-02-08-github-actions-skip-pull-request-and-push-workflows-with-skip-ci/).
+  - `[actions skip]` [does not run GitHub Actions](https://github.blog/changelog/2021-02-08-github-actions-skip-pull-request-and-push-workflows-with-skip-ci/).
   Note: this can be in the main commit message.
-  - `[skip appveyor]` does not run Appveyor, see [here](https://www.appveyor.com/docs/how-to/filtering-commits/#skip-directive-in-commit-message)
+  - `[skip appveyor]` [does not run Appveyor](https://www.appveyor.com/docs/how-to/filtering-commits/#skip-directive-in-commit-message)
 - During PR review, maintainers can add "suggestions", which you can directly commit via GitHub.
   However, ***batch all commits to accept suggestions*** (which you can do [via the "changes" tab on GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/incorporating-feedback-in-your-pull-request)),
   and of course, make sure that the commit message makes sense (and that you skip CI if you want to adjust afterwards locally).

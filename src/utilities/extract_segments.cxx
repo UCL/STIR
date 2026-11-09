@@ -34,6 +34,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Bin.h"
 #include "stir/format.h"
+#include <limits>
 
 using std::cerr;
 
@@ -42,13 +43,20 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char* argv[])
 {
-  if (argc < 2)
+
+  if (argc < 2 || argc > 3)
     {
-      cerr << "Usage: " << argv[0] << "<file name> (*.hs)\n";
-      exit(EXIT_FAILURE);
+      cerr << "Usage: " << argv[0] << " <file name> (*.hs) [<segment_num_to_export>]\n";
+      return EXIT_FAILURE;
     }
 
-  char const* const filename = argv[1];
+  const std::string filename = argv[1];
+  int segment_num_to_export = std::numeric_limits<int>::max();
+
+  if (argc == 3)
+    {
+      segment_num_to_export = std::atoi(argv[2]);
+    }
 
   shared_ptr<ProjData> s3d = ProjData::read_from_file(filename);
 
@@ -56,7 +64,10 @@ main(int argc, char* argv[])
 
   const bool is_tof = s3d->get_min_tof_pos_num() != s3d->get_max_tof_pos_num();
 
-  for (int segment_num = s3d->get_min_segment_num(); segment_num <= s3d->get_max_segment_num(); ++segment_num)
+  int min_seg = segment_num_to_export == std::numeric_limits<int>::max() ? s3d->get_min_segment_num() : segment_num_to_export;
+  int max_seg = segment_num_to_export == std::numeric_limits<int>::max() ? s3d->get_max_segment_num() : segment_num_to_export;
+
+  for (int segment_num = min_seg; segment_num <= max_seg; ++segment_num)
     for (int tof_pos_num = s3d->get_min_tof_pos_num(); tof_pos_num <= s3d->get_max_tof_pos_num(); ++tof_pos_num)
       {
         std::string output_filename = filename;

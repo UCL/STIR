@@ -27,20 +27,22 @@ CListModeDataPETSIRD::CListModeDataPETSIRD(const std::string& listmode_filename,
 {
   CListModeDataBasedOnCoordinateMap::listmode_filename = listmode_filename;
 
-  petsird::Header header;
   if (use_hdf5)
     current_lm_data_ptr.reset(new petsird::hdf5::PETSIRDReader(listmode_filename));
   else
     current_lm_data_ptr.reset(new petsird::binary::PETSIRDReader(listmode_filename));
 
-  current_lm_data_ptr->ReadHeader(header);
-
-  m_has_delayeds = header.scanner.delayed_events_are_stored;
+  {
+    auto header_sptr = std::make_shared<petsird::Header>();
+    current_lm_data_ptr->ReadHeader(*header_sptr);
+    m_has_delayeds = header_sptr->scanner.delayed_event_policy != petsird::CoincidencePolicy::kNone;
+    // list-mode reading does not use the module-pair efficiencies (several GB), so do not keep them
+    header_sptr->scanner.detection_efficiencies.module_pair_efficiencies_vectors.clear();
+    petsird_info_sptr = std::make_shared<PETSIRDInfo>(header_sptr);
+  }
 
   if (reset() == Succeeded::no)
     error(format("CListModeDataPETSIRD: Could not read the PETSIRD header from file {}.", listmode_filename));
-
-  petsird_info_sptr = std::make_shared<PETSIRDInfo>(header);
   auto stir_scanner_sptr = petsird_info_sptr->get_scanner_sptr();
 
   int tof_mash_factor = 1;
@@ -85,6 +87,27 @@ CListModeDataPETSIRD::get_empty_record_sptr() const
 Succeeded
 CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
 {
+  // helper to skip singles blocks and accumulate counts, then assign event block
+  const auto read_next_event_block = [&]() -> bool {
+    while (true)
+      {
+        if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
+          {
+            current_lm_data_ptr->Close();
+            return false;
+          }
+        ++m_time_block_index;
+        if (std::holds_alternative<petsird::EventTimeBlock>(curr_time_block))
+          {
+            curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+            // every new event block starts with its prompts
+            curr_is_prompt = true;
+            curr_event_in_event_block = 0;
+            return true;
+          }
+        // other block types silently skipped
+      }
+  };
   auto& record = dynamic_cast<CListRecordPETSIRD&>(record_of_general_type);
   const auto& prompt_list = curr_event_block.prompt_events.at(0).at(0); // TODO: support multiple pairs of modules.
   const auto& delayed_list = m_has_delayeds ? curr_event_block.delayed_events.at(0).at(0) : prompt_list;
@@ -100,13 +123,8 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
   if (event_list.size() == 0)
     {
       // no events, so read next Time block
-      if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-        {
-          current_lm_data_ptr->Close();
-          return Succeeded::no;
-        }
-      ++m_time_block_index;
-      curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+      if (!read_next_event_block())
+        return Succeeded::no;
       return get_next_record(record);
     }
 
@@ -137,25 +155,15 @@ CListModeDataPETSIRD::get_next_record(CListRecord& record_of_general_type) const
         }
       else
         {
-          if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-            {
-              current_lm_data_ptr->Close();
-              return Succeeded::no;
-            }
-          ++m_time_block_index;
-          curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+          if (!read_next_event_block())
+            return Succeeded::no;
         }
     }
   else
     {
       curr_is_prompt = true;
-      if (!current_lm_data_ptr->ReadTimeBlocks(curr_time_block))
-        {
-          current_lm_data_ptr->Close();
-          return Succeeded::no;
-        }
-      ++m_time_block_index;
-      curr_event_block = std::get<petsird::EventTimeBlock>(curr_time_block);
+      if (!read_next_event_block())
+        return Succeeded::no;
     }
 
   return Succeeded::yes;
@@ -188,7 +196,6 @@ CListModeDataPETSIRD::reopen_and_prime()
 
   petsird::Header header;
   current_lm_data_ptr->ReadHeader(header); // let it throw naturally if it fails
-  m_has_delayeds = header.scanner.delayed_events_are_stored;
 
   curr_event_in_event_block = 0;
   curr_is_prompt = true;

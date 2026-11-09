@@ -1005,7 +1005,9 @@ ProjMatrixByBinPinholeSPECTUB::calculate_proj_matrix_elems_for_one_bin(ProjMatri
   info(format("Computing matrix elements for view {}", view_num), 2);
   compute_one_subset(view_num);
 
-  lor.erase();
+  // compute_one_subset() has put all bins of this view in the cache, including this one
+  if (get_cached_proj_matrix_elems_for_one_bin(lor) == Succeeded::no)
+    lor.erase();
 }
 
 END_NAMESPACE_STIR
