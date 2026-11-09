@@ -29,8 +29,6 @@ dependencies:
   - root_base>=6.38 # not win
   - libpetsird=0.12.2
 #  - zlib # win
-  - xtensor>=0.24.2 # PETSIRD
-  - xtensor-blas # PETSIRD
   - howardhinnant_date>=3.0.1 # PETSIRD
   - python>=3.11.3 # 3.11.3 required for PETSIRD
   - numpy>=1.24.3

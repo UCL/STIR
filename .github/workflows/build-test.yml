@@ -228,47 +228,6 @@ jobs:
           # We will install all software, including some external dependencies, here
           echo CMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/install" >> $GITHUB_ENV
 
-    - name: Checkout PETSIRD
-      if: matrix.PETSIRD == 'ON'
-      uses: actions/checkout@v7
-      with:
-        repository: ETSInitiative/PETSIRD
-        ref: v0.12.2
-        path: external/PETSIRD
-
-    - name: Install yardl
-      if: matrix.PETSIRD == 'ON'
-      run: |
-        OS="$(uname -s)"
-        ARCH="$(uname -m)"
-        echo $OS
-        echo $ARCH
-        case "$OS" in
-          Linux)
-            YARDL_OS="linux"
-            ;;
-          Darwin)
-            YARDL_OS="darwin"
-            ;;
-          Windows)
-            YARDL_OS="windows"
-            ;;
-        esac
-
-        curl -L https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz -o yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz
-        mkdir yardl
-        tar -xzf "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz" -C yardl
-        rm "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz"
-        echo "$PWD/yardl" >> "$GITHUB_PATH"
-
-    - name: Install PETSIRD
-      if: matrix.PETSIRD == 'ON'
-      run: |
-          set -e
-          micromamba install conda-forge::just
-          cd external/PETSIRD/
-          just cmake_install_prefix="${CMAKE_INSTALL_PREFIX}" build-cpp
-
     - name: set_compiler_variables (no conda)
       if: matrix.PETSIRD !='ON'
       run: |
