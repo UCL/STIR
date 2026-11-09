@@ -18,7 +18,7 @@
       This is a release ...
     </p>
     <p>
-      Main code contributions were by Nikos Efthimiou (UMCG), Daniel Deidda (NPL), Kris Thielemans (UCL)
+      Main code contributions were by Nikos Efthimiou (UMCG), Alan Osys (LSBU), Daniel Deidda (NPL), Kris Thielemans (UCL).
       <br>
       Overall overview and release management was by Kris Thielemans (UCL).
     </p>
@@ -26,7 +26,7 @@
     <h2>Patch release info</h2>
     <ul>
       <li>
-        6.5.0 released XXX<br>
+        6.5.0 released 9 Nov 2026<br>
         <a href="https://github.com/UCL/STIR/milestone/14">GitHub Milestone 6.5</a>
       </li>
     </ul>
@@ -63,15 +63,20 @@
       Initial support for reading <a href=https://github.com/ETSInitiative/PETSIRD>PETSIRD</a> 0.12 list-mode data,
       the proposed standard for PET list-mode data from the
       <a href=https://etsinitiative.org/>Emission Tomography Standardization Initiative</a> (ETSI).
-      Some limitations include single layer, single module type geometry, no singles histogram.
+      Some limitations include single layer, single module type geometry.
+      Dead-time correction for PETSIRD data uses the alive-time fractions per crystal that are stored in the
+      PETSIRD file. Module-pair alive-time fractions are not supported yet.
+      <br>
       See also <a href=https://github.com/ETSIhackers/STIR2PETSIRD>STIR2PETSIRD</a> for using STIR to write PETSIRD data.
       <br>
-      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>,
+      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
     </li>
     <li>
-      Support for even number of TOF bins.
+      Initial support for even number of TOF bins.
       <br>
-      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>, but see
+      <a href=https://github.com/UCL/STIR/issues/1751>Issue #1751</a>.
     </li>
     <li>
       enable TOF for <code>BlocksOnCylindrical/Generic</code>
@@ -116,13 +121,6 @@
       <br>
       <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
     </li>
-    <li>
-      Dead-time correction for PETSIRD data, using the alive-time fractions per crystal that are stored in the
-      PETSIRD file. <a href=https://github.com/ETSIhackers/STIR2PETSIRD>STIR2PETSIRD</a> writes these when converting
-      mMR data. Module-pair alive-time fractions are not supported yet.
-      <br>
-      <a href=https://github.com/UCL/STIR/pull/1770>PR #1770</a>.
-    </li>
   </ul>
   
   <h3>Changed functionality</h3>
@@ -136,9 +134,9 @@
       <strong>WARNING</strong>: This means that the information on the Interfile header
       for the projection has now changed to
       <pre>
-      Number of blocks per bucket in transaxial direction      := 2 ; was 1
+      Number of blocks per bucket in transaxial direction         := 2; was 1
       Number of blocks per bucket in axial direction              := 1; was 2
-      Number of crystals per singles unit in axial direction         := 8; was 16
+      Number of crystals per singles unit in axial direction      := 8; was 16
       Number of crystals per singles unit in transaxial direction := 18; was 9
       </pre>
       The Siemens-mMR examples have been updated accordingly.
@@ -154,10 +152,6 @@
       <br>
       The checks are performed when calling <code>Scanner::set_up()</code>,
       which for instance is called after parsing headers.
-      <br>
-      <strong>Warning for developers:</strong> <code>Scanner::set_up()</code> now
-      <strong>always</strong>needs to be called explicitly after construction of a scanner.
-      This will be enforced in the next release.
       <br>
       To enable testing, we have now added approximate block-info for the GE Signa PET/MR.
       However, it still defaults to using Cylindrical geometry.
@@ -208,7 +202,7 @@
       Allow local running of a GitHub Action via <a href=https://github.com/nektos/act>act</a> (see 
       <a href=https://github.com/UCL/STIR/blob/master/documentation/devel/local-CI.md>local-CI.md</a>.
       <br>
-      a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
+      <a href=https://github.com/UCL/STIR/pull/1604>PR #1604</a>.
     </li>
     <li>
       Made (deprecated) <code>ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coordinates</code>
@@ -226,6 +220,11 @@
       if you need to).
       <br>
       <a href=https://github.com/UCL/STIR/pull/1731>PR #1731</a>.
+    </li>
+    <li>
+      <code>Scanner::set_up()</code> now
+      <strong>always</strong> needs to be called explicitly after construction of a scanner.
+      This will be enforced in v7.0.
     </li>
   </ul>
 
