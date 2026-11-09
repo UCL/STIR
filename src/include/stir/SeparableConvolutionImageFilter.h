@@ -78,13 +78,13 @@ START_NAMESPACE_STIR
 */
 template <typename elemT>
 class SeparableConvolutionImageFilter : public RegisteredParsingObject<SeparableConvolutionImageFilter<elemT>,
-                                                                       DataProcessor<DiscretisedDensity<3, elemT>>,
-                                                                       DataProcessor<DiscretisedDensity<3, elemT>>>
+                                                                       DataProcessor<DiscretisedDensity<num_dimensions, elemT>>,
+                                                                       DataProcessor<DiscretisedDensity<num_dimensions, elemT>>>
 {
 private:
   typedef RegisteredParsingObject<SeparableConvolutionImageFilter<elemT>,
-                                  DataProcessor<DiscretisedDensity<3, elemT>>,
-                                  DataProcessor<DiscretisedDensity<3, elemT>>>
+                                  DataProcessor<DiscretisedDensity<num_dimensions, elemT>>,
+                                  DataProcessor<DiscretisedDensity<num_dimensions, elemT>>>
       base_type;
 
 public:
