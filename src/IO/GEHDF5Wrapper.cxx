@@ -15,7 +15,7 @@
 /*
     Copyright (C) 2017-2019, University of Leeds
     Copyright (C) 2018 University of Hull
-    Copyright (C) 2018-2021, 2024, University College London
+    Copyright (C) 2018-2021, 2024, 2026, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -28,11 +28,18 @@
 #include "stir/Radionuclide.h"
 #include "stir/RadionuclideDB.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/HDF5_utilities.h"
 #include "stir/info.h"
 #include "stir/error.h"
 #include <sstream>
 
 START_NAMESPACE_STIR
+
+using HDF5_utilities::get_HDF5_group;
+using HDF5_utilities::is_valid;
+using HDF5_utilities::HDF5_group_exists;
+using HDF5_utilities::HDF5_dataset_exists;
+
 namespace GE
 {
 namespace RDF_HDF5
@@ -104,13 +111,12 @@ GEHDF5Wrapper::check_GE_signature(H5::H5File& file)
   if (file.getId() == -1)
     error("File is not open. Aborting");
 
-  std::string read_str_manufacturer = read_string(file, "/HeaderData/ExamData/manufacturer");
+  if (!(HDF5_dataset_exists(file, "/HeaderData/ExamData/scannerDesc")
+        && HDF5_dataset_exists(file, "/HeaderData/ExamData/manufacturer")))
+    return false;
 
-  if (read_str_manufacturer == "GE MEDICAL SYSTEMS")
-    {
-      return true;
-    }
-  return false;
+  const auto manufacturer = read_string(file, "/HeaderData/ExamData/manufacturer");
+  return manufacturer == "GE MEDICAL SYSTEMS";
 }
 
 bool
@@ -141,8 +147,7 @@ GEHDF5Wrapper::is_sino_file() const
     error("File is not open. Aborting");
 
   // If this Group exists, its a sino file.
-  // huh, no C++ way to do this without try catch. https://stackoverflow.com/questions/35668056/test-group-existence-in-hdf5-c
-  return H5Lexists(file.getId(), "/SegmentData/Segment2", H5P_DEFAULT) > 0;
+  return HDF5_group_exists(file, "/SegmentData/Segment2");
 }
 bool
 GEHDF5Wrapper::is_geo_file() const
@@ -155,7 +160,7 @@ GEHDF5Wrapper::is_geo_file() const
     return true;
   if (file.getId() == -1)
     error("File is not open. Aborting");
-  return H5Lexists(file.getId(), "/SegmentData/Segment4/3D_Norm_Correction/slice1", H5P_DEFAULT) > 0;
+  return HDF5_group_exists(file, "/SegmentData/Segment4/3D_Norm_Correction/slice1");
   // AB if you want to make sure geo is definetly geo, and not geo or norm, add to the avobe line: && !H5Lexists( file.getId(),
   // "/3DCrystalEfficiency/crystalEfficiency", H5P_DEFAULT );
 }
@@ -168,7 +173,7 @@ GEHDF5Wrapper::is_norm_file() const
   if (file.getId() == -1)
     error("File is not open. Aborting");
 
-  return H5Lexists(file.getId(), "/3DCrystalEfficiency/crystalEfficiency", H5P_DEFAULT) > 0;
+  return HDF5_group_exists(file, "/3DCrystalEfficiency/crystalEfficiency");
 }
 GEHDF5Wrapper::GEHDF5Wrapper()
 {
