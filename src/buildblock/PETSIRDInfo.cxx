@@ -29,23 +29,14 @@
 
 START_NAMESPACE_STIR
 
-/*!
-  \brief Infer scanner blocks and rotation axis from PETSIRD replicated modules.
-  \param unique_dim1_values Output set of unique translations along X.
-  \param unique_dim2_values Output set of unique translations along Y.
-  \param unique_dim3_values Output set of unique translations along Z.
-  \param replicated_module_list PETSIRD replicated detector modules.
-  \return Index of rotation axis (0=x, 1=y, 2=z) or -1 if not found.
-
-  \details
-  - Extracts translation components into the provided sets.
-  - Uses skew-symmetric part of rotation matrices to infer axis direction.
-  - Emits warnings for mixed-axis rotations or inconsistencies.
-*/
-int
+void
 PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique_dim1_values,
                                                          std::set<float>& unique_dim2_values,
-                                                         std::set<float>& unique_dim3_values)
+                                                         std::set<float>& unique_dim3_values,
+                                                         float& radius,
+                                                         int& radius_index,
+                                                         int& rotation_axis)
+
 {
   auto insertTranslations = [&](const petsird::RigidTransformation& trans) {
     unique_dim1_values.insert(trans.matrix.at(0, 3));
@@ -61,74 +52,6 @@ PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique
     return R;
     // skew = matrix::subtract(R, matrix::transpose(R));
     // auto rot = matrix::getAxisFromSkew(skew);
-  };
-
-  std::array<std::array<float, 3>, 3> skew;
-  int detected_axis = -1;
-
-  std::vector<petsird::ReplicatedDetectorModule> replicated_module_list
-      = get_petsird_scanner_info().scanner_geometry.replicated_modules;
-  for (const auto& module : replicated_module_list)
-    for (const auto& mod_trans : module.transforms)
-      {
-        insertTranslations(mod_trans);
-        matrix::Mat3 R = extractRotationMatrix(mod_trans);
-        skew = matrix::subtract(R, matrix::transpose(R));
-        auto axis_vec = matrix::getAxisFromSkew(skew);
-
-        int current_axis = -1;
-        for (int i = 0; i < 3; ++i)
-          {
-            if (std::abs(axis_vec[i]) > 1e-6f)
-              {
-                if (current_axis != -1)
-                  {
-                    warning("Rotation involves multiple axis components. Possibly non-pure rotation.");
-                    current_axis = -2; // Sentinel for mixed axes
-                    return -1;
-                  }
-                current_axis = i;
-              }
-          }
-
-        if (current_axis >= 0)
-          {
-            if (detected_axis == -1)
-              detected_axis = current_axis;
-            else if (detected_axis != current_axis)
-              warning("Inconsistent rotation axis detected between modules.");
-          }
-      }
-  info(format("Rotation axis of blocks inferred as axis index {}", detected_axis));
-  return detected_axis;
-}
-
-/*!
-  \brief Determine block element translations and radius.
-  \param unique_dim1_values Output set of element translations along X.
-  \param unique_dim2_values Output set of element translations along Y.
-  \param unique_dim3_values Output set of element translations along Z.
-  \param radius Output inferred radius (positive component orthogonal to rotation axis).
-  \param radius_index Output index of the axis containing the radius component.
-  \param rotation_axis Known rotation axis (0=x, 1=y, 2=z).
-  \param replicated_module_list PETSIRD replicated detector modules.
-
-  \details
-  - Scans element-level transforms to infer radius and collect translations.
-  - Emits warnings if mixed radii are detected.
-*/
-void
-PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_dim1_values,
-                                                      std::set<float>& unique_dim2_values,
-                                                      std::set<float>& unique_dim3_values,
-                                                      float& radius,
-                                                      int& radius_index,
-                                                      const int rotation_axis)
-{
-  auto insert_translation = [&](const petsird::RigidTransformation& trans) {
-    unique_dim1_values.insert(trans.matrix.at(0, 3));
-    unique_dim2_values.insert(trans.matrix.at(1, 3));
-    unique_dim3_values.insert(trans.matrix.at(2, 3));
   };
 
   auto detect_radius = [&](const petsird::RigidTransformation& trans) -> bool {
@@ -147,24 +70,79 @@ PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_di
     return false;
   };
 
-  for (const auto& module : get_petsird_scanner_info().scanner_geometry.replicated_modules)
-    {
-      for (const auto& el_trans : module.object.detecting_elements.transforms)
-        {
-          if (radius == 0.0f)
-            {
-              if (!detect_radius(el_trans))
-                {
-                  error("Unable to determine radius from translation components.");
-                }
-            }
-          else
-            {
-              float current = el_trans.matrix.at(radius_index, 3);
-              if (std::abs(current - radius) > 1e-4f)
-                warning("Mixed radii detected. Consider checking for misaligned modules.");
-            }
+  std::array<std::array<float, 3>, 3> skew;
+  int detected_axis = -1;
 
+  const auto& replicated_module_list = get_petsird_scanner_info().scanner_geometry.replicated_modules;
+  for (const auto& rep_module : replicated_module_list)
+    for (const auto& mod_trans : rep_module.transforms)
+      {
+        insertTranslations(mod_trans);
+        matrix::Mat3 R = extractRotationMatrix(mod_trans);
+        skew = matrix::subtract(R, matrix::transpose(R));
+        auto axis_vec = matrix::getAxisFromSkew(skew);
+
+        int current_axis = -1;
+        for (int i = 0; i < 3; ++i)
+          {
+            if (std::abs(axis_vec[i]) > 1e-6f)
+              {
+                if (current_axis != -1)
+                  {
+                    warning("Rotation involves multiple axis components. Possibly non-pure rotation.");
+                    rotation_axis = -1; // Sentinel for mixed axes
+                    return;
+                  }
+                current_axis = i;
+              }
+          }
+
+        if (current_axis >= 0)
+          {
+            if (detected_axis == -1)
+              detected_axis = current_axis;
+            else if (detected_axis != current_axis)
+              warning("Inconsistent rotation axis detected between modules.");
+          }
+      }
+  info(format("Rotation axis of blocks inferred as axis index {}", detected_axis));
+
+  rotation_axis = detected_axis;
+
+  for (const auto& rep_module : replicated_module_list)
+    for (const auto& mod_trans : rep_module.transforms)
+      {
+        if (radius == 0.0f)
+          {
+            if (!detect_radius(mod_trans))
+              {
+                error("Unable to determine radius from module transforms.");
+              }
+          }
+        else
+          {
+            float current = mod_trans.matrix.at(radius_index, 3);
+            if (std::abs(current - radius) > 1e-2f)
+              warning("Mixed radii detected. Consider checking for misaligned modules.");
+          }
+      }
+}
+
+void
+PETSIRDInfo::figure_out_block_element_transformations(std::set<float>& unique_dim1_values,
+                                                      std::set<float>& unique_dim2_values,
+                                                      std::set<float>& unique_dim3_values)
+{
+  auto insert_translation = [&](const petsird::RigidTransformation& trans) {
+    unique_dim1_values.insert(trans.matrix.at(0, 3));
+    unique_dim2_values.insert(trans.matrix.at(1, 3));
+    unique_dim3_values.insert(trans.matrix.at(2, 3));
+  };
+
+  for (const auto& rep_module : get_petsird_scanner_info().scanner_geometry.replicated_modules)
+    {
+      for (const auto& el_trans : rep_module.object.detecting_elements.transforms)
+        {
           insert_translation(el_trans);
         }
     }
@@ -238,8 +216,11 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
   std::set<float> unique_dim1_values, unique_dim2_values, unique_dim3_values;
   std::set<float> unique_tof_resolutions;
 
-  const int rotation_axis
-      = figure_out_scanner_blocks_and_rotation_axis(unique_dim1_values, unique_dim2_values, unique_dim3_values);
+  int rotation_axis = -1;
+  float radius = 0;
+  int radius_indx = -1;
+  figure_out_scanner_blocks_and_rotation_axis(
+      unique_dim1_values, unique_dim2_values, unique_dim3_values, radius, radius_indx, rotation_axis);
   if (rotation_axis == -1)
     is_cylindrical = false;
 
@@ -248,12 +229,8 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
   int num_transaxial_blocks = numberOfModules / main_axis.size();
   info(format("I deduce that the scanner has {} transaxial number of blocks", num_transaxial_blocks));
 
-  float radius = 0;
-  int radius_indx = -1;
-
   std::set<float> unique_elements_dim1_values, unique_elements_dim2_values, unique_elements_dim3_values;
-  figure_out_block_element_transformations(
-      unique_elements_dim1_values, unique_elements_dim2_values, unique_elements_dim3_values, radius, radius_indx, rotation_axis);
+  figure_out_block_element_transformations(unique_elements_dim1_values, unique_elements_dim2_values, unique_elements_dim3_values);
 
   std::set<float> unique_angle_modules;
   figure_out_block_angles(unique_angle_modules, rotation_axis);
