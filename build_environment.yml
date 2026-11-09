@@ -2,6 +2,10 @@ name: stir
 channels:
 - conda-forge
 dependencies:
+  # generally, using system compilers doesn't work very well with conda-forge packages
+  # you could try to remove these 2 if you're adventurous
+  - cxx-compiler
+  - c-compiler
   - cmake
   # - ccache # recommended by not required (possibly interferes with existing ccache on GitHub Actions)
   - ninja
