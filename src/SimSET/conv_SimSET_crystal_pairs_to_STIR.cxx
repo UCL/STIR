@@ -75,7 +75,7 @@
 
 #include "stir/ProjData.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/Bin.h"
 #include "stir/Scanner.h"
@@ -130,7 +130,7 @@ read_grid(std::ifstream& in, const int grid_num, const std::uint64_t num_crystal
 
 void
 rebin_grid(ProjDataInMemory& proj_data,
-           const ProjDataInfoCylindricalNoArcCorr& proj_data_info,
+           const ProjDataInfoPETScannerWithDiscreteDetectors& proj_data_info,
            const std::vector<float>& grid,
            const std::uint64_t num_crystals,
            const CrystalIndexer& crystal_index)
@@ -202,8 +202,7 @@ main(int argc, char** argv)
 
   const auto template_sptr = ProjData::read_from_file(template_filename);
   const auto proj_data_info_sptr = template_sptr->get_proj_data_info_sptr();
-  // TODO use ProjDataInfoPETWithDiscreteDetectors (here and in rebin_grid()) once #1746 is merged
-  const auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_sptr.get());
+  const auto proj_data_info_ptr = dynamic_cast<const ProjDataInfoPETScannerWithDiscreteDetectors*>(proj_data_info_sptr.get());
   if (!proj_data_info_ptr)
     error("conv_SimSET_crystal_pairs_to_STIR: the template has to be non-arc-corrected projection data");
   if (proj_data_info_ptr->is_tof_data())
