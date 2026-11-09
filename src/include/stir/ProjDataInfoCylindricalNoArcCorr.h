@@ -4,6 +4,7 @@
     Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2015-2018, 2022, 2024, 2026, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -77,7 +78,9 @@ class Succeeded;
   \todo The detector specific functions possibly do not belong in this class.
   One can easily imagine a case where the theta,phi,s,t coordinates are as
   described, but there is no real correspondence with detectors (for instance,
-  a rotating system). Maybe they should be moved somewhere else?
+  a rotating system). These should be moved somewhere else. See
+  ProjDataInfoPETScannerWithDiscreteDetectors and
+  https://github.com/UCL/STIR/issues/1307 etc.
   */
 class ProjDataInfoCylindricalNoArcCorr : public ProjDataInfoCylindrical
 {
@@ -268,6 +271,17 @@ public:
                                                CartesianCoordinate3D<float>& coord_2,
                                                const Bin& bin) const;
 
+protected:
+  // give access to protected member find_cartesian_coordinates_given_scanner_coordinates
+  friend class ProjDataInfoCylindricalNoArcCorrTests;
+  template <typename ProjDataInfoT>
+  friend class CListEventScannerWithDiscreteDetectors;
+  friend class LmToProjDataWithMCTests;
+
+  //! deprecated function
+  /*!
+    See https://github.com/UCL/STIR/issues/105
+  */
   virtual void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
                                                                     CartesianCoordinate3D<float>& coord_2,
                                                                     const int Ring_A,
@@ -276,6 +290,7 @@ public:
                                                                     const int det2,
                                                                     const int timing_pos_num) const;
 
+public:
   void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
                                                          const CartesianCoordinate3D<float>& coord_1,
                                                          const CartesianCoordinate3D<float>& coord_2) const;

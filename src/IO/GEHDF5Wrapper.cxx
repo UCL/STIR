@@ -31,6 +31,7 @@
 #include "stir/IO/HDF5_utilities.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/format.h"
 #include <sstream>
 
 START_NAMESPACE_STIR
@@ -423,6 +424,15 @@ GEHDF5Wrapper::get_scanner_from_HDF5()
       warning("GEHDF5Wrapper: energy resolution is not set. This will create trouble for scatter estimation");
     }
 
+  try
+    {
+      scanner_sptr->set_up();
+    }
+  catch (const std::exception& e)
+    {
+      error(format("GE HDF5 parsing ended up with the following incomplete/inconsistent scanner:\n{}\nPlease check.",
+                   scanner_sptr->parameter_info()));
+    }
   return scanner_sptr;
 }
 

@@ -19,6 +19,8 @@
 
     See STIR/LICENSE.txt for details.
 */
+#ifndef __stir_geometry_line_distances_H__
+#define __stir_geometry_line_distances_H__
 
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/LORCoordinates.h"
@@ -179,3 +181,5 @@ project_point_on_a_line(const CartesianCoordinate3D<coordT>& p1,
 }
 
 END_NAMESPACE_STIR
+
+#endif

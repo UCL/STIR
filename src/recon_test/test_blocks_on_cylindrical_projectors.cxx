@@ -105,7 +105,8 @@ BlocksTests::set_blocks_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_
                                         min_ring_diff_v,
                                         max_ring_diff_v,
                                         scanner_sptr->get_max_num_views(),
-                                        scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
+                                        scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction,
+                                        /* tof_mash_factor = */ 0);
 
   return proj_data_info_blocks_sptr;
 }
@@ -137,7 +138,8 @@ BlocksTests::set_direct_projdata_info(shared_ptr<Scanner> scanner_sptr, int bin_
                                         min_ring_diff_v,
                                         max_ring_diff_v,
                                         scanner_sptr->get_max_num_views(),
-                                        scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction);
+                                        scanner_sptr->get_max_num_non_arccorrected_bins() / bin_fraction,
+                                        /* tof_mash_factor = */ 0);
 
   return proj_data_info_blocks_sptr;
 }

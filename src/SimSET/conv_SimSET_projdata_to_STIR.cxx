@@ -86,6 +86,7 @@ main(int argc, char** argv)
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(scanner_name));
   if (is_null_ptr(scanner_sptr))
     error("Scanner '%s' is not a valid name", scanner_name);
+  scanner_sptr->set_up();
 
   {
     const float STIR_scanner_length = scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();

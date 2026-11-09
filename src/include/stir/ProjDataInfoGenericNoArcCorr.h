@@ -22,7 +22,7 @@
 #ifndef __stir_ProjDataInfoGenericNoArcCorr_H__
 #define __stir_ProjDataInfoGenericNoArcCorr_H__
 
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoPETScannerWithDiscreteDetectors.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -66,10 +66,10 @@ class Succeeded;
   \todo change ProjDataInfoCylindrical hierarchy order.
 
   */
-class ProjDataInfoGenericNoArcCorr : public ProjDataInfoCylindricalNoArcCorr
+class ProjDataInfoGenericNoArcCorr : public ProjDataInfoPETScannerWithDiscreteDetectors
 {
 private:
-  typedef ProjDataInfoCylindricalNoArcCorr base_type;
+  typedef ProjDataInfoPETScannerWithDiscreteDetectors base_type;
 #ifdef STIR_COMPILING_SWIG_WRAPPER
   // SWIG needs this typedef to be public
 public:
@@ -90,7 +90,8 @@ public:
       const VectorWithOffset<int>& min_ring_diff_v,
       const VectorWithOffset<int>& max_ring_diff_v,
       const int num_views,
-      const int num_tangential_poss);
+      const int num_tangential_poss,
+      const int tof_mash_factor = 0);
 
   self_type* clone() const override;
 
@@ -143,6 +144,10 @@ public:
 
   Bin get_bin(const LOR<float>&, const double delta_time = 0.0) const override;
 
+protected:
+  // give access to protected member find_cartesian_coordinates_given_scanner_coordinates
+  template <typename ProjDataInfoT>
+  friend class CListEventScannerWithDiscreteDetectors;
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
   /*! \warning These function take a different convention for the axial coordinate
@@ -153,7 +158,6 @@ public:
 
     \obsolete
   */
-
   // This version uses the coordinate map
   virtual void find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float>& coord_1,
                                                                     CartesianCoordinate3D<float>& coord_2,
