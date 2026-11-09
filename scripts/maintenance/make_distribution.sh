@@ -10,7 +10,7 @@
 # Check list of variables below for configuration options
 #
 # Dependencies: doxygen graphviz pdflatex zip etc
-# e.g. sudo apt install texlive-latex-base texlive-latex-extra doxygen graphviz zip ghosttscript
+# e.g. sudo apt install texlive-latex-base texlive-latex-extra latex2html zip ghostscript
 
 # This file is part of STIR.
 #
