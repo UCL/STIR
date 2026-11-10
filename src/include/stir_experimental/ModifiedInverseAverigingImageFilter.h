@@ -59,8 +59,8 @@ public:
                                       const VectorWithOffset<elemT>& filter_coefficients,
                                       shared_ptr<ProjData> proj_data_ptr,
                                       shared_ptr<ProjData> attenuation_proj_data_ptr,
-                                      DiscretisedDensity<3, float>* initial_image,
-                                      DiscretisedDensity<3, float>* sensitivity_image,
+                                      DiscretisedDensity<num_dimensions, float>* initial_image,
+                                      DiscretisedDensity<num_dimensions, float>* sensitivity_image,
                                       int mask_size,
                                       bool z_direction_trivial);
 
@@ -75,10 +75,10 @@ private:
   shared_ptr<ProjData> attenuation_proj_data_ptr;
   string attenuation_proj_data_filename;
 
-  DiscretisedDensity<3, float>* initial_image;
+  DiscretisedDensity<num_dimensions, float>* initial_image;
   string initial_image_filename;
 
-  DiscretisedDensity<3, float>* sensitivity_image;
+  DiscretisedDensity<num_dimensions, float>* sensitivity_image;
   string sensitivity_image_filename;
 
   bool z_direction_trivial;
@@ -89,8 +89,9 @@ private:
                      const DiscretisedDensity<num_dimensions, elemT>& in_density) const;
   void virtual_apply(DiscretisedDensity<num_dimensions, elemT>& density) const;
   void precalculate_filter_coefficients(
-      VectorWithOffset<VectorWithOffset<VectorWithOffset<shared_ptr<ArrayFunctionObject<3, float>>>>>& all_filter_coefficients,
-      DiscretisedDensity<3, elemT>* in_density) const;
+      VectorWithOffset<VectorWithOffset<VectorWithOffset<shared_ptr<ArrayFunctionObject<num_dimensions, float>>>>>&
+          all_filter_coefficients,
+      DiscretisedDensity<num_dimensions, elemT>* in_density) const;
 
   virtual void set_defaults();
   virtual void initialise_keymap();

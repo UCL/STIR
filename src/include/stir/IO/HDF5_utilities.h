@@ -25,7 +25,7 @@
 START_NAMESPACE_STIR
 
 /*!
-   \defgroup HDF5_utilities
+   \defgroup HDF5_utilities HDF5 utilities
    \ingroup IO
    @{
  */

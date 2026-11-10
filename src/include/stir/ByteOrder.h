@@ -45,7 +45,7 @@ START_NAMESPACE_STIR
 
   In a little-endian architecture, within a given 16- or 32-bit word,
    bytes at lower addresses have lower significance
-   (the word is stored `little-end-first').
+   (the word is stored `little-end-first`).
    (Quoted from http://www.techfak.uni-bielefeld.de/~joern/jargon/)
 */
 

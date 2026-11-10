@@ -1,4 +1,4 @@
-Licensing information for STIR 6.4.0
+Licensing information for STIR 6.5.0
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -241,7 +241,6 @@ Explicit list of files that carry the PARAPET license
 ./src/buildblock/error.cxx
 ./src/buildblock/recon_array_functions.cxx
 ./src/buildblock/VoxelsOnCartesianGrid.cxx
-./src/buildblock/ProjDataInfoGeneric.cxx
 ./src/analytic/FBP3DRP/ColsherFilter.cxx
 ./src/analytic/FBP3DRP/FBP3DRPReconstruction.cxx
 ./src/analytic/FBP3DRP/FBP3DRP.cxx

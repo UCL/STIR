@@ -34,8 +34,6 @@ on:
         default: false
 jobs:
   build:
-    env:
-      YARDL_VERSION: 0.6.7
     defaults:
       run:
         # All steps that don't have an explicit `shell` will activate any conda environment, see https://github.com/mamba-org/setup-micromamba#about-login-shells
@@ -210,57 +208,24 @@ jobs:
         cache-environment: true
         cache-downloads: true
 
+    - name: Cache Zenodo ROOT downloads
+      id: cache-zenodo
+      uses: actions/cache@v6
+      with:
+        path: examples/ROOT_files/ROOT_STIR_consistency/pretest_output
+        key: Zenodo-6410309
+
     - name: General env variables
       run: |
-          if [[ '${{ matrix.os }}' == macOS* ]]; then
-            if test -n "$CONDA_PREFIX"; then
+          if test -n "$CONDA_PREFIX"; then
+            echo CMAKE_PREFIX_PATH="$CONDA_PREFIX" >> "$GITHUB_ENV"
+            if [[ '${{ matrix.os }}' == macOS* ]]; then
               # see https://conda-forge.org/docs/maintainer/knowledge_base/#newer-c-features-with-old-sdk
               echo CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY">> $GITHUB_ENV
             fi
           fi
           # We will install all software, including some external dependencies, here
           echo CMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/install" >> $GITHUB_ENV
-
-    - name: Checkout PETSIRD
-      if: matrix.PETSIRD == 'ON'
-      uses: actions/checkout@v7
-      with:
-        repository: ETSInitiative/PETSIRD
-        ref: v0.12.2
-        path: external/PETSIRD
-
-    - name: Install yardl
-      if: matrix.PETSIRD == 'ON'
-      run: |
-        OS="$(uname -s)"
-        ARCH="$(uname -m)"
-        echo $OS
-        echo $ARCH
-        case "$OS" in
-          Linux)
-            YARDL_OS="linux"
-            ;;
-          Darwin)
-            YARDL_OS="darwin"
-            ;;
-          Windows)
-            YARDL_OS="windows"
-            ;;
-        esac
-
-        curl -L https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz -o yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz
-        mkdir yardl
-        tar -xzf "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz" -C yardl
-        rm "yardl_${YARDL_VERSION}_${YARDL_OS}_${ARCH}.tar.gz"
-        echo "$PWD/yardl" >> "$GITHUB_PATH"
-
-    - name: Install PETSIRD
-      if: matrix.PETSIRD == 'ON'
-      run: |
-          set -e
-          micromamba install conda-forge::just
-          cd external/PETSIRD/
-          just cmake_install_prefix="${CMAKE_INSTALL_PREFIX}" build-cpp
 
     - name: set_compiler_variables (no conda)
       if: matrix.PETSIRD !='ON'
@@ -295,7 +260,6 @@ jobs:
               CXX="${LLVMDIR}/bin/clang++"
             fi
           fi
-          export CC CXX
           # make available to jobs below
           echo CC="$CC" >> $GITHUB_ENV
           echo CXX="$CXX" >> $GITHUB_ENV
@@ -405,15 +369,15 @@ jobs:
              echo CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" >> "$GITHUB_ENV"
           fi
 
-          # we'll install some dependencies with shared libraries, so need to let the OS know
+          # we'll install some dependencies with shared libraries, so need to let the OS know# DEBUGXXXX
           # thisroot.sh also modified the path, so save that for the recon_test_pack
           case ${{matrix.os}} in
             (ubuntu*)
-              echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+              #echo LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
               echo PATH="$PATH" >> $GITHUB_ENV
               ;;
             (macOS*)
-              echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${DYLD_FALLBACK_LIBRARY_PATH}" >> "$GITHUB_ENV"
+              #echo DYLD_FALLBACK_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${DYLD_FALLBACK_LIBRARY_PATH}" >> "$GITHUB_ENV"
               echo PATH="$PATH" >> $GITHUB_ENV
               ;;
             (windows*)
@@ -432,20 +396,24 @@ jobs:
           fi
           #export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           cmake --version
+          # output CC/CXX versions (if env variables are set)
           if test "XX$CC" != "XX"; then
               $CC --version
+          fi
+          if test "XX$CXX" != "XX"; then
               $CXX --version
           fi
-          if [ -n "$ROOTSYS" ]; then
-            if test -n "$CONDA_PREFIX"; then
-              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_PATH=${CONDA_PREFIX}"
-              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DHDF5_ROOT=${CONDA_PREFIX}"
-            else
-              # TODO probably not necessary
-              EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_PREFIX_PATH=${ROOTSYS}"
-            fi
+
+          # Set some generic CMake flags
+          if test -n "$CONDA_PREFIX"; then
+              CMAKE_BUILD_FLAGS="${CMAKE_BUILD_FLAGS} -DHDF5_ROOT=${CONDA_PREFIX}"
           fi
-          EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DBUILD_SWIG_PYTHON=ON -DPython_EXECUTABLE=`which python`"
+          # Let CMake install with RPATH enable. Include our installation path as that's where parallelproj will be.
+          CMAKE_BUILD_FLAGS="${CMAKE_BUILD_FLAGS} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=TRUE -DCMAKE_INSTALL_RPATH:PATH=${CMAKE_INSTALL_PREFIX}/lib"
+          # store for re-use in other steps
+          echo CMAKE_BUILD_FLAGS="${CMAKE_BUILD_FLAGS}" >> $GITHUB_ENV
+
+          EXTRA_BUILD_FLAGS="${CMAKE_BUILD_FLAGS} -DBUILD_SWIG_PYTHON=ON -DPython_EXECUTABLE=`which python`"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DDOWNLOAD_ZENODO_TEST_DATA=ON"
           EXTRA_BUILD_FLAGS="${EXTRA_BUILD_FLAGS} -DGRAPHICS=None"
@@ -454,15 +422,6 @@ jobs:
           mkdir build
           cd build
           cmake -G Ninja -S .. ${BUILD_FLAGS} ${EXTRA_BUILD_FLAGS}
-          # report disk space
-          case ${{matrix.os}} in
-            (ubuntu* | macOS*)
-              df -h
-              ;;
-            (windows*)
-              # no idea how to do this
-              ;;
-           esac
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session if triggered
@@ -480,6 +439,17 @@ jobs:
             source "${GITHUB_WORKSPACE}/my-env/bin/activate"
           fi
           cmake --build . --config ${BUILD_TYPE} --target install
+
+    - name: Upload some build files for debugging
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build_files-${{ matrix.os }}-${{ matrix.compiler }}${{ matrix.compiler_version }}-cuda${{ matrix.cuda_version }}-${{ matrix.BUILD_TYPE }}-petsird=${{ matrix.PETSIRD}}-pp=${{ matrix.parallelproj }}-ROOT=${{ matrix.ROOT }}
+        path: |
+          ${{ github.workspace }}/build/**/*.log
+          ${{ github.workspace }}/build/**/STIR_DOXY2SWIG.i
+          ${{ github.workspace }}/build/CMakeCache.txt
+        retention-days: 7
 
     - name: ctest
       env:
@@ -555,7 +525,7 @@ jobs:
           # build and run C++/using_installed_STIR
           PATH=${CMAKE_INSTALL_PREFIX}/bin:$PATH
           cd ${GITHUB_WORKSPACE}/examples/C++/using_installed_STIR
-          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+          cmake -S . -B build/  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} ${CMAKE_BUILD_FLAGS}
           cmake --build build/ --config Release  --target install
           # run demo
           demo_create_image

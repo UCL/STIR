@@ -2,11 +2,22 @@ name: stir
 channels:
 - conda-forge
 dependencies:
+  # generally, using system compilers doesn't work very well with conda-forge packages
+  # you could try to remove these 2 if you're adventurous
+  - cxx-compiler
+  - c-compiler
   - cmake
   # - ccache # recommended by not required (possibly interferes with existing ccache on GitHub Actions)
   - ninja
   - swig
   - pre-commit>=4.0.1
+  - doxygen
+  - graphviz
+  # would be good for doxygen, but currently fails: https://github.com/conda-forge/texlive-core-feedstock/issues/19 
+  # Use sudo apt install texlive-latex-base texlive-latex-extra latex2html
+  # - texlive-core
+  # - pdflatex
+  - make # for the PDFs
   - nlohmann_json>=3.11.2
   - libboost-devel # really only libboost-headers needed, but CMake can then find a non-CONDA boost
   - hdf5 # not win and not (osx and arm64)
@@ -15,10 +26,9 @@ dependencies:
 #  - cuda-driver-dev: linux
 #  - cuda-cudart-dev
   - libparallelproj=2
-  - root_base=6.34 # not win
+  - root_base>=6.38 # not win
+  - libpetsird=0.12.2
 #  - zlib # win
-  - xtensor>=0.24.2 # PETSIRD
-  - xtensor-blas # PETSIRD
   - howardhinnant_date>=3.0.1 # PETSIRD
   - python>=3.11.3 # 3.11.3 required for PETSIRD
   - numpy>=1.24.3
