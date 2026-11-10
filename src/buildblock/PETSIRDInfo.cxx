@@ -17,8 +17,14 @@
 #include "stir/PETSIRDInfo.h"
 #include "stir/detail/PETSIRDInfo_helpers.h"
 
+#include "stir/round.h"
+#include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/format.h"
+
+// TODO remove
+#include <iostream>
+#include "stir/stream.h"
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"
@@ -26,8 +32,26 @@
 
 #include "petsird/binary/protocols.h"
 #include "petsird/hdf5/protocols.h"
+#include <cmath>
 
 START_NAMESPACE_STIR
+
+template <typename T>
+static float
+dot(const T& a, const T& b)
+{
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+template <typename T>
+static float
+my_norm(const T& a)
+{
+  // can't use xt::linalg::norm yet because of linking error with blas/lapack
+  return std::sqrt(dot(a, a)); // xt::linalg::norm(a) };
+}
+
+using xt::linalg::cross;
 
 void
 PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique_dim1_values,
@@ -52,22 +76,6 @@ PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique
     return R;
     // skew = matrix::subtract(R, matrix::transpose(R));
     // auto rot = matrix::getAxisFromSkew(skew);
-  };
-
-  auto detect_radius = [&](const petsird::RigidTransformation& trans) -> bool {
-    for (int i = 0; i < 3; ++i)
-      {
-        if (i == rotation_axis)
-          continue;
-        float candidate = trans.matrix.at(i, 3);
-        if (candidate > 0.0f)
-          {
-            radius = candidate;
-            radius_index = i;
-            return true;
-          }
-      }
-    return false;
   };
 
   std::array<std::array<float, 3>, 3> skew;
@@ -110,22 +118,63 @@ PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique
   rotation_axis = detected_axis;
 
   for (const auto& rep_module : replicated_module_list)
-    for (const auto& mod_trans : rep_module.transforms)
-      {
-        if (radius == 0.0f)
-          {
-            if (!detect_radius(mod_trans))
-              {
-                error("Unable to determine radius from module transforms.");
-              }
-          }
-        else
-          {
-            float current = mod_trans.matrix.at(radius_index, 3);
-            if (std::abs(current - radius) > 1e-2f)
-              warning("Mixed radii detected. Consider checking for misaligned modules.");
-          }
-      }
+    {
+      std::vector<petsird::Coordinate> mod_ADPs;
+      this->centre = petsird::Coordinate({ 0.F, 0.F, 0.F });
+      const auto num_modules{ rep_module.transforms.size() };
+      mod_ADPs.reserve(num_modules);
+      axis_direction.c[rotation_axis] = 1.F;
+      for (const auto& mod_trans : rep_module.transforms)
+        {
+          const auto ADP{ petsird_helpers::geometry::mult_transforms_coord({ mod_trans }, { { 0.F, 0.F, 0.F } }) };
+          mod_ADPs.push_back(ADP);
+          centre.c += ADP.c;
+        }
+      centre.c = centre.c / static_cast<float>(num_modules);
+      info(format("Centre at ({},{},{})", centre.c[0], centre.c[1], centre.c[2]));
+
+      axial_poss.clear();
+      angles.clear();
+      petsird::Coordinate first_projection;
+      bool first = true;
+      for (auto ADP : mod_ADPs)
+        {
+          ADP.c -= centre.c;
+          // info(format("ADP at ({},{},{})", ADP.c[0], ADP.c[1], ADP.c[2]));
+          // find distance along scanner axis (from the centre)
+          const float axial_pos{ dot(ADP.c, axis_direction.c) };
+          axial_poss.push_back(axial_pos);
+          // project ADP onto the scanner axis
+          const auto projection{ ADP.c - axial_pos * axis_direction.c };
+
+          if (first)
+            {
+              first = false;
+              first_projection.c = projection;
+              first_direction.c = first_projection.c / my_norm(first_projection.c);
+              second_direction.c = cross(first_direction.c, axis_direction.c);
+            }
+          float angle{ std::atan2(dot(ADP.c, second_direction.c), dot(ADP.c, first_direction.c)) };
+          if (angle < 0)
+            angle += static_cast<float>(2 * _PI);
+          angles.push_back(stir::round(1000.F * angle) / 1000.F);
+
+          const float current{ my_norm(projection) };
+          if (radius == 0.0f)
+            {
+              radius_index = 0;
+              radius = current;
+            }
+          else if (std::abs(current - radius) > 1.f)
+            {
+              radius_index = -1;
+              warning(format("Mixed radii detected {} vs {}. Consider checking for misaligned modules.", radius, current));
+            }
+        }
+      info(format("Radius: {}", radius));
+      std::cerr << "\nANGLES: " << angles;
+      std::cerr << "\nAxial poss: " << axial_poss;
+    }
 }
 
 void
@@ -152,19 +201,10 @@ void
 PETSIRDInfo::figure_out_block_angles(std::set<float>& unique_angle_modules, const int rot_axis)
 {
 
-  for (const auto& module : get_petsird_scanner_info().scanner_geometry.replicated_modules)
-    for (const auto& transform : module.transforms)
-      {
-        if (rot_axis == 0)
-          unique_angle_modules.insert(
-              std::fabs(int(1000.F * std::atan2(transform.matrix.at(1, 0), transform.matrix.at(2, 0))) / 1000.F));
-        else if (rot_axis == 1)
-          unique_angle_modules.insert(
-              std::fabs(int(1000.F * std::atan2(transform.matrix.at(2, 0), transform.matrix.at(0, 0))) / 1000.F));
-        else if (rot_axis == 2)
-          unique_angle_modules.insert(
-              std::fabs(int(1000.F * std::atan2(transform.matrix.at(1, 0), transform.matrix.at(0, 0))) / 1000.F));
-      }
+  for (const auto angle : this->angles)
+    {
+      unique_angle_modules.insert(angle);
+    }
 }
 
 PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::string scanner_geometry)
@@ -226,14 +266,14 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
 
   const std::set<float>& main_axis = vector_utils::get_largest_vector(unique_dim1_values, unique_dim2_values, unique_dim3_values);
 
-  int num_transaxial_blocks = numberOfModules / main_axis.size();
+  std::set<float> unique_angle_modules;
+  figure_out_block_angles(unique_angle_modules, rotation_axis);
+
+  int num_transaxial_blocks = unique_angle_modules.size();
   info(format("I deduce that the scanner has {} transaxial number of blocks", num_transaxial_blocks));
 
   std::set<float> unique_elements_dim1_values, unique_elements_dim2_values, unique_elements_dim3_values;
   figure_out_block_element_transformations(unique_elements_dim1_values, unique_elements_dim2_values, unique_elements_dim3_values);
-
-  std::set<float> unique_angle_modules;
-  figure_out_block_angles(unique_angle_modules, rotation_axis);
 
   std::vector<float> block_angular_spacing;
   if (!vector_utils::get_spacing_uniform(
@@ -250,16 +290,14 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
       {
         for (uint32_t elem = 0; elem < numberOfElementsIndices; elem++)
           {
-            petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, 1 };
-            auto box_shape = petsird_helpers::geometry::get_detecting_box(
-                get_petsird_scanner_info(), type_of_module, expanded_detection_bin);
+            petsird::ExpandedDetectionBin expanded_detection_bin{ module, elem, 0 };
+            auto ADP = petsird_helpers::geometry::get_ADP(get_petsird_scanner_info(), type_of_module, expanded_detection_bin);
             CartesianCoordinate3D<float> mean_coord;
-            for (auto& corner : box_shape.corners)
-              { // if STIR (z,y,x) -> PETSIRD (-y, -x, z) pheraps  the order below needs to be changed
-                mean_coord.x() = +corner.c[0] / box_shape.corners.size();
-                mean_coord.y() = +corner.c[1] / box_shape.corners.size();
-                mean_coord.z() = +corner.c[2] / box_shape.corners.size();
-              }
+            { // if STIR (z,y,x) -> PETSIRD (-y, -x, z) pheraps  the order below needs to be changed
+              mean_coord.x() = +ADP.c[0];
+              mean_coord.y() = +ADP.c[1];
+              mean_coord.z() = +ADP.c[2];
+            }
             // mean_coord.z() += this_scanner_sptr->get_axial_crystal_spacing() /
             //       save  mean pos into map
             pet_sird_positions.push_back(mean_coord);
@@ -290,6 +328,7 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
       error("Multiple radii handling not implemented yet.");
     }
 
+#if 0
   {
     info("Printing TOF bin edges for validation (please make sure that the STIR TOF bin edges match the PETSIRD TOF bin edges):");
     for (size_t i = 0; i < tof_bin_edges.NumberOfBins(); ++i)
@@ -297,6 +336,7 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
         info(format("PETSIRD TOF bin edge {}: {}", i, tof_bin_edges.edges[i]), 2);
       }
   }
+#endif
 
   bool has_tile_structure = group2 > 1 && group3 > 1 && (numberOfElementsIndices % (group2 * group3) == 0);
   info(format("Has tile structure: {}", has_tile_structure ? "yes" : "no"));
@@ -347,7 +387,8 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
               std::abs(expected_circle_area - polygon_area) / expected_circle_area));
   // This is the NeuroLF ratio.
   forced_geometry = "BlocksOnCylindrical";
-  if (std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.02f || forced_geometry == "cylindrical")
+  // TODO need to check on blocks spacing, so for now, never use cylindrical
+  if (false) // std::abs(expected_circle_area - polygon_area) / expected_circle_area < 0.02f || forced_geometry == "cylindrical")
     {
       info(format("PETSIRDInfo: The cylindrical area {} is more than 95% matching the polygon area {}. We will presume a "
                   "cylindrical configuration.",
@@ -444,7 +485,7 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
                        - *unique_elements_horizontal_values.begin()), // axial_crystal_spacing_v
                       (*std::next(unique_elements_vertical_values.begin())
                        - *unique_elements_vertical_values.begin()), // transaxial_crystal_spacing_v
-                      (*std::next(unique_elements_horizontal_values.begin()) - *unique_elements_horizontal_values.begin())
+                      (*std::next(unique_elements_horizontal_values.begin()) - *unique_elements_horizontal_values.begin()) // TODO
                           * num_axial_crystals_per_block * blocks_per_bucket_axial, // axial_block_spacing_v
                       (*std::next(unique_elements_vertical_values.begin()) - *unique_elements_vertical_values.begin())
                           * num_trans_crystals_per_block * blocks_per_bucket_transaxial, // transaxial_block_spacing_v

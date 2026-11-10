@@ -141,6 +141,16 @@ private:
    when it contains efficiency tables.
   */
   shared_ptr<const petsird::Header> petsird_header_sptr;
+  petsird::Coordinate centre;
+  //! unit vector along the scanner axis
+  petsird::Coordinate axis_direction;
+  //! unit vector from scanner axis to the first module
+  petsird::Coordinate first_direction;
+  //! unit vector determined as cross(first, axis)
+  petsird::Coordinate second_direction;
+  std::vector<float> axial_poss;
+  std::vector<float> angles;
+
   //! Active scanner instance.
   shared_ptr<Scanner> stir_scanner_sptr;
   //! Number of replicated modules.
