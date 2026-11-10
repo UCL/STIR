@@ -227,12 +227,6 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
 
   const auto& tof_bin_edges = get_petsird_scanner_info().tof_bin_edges[type_of_module][type_of_module];
   info(format("Num. of TOF bins in PETSIRD {}", tof_bin_edges.NumberOfBins()));
-  if (tof_bin_edges.NumberOfBins() > 1)
-    {
-      info(format(
-          "Since the PETSIRD file has TOF information, STIR will force cylindrical geometry, as long as other things checkout."));
-      forced_geometry = "cylindrical";
-    }
 
   std::set<float> unique_tof_values;
   vector_utils::find_unique_values_2D(unique_tof_values, get_petsird_scanner_info().tof_resolution);
