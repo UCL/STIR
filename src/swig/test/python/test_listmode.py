@@ -29,12 +29,14 @@ os.environ["EXCLUDE_RANDOM"] = "0"
 
 
 def test_get_record():
+    print(loc)
     try:
         lm = stir.ListModeData.read_from_file(os.path.join(loc, filename))
         proj_data_info = lm.get_proj_data_info()
     except RuntimeError:
         print(f"Could not open {filename}")
         print("ROOT support not enabled?")
+        assert False
         return
 
     record = lm.get_empty_record()

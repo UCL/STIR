@@ -592,8 +592,9 @@ jobs:
               echo skipping pytest due to numpy problem for now.
               ;;
             (*)
-              python -m pytest .
+              python -m pytest -s -v .
               cd ../examples/python
+              echo Running recon_demo_gradient.py
               python recon_demo_gradient.py
               ;;
           esac
