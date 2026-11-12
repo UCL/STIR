@@ -57,7 +57,9 @@ def test_get_record():
     event = record.event()
     lor = event.get_LOR()
     event.get_bin(b, proj_data_info);
-    diff = stir.FloatCartesianCoordinate3D(lor.p1() - stir.Float3BasicCoordinate((-2.03125, 325.646, -78.6102)))
+    # second event has negative TOF bin, so CListEventROOT swaps LOR end points
+    # for consistency with `ProjDataInfo::get_LOR` (#1775)
+    diff = stir.FloatCartesianCoordinate3D(lor.p1() - stir.Float3BasicCoordinate((2.03125, -334.349, 20.8681)))
     assert abs(diff.x()) < .1 and abs(diff.y()) < .1 and abs(diff.z()) < .1
     assert b.segment_num == -1 and b.axial_pos_num == 1 and b.view_num == 12 and b.tangential_pos_num == -14
 
