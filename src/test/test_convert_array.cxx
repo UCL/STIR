@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2025 University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -24,39 +25,42 @@
 #include "stir/NumericInfo.h"
 #include "stir/IndexRange3D.h"
 #include "stir/RunTests.h"
+#include "stir/stream.h"
 #include <vector>
 #include <iostream>
-#include <math.h>
+#include <cmath>
+#include <algorithm>
+#include <type_traits>
 using std::cerr;
 using std::endl;
 
 START_NAMESPACE_STIR
 
 //! tests  convert_array functionality
+template <typename indexT>
 class convert_array_Tests : public RunTests
 {
 public:
   void run_tests() override;
 };
 
+template <typename indexT>
 void
-convert_array_Tests::run_tests()
+convert_array_Tests<indexT>::run_tests()
 {
-
-  cerr << "Test program for 'convert_array'." << endl << "Everything is fine when there is no output below." << endl;
 
   // 1D
   {
-    Array<1, float> tf1(1, 20);
+    Array<1, float, indexT> tf1(1, 20);
     tf1.fill(100.F);
 
-    Array<1, short> ti1(1, 20);
+    Array<1, short, indexT> ti1(1, 20);
     ti1.fill(100);
 
     {
       // float -> short with a preferred scale factor
       float scale_factor = float(1);
-      Array<1, short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
+      Array<1, short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 
       check(scale_factor == float(1), "test convert_array float->short 1D");
       check_if_equal(ti1, ti2, "test convert_array float->short 1D");
@@ -65,10 +69,10 @@ convert_array_Tests::run_tests()
     {
       // float -> short with automatic scale factor
       float scale_factor = 0;
-      Array<1, short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
+      Array<1, short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 
       check(fabs(NumericInfo<short>().max_value() / 1.01 / ti2[1] - 1) < 1E-4);
-      for (int i = 1; i <= 20; i++)
+      for (indexT i = 1; i <= 20; i++)
         ti2[i] = short(double(ti2[i]) * scale_factor);
       check(ti1 == ti2);
     }
@@ -77,22 +81,22 @@ convert_array_Tests::run_tests()
     {
       // float -> short with a preferred scale factor that needs to be adjusted
       float scale_factor = 1;
-      Array<1, short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
+      Array<1, short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 
       check(fabs(NumericInfo<short>().max_value() / 1.01 / ti2[1] - 1) < 1E-4);
-      for (int i = 1; i <= 20; i++)
+      for (indexT i = 1; i <= 20; i++)
         check(fabs(double(ti2[i]) * scale_factor / tf1[i] - 1) < 1E-4);
     }
 
     {
       // short -> float with a scale factor = 1
       float scale_factor = 1;
-      Array<1, float> tf2 = convert_array(scale_factor, ti1, NumericInfo<float>());
-      Array<1, short> ti2(1, 20);
+      Array<1, float, indexT> tf2 = convert_array(scale_factor, ti1, NumericInfo<float>());
+      Array<1, short, indexT> ti2(1, 20);
 
       check(scale_factor == float(1));
       check(tf2[1] == 100.F);
-      for (int i = 1; i <= 20; i++)
+      for (indexT i = 1; i <= 20; i++)
         ti2[i] = short(double(tf2[i]) * scale_factor);
       check(ti1 == ti2);
     }
@@ -100,12 +104,12 @@ convert_array_Tests::run_tests()
     {
       // short -> float with a preferred scale factor = .01
       float scale_factor = .01F;
-      Array<1, float> tf2 = convert_array(scale_factor, ti1, NumericInfo<float>());
-      Array<1, short> ti2(1, 20);
+      Array<1, float, indexT> tf2 = convert_array(scale_factor, ti1, NumericInfo<float>());
+      Array<1, short, indexT> ti2(1, 20);
 
       check(scale_factor == float(.01));
       // TODO double->short
-      for (int i = 1; i <= 20; i++)
+      for (indexT i = 1; i <= 20; i++)
         ti2[i] = short(double(tf2[i]) * scale_factor + 0.5);
       check(ti1 == ti2);
     }
@@ -115,19 +119,19 @@ convert_array_Tests::run_tests()
     {
       // positive float -> unsigned short with a preferred scale factor
       float scale_factor = 1;
-      Array<1, short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
+      Array<1, short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 
       check(scale_factor == float(1));
       check(ti1 == ti2);
     }
 
     {
-      Array<1, unsigned short> ti3(1, 20);
+      Array<1, unsigned short, indexT> ti3(1, 20);
       ti3.fill(0);
 
       // negative float -> unsigned short with a preferred scale factor
       float scale_factor = 1;
-      Array<1, unsigned short> ti2 = convert_array(scale_factor, tf1, NumericInfo<unsigned short>());
+      Array<1, unsigned short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<unsigned short>());
 
       check(scale_factor == float(1));
       check(ti3 == ti2);
@@ -136,16 +140,17 @@ convert_array_Tests::run_tests()
   //   3D
 
   {
-    Array<3, float> tf1(IndexRange3D(1, 30, 1, 182, -2, 182));
+    const auto min_indices = make_coordinate<indexT>(1, 1, std::is_signed_v<indexT> ? -2 : 0);
+    Array<3, float, indexT> tf1(IndexRange<3, indexT>(min_indices, make_coordinate<indexT>(30, 182, 182)));
     tf1.fill(100.F);
 
-    Array<3, short> ti1(tf1.get_index_range());
+    Array<3, short, indexT> ti1(tf1.get_index_range());
     ti1.fill(100);
 
     {
       // float -> short with a preferred scale factor
       float scale_factor = float(1);
-      Array<3, short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
+      Array<3, short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 
       check(scale_factor == float(1));
       check(ti1 == ti2);
@@ -154,11 +159,11 @@ convert_array_Tests::run_tests()
     {
       // float -> short with automatic scale factor
       float scale_factor = 0;
-      Array<3, short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
+      Array<3, short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 #ifndef DO_TIMING_ONLY
       check(fabs(NumericInfo<short>().max_value() / 1.01 / (*ti2.begin_all()) - 1) < 1E-4);
-      const Array<3, short>::full_iterator iter_end = ti2.end_all();
-      for (Array<3, short>::full_iterator iter = ti2.begin_all(); iter != iter_end; ++iter)
+      const auto iter_end = ti2.end_all();
+      for (auto iter = ti2.begin_all(); iter != iter_end; ++iter)
         *iter = short(double((*iter)) * scale_factor);
       check(ti1 == ti2);
 #endif
@@ -168,13 +173,13 @@ convert_array_Tests::run_tests()
     {
       // float -> short with a preferred scale factor that needs to be adjusted
       float scale_factor = 1;
-      Array<3, short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
+      Array<3, short, indexT> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 
 #ifndef DO_TIMING_ONLY
       check(fabs(NumericInfo<short>().max_value() / 1.01 / (*ti2.begin_all()) - 1) < 1E-4);
-      Array<3, short>::full_iterator iter_ti2 = ti2.begin_all();
-      const Array<3, short>::full_iterator iter_ti2_end = ti2.end_all();
-      Array<3, float>::full_iterator iter_tf1 = tf1.begin_all();
+      auto iter_ti2 = ti2.begin_all();
+      const auto iter_ti2_end = ti2.end_all();
+      auto iter_tf1 = tf1.begin_all();
       for (; iter_ti2 != iter_ti2_end; ++iter_ti2, ++iter_tf1)
         check(fabs(double(*iter_ti2) * scale_factor / *iter_tf1 - 1) < 1E-4);
 #endif
@@ -216,7 +221,35 @@ USING_NAMESPACE_STIR
 int
 main()
 {
-  convert_array_Tests tests;
-  tests.run_tests();
-  return tests.main_return_value();
+  {
+    cerr << "Testing convert_array with int as indices\n";
+    cerr << "=========================================\n";
+    convert_array_Tests<int> tests;
+    tests.run_tests();
+    if (!tests.is_everything_ok())
+      return tests.main_return_value();
+  }
+  {
+    cerr << "Testing convert_array with short int as indices\n";
+    cerr << "=========================================\n";
+    convert_array_Tests<short int> tests;
+    tests.run_tests();
+    if (!tests.is_everything_ok())
+      return tests.main_return_value();
+  }
+  {
+    cerr << "Testing convert_array with long long as indices\n";
+    cerr << "=========================================\n";
+    convert_array_Tests<long long> tests;
+    tests.run_tests();
+    if (!tests.is_everything_ok())
+      return tests.main_return_value();
+  }
+  {
+    cerr << "Testing convert_array with unsigned int as indices\n";
+    cerr << "=========================================\n";
+    convert_array_Tests<unsigned int> tests;
+    tests.run_tests();
+    return tests.main_return_value();
+  }
 }

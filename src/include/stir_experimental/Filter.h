@@ -25,9 +25,6 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT>
-class Array;
-
 /*!
   \brief Preliminary class for 1D filtering using FFTs
 

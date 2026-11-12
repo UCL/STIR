@@ -28,31 +28,31 @@
 
 START_NAMESPACE_STIR
 
-template <class T, class NUMBER>
-NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const VectorWithOffset<T>& t)
+template <class T, class NUMBER, class indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::NumericVectorWithOffset(const VectorWithOffset<T, indexT>& t)
     : base_type(t)
 {}
 
-template <class T, class NUMBER>
-NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(NumericVectorWithOffset<T, NUMBER>&& other) noexcept
+template <class T, class NUMBER, class indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::NumericVectorWithOffset(NumericVectorWithOffset<T, NUMBER, indexT>&& other) noexcept
     : NumericVectorWithOffset()
 {
   swap(*this, other);
 }
 
 // assignment
-template <class T, class NUMBER>
-NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator=(const NumericVectorWithOffset<T, NUMBER>& other)
+template <class T, class NUMBER, class indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator=(const NumericVectorWithOffset<T, NUMBER, indexT>& other)
 {
   base_type::operator=(other);
   return *this;
 }
 
 // addition
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator+(const NumericVectorWithOffset& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator+(const NumericVectorWithOffset& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -60,9 +60,9 @@ NumericVectorWithOffset<T, NUMBER>::operator+(const NumericVectorWithOffset& v) 
 }
 
 // subtraction
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator-(const NumericVectorWithOffset& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator-(const NumericVectorWithOffset& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -70,9 +70,9 @@ NumericVectorWithOffset<T, NUMBER>::operator-(const NumericVectorWithOffset& v) 
 }
 
 // elem by elem multiplication
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator*(const NumericVectorWithOffset& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator*(const NumericVectorWithOffset& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -80,9 +80,9 @@ NumericVectorWithOffset<T, NUMBER>::operator*(const NumericVectorWithOffset& v) 
 }
 
 // elem by elem division
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator/(const NumericVectorWithOffset& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator/(const NumericVectorWithOffset& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -90,9 +90,9 @@ NumericVectorWithOffset<T, NUMBER>::operator/(const NumericVectorWithOffset& v) 
 }
 
 // Add a constant to every element
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator+(const NUMBER& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator+(const NUMBER& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -100,9 +100,9 @@ NumericVectorWithOffset<T, NUMBER>::operator+(const NUMBER& v) const
 }
 
 // Subtract a constant from every element
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator-(const NUMBER& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator-(const NUMBER& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -110,9 +110,9 @@ NumericVectorWithOffset<T, NUMBER>::operator-(const NUMBER& v) const
 }
 
 // Multiply every element by a constant
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator*(const NUMBER& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator*(const NUMBER& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -120,9 +120,9 @@ NumericVectorWithOffset<T, NUMBER>::operator*(const NUMBER& v) const
 }
 
 // Divide every element by a constant
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>
-NumericVectorWithOffset<T, NUMBER>::operator/(const NUMBER& v) const
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>
+NumericVectorWithOffset<T, NUMBER, indexT>::operator/(const NUMBER& v) const
 {
   this->check_state();
   NumericVectorWithOffset retval(*this);
@@ -132,9 +132,9 @@ NumericVectorWithOffset<T, NUMBER>::operator/(const NUMBER& v) const
 /*! This will grow the vector automatically if the 2nd argument has
     smaller min_index and/or larger max_index.
     New elements are first initialised with T() before adding.*/
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator+=(const NumericVectorWithOffset& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator+=(const NumericVectorWithOffset& v)
 {
   this->check_state();
   // first check if *this is empty
@@ -143,16 +143,16 @@ NumericVectorWithOffset<T, NUMBER>::operator+=(const NumericVectorWithOffset& v)
       return *this = v;
     }
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] += v.num[i];
   this->check_state();
   return *this;
 }
 
 /*! See operator+= (const NumericVectorWithOffset&) for growing behaviour */
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator-=(const NumericVectorWithOffset& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator-=(const NumericVectorWithOffset& v)
 {
   this->check_state();
   // first check if *this is empty
@@ -166,16 +166,16 @@ NumericVectorWithOffset<T, NUMBER>::operator-=(const NumericVectorWithOffset& v)
       error("NumericVectorWithOffset-= called with rhs that is larger in size than lhs. This is no longer supported.");
     }
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] -= v.num[i];
   this->check_state();
   return *this;
 }
 
 /*! See operator+= (const NumericVectorWithOffset&) for growing behaviour */
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator*=(const NumericVectorWithOffset& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator*=(const NumericVectorWithOffset& v)
 {
   this->check_state();
   // first check if *this is empty
@@ -190,16 +190,16 @@ NumericVectorWithOffset<T, NUMBER>::operator*=(const NumericVectorWithOffset& v)
       return *this;
     }
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] *= v.num[i];
   this->check_state();
   return *this;
 }
 
 /*! See operator+= (const NumericVectorWithOffset&) for growing behaviour */
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator/=(const NumericVectorWithOffset& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator/=(const NumericVectorWithOffset& v)
 {
   this->check_state();
   // first check if *this is empty
@@ -214,73 +214,73 @@ NumericVectorWithOffset<T, NUMBER>::operator/=(const NumericVectorWithOffset& v)
       return *this;
     }
   this->grow(std::min(this->get_min_index(), v.get_min_index()), std::max(this->get_max_index(), v.get_max_index()));
-  for (int i = v.get_min_index(); i <= v.get_max_index(); i++)
+  for (auto i = v.get_min_index(); i <= v.get_max_index(); i++)
     this->num[i] /= v.num[i];
   this->check_state();
   return *this;
 }
 
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator+=(const NUMBER& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator+=(const NUMBER& v)
 {
   this->check_state();
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     this->num[i] += v;
   this->check_state();
   return *this;
 }
 
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator-=(const NUMBER& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator-=(const NUMBER& v)
 {
   this->check_state();
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     this->num[i] -= v;
   this->check_state();
   return *this;
 }
 
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator*=(const NUMBER& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator*=(const NUMBER& v)
 {
   this->check_state();
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     this->num[i] *= v;
   this->check_state();
   return *this;
 }
 
-template <class T, class NUMBER>
-inline NumericVectorWithOffset<T, NUMBER>&
-NumericVectorWithOffset<T, NUMBER>::operator/=(const NUMBER& v)
+template <class T, class NUMBER, class indexT>
+inline NumericVectorWithOffset<T, NUMBER, indexT>&
+NumericVectorWithOffset<T, NUMBER, indexT>::operator/=(const NUMBER& v)
 {
   this->check_state();
-  for (int i = this->get_min_index(); i <= this->get_max_index(); i++)
+  for (auto i = this->get_min_index(); i <= this->get_max_index(); i++)
     this->num[i] /= v;
   this->check_state();
   return *this;
 }
 
-template <class T, class NUMBER>
+template <class T, class NUMBER, class indexT>
 template <class NUMBER2>
 inline void
-NumericVectorWithOffset<T, NUMBER>::axpby(const NUMBER2 a,
-                                          const NumericVectorWithOffset& x,
-                                          const NUMBER2 b,
-                                          const NumericVectorWithOffset& y)
+NumericVectorWithOffset<T, NUMBER, indexT>::axpby(const NUMBER2 a,
+                                                  const NumericVectorWithOffset& x,
+                                                  const NUMBER2 b,
+                                                  const NumericVectorWithOffset& y)
 {
-  NumericVectorWithOffset<T, NUMBER>::xapyb(x, a, y, b);
+  NumericVectorWithOffset<T, NUMBER, indexT>::xapyb(x, a, y, b);
 }
 
-template <class T, class NUMBER>
+template <class T, class NUMBER, class indexT>
 inline void
-NumericVectorWithOffset<T, NUMBER>::xapyb(const NumericVectorWithOffset& x,
-                                          const NUMBER a,
-                                          const NumericVectorWithOffset& y,
-                                          const NUMBER b)
+NumericVectorWithOffset<T, NUMBER, indexT>::xapyb(const NumericVectorWithOffset& x,
+                                                  const NUMBER a,
+                                                  const NumericVectorWithOffset& y,
+                                                  const NUMBER b)
 {
   this->check_state();
   if ((this->get_min_index() != x.get_min_index()) || (this->get_min_index() != y.get_min_index())
@@ -296,12 +296,12 @@ NumericVectorWithOffset<T, NUMBER>::xapyb(const NumericVectorWithOffset& x,
     }
 }
 
-template <class T, class NUMBER>
+template <class T, class NUMBER, class indexT>
 inline void
-NumericVectorWithOffset<T, NUMBER>::xapyb(const NumericVectorWithOffset& x,
-                                          const NumericVectorWithOffset& a,
-                                          const NumericVectorWithOffset& y,
-                                          const NumericVectorWithOffset& b)
+NumericVectorWithOffset<T, NUMBER, indexT>::xapyb(const NumericVectorWithOffset& x,
+                                                  const NumericVectorWithOffset& a,
+                                                  const NumericVectorWithOffset& y,
+                                                  const NumericVectorWithOffset& b)
 {
   this->check_state();
   if ((this->get_min_index() != x.get_min_index()) || (this->get_min_index() != y.get_min_index())
@@ -322,10 +322,10 @@ NumericVectorWithOffset<T, NUMBER>::xapyb(const NumericVectorWithOffset& x,
     }
 }
 
-template <class T, class NUMBER>
+template <class T, class NUMBER, class indexT>
 template <class T2>
 inline void
-NumericVectorWithOffset<T, NUMBER>::sapyb(const T2& a, const NumericVectorWithOffset& y, const T2& b)
+NumericVectorWithOffset<T, NUMBER, indexT>::sapyb(const T2& a, const NumericVectorWithOffset& y, const T2& b)
 {
   this->xapyb(*this, a, y, b);
 }
