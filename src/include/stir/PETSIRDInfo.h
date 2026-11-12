@@ -95,16 +95,27 @@ public:
 
 private:
   /*!
-     \brief Infer scanner blocks and rotation axis from PETSIRD replicated modules.
-     \param unique_dim1_values Output set of unique translations along X.
-     \param unique_dim2_values Output set of unique translations along Y.
-     \param unique_dim3_values Output set of unique translations along Z.
-     \param replicated_module_list PETSIRD replicated detector modules.
-     \return Index of rotation axis (0=x, 1=y, 2=z) or -1 if not found.
-   */
-  int figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique_dim1_values,
-                                                  std::set<float>& unique_dim2_values,
-                                                  std::set<float>& unique_dim3_values);
+    \brief Infer scanner blocks and rotation axis etc from PETSIRD replicated modules.
+    \param unique_dim1_values[out] Output set of unique translations along X.
+    \param unique_dim2_values[out] Output set of unique translations along Y.
+    \param unique_dim3_values[out] Output set of unique translations along Z.
+    \param radius[out] Output inferred radius (positive component orthogonal to rotation axis).
+    \param radius_index[out] Output index of the axis containing the radius component.
+    \param rotation_axis[out] Index of rotation axis (0=x, 1=y, 2=z) or -1 if not found.
+
+    \details
+    - Extracts translation components into the provided sets.
+    - Uses skew-symmetric part of rotation matrices to infer axis direction.
+    - Emits warnings for mixed-axis rotations or inconsistencies.
+
+    \warning Currently the radius of the average detection points is detected (i.e. inner ring + av DOI).
+  */
+  void figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique_dim1_values,
+                                                   std::set<float>& unique_dim2_values,
+                                                   std::set<float>& unique_dim3_values,
+                                                   float& radius,
+                                                   int& radius_index,
+                                                   int& rotation_axis);
   /*!
   \brief Compute unique module rotation angles around the given axis.
   \param unique_angle_modules Output set of unique angles (radians).
@@ -112,21 +123,17 @@ private:
   */
   void figure_out_block_angles(std::set<float>& unique_angle_modules, const int rot_axis);
   /*!
-  \brief Determine block element translations and radius.
-  \param unique_dim1_values Output set of element translations along X.
-  \param unique_dim2_values Output set of element translations along Y.
-  \param unique_dim3_values Output set of element translations along Z.
-  \param radius Output inferred radius.
-  \param radius_index Output axis index containing the radius component.
-  \param rotation_axis Known rotation axis (0=x, 1=y, 2=z).
-  \param replicated_module_list PETSIRD replicated detector modules.
-*/
+    \brief Determine block element translations.
+    \param unique_dim1_values[out] Output set of element translations along X.
+    \param unique_dim2_values[out] Output set of element translations along Y.
+    \param unique_dim3_values[out] Output set of element translations along Z.
+
+    \details
+    - Scans element-level transforms to collect translations.
+  */
   void figure_out_block_element_transformations(std::set<float>& unique_dim1_values,
                                                 std::set<float>& unique_dim2_values,
-                                                std::set<float>& unique_dim3_values,
-                                                float& radius,
-                                                int& radius_index,
-                                                const int rotation_axis);
+                                                std::set<float>& unique_dim3_values);
 
   //! Scanner information as provided by PETSIRD.
   /*!
@@ -134,6 +141,16 @@ private:
    when it contains efficiency tables.
   */
   shared_ptr<const petsird::Header> petsird_header_sptr;
+  petsird::Coordinate centre;
+  //! unit vector along the scanner axis
+  petsird::Coordinate axis_direction;
+  //! unit vector from scanner axis to the first module
+  petsird::Coordinate first_direction;
+  //! unit vector determined as cross(first, axis)
+  petsird::Coordinate second_direction;
+  std::vector<float> axial_poss;
+  std::vector<float> angles;
+
   //! Active scanner instance.
   shared_ptr<Scanner> stir_scanner_sptr;
   //! Number of replicated modules.
