@@ -134,3 +134,34 @@
     stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
 %include "stir/recon_buildblock/Parallelproj_projector/ProjectorByBinPairUsingParallelproj.h"
 #endif
+
+#ifdef STIR_WITH_CUDA
+%ignore stir::SPECTGPU::ForwardProjectorByBinSPECTGPU::get_allocated_stack;
+%ignore stir::SPECTGPU::BackProjectorByBinSPECTGPU::get_allocated_stack;
+%shared_ptr(stir::RegisteredParsingObject<stir::SPECTGPU::ForwardProjectorByBinSPECTGPU,
+    stir::ForwardProjectorByBin>);
+%shared_ptr(stir::SPECTGPU::ForwardProjectorByBinSPECTGPU);
+
+%shared_ptr(stir::RegisteredParsingObject<stir::SPECTGPU::BackProjectorByBinSPECTGPU,
+    stir::BackProjectorByBin>);
+%shared_ptr(stir::SPECTGPU::BackProjectorByBinSPECTGPU);
+
+%template (internalRPForwardProjectorByBinSPECTGPU)
+  stir::RegisteredParsingObject<stir::SPECTGPU::ForwardProjectorByBinSPECTGPU,
+     stir::ForwardProjectorByBin>;
+%include "stir/recon_buildblock/SPECTGPU_projector/ForwardProjectorByBinSPECTGPU.h"
+
+%template (internalRPBackProjectorByBinSPECTGPU)
+  stir::RegisteredParsingObject<stir::SPECTGPU::BackProjectorByBinSPECTGPU,
+     stir::BackProjectorByBin>;
+%include "stir/recon_buildblock/SPECTGPU_projector/BackProjectorByBinSPECTGPU.h"
+
+%shared_ptr(stir::RegisteredParsingObject<stir::SPECTGPU::ProjectorByBinPairUsingSPECTGPU,
+    stir::ProjectorByBinPair, stir::ProjectorByBinPair>);
+%shared_ptr(stir::SPECTGPU::ProjectorByBinPairUsingSPECTGPU);
+%template(internalRPProjectorByBinPairUsingSPECTGPU)
+  stir::RegisteredParsingObject<stir::SPECTGPU::ProjectorByBinPairUsingSPECTGPU,
+    stir::ProjectorByBinPair, stir::ProjectorByBinPair>;
+%include "stir/recon_buildblock/SPECTGPU_projector/ProjectorByBinPairUsingSPECTGPU.h"
+#endif
+
