@@ -54,7 +54,7 @@ fi
         GPU_tests="SPECTGPU"
     fi
   fi
-for SPECTtest in $GPU_tests PinholeSPECTUB; do
+for SPECTtest in $GPU_tests SPECTUB PinholeSPECTUB; do
 
     echo
     echo "********************************************************************************"
