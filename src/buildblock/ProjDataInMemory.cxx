@@ -33,6 +33,9 @@
 #include "stir/is_null_ptr.h"
 #include "stir/numerics/norm.h"
 #include "stir/format.h"
+#ifdef STIR_WITH_CUDA
+#  include "stir/cuda_utilities.h"
+#endif
 #include "stir/error.h"
 #include <iostream>
 #include <cstring>
@@ -98,7 +101,7 @@ void
 ProjDataInMemory::create_buffer(const bool initialise_with_0)
 {
 #ifdef STIR_WITH_CUDA
-  auto sp = std::allocate_shared<float[]>(CuAlloc<float>(), this->size_all());
+  auto sp = allocate_buffer<float>(this->size_all());
 
   Array<1, float> new_buffer(IndexRange<1>(0, this->size_all() - 1), sp);
 

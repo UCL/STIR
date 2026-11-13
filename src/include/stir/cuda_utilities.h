@@ -25,14 +25,12 @@
 #include <stdexcept>
 #ifdef STIR_WITH_CUDA
 #  include <cuda_runtime.h>
-#  include "cuvec.cuh"
 #else
-#  ifndef STIR_WITH_CUDA
-#    ifndef CUVEC_DISABLE_CUDA
-#      define CUVEC_DISABLE_CUDA
-#    endif
+#  ifndef CUVEC_DISABLE_CUDA
+#    define CUVEC_DISABLE_CUDA
 #  endif
 #endif
+#include "cuvec.cuh"
 #include <memory>
 #include <vector>
 #include "stir/algebraic_kernels.h"
@@ -316,13 +314,79 @@ template <int num_dimensions, typename elemT>
 void array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
 
 #ifdef STIR_WITH_CUDA
+// Whether the current device supports full unified memory
+inline bool
+concurrent_managed_access()
+{
+  static const bool supported = []
+  {
+    int device = 0, val = 0;
+    if (cudaGetDevice(&device) != cudaSuccess
+        || cudaDeviceGetAttribute(&val, cudaDevAttrConcurrentManagedAccess, device) != cudaSuccess)
+      {
+        cudaGetLastError();
+        return false;
+      }
+    return val != 0;
+  }();
+  return supported;
+}
+
+// Buffer in managed memory when full unified memory is supported,
+// otherwise in plain host memory (kernels then use explicit-copy device_readable_ptr etc)
+template <class elemT>
+std::shared_ptr<elemT[]>
+allocate_buffer(const std::size_t size)
+{
+  if (concurrent_managed_access())
+    return std::allocate_shared<elemT[]>(CuAlloc<elemT>(), size);
+  return std::make_shared<elemT[]>(size);
+}
+
+// Does nothing for Windows/WSL2 (lack full unified memory) or non-managed pointers
+inline void
+prefetch_to_device(const void* ptr, const std::size_t num_bytes)
+{
+  if (!concurrent_managed_access())
+    return;
+  cudaPointerAttributes attr;
+  if (ptr == nullptr || num_bytes == 0 || cudaPointerGetAttributes(&attr, ptr) != cudaSuccess
+      || attr.type != cudaMemoryTypeManaged)
+    return;
+  int device = 0;
+  cudaGetDevice(&device);
+  cudaMemLocation loc;
+  loc.type = cudaMemLocationTypeDevice;
+  loc.id = device;
+  cudaMemPrefetchAsync(ptr, num_bytes, loc, 0, 0);
+  cudaGetLastError();
+}
+
+inline void
+prefetch_to_host(const void* ptr, const std::size_t num_bytes)
+{
+  if (!concurrent_managed_access())
+    return;
+  cudaPointerAttributes attr;
+  if (ptr == nullptr || num_bytes == 0 || cudaPointerGetAttributes(&attr, ptr) != cudaSuccess
+      || attr.type != cudaMemoryTypeManaged)
+    return;
+  cudaMemLocation loc;
+  loc.type = cudaMemLocationTypeHost;
+  cudaMemPrefetchAsync(ptr, num_bytes, loc, 0, 0);
+  cudaGetLastError();
+}
+
 // Pointer a kernel can read: the array's own pointer if on the GPU, otherwise a device copy in tmp.
 template <int num_dimensions, typename elemT>
 const elemT*
 device_readable_ptr(const Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp)
 {
   if (onGPU(arr))
-    return &*arr.begin_all();
+    {
+      prefetch_to_device(&*arr.begin_all(), arr.size_all());
+      return &*arr.begin_all();
+    }
   array_to_device(tmp, arr);
   return tmp.data();
 }
@@ -335,11 +399,15 @@ elemT*
 device_writable_ptr(Array<num_dimensions, elemT>& arr, CuVec<elemT>& tmp, const bool copy_in)
 {
   if (onGPU(arr))
-    return &*arr.begin_all();
+    {
+      prefetch_to_device(&*arr.begin_all(), arr.size_all());
+      return &*arr.begin_all();
+    }
   if (copy_in)
     array_to_device(tmp, arr);
   else
     tmp.resize(arr.size_all());
+  prefetch_to_device(tmp.data(), tmp.size());
   return tmp.data();
 }
 #endif

@@ -43,7 +43,7 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const IndexRange<n
     : base_type(range_v
 #ifdef STIR_WITH_CUDA
                 ,
-                std::allocate_shared<elemT[]>(CuAlloc<elemT>(), range_v.size_all())
+                allocate_buffer<elemT>(range_v.size_all())
 #endif
                     ),
       origin(origin_v)
@@ -57,7 +57,7 @@ DiscretisedDensity<num_dimensions, elemT>::DiscretisedDensity(const shared_ptr<c
       base_type(range_v
 #ifdef STIR_WITH_CUDA
                 ,
-                std::allocate_shared<elemT[]>(CuAlloc<elemT>(), range_v.size_all())
+                allocate_buffer<elemT>(range_v.size_all())
 #endif
                     ),
       origin(origin_v)

@@ -282,8 +282,10 @@ CudaRelativeDifferencePrior<elemT>::compute_gradient(DiscretisedDensity<3, elemT
       const char* err = cudaGetErrorString(cuda_error);
       error(std::string("CUDA error in compute_gradient kernel execution: ") + err);
     }
-
+  checkCudaError("compute_gradient kernel");
   cudaDeviceSynchronize();
+  if (!onGPU(prior_gradient))
+    array_to_host(prior_gradient, tmp_gradient);
 }
 
 template <typename elemT>

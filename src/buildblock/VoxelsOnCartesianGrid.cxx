@@ -46,7 +46,7 @@
 #include "stir/format.h"
 #ifdef STIR_WITH_CUDA
 #  include <cuda_runtime.h>
-#  include "cuvec.cuh"
+#  include "stir/cuda_utilities.h"
 #endif
 
 using std::ifstream;
@@ -291,7 +291,7 @@ VoxelsOnCartesianGrid<elemT>::construct_from_projdata_info(const shared_ptr<cons
 
 #ifdef STIR_WITH_CUDA
   // Force voxel storage allocation in CUDA managed memory when built with CUDA support
-  Array<3, elemT>::operator=(Array<3, elemT>(range, std::allocate_shared<elemT[]>(CuAlloc<elemT>(), range.size_all())));
+  Array<3, elemT>::operator=(Array<3, elemT>(range, allocate_buffer<elemT>(range.size_all())));
 #else
   // Standard CPU host allocation for non-CUDA builds
   Array<3, elemT>::operator=(Array<3, elemT>(range));

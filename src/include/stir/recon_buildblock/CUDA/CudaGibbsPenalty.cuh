@@ -541,6 +541,8 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_gradient(DiscretisedDensity<3, elem
 
   checkCudaError("compute_gradient kernel");
   cudaDeviceSynchronize();
+  if (!onGPU(prior_gradient))
+    array_to_host(prior_gradient, tmp_gradient);
 
   // Optional: write gradient to file
   static int counter = 0;
@@ -633,7 +635,8 @@ CudaGibbsPenalty<elemT, PotentialT>::compute_Hessian_diagonal(DiscretisedDensity
 
   checkCudaError("compute_hessian_diagonal kernel");
   cudaDeviceSynchronize();
-
+  if (!onGPU(Hessian_diag))
+    array_to_host(Hessian_diag, tmp_hessian);
 }
 
 template <typename elemT, typename PotentialT>
@@ -679,6 +682,8 @@ CudaGibbsPenalty<elemT, PotentialT>::accumulate_Hessian_times_input(DiscretisedD
 
   checkCudaError("accumulate_Hessian_times_input kernel");
   cudaDeviceSynchronize();
+  if (!onGPU(output))
+    array_to_host(output, tmp_output);
 }
 
 template <typename elemT, typename PotentialT>
