@@ -91,7 +91,7 @@ ParametricDiscretisedDensityTests::run_tests()
     const CartesianCoordinate3D<int> sizes(1, 1, 1);
 
     const shared_ptr<ParametricVoxelsOnCartesianGrid> parametric_image_sptr(
-        new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(proj_data_info, zoom, grid_spacing, sizes)));
+        new ParametricVoxelsOnCartesianGrid(Parametric2VoxelsOnCartesianGridBaseType(proj_data_info, zoom, grid_spacing, sizes)));
     ParametricVoxelsOnCartesianGrid& parametric_image = *parametric_image_sptr;
     parametric_image[0][0][0][1] = 1.F;
     parametric_image[0][0][0][2] = 2.F;
@@ -112,7 +112,7 @@ ParametricDiscretisedDensityTests::run_tests()
 
     // ParametricVoxelsOnCartesianGrid & parametric_image = *parametric_image_sptr;
     ParametricVoxelsOnCartesianGrid parametric_image(
-        ParametricVoxelsOnCartesianGridBaseType(proj_data_info, zoom, grid_spacing, sizes));
+        Parametric2VoxelsOnCartesianGridBaseType(proj_data_info, zoom, grid_spacing, sizes));
     for (int k = 0; k < 63; ++k)
       for (int j = -64; j < 63; ++j)
         for (int i = -64; i < 63; ++i)

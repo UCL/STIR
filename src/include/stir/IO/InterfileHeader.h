@@ -16,6 +16,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
   \author PARAPET project
   \author Richard Brown
   \author Parisa Khateri
@@ -33,6 +34,7 @@
 #include "stir/ProjDataFromStream.h"
 #include "stir/ExamInfo.h"
 #include "stir/date_time_functions.h"
+#include "stir/TimeFrameDefinitions.h"
 
 START_NAMESPACE_STIR
 
@@ -185,6 +187,9 @@ public:
   //! \details High energy window limit
   std::vector<float> upper_en_window_thresholds;
   // end acquisition parameters
+
+  // Added for old implementations relying on time_frame_definitions variable
+  TimeFrameDefinitions time_frame_definitions;
 
 protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset

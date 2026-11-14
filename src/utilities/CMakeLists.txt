@@ -61,7 +61,9 @@ if (NOT MINI_STIR)
     stir_list_registries.cxx
     shift_image_origin.cxx
     warp_and_accumulate_gated_images.cxx
+    warp_gated_images.cxx
     warp_image.cxx
+    apply_RL_deconvolution.cxx
     zeropad_planes.cxx
     apply_normfactors3D.cxx
     apply_normfactors.cxx

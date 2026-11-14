@@ -51,10 +51,66 @@
 #include "stir/format.h"
 #include <boost/format.hpp>
 
+USING_NAMESPACE_STIR
+
+template <typename ParametricDensityT>
+Succeeded
+actual_extract_parameters(const ParametricDensityT& param_im,
+                          const OutputFileFormat<DiscretisedDensity<3, float>>& output,
+                          const std::string& output_filename_prefix)
+{
+
+  // Loop over each image
+  for (unsigned i = 1; i <= param_im.get_num_params(); ++i)
+    {
+      auto disc = param_im.construct_single_density(i);
+      {
+        // Get the time frame definition (from start of first frame to end of last)
+        ExamInfo exam_info = disc.get_exam_info();
+        TimeFrameDefinitions tdefs = exam_info.get_time_frame_definitions();
+        const double start = tdefs.get_start_time(1);
+        const double end = tdefs.get_end_time(tdefs.get_num_frames());
+        tdefs.set_num_time_frames(1);
+        tdefs.set_time_frame(1, start, end);
+        exam_info.set_time_frame_definitions(tdefs);
+        disc.set_exam_info(exam_info);
+      }
+
+      std::string current_filename;
+      try
+        {
+          if (output_filename_prefix.find("%") != std::string::npos)
+            {
+              warning("The output_filename pattern is using the boost::format convention ('\%d')."
+                      "It is recommended to use fmt::format/std::format style formatting ('{}').");
+              current_filename = boost::str(boost::format(output_filename_prefix) % i);
+            }
+          else
+            {
+              current_filename = runtime_format(output_filename_prefix, i);
+            }
+        }
+      catch (std::exception& e)
+        {
+          error(format("Error using 'output_filename' pattern (which is set to '{}'). "
+                       "Check syntax for fmt::format. Error is:\n{}",
+                       output_filename_prefix,
+                       e.what()));
+          return Succeeded::no;
+        }
+
+      // Write to file
+      const Succeeded success = output.write_to_file(current_filename, disc);
+      if (success == Succeeded::no)
+        throw std::runtime_error("Failed writing.");
+    }
+
+  return Succeeded::yes;
+}
+
 int
 main(int argc, char* argv[])
 {
-  USING_NAMESPACE_STIR
 
   if (argc != 3 && argc != 4)
     {
@@ -63,89 +119,53 @@ main(int argc, char* argv[])
       return EXIT_FAILURE;
     }
 
+  std::string output_prefix_str(argv[1]);
+  std::string error_2param, error_3param;
+
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3, float>>> output_file_format_sptr;
+
+  if (argc == 3)
+    output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3, float>>::default_sptr();
+  else
+    {
+      KeyParser parser;
+      parser.add_start_key("OutputFileFormat Parameters");
+      parser.add_parsing_key("output file format type", &output_file_format_sptr);
+      parser.add_stop_key("END");
+      std::ifstream in(argv[3]);
+      if (!parser.parse(in) || is_null_ptr(output_file_format_sptr))
+        error(format("Failed to parse output format file ({})", std::string(argv[3])));
+    }
+
   try
     {
-
-      // Read images
-      auto param_im_sptr(read_from_file<ParametricVoxelsOnCartesianGrid>(argv[2]));
-
-      // Check
-      if (is_null_ptr(param_im_sptr))
-        throw std::runtime_error("Failed to read dynamic image (" + std::string(argv[2]) + ").");
-
-      // Set up the output type
-      shared_ptr<OutputFileFormat<DiscretisedDensity<3, float>>> output_file_format_sptr;
-      if (argc == 3)
-        output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3, float>>::default_sptr();
-      else
-        {
-          KeyParser parser;
-          parser.add_start_key("OutputFileFormat Parameters");
-          parser.add_parsing_key("output file format type", &output_file_format_sptr);
-          parser.add_stop_key("END");
-          std::ifstream in(argv[3]);
-          if (!parser.parse(in) || is_null_ptr(output_file_format_sptr))
-            throw std::runtime_error("Failed to parse output format file (" + std::string(argv[3]) + ").");
-        }
-
-      // Loop over each image
-      for (unsigned i = 1; i <= param_im_sptr->get_num_params(); ++i)
-        {
-
-          auto disc = param_im_sptr->construct_single_density(i);
-          {
-            // Get the time frame definition (from start of first frame to end of last)
-            ExamInfo exam_info = disc.get_exam_info();
-            TimeFrameDefinitions tdefs = exam_info.get_time_frame_definitions();
-            const double start = tdefs.get_start_time(1);
-            const double end = tdefs.get_end_time(tdefs.get_num_frames());
-            tdefs.set_num_time_frames(1);
-            tdefs.set_time_frame(1, start, end);
-            exam_info.set_time_frame_definitions(tdefs);
-            disc.set_exam_info(exam_info);
-          }
-
-          std::string current_filename;
-          try
-            {
-              if (std::string(argv[1]).find("%") != std::string::npos)
-                {
-                  warning("The output_filename pattern is using the boost::format convention ('\%d')."
-                          "It is recommended to use fmt::format/std::format style formatting ('{}').");
-                  current_filename = boost::str(boost::format(argv[1]) % i);
-                }
-              else
-                {
-                  current_filename = runtime_format(argv[1], i);
-                }
-            }
-          catch (std::exception& e)
-            {
-              error(format("Error using 'output_filename' pattern (which is set to '{}'). "
-                           "Check syntax for fmt::format. Error is:\n{}",
-                           argv[1],
-                           e.what()));
-              return EXIT_FAILURE;
-            }
-
-          // Write to file
-          const Succeeded success = output_file_format_sptr->write_to_file(current_filename, disc);
-          if (success == Succeeded::no)
-            throw std::runtime_error("Failed writing.");
-        }
-
-      // If all is good, exit
+      const auto param_im_sptr(read_from_file<Parametric2VoxelsOnCartesianGrid>(argv[2]));
+      if (actual_extract_parameters<Parametric2VoxelsOnCartesianGrid>(*param_im_sptr, *output_file_format_sptr, output_prefix_str)
+          == Succeeded::no)
+        return EXIT_FAILURE;
       return EXIT_SUCCESS;
+    }
+  catch (const std::runtime_error& e)
+    {
+      error_2param = e.what();
+    }
 
-      // If there was an error
-    }
-  catch (const std::exception& error)
+  try
     {
-      std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
-      return EXIT_FAILURE;
+      const auto param_im_sptr(read_from_file<Parametric3VoxelsOnCartesianGrid>(argv[2]));
+      if (actual_extract_parameters<Parametric3VoxelsOnCartesianGrid>(*param_im_sptr, *output_file_format_sptr, output_prefix_str)
+          == Succeeded::no)
+        return EXIT_FAILURE;
+      return EXIT_SUCCESS;
     }
-  catch (...)
+  catch (const std::runtime_error& e)
     {
-      return EXIT_FAILURE;
+      error_3param = e.what();
     }
+
+  // Somehow end up here
+  error(format("Failed to read parametric image ({}).\n  2-param attempt: {}\n  3-param attempt: {}",
+               argv[2],
+               error_2param,
+               error_3param));
 }
