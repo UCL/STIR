@@ -54,9 +54,10 @@ set(${dir_LIB_SOURCES}
   )
 
 if (STIR_WITH_CUDA)
-    list(APPEND ${dir_LIB_SOURCES}
-      CUDA/cuda_utilities.cu
-      )
+  list(APPEND ${dir_LIB_SOURCES}
+    CUDA/cuda_utilities.cu
+    CUDA/algebraic_kernels.cu
+  )
 endif()
 
 if (NOT MINI_STIR)
