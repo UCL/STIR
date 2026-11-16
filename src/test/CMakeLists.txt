@@ -107,6 +107,10 @@ endforeach()
 
 if (BUILD_TESTING)
 
+if (SKIP_CUDA_TESTS)
+  set_tests_properties(test_cuda_utilities_from_cxx PROPERTIES DISABLED TRUE)
+endif()
+
 # Add test for test_proj_data_info_subsets_spect with arguments
 ADD_TEST(NAME test_proj_data_info_subsets_spect
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_proj_data_info_subsets_spect ${CMAKE_SOURCE_DIR}/examples/samples/SPECT_Interfile_header.hs)
