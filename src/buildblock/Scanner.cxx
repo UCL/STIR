@@ -492,8 +492,8 @@ Scanner::Scanner(Type scanner_type)
           1.6F,                                            // bin size (mm)
           0.0324F, // intrinsic tilt, use value for the Siemens Biograph Vision (same crystal size and geometry as the Quadra)
           // ONLY used for CTI scanners for normalisation. These values will be ignored here.
-          4,
-          1, // n axial/trans blocks per bucket
+          4, // n axial blocks per bucket
+          1, // n trans blocks per bucket
           10 * 8 + 1,
           20 + 1, // n axial/trans xtals per block
           0,

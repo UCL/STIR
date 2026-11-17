@@ -164,6 +164,9 @@ InputStreamFromROOTFileForECATPET::set_up(const std::string& header_path)
   if (base_type::set_up(header_path) == Succeeded::no)
     return Succeeded::no;
 
+  if (is_gate10)
+    error("ECATPET is not supported with gate10.");
+
   std::string missing_keywords;
   if (!check_all_required_keywords_are_set(missing_keywords))
     {
