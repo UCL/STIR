@@ -442,6 +442,10 @@ read_coll_params_mph(wmh_mph_type& wmh)
 
   wmh.collim.model = wm_SPECT_read_value_1d(&stream1, DELIMITER);
 
+  // collimator type: knife or channel
+  token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
+  wmh.collim.type = token;
+
   token = wm_SPECT_read_value_1d(&stream1, DELIMITER);
   wmh.collim.rad = std::stof(token);
 
@@ -481,7 +485,8 @@ read_coll_params_mph(wmh_mph_type& wmh)
   stream1.close();
 
   info_stream << "Collimator parameters" << endl;
-  info_stream << "\nCollimator model: " << wmh.collim.model << endl;
+  info_stream << "\nCollimator type: " << wmh.collim.type << endl;
+  info_stream << "Collimator model: " << wmh.collim.model << endl;
   info_stream << "Collimator rad: " << wmh.collim.rad << endl;
   info_stream << "Number of holes: " << wmh.collim.Nht << endl;
 
@@ -612,6 +617,16 @@ wm_SPECT_read_hvalues_mph(ifstream* stream1, char DELIMITER, int* nh, bool do_cy
       h.dxcm = std::stof(token);
       if (h.dxcm > max_hsxcm)
         max_hsxcm = h.dxcm;
+      pos1 = pos3;
+
+      //... channel-edge width y cm .......................
+
+      pos2 = line.find_first_not_of(" \t\f\v\n\r", pos1 + 1);
+      pos3 = line.find_first_of(" \t\f\v\n\r", pos2);
+      if (pos2 == string::npos)
+        error_wmtools_SPECT_mph(333, *nh, "dycm");
+      token = line.substr(pos2, pos3 - pos2);
+      h.dycm = std::stof(token);
       pos1 = pos3;
 
       //... dimension z cm .......................

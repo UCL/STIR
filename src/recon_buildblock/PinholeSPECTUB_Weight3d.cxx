@@ -49,6 +49,8 @@ static bool check_zang_par(const voxel_type* vox, const hole_type* h);
 
 // bool check_zang_obl( lor_type * l, voxel_type * vox, hole_type * h);
 
+static float channel_area_fraction(const hole_type* h, const float dxh, const float dzh);
+
 static void voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const wmh_mph_type& wmh);
 
 static void downsample_psf(const psf2d_type* psf_in, psf2d_type* psf_out, int factor, bool do_calc);
@@ -468,65 +470,403 @@ check_zang_par(const voxel_type* v, const hole_type* h)
 }
 
 //==========================================================================
+//=== channel_area_fraction ================================================
+//==========================================================================
+
+static float
+channel_area_fraction(const hole_type* h, const float dxh, const float dzh)
+{
+    if (h->do_round)
+    {
+        // Relative displacement of two identical elliptical/circular apertures.
+        const float qx = dxh / h->dxcm;
+        const float qz = dzh / h->dzcm;
+        const float q = (std::sqrt)(qx * qx + qz * qz);
+
+        if (q >= 1.F)
+            return 0.F;
+
+        constexpr float pi = 3.14159265358979323846F;
+
+        const float radicand = 1.F - q * q;
+
+        return (2.F / pi)
+               * ((std::acos)(q)
+                  - q * (std::sqrt)(radicand > 0.F ? radicand : 0.F));
+    }
+
+    // Rectangular aperture.
+    const float fx_raw
+        = 1.F - (std::abs)(dxh) / h->dxcm;
+
+    const float fz_raw
+        = 1.F - (std::abs)(dzh) / h->dzcm;
+
+    const float fx = fx_raw > 0.F ? fx_raw : 0.F;
+    const float fz = fz_raw > 0.F ? fz_raw : 0.F;
+
+    return fx * fz;
+}
+
+//==========================================================================
 //=== voxel_projection =====================================================
 //==========================================================================
 
 void
 voxel_projection_mph(lor_type* l, const voxel_type* v, const hole_type* h, const wmh_mph_type& wmh)
 {
-
-  //...vector voxel-hole, angles and distances...............................
-
-  float ux1 = h->x1 - v->x1;
-  float uy1 = h->y1 - v->y1;
-  float uz1 = h->z1 - v->z;
-
-  if (uy1 <= EPSILON)
-    error_weight3d(88, "");
-
-  //...vector voxel-hole and distances...............................
-
-  float dxyz_2 = ux1 * ux1 + uy1 * uy1 + uz1 * uz1;
-  float dvh_l = sqrtf(dxyz_2);
-
-  ux1 /= dvh_l;
-  uy1 /= dvh_l;
-  uz1 /= dvh_l;
-
-  //...distance over voxel-hole line from voxel and hole to detection plane..........
-
-  float dvd_l = (wmh.prj.rad - v->y1) / uy1;
-
-  l->x1d_l = v->x1 + dvd_l * ux1;
-  l->z1d_l = v->z + dvd_l * uz1;
-
-  //...shadow of the hole ..........
-
-  l->hsxcm_d = h->dxcm * dvd_l / dvh_l;
-  l->hszcm_d = h->dzcm * dvd_l / dvh_l;
-  l->hsxcm_d_d2 = l->hsxcm_d / (float)2.;
-  l->hszcm_d_d2 = l->hszcm_d / (float)2.;
-
-  //... values at detection + crystal distance ................................
-
-  if (wmh.do_depth)
+    if (wmh.collim.type == "knife" || h->dycm == 0.) //if the channel width is set to zero the collimator is a knife-edge pinhole 
     {
 
-      float dvdc_l = (wmh.prj.radc - v->y1) / uy1;
+        //...vector voxel-hole, angles and distances...............................
 
-      l->hsxcm_dc = h->dxcm * dvdc_l / dvh_l;
-      l->hszcm_dc = h->dzcm * dvdc_l / dvh_l;
+        float ux1 = h->x1 - v->x1;
+        float uy1 = h->y1 - v->y1;
+        float uz1 = h->z1 - v->z;
 
-      l->hsxcm_dc_d2 = l->hsxcm_d / (float)2.;
-      l->hszcm_dc_d2 = l->hszcm_d / (float)2.;
+        if (uy1 <= EPSILON)error_weight3d(88, "");
 
-      l->x1dc_l = v->x1 + dvdc_l * ux1;
-      l->z1dc_l = v->z + dvdc_l * uz1;
+        //...vector voxel-hole and distances...............................
+
+        float dxyz_2 = ux1 * ux1 + uy1 * uy1 + uz1 * uz1;
+        float dvh_l = sqrtf(dxyz_2);
+
+        ux1 /= dvh_l;
+        uy1 /= dvh_l;
+        uz1 /= dvh_l;
+
+        //...distance over voxel-hole line from voxel and hole to detection plane..........
+
+        float dvd_l = (wmh.prj.rad - v->y1) / uy1;
+
+        l->x1d_l = v->x1 + dvd_l * ux1;
+        l->z1d_l = v->z + dvd_l * uz1;
+
+        //...shadow of the hole ..........
+
+        l->hsxcm_d = h->dxcm * dvd_l / dvh_l;
+        l->hszcm_d = h->dzcm * dvd_l / dvh_l;
+        l->hsxcm_d_d2 = l->hsxcm_d / (float)2.;
+        l->hszcm_d_d2 = l->hszcm_d / (float)2.;
+
+        //... values at detection + crystal distance ................................
+
+        if (wmh.do_depth)
+        {
+
+            float dvdc_l = (wmh.prj.radc - v->y1) / uy1;
+
+            l->hsxcm_dc = h->dxcm * dvdc_l / dvh_l;
+            l->hszcm_dc = h->dzcm * dvdc_l / dvh_l;
+
+            l->hsxcm_dc_d2 = l->hsxcm_d / (float)2.;
+            l->hszcm_dc_d2 = l->hszcm_d / (float)2.;
+
+            l->x1dc_l = v->x1 + dvdc_l * ux1;
+            l->z1dc_l = v->z + dvdc_l * uz1;
+        }
+
+        //... effectiveness ......................................................
+
+        l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
     }
+    else
+    {
+        // channel-edge margins 
 
-  //... effectiveness ......................................................
+        float mxdx = h->x1 + h->dxcm / (float)2.;
+        float mxsx = h->x1 - h->dxcm / (float)2.;
+        float mzdx = h->z1 + h->dzcm / (float)2.;
+        float mzsx = h->z1 - h->dzcm / (float)2.;
+        float myup = h->y1 + h->dycm / (float)2.;
+        float mydn = h->y1 - h->dycm / (float)2.;
 
-  l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+        // pinhole shadow for the region projecting inside the channel
+        if (v->x1 >= mxsx && v->x1 <= mxdx && v->z >= mzsx && v->z <= mzdx)
+        {
+
+            //...vector voxel-hole, angles and distances...............................
+
+            float ux1 = h->x1 - v->x1;
+            float uy1 = myup - v->y1;
+            float uz1 = h->z1 - v->z;
+
+            if (uy1 <= EPSILON) error_weight3d(88, "");
+
+            //...vector voxel-hole and distances...............................
+
+            float dxyz_2 = ux1 * ux1 + uy1 * uy1 + uz1 * uz1;
+            float dvh_l = sqrtf(dxyz_2);
+
+            ux1 /= dvh_l;
+            uy1 /= dvh_l;
+            uz1 /= dvh_l;
+
+            //...distance over voxel-hole line from voxel and hole to detection plane..........
+
+            float dvd_l = (wmh.prj.rad - v->y1) / uy1;
+
+            l->x1d_l = v->x1 + dvd_l * ux1;
+            l->z1d_l = v->z + dvd_l * uz1;
+
+            //...shadow of the hole ..........
+
+            l->hsxcm_d = h->dxcm * dvd_l / dvh_l;
+            l->hszcm_d = h->dzcm * dvd_l / dvh_l;
+            l->hsxcm_d_d2 = l->hsxcm_d / (float)2.;
+            l->hszcm_d_d2 = l->hszcm_d / (float)2.;
+            //... values at detection + crystal distance ................................
+
+            if (wmh.do_depth)
+                        {
+
+                float dvdc_l = (wmh.prj.radc - v->y1) / uy1;
+
+                l->hsxcm_dc = h->dxcm * dvdc_l / dvh_l;
+                l->hszcm_dc = h->dzcm * dvdc_l / dvh_l;
+
+                l->hsxcm_dc_d2 = l->hsxcm_d / (float)2.;
+                l->hszcm_dc_d2 = l->hszcm_d / (float)2.;
+
+                l->x1dc_l = v->x1 + dvdc_l * ux1;
+                l->z1dc_l = v->z + dvdc_l * uz1;
+                        }
+
+            //... effectiveness ......................................................
+
+            l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+        
+        }
+        else if ((v->x1 < mxsx || v->x1 > mxdx) && (v->z < mzsx || v->z > mzdx)) // x and z outside
+        {
+            float dxvch = (float)0.;
+            float dzvch = (float)0.;
+
+            // voxel distance to the channel margin
+            if (v->x1 > h->x1)
+            {
+                dxvch = mxdx - v->x1;     
+            }
+            else
+            {
+                dxvch = mxsx - v->x1;
+            }
+            if (v->z > h->z1)
+            {
+                dzvch = mzdx - v->z;
+            }
+            else
+            {
+                dzvch = mzsx - v->z;
+            }
+
+            float dyvch = mydn - v->y1;
+
+            // voxel to channel distance projected to the hole plane
+
+            float dxh = dxvch * h->dycm / dyvch;
+            float dzh = dzvch * h->dycm / dyvch;
+
+            //...vector voxel-hole, angles and distances...............................
+
+            float ux1 = h->x1 + dxh / 2.F - v->x1;
+            float uy1 = myup - v->y1;
+            float uz1 = h->z1 + dzh / 2.F - v->z;
+
+            if (uy1 <= EPSILON)
+            error_weight3d(88, "");
+
+            //...vector voxel-hole and distances...............................
+
+            float dxyz_2 = ux1 * ux1 + uy1 * uy1 + uz1 * uz1;
+            float dvh_l = sqrtf(dxyz_2);
+
+            ux1 /= dvh_l;
+            uy1 /= dvh_l;
+            uz1 /= dvh_l;
+
+            //...distance over voxel-hole line from voxel and hole to detection plane..........
+
+            float dvd_l = (wmh.prj.rad - v->y1) / uy1;
+
+            l->x1d_l = v->x1 + dvd_l * ux1;
+            l->z1d_l = v->z + dvd_l * uz1;
+
+            //...shadow of the hole ..........
+
+            l->hsxcm_d = (h->dxcm-abs(dxh)) * dvd_l / dvh_l;
+            l->hszcm_d = (h->dzcm-abs(dzh)) * dvd_l / dvh_l;
+            l->hsxcm_d_d2 = l->hsxcm_d / (float)2.;
+            l->hszcm_d_d2 = l->hszcm_d / (float)2.;
+            //... values at detection + crystal distance ................................
+
+            if (wmh.do_depth)
+            {
+
+                float dvdc_l = (wmh.prj.radc - v->y1) / uy1;
+
+                l->hsxcm_dc = (h->dxcm - abs(dxh)) * dvdc_l / dvh_l;
+                l->hszcm_dc = (h->dzcm - abs(dzh)) * dvdc_l / dvh_l;
+
+                l->hsxcm_dc_d2 = l->hsxcm_d / (float)2.;
+                l->hszcm_dc_d2 = l->hszcm_d / (float)2.;
+
+                l->x1dc_l = v->x1 + dvdc_l * ux1;
+                l->z1dc_l = v->z + dvdc_l * uz1;
+            }
+
+            //... effectiveness ......................................................
+
+            l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+            l->eff *= channel_area_fraction(h, dxh, dzh);
+        }
+        else if ((v->x1 >= mxsx && v->x1 <= mxdx) && (v->z < mzsx || v->z > mzdx)) // x inside and z outside
+        {
+            float dzvch = (float)0.;
+          
+            if (v->z > h->z1)
+            {
+                dzvch = mzdx - v->z;
+            }
+            else
+            {
+                dzvch = mzsx - v->z;
+            }
+
+            float dyvch = mydn - v->y1;
+
+            // voxel to channel distance projected to the hole plane
+
+            float dzh = dzvch * h->dycm / dyvch;
+
+            //...vector voxel-hole, angles and distances...............................
+
+            float ux1 = h->x1 - v->x1;
+            float uy1 = myup - v->y1;
+            float uz1 = h->z1 + dzh / 2.F - v->z;
+
+            if (uy1 <= EPSILON)
+            error_weight3d(88, "");
+
+            //...vector voxel-hole and distances...............................
+
+            float dxyz_2 = ux1 * ux1 + uy1 * uy1 + uz1 * uz1;
+            float dvh_l = sqrtf(dxyz_2);
+
+            ux1 /= dvh_l;
+            uy1 /= dvh_l;
+            uz1 /= dvh_l;
+
+            //...distance over voxel-hole line from voxel and hole to detection plane..........
+
+            float dvd_l = (wmh.prj.rad - v->y1) / uy1;
+
+            l->x1d_l = v->x1 + dvd_l * ux1;
+            l->z1d_l = v->z + dvd_l * uz1;
+
+            //...shadow of the hole ..........
+
+            l->hsxcm_d = h->dxcm  * dvd_l / dvh_l;
+            l->hszcm_d = (h->dzcm - abs(dzh)) * dvd_l / dvh_l;
+            l->hsxcm_d_d2 = l->hsxcm_d / (float)2.;
+            l->hszcm_d_d2 = l->hszcm_d / (float)2.;
+            //... values at detection + crystal distance ................................
+
+            if (wmh.do_depth)
+            {
+
+                float dvdc_l = (wmh.prj.radc - v->y1) / uy1;
+
+                l->hsxcm_dc = h->dxcm * dvdc_l / dvh_l;
+                l->hszcm_dc = (h->dzcm - abs(dzh)) * dvdc_l / dvh_l;
+
+                l->hsxcm_dc_d2 = l->hsxcm_d / (float)2.;
+                l->hszcm_dc_d2 = l->hszcm_d / (float)2.;
+
+                l->x1dc_l = v->x1 + dvdc_l * ux1;
+                l->z1dc_l = v->z + dvdc_l * uz1;
+            }
+
+            //... effectiveness ......................................................
+
+            l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+            l->eff *= channel_area_fraction(h, 0.F, dzh);
+        }
+        else if ((v->x1 < mxsx || v->x1 > mxdx) && (v->z >= mzsx && v->z <= mzdx)) // x outside and z inside
+        {
+            float dxvch = (float)0.;
+
+            if (v->x1 > h->x1)
+            {
+                dxvch = mxdx - v->x1;
+            }
+            else
+            {
+                dxvch = mxsx - v->x1;
+            }
+
+            float dyvch = mydn - v->y1;
+
+            // voxel to channel distance projected to the hole plane
+
+            float dxh = dxvch * h->dycm / dyvch;
+
+            //...vector voxel-hole, angles and distances...............................
+
+            float ux1 = h->x1 + dxh / 2.F - v->x1;
+            float uy1 = myup - v->y1;
+            float uz1 = h->z1 - v->z;
+
+            if (uy1 <= EPSILON)
+            error_weight3d(88, "");
+
+            //...vector voxel-hole and distances...............................
+
+            float dxyz_2 = ux1 * ux1 + uy1 * uy1 + uz1 * uz1;
+            float dvh_l = sqrtf(dxyz_2);
+
+            ux1 /= dvh_l;
+            uy1 /= dvh_l;
+            uz1 /= dvh_l;
+
+            //...distance over voxel-hole line from voxel and hole to detection plane..........
+
+            float dvd_l = (wmh.prj.rad - v->y1) / uy1;
+
+            l->x1d_l = v->x1 + dvd_l * ux1;
+            l->z1d_l = v->z + dvd_l * uz1;
+
+            //...shadow of the hole ..........
+
+            l->hsxcm_d = (h->dxcm - abs(dxh)) * dvd_l / dvh_l;
+            l->hszcm_d = h->dzcm  * dvd_l / dvh_l;
+            l->hsxcm_d_d2 = l->hsxcm_d / (float)2.;
+            l->hszcm_d_d2 = l->hszcm_d / (float)2.;
+            //... values at detection + crystal distance ................................
+
+            if (wmh.do_depth)
+            {
+
+                float dvdc_l = (wmh.prj.radc - v->y1) / uy1;
+
+                l->hsxcm_dc = (h->dxcm - abs(dxh)) * dvdc_l / dvh_l;
+                l->hszcm_dc = h->dzcm * dvdc_l / dvh_l;
+
+                l->hsxcm_dc_d2 = l->hsxcm_d / (float)2.;
+                l->hszcm_dc_d2 = l->hszcm_d / (float)2.;
+
+                l->x1dc_l = v->x1 + dvdc_l * ux1;
+                l->z1dc_l = v->z + dvdc_l * uz1;
+            }
+
+            //... effectiveness ......................................................
+
+            l->eff = wmh.mndvh2 / dxyz_2 * fabsf(uy1);
+            l->eff *= channel_area_fraction(h, dxh, 0.F);
+        }
+
+
+    }
 }
 
 //==========================================================================
