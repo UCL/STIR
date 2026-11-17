@@ -126,6 +126,6 @@ ParamDiscDensityOutputFileFormat::actual_write_to_file(std::string& filename,
 #undef ParamDiscDensity
 #undef TEMPLATE
 
-template class MultiParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;
+template class MultiParametricDiscretisedDensityOutputFileFormat<Parametric2VoxelsOnCartesianGridBaseType>;
 
 END_NAMESPACE_STIR

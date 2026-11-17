@@ -22,6 +22,7 @@
   \author Matthew Jacobson
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
   \author Ashley Gillman
   \author Daniel Deidda
   \author PARAPET project
@@ -385,6 +386,11 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
   timerSubset.Start();
 #endif // PARALLEL
 
+  // Nicolas A Karakatsanis: Pass the name and the subiteration number to the obj function
+  // as a new output filename prefix for the multiple nested images within the same global iteration
+  // This can be utilized by nested obj functions for many purposes
+  this->objective_function().set_nested_output_filename_prefix(this->output_filename_prefix, this->subiteration_num);
+
   const int subset_num = this->get_subset_num();
   info(format("Now processing subset #: {}", subset_num));
 
@@ -392,122 +398,133 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
       *multiplicative_update_image_ptr, current_image_estimate, subset_num);
 
   // divide by subset sensitivity
-  {
-    const TargetT& sensitivity = this->get_subset_sensitivity(subset_num);
 
-    int count = 0;
-
-    // std::cerr <<this->MAP_model << std::endl;
-
-    if (this->objective_function_sptr->prior_is_zero())
-      {
-        divide(multiplicative_update_image_ptr->begin_all(),
-               multiplicative_update_image_ptr->end_all(),
-               sensitivity.begin_all(),
-               0.F); // no need to find a threshold for division by sensitivity
-      }
-    else
-      {
-        unique_ptr<TargetT> denominator_ptr(current_image_estimate.get_empty_copy());
-
-        this->objective_function_sptr->get_prior_ptr()->compute_gradient(*denominator_ptr, current_image_estimate);
-
-        typename TargetT::full_iterator denominator_iter = denominator_ptr->begin_all();
-        const typename TargetT::full_iterator denominator_end = denominator_ptr->end_all();
-        typename TargetT::const_full_iterator sensitivity_iter = sensitivity.begin_all();
-
-        if (this->MAP_model == "additive")
-          {
-            // lambda_new = lambda / (p_v + beta*prior_gradient/ num_subsets) *
-            //                   sum_subset backproj(measured/forwproj(lambda))
-            // with p_v = sum_{b in subset} p_bv
-            // actually, we restrict 1 + beta*prior_gradient/num_subsets/p_v between .1 and 10
-            while (denominator_iter != denominator_end)
-              {
-                *denominator_iter = *denominator_iter / this->get_num_subsets() + (*sensitivity_iter);
-                // bound denominator between (*sensitivity_iter)/10 and (*sensitivity_iter)*10
-                *denominator_iter = std::max(std::min(*denominator_iter, (*sensitivity_iter) * 10), (*sensitivity_iter) / 10);
-                ++denominator_iter;
-                ++sensitivity_iter;
-              }
-          }
-        else
-          {
-            if (this->MAP_model == "multiplicative")
-              {
-                // multiplicative form
-                // lambda_new = lambda / (p_v*(1 + beta*prior_gradient)) *
-                //                   sum_subset backproj(measured/forwproj(lambda))
-                // with p_v = sum_{b in subset} p_bv
-                // actually, we restrict 1 + beta*prior_gradient between .1 and 10
-                while (denominator_iter != denominator_end)
-                  {
-                    *denominator_iter += 1;
-                    // bound denominator between 1/10 and 1*10
-                    // TODO code will fail if *denominator_iter is not a float
-                    *denominator_iter = std::max(std::min(*denominator_iter, 10.F), 1 / 10.F);
-                    *denominator_iter *= (*sensitivity_iter);
-                    ++denominator_iter;
-                    ++sensitivity_iter;
-                  }
-              }
-          }
-
-        // do the division
-        // TODO: The thresholding implied in "divide" potentially fails with parametric images
-        // as the different parametric images can have very different scales.
-        // See https://github.com/UCL/STIR/issues/906
-        divide(multiplicative_update_image_ptr->begin_all(),
-               multiplicative_update_image_ptr->end_all(),
-               denominator_ptr->begin_all(),
-               small_num);
-      }
-
-    info(format("Number of (cancelled) singularities in Sensitivity division: {}", count));
-  }
-
-  if (this->inter_update_filter_interval > 0 && !is_null_ptr(this->inter_update_filter_ptr)
-      && !(this->subiteration_num % this->inter_update_filter_interval))
+  if (this->objective_function_sptr->is_nested())
     {
-      info("Applying inter-update filter");
-      this->inter_update_filter_ptr->apply(current_image_estimate);
+      // If nested EM algorithm has been selected a new estimate is already computed
+      // from method: compute_sub_gradient_without_penalty_plus_sensitivity
+      cerr << endl << "Update mechanism is nested" << endl;
+      current_image_estimate = *this->objective_function_sptr->last_nested_estimate_sptr;
     }
-
-  // KT 17/08/2000 limit update
-  // TODO move below thresholding?
-  if (this->write_update_image && !this->_disable_output)
+  else
+    // divide subset gradient by subset sensitivity to obtain update image
+    // and multuply previous estimate with update image to obtain new estimate
     {
-      // allocate space for the filename assuming that
-      // we never have more than 10^49 subiterations ...
-      const size_t filename_length = this->output_filename_prefix.size() + 60;
-      char* fname = new char[filename_length];
-      snprintf(fname, filename_length, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
+      const TargetT& sensitivity = this->get_subset_sensitivity(subset_num);
 
-      // Write it to file
-      this->output_file_format_ptr->write_to_file(fname, *multiplicative_update_image_ptr);
-      delete[] fname;
+      int count = 0;
+
+      // std::cerr <<this->MAP_model << std::endl;
+
+      if (this->objective_function_sptr->prior_is_zero())
+        {
+          divide(multiplicative_update_image_ptr->begin_all(),
+                 multiplicative_update_image_ptr->end_all(),
+                 sensitivity.begin_all(),
+                 0.F); // no need to find a threshold for division by sensitivity
+        }
+      else
+        {
+          unique_ptr<TargetT> denominator_ptr(current_image_estimate.get_empty_copy());
+
+          this->objective_function_sptr->get_prior_ptr()->compute_gradient(*denominator_ptr, current_image_estimate);
+
+          typename TargetT::full_iterator denominator_iter = denominator_ptr->begin_all();
+          const typename TargetT::full_iterator denominator_end = denominator_ptr->end_all();
+          typename TargetT::const_full_iterator sensitivity_iter = sensitivity.begin_all();
+
+          if (this->MAP_model == "additive")
+            {
+              // lambda_new = lambda / (p_v + beta*prior_gradient/ num_subsets) *
+              //                   sum_subset backproj(measured/forwproj(lambda))
+              // with p_v = sum_{b in subset} p_bv
+              // actually, we restrict 1 + beta*prior_gradient/num_subsets/p_v between .1 and 10
+              while (denominator_iter != denominator_end)
+                {
+                  *denominator_iter = *denominator_iter / this->get_num_subsets() + (*sensitivity_iter);
+                  // bound denominator between (*sensitivity_iter)/10 and (*sensitivity_iter)*10
+                  *denominator_iter = std::max(std::min(*denominator_iter, (*sensitivity_iter) * 10), (*sensitivity_iter) / 10);
+                  ++denominator_iter;
+                  ++sensitivity_iter;
+                }
+            }
+          else
+            {
+              if (this->MAP_model == "multiplicative")
+                {
+                  // multiplicative form
+                  // lambda_new = lambda / (p_v*(1 + beta*prior_gradient)) *
+                  //                   sum_subset backproj(measured/forwproj(lambda))
+                  // with p_v = sum_{b in subset} p_bv
+                  // actually, we restrict 1 + beta*prior_gradient between .1 and 10
+                  while (denominator_iter != denominator_end)
+                    {
+                      *denominator_iter += 1;
+                      // bound denominator between 1/10 and 1*10
+                      // TODO code will fail if *denominator_iter is not a float
+                      *denominator_iter = std::max(std::min(*denominator_iter, 10.F), 1 / 10.F);
+                      *denominator_iter *= (*sensitivity_iter);
+                      ++denominator_iter;
+                      ++sensitivity_iter;
+                    }
+                }
+            }
+
+          // do the division
+          // TODO: The thresholding implied in "divide" potentially fails with parametric images
+          // as the different parametric images can have very different scales.
+          // See https://github.com/UCL/STIR/issues/906
+          divide(multiplicative_update_image_ptr->begin_all(),
+                 multiplicative_update_image_ptr->end_all(),
+                 denominator_ptr->begin_all(),
+                 small_num);
+        }
+
+      info(format("Number of (cancelled) singularities in Sensitivity division: {}", count));
+
+      if (this->inter_update_filter_interval > 0 && !is_null_ptr(this->inter_update_filter_ptr)
+          && !(this->subiteration_num % this->inter_update_filter_interval))
+        {
+          info("Applying inter-update filter");
+          this->inter_update_filter_ptr->apply(current_image_estimate);
+        }
+
+      // KT 17/08/2000 limit update
+      // TODO move below thresholding?
+      if (this->write_update_image && !this->_disable_output)
+        {
+          // allocate space for the filename assuming that
+          // we never have more than 10^49 subiterations ...
+          const size_t filename_length = this->output_filename_prefix.size() + 60;
+          char* fname = new char[filename_length];
+          snprintf(fname, filename_length, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
+
+          // Write it to file
+          this->output_file_format_ptr->write_to_file(fname, *multiplicative_update_image_ptr);
+          delete[] fname;
+        }
+
+      if (this->subiteration_num != 1)
+        {
+          const float current_min
+              = *std::min_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
+          const float current_max
+              = *std::max_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
+          const float new_min = static_cast<float>(this->minimum_relative_change);
+          const float new_max = static_cast<float>(this->maximum_relative_change);
+          info(format("Update image old min,max: {}, {}, new min,max {}, {}",
+                      current_min,
+                      current_max,
+                      (min(current_min, new_min)),
+                      (max(current_max, new_max))));
+
+          threshold_upper_lower(
+              multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all(), new_min, new_max);
+        }
+
+      // current_image_estimate *= *multiplicative_update_image_ptr;
+      apply_multiplicative_update(current_image_estimate, *multiplicative_update_image_ptr);
     }
-
-  if (this->subiteration_num != 1)
-    {
-      const float current_min
-          = *std::min_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
-      const float current_max
-          = *std::max_element(multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all());
-      const float new_min = static_cast<float>(this->minimum_relative_change);
-      const float new_max = static_cast<float>(this->maximum_relative_change);
-      info(format("Update image old min,max: {}, {}, new min,max {}, {}",
-                  current_min,
-                  current_max,
-                  (min(current_min, new_min)),
-                  (max(current_max, new_max))));
-
-      threshold_upper_lower(
-          multiplicative_update_image_ptr->begin_all(), multiplicative_update_image_ptr->end_all(), new_min, new_max);
-    }
-
-  // current_image_estimate *= *multiplicative_update_image_ptr;
-  apply_multiplicative_update(current_image_estimate, *multiplicative_update_image_ptr);
 
 #ifdef PARALLEL
   timerSubset.Stop();
@@ -517,5 +534,6 @@ OSMAPOSLReconstruction<TargetT>::update_estimate(TargetT& current_image_estimate
 
 template class OSMAPOSLReconstruction<DiscretisedDensity<3, float>>;
 template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid>;
+template class OSMAPOSLReconstruction<Parametric3VoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR
