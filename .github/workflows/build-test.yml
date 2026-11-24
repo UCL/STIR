@@ -333,9 +333,9 @@ jobs:
           esac
 
           if test "${{matrix.parallelproj}}XX" == "ONXX"; then
-             git clone --depth 20 https://github.com/KUL-recon-lab/libparallelproj/
+             git clone --depth 200 https://github.com/KUL-recon-lab/libparallelproj/
              cd libparallelproj
-             git checkout v2.0.3
+             git checkout v2.0.7
              mkdir build
              cd build
              if test "${{matrix.cuda_version}}" == "0"; then
