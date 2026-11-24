@@ -36,9 +36,9 @@
 
 START_NAMESPACE_STIR
 
-template <typename T>
+template <class A, class B>
 static float
-dot(const T& a, const T& b)
+dot(const A& a, const B& b)
 {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
@@ -171,9 +171,8 @@ PETSIRDInfo::figure_out_scanner_blocks_and_rotation_axis(std::set<float>& unique
               warning(format("Mixed radii detected {} vs {}. Consider checking for misaligned modules.", radius, current));
             }
         }
-      info(format("Radius: {}", radius));
-      std::cerr << "\nANGLES: " << angles;
-      std::cerr << "\nAxial poss: " << axial_poss;
+      // std::cerr << "\nANGLES: " << angles;
+      // std::cerr << "\nAxial poss: " << axial_poss;
     }
 }
 
@@ -226,15 +225,6 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
   if (geom.replicated_modules[0].object.detecting_elements.transforms.empty())
     error("PETSIRDInfo: detecting_elements.transforms is empty (cannot infer element spacing/radius).");
 
-  //! TODO: Determine the DOI based on material
-  float average_doi = 0.0;
-  if (get_petsird_scanner_info().bulk_materials.size() > 0)
-    {
-      const std::string& material = get_petsird_scanner_info().bulk_materials[0].name;
-      if (material.size() > 0)
-        average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
-    }
-
   type_of_module = get_petsird_scanner_info().scanner_geometry.replicated_modules.size() - 1;
   if (type_of_module > 0)
     {
@@ -264,6 +254,55 @@ PETSIRDInfo::PETSIRDInfo(shared_ptr<const petsird::Header> header_sptr, std::str
   if (rotation_axis == -1)
     is_cylindrical = false;
 
+  float average_doi = 0.0;
+  petsird::ExpandedDetectionBin expanded_detection_bin{ 0, 0, 0 }; // Check the first element of the first module
+  auto ADP = petsird_helpers::geometry::get_ADP(get_petsird_scanner_info(), type_of_module, expanded_detection_bin);
+
+  for (uint32_t module = 0; module < 1; module++)
+    {
+      auto box = petsird_helpers::geometry::get_detecting_box(get_petsird_scanner_info(), module, expanded_detection_bin);
+      petsird::Coordinate front{ { 0.F, 0.F, 0.F } };
+      petsird::Coordinate back{ { 0.F, 0.F, 0.F } };
+      for (int i = 0; i < 4; ++i)
+        {
+          front.c += box.corners[i].c;
+          back.c += box.corners[i + 4].c;
+        }
+      front.c /= 4.F;
+      back.c /= 4.F;
+
+      const auto axis = back.c - front.c;
+      const float crystal_length = my_norm(axis);
+      if (crystal_length <= 0.F)
+        error("PETSIRDInfo: Crystal has zero length.");
+
+      const auto outward = axis / crystal_length;
+      average_doi = dot(ADP.c - front.c, outward);
+    }
+
+  //! Determine the DOI based on material's typical values, if ADP was not helpful.
+  if (average_doi == 0) // For older PETSIRD versions
+    {
+      warning("PETSIRDInfo was not able to deduce the average DOI. We will try to set some values based on the matterial of the "
+              "module, if it exists (BGO, LSO and LYSO).");
+      if (get_petsird_scanner_info().bulk_materials.size() > 0)
+        {
+          const std::string& material = get_petsird_scanner_info().bulk_materials[0].name;
+          if (material.size() > 0)
+            {
+              average_doi = (material == "BGO") ? 5.0f : (material == "LSO" || material == "LYSO") ? 7.0f : 0.0f;
+              if (average_doi == 0)
+                warning(format("The material ({}) in the PETSIRD file is not in the recognized list (BGO, LSO, LYSO)", material));
+            }
+          else
+            warning("The module material has not been set. The average DOI is set to zero!");
+        }
+    }
+
+  info(format("Average depth of interaction is : {}", average_doi));
+  // Convert the detected radius to the inner radius
+  radius -= average_doi;
+  info(format("Radius: {}", radius));
   const std::set<float>& main_axis = vector_utils::get_largest_vector(unique_dim1_values, unique_dim2_values, unique_dim3_values);
 
   std::set<float> unique_angle_modules;
