@@ -27,7 +27,7 @@ dependencies:
 #  - cuda-cudart-dev
   - libparallelproj=2
   - root_base>=6.38 # not win
-  - libpetsird=0.12.2
+  - libpetsird=0.13.3
 #  - zlib # win
   - howardhinnant_date>=3.0.1 # PETSIRD
   - python>=3.11.3 # 3.11.3 required for PETSIRD
