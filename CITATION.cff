@@ -43,9 +43,6 @@ authors:
       affiliation:  University of Leeds (UK)
     - family-names: Beisel
       given-names:  Tobias
-    - family-names: Khateri
-      given-names:  Parisa
-      affiliation:  ETH Zuerich
     - family-names: Strugari
       given-names:  Matthew
       orcid:        'https://orcid.org/0000-0001-8045-9126'
@@ -53,6 +50,9 @@ authors:
     - family-names: Colombo
       given-names:  Matteo Neel
       affiliation:  University of Milano-Bicocca (Italy)
+    - family-names: Khateri
+      given-names:  Parisa
+      affiliation:  ETH Zuerich
     - family-names: Emond
       given-names:  Elise
       affiliation:  University College London
@@ -82,11 +82,14 @@ authors:
     - family-names: Fischer
       given-names:  Jannis
       orcid:        'https://orcid.org/0000-0002-8329-0220'
-    - family-names: Bertolli
-      given-names:  Ottavia
-      affiliation:  University College London
+    - family-names: Osys
+      given-names:  Alan
+      affiliation:  London South Bank University
     - family-names: Brusaferri
       given-names:  Ludovica
+      affiliation:  University College London
+    - family-names: Bertolli
+      given-names:  Ottavia
       affiliation:  University College London
     - family-names: Thomas
       given-names:  Benjamin

@@ -12,10 +12,9 @@
 #include "petsird/binary/protocols.h"
 #include "petsird/hdf5/protocols.h"
 #include "stir/error.h"
+#include "stir/IO/HDF5_utilities.h"
 #include "stir/format.h"
 #include <array>
-// #include "../../PETSIRD/cpp/generated/types.h"
-// #include "../../PETSIRD/cpp/helpers/include/petsird_helpers.h"
 
 START_NAMESPACE_STIR
 
@@ -34,8 +33,10 @@ bool
 PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const std::string& filename) const
 {
 
-  std::array<char, 4> hdf5_signature = { 'H', 'D', 'F', '5' };
-  std::array<char, 4> binary_signature = { 'y', 'a', 'r', 'd' };
+  using HDF5_utilities::get_HDF5_group;
+  using HDF5_utilities::is_valid;
+
+  constexpr std::array<char, 5> binary_signature = { 'y', 'a', 'r', 'd', 'l' };
 
   std::ifstream file(filename, std::ios::binary);
   if (!file.is_open())
@@ -43,7 +44,7 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
       error(format("Cannot open file: {}", filename));
       return false;
     }
-  std::array<char, 4> signature_{};
+  std::array<char, 5> signature_{};
   auto it = std::istreambuf_iterator<char>(file);
   auto end = std::istreambuf_iterator<char>();
 
@@ -55,32 +56,28 @@ PETSIRDCListmodeInputFileFormat::can_read(const FileSignature& signature, const 
   if (!file)
     error("Stream error while reading file signature");
 
-  if (signature_ == hdf5_signature)
-    {
-      use_hdf5 = true;
-      return use_hdf5;
-    }
-
   if (signature_ == binary_signature)
     {
       use_hdf5 = false;
       return true;
     }
 
-  // petsird::hdf5::PETSIRDReader* petsird_reader = new petsird::hdf5::PETSIRDReader(filename);
-
-  // if (is_null_ptr(petsird_reader))
-  //   {
-
-  //     petsird::binary::PETSIRDReader* petsird_reader = new petsird::binary::PETSIRDReader(filename);
-  //     if (is_null_ptr(petsird_reader))
-  //       {
-  //         return false;
-  //       }
-  //     return true;
-  //   }
-
-  return false;
+  // HDF5 signature can fail, so check reliably
+  if (!H5::H5File::isHdf5(filename))
+    return false;
+  use_hdf5 = true;
+  try
+    {
+      H5::H5File file;
+      file.openFile(filename, H5F_ACC_RDONLY);
+      auto group = get_HDF5_group(file, "PETSIRD");
+      return is_valid(group) && group.attrExists("$yardl_format_version");
+    }
+  catch (...)
+    {
+      // it failed for some reason
+      return false;
+    }
 }
 
 END_NAMESPACE_STIR

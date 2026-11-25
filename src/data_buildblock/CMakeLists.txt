@@ -19,6 +19,7 @@ set(${dir_LIB_SOURCES}
 	SinglesRates.cxx
 	SinglesRatesForTimeFrames.cxx
         SinglesRatesForTimeSlices.cxx
+        SinglesRatesFromJSON.cxx
         randoms_from_singles.cxx
 )
 if (HAVE_ECAT)

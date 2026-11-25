@@ -368,14 +368,14 @@ Scanner::Scanner(Type scanner_type)
                  7.0F,
                  4.0625F,
                  2.08626F,
-                 0.0F,
-                 2,
-                 1,
-                 8,
-                 9,
-                 16,
-                 9,
-                 1,
+                 0.0F, // intrinsic_tilt_v
+                 1,    // num_axial_blocks_per_bucket_v
+                 2,    // num_transaxial_blocks_per_bucket_v
+                 8,    // num_axial_crystals_per_block_v
+                 9,    // num_transaxial_crystals_per_block_v
+                 8,    // num_axial_crystals_per_singles_unit_v
+                 18,   // num_transaxial_crystals_per_singles_unit_v
+                 1,    // num_detector_layers_v
                  0.145F,
                  511.F,
                  1,
@@ -841,7 +841,18 @@ Scanner::Scanner(Type scanner_type)
                  511.F,
                  (short int)(351),
                  (float)(13.02),
-                 (float)(390.0F));
+                 (float)(390.0F),
+                 "Cylindrical",
+                 5.3F, // axial
+                 4.F   // transaxial
+      );
+      // note: crystal length: 25mm
+      // we want ring_spacing * (num_rings - 1) ==
+      //   (axial_block_spacing * (num_axial_blocks -1) + (num_axial_crystals_per_block - 1) * axial_crystal_spacing))
+      this->set_axial_block_spacing((this->get_ring_spacing() * (this->get_num_rings() - 1)
+                                     - (this->get_num_axial_crystals_per_block() - 1) * this->get_axial_crystal_spacing())
+                                    / (this->get_num_axial_blocks() - 1));
+      this->set_transaxial_block_spacing(this->get_transaxial_crystal_spacing() * this->get_num_transaxial_crystals_per_block());
       break;
 
     case Discovery690:
@@ -1551,7 +1562,10 @@ Scanner::set_params(Type type_v,
   else
     set_scanner_geometry(scanner_geometry_v);
 
-  set_up();
+#if STIR_VERSION < 070000
+  if (this->scanner_geometry == "Cylindrical")
+    this->set_up();
+#endif
 }
 
 void
@@ -2244,7 +2258,10 @@ Scanner::get_scanner_from_name(const string& name)
         {
           const string matching_scanner_name = standardise_interfile_keyword(*iter);
           if (matching_scanner_name == matching_name)
-            return scanner_ptr;
+            {
+              scanner_ptr->set_up();
+              return scanner_ptr;
+            }
         }
 
       // we didn't find it yet

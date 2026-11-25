@@ -27,14 +27,14 @@ START_NAMESPACE_STIR
 Succeeded
 CListRecordPETSIRD::init_from_data(const petsird::CoincidenceEvent& event, const bool is_prompt)
 {
-  const auto scanner_info_sptr = petsird_info_sptr->get_petsird_scanner_info_sptr();
+  const auto& scanner_info = petsird_info_sptr->get_petsird_scanner_info();
 
   const auto exp_det_0
-      = petsird_helpers::expand_detection_bin(*scanner_info_sptr,
+      = petsird_helpers::expand_detection_bin(scanner_info,
                                               0, // TODO type_of_module, currently we only support single module types.
                                               event.detection_bins[0]);
   const auto exp_det_1
-      = petsird_helpers::expand_detection_bin(*scanner_info_sptr,
+      = petsird_helpers::expand_detection_bin(scanner_info,
                                               0, // TODO type_of_module, currently we only support single module types.
                                               event.detection_bins[1]);
   auto it0 = petsird_info_sptr->get_petsird_to_stir_map()->find(exp_det_1);

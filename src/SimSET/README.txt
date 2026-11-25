@@ -64,6 +64,73 @@ WARNING: this script first calls mult_num_photons.sh in an attempt to handle cas
 you have different number of decays per simulations. However, this most definitely does 
 not handle cases where you change importance sampling parameters.
 
+- conv_SimSET_crystal_pairs_to_STIR.sh
+Converts SimSET weight files to STIR Interfile projection data for simulations that
+model block detectors (detector_type = block in det.rec) with the output binned by
+crystal pair (bin_by_crystal = true in bin.rec). The weight file then holds one
+value per pair of crystals instead of SimSET's usual sinogram bins (num_td_bins,
+num_aa_bins, ...), so conv_SimSET_projdata_to_STIR.sh cannot be used for it.
+Usage:
+
+    conv_SimSET_crystal_pairs_to_STIR.sh output_prefix template.hs weight_file
+
+  output_prefix  outputs are written as <output_prefix>_<label>.hs (and .s)
+  template.hs    STIR projection data header describing the simulated scanner and
+                 the output sinogram (segments, views, tangential positions)
+  weight_file    the weight_image_path of the bin.rec file
+
+The script reads the SimSET binning from the weight file header (this needs
+SIMSET_DIR, see "How to use" below) and supports:
+  scatter_param 4, min_s 0, max_s 1 : 2 grids [unscattered][scattered], written as
+                                      <output_prefix>_unscattered and
+                                      <output_prefix>_singles_scat
+  scatter_param 5, min_s 2, max_s 2 : 1 grid [multiple scatter], written as
+                                      <output_prefix>_multiples
+The block layout is taken from the template, so the template has to have the same
+block layout as the simulated detector. The script then calls the executable
+conv_SimSET_crystal_pairs_to_STIR. Example:
+
+    conv_SimSET_crystal_pairs_to_STIR.sh sino template.hs rec.weight
+
+- conv_SimSET_crystal_pairs_to_STIR
+The executable called by the script above. You only need to run it directly if
+your binning is not one of the two above. Usage:
+
+    conv_SimSET_crystal_pairs_to_STIR output_prefix template.hs weight_file mode
+
+  output_prefix, template.hs, weight_file  as for the script
+  mode           multiples    : the weight file holds 1 grid (e.g. scatter_param 5,
+                                min_s = max_s = 2), written as
+                                <output_prefix>_multiples
+                 singles_scat : the weight file holds 2 grids (e.g. scatter_param 4,
+                                min_s 0, max_s 1), written as
+                                <output_prefix>_unscattered and
+                                <output_prefix>_singles_scat
+  The number of grids in the weight file has to match the mode.
+
+The scanner, including its block layout, is taken from the template header
+("Number of rings", "Number of detectors per ring", "Number of crystals per block
+in axial/transaxial direction"), which has to agree with the simulated SimSET
+detector:
+  Number of rings / crystals per block in axial direction
+      number of block rings in det.rec that contain active crystals (rings with
+      only shielding do not count)
+  Number of detectors per ring / crystals per block in transaxial direction
+      ring_num_blocks_in_ring in the ring parameter file
+  Number of crystals per block in axial direction
+      number of active crystals per block along z
+  Number of crystals per block in transaxial direction
+      number of active crystals per block along y
+(when every element of the block is an active crystal, the last two are
+block_layer_num_z_changes + 1 and block_layer_num_y_changes + 1).
+The total number of crystals is checked against the size of the weight file.
+
+Each grid is read into memory in turn (4 x num_crystals^2 bytes, e.g. 5.8 GB for
+38016 crystals). Only Cylindrical and BlocksOnCylindrical, non-arc-corrected,
+non-TOF templates are supported. Example:
+
+    conv_SimSET_crystal_pairs_to_STIR sino template.hs rec.weight singles_scat
+
 How to use
 -----------
 You first have to tell these routines where your SimSET installation is located, for instance

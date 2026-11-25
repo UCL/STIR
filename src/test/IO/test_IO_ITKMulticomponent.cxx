@@ -59,15 +59,15 @@ IOTests_ITKMulticomponent::run_tests()
       check(!is_null_ptr(voxels_coords), "failed reading %s");
 
       // Check sizes
-      check_if_equal<size_t>(voxels_coords->size(), 64);
-      check_if_equal<size_t>(voxels_coords->at(0).size(), 62);
-      check_if_equal<size_t>(voxels_coords->at(0).at(0).size(), 63);
-      check_if_equal<size_t>(voxels_coords->at(0).at(0).at(0).size(), 3);
+      check_if_equal(size_t(voxels_coords->size()), size_t(64));
+      check_if_equal(size_t(voxels_coords->at(0).size()), size_t(62));
+      check_if_equal(size_t(voxels_coords->at(0).at(0).size()), size_t(63));
+      check_if_equal(size_t(voxels_coords->at(0).at(0).at(0).size()), size_t(3));
 
       // Check voxel sizes
-      check_if_equal<float>(voxels_coords->get_voxel_size()[1], 4.0625F);
-      check_if_equal<float>(voxels_coords->get_voxel_size()[2], 4.0625F);
-      check_if_equal<float>(voxels_coords->get_voxel_size()[3], 4.0625F);
+      check_if_equal(voxels_coords->get_voxel_size()[1], 4.0625F);
+      check_if_equal(voxels_coords->get_voxel_size()[2], 4.0625F);
+      check_if_equal(voxels_coords->get_voxel_size()[3], 4.0625F);
     }
   catch (...)
     {

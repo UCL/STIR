@@ -22,7 +22,7 @@
 #include "stir/Array.h"
 #include "stir/info.h"
 #include "stir/error.h"
-#ifdef __CUDACC__
+#ifdef STIR_WITH_CUDA
 #  include <cuda_runtime.h>
 #else
 #  ifndef CUVEC_DISABLE_CUDA

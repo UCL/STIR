@@ -1206,6 +1206,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
       scanner_ptr.reset(Scanner::ask_parameters());
     }
 #endif
+  scanner.set_up();
 
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(exam_info_whole_file));
   if (frame_duration > 0)

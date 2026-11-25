@@ -189,6 +189,14 @@ private:
 
   float reference_energy;
   //@}
+  //! \name block information
+  //@{
+  std::string scanner_geometry;
+  float axial_distance_between_crystals_in_cm;
+  float transaxial_distance_between_crystals_in_cm;
+  float axial_distance_between_blocks_in_cm;
+  float transaxial_distance_between_blocks_in_cm;
+  //@}
   //@}
 
   KeyParser parser;

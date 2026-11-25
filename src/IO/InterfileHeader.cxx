@@ -1096,7 +1096,7 @@ InterfilePDFSHeader::post_processing()
 
       // new variables for block geometry
       if (axial_distance_between_crystals_in_cm < 0)
-        axial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_transaxial_crystal_spacing() / 10;
+        axial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_axial_crystal_spacing() / 10;
       if (transaxial_distance_between_crystals_in_cm < 0)
         transaxial_distance_between_crystals_in_cm = guessed_scanner_ptr->get_transaxial_crystal_spacing() / 10;
       if (axial_distance_between_blocks_in_cm < 0)
@@ -1398,6 +1398,16 @@ InterfilePDFSHeader::post_processing()
                                                          static_cast<float>(transaxial_distance_between_blocks_in_cm * 10.),
                                                          crystal_map));
 
+  try
+    {
+      scanner_sptr_from_file->set_up();
+    }
+  catch (const std::exception& e)
+    {
+      error(format("Interfile parsing ended up with the following incomplete/inconsistent scanner:\n{}\nPlease check.",
+                   scanner_sptr_from_file->parameter_info()));
+    }
+
   bool is_consistent = scanner_sptr_from_file->check_consistency() == Succeeded::yes;
   if (scanner_sptr_from_file->get_type() == Scanner::Unknown_scanner
       || scanner_sptr_from_file->get_type() == Scanner::User_defined_scanner || mismatch_between_header_and_guess
@@ -1443,13 +1453,23 @@ InterfilePDFSHeader::post_processing()
     }
   else if (scanner_geometry == "BlocksOnCylindrical") // if block geometry
     {
-      data_info_sptr.reset(new ProjDataInfoBlocksOnCylindricalNoArcCorr(
-          scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
+      data_info_sptr.reset(new ProjDataInfoBlocksOnCylindricalNoArcCorr(scanner_sptr_from_file,
+                                                                        sorted_num_rings_per_segment,
+                                                                        sorted_min_ring_diff,
+                                                                        sorted_max_ring_diff,
+                                                                        num_views,
+                                                                        num_bins,
+                                                                        tof_mash_factor));
     }
   else // if generic geometry
     {
-      data_info_sptr.reset(new ProjDataInfoGenericNoArcCorr(
-          scanner_sptr_from_file, sorted_num_rings_per_segment, sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
+      data_info_sptr.reset(new ProjDataInfoGenericNoArcCorr(scanner_sptr_from_file,
+                                                            sorted_num_rings_per_segment,
+                                                            sorted_min_ring_diff,
+                                                            sorted_max_ring_diff,
+                                                            num_views,
+                                                            num_bins,
+                                                            tof_mash_factor));
     }
   if (data_info_sptr->get_num_tof_poss() != num_timing_poss)
     error(format("Interfile header parsing with TOF: inconsistency between number of TOF bins in data ({}), "

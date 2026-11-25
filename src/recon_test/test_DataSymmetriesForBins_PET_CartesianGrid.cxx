@@ -736,6 +736,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
       {
         cerr << "Testing span=1\n";
         shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+        scanner_sptr->set_up();
         proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                 /*span=*/1,
                                                                 /*max_delta=*/5,
@@ -749,6 +750,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
         // warning: make sure that parameters are ok such that hard-wired
         // bins above are fine (e.g. segment 3 should be allowed)
         shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+        scanner_sptr->set_up();
         proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                 /*span=*/3,
                                                                 /*max_delta=*/13,
@@ -762,6 +764,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
         // warning: make sure that parameters are ok such that hard-wired
         // bins above are fine (e.g. segment 3 should be allowed)
         shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::PETMR_Signa));
+        scanner_sptr->set_up();
         proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                 /*span=*/11,
                                                                 /*max_delta=*/5,
@@ -777,6 +780,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
         // warning: make sure that parameters are ok such that hard-wired
         // bins above are fine (e.g. segment 3 should be allowed)
         shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::test_scanner));
+        scanner_sptr->set_up();
         proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                                                 /*span=*/1,
                                                                 /*max_delta=*/3,

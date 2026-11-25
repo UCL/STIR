@@ -110,11 +110,17 @@ public:
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
+  float get_dead_time_efficiency(int ring, float singles_rate) const;
+  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
   bool use_geometric_factors() const;
   bool use_crystal_interference_factors() const;
   bool use_axial_effects_factors() const;
 
+  void set_singles_rates(const shared_ptr<SinglesRates>& sptr) { singles_rates_ptr = sptr; }
+
 private:
+  Array<1, float> rng_dtp_array;
+  Array<1, float> rng_dtnp_array;
   Array<1, float> axial_t1_array;
   Array<1, float> axial_t2_array;
   Array<1, float> trans_t1_array;
@@ -149,7 +155,6 @@ private:
   bool _write_components_to_file;
 
   void read_norm_data(const string& filename);
-  float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
 
   //! initialise sino_index and num_Siemens_sinograms
   void construct_sino_lookup_table();
@@ -160,6 +165,7 @@ private:
   bool post_processing() override;
 
   string normalisation_ECAT8_filename;
+  std::string singles_filename;
 };
 
 END_NAMESPACE_ECAT

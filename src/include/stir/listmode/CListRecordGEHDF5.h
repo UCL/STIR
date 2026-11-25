@@ -24,8 +24,8 @@
 #include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
 #include <boost/static_assert.hpp>
-#include <boost/cstdint.hpp>
 #include "stir/error.h"
+#include <cstdint>
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -83,10 +83,10 @@ public:
   // Do byteswapping first before using this bit field.
   TODO;
 #else
-  boost::uint16_t eventLength : 2;  /* Event Length : Enum for the number of bytes in the event */
-  boost::uint16_t eventType : 1;    /* Event Type : Coin or Extended types */
-  boost::uint16_t eventTypeExt : 4; /*  If not a coincidence, Extended Event Type : Time Marker, Trigger, Single..etc */
-  boost::uint16_t dummy : 9;
+  std::uint16_t eventLength : 2;  /* Event Length : Enum for the number of bytes in the event */
+  std::uint16_t eventType : 1;    /* Event Type : Coin or Extended types */
+  std::uint16_t eventTypeExt : 4; /*  If not a coincidence, Extended Event Type : Time Marker, Trigger, Single..etc */
+  std::uint16_t dummy : 9;
 #endif
 }; /*any record */
 
@@ -114,17 +114,17 @@ public:
   // Do byteswapping first before using this bit field.
   TODO
 #else
-  boost::uint16_t eventLength : 2;       /* Event Length : Enum for the number of bytes in the event */
-  boost::uint16_t eventType : 1;         /* Event Type : Coin or Extended types */
-  boost::uint16_t hiXtalShortInteg : 1;  /* High Crystal Short Integration on / off */
-  boost::uint16_t loXtalShortInteg : 1;  /* Low Crystal Short Integration on / off */
-  boost::uint16_t hiXtalScatterRec : 1;  /* High Crystal Scatter Recovered on / off */
-  boost::uint16_t loXtalScatterRec : 1;  /* Low Crystal Scatter Recovered on / off */
-  boost::int16_t deltaTime : 9;          /* TOF 'signed' delta time (units defined by electronics */
-  boost::uint16_t hiXtalAxialID : 6;     /* High Crystal Axial Id */
-  boost::uint16_t hiXtalTransAxID : 10;  /* High Crystal Trans-Axial Id */
-  boost::uint16_t loXtalAxialID : 6;     /* Low Crystal Axial Id */
-  boost::uint16_t loXtalTransAxID : 10;  /* Low Crystal Trans-Axial Id */
+  std::uint16_t eventLength : 2;      /* Event Length : Enum for the number of bytes in the event */
+  std::uint16_t eventType : 1;        /* Event Type : Coin or Extended types */
+  std::uint16_t hiXtalShortInteg : 1; /* High Crystal Short Integration on / off */
+  std::uint16_t loXtalShortInteg : 1; /* Low Crystal Short Integration on / off */
+  std::uint16_t hiXtalScatterRec : 1; /* High Crystal Scatter Recovered on / off */
+  std::uint16_t loXtalScatterRec : 1; /* Low Crystal Scatter Recovered on / off */
+  std::int16_t deltaTime : 9;         /* TOF 'signed' delta time (units defined by electronics */
+  std::uint16_t hiXtalAxialID : 6;    /* High Crystal Axial Id */
+  std::uint16_t hiXtalTransAxID : 10; /* High Crystal Trans-Axial Id */
+  std::uint16_t loXtalAxialID : 6;    /* Low Crystal Axial Id */
+  std::uint16_t loXtalTransAxID : 10; /* Low Crystal Trans-Axial Id */
 #endif
 }; /*-coincidence event*/
 
@@ -150,26 +150,24 @@ public:
   } // TODO
 
 private:
-  typedef union
+  struct data_t
   {
-    struct
-    {
 #if STIRIsNativeByteOrderBigEndian
-      TODO
+    TODO
 #else
-      boost::uint16_t eventLength : 2;   /* Event Length : Enum for the number of bytes in the event */
-      boost::uint16_t eventType : 1;     /* Event Type : Coin or Extended types */
-      boost::uint16_t eventTypeExt : 4;  /* Extended Event Type : Time Marker, Trigger, Single..etc */
-      boost::uint16_t unused1 : 5;       /* Unused */
-      boost::uint16_t externEvt3 : 1;    /* External Event Input 3 Level */
-      boost::uint16_t externEvt2 : 1;    /* External Event Input 2 Level */
-      boost::uint16_t externEvt1 : 1;    /* External Event Input 1 Level */
-      boost::uint16_t externEvt0 : 1;    /* External Event Input 0 Level */
-      boost::uint16_t timeMarkerLS : 16; /* Least Significant 16 bits of 32-bit Time Marker */
-      boost::uint16_t timeMarkerMS : 16; /* Most Significant 16 bits of 32-bitTime Marker */
+    std::uint16_t eventLength : 2;    /* Event Length : Enum for the number of bytes in the event */
+    std::uint16_t eventType : 1;      /* Event Type : Coin or Extended types */
+    std::uint16_t eventTypeExt : 4;   /* Extended Event Type : Time Marker, Trigger, Single..etc */
+    std::uint16_t unused1 : 5;        /* Unused */
+    std::uint16_t externEvt3 : 1;     /* External Event Input 3 Level */
+    std::uint16_t externEvt2 : 1;     /* External Event Input 2 Level */
+    std::uint16_t externEvt1 : 1;     /* External Event Input 1 Level */
+    std::uint16_t externEvt0 : 1;     /* External Event Input 0 Level */
+    std::uint16_t timeMarkerLS : 16;  /* Least Significant 16 bits of 32-bit Time Marker */
+    std::uint16_t timeMarkerMS : 16;  /* Most Significant 16 bits of 32-bitTime Marker */
 #endif
-    };
-  } data_t;
+  };
+
   data_t data;
 
   unsigned long time_lo() const
@@ -309,7 +307,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
     union
     {
       detail::CListAnyRecordDataGEHDF5 rec;
-      boost::uint16_t raw[4];
+      std::uint16_t raw[4];
     };
     std::copy(data_ptr, data_ptr + 2, &raw[0]);
     switch (rec.eventLength)
@@ -348,9 +346,9 @@ private:
     DataType event_data;
     TimeType time_data;
     // GatingType gating_data;
-    boost::int32_t raw[16 / 4];
+    std::int32_t raw[16 / 4];
   };
-  BOOST_STATIC_ASSERT(sizeof(boost::int32_t) == 4);
+  BOOST_STATIC_ASSERT(sizeof(std::int32_t) == 4);
   BOOST_STATIC_ASSERT(sizeof(DataType) == 6);
   BOOST_STATIC_ASSERT(sizeof(TimeType) == 6);
   // BOOST_STATIC_ASSERT(sizeof(GatingType)==8);

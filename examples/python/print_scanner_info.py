@@ -19,6 +19,7 @@ l=stir.Scanner.get_names_of_predefined_scanners()
 #%% go through the list to print some properties
 for s in l:
   sc=stir.Scanner.get_scanner_from_name(s)
+  sc.set_up()
   if (sc.get_intrinsic_azimuthal_tilt() != 0):
     print("{0:30}: intrinsic tilt (degrees): {1:3.2f}".format(sc.get_name(), sc.get_intrinsic_azimuthal_tilt()*180/math.pi))
 
