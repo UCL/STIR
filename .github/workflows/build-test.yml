@@ -53,6 +53,9 @@ jobs:
           BUILD_FLAGS: "-DSTIR_OPENMP=ON"
           BUILD_TYPE: "Release"
           PETSIRD: "ON"
+          # the environment contains root_base and ITK, so flag that it's available for tests below
+          ROOT: "ON"
+          ITK: "ON"
         - os: ubuntu-24.04
           compiler: gcc
           # compiler_version: 9
@@ -146,9 +149,10 @@ jobs:
           cuda_version: "0"
           parallelproj: "ON"
           BUILD_TYPE: "Release"
+          PETSIRD: "ON"
+          # the environment contains root_base and ITK, so flag that it's available for tests below
           ROOT: "ON"
           ITK: "ON"
-          PETSIRD: "ON"
         - os: macOS-latest
           compiler: clang
           compiler_version: 21
@@ -592,8 +596,9 @@ jobs:
               echo skipping pytest due to numpy problem for now.
               ;;
             (*)
-              python -m pytest .
+              python -m pytest -s -v .
               cd ../examples/python
+              echo Running recon_demo_gradient.py
               python recon_demo_gradient.py
               ;;
           esac
