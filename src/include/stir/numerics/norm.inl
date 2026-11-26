@@ -53,16 +53,16 @@ norm(Iter begin, Iter end)
   return sqrt(norm_squared(begin, end));
 }
 
-template <class elemT>
+template <class elemT, class indexT>
 inline double
-norm(const Array<1, elemT>& v1)
+norm(const Array<1, elemT, indexT>& v1)
 {
   return norm(v1.begin(), v1.end());
 }
 
-template <class elemT>
+template <class elemT, class indexT>
 inline double
-norm_squared(const Array<1, elemT>& v1)
+norm_squared(const Array<1, elemT, indexT>& v1)
 {
   return norm_squared(v1.begin(), v1.end());
 }

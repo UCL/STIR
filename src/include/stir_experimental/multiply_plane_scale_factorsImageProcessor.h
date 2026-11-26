@@ -21,12 +21,10 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/VectorWithOffsetFwd.h"
 #include <vector>
 
 START_NAMESPACE_STIR
-
-template <typename elemT>
-class VectorWithOffset;
 
 /*!
   \brief Simply multiplies each plane in an image with a scale factor.

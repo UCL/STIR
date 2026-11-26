@@ -28,9 +28,12 @@ namespace detail
 
 /***************** version for ostream *******************************/
 
-template <int num_dimensions, class elemT>
+template <int num_dimensions, class elemT, class indexT>
 inline Succeeded
-write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data)
+write_data_1d(std::ostream& s,
+              const Array<num_dimensions, elemT, indexT>& data,
+              const ByteOrder byte_order,
+              const bool can_corrupt_data)
 {
   if (!s || (dynamic_cast<std::ofstream*>(&s) != 0 && !dynamic_cast<std::ofstream*>(&s)->is_open())
       || (dynamic_cast<std::fstream*>(&s) != 0 && !dynamic_cast<std::fstream*>(&s)->is_open()))
@@ -45,7 +48,7 @@ write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const B
   /*
   if (!byte_order.is_native_order())
   {
-  Array<num_dimensions, elemT> a_copy(data);
+  Array<num_dimensions, elemT, indexT> a_copy(data);
   for(int i=data.get_min_index(); i<=data.get_max_index(); i++)
   ByteOrder::swap_order(a_copy[i]);
   return write_data(s, a_copy, ByteOrder::native, true);
@@ -53,7 +56,7 @@ write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const B
   */
   if (!byte_order.is_native_order())
     {
-      Array<num_dimensions, elemT>& data_ref = const_cast<Array<num_dimensions, elemT>&>(data);
+      auto& data_ref = const_cast<Array<num_dimensions, elemT, indexT>&>(data);
       for (auto iter = data_ref.begin_all(); iter != data_ref.end_all(); ++iter)
         ByteOrder::swap_order(*iter);
     }
@@ -76,7 +79,7 @@ write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const B
 
   if (!can_corrupt_data && !byte_order.is_native_order())
     {
-      Array<num_dimensions, elemT>& data_ref = const_cast<Array<num_dimensions, elemT>&>(data);
+      auto& data_ref = const_cast<Array<num_dimensions, elemT, indexT>&>(data);
       for (auto iter = data_ref.begin_all(); iter != data_ref.end_all(); ++iter)
         ByteOrder::swap_order(*iter);
     }
@@ -93,9 +96,12 @@ write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const B
 /***************** version for FILE *******************************/
 // largely a copy of above, but with calls to stdio function
 
-template <int num_dimensions, class elemT>
+template <int num_dimensions, class elemT, class indexT>
 inline Succeeded
-write_data_1d(FILE*& fptr_ref, const Array<num_dimensions, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data)
+write_data_1d(FILE*& fptr_ref,
+              const Array<num_dimensions, elemT, indexT>& data,
+              const ByteOrder byte_order,
+              const bool can_corrupt_data)
 {
   FILE* fptr = fptr_ref;
   if (fptr == 0 || ferror(fptr))
@@ -110,7 +116,7 @@ write_data_1d(FILE*& fptr_ref, const Array<num_dimensions, elemT>& data, const B
   /*
   if (!byte_order.is_native_order())
   {
-  Array<num_dimensions, elemT> a_copy(data);
+  Array<num_dimensions, elemT, indexT> a_copy(data);
   for(int i=data.get_min_index(); i<=data.get_max_index(); i++)
   ByteOrder::swap_order(a_copy[i]);
   return write_data(s, a_copy, ByteOrder::native, true);
@@ -118,7 +124,7 @@ write_data_1d(FILE*& fptr_ref, const Array<num_dimensions, elemT>& data, const B
   */
   if (!byte_order.is_native_order())
     {
-      Array<num_dimensions, elemT>& data_ref = const_cast<Array<num_dimensions, elemT>&>(data);
+      auto& data_ref = const_cast<Array<num_dimensions, elemT, indexT>&>(data);
       for (auto iter = data_ref.begin_all(); iter != data_ref.end_all(); ++iter)
         ByteOrder::swap_order(*iter);
     }
@@ -134,7 +140,7 @@ write_data_1d(FILE*& fptr_ref, const Array<num_dimensions, elemT>& data, const B
 
   if (!can_corrupt_data && !byte_order.is_native_order())
     {
-      Array<num_dimensions, elemT>& data_ref = const_cast<Array<num_dimensions, elemT>&>(data);
+      auto& data_ref = const_cast<Array<num_dimensions, elemT, indexT>&>(data);
       for (auto iter = data_ref.begin_all(); iter != data_ref.end_all(); ++iter)
         ByteOrder::swap_order(*iter);
     }

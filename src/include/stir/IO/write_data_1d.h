@@ -18,7 +18,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/ArrayFwd.h"
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -34,9 +34,11 @@ namespace detail
   This function does not throw any exceptions. Exceptions thrown by std::ostream::write
   are caught.
  */
-template <int num_dimensions, class elemT>
-inline Succeeded
-write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const ByteOrder byte_order, const bool can_corrupt_data);
+template <int num_dimensions, class elemT, class indexT>
+inline Succeeded write_data_1d(std::ostream& s,
+                               const Array<num_dimensions, elemT, indexT>& data,
+                               const ByteOrder byte_order,
+                               const bool can_corrupt_data);
 /*! \ingroup Array_IO_detail
   \brief This is an internal function called by \c write_data(). It does the actual writing
    to \c FILE* using stdio functions.
@@ -44,9 +46,9 @@ write_data_1d(std::ostream& s, const Array<num_dimensions, elemT>& data, const B
   This function does not throw any exceptions.
 
  */
-template <int num_dimensions, class elemT>
+template <int num_dimensions, class elemT, class indexT>
 inline Succeeded write_data_1d(FILE*& fptr_ref,
-                               const ArrayType<num_dimensions, elemT>& data,
+                               const ArrayType<num_dimensions, elemT, indexT>& data,
                                const ByteOrder byte_order,
                                const bool can_corrupt_data);
 } // namespace detail

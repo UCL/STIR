@@ -97,10 +97,10 @@ START_NAMESPACE_STIR
   </ul>
 */
 
-template <typename T>
+template <typename T, typename indexT>
 void
-overlap_interpolate(VectorWithOffset<T>& out_data,
-                    const VectorWithOffset<T>& in_data,
+overlap_interpolate(VectorWithOffset<T, indexT>& out_data,
+                    const VectorWithOffset<T, indexT>& in_data,
                     const float zoom,
                     const float offset,
                     const bool assign_rest_with_zeroes)
@@ -124,8 +124,8 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
       // the position of the left edge of the first 'out' bin:
       // left_edge = (out_data.get_min_index() - .5)/zoom + offset
       // x1 -.5 <= left_edge < x1+.5
-      int x2 = out_data.get_min_index();
-      int x1 = (int)floor((x2 - .5) / zoom + offset + .5);
+      auto x2 = out_data.get_min_index();
+      auto x1 = (indexT)floor((x2 - .5) / zoom + offset + .5);
 
       // the next variable holds the difference between the coordinates
       // of the right edges of the 'in' bin and the 'out' bin, computed
@@ -217,9 +217,9 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
       const float inverse_zoom = 1 / zoom;
 
       // current coordinate in out_data
-      int x2 = out_data.get_min_index();
+      auto x2 = out_data.get_min_index();
       // current coordinate in in_data
-      int x1 = (int)floor((x2 - .5) * inverse_zoom + offset + .5);
+      auto x1 = (indexT)floor((x2 - .5) * inverse_zoom + offset + .5);
 
       // the next variable holds the difference between the coordinates
       // of the right edges of the 'in' bin and the 'out' bin, computed
@@ -329,26 +329,7 @@ template void overlap_interpolate<>(VectorWithOffset<double>& out_data,
                                     const bool assign_rest_with_zeroes);
 END_NAMESPACE_STIR
 
-// TODO remove
-#if defined(OLDDESIGN)
-
-#  include "stir/Tensor2D.h"
-
-template void overlap_interpolate<>(VectorWithOffset<Tensor1D<float>>& out_data,
-                                    const VectorWithOffset<Tensor1D<float>>& in_data,
-                                    const float zoom,
-                                    const float offset,
-                                    const bool assign_rest_with_zeroes);
-
-template void overlap_interpolate<>(VectorWithOffset<Tensor2D<float>>& out_data,
-                                    const VectorWithOffset<Tensor2D<float>>& in_data,
-                                    const float zoom,
-                                    const float offset,
-                                    const bool assign_rest_with_zeroes);
-
-#else
-
-#  include "stir/Array.h"
+#include "stir/Array.h"
 
 START_NAMESPACE_STIR
 
@@ -363,6 +344,5 @@ template void overlap_interpolate<>(VectorWithOffset<Array<2, float>>& out_data,
                                     const float zoom,
                                     const float offset,
                                     const bool assign_rest_with_zeroes);
-#endif
 
 END_NAMESPACE_STIR
