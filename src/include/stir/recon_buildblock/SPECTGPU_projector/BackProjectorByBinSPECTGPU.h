@@ -33,6 +33,8 @@ namespace SPECTGPU
 /*!
   \ingroup projection
   \brief Class for SPECTGPU's GPU back projector
+
+  Adjoint operation of ForwardProjectorByBinSPECTGPU. It uses adjoint interpolation to achieve this.
 */
 class BackProjectorByBinSPECTGPU : public RegisteredParsingObject<BackProjectorByBinSPECTGPU, BackProjectorByBin>
 {

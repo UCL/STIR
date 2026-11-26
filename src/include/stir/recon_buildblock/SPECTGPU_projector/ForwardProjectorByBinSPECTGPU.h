@@ -12,10 +12,6 @@
 
   \author Daniel Deidda
 
-  \todo SPECTGPU limitations: the prjector only works if the data and the image have the
-  same dimensions, in particular  tangential and axial. Interpolation would need  to be
-  added to support different  voxels sizes
-
 */
 /*
     Copyright (C) 2026, National Physical Laboratory
@@ -42,7 +38,17 @@ namespace SPECTGPU
 /*!
   \ingroup projection
   \brief Class for SPECTGPU's GPU forward projector.
-*/
+
+  This is a SPECT projector for a parallel hole collimator, including attenuation and collimator response.
+  The implementation uses a rotating projector (i.e. filter, rotate the image and then project),
+  as suggested by
+  <a href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=552061">Jerold W. Wallis and Tom R. Miller, IEEE TMI
+  1997)</a>. See the User's Guide for details.
+
+  \todo SPECTGPU limitations: the prjector only works if the data and the image have the
+  same dimensions, in particular tangential and axial. Interpolation would need to be
+  added to support different voxels sizes.
+  */
 class ForwardProjectorByBinSPECTGPU : public RegisteredParsingObject<ForwardProjectorByBinSPECTGPU, ForwardProjectorByBin>
 {
 public:
@@ -57,7 +63,6 @@ public:
   static const char* const registered_name;
 
   //! Default constructor calls reset_timers()
-  // inline
   ForwardProjectorByBinSPECTGPU();
 
   /// Destructor
