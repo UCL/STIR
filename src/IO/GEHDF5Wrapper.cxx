@@ -441,10 +441,22 @@ GEHDF5Wrapper::initialise_proj_data_info_from_HDF5()
 {
   shared_ptr<Scanner> scanner_sptr = get_scanner_from_HDF5();
 
-  // TODO get TOF mashing when reading sinos as TOF
-  const auto num_tof_bins = read_dataset_uint32("/HeaderData/Sorter/numTOF_bins");
-  if (num_tof_bins > 1)
-    warning("GE RDF data currently still read as non-TOF");
+  uint32_t num_tof_bins = read_dataset_uint32("/HeaderData/Sorter/numTOF_bins");
+  if (num_tof_bins == 0)
+    {
+      if (this->is_list_file())
+        num_tof_bins = scanner_sptr->get_max_num_timing_poss();
+      else
+        {
+          warning("GE HDF5: header says number of TOF bins -is 0. Assuming non-TOF data");
+          num_tof_bins = 1;
+        }
+    }
+  if (scanner_sptr->get_max_num_timing_poss() % num_tof_bins != 0)
+    error(format("GE HDF5: number TOF bins ({}) should be a divisor of the maximum (i.e. unmashed) number ({})",
+                 num_tof_bins,
+                 scanner_sptr->get_max_num_timing_poss()));
+  const int tof_mashing = static_cast<int>(scanner_sptr->get_max_num_timing_poss() / num_tof_bins);
 
   this->proj_data_info_sptr
       = ProjDataInfo::construct_proj_data_info(scanner_sptr,
@@ -453,8 +465,7 @@ GEHDF5Wrapper::initialise_proj_data_info_from_HDF5()
                                                /* num_views */ scanner_sptr->get_num_detectors_per_ring() / 2,
                                                /* num_tangential_poss */ scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                /* arc_corrected */ false,
-                                               this->is_list_file() ? 1 : 0 // TODO change when reading sinos as TOF
-      );
+                                               tof_mashing);
   this->proj_data_info_sptr->set_bed_position_horizontal(
       this->read_dataset_int32("/HeaderData/AcqParameters/LandmarkParameters/absTableLongitude")
       / 10.F); /* units in RDF are 0.1 mm */

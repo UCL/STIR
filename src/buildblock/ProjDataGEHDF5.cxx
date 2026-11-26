@@ -123,9 +123,7 @@ ProjDataGEHDF5::get_viewgram(const int view_num,
 {
   if (make_num_tangential_poss_odd)
     error("make_num_tangential_poss_odd not supported by ProjDataGEHDF5");
-  Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num);
-  // not necessary
-  // ret_viewgram.fill(0.0);
+  Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num, timing_pos);
 
   // find num TOF bins
   BasicCoordinate<3, int> min_index, max_index;
@@ -133,11 +131,10 @@ ProjDataGEHDF5::get_viewgram(const int view_num,
   const int num_tof_poss = max_index[2] - min_index[2] + 1;
   if (num_tof_poss <= 0)
     error("ProjDataGEHDF5: internal error on TOF data dimension");
-  if (proj_data_info_sptr->get_scanner_ptr()->get_type() == Scanner::PETMR_Signa)
-    if (num_tof_poss != 27)
-      error("ProjDataGEHDF5: internal error on TOF data dimension for GE Signa");
+  if (num_tof_poss != this->get_proj_data_info_sptr()->get_num_tof_poss())
+    error("ProjDataGEHDF5: internal error on TOF data dimension: TOF mashing set incorrectly?");
 
-  // PW flip the tangential and view numbers. The TOF bins are added below to return non TOF viewgram.
+  // PW flip the tangential and view numbers.
   if (get_min_view_num() != 0)
     error("ProjDataGEHDF5: internal error on views");
   if (get_max_tangential_pos_num() + get_min_tangential_pos_num() != 0)
@@ -148,36 +145,13 @@ ProjDataGEHDF5::get_viewgram(const int view_num,
     for (int i_axial = get_min_axial_pos_num(segment_num), axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)];
          i_axial <= get_max_axial_pos_num(segment_num);
          i_axial++, axial_pos++)
-      for (int tof_poss = 0; tof_poss <= num_tof_poss - 1; tof_poss++)
-        {
-          ret_viewgram[i_axial][-tang_pos]
-              += static_cast<float>(tof_data[get_max_view_num() - view_num][i_tang][tof_poss][axial_pos]);
-        }
-
-#if 0
-    ofstream write_tof_data;
-    write_tof_data.open("uncompressed_sino_tof_data.txt",ios::out);
-    for ( int i =tof_data.get_min_index(); i<=tof_data.get_max_index();i++)
       {
-        for ( int j =tof_data[i].get_min_index(); j <=tof_data[i].get_max_index(); j++)
-           {
-            for(int k = tof_data[i][j].get_min_index(); k <=tof_data[i][j].get_max_index(); k++)
-         write_tof_data << tof_data[i][j][k] << "   " ;
-           }
-                  write_tof_data << std::endl;
-           }
+        // note: tof_data tof index starts from 0
+        // note: various swaps here
+        ret_viewgram[i_axial][-tang_pos]
+            = static_cast<float>(tof_data[get_max_view_num() - view_num][i_tang][-timing_pos + get_min_tof_pos_num()][axial_pos]);
+      }
 
-    ofstream write_ret_viewgram_data;
-    write_ret_viewgram_data.open("uncompressed_sino_ret_viewgram_data.txt",ios::out);
-    for ( int i =ret_viewgram.get_min_index(); i<=ret_viewgram.get_max_index();i++)
-      {
-        for ( int j =ret_viewgram[i].get_min_index(); j <=ret_viewgram[i].get_max_index(); j++)
-           {
-         write_ret_viewgram_data << ret_viewgram[i][j] << "   " ;
-           }
-                  write_ret_viewgram_data << std::endl;
-           }
-#endif
   return ret_viewgram;
 }
 
