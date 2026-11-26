@@ -14,6 +14,7 @@
   \brief Implementation of functions of class stir::PatlakPlot
 
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -22,8 +23,7 @@
 
 #include "stir/modelling/KineticModel.h"
 #include "stir/modelling/ModelMatrix.h"
-#include "stir/modelling/PlasmaData.h"
-#include "stir/Succeeded.h"
+
 #include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
@@ -68,28 +68,31 @@ START_NAMESPACE_STIR
 
   \todo Should be derived from LinearModels, but when non-linear models will be introduced, as well.
 */
-class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
+class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel, KineticModel>
 {
+private:
+  typedef RegisteredParsingObject<PatlakPlot, KineticModel, KineticModel> base_type;
+
 public:
   //! Name which will be used when parsing a PatlakPlot object
   static const char* const registered_name;
 
-  PatlakPlot();           //!< Default constructor (calls set_defaults())
-  ~PatlakPlot() override; //!< default destructor
-                          /*! \name Functions to get parameters */
-                          //!@{
+  //! Default constructor (calls set_defaults())
+  PatlakPlot();
+
+  PatlakPlot(const shared_ptr<const ExamInfo>& exam_info_sptr);
+
+  ~PatlakPlot() override;
+
+  /*! \name Functions to get parameters */
+  //!@{
   //! Simply gets model matrix, if it has been already stored.
   ModelMatrix<2> get_model_matrix() const;
   //! Creates model matrix from plasma data (Must be already sorted in appropriate frames).
   ModelMatrix<2> get_model_matrix(const PlasmaData& plasma_data,
                                   const TimeFrameDefinitions& time_frame_definitions,
                                   const unsigned int starting_frame);
-  //! Returns the frame that the PatlakPlot linearization is assumed to be valid.
-  unsigned int get_starting_frame() const;
-  //! Returns the number of the last frame available.
-  unsigned int get_ending_frame() const;
-  //! Returns the TimeFrameDefinitions that the PatlakPlot linearization is assumed to be valid: ChT::Check
-  TimeFrameDefinitions get_time_frame_definitions() const;
+
   //!@}
   /*! \name Functions to set parameters*/
   //!@{
@@ -116,6 +119,37 @@ public:
   virtual void get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity& dyn_image,
                                                        const ParametricVoxelsOnCartesianGrid& par_image) const;
 
+  //! Multiplies the dynamic image with the initialization kinetic model gradient.
+  /*!  For a linear model the model gradient is the transpose of the model matrix.
+    So, the dynamic image is "projected" from time domain to the parameter domain.
+
+    \todo Should be a virtual function declared in the KineticModel class.
+        Only intended for the initialization of the Generalized Patlak Model EM update estimates
+        Currently not used but retained for future potential usage.
+    The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+  */
+  virtual void multiply_dynamic_image_with_initialization_model_gradient(Parametric3VoxelsOnCartesianGrid& parametric_image,
+                                                                         const DynamicDiscretisedDensity& dyn_image) const;
+
+  //! Multiplies the dynamic image with the initialization kinetic model gradient and add to original \c parametric_image
+  /*! \todo Should be a virtual function declared in the KineticModel class.
+      Only intended for the initialization of the Generalized Patlak Model EM update estimates
+          Currently not used but retained for future potential usage.
+      The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+  */
+  virtual void
+  multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(Parametric3VoxelsOnCartesianGrid& parametric_image,
+                                                                             const DynamicDiscretisedDensity& dyn_image) const;
+
+  //! Multiplies the parametric image with the initialization kinetic model matrix to get the corresponding dynamic image.
+  /*! \todo Should be a virtual function declared in the KineticModel class.
+          Only intended for the initialization of the Generalized Patlak Model EM update estimates
+          Currently not used but retained for future potential usage.
+      The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+  */
+  virtual void get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
+                                                                      const Parametric3VoxelsOnCartesianGrid& par_image) const;
+
   //! This is the common method used to estimate the parametric images from the dynamic images.
   /*! \todo There is currently no check if the time frame definitions from \a dyn_image are
     the same as the ones encoded in the model.
@@ -126,25 +160,13 @@ public:
 
   Succeeded set_up() override;
 
-  bool _if_cardiac;             //!< Switches between cardiac and brain data
-  unsigned int _starting_frame; //!< Starting frame to apply the model
-  float _cal_factor;            //!< Calibration Factor, maybe to be removed.
-  float _time_shift;            //!< Shifts the time to fit the timing of Plasma Data with the Projection Data.
-  bool _in_correct_scale; //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale
-                          //!< factor.
-  bool _in_total_cnt;     //!< Switch to choose the values of the model to be in total counts or in mean counts.
-  std::string _blood_data_filename;            //!< Name of file in which the input function is stored
-  PlasmaData _plasma_frame_data;               //!< Stores the plasma data into frames for brain studies
-  std::string _time_frame_definition_filename; //!< name of file to get frame definitions
-  TimeFrameDefinitions _frame_defs;            //!< TimeFrameDefinitions
-
 private:
-  void create_model_matrix(); //!< Creates model matrix from private members
+  //! Creates model matrix from private members
+  void create_model_matrix() override;
+
   void initialise_keymap() override;
   bool post_processing() override;
   mutable ModelMatrix<2> _model_matrix;
-  bool _matrix_is_stored;
-  typedef RegisteredParsingObject<PatlakPlot, KineticModel> base_type;
 };
 
 END_NAMESPACE_STIR
