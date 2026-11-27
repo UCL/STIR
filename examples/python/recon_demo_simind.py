@@ -122,8 +122,8 @@ if data_file is None:
     umap = stir.FloatVoxelsOnCartesianGrid.read_from_file(mu_map_file)
 
     # SIMIND simulates photons per unit of the source image
-    # We scale the input image to quantization_scale x the 16-bit range, 
-    # so this one number sets both the noise level and the run time.  
+    # We scale the input image to quantization_scale x the 16-bit range,
+    # so this one number sets both the noise level and the run time.
     # 0.0002 keeps the demo to about 2 minutes.
     # Quantization scale cannot be more thant 1
     # If you desire more photons, use the runtime switch "NN"

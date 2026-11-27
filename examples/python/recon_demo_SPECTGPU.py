@@ -13,8 +13,6 @@
 #
 # See STIR/LICENSE.txt for details
 
-from matplotlib import pylab
-
 import stir
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -43,7 +41,7 @@ target.fill(1)
 # run a few iterations and plot intermediate results
 
 # Switch 'interactive' mode on for pylab.
-# Without it, the python shell will wait after every pylab.show() for you
+# Without it, the python shell will wait after every plt.show() for you
 # to close the window.
 try:
     plt.ion()
@@ -80,8 +78,6 @@ if (s.succeeded()):
     target.write_to_file(recon_filename)
 
     # display a reconstructed slice
-    
-
     fig2, ax2 = plt.subplots()
 
     im = ax2.imshow(npimage[slice_idx, :, :],
@@ -102,4 +98,3 @@ if (s.succeeded()):
     plt.show(block=True)
 else:
     print('Error setting-up reconstruction object')
-

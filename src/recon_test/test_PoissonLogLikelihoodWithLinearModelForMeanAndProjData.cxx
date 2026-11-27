@@ -111,9 +111,9 @@ public:
 
   ProjectorType _projector_type;
 
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const* proj_data_filename = 0,
-                                                             char const* density_filename = 0,
-                                                             ProjectorType projector_type = ProjectorType::RayTracing);
+  explicit PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const* proj_data_filename = 0,
+                                                                      char const* density_filename = 0,
+                                                                      ProjectorType projector_type = ProjectorType::RayTracing);
 
   void construct_input_data(shared_ptr<target_type>& density_sptr, const bool TOF_or_not);
 
