@@ -87,6 +87,8 @@ void array_to_host(Array<num_dimensions, elemT>& stir_array, const elemT* dev_da
 template <int num_dimensions, typename elemT>
 void array_to_host(Array<num_dimensions, elemT>& stir_array, const CuVec<elemT>& dev_data, bool sync = true);
 
+void cu_allocate(float*& array, size_t size);
+void cu_free(float*& array);
 #ifdef __CUDACC__
 
 //! \brief Performs a parallel reduction sum on shared memory within a CUDA thread block, final value stored in shared_mem[0].

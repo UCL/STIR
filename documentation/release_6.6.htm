@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <title>Summary of changes in STIR release 6.6</title>
+</head>
+
+<body>
+  <h1>Summary of changes in STIR release 6.6</h1>
+
+
+  <h2>Overall summary</h2>
+
+    <p>
+      
+    </p>
+    <p>
+      This is a release with several major updates, including a new SPECT GPU projector,
+      
+      More detail is below.
+    </p>
+    <p>
+      Main code contributions were by Nikos Efthimiou (UMCG), Alan Osys (LSBU), Daniel Deidda (NPL), Kris Thielemans (UCL).
+      <br>
+      Overall overview and release management was by Kris Thielemans (UCL).
+    </p>
+
+    <h2>Patch release info</h2>
+    <ul>
+      <li>
+        6.6.0 released <br>
+        <a href="https://github.com/UCL/STIR/milestone/14">GitHub Milestone 6.6</a>
+      </li>
+    </ul>
+
+  <h2> Summary for end users (also to be read by developers)</h2>
+
+  <h3>Bug fixes</h3>
+  <ul>
+    <li>
+      
+      <br>
+      <a </a>.
+    </li>
+    
+ </ul>
+
+  <h3>New functionality</h3>
+  <h4>General</h4>
+  <ul>
+    <li>
+      A new SPECT GPU projector is available for reconstruction of SPECT data including attenuation and collimator response. The implementation uses a rotating projector (i.e. filter, rotate the image and then project),
+      as suggested by 
+      <a href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=552061">Jerold W. Wallis and Tom R. Miller, IEEE TMI 1997)</a>.
+      The STIR implementation uses adjoint interpolation. See the User's Guide for details.
+    </li>
+  </ul>
+  <h3>Changed functionality</h3>
+  <ul>
+    <li>
+      
+    </li>
+  </ul>
+<!--
+  <h4>Changes to examples</h4>
+  <ul>
+    <li>
+      Changed <tt>examples/ROOT_files/ROOT_STIR_consistency/root_header_test_template.hroot</tt>
+      to use BlocksOnCylindrical geometry.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1746>PR #1746</a>.
+    </li>
+  </ul>
+  <!--
+  <h3>Changes to documentation</h3>
+  <ul>
+  </ul>
+  -->
+
+  <h3>Build system</h3>
+  <ul>
+    <li>
+    
+     
+    </li>
+  </ul>
+
+  <h3>Known problems</h3>
+  <p>See .
+  </p>
+
+
+<H2>What is new for developers (aside from what should be obvious from the above):</H2>
+
+  <h3>Changed functionality</h3>
+  <ul>
+    <li>
+     
+    </li>
+  </ul>
+
+  <h3>New Deprecations and renames</h3>
+  <ul>
+  
+    <li>
+    </li>
+  </ul>
+
+  <h3>Code improvements</h3>
+  <ul>
+    <li>
+      
+    </li>
+  </ul>
+
+  <h3>Test changes</h3>
+  <p>All new features and most code changes were accompanied by new tests.</p>
+  <ul>
+    <li>
+      <code>SPECTGPU is tested in test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_with_SPECTGPU and test_OSMAPOSL_spect_gpu.
+      <br>
+      <a href=https://github.com/UCL/STIR/pull/1687>PR #1687</a>.
+    </li>
+  </ul>
+</body>
+
+</html>
